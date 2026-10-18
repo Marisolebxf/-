@@ -1,0 +1,47 @@
+# 集成项卡片模板（唯一格式，真源 = SCI-INT-总派单.md §2）
+# 产物/SCI-INT-{ID}.yaml；范围清单见 产物/P00-baseline.yaml
+task_id: SCI-INT-A01
+scope_count: 16          # 范围内 SRS 叶数或 metric 数
+card_count: 16
+gap: []                  # 差集，必须为空
+cards:
+  - int_id: INT-A-TECH-001        # INT-{A|B|C|D}-{TAL|TECH|ORG|X}-{nnn}；X=非三要素或跨要素；nnn 用本叶号段
+    layer: page                   # page|metric|data|test
+    # —— 来源 ——
+    srs: {excel_row: 4, seq: 1, path: "…/科技全域态势/地图操作/放大/缩小"}
+    page_ref: DS-01-MAP            # DS 页面映射 id（A 段必填）
+    dimension: [TECH, ORG]         # TAL|TECH|ORG|NONE_3E|OTHER
+    # —— 依赖 ——
+    dep_kind: [data, metric]       # data|metric|algorithm|graph|service|push|export|write_back
+    metric_ids: [M_TECH_GRAPH_STRUCT]
+    metric_domain_other: []        # 页面用到的 INNOV/SYNTH 等非三要素域指标
+    algorithm_type: third_party    # 来自 MCP，不自填
+    integration_pattern: TBD       # B01 模式编号 IP-nn；B01 未出前填 TBD
+    # —— 分工 ——
+    ours: [frontend, java_facade]  # frontend|java_facade|python_internal|etl|graph_load
+    counterpart: jiuxin            # jiuxin|gkx_mysql_raw|trsgraph|other:<名>|none
+    delivery_form: API             # API|SQL|Python|table|file|none|unknown
+    jiuxin_row_id: null            # 对上 P00-baseline.yaml jiuxin_rows 之一
+    # —— 调用链与契约草案 ——
+    call_chain:
+      fe_route: /situation/global   # lumen 路由；不存在写 null
+      java: "GET /innov/v1/… (draft)"
+      python: "POST /internal/… (draft)"
+      downstream: "久新 API / ADS 表 / Nebula space"
+    contract_draft:
+      request: [region_code, time_range, domain_code, page, size]
+      response_key_fields: [id, name, lat, lng, score]
+      granularity: {time: month, geo: city}
+      freshness: T+1               # realtime|T+1|weekly|offline
+    # —— 现状与缺口 ——
+    status:
+      demo: "demo-ui-science src/pages/…（有/无/部分）"
+      lumen: "lumen-ui-science-pc src/views/situation/…（有/无/部分）"
+      d1_d4: {d1: draft, d4: mock}  # 来自 MCP
+    gaps: []
+    conflicts: []
+    decision_needed: []            # 需甲方 / 久新拍板的问题（草案）
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：…", "降级：对端超时显示空态+角标"]
+    confidence: medium             # high|medium|low

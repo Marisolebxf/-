@@ -1,0 +1,1485 @@
+# SCI-INT-A01 · 科技全域态势（DS-01-MAP / LAYERS / FACTORS / EVENTS）系统集成项卡片
+# 格式真源：SCI-INT-总派单.md §2 / 产物/_card-template.yaml；模式编号：B01 IP-01～IP-13
+# 范围：SRS 科技发展态势/科技全域态势.md excel_rows 4–19（P00-baseline leaf=A01，16 叶）
+# 对端：北京久新（目录名沿用旧写法「九新」）；久新行一律「待确认」
+# algorithm_type / d1_d4 全部来自 MCP user-metric-registry（metric-get / metric-query，2026-10-18）
+# 约定：gaps 前缀 metric_missing:=统计数字无任何注册 metric_id；algo_owner_missing:=有 id 但 05 库/久新均无交付方
+#       X 卡=跨要素或非三要素；含 TAL/TECH/ORG 维度的 X 卡同样写满 call_chain 四段
+# 全部 lumen 路由：/trend/tech-overall-situation（lumen-ui-science-pc src/views/situation/overview/）
+# 全部前端 API：src/api/situation/index.ts BASE=/situation/v1（POST，契约 BE-TS-CONTRACT-01 未冻结）；
+#   lumen-svc-platform 无 /situation 实现（grep 0 命中）——下文 java 段一律 draft
+task_id: SCI-INT-A01
+scope_count: 16
+card_count: 39
+gap: []
+cards:
+  # ───────────────────────── 地图操作（DS-01-MAP） ─────────────────────────
+  - int_id: INT-A-X-001
+    layer: page
+    srs: {excel_row: 4, seq: 1, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/地图操作/放大/缩小"}
+    page_ref: DS-01-MAP
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: "other:天地图瓦片服务"
+    delivery_form: API
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: null
+      python: null
+      downstream: "天地图瓦片（前端 UnifiedLeafletMap/Leaflet 直连瓦片，非业务数据）"
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: zoom_level}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx global-situation-page（有，Leaflet 缩放）"
+      lumen: "lumen-ui-science-pc FactorMapSection（有，前端地图相机操作）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["天地图 key 与内网可达性属运维配置，非集成项；离线瓦片待部署环境确认"]
+    test_points: ["交互：滚轮/按钮缩放保持中心点", "降级：瓦片加载失败显示底图占位不白屏"]
+    confidence: high
+
+  - int_id: INT-A-X-002
+    layer: page
+    srs: {excel_row: 5, seq: 2, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/地图操作/拖动平移"}
+    page_ref: DS-01-MAP
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（有）"
+      lumen: "lumen-ui-science-pc FactorMapSection（有，Leaflet 拖拽）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：拖拽平移后落点/弹窗位置跟随", "无障碍：键盘方向键平移（D10）"]
+    confidence: high
+
+  - int_id: INT-A-X-003
+    layer: page
+    srs: {excel_row: 6, seq: 3, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/地图操作/复位"}
+    page_ref: DS-01-MAP
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（有）"
+      lumen: "lumen-ui-science-pc FactorMapSection（有，复位按钮）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：复位后视野/缩放回初始值，筛选条件不被清空"]
+    confidence: high
+
+  - int_id: INT-A-X-004
+    layer: page
+    srs: {excel_row: 7, seq: 4, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/地图操作/搜索要素定位"}
+    page_ref: DS-01-MAP
+    dimension: [ORG, TAL, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/factors/search?keyword&type&mode=fuzzy|exact (draft，gkxlumen-innov 门面)"
+      python: "POST /internal/v1/search/factors (draft，lumen-etl-es-py 查询 ES)"
+      downstream: "ES 三要素检索索引（候选 idx_sci_factor：科研机构/服务机构/重点企业/专家学者；源 dwd_research_institute_base_info / dwd_scholar 等 ← gkx_mysql_raw）"
+    contract_draft:
+      request: [keyword, factor_type, match_mode, region_code, page, size]
+      response_key_fields: [entity_id, entity_type, name, org_type, address, region_code, lat, lng, highlight]
+      granularity: {time: none, geo: point}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（有，前端过滤 mock 列表）"
+      lumen: "lumen-ui-science-pc index.vue buildKeywordCandidateResults 仅在前端 regions 内匹配；历史缓存 localStorage ts-m1-keyword-history（部分：无后端检索）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "lumen-etl-es-py 仅有企业索引（create_enterprise_index.py / etl/enterprise.py），无科研机构/专家学者/服务机构索引"
+      - "无后端检索接口；前端候选仅来自当前页已加载区域样本，无法全库命中"
+      - "地址→坐标（lat/lng）来源 unknown：dwd_* 多为省市文本，地理编码归属未定"
+    conflicts:
+      - "DS-01-MAP 明确禁止把搜索映射到 seq116（综合图谱 API），检索与图谱关系分属两条链"
+    decision_needed:
+      - "检索对象范围：SRS 列重点企业/服务机构/科研机构，是否含专家学者、论文、专利（与 seq9 浏览对象一致？）"
+    structure_escalation: true
+    risks:
+      - "三要素主数据 ID 与重点企业 ID 体系未对齐，命中后飞点/详情跳转可能断链"
+    test_points:
+      - "契约：模糊/精确两种 match_mode 命中差异可测"
+      - "降级：ES 不可用时前端提示「检索服务不可用」，不回落本地伪结果"
+      - "历史缓存仅存关键词，不存结果"
+    confidence: medium
+
+  # ───────────────────────── 图层配置（DS-01-LAYERS） ─────────────────────────
+  - int_id: INT-A-X-005
+    layer: page
+    srs: {excel_row: 8, seq: 5, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/图层配置/多对象图层管理"}
+    page_ref: DS-01-LAYERS
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_COUNT]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/map (前端已调；Java 未实现，draft 落 gkxlumen-innov 只读 ADS)"
+      python: "无在线调用；ETL 离线由 lumen-etl-es-py 产出落点 (draft)"
+      downstream: "ADS 要素落点表（候选 ads_sci_factor_geo：factor_type∈论文/专利/专家学者/机构/会议/项目…，region_code, lat, lng, cnt）"
+    contract_draft:
+      request: [factor_types, region_code, time_range, layer_keys]
+      response_key_fields: [layer_key, factor_type, region_code, lat, lng, count]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（有，mock 图层）"
+      lumen: "lumen-ui-science-pc FactorMapSection 图例开关 + fetchSituationMap（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_ids 无三要素图层计数指标：落点计数暂挂 INNOV 域 M_INNOV_FACTOR_COUNT"
+      - "Java /situation/v1/map 未实现"
+      - "要素落点 ADS 表不存在（按要素类型分层的点位/区域聚合）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: true
+    risks: ["论文/专利按机构地址落点需机构地理编码，精度口径未定（行政区划精度属甲方口径，见客户决策清单）"]
+    test_points: ["契约：每个 layer_key 独立显隐，不互相清空", "Mock 开关：USE_MOCK=false 时无数据显示空态+⚠️"]
+    confidence: medium
+
+  - int_id: INT-A-X-006
+    layer: page
+    srs: {excel_row: 9, seq: 6, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/图层配置/实时数据监控"}
+    page_ref: DS-01-LAYERS
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-11
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/dict/meta/data-status (已有，返回数据截至时间) + POST /situation/v1/map 轮询 (draft)"
+      python: "无"
+      downstream: "ADS 落点表 + 快照版本号（IP-11 横切，候选 ads_sci_result_snapshot）"
+    contract_draft:
+      request: [layer_keys, since_version]
+      response_key_fields: [snapshot_version, data_as_of, changed]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（文案「实时」，无轮询）"
+      lumen: "lumen-ui-science-pc 未见轮询/推送（无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "SRS「实时」与数据链路 T+1（GDF→ADS 批）不符，无流式源"
+    conflicts:
+      - "SRS 写「实时反映」，B01/IP-01 链路为批处理 T+1"
+    decision_needed:
+      - "「实时」口径：轮询刷新最新快照（T+1/小时级）是否可接受？需甲方确认，未确认前 UI 标「数据截至」+⚠️"
+    structure_escalation: false
+    risks: ["若甲方坚持秒级实时，需新增流式通道，超出现有架构基线"]
+    test_points: ["契约：snapshot_version 不变时前端不重绘", "显示数据截至时间"]
+    confidence: medium
+
+  - int_id: INT-A-X-007
+    layer: page
+    srs: {excel_row: 10, seq: 7, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/图层配置/图层分组与组织"}
+    page_ref: DS-01-LAYERS
+    dimension: [NONE_3E]
+    dep_kind: [service, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET/PUT /innov/v1/layer-groups (draft，用户图层分组/重命名/颜色，存 Java 自有库)"
+      python: null
+      downstream: "Java 自有配置表（候选 sys_user_layer_group）"
+    contract_draft:
+      request: [user_id, groups:[group_id, name, color, layer_keys, order]]
+      response_key_fields: [group_id, name, color, layer_keys, order, updated_at]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science src/App.jsx（部分）"
+      lumen: "lumen-ui-science-pc 未见图层分组/重命名/颜色；现有 rename 仅针对要素标签（factorTagStore，localStorage）（无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["图层分组配置无持久化接口与表"]
+    conflicts: []
+    decision_needed: ["分组配置是否按用户跨设备持久化（服务端）还是本地浏览器即可"]
+    structure_escalation: true
+    risks: []
+    test_points: ["写回：重命名/颜色修改刷新后保留", "颜色需满足 Design.md 对比度"]
+    confidence: medium
+
+  - int_id: INT-A-X-008
+    layer: page
+    srs: {excel_row: 11, seq: 8, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/图层配置/数据源灵活配置"}
+    page_ref: DS-01-LAYERS
+    dimension: [TECH, TAL, ORG, OTHER]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: unknown
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "CRUD /innov/v1/layer-sources (draft，图层↔数据源绑定登记；管理端在 lumen-ui-admin)"
+      python: "POST /internal/v1/etl/layer-source/sync (draft，lumen-etl-es-py 按绑定拉取 API/库表 → ADS)"
+      downstream: "数据源登记表（候选 cfg_layer_datasource）+ ADS 落点表；外部 API 源 unknown"
+    contract_draft:
+      request: [layer_key, source_type(api|db_table|user_fill), source_ref, field_mapping, schedule]
+      response_key_fields: [source_id, layer_key, source_type, status, last_sync_at]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（无/仅文案）"
+      lumen: "lumen-ui-science-pc / lumen-ui-admin 未见数据源配置（无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "【重点结论】图层数据源配置不是算法，是取数/接入配置服务：需 Java 登记 + ETL 执行，前端不得直连任何外部 API/库"
+      - "外部 API 数据源清单 unknown（是否含久新接口未见依据，不推测）"
+    conflicts: []
+    decision_needed:
+      - "「API 接口」类数据源具体指哪些系统（含是否久新接口）？需甲方/久新确认"
+    structure_escalation: true
+    risks:
+      - "若允许任意 API 配置，存在 SSRF/凭据泄露风险：凭据只存 Python 侧，Java 只登记引用"
+      - "动态字段映射易破坏 D9 血缘（新数据源须挂 metric_id 才能上 ⓘ）"
+    test_points: ["契约：新增数据源后图层可见数据且血缘可追溯", "安全：前端请求中不出现外部源地址/凭据"]
+    confidence: low
+
+  - int_id: INT-A-X-009
+    layer: page
+    srs: {excel_row: 11, seq: 8, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/图层配置/数据源灵活配置"}
+    page_ref: DS-01-LAYERS
+    dimension: [NONE_3E]
+    dep_kind: [write_back, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /innov/v1/layer-sources/{id}/fill (draft，用户填报写入 Java 自有表)"
+      python: null
+      downstream: "用户填报表（候选 ods_user_layer_fill）→ ETL 并入 ADS 落点"
+    contract_draft:
+      request: [source_id, rows:[name, address, region_code, lat, lng, attrs]]
+      response_key_fields: [fill_id, accepted, rejected, audit_status]
+      granularity: {time: none, geo: point}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science（无）"
+      lumen: "lumen-ui-science-pc（无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["用户填报写回链路、审核与数据标识全缺"]
+    conflicts: []
+    decision_needed:
+      - "用户填报范围：谁可填、是否需审核、填报数据是否与三方源同图层混显（需甲方拍板）"
+    structure_escalation: true
+    risks: ["填报数据无血缘身份，混入统计会污染 D9 口径；须单独图层或打标"]
+    test_points: ["写回：越权填报被拒", "填报数据在图层上可区分来源"]
+    confidence: low
+
+  # ───────────────────────── 科创要素·基础信息（DS-01-FACTORS D01） ─────────────────────────
+  - int_id: INT-A-TAL-010
+    layer: page
+    srs: {excel_row: 12, seq: 9, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/基础信息查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/factors/scholar?filters & /{id} (draft)"
+      python: "无在线调用；ETL 由 GDF 贴源→DWD (draft)"
+      downstream: "dwd_scholar（gkx_mysql_raw 入站）→ ADS 专家学者主数据"
+    contract_draft:
+      request: [time_range, discipline_code, region_code, keyword, page, size]
+      response_key_fields: [scholar_id, name, org_id, org_name, discipline, region_code, h_index, paper_nums]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 列表）"
+      lumen: "lumen-ui-science-pc OverviewTab 要素卡（前端有；后端无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["专家学者主数据 ADS 视图与 Java 接口均未实现", "学科领域分类码表来源 unknown"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["与专题系统人才主数据须共用同一 scholar_id，否则跨系统跳转断链（方案 A 共享聚合核心）"]
+    test_points: ["契约：多条件组合筛选结果数正确", "降级：空结果显示空态"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-011
+    layer: page
+    srs: {excel_row: 12, seq: 9, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/基础信息查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [ORG]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/factors/org?filters & /{id} (draft)"
+      python: "无在线调用 (draft)"
+      downstream: "dwd_research_institute_base_info（gkx_mysql_raw）→ ADS 机构主数据"
+    contract_draft:
+      request: [time_range, org_type, discipline_code, region_code, page, size]
+      response_key_fields: [org_id, name, org_type, address, region_code, lat, lng]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab（前端有；后端无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["机构主数据 ADS 与接口未实现"]
+    conflicts:
+      - "SD-FACT-05：SRS「组织机构」与 FACTORS 拆分后的「科研机构/企业/服务机构」粒度不一致"
+    decision_needed: ["「组织机构」是否等同科研机构，或含企业/服务机构（甲方口径）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：机构类型筛选与地图落点数一致"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-012
+    layer: page
+    srs: {excel_row: 12, seq: 9, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/基础信息查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TECH]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/factors/{paper|patent}?filters & /{id} (draft)"
+      python: "无在线调用 (draft)"
+      downstream: "dwd_zh_paper / dwd_en_paper / dwd_patent（gkx_mysql_raw）→ ADS"
+    contract_draft:
+      request: [time_range, discipline_code, region_code, keyword, page, size]
+      response_key_fields: [id, title, pub_date, org_ids, author_ids, discipline, region_code]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab（前端有；后端无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["论文/专利明细 ADS 与接口未实现；论文/专利→技术领域归类口径 unknown"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["论文/专利量级大，明细列表需分页+ES，避免 Java 直扫 ADS 大表"]
+    test_points: ["契约：分页稳定排序", "性能：首屏 ≤2s"]
+    confidence: medium
+
+  - int_id: INT-A-X-013
+    layer: page
+    srs: {excel_row: 12, seq: 9, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/基础信息查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [NONE_3E, OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET /innov/v1/factors/{journal|conference|topic|project|achievement}?filters (draft)"
+      python: null
+      downstream: "dwd_zh_project 等（gkx_mysql_raw，期刊/会议/成果源表 unknown）"
+    contract_draft:
+      request: [factor_type, time_range, discipline_code, region_code, page, size]
+      response_key_fields: [id, name, factor_type, date, region_code]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab（前端有；后端无）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["期刊/会议/成果源表在三方库中是否存在 unknown"]
+    conflicts: ["SD-FACT-05：SRS「课题」与「项目」是否合并未定"]
+    decision_needed: ["课题是否并入项目展示（甲方口径）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["降级：某类要素无源时该类 Tab 显示空态+⚠️，不伪造"]
+    confidence: low
+
+  - int_id: INT-A-X-014
+    layer: page
+    srs: {excel_row: 12, seq: 9, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/基础信息查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH, OTHER]
+    dep_kind: [service, write_back]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "GET/POST/DELETE /innov/v1/favorites , /innov/v1/factor-tags (draft，Java 自有库)"
+      python: "无（用户数据 CRUD，不经 Python）"
+      downstream: "Java 自有表（候选 sys_user_favorite / sys_user_factor_tag）"
+    contract_draft:
+      request: [user_id, entity_type, entity_id, tags]
+      response_key_fields: [favorite_id, entity_type, entity_id, tags, created_at]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science（本地状态）"
+      lumen: "lumen-ui-science-pc useFollow + factorTagStore 均为 localStorage（部分：无服务端）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["收藏/标签无服务端持久化，换设备丢失"]
+    conflicts: []
+    decision_needed: ["收藏/标签是否需与专题系统共享（同一用户中心）"]
+    structure_escalation: true
+    risks: ["entity_id 依赖三要素主数据 ID 稳定性；主数据重建会产生孤儿收藏"]
+    test_points: ["写回：收藏后刷新/换浏览器仍在", "标签重命名同步到全部已打标对象"]
+    confidence: medium
+
+  # ───────────────────────── 科创要素·统计指标（DS-01-FACTORS D02–D04） ─────────────────────────
+  - int_id: INT-A-TECH-015
+    layer: page
+    srs: {excel_row: 13, seq: 10, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/统计指标展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TECH]
+    dep_kind: [metric, data]
+    metric_ids: [M_TECH_BASE_96_1]
+    metric_domain_other: [M_INNOV_FACTOR_COUNT, M_INNOV_FACTOR_DIST, M_INNOV_FACTOR_GROWTH]
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-96
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/overview (前端已调；Java 未实现，draft 只读 ADS)"
+      python: "无在线调用；久新 SQL 由我方 GDF/调度执行落 ADS (draft)"
+      downstream: "久新 SRS-96 技术基础指标 SQL（待确认）→ ADS 技术基础指标表（候选 ads_sci_tech_base）"
+    contract_draft:
+      request: [time_range, region_code, discipline_code, group_by]
+      response_key_fields: [metric_id, factor_type(paper|patent), region_code, period, value, yoy, share]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock KPI）"
+      lumen: "lumen-ui-science-pc OverviewTab 要素卡（前端有；ⓘ metric-id 为自造 TS-M1-factor-*）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "前端 MetricSpecHint metric-id=`TS-M1-factor-${factorKey}` 非注册表 ID，需改绑注册 metric_id"
+      - "ADS 技术基础指标表未建"
+    conflicts:
+      - "页面级 M_INNOV_FACTOR_COUNT/DIST/GROWTH（STAT 自建）与库叶 M_TECH_BASE_96_1（third_party·久新 SQL）同一数字双轨，ⓘ 绑哪个未定"
+    decision_needed:
+      - "久新 SRS-96 交付形态 SQL 是否确认、输出字段是否含按区域/月的数量（待久新确认）"
+    structure_escalation: true
+    risks: []
+    test_points: ["契约：同一时间/区域下前端数字=ADS 值", "降级：久新未交付时显示空态+⚠️+🧪(mock)"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-016
+    layer: page
+    srs: {excel_row: 13, seq: 10, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/统计指标展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL]
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_BASE_98_1]
+    metric_domain_other: [M_INNOV_FACTOR_COUNT, M_INNOV_FACTOR_DIST, M_INNOV_FACTOR_GROWTH]
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-98
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/overview (draft)"
+      python: "无在线调用 (draft)"
+      downstream: "久新 SRS-98 人才基础指标 SQL（待确认）→ ADS 人才基础指标表（候选 ads_sci_talent_base）"
+    contract_draft:
+      request: [time_range, region_code, discipline_code, group_by]
+      response_key_fields: [metric_id, region_code, period, value, yoy, share]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["前端 ⓘ 自造 metric-id，需改绑", "ADS 人才基础指标表未建"]
+    conflicts:
+      - "MCP M_TALENT_BASE_98_1 的 srs_refs 未含 DS-01，但 DS-01-FACTORS 把专家学者数量映射到 seq98；需 data-agent 补 srs_refs 或改映射"
+      - "同 TECH-015：M_INNOV_FACTOR_* 自建与 98 第三方双轨"
+    decision_needed: ["久新 SRS-98 交付形态与字段（待久新确认）"]
+    structure_escalation: true
+    risks: []
+    test_points: ["契约：专家学者数量与基础信息列表总数一致"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-017
+    layer: page
+    srs: {excel_row: 13, seq: 10, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/统计指标展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [ORG]
+    dep_kind: [metric, data]
+    metric_ids: [M_ORG_BASE_99_1]
+    metric_domain_other: [M_INNOV_FACTOR_COUNT, M_INNOV_FACTOR_DIST, M_INNOV_FACTOR_GROWTH]
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-99
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/overview (draft)"
+      python: "无在线调用 (draft)"
+      downstream: "久新 SRS-99 科研机构基础指标 SQL（待确认）→ ADS 机构基础指标表（候选 ads_sci_org_base）"
+    contract_draft:
+      request: [time_range, region_code, org_type, group_by]
+      response_key_fields: [metric_id, region_code, period, value, yoy, share]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["前端 ⓘ 自造 metric-id，需改绑", "ADS 机构基础指标表未建"]
+    conflicts: ["同 TECH-015：M_INNOV_FACTOR_* 自建与 99 第三方双轨"]
+    decision_needed: ["久新 SRS-99 交付形态与字段（待久新确认）"]
+    structure_escalation: true
+    risks: []
+    test_points: ["契约：机构数量按区域汇总=全国合计"]
+    confidence: medium
+
+  - int_id: INT-A-X-018
+    layer: page
+    srs: {excel_row: 13, seq: 10, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/统计指标展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [NONE_3E, OTHER]
+    dep_kind: [metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_COUNT, M_INNOV_FACTOR_DIST, M_INNOV_FACTOR_GROWTH]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/overview (draft；自定义统计维度 group_by)"
+      python: null
+      downstream: "GDF→ADS 要素计数宽表（期刊/会议/课题/项目/成果/企业/服务机构；源表部分 unknown）"
+    contract_draft:
+      request: [factor_types, time_range, region_code, group_by(region|discipline|period)]
+      response_key_fields: [metric_id, factor_type, dim_key, period, value, share, growth]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc OverviewTab + chartBuilders（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["非三要素对象计数 ADS 未建；会议/期刊源表 unknown"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["自定义维度若开放任意组合，易出现无口径的派生数字（须限定为注册维度）"]
+    test_points: ["契约：group_by 枚举外的值被 400 拒绝", "每个数字有 ⓘ（D9）"]
+    confidence: medium
+
+  - int_id: INT-A-X-019
+    layer: page
+    srs: {excel_row: 13, seq: 10, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/统计指标展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [NONE_3E]
+    dep_kind: [export, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /innov/v1/export (draft，服务端导出+审计；如沿用前端导出则 null)"
+      python: null
+      downstream: "pigx 审计日志（是否复用 sys_log unknown）"
+    contract_draft:
+      request: [view_key, filters, columns, format(csv|xlsx|png)]
+      response_key_fields: [file_url, row_count, audit_id]
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science（前端导出）"
+      lumen: "lumen-ui-science-pc 前端 CSV 导出（50 行上限、字段白名单、审计仅为提示文案，未落后端）（部分）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["UI 提示「审计记录」但无后端审计落库", "超 50 行全量导出无服务端能力"]
+    conflicts: []
+    decision_needed: ["导出是否需服务端审计与全量（安全口径）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["导出：文件内含 metric_id 与数据截至时间", "审计：导出行为可查"]
+    confidence: medium
+
+  # ───────────────────────── 科创要素·分析数据（DS-01-FACTORS D05–D17） ─────────────────────────
+  - int_id: INT-A-X-020
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [graph, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_RELATION, M_INNOV_FACTOR_EDGE_WEIGHT, M_SYNTH_GRAPHAPI_116_1]
+    algorithm_type: GRAPH
+    integration_pattern: IP-05
+    ours: [java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence 关联子图 (draft；现有 gkxlumen-innov /v1/graph/subgraph 读 dwm_graph_*，口径不同)"
+      python: "POST /internal/v1/sci/factor-relation (draft，lumen-algo-py 查 Nebula 并投影 ADS)"
+      downstream: "NebulaGraph TRSGraph（三要素关系 space/edge 未定义）→ ADS 关系投影"
+    contract_draft:
+      request: [center_entity_id, entity_types, depth, time_range]
+      response_key_fields: [nodes:[id,type,name], edges:[src,dst,rel_type,weight]]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 关系）"
+      lumen: "lumen-ui-science-pc InfluenceTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_ids 无三要素图谱指标；页面关联用 INNOV GRAPH + SYNTH 116"
+      - "Nebula 三要素关系 schema（tag/edge）未定义"
+      - "M_SYNTH_GRAPHAPI_116_1 标 third_party 但 P00 无 SRS-116 久新行 → 无交付方"
+    conflicts:
+      - "M_SYNTH_GRAPHAPI_116_1 algorithm_type=third_party，而页面级 M_INNOV_FACTOR_RELATION/EDGE_WEIGHT=GRAPH 自建，归属冲突"
+      - "现有 /innov/v1/graph/* 读 dwm_graph_*（Java 读 DWM 违反只读 ADS，B01 R4）"
+    decision_needed: ["116 综合图谱 API 由谁交付（久新扩包/自建 Nebula）"]
+    structure_escalation: true
+    risks: ["Java 不得直连 nGQL；图查询必须经 Python /internal"]
+    test_points: ["契约：depth≤2 时响应 ≤2s", "降级：图服务超时显示空态+⚠️"]
+    confidence: low
+
+  - int_id: INT-A-TAL-021
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL]
+    dep_kind: [metric, algorithm]
+    metric_ids: [M_TALENT_DEEP_162_1]
+    metric_domain_other: [M_INNOV_SCHOLAR_INFLUENCE]
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-162
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence?type=scholar (draft)"
+      python: "POST /internal/v1/sci/talent/academic-power (draft，lumen-algo-py 久新适配器；超时 2s/10s+熔断+快照)"
+      downstream: "久新 SRS-162 人才学术力评估模型 API（待确认）→ ADS 快照（候选 ads_sci_result_snapshot）"
+    contract_draft:
+      request: [scholar_ids|region_code, discipline_code, top_n]
+      response_key_fields: [scholar_id, score, rank, model_version, as_of]
+      granularity: {time: year, geo: city}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 影响力）"
+      lumen: "lumen-ui-science-pc InfluenceTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["lumen-algo-py 无久新适配器、无 /internal/v1/sci/*"]
+    conflicts:
+      - "页面 ⓘ 候选 M_INNOV_SCHOLAR_INFLUENCE（MODEL，自建加权平均 h_index/citation，源 dwd_scholar）与库叶 M_TALENT_DEEP_162_1（third_party 久新 API）口径不同"
+    decision_needed:
+      - "专家学者影响力以久新 162 为准还是自建公式（Q-MO-DS01-02）"
+      - "久新 SRS-162 API 输入输出与调用频率（待久新确认）"
+    structure_escalation: true
+    risks:
+      - "D12：MCP 显示 M_INNOV_SCHOLAR_INFLUENCE algo_server_location=repos/demo-algo-science/innov/…；lumen 不得调用，须在 lumen-algo-py 重写或改用 162"
+      - "凭据只存 Python 侧；前端不得直连久新"
+    test_points: ["契约：久新超时 10s 熔断后读最近快照并标数据截至", "D12：链路中无 demo-* 域名"]
+    confidence: medium
+
+  - int_id: INT-A-ORG-022
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [ORG]
+    dep_kind: [metric, algorithm]
+    metric_ids: [M_ORG_BASE_99_1]
+    metric_domain_other: [M_INNOV_ORG_INFLUENCE]
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-99
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence?type=org (draft)"
+      python: "无在线调用；若采用自建 MODEL 则 lumen-algo-py 批任务 (draft)"
+      downstream: "久新 SRS-99 SQL（待确认）→ ADS 机构基础指标表（同 INT-A-ORG-017 结构项）"
+    contract_draft:
+      request: [region_code, org_type, top_n, time_range]
+      response_key_fields: [org_id, score, rank, as_of]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc InfluenceTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["SRS-99 为「基础指标」，是否含影响力评分 unknown"]
+    conflicts:
+      - "页面 M_INNOV_ORG_INFLUENCE（MODEL 自建，源 dwd_research_institute_base_info/dwd_patent/dwd_*_paper/dwd_zh_project）与库叶 M_ORG_BASE_99_1（third_party SQL）不同口径"
+    decision_needed: ["科研机构影响力用久新 99 产出还是自建 MODEL"]
+    structure_escalation: false
+    risks: ["D12：M_INNOV_ORG_INFLUENCE algo_server_location 指向 demo-algo-science"]
+    test_points: ["契约：排名 top_n 稳定", "D12：链路无 demo-*"]
+    confidence: low
+
+  - int_id: INT-A-TECH-023
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TECH]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_BASE_96_1]
+    metric_domain_other: [M_INNOV_PAPER_INFLUENCE]
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-96
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence?type=paper (draft)"
+      python: "无在线调用 (draft)"
+      downstream: "久新 SRS-96 SQL（待确认）→ ADS 技术基础指标表（同 INT-A-TECH-015 结构项）"
+    contract_draft:
+      request: [region_code, discipline_code, time_range]
+      response_key_fields: [region_code, citation_sum, paper_count, influence_value]
+      granularity: {time: year, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc InfluenceTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["SRS-96 是否含被引类字段 unknown"]
+    conflicts: ["M_INNOV_PAPER_INFLUENCE（STAT 自建）与 M_TECH_BASE_96_1（third_party）双轨"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：论文影响力与统计页论文数同口径时间窗"]
+    confidence: low
+
+  - int_id: INT-A-TECH-024
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TECH]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_PATENT_INFLUENCE, M_INNOV_DS_FACTORS_014]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence?type=patent (draft，当前仅返回 gap 标记)"
+      python: "候选 lumen-algo-py 批任务 (draft，无 owner)"
+      downstream: "无（05 库与久新均未覆盖）"
+    contract_draft:
+      request: [region_code, time_range]
+      response_key_fields: [gap_code, pending_hint_ref]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc InfluenceTab（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_ids 无三要素专利影响力指标（TECH 维度无注册 id）"
+      - "algo_owner_missing: M_INNOV_PATENT_INFLUENCE / M_INNOV_DS_FACTORS_014 无交付方"
+    conflicts: ["同一需求两个 id（M_INNOV_PATENT_INFLUENCE 与 M_INNOV_DS_FACTORS_014），需 data-agent 合并"]
+    decision_needed: ["专利影响力由久新扩包、自研还是降范围（PM/甲方）"]
+    structure_escalation: false
+    risks: ["USE_MOCK=false 时禁止伪数值，只能空态+⚠️"]
+    test_points: ["Mock 关：显示空态+⚠️，DOM 无数字"]
+    confidence: high
+
+  - int_id: INT-A-X-025
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [NONE_3E]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_CONFERENCE_INFLUENCE, M_INNOV_PROJECT_INFLUENCE, M_INNOV_JOURNAL_INFLUENCE, M_INNOV_DS_FACTORS_008, M_INNOV_DS_FACTORS_012, M_INNOV_DS_FACTORS_015]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: []
+      response_key_fields: [gap_code, pending_hint_ref]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc InfluenceTab（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["algo_owner_missing: 会议/项目/期刊影响力 05 库与久新均无"]
+    conflicts: ["OPEN id 与 M_INNOV_DS_FACTORS_008/012/015 双 id 并存"]
+    decision_needed: ["会议/项目/期刊影响力 owner 或降范围"]
+    structure_escalation: false
+    risks: []
+    test_points: ["Mock 关：空态+⚠️"]
+    confidence: high
+
+  - int_id: INT-A-X-026
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [OTHER]
+    dep_kind: [metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_ENTERPRISE_INFLUENCE, M_SVC_ORG_TECH_SCORE]
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/influence?type=enterprise|svc_org (draft)"
+      python: "lumen-algo-py 批任务（服务机构技术分 M_SVC_ORG_TECH_SCORE 已有 svcan 路由，企业影响力 owner unknown）(draft)"
+      downstream: "ADS 结果表（企业/服务机构评分）"
+    contract_draft:
+      request: [region_code, top_n]
+      response_key_fields: [entity_id, score, rank, model_version]
+      granularity: {time: year, geo: city}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc InfluenceTab（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["M_INNOV_ENTERPRISE_INFLUENCE 实现 owner unknown"]
+    conflicts: ["A2 规定本页不消费 M_ENT_*（如 M_ENT_TECH_POWER_SCORE），须用 M_INNOV_ENTERPRISE_INFLUENCE"]
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：服务机构分与 M_SVC_ORG_TECH_SCORE 一致（d1 aligned）"]
+    confidence: medium
+
+  - int_id: INT-A-X-027
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_CLUSTER, M_INNOV_DS_FACTORS_016]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/cluster (前端已调；Java 未实现)"
+      python: "候选 POST /internal/v1/sci/factor-cluster (draft，无 owner)"
+      downstream: "无（05 库/久新未覆盖）"
+    contract_draft:
+      request: [factor_types, region_code, k]
+      response_key_fields: [cluster_id, members, centroid_desc]
+      granularity: {time: year, geo: city}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc ClusterTab（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_ids 无三要素聚类指标"
+      - "algo_owner_missing: 要素聚类无交付方"
+    conflicts: ["双 id：M_INNOV_FACTOR_CLUSTER / M_INNOV_DS_FACTORS_016"]
+    decision_needed: ["聚类对象与特征口径（SRS 未定义）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["Mock 关：空态+⚠️"]
+    confidence: high
+
+  - int_id: INT-A-X-028
+    layer: page
+    srs: {excel_row: 14, seq: 11, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/分析数据展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [metric, service]
+    metric_ids: [M_TECH_BASE_96_1, M_TALENT_BASE_98_1, M_ORG_BASE_99_1]
+    metric_domain_other: [M_INNOV_FACTOR_COUNT, M_INNOV_FACTOR_GROWTH]
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/compare (前端已调；Java 未实现，draft 复用 overview ADS)"
+      python: "无在线调用（Java 只读 ADS 组装）"
+      downstream: "复用 INT-A-TECH-015/TAL-016/ORG-017 的 SRS-96/98/99 交付（不另向久新要）"
+    contract_draft:
+      request: [entity_or_region_keys, metric_ids, time_range]
+      response_key_fields: [key, metric_id, period, value]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc ElementCompareTab（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：比较值与单项统计值一致"]
+    confidence: medium
+
+  # ───────────────────────── 科创要素·监测趋势（DS-01-FACTORS D04/D18/D19） ─────────────────────────
+  - int_id: INT-A-X-029
+    layer: page
+    srs: {excel_row: 15, seq: 12, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/监测数据趋势变化查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_BASE_96_1, M_TALENT_BASE_98_1, M_ORG_BASE_99_1]
+    metric_domain_other: [M_INNOV_FACTOR_GROWTH]
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/timeline (前端已调；Java 未实现，draft)"
+      python: "无在线调用（Java 只读 ADS 时间序列）"
+      downstream: "复用 SRS-96/98/99 交付落 ADS 的时间序列（日/月/季/年）"
+    contract_draft:
+      request: [metric_ids, region_code, granularity(day|month|quarter|year), time_range]
+      response_key_fields: [metric_id, period, value]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 时间轴）"
+      lumen: "lumen-ui-science-pc SituationFilterBar 时间轴 + fetchSituationTimeline（前端有；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["久新 SQL 是否给到日粒度 unknown"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：四种粒度汇总一致（月和=季）"]
+    confidence: medium
+
+  - int_id: INT-A-X-030
+    layer: page
+    srs: {excel_row: 15, seq: 12, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/监测数据趋势变化查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_FORECAST, M_INNOV_DS_FACTORS_018]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "无（gkxlumen-innov /v1/forecast 为领域预测，口径未核，不视为已有）"
+      python: "候选 lumen-algo-py 预测批任务 (draft，无 owner；vendor/innov-py/forecast 未挂载)"
+      downstream: "无"
+    contract_draft:
+      request: [metric_id, region_code, horizon]
+      response_key_fields: [period, yhat, yhat_lower, yhat_upper, model_version]
+      granularity: {time: month, geo: city}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc AnalysisPanel（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["metric_ids 无三要素预测指标", "algo_owner_missing: 要素趋势预测无交付方"]
+    conflicts: ["双 id：M_INNOV_FACTOR_FORECAST / M_INNOV_DS_FACTORS_018"]
+    decision_needed: ["预测是否在本期范围"]
+    structure_escalation: false
+    risks: []
+    test_points: ["Mock 关：空态+⚠️"]
+    confidence: high
+
+  - int_id: INT-A-X-031
+    layer: page
+    srs: {excel_row: 15, seq: 12, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/监测数据趋势变化查看功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_FACTOR_ANOMALY, M_INNOV_DS_FACTORS_019]
+    algorithm_type: MODEL
+    integration_pattern: IP-10
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/timeline 附 anomaly 标记 (draft，当前仅返回 gap)"
+      python: "候选 lumen-algo-py 异常检测批任务 (draft，无 owner)"
+      downstream: "无"
+    contract_draft:
+      request: [metric_id, region_code, time_range]
+      response_key_fields: [period, value, is_anomaly, reason]
+      granularity: {time: month, geo: city}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc AnalysisPanel（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["metric_ids 无三要素异常指标", "algo_owner_missing: 异常点识别无交付方"]
+    conflicts: ["双 id：M_INNOV_FACTOR_ANOMALY / M_INNOV_DS_FACTORS_019"]
+    decision_needed: ["异常判定规则（阈值/算法）口径"]
+    structure_escalation: false
+    risks: []
+    test_points: ["Mock 关：空态+⚠️"]
+    confidence: high
+
+  # ───────────────────────── 科创要素·地图可视化（DS-01-FACTORS D20） ─────────────────────────
+  - int_id: INT-A-X-032
+    layer: page
+    srs: {excel_row: 16, seq: 13, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创要素/地图可视化展示功能"}
+    page_ref: DS-01-FACTORS
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [data, metric]
+    metric_ids: [M_TECH_BASE_96_1, M_TALENT_BASE_98_1, M_ORG_BASE_99_1]
+    metric_domain_other: [M_INNOV_FACTOR_DIST, M_INNOV_FACTOR_COUNT]
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "POST /situation/v1/map (draft，热力=区域聚合计数)"
+      python: "无在线调用（ETL 离线产出落点，同 INT-A-X-005）"
+      downstream: "复用 SRS-96/98/99 区域分布 + ADS 要素落点（同 INT-A-X-005 结构项）"
+    contract_draft:
+      request: [factor_types, region_code, time_range, mode(point|heat)]
+      response_key_fields: [region_code, lat, lng, weight, metric_id]
+      granularity: {time: month, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 热力）"
+      lumen: "lumen-ui-science-pc FactorMapSection（前端有，地图-列表联动；后端无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["地理维表（全球/国家/城市坐标）是否存在 unknown（B01 C05）"]
+    conflicts: []
+    decision_needed: ["行政区划精度（省/市/区）为甲方口径"]
+    structure_escalation: false
+    risks: []
+    test_points: ["联动：地图点选=列表定位", "热力权重与统计数字同源"]
+    confidence: medium
+
+  # ───────────────────────── 科创事件（DS-01-EVENTS） ─────────────────────────
+  - int_id: INT-A-X-033
+    layer: page
+    srs: {excel_row: 17, seq: 14, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/时间筛选功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade]
+    counterpart: "other:科技资讯库/CMS"
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "已有 GET /innov/v1/events + /innov/v1/events/stats（gkxlumen-innov）；前端调 POST /situation/v1/events，路径/方法不一致"
+      python: null
+      downstream: "ads_innovation_event（来源资讯入库链路 unknown）"
+    contract_draft:
+      request: [granularity(day|week|month|quarter|year), start, end, compare_start, compare_end, event_types, page, size]
+      response_key_fields: [event_id, title, event_time, region_code, importance_level, period, count]
+      granularity: {time: day, geo: city}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 事件）"
+      lumen: "lumen-ui-science-pc GlobalEventSection + SituationFilterBar（前端有 day/week/month/quarter/year；Java stats 仅 day|month|year）（部分）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "Java /v1/events/stats 不支持 week/quarter（落回 month）"
+      - "metric_missing: 事件数量/时段分布对比数字无注册 metric_id"
+      - "前后端契约不一致：POST /situation/v1/events vs GET /innov/v1/events"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["ads_innovation_event 在 lumen 环境是否已建表/有数 unknown"]
+    test_points: ["契约：周/季粒度返回正确分桶", "时段对比两区间计数可复算"]
+    confidence: medium
+
+  - int_id: INT-A-X-034
+    layer: page
+    srs: {excel_row: 18, seq: 15, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/重要性分级功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EVENT_ATTENTION, M_INNOV_DS_01_EVENTS_001]
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [python_internal, etl]
+    counterpart: unknown
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "只读 ads_innovation_event.heat_score (draft)"
+      python: "lumen-algo-py 批任务计算关注度 (draft；vendor/innov-py 有 heat_score 写入逻辑但未挂载)"
+      downstream: "传播/舆情源（转载、评论等）unknown → ads_innovation_event"
+    contract_draft:
+      request: [event_ids|time_range]
+      response_key_fields: [event_id, attention_score, as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc（前端仅展示等级，无关注度来源）（无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["关注度原始数据源（舆情/传播）unknown", "algo_owner_missing: 05 库/久新均无"]
+    conflicts: ["双 id：M_INNOV_EVENT_ATTENTION / M_INNOV_DS_01_EVENTS_001"]
+    decision_needed: ["关注度口径（Q-MO-DS01-06）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["无源时等级计算降级为仅影响力并标注"]
+    confidence: low
+
+  - int_id: INT-A-X-035
+    layer: page
+    srs: {excel_row: 18, seq: 15, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/重要性分级功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EVENT_INFLUENCE, M_INNOV_DS_01_EVENTS_002]
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "只读 ads_innovation_event.importance_detail (draft)"
+      python: "lumen-algo-py 批任务（候选移植 vendor/innov-py event/importance/scorer.py 先验因子）(draft)"
+      downstream: "dim_event_type 先验 + 事件属性 → ads_innovation_event"
+    contract_draft:
+      request: [event_ids|time_range]
+      response_key_fields: [event_id, influence_score, factors, as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock）"
+      lumen: "lumen-ui-science-pc（无）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["algo_owner_missing: 05 库/久新均无；vendor scorer 未挂入 lumen_algo_service，部署状态 unknown"]
+    conflicts: ["双 id：M_INNOV_EVENT_INFLUENCE / M_INNOV_DS_01_EVENTS_002"]
+    decision_needed: ["影响力权重（Q-MO-DS01-07）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["同一事件重复计算结果稳定（幂等）"]
+    confidence: low
+
+  - int_id: INT-A-X-036
+    layer: page
+    srs: {excel_row: 18, seq: 15, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/重要性分级功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, metric, data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EVENT_IMPORTANCE, M_INNOV_DS_01_EVENTS_003]
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "已有 GET /innov/v1/events 读 importance_level/importance_score（筛选排序）；前端调 POST /situation/v1/events importanceFilter"
+      python: "lumen-algo-py 批任务：0.5×关注度+0.5×影响力 → P70/P30 分档（样本<20 回退 70/40）(draft)"
+      downstream: "ads_innovation_event.importance_level/score（写入方当前仅 vendor/innov-py，未挂载）"
+    contract_draft:
+      request: [importance_levels(high|medium|low), sort(importance_desc|time_desc), time_range]
+      response_key_fields: [event_id, importance_level, importance_score, as_of]
+      granularity: {time: day, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 等级）"
+      lumen: "lumen-ui-science-pc GlobalEventSection 等级筛选（前端有；等级数据无真实生产方）（部分）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "【重点结论】事件重要性分级是算法（MODEL）：SRS 点名「基于影响力、关注度等指标自动计算等级」，不是人工字段或规则配置"
+      - "algo_owner_missing: 05 库与久新均未覆盖；lumen-algo-py 未挂 vendor scorer"
+      - "SRS「实时更新」与批计算 T+1 不符"
+    conflicts:
+      - "MCP 口径「科技政策事件重要性分档」源 dwd_policy_base，与 SRS「科创事件」范围不一致"
+    decision_needed:
+      - "事件范围：科创事件全集还是仅政策事件（甲方）"
+      - "分档阈值与回退规则（Q-MO-DS01-08）"
+      - "算法 owner：lumen-algo-py 自研（移植 vendor scorer）是否获批"
+    structure_escalation: false
+    risks:
+      - "D12：MCP algo_server_location=repos/demo-algo-science/innov/metrics/metrics.py + api/innov_metric_routes.py；lumen 链路禁调，须在 lumen-algo-py 重写"
+    test_points:
+      - "算法：样本<20 时走 70/40 回退"
+      - "筛选：高/中/低过滤与排序正确"
+      - "D12：链路无 demo-*"
+    confidence: medium
+
+  - int_id: INT-A-X-037
+    layer: page
+    srs: {excel_row: 19, seq: 16, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/事件详情查看功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade]
+    counterpart: "other:科技资讯库/CMS"
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "已有 GET /innov/v1/events/{eventId}（gkxlumen-innov）"
+      python: null
+      downstream: "ads_innovation_event"
+    contract_draft:
+      request: [event_id]
+      response_key_fields: [event_id, title, event_time, location, lat, lng, description, subjects]
+      granularity: {time: day, geo: point}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 弹窗）"
+      lumen: "lumen-ui-science-pc GlobalEventSection 地图标记弹窗（前端有；接 /situation/v1/events 而非已有 Java 详情）（部分）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["前端未对接已有 /innov/v1/events/{id}"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：详情字段五项齐全（标题/时间/地点/描述/相关主体）"]
+    confidence: high
+
+  - int_id: INT-A-X-038
+    layer: page
+    srs: {excel_row: 19, seq: 16, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/事件详情查看功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [ORG, TAL, NONE_3E]
+    dep_kind: [data, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [java_facade, python_internal]
+    counterpart: "other:科技资讯库/CMS"
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: "已有 GET /innov/v1/events/{eventId}/relations（读 ads_event_relation）"
+      python: "离线 NER：lumen-algo-py / vendor innov-py /internal/analysis/article/extract 抽取机构/人员 (draft，挂载状态 unknown)"
+      downstream: "ads_event_relation（rel_type: event|org|person）；机构/人员 ID 需对齐三要素主数据"
+    contract_draft:
+      request: [event_id]
+      response_key_fields: [rel_type, target_id, target_name, score]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science src/App.jsx（mock 关联）"
+      lumen: "lumen-ui-science-pc（前端展示相关主体文本，无跳转）（部分）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing: 关联强度 score 若上屏无注册 metric_id"
+      - "NER 抽出的机构/人员与 ORG/TAL 主数据 ID 对齐（实体消歧）无方案"
+    conflicts: ["DS-01-EVENTS 禁止把事件关联映射到 seq116 图谱"]
+    decision_needed: []
+    structure_escalation: false
+    risks: ["实体消歧错误会把事件挂到错误机构/人员，影响专题系统画像"]
+    test_points: ["关联机构可跳转机构详情（同 org_id）", "无关联时显示空态"]
+    confidence: low
+
+  - int_id: INT-A-X-039
+    layer: page
+    srs: {excel_row: 19, seq: 16, path: "智能服务集群/科技信息展示系统/科技发展态势/科技全域态势/科创事件/事件详情查看功能"}
+    page_ref: DS-01-EVENTS
+    dimension: [NONE_3E]
+    dep_kind: [export]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-overall-situation
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: [event_id, format(html|pdf)]
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo-ui-science（前端导出）"
+      lumen: "lumen-ui-science-pc 前端 HTML 导出 + 剪贴板复制分享（有）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: []
+    conflicts: []
+    decision_needed: ["「分享」是否需生成可访问链接（需后端短链+鉴权），还是复制文案即可"]
+    structure_escalation: false
+    risks: []
+    test_points: ["导出：文件含事件五项字段", "分享：复制内容不含内部 ID"]
+    confidence: high

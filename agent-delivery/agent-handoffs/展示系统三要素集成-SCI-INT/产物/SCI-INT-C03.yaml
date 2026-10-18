@@ -1,0 +1,3522 @@
+task_id: SCI-INT-C03
+layer: data
+element: ORG（科研机构：高校 / 院所 / 新型研发机构 / 创新载体）
+generated_by: 产物/_work/C03-build.py
+as_of: '2026-10-18'
+note: 对端正名「久新」；引用旧路径 metrics/request/九新-技术机构人才/ 保留原名。指标 8 件套/D1–D4 取自 MCP metric-registry（metric-query domain=ORG fields=full，2026-10-18）；行数引用仓内快照，未连库。scope_count / card_count 按源卡计数；data_source 为本叶对 §2
+  schema 的扩展块。
+scope_count: 39
+card_count: 39
+gap: []
+master_data_conclusion:
+  conclusion: 当前没有任何一方持有统一的科研机构实体主数据。甲方三方库 gkx（供应方即久新）把机构拆成多张互不关联的 dwd_*：国内科研院所 dwd_research_institute_base_info（≈2 千，org_id + 可空统一社会信用代码）、高校 dwd_org_heis_info（school_code + 信用代码，业务行数反复清零/回灌）、工商全集 dwd_org_base_info（以企业为主，无科研机构类型码）、海外高校/科研机构
+    dwd_forg_university_org_info / dwd_forg_research_org_info（只有三方 org_id，无 GRID/ROR，08-31 业务行=0）；论文/专利/项目/学者里的机构全部只有名称（唯一例外 dwd_zh_report_org 带 org_xydm）。草案：我方自建科研机构主数据维表 dim_research_org（INT-C-ORG-240，全局
+    org_uid）+ 名称归一表（241）+ 文献-机构桥接表（242），以统一社会信用代码 / 学校标识码 / 三方 org_id 为对齐锚点；久新 11 行交付一律以我方 org_uid 交互。
+  status: decision_needed（待甲方 / 久新确认；structure_escalation → human:李伟）
+  evidence:
+  - 2026-10-10 估数报告：机构相关表行号 641 / 835 / 1410 / 1523 / 1545 / 1654 / 1680；字段见各卡 data_source
+  - 2026-08-31 精确 COUNT：heis=0、forg_*=0（全表 20,000）、org_base_info=50,000（样例上限）
+  - 2026-09-11 差异摘要：国外机构/高校估数>0 多半含 is_deleted=1，不视为业务回灌
+  - ORG-SUPPLIER-QUESTIONS（2026-09-04）P0-1 主表/主键/稳定码 未回，卡住 22 条
+  - 客户决策清单 Q055（国内机构库到位时间）🔴 未决
+  - lumen-etl-es-py / lumen-svc-platform 无科研机构维；lumen-algo-py 仅 vendor svcan 同名推荐端点
+  candidates:
+  - option: A 我方自建主数据（推荐草案）
+    pros: ID 稳定、可审计，与 Nebula/ES/ADS 同源；C01/C02 归一有统一靶
+    cons: 新表 + 归一流程（结构升级）
+  - option: B 久新持有主数据、我方存映射
+    pros: 我方工作量小；久新本身是三方库供应方
+    cons: 主数据在对端，变更不可控；Java 只读 ADS 闭环需额外映射表
+  - option: C 直接用 dwd_research_institute_base_info + dwd_org_heis_info 拼接
+    pros: 零建设
+    cons: 无海外、无新型研发机构、高校行数不稳；文献侧名称无法挂接
+  carrier_vs_org:
+    issue: 三要素口径 ORG=科研机构（含高校、新型研发机构），企业归 OTHER；但展示系统 DS-04「载体」=企业/机构，DS-06「载体」=高校/研究机构/企业/工作室
+    team_default: 🟡 团队临时默认：ORG 主数据只收院所/高校/新型研发机构；企业/工作室载体留在 dwd_org_base_info（INNOV/ENT 域），DS-04/DS-06 载体榜按 org_category 联合两侧
+    decision_needed: true
+id_alignment_draft:
+  org_uid:
+    format_draft: 我方代理键（如 ORG-{CN|GL}-{8 位序号} 或 UUID，待定）；Nebula VID = org:{org_uid}
+    anchor_priority:
+    - 统一社会信用代码（credit_code：200/201/202/220/223 external_id·xydm）
+    - 学校标识码 school_code（201）
+    - 三方 org_id（200/201/202/204/205/206，仅三方内部稳定，跨表是否同体系 unknown）
+    - 规范化名称 + 区划（province/city）
+    - 英文 name_std + name_alias + abbreviation + country（海外）
+    normalize:
+    - 全半角/空白/标点/括号规范化
+    - 后缀与简称表（如「中国科学院」「中科院」、「大学」「学院」）
+    - 多机构分号拆分（dwd_scholar.scholar_org_name_*）
+    - Python 模糊匹配 + 久新 114 NER 产出作候选（待确认）
+    - 人工确认写回（confirmed_by）
+    grid_ror: unknown：三方库无 GRID/ROR 列；海外高校/科研机构表形态类似但未给码，需问供应方（OI-C03-04）
+    versioning: 合并/拆分保留 redirect（旧 org_uid → 新 org_uid），图谱与快照按 version 回放
+  org_category:
+    draft: 院所 / 高校 / 新型研发机构 / 创新载体（实验室、工程中心、孵化器…）/ 企业（非 ORG）
+    source: 200=院所、201=高校、203 标签候选（未盘点）、205/206 org_type 多值
+    decision: 码表与新型研发机构认定口径待甲方（OI-C03-02）
+  geo:
+    rule: 机构表存区划名称 → dwd_dim_admin_area（222）映射 adcode；深圳圈定=city_code 440300（区级 4403xx）
+    gap: 产业园/园区层级无源（DS-06）
+  cross_leaf:
+    C01: 人才 → 机构：scholar_org_name_* / work_experience / education → map_org_alias → org_uid
+    C02: 专利申请人 / 项目承担单位 → map_org_alias → org_uid；dwd_org_base_info_patent_rel 有数据时优先
+    C04: TRSGraph institution VID 迁移为 org:{org_uid}
+  jiuxin:
+    rule: 久新 API 入参/出参使用我方 org_uid；若用自有 ID 须交映射表 jx_org_id→org_uid，按命中率对账（阈值待定）
+    status: 待确认（郭万迎主谈）
+metric_coverage:
+  scope_metrics: 22
+  covered: 22
+  no_source: 0
+  diff: []
+  binding_legend:
+    kit_declared: MCP kit.source_tables 点名（本域 22 条均 pending_ods，无此类）
+    candidate: 本叶据口径推断的候选原料（未核验）
+    jiuxin_pending: 久新交付（11 行之一，全部待确认）
+    no_source: 无可识别源
+  items:
+  - metric_id: M_ORG_ATTENTION_TREND
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-250
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-240
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-02（Q085）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-99（TOPIC-RORG-006）；新增判定依赖名录首次入库时间
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_ATTRACT_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-258
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-07（Q090）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-154（TOPIC-RORG-013）；lumen-algo-py 同名端点口径关系 unknown（B01 C9）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_BASE_99_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-250
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-202
+    - INT-C-ORG-203
+    - INT-C-ORG-205
+    - INT-C-ORG-206
+    - INT-C-ORG-212
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-222
+    - INT-C-ORG-240
+    binding: jiuxin_pending
+    integration_pattern: IP-06
+    srs_refs: 04:60/64/65/67 · 05:99
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: 久新交 SQL-99（待确认），在我方库跑；原料=机构名录 + 论文/专利/项目计数，须经机构主数据与文献-机构桥接
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_COLLAB_CHAIN
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-257
+    - INT-C-ORG-210
+    - INT-C-ORG-230
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-05（Q088）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-153（TOPIC-RORG-010）；图在 TRSGraph
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_CULTIVATE_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-259
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-07（Q090）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-155（TOPIC-RORG-014）；lumen-algo-py 同名端点（B01 C9）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_149_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-253
+    - INT-C-ORG-211
+    - INT-C-ORG-212
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-223
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 04:62 · 05:149
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-149；技术领域分类码见 ORG-P0-3 / C02 OI-C02-02
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_150_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-254
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-212
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 05:150
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-150；成立时间仅 research_institute.incorporation_date；专题 RORG-017 产品走 CMS
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_151_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-255
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-207
+    - INT-C-ORG-212
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-222
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 04:80/81 · 05:151
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-151；成果/经费/人才三维（Q091 默认）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_152_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-256
+    - INT-C-ORG-207
+    - INT-C-ORG-217
+    - INT-C-ORG-218
+    - INT-C-ORG-222
+    - INT-C-ORG-223
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 04:82/83 · 05:152
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-152；项目/转化/人才/产业合作四维（Q092 默认）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_153_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-257
+    - INT-C-ORG-210
+    - INT-C-ORG-211
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-230
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 02:153 · 04:70/71 · 05:100/153/167
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-153；合作边原料只有名称（ORG-P1-5）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_154_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-258
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-205
+    - INT-C-ORG-206
+    - INT-C-ORG-207
+    - INT-C-ORG-208
+    - INT-C-ORG-209
+    - INT-C-ORG-212
+    - INT-C-ORG-214
+    - INT-C-ORG-215
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 04:75/76/77 · 05:154
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-154；学术影响力/科技成果/团队实力
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_DEEP_155_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-259
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-207
+    - INT-C-ORG-208
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-222
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: 04:78/79 · 05:155
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: API-155；成果/经费效率/人才结构
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_GRAPH_114_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-251
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-204
+    - INT-C-ORG-205
+    - INT-C-ORG-206
+    - INT-C-ORG-211
+    - INT-C-ORG-213
+    - INT-C-ORG-215
+    - INT-C-ORG-218
+    - INT-C-ORG-219
+    - INT-C-ORG-220
+    - INT-C-ORG-221
+    - INT-C-ORG-230
+    - INT-C-ORG-241
+    binding: jiuxin_pending
+    integration_pattern: IP-07
+    srs_refs: 05:114
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: 久新交 Python-114（待确认）并入 lumen-algo-py；输入=各表机构名称文本，输出须落我方 org_id
+    pages:
+    - SRS-ORG
+  - metric_id: M_ORG_GRAPH_115_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-252
+    - INT-C-ORG-210
+    - INT-C-ORG-211
+    - INT-C-ORG-215
+    - INT-C-ORG-216
+    - INT-C-ORG-218
+    - INT-C-ORG-230
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-07
+    srs_refs: 05:115
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: 久新交 Python-115（待确认）；机构-机构/机构-文献关系，落 TRSGraph（C04）
+    pages:
+    - SRS-ORG
+  - metric_id: M_ORG_INDUSTRY_COVER
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-250
+    - INT-C-ORG-223
+    - INT-C-ORG-240
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: GAP-ALGO-TYPE-UNSIGNED
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-99（TOPIC-RORG-002）；科研机构↔产业链无直接边，只能经 credit_code 碰 dwd_org_industry_tags（企业为主，命中率 unknown）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_NEW_TREND
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-250
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-240
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-01（Q084）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-99（TOPIC-RORG-005）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_PERF_QUERY
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-ORG-240
+    - INT-C-ORG-242
+    - INT-C-ORG-200
+    - INT-C-ORG-201
+    - INT-C-ORG-211
+    - INT-C-ORG-212
+    - INT-C-ORG-214
+    binding: candidate
+    integration_pattern: IP-01
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-QUERY-02（Q104）
+    kit_source_tables: pending_ods
+    note: STAT 自建（IP-01）：结果集内关联论文数（Q104 默认）；依赖机构主数据 + 文献-机构桥接，不在久新 51 行
+    pages:
+    - TOPIC-QUERY
+  - metric_id: M_ORG_SZ_ADVANTAGE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-255
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-08（Q091）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-151（TOPIC-RORG-015）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_SZ_PAINPOINT
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-256
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-09（Q092）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-152（TOPIC-RORG-016）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_SZ_STATUS
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-250
+    - INT-C-ORG-222
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-04（Q087）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-99（TOPIC-RORG-008）；深圳圈定见 ORG-P1-4
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_TECH_LAYOUT
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-253
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-09
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-03（Q086）
+    kit_source_tables: pending_ods
+    note: B01 IP-09 派生自 SRS-149（TOPIC-RORG-003）
+    pages:
+    - TOPIC-ORG-05
+  - metric_id: M_ORG_TECH_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-ORG-260
+    - INT-C-ORG-242
+    binding: jiuxin_pending
+    integration_pattern: IP-08
+    srs_refs: '[]（未回填）'
+    d1_pending_ref: Q-MO-ORG-06（Q089）
+    kit_source_tables: pending_ods
+    note: 久新无专叶行 TOPIC-RORG-012（待确认）；禁止用 M_SVC_ORG_TECH_SCORE 顶替
+    pages:
+    - TOPIC-ORG-05
+open_items:
+- id: OI-C03-01
+  item: 科研机构主数据持有方与全局 org_uid（我方自建 / 久新 / 甲方）
+  owner: human:李伟（结构）+ 甲方/久新
+  kind: structure_escalation + decision_needed
+  blocking: P0
+- id: OI-C03-02
+  item: 载体是否等于机构；企业/工作室是否进 ORG；新型研发机构/创新载体认定口径（是否用 dwd_org_tech_tag 圈定）
+  owner: PM → 甲方
+  kind: decision_needed（客户决策清单草案）
+  blocking: P0
+- id: OI-C03-03
+  item: 供应方 9 题未回：ORG-P0-1 主表主键稳定码 / P0-2 产业链码 / P0-3 学科码 / P1-1~P1-6（2026-09-04 出题）
+  owner: human:郭万迎
+  kind: 供应方回复
+  blocking: P0
+- id: OI-C03-04
+  item: GRID/ROR 是否可由供应方补列（海外高校/科研机构表）
+  owner: human:郭万迎
+  kind: 供应方回复
+  blocking: P1
+- id: OI-C03-05
+  item: 高校表 dwd_org_heis_info 与海外 forg_* 业务行数（is_deleted=0）需只读 COUNT 复核；估数含软删
+  owner: data-agent（下次快照）
+  kind: 核验
+  blocking: P1
+- id: OI-C03-06
+  item: 久新科研机构 11 行交付形态与数据底座（用我方 gkx 入站数据还是其自有库）
+  owner: human:郭万迎
+  kind: 对端确认
+  blocking: P0
+- id: OI-C03-07
+  item: 711 万国内机构是否含高校/科研院所；dwd_research_institute_base_info 是否全量（Q055 / Q-SVC-005）
+  owner: 供应方 / 甲方
+  kind: 供应方回复
+  blocking: P1
+- id: OI-C03-08
+  item: 深圳科研机构圈定规则（注册地 city vs 实际办公地 vs 分支机构）
+  owner: PM → 甲方
+  kind: decision_needed
+  blocking: P1
+- id: OI-C03-09
+  item: dwd_org_tech_tag 标签值域、dwd_org_base_info_patent_rel 行数与覆盖面（只读盘点）
+  owner: data-agent（下次快照）
+  kind: 核验
+  blocking: P2
+- id: OI-C03-10
+  item: lumen-algo-py vendor svcan 同名端点（attract/cultivate/tech-score）与 ORG 指标口径关系（B01 C9）
+  owner: algorithm-agent（B09）
+  kind: owner 未定
+  blocking: P1
+- id: OI-C03-11
+  item: 架构初稿 §3 写 DS-04 依赖 99/149/153、DS-06 依赖 151/152，但 DS-04-CARRIER-RANK / DS-06-CARRIER 明确禁止挂 99/149/154/155、151/152；以页面映射为准并回改初稿
+  owner: architect
+  kind: 冲突回写
+  blocking: P2
+- id: OI-C03-12
+  item: TRSGraph institution 顶点数 / VID 规则 / 可灌属性（Q055 备注仅 4 字段）
+  owner: C04
+  kind: 交接
+  blocking: P1
+cards:
+- int_id: INT-C-ORG-200
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_ATTENTION_TREND
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_150_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_DEEP_155_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_NEW_TREND
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-06
+  - IP-07
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_research_institute_base_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id001
+    - org_id
+    - external_id（统一社会信用代码，可空）
+    - name_cn
+    - name_en
+    - org_type（如 事业单位）
+    - province / city / area（名称，值域 dim_admin_area）
+    - addr_lng / addr_lat
+    - registration_org
+    - incorporation_date
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_research_institute_base_info
+    table_cn: 科研机构基本信息
+    key_fields: *id001
+    primary_key: org_id
+    entity_align_key: org_id 为三方业务键；统一社会信用代码 external_id 可空，非空时作跨表锚点；name_cn 归一兜底；无 GRID/ROR 列
+    coverage: 中国（国内科研院所；样例 中科院深圳先进院）；深圳切片可用 city
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 2,012（估数）；2,074（2026-08-31 精确 COUNT）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 规模仅约 2 千条，国内科研院所全集口径 unknown（需供应方说明是否全量）
+  - 无学科/技术领域、无产业链字段（ORG-P0-2/P0-3）
+  - 无机构类型码表（ORG-P1-3）
+  conflicts:
+  - SOURCE-TABLES.md 工作面清单未列本表（清单较旧），以 2026-10-10 报告为准
+  decision_needed:
+  - 本表是否作为「科研院所」主名录（vs 711 万国内机构全集中按类型圈定）
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 COUNT ≈ 2,074
+  - 契约：org_id 唯一；external_id 非空率
+  - 深圳切片：city='深圳市' 行数抽样
+  confidence: high
+- int_id: INT-C-ORG-201
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_ATTENTION_TREND
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_150_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_DEEP_155_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_NEW_TREND
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-06
+  - IP-07
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_org_heis_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id002
+    - org_id
+    - name_cn
+    - school_code（学校标识码，非空）
+    - external_id（统一社会信用代码）
+    - name_en
+    - univ_type
+    - comp_dept（主管部门）
+    - school_nature
+    - province / city / area
+    - lng / lat
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_org_heis_info
+    table_cn: 高校基本信息
+    key_fields: *id002
+    primary_key: org_id
+    entity_align_key: school_code（教育部学校标识码）为最强锚点；external_id 统一社会信用代码次之；无 GRID/ROR
+    coverage: 中国高校
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 3,576（估数）；2026-08-31 精确 COUNT=0；2026-09-11 摘要 2,864
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 行数大起大落（2,933→0→回灌 1,819→估 3,576），疑似软删/换批；业务行数需 is_deleted=0 复核
+  - 无学科/技术领域字段
+  conflicts:
+  - SUPPLIER-LOAD-PROGRESS：711 万国内机构是否含高校未答
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 估数含 is_deleted=1 行（09-11 摘要：高校估数>0 多半含软删，不视为业务回灌）
+  test_points:
+  - 对账：is_deleted=0 COUNT 复核
+  - 契约：school_code 唯一
+  confidence: medium
+- int_id: INT-C-ORG-202
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-06
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_org_base_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id003
+    - org_id
+    - name_cn
+    - external_id（统一社会信用代码）
+    - province / city / area
+    - lng / lat
+    - org_type（工商类型）
+    - industry_l1~l4（国民经济行业 2017）
+    - org_size
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_org_base_info
+    table_cn: 机构基本信息（国内全集，企业为主）
+    key_fields: *id003
+    primary_key: org_id
+    entity_align_key: external_id 统一社会信用代码；专利申请人/项目承担单位名称归一的主靶表（C01/C02 指向本表）
+    coverage: 中国（工商主体全集，企业为主）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 192,464（估数）；2026-08-31 精确 COUNT=50,000（样例上限）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01/C02 名称归一靶表；C03 为主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无「科研机构/高校/新型研发机构」类型码，只有工商 org_type（ORG-P1-3）
+  - 供应方口径 711 万 vs 库内 19 万，是否全量 unknown（Q-SVC-005 / Q055）
+  conflicts:
+  - 三要素口径 ORG 不含企业，但 DS-04/DS-06「载体」含企业/工作室；本表若进 ORG 需甲方拍板
+  decision_needed:
+  - 载体是否等于机构；企业/工作室是否进 ORG 实体
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-203
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-06
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_org_tech_tag →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id004
+    - org_id
+    - org_tag（如 国家级高新技术企业）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_org_tech_tag
+    table_cn: 科技型标签
+    key_fields: *id004
+    primary_key: org_id + org_tag
+    entity_align_key: org_id → dwd_org_base_info.org_id
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 196,662（估数）；202,393（2026-08-31 精确 COUNT）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 标签值域未盘点：是否含「新型研发机构 / 重点实验室 / 工程中心 / 孵化器」等载体标签 unknown
+  conflicts: []
+  decision_needed:
+  - 新型研发机构 / 创新载体是否以本表标签圈定
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 值域：SELECT DISTINCT org_tag 只读盘点（下次快照）
+  confidence: low
+- int_id: INT-C-ORG-204
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_forg_base_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id005
+    - org_id（名录唯一标识，如 60704780）
+    - name_en
+    - country_code
+    - external_id（当地注册码）
+    - industry_code（NAICS）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_forg_base_info
+    table_cn: 海外机构基本信息
+    key_fields: *id005
+    primary_key: org_id
+    entity_align_key: org_id 仅三方内部；无 GRID/ROR；名称英文归一
+    coverage: 全球（海外工商主体为主）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,549（估数）；2026-08-31 业务行=0
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 业务行在 08-31 为 0，估数多半含软删（09-11 摘要）
+  - 以企业为主，非科研机构名录
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 不视为业务回灌，需 is_deleted=0 复核
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-205
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-07
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_forg_university_org_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id006
+    - org_id
+    - name_std
+    - org_type（多值：高等教育/科研设施/资助机构/政府/医疗/非营利/企业）
+    - country
+    - region
+    - city
+    - website
+    - name_alias
+    - abbreviation
+    - lat / lng
+    - information_date
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_forg_university_org_info
+    table_cn: 海外高校基本信息
+    key_fields: *id006
+    primary_key: org_id
+    entity_align_key: org_id 三方内部；name_std + name_alias + abbreviation 可做英文归一；无 GRID/ROR 列（形态像 ROR/GRID 衍生但未给码）
+    coverage: 全球高校
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,790（估数）；2026-08-31 业务行=0（全表 20,000）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 业务行=0，估数含软删
+  - GRID/ROR 不可用（unknown，需问供应方是否可补）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 不视为业务回灌
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-206
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-07
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_forg_research_org_info →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id007
+    - org_id
+    - name_std
+    - org_type（多值）
+    - country
+    - region
+    - city
+    - website
+    - name_alias
+    - abbreviation
+    - lat / lng
+    - information_date
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_forg_research_org_info
+    table_cn: 海外科研机构基本信息
+    key_fields: *id007
+    primary_key: org_id
+    entity_align_key: 同 INT-C-ORG-205；无 GRID/ROR
+    coverage: 全球科研机构
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,902（估数）；2026-08-31 业务行=0（全表 20,000）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 业务行=0，估数含软删
+  - GRID/ROR 不可用
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 不视为业务回灌
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-207
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_152_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_DEEP_155_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_scholar →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id008
+    - scholar_id
+    - scholar_org_name_zh / scholar_org_name_en（文本，分号拼接多机构）
+    - scholar_org_id（暂无值时为空字符串）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_scholar
+    table_cn: 学者（机构名字段）
+    key_fields: *id008
+    primary_key: scholar_id
+    entity_align_key: 机构只有名称 → 归一到 org_id（INT-C-ORG-241）；scholar_org_id 空
+    coverage: 全球学者
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,933（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01 主卡；本卡只记机构团队/人才结构用法
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - scholar_org_id 为空串，机构-人才边只能靠名称归一
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-208
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_154_1
+  - M_ORG_DEEP_155_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_scholar_work_experience →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id009
+    - scholar_id
+    - org_name_zh / org_name_en
+    - 起止时间
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_scholar_work_experience
+    table_cn: 学者工作经历
+    key_fields: *id009
+    primary_key: unknown（报告未标主键）
+    entity_align_key: 无 org_id，名称归一
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 56,295（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01 主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无 org_id
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-209
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_154_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_scholar_education_background →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id010
+    - scholar_id
+    - 机构名称
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_scholar_education_background
+    table_cn: 学者教育背景
+    key_fields: *id010
+    primary_key: unknown
+    entity_align_key: 无 org_id，名称归一
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 42,837（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01 主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无 org_id
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-210
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-07
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_scholar_coauthor →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id011
+    - scholar_id
+    - co_scholar_id
+    - co_scholar_org_id（为空）
+    - co_scholar_org_name
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_scholar_coauthor
+    table_cn: 学者合作者
+    key_fields: *id011
+    primary_key: unknown
+    entity_align_key: 机构合作边候选：scholar 机构 × co_scholar_org_name，两端都要名称归一
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,028,293（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01 主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - co_scholar_org_id 为空
+  - 机构-机构合作边需由人-人合作派生，口径待定（ORG-P1-5）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-211
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_GRAPH_115_1
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-07
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_zh_author →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id012
+    - author_id / paper_id
+    - institution（文本）
+    - affiliation（json）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_zh_author
+    table_cn: 中文论文作者
+    key_fields: *id012
+    primary_key: unknown
+    entity_align_key: 无机构 ID，institution 文本归一
+    coverage: 中国（中文论文）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 63,260（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: C02 文献主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无机构 ID / 无地理
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-212
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_150_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-06
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_zh_paper →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id013
+    - id
+    - title
+    - year
+    - keywords
+    - scope
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_zh_paper
+    table_cn: 中文论文
+    key_fields: *id013
+    primary_key: id
+    entity_align_key: 论文 → 作者（211）→ 机构名称归一
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 89,214（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: C02 主卡；本卡只记机构产出计数用法
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 论文表本身无机构字段
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: high
+- int_id: INT-C-ORG-213
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_en_author →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id014
+    - author_id / paper_id
+    - institution（文本）
+    - affiliation（json）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_en_author
+    table_cn: 英文论文作者
+    key_fields: *id014
+    primary_key: unknown
+    entity_align_key: 无机构 ID，英文名称归一
+    coverage: 全球（英文论文）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,367（估数）；2026-08-31 库中无此表
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    shared_with: C02
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 规模过小（C02 OI-C02-06 英文论文仅 1,356 行）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-214
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_154_1
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_scholar_papers →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id015
+    - paper_id
+    - doi
+    - title
+    - year
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_scholar_papers
+    table_cn: 学者论文
+    key_fields: *id015
+    primary_key: paper_id
+    entity_align_key: 经 dwd_scholar_paper_relation（887,927）→ scholar → 机构名称；与论文库按 doi 去重
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 597,513（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: C01/C02
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 机构关联须经学者两跳且为名称
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-215
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_150_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_153_1
+  - M_ORG_DEEP_154_1
+  - M_ORG_DEEP_155_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-07
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_patent →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id016
+    - patent_id
+    - applicants.name
+    - assignees.name
+    - first_applicant_name
+    - main_classification_ipcr / cpc
+    - country_code
+    - apdt_year
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_patent
+    table_cn: 全球专利
+    key_fields: *id016
+    primary_key: patent_id
+    entity_align_key: 申请人/权利人只有名称，无信用代码 → 名称归一到 org_id；有 216 显式边时优先
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 2,690,167（估数）；2026-08-31 精确 COUNT=86,028
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C02 主卡；本卡只记机构成果用法
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 申请人无稳定码（ORG-P1-6）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: high
+- int_id: INT-C-ORG-216
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_org_base_info_patent_rel →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id017
+    - org_id
+    - base_external_id
+    - patent_id
+    - publication_number
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_org_base_info_patent_rel
+    table_cn: 国内机构-专利关联
+    key_fields: *id017
+    primary_key: id
+    entity_align_key: 机构↔专利显式边，可替代名称归一
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（结构盘点，无行数）
+    pages:
+    - SRS-ORG
+    shared_with: C02 同卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 行数 unknown（C02 OI-C02-07 同项）
+  - 是否覆盖科研院所/高校（还是仅企业）unknown
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-217
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_152_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_patent_transfer →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id018
+    - patent_id
+    - 转让人 / 受让人（名称）
+    - 转移日期
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_patent_transfer
+    table_cn: 专利转移
+    key_fields: *id018
+    primary_key: unknown
+    entity_align_key: 转让人名称归一到 org_id（成果转化维）
+    coverage: 全球/中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 21,193（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C02
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 当事人只有名称
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-218
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_150_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_152_1
+  - M_ORG_DEEP_153_1
+  - M_ORG_DEEP_155_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-07
+  - IP-08
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_zh_project →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id019
+    - id
+    - funded_institution（名称）
+    - participating_institution（json）
+    - funded_province
+    - 经费
+    - approval_year
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_zh_project
+    table_cn: 中文科研项目
+    key_fields: *id019
+    primary_key: id
+    entity_align_key: 承担/参与单位名称归一到 org_id（经费/项目维）
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 46,455（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C02
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无单位 ID
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: medium
+- int_id: INT-C-ORG-219
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_en_project →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id020
+    - 项目索引
+    - funded_institution
+    - funded_country
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_en_project
+    table_cn: 英文科研项目
+    key_fields: *id020
+    primary_key: 项目索引
+    entity_align_key: 英文名称归一
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,281（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    shared_with: C02
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无单位 ID
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-220
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_zh_report_org →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id021
+    - org_id
+    - org_name
+    - org_xydm（统一社会信用代码，覆盖约 70%）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_zh_report_org
+    table_cn: 中文报告机构
+    key_fields: *id021
+    primary_key: org_id
+    entity_align_key: 唯一自带信用代码的文献侧机构表：xydm → research_institute/heis/org_base external_id
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,387（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 规模小；与 200/201/202 的 org_id 是否同一编码体系 unknown
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：org_xydm 与 200/201/202 external_id 命中率
+  confidence: medium
+- int_id: INT-C-ORG-221
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_en_report_org →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id022
+    - org_id
+    - org_name
+    - org_country
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_en_report_org
+    table_cn: 英文报告机构
+    key_fields: *id022
+    primary_key: org_id
+    entity_align_key: 英文名称归一
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 961（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无注册码
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-222
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  - M_ORG_DEEP_151_1
+  - M_ORG_DEEP_152_1
+  - M_ORG_DEEP_155_1
+  - M_ORG_SZ_STATUS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_dim_admin_area →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id023
+    - cur_code（12 位国标）
+    - province_code / city_code / area_code / street_code
+    - 名称
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_dim_admin_area
+    table_cn: 行政区划维
+    key_fields: *id023
+    primary_key: cur_code
+    entity_align_key: 机构表 province/city/area 存名称 → 经本表映射 adcode；深圳圈定用 city_code
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,633（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C01 区划卡共用
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 机构表存名称不存码，需名称→码映射（ORG-P1-4）
+  - 产业园/园区层级不在本维（DS-06 需要）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: high
+- int_id: INT-C-ORG-223
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_152_1
+  - M_ORG_INDUSTRY_COVER
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py 离线 ETL（draft）
+    downstream: gkx.dwd_org_industry_tags →（is_deleted=0）项目 DWD → 机构主数据/桥接 → ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id024
+    - industry_code（INB*）
+    - industry_name
+    - industry_link_code / name
+    - company_name
+    - credit_code
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp；供应方=北京久新）
+    table: dwd_org_industry_tags
+    table_cn: 产业关联企业信息
+    key_fields: *id024
+    primary_key: credit_code（报告标主键，实为一对多）
+    entity_align_key: credit_code ↔ 机构 external_id；节点码对 dwd_industry_chain_info（1,296）
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 2,197,216（估数）
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: CHAIN 域主卡（非三要素）
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 主体为企业，科研机构命中率 unknown（ORG-P0-2 产业链码未答）
+  conflicts: []
+  decision_needed:
+  - 科研机构产业链归属是否允许经信用代码借用企业产业标签
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：is_deleted=0 精确 COUNT 与估数比对
+  - 契约：org_id 唯一、名称非空率
+  confidence: low
+- int_id: INT-C-ORG-230
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-07
+  - IP-08
+  - IP-09
+  ours:
+  - graph_load
+  - python_internal
+  counterpart: trsgraph
+  delivery_form: graph
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 不直连 Nebula；读 Python 投影的 ADS
+    python: lumen-algo-py /internal/graph/*（draft）
+    downstream: NebulaGraph TRSGraph TAG institution
+  contract_draft:
+    request: []
+    response_key_fields: &id025
+    - VID
+    - name
+    - （仅约 4 个属性可灌，见 Q055 备注）
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: NebulaGraph TRSGraph（graphd 10.50.75.136:9669）
+    table: TAG institution（及机构相关边）
+    table_cn: 图谱机构顶点
+    key_fields: *id025
+    primary_key: VID（规则 unknown）
+    entity_align_key: VID 须改用我方 org_id（C04 交接）
+    coverage: unknown
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 未查图；客户决策清单 Q055 备注「Nebula institution Tag 仅能灌 4 个字段」
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: C04 主卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: lumen-algo-py 未见 institution 读写（未逐文件核）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 顶点数、VID 规则、现存边类型 unknown（C04 盘点）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - C04：institution 顶点计数与 VID 抽样
+  confidence: low
+- int_id: INT-C-ORG-240
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_ATTENTION_TREND
+  - M_ORG_BASE_99_1
+  - M_ORG_INDUSTRY_COVER
+  - M_ORG_NEW_TREND
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-06
+  - IP-09
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS 投影（draft）
+    python: lumen-etl-es-py / lumen-algo-py 归一 Job（draft）
+    downstream: 我方 DWD/ADS 新表（未建）
+  contract_draft:
+    request: []
+    response_key_fields: &id026
+    - org_uid（我方全局 ID）
+    - src_refs[{system, table, org_id}]
+    - credit_code
+    - school_code
+    - name_cn / name_en / aliases
+    - org_category（院所/高校/新型研发机构/载体…，码表待定）
+    - adcode / city_code
+    - lng / lat
+    - established_date
+    - status
+    - version
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: T+1
+  data_source:
+    source_system: 我方项目内结构（不存在，提案）
+    table: dim_research_org（我方科研机构主数据维表，草案）
+    table_cn: 科研机构主数据
+    key_fields: *id026
+    primary_key: org_uid
+    entity_align_key: 合并 200/201/(202 圈定子集)/205/206：优先 credit_code → school_code → 规范化名称+区划
+    coverage: 全球（国内+海外）
+    update_freq: T+1（草案，随入站 ETL）
+    rows:
+      value: n/a（未建）
+      as_of: null
+      ref: 提案，无快照
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: C01/C02 归一依赖本卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 不存在（lumen-etl-es-py db/dwd_domain_tables.sql 无机构维）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 新表/新结构，未评审
+  conflicts: []
+  decision_needed:
+  - 主数据持有方（我方自建 vs 久新 vs 甲方）
+  structure_escalation: true
+  risks:
+  - 归一错误会污染全部机构计数与图谱
+  test_points:
+  - 归一抽样准确率（阈值待定）
+  - 重复 org_uid 检测
+  confidence: low
+- int_id: INT-C-ORG-241
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS 投影（draft）
+    python: lumen-etl-es-py / lumen-algo-py 归一 Job（draft）
+    downstream: 我方 DWD/ADS 新表（未建）
+  contract_draft:
+    request: []
+    response_key_fields: &id027
+    - raw_name
+    - lang
+    - source_table
+    - org_uid
+    - match_method（xydm|school_code|exact|fuzzy|ner|manual）
+    - score
+    - confirmed_by
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: T+1
+  data_source:
+    source_system: 我方项目内结构（不存在，提案）
+    table: map_org_alias（机构名称归一 / 别名映射，草案）
+    table_cn: 机构名称归一表
+    key_fields: *id027
+    primary_key: raw_name + source_table
+    entity_align_key: 所有只有机构名称的表（207–219）→ org_uid
+    coverage: 全球
+    update_freq: T+1（草案，随入站 ETL）
+    rows:
+      value: n/a（未建）
+      as_of: null
+      ref: 提案，无快照
+    pages:
+    - SRS-ORG
+    shared_with: C01/C02 归一依赖本卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 不存在（lumen-etl-es-py db/dwd_domain_tables.sql 无机构维）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 新表/新结构，未评审
+  conflicts: []
+  decision_needed:
+  - 主数据持有方（我方自建 vs 久新 vs 甲方）
+  structure_escalation: true
+  risks:
+  - 归一错误会污染全部机构计数与图谱
+  test_points:
+  - 归一抽样准确率（阈值待定）
+  - 重复 org_uid 检测
+  confidence: low
+- int_id: INT-C-ORG-242
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_115_1
+  - M_ORG_PERF_QUERY
+  - M_ORG_TECH_LAYOUT
+  - M_ORG_TECH_SCORE
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern:
+  - IP-01
+  - IP-07
+  - IP-08
+  - IP-09
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS 投影（draft）
+    python: lumen-etl-es-py / lumen-algo-py 归一 Job（draft）
+    downstream: 我方 DWD/ADS 新表（未建）
+  contract_draft:
+    request: []
+    response_key_fields: &id028
+    - doc_type（paper|patent|project|report|scholar）
+    - doc_id
+    - org_uid
+    - role（作者单位/申请人/承担/参与/转让）
+    - source
+    - version
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: T+1
+  data_source:
+    source_system: 我方项目内结构（不存在，提案）
+    table: rel_doc_org（文献-机构桥接，草案）
+    table_cn: 文献-机构桥接表
+    key_fields: *id028
+    primary_key: doc_type + doc_id + org_uid + role
+    entity_align_key: 由 241 归一结果 + 216 显式边生成
+    coverage: 全球
+    update_freq: T+1（草案，随入站 ETL）
+    rows:
+      value: n/a（未建）
+      as_of: null
+      ref: 提案，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    - TOPIC-QUERY
+    shared_with: C01/C02 归一依赖本卡
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 不存在（lumen-etl-es-py db/dwd_domain_tables.sql 无机构维）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 新表/新结构，未评审
+  conflicts: []
+  decision_needed:
+  - 主数据持有方（我方自建 vs 久新 vs 甲方）
+  structure_escalation: true
+  risks:
+  - 归一错误会污染全部机构计数与图谱
+  test_points:
+  - 归一抽样准确率（阈值待定）
+  - 重复 org_uid 检测
+  confidence: low
+- int_id: INT-C-ORG-250
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_ATTENTION_TREND
+  - M_ORG_BASE_99_1
+  - M_ORG_INDUSTRY_COVER
+  - M_ORG_NEW_TREND
+  - M_ORG_SZ_STATUS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-06
+  - IP-09
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id:
+  - SRS-99
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）；SQL 并入 GDF/ETL 跑在我方库
+    downstream: 久新 SQL（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id029
+    - org_uid
+    - metric_code
+    - value
+    - period
+    - region
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: SQL-99
+    table_cn: 科研机构基础指标模型构建
+    key_fields: *id029
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-01-FACTORS
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 STAT，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-251
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  - graph
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-114
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 Python（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id030
+    - raw_name
+    - org_uid
+    - score
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: Python-114
+    table_cn: 科研机构实体识别构建
+    key_fields: *id030
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 GRAPH，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-252
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  - graph
+  metric_ids:
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-07
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-115
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 Python（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id031
+    - src_org_uid
+    - dst_org_uid / doc_id
+    - rel_type
+    - weight
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: Python-115
+    table_cn: 科研机构实体关系抽取
+    key_fields: *id031
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 GRAPH，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-253
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_DEEP_149_1
+  - M_ORG_TECH_LAYOUT
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-149
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id032
+    - org_uid
+    - domain_code
+    - count / share
+    - as_of
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-149
+    table_cn: 科研机构重点技术领域布局模型
+    key_fields: *id032
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-254
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_DEEP_150_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-150
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id033
+    - org_uid
+    - events[{date, type, desc}]
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-150
+    table_cn: 科研机构发展历程模型
+    key_fields: *id033
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-255
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_DEEP_151_1
+  - M_ORG_SZ_ADVANTAGE
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-151
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id034
+    - industry_code
+    - org_uid
+    - dims[成果/经费/人才]
+    - report
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-151
+    table_cn: 深圳科研机构优势分析模型
+    key_fields: *id034
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-256
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_DEEP_152_1
+  - M_ORG_SZ_PAINPOINT
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-152
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id035
+    - industry_code
+    - org_uid
+    - dims[项目/转化/人才/产业合作]
+    - suggestions
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-152
+    table_cn: 深圳科研机构痛难点识别模型
+    key_fields: *id035
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-257
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  - graph
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-153
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id036
+    - nodes[org_uid]
+    - edges[src, dst, strength, type]
+    - centrality
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-153
+    table_cn: 科研合作关系链条模型
+    key_fields: *id036
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-258
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_ATTRACT_SCORE
+  - M_ORG_DEEP_154_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-154
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id037
+    - org_uid
+    - score
+    - dims[学术影响力/科技成果/团队实力]
+    - reason
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-154
+    table_cn: 科研机构引入推荐模型
+    key_fields: *id037
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-algo-py vendor 有 svcan 同名端点 attract/cultivate/tech-score，口径关系 unknown，B01 C9）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-259
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_CULTIVATE_SCORE
+  - M_ORG_DEEP_155_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern:
+  - IP-08
+  - IP-09
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-155
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id038
+    - org_uid
+    - score
+    - dims[成果/经费效率/人才结构]
+    - plan_text
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-155
+    table_cn: 科研机构扶持推荐模型
+    key_fields: *id038
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - SRS-ORG
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-algo-py vendor 有 svcan 同名端点 attract/cultivate/tech-score，口径关系 unknown，B01 C9）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low
+- int_id: INT-C-ORG-260
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_ORG_TECH_SCORE
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: IP-08
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - TOPIC-RORG-012
+  call_chain:
+    fe_route: null
+    java: gkxlumen-* 只调 Python /internal/*（draft）
+    python: lumen-algo-py 适配层 /internal/org/*（draft）
+    downstream: 久新 API（待确认）→ 结果快照表（B01 IP-11）
+  contract_draft:
+    request:
+    - org_uid[]
+    - industry_code
+    - region_code
+    - time_range
+    response_key_fields: &id039
+    - org_uid
+    - weights_in
+    - score
+    - radar_dims
+    granularity:
+      time: year
+      geo: country / province / city（深圳）
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: API-TOPIC-RORG-012
+    table_cn: 科研机构技术力评价与对比（05 无专叶）
+    key_fields: *id039
+    primary_key: unknown（建议 org_uid + as_of + version）
+    entity_align_key: 入参/出参须用我方 org_uid；若用久新自有 ID 须附映射表 jx_org_id→org_uid
+    coverage: unknown（久新数据底座未知：用我方入站 gkx 数据还是其自有库）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-ORG-05
+    shared_with: null
+  status:
+    demo: demo-* 科研机构页为 Mock，未以 dwd_* 接入（未逐页核）
+    lumen: 无（lumen-algo-py vendor 有 svcan 同名端点 attract/cultivate/tech-score，口径关系 unknown，B01 C9）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新确认=待确认（JIUXIN-TECH-ORG-TALENT-L01）
+  - 交付形态为沟通起点（非最终）
+  - algorithm.type SRS 层暂标 MODEL，未签
+  conflicts: []
+  decision_needed:
+  - 久新返回是否带我方 org_uid
+  structure_escalation: false
+  risks:
+  - 久新底座与我方入站数据不同源时，机构计数口径不一致
+  test_points:
+  - 契约：返回 org_uid 命中我方主数据比例
+  - 降级：对端超时空态 + ⚠️
+  confidence: low

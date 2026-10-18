@@ -1,0 +1,462 @@
+# SCI-INT-B01 指标分层集成架构 + 通用集成模式 IP-01…IP-13（人才 / 技术链 / 科研机构）
+# 作者：agent:architect-agent · 监管 human:淮政玮 · 2026-10-18
+# 口径真源：P00-baseline.yaml（93 指标清单）+ MCP metric-registry（algorithm_type / D1–D4，2026-10-18 快照）
+#           + metrics/request/九新-技术机构人才/JIUXIN-TECH-ORG-TALENT-L01（51 行，全部「待确认」）
+# 现状对照：只读 repos/lumen-svc-platform、lumen-algo-py、lumen-etl-es-py、lumen-ui-science-pc（2026-10-18 dev 工作区）
+# 校验：产物/_work/B01-check.py（93=93、差集为空、IP 编号合法、类型与 P00 一致）
+# 下游：B02–B09 卡片 integration_pattern 必须引用本文件 IP 编号；D02 引用 layers/patterns。
+
+task_id: SCI-INT-B01
+scope_count: 93
+card_count: 93            # 本叶不出 INT 卡；card_count = initial_mapping 行数（每指标一行初判）
+gap: []
+structure_escalation: true   # 见 IP-11 / IP-08：第三方结果快照表、适配层缓存为新结构 → 升级 human:李伟
+
+# ─────────────────────────────────────────────────────────────
+# 一、分层（L0–L4，调用只能自上而下逐层，不可越层）
+# ─────────────────────────────────────────────────────────────
+layers:
+  - id: L0
+    name: 前端展示层（ⓘ / 角标 / 业务图表）
+    repo: lumen-ui-science-pc
+    责任:
+      - 业务数据只经 gkxlumen-platform-gateway 调 Java（defineApi 双轨，USE_MOCK 统一开关）
+      - 每个统计数字旁挂 ⓘ（MetricSpecHint）→ 读 L1 catalog；四维角标（Mock/Ingesting/SchemaGap/Pending）只读消费，禁止前端自填
+      - 评审层门控 + 组件自闸；关闭评审模式 DOM 零泄漏
+      - 前端 observability（X-Trace-Id 注入 + 页面/接口埋点）
+      - 禁止直连久新、禁止直连 Python、禁止调用 demo-*（D12）
+    现状:
+      - 有：src/config/app.ts USE_MOCK（VITE_APP_USE_MOCK）；src/utils/http.ts defineApi 双轨；main.ts 仅 USE_MOCK=true 注册 mock
+      - 有：src/utils/observability.ts；src/utils/request.ts 注入 X-Trace-Id
+      - 有：components/lineage/MetricSpecHint.vue、MockBadge.vue
+      - 有：api/situation/*（BASE=/situation/v1）共 9 个 situation 模块（科技发展态势侧）
+      - 无：src/review/ 集中评审层目录（Test-Path=False）
+      - 无：SchemaGapBadge / PendingBadge / IngestingBadge 组件（components/lineage 下仅 2 个）
+      - 无：人才页面——router/menu.ts「科技人才态势」4 个导航项（global-talent-situation / local-talent-situation / key-talent-profile / talent-introduction-evaluation）挂 DevelopingView
+      - 无：技术链 / 科研机构专属 API 模块（仅在 situation/* 页面内以子模块出现，未逐一核实）
+    缺口:
+      - 建 src/review/ 集中目录并补齐 3 个角标组件（参照 lumen-ui-topic src/review/）
+      - 人才 4 页、技术链/机构相关页的 api 模块与 defineApi 双轨
+      - 指标就绪度只读镜像模块（catalog 未带 D1–D4 前的过渡态）
+  - id: L1
+    name: 指标元数据层（/metrics/v1/catalog）
+    repo: lumen-svc-platform / gkxlumen-metrics
+    责任:
+      - 返回 8 件套（9 项）+ D1–D4 就绪度（目标态），前端 ⓘ 与角标唯一数据源
+      - 只读；改口径走 data-agent 正式化，不在本层改
+    现状:
+      - 有：MetricCatalogController GET /metrics/v1/catalog?ids&element&idPrefix&mappingStatus
+      - 有：MetricCatalogService catalog-source=auto（先 DB gkx_cfg.cfg_metric，失败回落 classpath seed）
+      - 字段：metricId / element / metricNameZh / definition / formula / sourceTables / sourceSystems / updateFreq / version / unit / mappingStatus / definitionStatus / formulaStatus / pendingRef / isMock / bidRef / acceptanceUnitId / ownerAgent
+      - 无：algorithm_type 字段（8 件套第 5 项缺）
+      - 无：D1–D4 四维字段（def_status / schema_status / source_mapping_status / ingestion_status + 阶段清单）
+      - 无：TAL / TECH / ORG seed——classpath 仅 metrics/cfg_metric-ENT-seed.json；DB 侧 cfg_metric 是否已灌三要素 = unknown
+    缺口:
+      - catalog 扩 algorithm_type + D1–D4（契约变更，归 api-agent，非本叶）
+      - 三要素 93 指标进 cfg_metric（seed 或 DB），否则 ⓘ 全空
+  - id: L2
+    name: Java 业务门面层（gkxlumen-*）
+    repo: lumen-svc-platform（候选模块 gkxlumen-innov / gkxlumen-topic* / 新模块待定）
+    责任:
+      - 对前端出 REST（/situation/v1/** 等），鉴权/租户/分页/参数校验/错误码
+      - STAT：只读 ADS（JdbcTemplate/Dao）
+      - MODEL / GRAPH / third_party：只调 Python /internal/*（RestTemplate/Feign），不写算法、不写 nGQL、不直连久新
+      - 透传 trace（Java Agent），统一降级包装（见各 IP failure_degrade）
+    现状:
+      - 有：gkxlumen-innov（Graph/Forecast/City/Dict/Carrier/Event/IndustryCluster/TechNewsExtract Controller）；TechNewsExtractService 以 RestTemplate 透传 Python /internal/tech-news/*——IP-03/IP-04 的现成参照
+      - 有：GraphController /v1/graph/* 读 ads_node_influence / ads_innovation_point_map，但同时直读 dwm_graph_edge / dwm_graph_node（DWM 层，非 ADS）→ 进 risks R4
+      - 无：/situation/v1/** 的 Java 实现（lumen-svc-platform 全仓 grep「/situation」0 命中）→ 前端 USE_MOCK=false 时无后端
+      - 无：人才 / 技术链 / 科研机构 专属业务门面模块
+      - 无：调用久新的任何 Java 代码（正确：本就不该有）
+    缺口:
+      - 三要素门面落在哪个 gkxlumen-* 模块未定（decision_needed DN-07，structure_escalation）
+      - /situation/v1 契约冻结（BE-TS-CONTRACT-01）后实现
+  - id: L3
+    name: Python 内部服务层（/internal/*）
+    repo: lumen-algo-py（算法/模型/图谱/第三方适配）· lumen-etl-es-py（ETL / ES 索引）
+    责任:
+      - MODEL 推理、GRAPH 计算（NebulaGraph TRSGraph）、第三方 API 适配（鉴权/限流/超时/缓存/熔断）
+      - 异步 Job（lumen_algo_worker）与结果快照写 ADS
+      - mock_guard：数据未就绪时显式报错，不伪造
+      - Python instrument（OTel）
+    现状:
+      - 有：FastAPI 路由 /internal/v1/chain/*、/internal/v1/svcan/*、/internal/industry/*、/internal/policy/industry/*
+      - 不一致：/v1/entan/*、/v1/evaluation/*、/v1/talent-recommend/compute、/v1/risk-insight/compute 未带 /internal 前缀（存量，不在本包改）
+      - 有：lumen_common/observability.py（OTel trace，可选导入）、mock_guard.py、tasks/lifecycle+executor（异步 Job 骨架）、lumen_algo_worker
+      - 有：requirements nebula3-python；conf/settings.yaml nebula 段；chain/graph_project.py 投影到 demo space「demo_gkx_chain」（NonDemoNebulaSpaceError 保护）
+      - 有：lumen_common/algorithms/science/{attraction,cultivation,pain_points,supply_chain}.py；svcan 路由含 /org/tech-score、/graph/centrality、/graph/influence、/rec/attract-score、/rec/cultivate-score（专题科研服务机构口径，与本包 ORG/TECH 是否同口径 = unknown）
+      - 无：久新 API 适配层（grep jiuxin/久新 0 命中）
+      - 无：人才 / 技术链 / 科研机构 三要素 /internal 路由
+    缺口:
+      - lumen_common/adapters/jiuxin（或同级）适配层 + /internal/v1/sci/{talent,tech,org}/* 路由（路径名待 B02–B09 定稿）
+      - 久新交 Python（SRS-104/105/110/111/114/115）并入后的目录与评审流程
+  - id: L4
+    name: 数据与对端层（久新 / ADS / NebulaGraph / ES）
+    责任:
+      - 久新：按 51 行交付（SQL 3 / Python 6 / API 42），全部「待确认」
+      - ADS：STAT 与所有快照结果的唯一读面（Java 只读）
+      - NebulaGraph TRSGraph 10.50.75.136:9669：技术/人才/机构实体与关系（禁止 Neo4j）
+      - GDF：ods→dwd→ads 建表与加工
+    现状:
+      - 93 指标 D1 全 draft、D4 全 mock；抽样 source_tables 多为 pending_ods，D3 pending_ods
+      - 三要素专用 ADS 表 = unknown（未在本叶核实，归 D02 / data-agent）
+      - TRSGraph 三要素 space / schema = unknown
+    缺口:
+      - 51 行交付形态、接口文档、鉴权方式、SLA 全部未确认（DN-01）
+      - 三要素 ADS 表与快照表设计（structure_escalation → human:李伟）
+
+call_chain_rule: "L0 → gateway → L2 → L3 → L4；STAT 允许 L2 直读 L4-ADS；任何层不得越级；L0/L2 不得触达久新；lumen 链路不得触达 demo-*"
+
+# ─────────────────────────────────────────────────────────────
+# 二、通用集成模式
+# ─────────────────────────────────────────────────────────────
+patterns:
+  - id: IP-01
+    name: STAT 自建统计（GDF 建 ADS → Java 只读）
+    applies_to: {algorithm_type: [STAT], 交付形态: [table]}
+    responsibility_by_layer:
+      L0: defineApi 调 Java；ⓘ + 角标
+      L1: catalog 8 件套 algorithm_type=STAT
+      L2: 模块 Owner Java（展示=李伟）SELECT ads_*；分页/维度过滤
+      L3: 不参与
+      L4: GDF ods→dwd→ads（COUNT/SUM/DISTINCT 等聚合在 SQL 加工里完成）
+    freshness: T+1（默认，跟随 GDF 调度；甲方未确认）
+    failure_degrade: ADS 无当期分区 → 返回上一期 + period 字段 + 前端「数据截至 X」；空表 → 空态，禁止 Mock 回填（USE_MOCK=false）
+    observability: {java_agent: 必加（SQL span）, python_instrument: N/A, frontend: observability.ts 接口耗时 + trace_id}
+    test_points: [聚合口径与 8 件套 formula 一致, period 回落正确, 空表空态不报错, USE_MOCK=false 无 fixture]
+    open_items: [三要素 ADS 表名与粒度未定（D02）, 6 个 STAT 指标 source_tables 均 pending_ods]
+  - id: IP-02
+    name: COMPUTE 确定性派生计算（ADS 上公式二次计算）
+    applies_to: {algorithm_type: [COMPUTE], 交付形态: [table, Python]}
+    responsibility_by_layer:
+      L0: 同 IP-01
+      L2: 只读计算结果；简单比值/同比若可纯 SQL 则在 GDF 完成，Java 不做公式
+      L3: 非纯 SQL 的公式在 lumen-algo-py 批 Job 计算后写 ADS
+      L4: ADS 结果表 + 计算版本号
+    freshness: 跟随上游 ADS（T+1）
+    failure_degrade: 上游缺一项 → 该指标置灰 + PendingBadge，不以 0 代替
+    observability: {java_agent: 必加, python_instrument: Job span + 指标行数, frontend: 同 IP-01}
+    test_points: [公式单测（assert 级）, 上游缺失时置灰, 版本号随公式变更递增]
+    open_items: [93 中当前无 COMPUTE 类型；保留本模式供 algorithm_type 改型时使用]
+  - id: IP-03
+    name: MODEL 同步推理（Python /internal 同步调用）
+    applies_to: {algorithm_type: [MODEL], 交付形态: [Python, API]}
+    sync_vs_async_criteria:
+      同步: "P95 ≤ 2s 且 单次输入 ≤ 1 个对象/页面条件 且 无写库副作用 且 结果可按条件缓存"
+      异步: "任一不满足：P95 > 2s、批量对象、需写快照、依赖久新 API 且其 SLA 未知、需排队限流"
+      默认: 久新 API 背后模型一律先按 IP-04 异步（SLA 未确认前不承诺同步）
+    responsibility_by_layer:
+      L0: 条件栏「开始分析」才触发（附录 E；切条件不自动起任务）
+      L2: RestTemplate/Feign 调 /internal/*，超时 3s，透传 trace
+      L3: lumen-algo-py 模型推理，输入校验，mock_guard
+      L4: 只读 ADS / Nebula 特征
+    freshness: realtime（按请求）
+    failure_degrade: 超时 → Java 返回业务码「模型暂不可用」+ 上一份快照（若有）；无快照 → 空态
+    observability: {java_agent: 必加（下游 span）, python_instrument: 推理耗时/输入规模, frontend: 分析按钮点击 + 结果耗时}
+    test_points: [P95 压测, 超时降级路径, 同条件幂等]
+    open_items: [M_TECH_DS_07_TECH_INNOV_002/004/006 模型 Owner 未定（DN-05）]
+  - id: IP-04
+    name: MODEL 异步 Job（提交 → worker → 结果快照 → 轮询）
+    applies_to: {algorithm_type: [MODEL, GRAPH], 交付形态: [Python, API]}
+    responsibility_by_layer:
+      L0: 「开始分析」→ 轮询任务状态；同用户同条件单飞；当天已成功直接打开结果；「重新分析」强制重跑（Q-ANALYSIS-01）
+      L2: 提交/查询/取结果三接口，任务表只存元数据；结果读 ADS 快照（IP-11）
+      L3: lumen_algo_worker + lumen_common/tasks/{lifecycle,executor}；结果写快照
+      L4: ADS 快照表、Nebula 读
+    freshness: 按任务；周期类（G3 Job，如 M_TECH_HEAT_INDEX / M_TALENT_ATTRACT_SCORE）weekly 或 T+1 预算（未确认）
+    failure_degrade: 失败 → 任务状态 failed + 原因码；页面保留上一成功快照并标「非最新」；不自动重试超过 1 次
+    observability: {java_agent: 提交/查询 span, python_instrument: job_id 贯穿 trace + 阶段耗时, frontend: 任务提交/完成/失败事件}
+    test_points: [单飞（并发提交只一条 running）, 当天复用, 失败保留旧快照, job_id 与 trace_id 关联]
+    open_items: [三要素任务表/快照表结构（structure_escalation）, 专题跑 Job 与展示读同一快照的写者归属（C3）]
+  - id: IP-05
+    name: GRAPH 自建（Python 读写 NebulaGraph TRSGraph → 结果投影 ADS）
+    applies_to: {algorithm_type: [GRAPH], 交付形态: [Python]}
+    responsibility_by_layer:
+      L0: 子图用 AntV G6；ⓘ 指向图指标
+      L2: 读 ADS 投影结果（中心性/关键节点/影响力表）；子图查询经 Python /internal，不写 nGQL、不读 dwm_graph_*
+      L3: lumen-algo-py nebula3-python 连 graphd 10.50.75.136:9669；中心性/关键节点/路径算法；批 Job 写 ADS 投影
+      L4: TRSGraph 三要素 space（schema 未知）
+    freshness: weekly（图批量重算；未确认）
+    failure_degrade: Nebula 不可达 → 读最近投影快照 + 「图谱更新中」；无投影 → 空态
+    observability: {java_agent: 必加, python_instrument: nGQL 耗时/返回节点数, frontend: 图渲染耗时}
+    test_points: [禁止 Neo4j 依赖, space 名非 demo_*（参照 NonDemoNebulaSpaceError）, 中心性小图 assert 自检]
+    open_items: [M_TECH_PATH_CENTRALITY/KEYNODE/PRIORITY、M_TECH_ENTITY_INFLUENCE 是否自建（DN-02，唐绍祖）, TRSGraph 三要素 schema unknown]
+  - id: IP-06
+    name: third_party × SQL（久新交 SQL → 我方 GDF/ETL 落 ADS → 同 IP-01 读链）
+    applies_to: {algorithm_type: [third_party], 交付形态: [SQL]}
+    jiuxin_rows: [SRS-96, SRS-98, SRS-99]
+    responsibility_by_layer:
+      L0: 同 IP-01
+      L2: 只读 ADS
+      L3: 不参与（若 SQL 依赖 ES 则 lumen-etl-es-py 承接）
+      L4: 久新 SQL 经我方评审（口径/性能/表名映射到 gkx 三方库）后纳入 GDF 调度，产出 ADS
+    freshness: T+1（随 GDF；未确认）
+    failure_degrade: 同 IP-01
+    observability: {java_agent: 必加, python_instrument: ETL 任务行数/耗时（若经 etl-es）, frontend: 同 IP-01}
+    test_points: [久新 SQL 在 gkx 沙箱可执行, 结果行数与久新样例一致, 口径与 8 件套一致]
+    open_items: [SQL 依赖的源表是否在 gkx 三方库（D3 pending_ods）, 3 行交付形态均「待确认」]
+  - id: IP-07
+    name: third_party × Python（久新交 Python → 并入 lumen-algo-py → 按 IP-04/IP-05 运行）
+    applies_to: {algorithm_type: [third_party], 交付形态: [Python]}
+    jiuxin_rows: [SRS-104, SRS-105, SRS-110, SRS-111, SRS-114, SRS-115]
+    responsibility_by_layer:
+      L0: 同 IP-05
+      L2: 只调 Python /internal 或读 ADS 投影
+      L3: 代码并入 lumen-algo-py（lumen_common/algorithms/sci/…，目录待定）；依赖进 requirements 须评审；实体识别/关系抽取结果写 Nebula + ADS
+      L4: TRSGraph、ADS
+    freshness: weekly / 增量（未确认）
+    failure_degrade: 抽取 Job 失败 → 保留上一版图谱与投影；新代码不得在 lumen 链路回落 demo-algo-*（D12）
+    observability: {java_agent: 必加, python_instrument: 抽取条数/失败率/模型版本, frontend: 同 IP-05}
+    test_points: [并入代码有 1 个最小可跑自检, 无 demo-* import, 依赖许可审查, 抽取结果写入 TRSGraph 非 demo space]
+    open_items: [久新是否交源码还是 wheel/镜像 unknown, 模型权重存放与许可 unknown, 并入后维护责任（郭万迎对接）]
+  - id: IP-08
+    name: third_party × API（Python 适配层封装 → Java 只调 Python）
+    applies_to: {algorithm_type: [third_party], 交付形态: [API]}
+    jiuxin_rows: "SRS-130…140、SRS-149…155、SRS-156…165、TOPIC-RORG-012 + 13 展示 third_party 行（与库叶同交，不单独再要）"
+    adapter_contract:
+      鉴权: 久新凭据只存在 Python 侧（K8s Secret），不下发 Java/前端
+      限流: 适配层令牌桶（按久新给定 QPS；未知前保守 5 QPS）
+      超时: 连接 2s / 读 10s（同步）；超出转 IP-04 异步
+      缓存: 按 (接口, 规范化参数) 键缓存，TTL = freshness；是否允许落库待甲方（DN-09）
+      熔断: 连续 5 次失败或错误率 >50%/1min 打开 60s；打开期间读快照
+      重试: 幂等 GET 最多 1 次，退避 500ms
+      字段映射: 久新响应 → 我方 contract_draft.response_key_fields，在适配层完成，Java 不感知久新字段
+    responsibility_by_layer:
+      L0: 同 IP-04 交互
+      L2: 只调 /internal/v1/sci/*（路径待定），不知道久新存在
+      L3: lumen-algo-py 适配层 + 快照写入（IP-11）
+      L4: 久新 API
+    freshness: 按库叶（未确认；默认 T+1 快照 + 页面读快照）
+    failure_degrade: 熔断/超时 → 最近快照 + 「数据更新中」；无快照 → 空态 + PendingBadge；禁止 Mock 兜底
+    observability: {java_agent: 必加, python_instrument: 外呼 span（久新耗时/状态码/熔断状态）, frontend: 同 IP-04}
+    test_points: [凭据不出 Python, 熔断打开读快照, 超时降级, 字段映射单测, 前端/Java 无久新域名]
+    open_items: [42 行 API 接口文档/鉴权/SLA 全部「待确认」, 缓存/落库合规（DN-09）, 适配层缓存表 structure_escalation]
+    structure_escalation: true
+  - id: IP-09
+    name: 页面派生（读父库叶结果快照的子字段，不单独向久新再要）
+    applies_to: {algorithm_type: [third_party], 交付形态: [none]}
+    responsibility_by_layer:
+      L0: 同 IP-01；ⓘ 的 8 件套 source_tables 指向父库叶快照
+      L2: 读父库叶快照（IP-11）并按维度切片；不做公式
+      L3: 若需二次处理（排序/TopN/阶段归类）在 Python 写快照时一并产出
+      L4: 父库叶快照
+    freshness: 跟随父库叶
+    failure_degrade: 跟随父库叶
+    observability: {java_agent: 必加, python_instrument: 跟随父库叶, frontend: 同 IP-01}
+    test_points: [派生值与父快照一致, 父快照缺失时子指标同步空态]
+    open_items: [父子映射来自 JIUXIN topic_trace，部分属 TOPIC-*（专题）模块，展示侧共享归属待定（C3）]
+  - id: IP-10
+    name: 无来源 / 无主缺口（空态 + ⚠️，禁止伪数）
+    applies_to: {algorithm_type: [third_party, UNKNOWN], 交付形态: [none, unknown]}
+    responsibility_by_layer:
+      L0: 业务态置灰/空态 + PendingBadge（文案读 data-gap-catalog）；评审态显示缺口
+      L1: D3=none/partial 如实返回
+      L2: 不出数值字段（或 null + reason）
+      L3: 不实现
+      L4: 无
+    freshness: N/A
+    failure_degrade: 本身即降级态
+    observability: {java_agent: N/A, python_instrument: N/A, frontend: 缺口曝光埋点（可选）}
+    test_points: [D3=none 不参与计分/排行, 不得向久新虚构 API 行]
+    open_items: [DS-16 六项来源（DN-04）, M_TECH_COMPOSITE_SCORE 权重口径（DN-03）, 约 49 项库缺无主（架构初稿 §2）]
+  - id: IP-11
+    name: 结果快照与版本（横切）
+    applies_to: {algorithm_type: [MODEL, GRAPH, third_party, COMPUTE], 交付形态: [API, Python]}
+    responsibility_by_layer:
+      L2: 只读快照；响应带 snapshot_id / period / algo_version / source（jiuxin|self）
+      L3: 写快照（幂等键 = 指标+条件规范化哈希+period）；保留最近 N 期
+      L4: ADS 快照表（候选 ads_sci_result_snapshot，结构未定）
+    freshness: 由各 IP 定义
+    failure_degrade: 写失败不覆盖旧快照
+    observability: {java_agent: 必加, python_instrument: 快照写入行数/版本, frontend: 展示「数据截至」}
+    test_points: [重复写幂等, 版本递增, 读最新成功快照]
+    open_items: [快照表为新结构 → structure_escalation human:李伟, 保留期数]
+    structure_escalation: true
+  - id: IP-12
+    name: metric_id 与 8 件套挂接（横切）
+    applies_to: {algorithm_type: [STAT, COMPUTE, MODEL, GRAPH, third_party, MIXED, LITERATURE, UNKNOWN], 交付形态: [all]}
+    responsibility_by_layer:
+      L0: 每个统计数字 ⓘ 绑定 metric_id；D1=missing 用红 ？；角标只读 catalog/镜像
+      L1: /metrics/v1/catalog 返回 9 项 + D1–D4（目标态）；过渡态用只读镜像模块（头注释真源路径 + 同步任务 ID）
+      L2: 业务响应可回带 metric_id 便于对照（可选）
+      L3/L4: 不改 8 件套；改口径走 data-agent
+    freshness: 随 registry 版本
+    failure_degrade: catalog 不可用 → ⓘ 显示「口径加载失败」，不隐藏入口
+    observability: {java_agent: 必加, python_instrument: N/A, frontend: ⓘ 打开埋点}
+    test_points: [93 指标 catalog 可查, algorithm_type 有值, 评审关闭零泄漏]
+    open_items: [catalog 缺 algorithm_type 与 D1–D4 字段, TAL/TECH/ORG 未进 seed]
+  - id: IP-13
+    name: Mock 切换开关（横切）
+    applies_to: {algorithm_type: [all], 交付形态: [all]}
+    responsibility_by_layer:
+      L0: VITE_APP_USE_MOCK 唯一开关；true → @/mock 注册种子 + MockBadge；false → 零 mock 代码执行、禁止 fixture 填数
+      L2: 不做 Mock；无数据如实空
+      L3: mock_guard 显式报 MockStateError，不回假数
+      L4: D4=mock 如实标注
+    freshness: N/A
+    failure_degrade: USE_MOCK=false 且后端未就绪 → 空态，不回落 mock
+    observability: {java_agent: N/A, python_instrument: MockStateError 计数, frontend: 启动日志记录 USE_MOCK}
+    test_points: [false 时 bundle 不执行 mock 注册, MockBadge 仅 D4=mock 显示]
+    open_items: [人才页尚无 mock 模块]
+
+# ─────────────────────────────────────────────────────────────
+# 三、93 指标初判映射（清单 = P00-baseline；algorithm_type = MCP 2026-10-18）
+# pattern = 主模式；IP-11/12/13 为横切，所有行默认叠加，不重复列
+# jiuxin_row_id：对上 51 行之一才填；全部「待确认」
+# ─────────────────────────────────────────────────────────────
+initial_mapping:
+  # B02 人才·库叶 DEEP（10）
+  - {metric_id: M_TALENT_DEEP_156_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-156, 备注: 重点人才识别}
+  - {metric_id: M_TALENT_DEEP_157_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-157, 备注: 人才流动追踪}
+  - {metric_id: M_TALENT_DEEP_158_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-158, 备注: 高校新培育}
+  - {metric_id: M_TALENT_DEEP_159_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-159, 备注: 深圳优势短板}
+  - {metric_id: M_TALENT_DEEP_160_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-160, 备注: 人才关系链}
+  - {metric_id: M_TALENT_DEEP_161_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-161, 备注: 供需分析}
+  - {metric_id: M_TALENT_DEEP_162_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-162, 备注: 学术力；展示行 DS-08-VIZ-001/004 与本库叶同交}
+  - {metric_id: M_TALENT_DEEP_163_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-163, 备注: 产业力}
+  - {metric_id: M_TALENT_DEEP_164_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-164, 备注: 招入推荐}
+  - {metric_id: M_TALENT_DEEP_165_1, algorithm_type: third_party, b_leaf: B02, pattern: IP-08, jiuxin_row_id: SRS-165, 备注: 培育布局}
+  # B03 人才·基础/图谱/页面派生（15）
+  - {metric_id: M_TALENT_BASE_98_1, algorithm_type: third_party, b_leaf: B03, pattern: IP-06, jiuxin_row_id: SRS-98, 备注: 人才基础指标 SQL；srs_refs 15 条跨 DS-13/14/26 + TOPIC-TALENT-05}
+  - {metric_id: M_TALENT_GRAPH_110_1, algorithm_type: third_party, b_leaf: B03, pattern: IP-07, jiuxin_row_id: SRS-110, 备注: 人才实体识别}
+  - {metric_id: M_TALENT_GRAPH_111_1, algorithm_type: third_party, b_leaf: B03, pattern: IP-07, jiuxin_row_id: SRS-111, 备注: 人才实体关系抽取}
+  - {metric_id: M_TALENT_ACADEMIC_SCORE, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-162, 备注: TOPIC-TALENT-006 学术力 → 162}
+  - {metric_id: M_TALENT_ATTRACT_SCORE, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-164, 备注: G3 Job；TOPIC-TALENT-008 → 164；专题跑 Job 展示读快照}
+  - {metric_id: M_TALENT_CULTIVATE_SCORE, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-165, 备注: TOPIC-TALENT-009 → 165}
+  - {metric_id: M_TALENT_INDUSTRY_SCORE, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-163, 备注: TOPIC-TALENT-007 → 163}
+  - {metric_id: M_TALENT_FLOW_TRACK, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-157, 备注: TOPIC-TALENT-013 → 157}
+  - {metric_id: M_TALENT_ORG_DIST, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-98, 备注: TOPIC-TALENT-002 机构分布 → 98（父为 SQL 库叶，派生走 IP-01 读链）}
+  - {metric_id: M_TALENT_REGIONAL_DIST, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-98, 备注: TOPIC-TALENT-001 区域分布 → 98}
+  - {metric_id: M_TALENT_RELATION_NET, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-160, 备注: TOPIC-TALENT-004 → 160}
+  - {metric_id: M_TALENT_SUPPLY_STRUCT, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-98, 备注: TOPIC-TALENT-003 供给 → 98}
+  - {metric_id: M_TALENT_SZ_STATUS, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-159, 备注: TOPIC-TALENT-005 → 159}
+  - {metric_id: M_TALENT_SZ_SUPPLY_DEMAND, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-161, 备注: TOPIC-TALENT-011 → 161}
+  - {metric_id: M_TALENT_UNIV_NEW, algorithm_type: third_party, b_leaf: B03, pattern: IP-09, jiuxin_row_id: SRS-158, 备注: TOPIC-TALENT-010 → 158}
+  # B04 人才·DS-16 招引 + STAT（7）
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_005, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: DS-16 不进久新包；库缺型叶，禁止伪造 API 行}
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_006, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_007, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_010, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_013, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TALENT_DS_16_TALENT_RECRUIT_025, algorithm_type: third_party, b_leaf: B04, pattern: IP-10, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TALENT_STRUCT_QUERY, algorithm_type: STAT, b_leaf: B04, pattern: IP-01, jiuxin_row_id: null, 备注: 人才结构查询自建统计}
+  # B05 技术链·库叶 DEEP（11）
+  - {metric_id: M_TECH_DEEP_130_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-130, 备注: 全景技术链}
+  - {metric_id: M_TECH_DEEP_131_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-131, 备注: 深圳技术链}
+  - {metric_id: M_TECH_DEEP_132_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-132, 备注: 技术发展历程}
+  - {metric_id: M_TECH_DEEP_133_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-133, 备注: 深圳细分领域分布}
+  - {metric_id: M_TECH_DEEP_134_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-134, 备注: 前沿热点；展示行 DS-03-RESULT-001/002、DS-09-COMPREHENSIVE-001/002/004 同交}
+  - {metric_id: M_TECH_DEEP_135_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-135, 备注: 产业化潜力；展示行 DS-07-TECH-INNOV-003、DS-07-INDUSTRY-POTENTIAL-002 同交}
+  - {metric_id: M_TECH_DEEP_136_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-136, 备注: 转化瓶颈}
+  - {metric_id: M_TECH_DEEP_137_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-137, 备注: 技术阶段；展示行 DS-03-RESULT-004/005/006、DS-07-SCI-CREATE-003 同交}
+  - {metric_id: M_TECH_DEEP_138_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-138, 备注: 深圳发展问题}
+  - {metric_id: M_TECH_DEEP_139_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-139, 备注: 深圳发展机遇}
+  - {metric_id: M_TECH_DEEP_140_1, algorithm_type: third_party, b_leaf: B05, pattern: IP-08, jiuxin_row_id: SRS-140, 备注: 重点布局推荐}
+  # B06 技术链·基础/图谱（12）
+  - {metric_id: M_TECH_BASE_96_1, algorithm_type: third_party, b_leaf: B06, pattern: IP-06, jiuxin_row_id: SRS-96, 备注: 技术基础指标 SQL}
+  - {metric_id: M_TECH_GRAPH_104_1, algorithm_type: third_party, b_leaf: B06, pattern: IP-07, jiuxin_row_id: SRS-104, 备注: 技术实体识别}
+  - {metric_id: M_TECH_GRAPH_105_1, algorithm_type: third_party, b_leaf: B06, pattern: IP-07, jiuxin_row_id: SRS-105, 备注: 技术实体关系抽取}
+  - {metric_id: M_TECH_EDGE_STRENGTH, algorithm_type: third_party, b_leaf: B06, pattern: IP-09, jiuxin_row_id: SRS-105, 备注: 消费 seq 105 关系面}
+  - {metric_id: M_TECH_ENTITY_INFLUENCE, algorithm_type: third_party, b_leaf: B06, pattern: IP-05, jiuxin_row_id: null, 备注: DS-02 无专叶；GRAPH 自建候选；与 type=third_party 冲突（C1）}
+  - {metric_id: M_TECH_ENTITY_REL, algorithm_type: third_party, b_leaf: B06, pattern: IP-09, jiuxin_row_id: SRS-105, 备注: 消费 seq 105 关系面}
+  - {metric_id: M_TECH_ENTITY_TOP5, algorithm_type: third_party, b_leaf: B06, pattern: IP-09, jiuxin_row_id: SRS-105, 备注: 消费 seq 105 关系面}
+  - {metric_id: M_TECH_GRAPH_STRUCT, algorithm_type: third_party, b_leaf: B06, pattern: IP-09, jiuxin_row_id: SRS-104, 备注: Nebula 技术子图，建于 104/105；主挂 104}
+  - {metric_id: M_TECH_PATH_CENTRALITY, algorithm_type: third_party, b_leaf: B06, pattern: IP-05, jiuxin_row_id: null, 备注: 05 无专叶，库 missing（赋号≠mapped）；禁用 seq 116；GRAPH 自建候选}
+  - {metric_id: M_TECH_PATH_KEYNODE, algorithm_type: third_party, b_leaf: B06, pattern: IP-05, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TECH_PATH_PRIORITY, algorithm_type: third_party, b_leaf: B06, pattern: IP-05, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TECH_REL_STRENGTH, algorithm_type: third_party, b_leaf: B06, pattern: IP-09, jiuxin_row_id: SRS-105, 备注: 消费 seq 105 关系面}
+  # B07 技术链·模型/STAT/页面派生（16）
+  - {metric_id: M_TECH_DS_07_TECH_INNOV_002, algorithm_type: MODEL, b_leaf: B07, pattern: IP-04, jiuxin_row_id: null, 备注: 模型 Owner 未定；extras.algo_server_location 指向 demo-algo-science（D12 风险 R1），须在 lumen-algo-py 重写；同步/异步按 IP-03 判据待测}
+  - {metric_id: M_TECH_DS_07_TECH_INNOV_004, algorithm_type: MODEL, b_leaf: B07, pattern: IP-04, jiuxin_row_id: null, 备注: 同上；兄弟行 DS-07-TECH-INNOV-003 属久新，非本指标}
+  - {metric_id: M_TECH_DS_07_TECH_INNOV_006, algorithm_type: MODEL, b_leaf: B07, pattern: IP-04, jiuxin_row_id: null, 备注: 同上}
+  - {metric_id: M_TECH_HEAT_QUERY, algorithm_type: STAT, b_leaf: B07, pattern: IP-01, jiuxin_row_id: null, 备注: TOPIC-QUERY TF 统计；明确不是 seq 134}
+  - {metric_id: M_TECH_INVEST_AMOUNT, algorithm_type: STAT, b_leaf: B07, pattern: IP-01, jiuxin_row_id: null, 备注: DS-03 投资额统计}
+  - {metric_id: M_TECH_OUTPUT_SCALE, algorithm_type: STAT, b_leaf: B07, pattern: IP-01, jiuxin_row_id: null, 备注: 产出规模统计}
+  - {metric_id: M_TECH_PAPER_PATENT_CNT, algorithm_type: STAT, b_leaf: B07, pattern: IP-01, jiuxin_row_id: null, 备注: COUNT DISTINCT；与 SRS-96 SQL 论文/专利量子集同口径嫌疑（TOPIC-TECH-003 → 96），不铺 96 交易额/资讯；自建 vs 久新 SQL 待定（DN-06）}
+  - {metric_id: M_TECH_COMPOSITE_SCORE, algorithm_type: third_party, b_leaf: B07, pattern: IP-10, jiuxin_row_id: null, 备注: DS-03 只读 ADS，不跑评估 Job；seq 182–191 不照搬；权重未冻结（DN-03）}
+  - {metric_id: M_TECH_CONVERT_BOTTLENECK, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-136, 备注: TOPIC-TECH-013/014 → 136}
+  - {metric_id: M_TECH_HEAT_INDEX, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-134, 备注: G3 Job；TOPIC-TECH；与 TOPIC_HEAT 非同一对象}
+  - {metric_id: M_TECH_LIFE_STAGE, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-137, 备注: 展示行 DS-03-RESULT-006；本页读 ADS，专题跑 Job 写同一结果}
+  - {metric_id: M_TECH_MATURITY_LEVEL, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-137, 备注: 展示行 DS-03-RESULT-005；同上}
+  - {metric_id: M_TECH_POTENTIAL_SCORE, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-135, 备注: TOPIC-TECH-006/007 → 135}
+  - {metric_id: M_TECH_STAGE_JUDGE, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-137, 备注: TOPIC-TECH-008/009 → 137}
+  - {metric_id: M_TECH_SZ_ASSESS, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-138, 备注: TOPIC-TECH-012 深圳潜力与阶段综合评估 → 138}
+  - {metric_id: M_TECH_TOPIC_HEAT, algorithm_type: third_party, b_leaf: B07, pattern: IP-09, jiuxin_row_id: SRS-134, 备注: 只读 ADS；展示行 DS-03-RESULT-002 同交}
+  # B08 科研机构·库叶 DEEP（7）
+  - {metric_id: M_ORG_DEEP_149_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-149, 备注: 重点技术领域布局}
+  - {metric_id: M_ORG_DEEP_150_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-150, 备注: 发展历程}
+  - {metric_id: M_ORG_DEEP_151_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-151, 备注: 深圳优势}
+  - {metric_id: M_ORG_DEEP_152_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-152, 备注: 深圳痛难点}
+  - {metric_id: M_ORG_DEEP_153_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-153, 备注: 合作关系链}
+  - {metric_id: M_ORG_DEEP_154_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-154, 备注: 引入推荐}
+  - {metric_id: M_ORG_DEEP_155_1, algorithm_type: third_party, b_leaf: B08, pattern: IP-08, jiuxin_row_id: SRS-155, 备注: 扶持推荐}
+  # B09 科研机构·基础/图谱/页面派生/STAT（15）
+  - {metric_id: M_ORG_BASE_99_1, algorithm_type: third_party, b_leaf: B09, pattern: IP-06, jiuxin_row_id: SRS-99, 备注: 机构基础指标 SQL}
+  - {metric_id: M_ORG_GRAPH_114_1, algorithm_type: third_party, b_leaf: B09, pattern: IP-07, jiuxin_row_id: SRS-114, 备注: 机构实体识别}
+  - {metric_id: M_ORG_GRAPH_115_1, algorithm_type: third_party, b_leaf: B09, pattern: IP-07, jiuxin_row_id: SRS-115, 备注: 机构实体关系抽取}
+  - {metric_id: M_ORG_ATTENTION_TREND, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-99, 备注: TOPIC-RORG-006 科研关注度 → 99}
+  - {metric_id: M_ORG_ATTRACT_SCORE, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-154, 备注: TOPIC-RORG-013 → 154；lumen-algo-py svcan /rec/attract-score 同名，口径关系 unknown（C9）}
+  - {metric_id: M_ORG_COLLAB_CHAIN, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-153, 备注: TOPIC-RORG-010 → 153}
+  - {metric_id: M_ORG_CULTIVATE_SCORE, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-155, 备注: TOPIC-RORG-014 → 155；svcan /rec/cultivate-score 同名（C9）}
+  - {metric_id: M_ORG_INDUSTRY_COVER, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-99, 备注: TOPIC-RORG-002 → 99}
+  - {metric_id: M_ORG_NEW_TREND, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-99, 备注: TOPIC-RORG-005 → 99}
+  - {metric_id: M_ORG_SZ_ADVANTAGE, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-151, 备注: TOPIC-RORG-015 → 151}
+  - {metric_id: M_ORG_SZ_PAINPOINT, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-152, 备注: TOPIC-RORG-016 → 152}
+  - {metric_id: M_ORG_SZ_STATUS, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-99, 备注: TOPIC-RORG-008 → 99}
+  - {metric_id: M_ORG_TECH_LAYOUT, algorithm_type: third_party, b_leaf: B09, pattern: IP-09, jiuxin_row_id: SRS-149, 备注: TOPIC-RORG-003 → 149}
+  - {metric_id: M_ORG_TECH_SCORE, algorithm_type: third_party, b_leaf: B09, pattern: IP-08, jiuxin_row_id: TOPIC-RORG-012, 备注: 05 无专叶主行；公式不展开，用户加权；svcan /org/tech-score 同名（C9）}
+  - {metric_id: M_ORG_PERF_QUERY, algorithm_type: STAT, b_leaf: B09, pattern: IP-01, jiuxin_row_id: null, 备注: 机构绩效查询自建统计}
+
+# ─────────────────────────────────────────────────────────────
+# 四、汇总
+# ─────────────────────────────────────────────────────────────
+conflicts:
+  - id: C1
+    desc: M_TECH_PATH_CENTRALITY/KEYNODE/PRIORITY、M_TECH_ENTITY_INFLUENCE 在 registry 为 third_party，但久新 51 行无对应行，本叶初判 IP-05 自建 GRAPH
+    resolution: 待 DN-02；B06 卡标 conflicts，algorithm_type 不由本叶改（改型走 data-agent）
+  - id: C2
+    desc: 类型轴不一致——registry algorithm_type 记来源（third_party），久新行 algorithm.type 记算法性质（STAT/GRAPH/MODEL）
+    resolution: 卡片 algorithm_type 取 registry；久新算法性质写入 delivery_form/备注，不混填
+  - id: C3
+    desc: 约 40 个页面派生指标的父库叶属 TOPIC-*（专题系统），展示侧消费同一结果；谁跑 Job、谁写快照未定
+    resolution: 按公约 §2.7 方案 A 共享 gkxlumen-topic；写者归属走 DN-07
+  - id: C4
+    desc: 久新 51 行「系统」字段 37 行为「专题」、13 行为「展示」、1 行为无专叶；本包为展示系统，所有库叶结果需与专题共用
+    resolution: 不重复向久新要；展示 13 行「与库叶同交」
+  - id: C5
+    desc: AGENTS.md 要求 catalog 带 D1–D4，现 MetricCatalogService 无 algorithm_type 与 D1–D4，且 seed 仅 ENT
+    resolution: 过渡态用只读镜像模块；catalog 扩字段另起 api 叶
+  - id: C6
+    desc: gkxlumen-innov GraphController 直读 dwm_graph_edge / dwm_graph_node（DWM），与「Java 只读 ADS」不符
+    resolution: 存量，不在本包改；三要素新门面不得沿用该写法（进 risks R4）
+  - id: C7
+    desc: 13 展示 third_party 行（如 DS-08-VIZ-001 专家 H 指数、DS-08-VIZ-004 专家活跃度）在 93 指标中无独立 metric_id
+    resolution: 按 JIUXIN 约定挂库叶 SRS-162/134/135/137；是否补 metric_id 由 B02/B05 卡片提 open_items
+  - id: C8
+    desc: M_TECH_PAPER_PATENT_CNT（STAT 自建）与 SRS-96 SQL 库叶论文/专利量可能同口径
+    resolution: DN-06
+  - id: C9
+    desc: lumen-algo-py svcan 已有 /org/tech-score、/rec/attract-score、/rec/cultivate-score、/graph/centrality，与本包 ORG/TECH 指标同名，口径/数据源关系 unknown
+    resolution: B09/B06 卡片核对；未确认前不得复用为「已有」
+
+decision_needed:
+  - {id: DN-01, owner: "甲方/久新（经郭万迎）", item: 久新 51 行交付形态、接口文档、鉴权、QPS、SLA、更新频率——全部「待确认」}
+  - {id: DN-02, owner: "human:唐绍祖", item: DS-02 路径中心性/关键节点/优先级/实体影响力是否自建 GRAPH（IP-05）或向久新补行}
+  - {id: DN-03, owner: 甲方, item: M_TECH_COMPOSITE_SCORE 综合评分权重与口径}
+  - {id: DN-04, owner: 甲方 + 产品, item: DS-16 招引六项（005/006/007/010/013/025）数据来源}
+  - {id: DN-05, owner: "human（PM/架构）", item: M_TECH_DS_07_TECH_INNOV_002/004/006 模型 Owner 与实现位置（须 lumen-algo-py）}
+  - {id: DN-06, owner: "human:唐绍祖 + 数据 Lead", item: M_TECH_PAPER_PATENT_CNT 自建 STAT 还是复用久新 SRS-96 SQL}
+  - {id: DN-07, owner: "human:李伟（structure_escalation）", item: 三要素 Java 门面所在模块、快照表/适配缓存表结构、专题与展示的结果写者}
+  - {id: DN-08, owner: "PM", item: 技术链/科研机构/人才 功能 Owner 未指派}
+  - {id: DN-09, owner: 甲方, item: 久新 API 结果是否允许我方缓存/落库快照（数据所有权与合规）}
+
+risks:
+  - {id: R1, level: high, desc: "M_TECH_DS_07_TECH_INNOV_* extras.algo_server_location 指向 repos/demo-algo-science；若 lumen 链路直接调用即违反 D12", mitigation: 在 lumen-algo-py 重写；demo 只读参考}
+  - {id: R2, level: high, desc: 42 行久新 API 全部未确认，SLA 未知；页面强依赖第三方实时可用性, mitigation: IP-08 熔断 + IP-11 快照，默认异步}
+  - {id: R3, level: high, desc: /metrics/v1/catalog 无 TAL/TECH/ORG 数据、无 algorithm_type 与 D1–D4 → 93 指标 ⓘ 全空, mitigation: 先建只读镜像；另起 catalog 扩字段叶}
+  - {id: R4, level: medium, desc: GraphController 直读 DWM 图表，若被三要素复制将扩大违规面, mitigation: B06/B09 卡片明示只读 ADS 投影}
+  - {id: R5, level: medium, desc: lumen-algo-py 无久新适配层、无三要素路由；/situation/v1 无 Java 实现；人才页为 DevelopingView, mitigation: B02–B09 卡片逐项列 ours 缺口}
+  - {id: R6, level: medium, desc: lumen-ui-science-pc 无 src/review 集中评审层，缺 3 个角标组件, mitigation: 参照 lumen-ui-topic src/review 补齐}
+  - {id: R7, level: medium, desc: lumen-algo-py 部分路由（/v1/entan、/v1/evaluation、/v1/talent-recommend）不带 /internal 前缀，新路由若照抄会破坏网关隔离约定, mitigation: 三要素新路由统一 /internal/v1/sci/*}
+  - {id: R8, level: medium, desc: 约 49 项库缺无主 + DS-16 六项无来源，业务态大面积空, mitigation: IP-10 空态如实，不伪数}
+  - {id: R9, level: low, desc: 久新交 Python 并入可能带入新依赖/许可问题, mitigation: IP-07 依赖评审}

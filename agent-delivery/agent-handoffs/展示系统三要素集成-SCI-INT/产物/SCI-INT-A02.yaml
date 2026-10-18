@@ -1,0 +1,884 @@
+# SCI-INT-A02 · 科学技术全景（DS-02-TECHGRAPH / ENTITY / PATH）系统集成项卡片
+# 格式真源：SCI-INT-总派单.md §2 / 产物/_card-template.yaml；模式编号：B01 IP-01～IP-13
+# 范围：SRS 科技发展态势/科学技术全景.md excel_rows 20–36（P00-baseline leaf=A02，17 叶）；37–50 属 A03 不在本叶
+# 对端：北京久新（目录名沿用旧写法「九新」）；久新行一律「待确认」
+# algorithm_type / d1_d4 全部来自 MCP user-metric-registry（metric-get / metric-query，2026-10-18）；
+#   无 metric 的卡按 DS-02-* 映射裁定写 n/a_ops / other_system，d1_d4 写 n/a
+# 约定：gaps 前缀 metric_missing:=统计数字无任何注册 metric_id；algo_owner_missing:=有 id 但 05 库/久新均无交付方
+#       X 卡=跨要素或非三要素；含 TAL/TECH/ORG 维度的 X 卡同样写满 call_chain 四段
+# 全部 lumen 路由：/trend/tech-panorama（lumen-ui-science-pc src/views/situation/panorama/index.vue）
+# 现状前端唯一接口：src/api/situation defineApi 'tsPanoramaGraph' = POST /situation/v1/panorama/graph
+#   （一次性返回 nodes/relations/keyPathOptions/timeline/listRecords/relationTypeOptions/factorItems，
+#    筛选/搜索/排序/播放全部在前端 src/lib/graph/* 计算；mock = src/mock/modules/panorama.ts）
+#   lumen-svc-platform 无 /situation 实现（grep 0 命中）——下文 java 段一律 draft；Java 模块归属 unknown（B01/架构定）
+#   lumen-algo-py 无技术点 / 久新 / sci 路由——下文 python 段一律 draft，前缀按 B01 R7 用 /internal/v1/sci/*
+# 全页共性缺口（各统计卡 gaps 不再逐条展开时以此为准）：全景页无 MetricSpecHint ⓘ / MockBadge / 就绪度角标，且仓内无 src/review 评审层（B01 R6）
+#
+# 【图结构怎么生成】（派单关注点 1）
+#   实体集 = 久新 SRS-104（Python，技术实体识别）→ 并入 lumen-algo-py 写 Nebula TRSGraph 顶点（INT-C-TECH-151/170）
+#   关系边 + 关联强度 = 久新 SRS-105（Python，技术实体关系抽取）→ 写 TRSGraph 边（INT-C-TECH-152/171）
+#   链结构 = 久新 SRS-130（API，全景技术链模型）→ Python 适配器拉取、缓存、快照（INT-C-TECH-153）
+#   我方 Python /internal/v1/sci/tech-graph/* 读 Nebula 出子图 + ADS 投影；Java 只做门面；前端只负责布局/着色
+#   前置缺口：技术主数据无人持有、TRSGraph 技术 VID=`tech:{名称}` 不稳定（OI-C02-01 P0 / OI-C02-16）
+# 【关键路径谁算】（派单关注点 2）
+#   05 库无关键路径叶；130 不含关键节点识别；131 是深圳链；116 禁用（DS-02-PATH 裁定）→ 久新侧当前无交付行
+#   草案建议：我方 Python 在 Nebula TRSGraph 上自建（IP-05），结果投影 ADS；是否改请久新补行 = DN-02（owner human:唐绍祖）
+task_id: SCI-INT-A02
+scope_count: 17
+card_count: 22
+gap: []
+cards:
+  # ───────────────────────── 展示技术点图谱（DS-02-TECHGRAPH） ─────────────────────────
+  - int_id: INT-A-X-101
+    layer: page
+    srs: {excel_row: 20, seq: 17, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/技术点图谱数据输入"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: ["file(xlsx|json)", "manual_node{name, category, level}", "manual_edge{source, target, relation_type}"]
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/graphManualInput.js + App.jsx 科学技术全景（有，会话级 Mock）"
+      lumen: "lumen-ui-science-pc panorama/index.vue 导入 xlsx/json、手动增删、撤销/重做（有，仅会话级，不回写）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-TECHGRAPH TG-D01 判 n/a_ops（不映射 seq 104）：导入只作用于当前会话画布，无持久化后端"
+      - "若需导入数据入库/共享，属 write_back，需新建写入链路（Java 门面 + Python 校验 + 存储表），本叶不建卡"
+    conflicts: []
+    decision_needed:
+      - "DN-A02-01：「数据输入」是否要求持久化/多人共享？若要求，导入数据与久新 104/105 产出如何合并、以谁为准（甲方定口径）"
+    structure_escalation: false
+    risks: ["前端解析 xlsx/json 属信任边界：须校验字段与体量上限，防超大文件卡死页面"]
+    test_points: ["导入：合法 xlsx/json 节点边正确上图；非法列/超限给出错误提示不白屏", "撤销/重做：连续 10 步可逆", "刷新页面后导入内容消失（会话级口径）"]
+    confidence: high
+
+  - int_id: INT-A-TECH-102
+    layer: page
+    srs: {excel_row: 21, seq: 18, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/图结构自动生成"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [data, metric, algorithm, service]
+    metric_ids: [M_TECH_DEEP_130_1, M_TECH_GRAPH_STRUCT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-130
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/graph（前端已调用；Java 未实现，draft）"
+      python: "POST /internal/v1/sci/tech-graph/chain-structure（draft；久新凭据只在 Python 侧，熔断+缓存+快照）"
+      downstream: "久新 SRS-130 全景技术链模型 API（待确认）→ 快照落 ADS（表名 unknown，见 INT-C-TECH-153）"
+    contract_draft:
+      request: [domain_code, tech_id, depth, time_range]
+      response_key_fields: ["nodes[id, name, category, level]", "relations[source, target, relation_type, strength]", snapshot_version]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science App.jsx + components/tech-situation/KnowledgeGraph.jsx（有，纯 Mock）"
+      lumen: "lumen-ui-science-pc KnowledgeGraph / GraphList 视图（有，数据仅 mock 或空）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "Java 无 /situation 实现；Python 无 sci 路由；契约 BE-TS-CONTRACT-01 未冻结"
+      - "按层级着色/定形需节点 level/category，依赖技术分类体系（OI-C02-02），130 是否返回该字段 unknown"
+      - "全页无 ⓘ / MockBadge"
+    conflicts:
+      - "M_TECH_DEEP_130_1 srs_refs 指向 seq 18（本叶）；JIUXIN 清单注 130 的专题消费为 TOPIC-TECH-001：展示与专题共用同一份链结构，结果由谁写、谁缓存 = B01 C3"
+    decision_needed:
+      - "久新：SRS-130 API 是否支持按技术点/领域取子图、返回 level/category 与 strength、调用频率与 SLA（待确认）"
+    structure_escalation: false
+    risks: ["对端 API 不可用时整张图空白：须快照兜底 + 空态 ⚠️，禁止 fixture 填数（USE_MOCK=false）"]
+    test_points: ["契约：nodes/relations 字段齐全、snapshot_version 非空", "降级：久新超时显示上一快照 + 角标；无快照显示空态", "可观测：trace 从前端经 Java、Python 贯通到对端调用"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-103
+    layer: page
+    srs: {excel_row: 21, seq: 18, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/图结构自动生成"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_TECH_GRAPH_104_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade, frontend]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-104
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/graph（draft，同 102 门面）"
+      python: "lumen-algo-py 并入久新 104 实体识别 → 离线 Job 写顶点；在线 POST /internal/v1/sci/tech-graph/subgraph（draft）"
+      downstream: "Nebula TRSGraph 技术顶点（INT-C-TECH-151/170；space 名与现网条数待 C04 实测）"
+    contract_draft:
+      request: [domain_code, tech_id, depth]
+      response_key_fields: ["nodes[vid, name, category, level, source]"]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "无（Mock 节点）"
+      lumen: "无后端；前端 nodes 结构已就位"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "M_TECH_GRAPH_104_1 srs_refs 仅 TOPIC-TECH-05，未登记本页 seq 18 引用（data-agent 补 srs 引用）"
+      - "lumen-algo-py 无技术实体模块；久新 Python 交付形态（包/镜像/依赖）unknown"
+    conflicts: []
+    decision_needed:
+      - "久新：SRS-104 Python 交付物的输入语料、输出实体 schema、运行频率（待确认）"
+    structure_escalation: false
+    risks: ["实体 VID 用 `tech:{名称}`，同名异义/改名会断边（OI-C02-16），见 INT-A-TECH-105"]
+    test_points: ["数据：Job 跑完后 TRSGraph 顶点数 > 0 且与 Job 日志一致", "架构：Java 侧无 nGQL（grep）"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-104
+    layer: page
+    srs: {excel_row: 21, seq: 18, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/图结构自动生成"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [data, metric, algorithm, graph]
+    metric_ids: [M_TECH_GRAPH_105_1, M_TECH_EDGE_STRENGTH]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade, frontend]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/graph（draft，同 102 门面）"
+      python: "lumen-algo-py 并入久新 105 关系抽取 → 离线 Job 写边；在线 POST /internal/v1/sci/tech-graph/subgraph（draft）"
+      downstream: "Nebula TRSGraph 技术-技术边 + strength 属性（INT-C-TECH-152/171）→ ADS 投影（表名 unknown）"
+    contract_draft:
+      request: [domain_code, tech_id, depth, min_strength]
+      response_key_fields: ["relations[source, target, relation_type, strength, first_seen_year]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science graphEntityRanking.js（Mock 强度）"
+      lumen: "前端 relations[strength] 字段已就位，GraphAnalysisPanel「关联强度排行」读 mock"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "JIUXIN 清单注 105 的展示消费为 DS-03（而非本页）；DS-02-TECHGRAPH TG-D03 又判本页 mapped 105——引用口径需 data-agent 对齐"
+      - "全页无 ⓘ / MockBadge"
+    conflicts: []
+    decision_needed:
+      - "久新：SRS-105 是否输出关联强度数值与关系首次出现时间（时间轴回放依赖，见 INT-A-X-114）"
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：每条边 strength ∈ [0,1] 或注明量纲", "数据：边两端 VID 均存在于顶点集"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-105
+    layer: page
+    srs: {excel_row: 21, seq: 18, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/图结构自动生成"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [data, graph]
+    metric_ids: [M_TECH_GRAPH_STRUCT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [etl, graph_load, python_internal]
+    counterpart: trsgraph
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/graph（draft，只读 ADS 投影）"
+      python: "Python 图装载 Job：技术主数据 → 稳定 VID → 写 TRSGraph + 投影 ADS（draft）"
+      downstream: "ADS 技术主表 / 领域维表 / 桥表（INT-C-TECH-180/181/182，新表）+ Nebula TRSGraph"
+    contract_draft:
+      request: []
+      response_key_fields: [tech_id, tech_name, domain_code, level, vid]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "无"
+      lumen: "无"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "技术主数据无人持有（C02 结论，OI-C02-01 P0）；TRSGraph 技术 VID=`tech:{名称}` 不稳定（OI-C02-16）"
+      - "图快照/版本（IP-11）未定：展示需按 snapshot_version 回放与对比"
+    conflicts: []
+    decision_needed:
+      - "技术点分类体系（层级/领域）以谁为准（OI-C02-02，甲方定）"
+    structure_escalation: true
+    risks: ["主数据未定前 104/105 写入的顶点后续需迁移 VID，存在全图重灌风险"]
+    test_points: ["数据：同一技术点改名后 VID 不变、边不断", "结构：新表评审通过（human:李伟）后方可建表"]
+    confidence: low
+
+  - int_id: INT-A-X-106
+    layer: page
+    srs: {excel_row: 22, seq: 19, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/图谱交互操作"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science KnowledgeGraph.jsx（有：缩放/平移/拖拽/展开收起/高亮）"
+      lumen: "lumen-ui-science-pc KnowledgeGraph 视图（有，前端交互）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["展开/收起若需按需加载下一层邻居，则转为服务依赖（复用 102/103 subgraph 接口 depth 参数）"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["「旋转」在 2D 力导图中语义不明，以 demo 已评审交互为准"]
+    test_points: ["交互：缩放/平移/拖拽/展开/收起/路径高亮均可用", "无障碍：键盘可聚焦节点并展开（D10）"]
+    confidence: high
+
+  - int_id: INT-A-TECH-107
+    layer: page
+    srs: {excel_row: 23, seq: 20, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/技术点搜索定位"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/search（draft）"
+      python: "POST /internal/v1/sci/tech/search（draft；模糊/精确匹配）"
+      downstream: "ES 技术点索引（lumen-etl-es-py 无该索引）或 ADS 技术主表（INT-C-TECH-180）"
+    contract_draft:
+      request: [keyword, match_mode, domain_code, size]
+      response_key_fields: [tech_id, tech_name, vid, highlight]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science App.jsx 关键词过滤（Mock）"
+      lumen: "lumen-ui-science-pc 前端对已加载节点做关键词过滤 + 高亮居中（有，仅限当前子图）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-TECHGRAPH TG-D05 判 other_system（不映射 seq 116）：搜索非统计，不需 metric"
+      - "仅前端过滤只能搜到已加载节点；全库搜索需新建 ES 索引或主表查询"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: true
+    risks: []
+    test_points: ["功能：模糊/精确两种模式结果不同且命中节点居中高亮", "边界：命中节点不在当前子图时自动加载其邻域"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-108
+    layer: page
+    srs: {excel_row: 24, seq: 21, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点图谱/技术点详情查看"}
+    page_ref: DS-02-TECHGRAPH
+    dimension: [TECH]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "GET /situation/v1/panorama/tech/{tech_id}（draft）"
+      python: "GET /internal/v1/sci/tech/{tech_id}（draft；ADS 主表 + 图属性）"
+      downstream: "ADS 技术主表（INT-C-TECH-180）+ 130 快照节点属性"
+    contract_draft:
+      request: [tech_id]
+      response_key_fields: [tech_name, description, attributes, dev_status, domain_code]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science App.jsx 详情抽屉（Mock）"
+      lumen: "lumen-ui-science-pc InsightDetailDrawer（有，读 mock 节点字段）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-TECHGRAPH TG-D06 判 other_system；「发展状态」不是 seq 137，来源 unknown"
+      - "description/attributes 依赖技术主数据（OI-C02-01）"
+    conflicts: []
+    decision_needed:
+      - "DN-A02-02：「发展状态」取值口径（萌芽/成长/成熟/衰退？由谁判定）——甲方定"
+    structure_escalation: false
+    risks: []
+    test_points: ["功能：点击节点详情字段与主表一致", "空值：发展状态无来源时显示「—」+ ⚠️ 待甲方确认"]
+    confidence: low
+
+  # ───────────────────────── 展示技术点关联实体（DS-02-ENTITY） ─────────────────────────
+  - int_id: INT-A-X-109
+    layer: page
+    srs: {excel_row: 25, seq: 22, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/默认实体展示"}
+    page_ref: DS-02-ENTITY
+    dimension: [TECH, TAL, ORG]
+    dep_kind: [data, metric, algorithm, graph]
+    metric_ids: [M_TECH_ENTITY_TOP5, M_TECH_GRAPH_105_1, M_TECH_GRAPH_104_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/entities（draft）"
+      python: "POST /internal/v1/sci/tech-graph/entities（draft；读 105 快照取 Top5）"
+      downstream: "Nebula TRSGraph 技术-人/机构/论文/专利边（来自 104/105）→ ADS 投影"
+    contract_draft:
+      request: [tech_id, entity_types, top_n]
+      response_key_fields: ["entities[entity_id, entity_type, name, strength]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science graphEntityRanking.js（Mock Top5）"
+      lumen: "lumen-ui-science-pc GraphAnalysisPanel「Top5 关键实体」（有，mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "104/105 是否覆盖人才/机构/论文/专利四类实体 unknown（技术链实体识别可能只含技术点）"
+      - "全页无 ⓘ / MockBadge"
+    conflicts: []
+    decision_needed:
+      - "Q-MO-DS02-01（M_TECH_ENTITY_TOP5 待确认项）：Top5 是四类各 5 还是合并 5"
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：每类实体 ≤ 5 且按 strength 降序", "降级：某类无数据显示空态不补假数"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-110
+    layer: page
+    srs: {excel_row: 25, seq: 22, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/默认实体展示"}
+    page_ref: DS-02-ENTITY
+    dimension: [TECH]
+    dep_kind: [data, metric]
+    metric_ids: [M_TECH_BASE_96_1, M_TECH_PAPER_PATENT_CNT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [etl, java_facade, python_internal, frontend]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-96
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/entities（draft，计数字段并入实体面板）"
+      python: "POST /internal/v1/sci/tech/base-stats（draft；读 ADS）"
+      downstream: "久新 SRS-96 技术基础指标 SQL（待确认）→ 我方 ETL 落 ADS（表名 unknown，见 INT-C-TECH-150）"
+    contract_draft:
+      request: [tech_id, time_range]
+      response_key_fields: [paper_cnt, patent_cnt, talent_cnt, org_cnt]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "无（Mock 数字）"
+      lumen: "无独立展示位；面板统计数字为 mock"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["全页无 ⓘ / MockBadge"]
+    conflicts:
+      - "M_TECH_BASE_96_1（third_party）与 M_TECH_PAPER_PATENT_CNT（STAT，验收单元 TOPIC-TECH-05）口径重叠 DS-02-ENTITY 第 002 行 = DN-06；type 不改，待 data-agent 收敛"
+    decision_needed:
+      - "久新：SRS-96 SQL 运行在哪个库、输出表结构、是否可直接投递 ADS（待确认）"
+    structure_escalation: false
+    risks: []
+    test_points: ["数据：ADS 计数与久新 SQL 原表抽样一致", "ⓘ：每个计数旁 MetricSpecCard 可打开"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-111
+    layer: page
+    srs: {excel_row: 26, seq: 23, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/节点点击交互"}
+    page_ref: DS-02-ENTITY
+    dimension: [TECH]
+    dep_kind: [service]
+    metric_ids: [M_TECH_ENTITY_TOP5]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/entities（draft，按 tech_id 懒加载，复用 109）"
+      python: "POST /internal/v1/sci/tech-graph/entities（draft）"
+      downstream: "同 INT-A-X-109（105 快照投影）"
+    contract_draft:
+      request: [tech_id]
+      response_key_fields: ["entities[entity_id, entity_type, name, strength]"]
+      granularity: {time: none, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science App.jsx 点击刷新面板（Mock）"
+      lumen: "lumen-ui-science-pc 点击节点刷新 GraphAnalysisPanel（有，从一次性 payload 前端过滤）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "DS-02-ENTITY ENT-D05 判 n/a_ops；但全图实体无法一次塞进 graph payload，真实数据下需按节点懒加载 → 需服务（本卡依据）"
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：点击任一节点 1s 内面板刷新为该节点实体", "并发：快速连点只渲染最后一次请求结果"]
+    confidence: medium
+
+  - int_id: INT-A-X-112
+    layer: page
+    srs: {excel_row: 27, seq: 24, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/实体详情查看"}
+    page_ref: DS-02-ENTITY
+    dimension: [TAL, ORG, TECH]
+    dep_kind: [service, data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "GET /situation/v1/panorama/entity/{entity_type}/{entity_id}（draft）"
+      python: "GET /internal/v1/sci/entity/{entity_type}/{entity_id}（draft）"
+      downstream: "ADS 人才/机构/论文/专利主表（源 gkx_mysql_raw，见 C01/C03 卡）+ 技术-实体桥表（INT-C-TECH-182）"
+    contract_draft:
+      request: [entity_type, entity_id]
+      response_key_fields: [name, attributes, linked_techs, timeline, stats]
+      granularity: {time: year, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science App.jsx 实体抽屉（Mock）"
+      lumen: "lumen-ui-science-pc InsightDetailDrawer（有，mock 字段）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-ENTITY ENT-D06 判 other_system（实体属性/时间线非统计）"
+      - "metric_missing: 详情内「统计数据」（实体维度论文/专利/合作数等）无注册 metric_id"
+      - "关联技术点列表依赖技术-实体桥表（新表，见 INT-A-TECH-105 / INT-C-TECH-182）"
+    conflicts: []
+    decision_needed: ["DN-A02-03：实体详情「统计数据」具体展示哪些数字（甲方定），定后由 data-agent 注册 metric"]
+    structure_escalation: false
+    risks: ["人才实体含个人信息：详情字段须按脱敏规则输出"]
+    test_points: ["功能：四类实体详情均可打开且字段非伪造", "合规：人才手机号/证件号不出现在响应"]
+    confidence: low
+
+  - int_id: INT-A-X-113
+    layer: page
+    srs: {excel_row: 28, seq: 25, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/实体筛选功能"}
+    page_ref: DS-02-ENTITY
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: [entity_types, time_range]
+      response_key_fields: []
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science App.jsx FilterBar（Mock）"
+      lumen: "lumen-ui-science-pc FilterBar + src/lib/graph/* 前端过滤（有）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["DS-02-ENTITY ENT-D07 判 n/a_ops；按时间筛选要求 109/111 返回实体时间字段"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：按类型/时间组合筛选结果即时刷新", "空态：无匹配显示空提示"]
+    confidence: high
+
+  - int_id: INT-A-X-114
+    layer: page
+    srs: {excel_row: 29, seq: 26, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/实体关联关系展示"}
+    page_ref: DS-02-ENTITY
+    dimension: [TECH, TAL, ORG]
+    dep_kind: [data, metric, graph, service]
+    metric_ids: [M_TECH_ENTITY_REL, M_TECH_GRAPH_105_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/entity-relations（draft）"
+      python: "POST /internal/v1/sci/tech-graph/entity-relations（draft；读 105 快照）"
+      downstream: "Nebula TRSGraph 实体间边（105）→ ADS 投影"
+    contract_draft:
+      request: [tech_id, entity_ids, time_range]
+      response_key_fields: ["edges[source, target, relation_type, strength, year]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science App.jsx 关系网络 + 时间轴（Mock）"
+      lumen: "lumen-ui-science-pc 关系网络 + timeline 回放（有，mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "时间轴回放（ENT-D08 判 n/a_ops）要求边带 year；105 是否输出时间 unknown"
+      - "全页无 ⓘ / MockBadge"
+    conflicts: []
+    decision_needed: ["久新：SRS-105 是否抽取人-机构-技术之间的关系（不止技术-技术）及关系时间（待确认）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["契约：每条边带 year 时回放逐年出现", "降级：无 year 时隐藏回放控件而非伪造时间"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-115
+    layer: page
+    srs: {excel_row: 30, seq: 27, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/实体排序与优先级"}
+    page_ref: DS-02-ENTITY
+    dimension: [TECH]
+    dep_kind: [metric, algorithm, graph]
+    metric_ids: [M_TECH_ENTITY_INFLUENCE]
+    metric_domain_other: [M_ENT_DS_02_ENTITY_004]
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade, frontend]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/entities（draft，返回 influence 字段供排序）"
+      python: "离线 Job：TRSGraph 上算影响力 → ADS；在线 POST /internal/v1/sci/tech-graph/entities（draft）"
+      downstream: "Nebula TRSGraph + ADS 影响力结果表（新表，名 unknown）"
+    contract_draft:
+      request: [tech_id, sort_by]
+      response_key_fields: ["entities[entity_id, strength, influence]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science graphEntityRanking.js（Mock 影响力）"
+      lumen: "lumen-ui-science-pc 前端排序（有，mock influence）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: 影响力无 05 库叶、无久新行（DS-02-ENTITY ENT-D04 判 missing；DS-ALGO-GAP-L01 列为缺口）"
+      - "全页无 ⓘ / MockBadge"
+    conflicts:
+      - "同一概念双注册：M_TECH_ENTITY_INFLUENCE（third_party，TECH 域）vs M_ENT_DS_02_ENTITY_004（MODEL，挂 ENT 域）；type 不改，待 data-agent 合并"
+      - "B01 C1：影响力 jiuxin=null 却标 third_party"
+    decision_needed:
+      - "DN-02（owner human:唐绍祖）：影响力由我方 Python+Nebula 自建（IP-05）还是请久新补行"
+      - "Q-MO-DS02-03：影响力口径（中心性/引用/合作广度？）"
+    structure_escalation: true
+    risks: ["B01 C9：lumen-algo-py svcan /graph/centrality 同名，口径 unknown，禁止直接复用当作影响力"]
+    test_points: ["算法：已知小图（星形）中心节点影响力最高", "降级：无结果时排序退化为按 strength，并显示 ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-X-116
+    layer: page
+    srs: {excel_row: 30, seq: 27, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示技术点关联实体/实体排序与优先级"}
+    page_ref: DS-02-ENTITY
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: ["sort_by(time|name|type)", order]
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science App.jsx 排序（Mock）"
+      lumen: "lumen-ui-science-pc 前端排序（有）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["DS-02-ENTITY ENT-D09 判 n/a_ops（用户按时间/名称/类型排序为前端行为）"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：三种排序切换结果正确，名称按拼音排序"]
+    confidence: high
+
+  # ───────────────────────── 展示关键路径和关键节点（DS-02-PATH） ─────────────────────────
+  - int_id: INT-A-TECH-117
+    layer: page
+    srs: {excel_row: 31, seq: 28, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/关键路径数据接收与处理"}
+    page_ref: DS-02-PATH
+    dimension: [TECH]
+    dep_kind: [algorithm, graph, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade, frontend]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/key-paths（draft；现状 keyPathOptions 塞在 /panorama/graph 响应里）"
+      python: "离线/异步 Job：TRSGraph 上算关键路径 → ADS；在线 POST /internal/v1/sci/tech-graph/key-paths（draft）"
+      downstream: "Nebula TRSGraph + ADS 关键路径结果表（新表，名 unknown）"
+    contract_draft:
+      request: [domain_code, tech_id, path_type, top_n]
+      response_key_fields: ["paths[path_id, path_type, node_seq[], edges[], importance, years[]]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science graphKeyPathMockData.js（Mock）"
+      lumen: "lumen-ui-science-pc KeyPathPlayback + keyPathOptions（有，mock）；DS-02-PATH 注「501 未注册」= 展示侧路径 Job 未登记"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-PATH PATH-D04 判 other_system；关键路径生产方 unknown：05 库无叶，130 不含关键节点识别，131=深圳链，116 禁用"
+      - "metric_missing: 路径「重要性」字段无独立 metric_id（是否复用 M_TECH_PATH_PRIORITY 由 data-agent 定）"
+    conflicts: []
+    decision_needed:
+      - "DN-02（owner human:唐绍祖）：关键路径算法归我方 Python+Nebula 自建（草案建议）还是久新补行"
+      - "DN-A02-04：「关键路径」定义（最长依赖链/最大强度路径/中心节点串联？）——甲方定"
+    structure_escalation: true
+    risks:
+      - "D12：lumen-algo-py /internal/v1/chain 的 panorama.graph.v1 / key_link.graph.v1 是产业链 Job 且写 demo_* 快照，禁止复用到技术点关键路径"
+      - "若改为前端自算路径，违反「算法只在 Python」——只能进 risks，不得采用"
+    test_points: ["算法：给定小图关键路径结果可复现", "契约：node_seq 中每个节点均在当前图中，前端可合并高亮", "降级：无结果时路径视图空态 + ⚠️"]
+    confidence: low
+
+  - int_id: INT-A-TECH-118
+    layer: page
+    srs: {excel_row: 32, seq: 29, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/关键节点识别与标记"}
+    page_ref: DS-02-PATH
+    dimension: [TECH]
+    dep_kind: [metric, algorithm, graph]
+    metric_ids: [M_TECH_PATH_CENTRALITY, M_TECH_PATH_KEYNODE]
+    metric_domain_other: [M_INNOV_DS_02_PATH_001, M_INNOV_DS_02_PATH_002]
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade, frontend]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/key-paths（draft，节点带 centrality/is_key）"
+      python: "离线 Job：TRSGraph 中心性 + 影响力 → 关键节点 → ADS（draft）"
+      downstream: "Nebula TRSGraph + ADS 节点中心性结果表（新表，名 unknown；不得复用 innov 的 ads_node_influence）"
+    contract_draft:
+      request: [domain_code, tech_id]
+      response_key_fields: ["nodes[vid, centrality, influence, is_key, mark_style]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science graphKeyPathMockData.js（Mock 标记）"
+      lumen: "lumen-ui-science-pc 关键节点样式标记（有，mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "algo_owner_missing: DS-02-PATH PATH-D01/D02 判 missing（无 05 叶；130 无关键节点识别；116 禁用）"
+      - "全页无 ⓘ / MockBadge"
+    conflicts:
+      - "同一概念双注册：M_TECH_PATH_CENTRALITY/KEYNODE（third_party）vs M_INNOV_DS_02_PATH_001/002（GRAPH，INNOV 域）；type 不改，待 data-agent 合并"
+      - "B01 C1：jiuxin=null 却标 third_party"
+    decision_needed:
+      - "DN-02（owner human:唐绍祖）：同 117"
+      - "Q-MO-DS02-02：关键节点判定阈值与标记样式"
+    structure_escalation: true
+    risks:
+      - "B01 C9：lumen-algo-py svcan /graph/centrality 同名、口径 unknown，复用前须口径核对"
+      - "B01 R4：innov GraphController 直读 DWM，技术点图不得照抄该模式（Java 只读 ADS）"
+    test_points: ["算法：星形/链形小图中心性排序符合预期", "UI：关键节点样式与普通节点可区分且有图例"]
+    confidence: low
+
+  - int_id: INT-A-TECH-119
+    layer: page
+    srs: {excel_row: 33, seq: 30, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/路径详情查看"}
+    page_ref: DS-02-PATH
+    dimension: [TECH]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: other_system
+    integration_pattern: IP-10
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "GET /situation/v1/panorama/path/{path_id}（draft）"
+      python: "GET /internal/v1/sci/tech-graph/path/{path_id}（draft）"
+      downstream: "unknown：路径技术含义/发展历程/关键突破无来源（ADS 路径详情表为新表草案）"
+    contract_draft:
+      request: [path_id]
+      response_key_fields: [meaning, "history[]", "breakthroughs[]"]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science PathComparisonPanel.jsx / 详情（Mock 文案）"
+      lumen: "lumen-ui-science-pc InsightDetailDrawer 路径详情（有，mock 文案）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "DS-02-PATH PATH-D05 判 other_system 且明确不是 132（技术发展历程）；内容来源 unknown"
+      - "无来源前须 IP-10：空态 + ⚠️，禁止伪造文案"
+    conflicts: []
+    decision_needed:
+      - "DN-A02-05：路径详情文案由人工维护、久新提供还是模型生成（若模型生成则属 MODEL 新算法，需立项）——甲方/久新定"
+    structure_escalation: true
+    risks: []
+    test_points: ["空态：无数据时显示 ⚠️ 待确认而非示例文案", "功能：有数据时三段内容与 path_id 对应"]
+    confidence: low
+
+  - int_id: INT-A-TECH-120
+    layer: page
+    srs: {excel_row: 34, seq: 31, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/关键路径筛选与过滤"}
+    page_ref: DS-02-PATH
+    dimension: [TECH]
+    dep_kind: [metric, algorithm]
+    metric_ids: [M_TECH_PATH_PRIORITY]
+    metric_domain_other: [M_INNOV_DS_02_PATH_003]
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: "POST /situation/v1/panorama/key-paths（draft，带 path_type / priority_level 过滤参数，复用 117）"
+      python: "POST /internal/v1/sci/tech-graph/key-paths（draft）"
+      downstream: "ADS 关键路径结果表（同 117，新表）"
+    contract_draft:
+      request: [path_type, priority_level, time_range]
+      response_key_fields: ["paths[path_id, path_type, priority_level, years[]]"]
+      granularity: {time: year, geo: none}
+      freshness: weekly
+    status:
+      demo: "demo-ui-science App.jsx 路径筛选（Mock）"
+      lumen: "lumen-ui-science-pc 前端过滤 keyPathOptions（有，mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "DS-02-PATH PATH-D03 判 missing（节点优先级无交付方）；PATH-D06 筛选本身 other_system"
+      - "algo_owner_missing: 重要性等级依赖 117/118 自建结果"
+      - "全页无 ⓘ / MockBadge"
+    conflicts:
+      - "同一概念双注册：M_TECH_PATH_PRIORITY（third_party）vs M_INNOV_DS_02_PATH_003（GRAPH，INNOV 域）"
+    decision_needed: ["Q-MO-DS02-02：重要性分级档位（高/中/低阈值）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：按类型/重要性/时间组合过滤路径列表与画布同步", "边界：路径超过 50 条时服务端过滤而非前端全量"]
+    confidence: low
+
+  - int_id: INT-A-X-121
+    layer: page
+    srs: {excel_row: 35, seq: 32, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/路径比较分析"}
+    page_ref: DS-02-PATH
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: ["path_ids[]"]
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science components/tech-situation/PathComparisonPanel.jsx（Mock）"
+      lumen: "lumen-ui-science-pc GraphAnalysisPanel 路径比较（有，前端并排/叠加）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["DS-02-PATH PATH-D07 判 n/a_ops；对比数据来自 117 路径结果"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：选 2–3 条路径并排/叠加切换正确，共同节点高亮"]
+    confidence: high
+
+  - int_id: INT-A-X-122
+    layer: page
+    srs: {excel_row: 36, seq: 33, path: "智能服务集群/科技信息展示系统/科技发展态势/科学技术全景/展示关键路径和关键节点/关键路径动态演示"}
+    page_ref: DS-02-PATH
+    dimension: [NONE_3E]
+    dep_kind: []
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-09
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-panorama
+      java: null
+      python: null
+      downstream: null
+    contract_draft:
+      request: [path_id, speed]
+      response_key_fields: []
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science App.jsx 路径播放（Mock）"
+      lumen: "lumen-ui-science-pc KeyPathPlayback（有：播放/暂停/调速）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["DS-02-PATH PATH-D08 判 n/a_ops；按时间演示要求 117 返回 node_seq 与 years[]"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["交互：播放/暂停/调速（0.5x–2x）正常，结束后可重播", "无障碍：播放控件键盘可达（D10）"]
+    confidence: high

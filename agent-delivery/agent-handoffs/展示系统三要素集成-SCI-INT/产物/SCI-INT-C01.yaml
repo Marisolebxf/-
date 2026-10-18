@@ -1,0 +1,3897 @@
+task_id: SCI-INT-C01
+layer: data
+element: TAL（人才）
+generated_by: 产物/_work/C01-build.py
+as_of: '2026-10-18'
+note: 对端正名「久新」；引用旧路径 metrics/request/九新-技术机构人才/ 保留原名。指标 8 件套/D1–D4 取自 MCP metric-registry（metric-query domain=TALENT fields=full，2026-10-18）；行数引用仓内快照，未连库、未执行 SQL。data_source 为本叶对 §2 schema 的扩展块（派单要求的源系统/主键/覆盖/频率/行数）。
+scope_count: 43
+card_count: 43
+gap: []
+master_data_conclusion:
+  conclusion: 人才实体主数据候选 = 甲方三方库 gkx 人才要素库 dwd_scholar.scholar_id（INT-C-TAL-001）：它是三方库中唯一同时具备稳定业务 ID、履历、教育、研究方向、论文、合作者的人员表，且 dwd_rel_project_scholar / dwd_rel_report_scholar 已用「算法绑定后的 scholar_id」挂接。草案：我方人才主档（INT-C-TAL-070）沿用
+    scholar_id 作主键，论文/报告作者 author_id、Scopus auid、专利发明人、项目主持人、机构高管等次级人员源一律经人员 ID 映射表（INT-C-TAL-072）对齐到 scholar_id；久新接口以 scholar_id 交互。
+  status: 待确认（scholar_id 稳定性与全量覆盖未获书面确认；新建主档/映射/流动边为结构项 → structure_escalation，升级 human:李伟）
+  evidence:
+  - SOURCE-TABLES.md + 2026-10-10 行数报告：人才要素库 8 表（dwd_scholar 16,933 / work_experience 56,295 / education 42,837 / talent_flag 16,400 / research_direction 19,466 / paper_relation 887,927 / papers 597,513
+    / coauthor 1,028,293，TABLE_ROWS 估数）
+  - 2026-08-31 精确 COUNT：人才 8 表各恰 20,000 行（样例）→ 全量范围未知
+  - DDL：dwd_rel_project_scholar / dwd_rel_report_scholar 注释「算法绑定后的学者ID」
+  - dwd_author_info 及 author_*_rel 族 08-03 探针为 0 行；dwd_zh_author/en_author/report_author 只有供应方 author_id 或姓名；专利发明人、项目主持人只有姓名
+  - TALENT-SUPPLIER-QUESTIONS（DATA-SUPPLIER-Q-TALENT-L01，2026-09-04 现行 7 题）：TALENT-P0-1 人才库主键稳定性、P0-2 领域码、P1-2 流动边、P1-3 分箱键、P1-4 机构码、P1-5 区划码均待供应方回复
+  - SYNTH-SUPPLIER-QUESTIONS：SYNTH-P2-1 rel_project_scholar.scholar_id 是否与人才库主键同一套；SYNTH-P0-3 DDL 无人才流动边
+  - lumen-* 未接入任何 dwd_scholar*；lumen-algo-py vendor/innov-py 仅有 mock ods_scholar
+  candidates:
+  - option: A 沿用三方 scholar_id 作人才主键（推荐草案）
+    pros: 已有履历/论文/合作/项目报告绑定，零重编码
+    cons: 主键稳定性依赖供应方；样例规模，全量未知；缺地理/领域/机构码需我方补维
+  - option: B 我方代理键 talent_id + scholar_id 映射
+    pros: 不受供应方 ID 变更影响
+    cons: 多一层映射；图谱/ES/ADS 均需改用代理键
+  - option: C 久新持有人才主数据（110 产出）、我方存映射
+    pros: 我方工作量小
+    cons: 主数据在对端，与入站数据不同源，违背 Java 只读 ADS 闭环
+id_alignment_draft:
+  scholar_id:
+    primary: dwd_scholar.scholar_id（varchar32）；Nebula 人才 VID = scholar_id（C04 定前缀）
+    strong_aux_keys:
+    - orc_id / ORCID（dwd_scholar.orc_id、dwd_author_info.orcid）
+    - email（dwd_zh_author / dwd_en_author）
+    - Scopus auid（dwd_author_info，当前 0 行）
+    versioning: 合并/拆分保留旧 ID → 新 ID 映射，快照按 version 回放（同 C02 规则）
+  person_disambiguation:
+    table: INT-C-TAL-072
+    steps:
+    - 强键直连：orc_id / email / auid 精确匹配
+    - 显式边优先：dwd_rel_project_scholar / dwd_rel_report_scholar（已绑定 scholar_id）
+    - 姓名规范化：中文全半角/空白，英文姓名 First/Last 顺序与缩写变体（name_zh / name_en）
+    - 姓名 + 机构归一后 org_id + 共现（DOI 论文共作、项目共参）打分合并
+    - 低置信度进人工复核（不自动合并）
+    sources:
+      zh_paper: dwd_zh_author.author_id
+      en_paper: dwd_en_author.author_id
+      zh_report: dwd_zh_report_author.author_id
+      en_report: dwd_en_report_author.authors_id
+      patent: dwd_patent.inventors.name + patent_id
+      project: dwd_zh_project.project_host / participants + id
+      executive: dwd_org_executive_info 姓名 + org_id
+    decision: 置信度阈值、是否允许跨语言自动合并 → decision_needed（OI-C01-05）
+  org_normalize:
+    rule: scholar_org_name_*（分号拼接多机构）/ work_experience.org_name_* / education.org_name_* → dwd_org_base_info.org_id（国外 dwd_forg_base_info）；规则与别名表归 C03
+    multi_org: 多机构任职时「当前所属机构」取 is_current=1 的履历段，仍多条时规则待定
+  geo: 人才无地理列：区域/深圳切片 = 机构 org_id → city/province/country → dim_code_region / dim_code_country（INT-C-TAL-026）
+  domain: 研究方向 fields 自由文本 → 共用 C02 技术领域维表（INT-C-TECH-181）的 domain_code；禁止用产业链 INB* 冒充（TALENT-P0-2）
+  jiuxin:
+    rule: 久新 SQL/脚本/API 入参出参统一 scholar_id / org_id / domain_code；若久新用自有人才 ID，须交映射表 jx_person_id→scholar_id，D03 按命中率对账（阈值待定）
+    status: 待确认（郭万迎主谈）
+  privacy: 人才为自然人：email、个人履历、头像属个人信息，入 ADS 与展示前需字段分级与脱敏（架构级初稿 §3），口径 decision_needed（OI-C01-08）
+metric_coverage:
+  scope_metrics: 32
+  covered: 26
+  no_source: 6
+  diff: []
+  binding_legend:
+    kit_declared: MCP kit.source_tables 点名（本域 32 条 kit 均 pending_ods，故无）
+    candidate: 本叶据口径推断的候选原料（未核验）
+    jiuxin_pending: 久新交付（51 行之一，全部待确认）
+    no_source: 无可识别源
+  items:
+  - metric_id: M_TALENT_ACADEMIC_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-049
+    binding: jiuxin_pending
+    note: 对照 seq 162 学术力
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_ATTRACT_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-051
+    binding: jiuxin_pending
+    note: 对照 seq 164 招入推荐
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_BASE_98_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-040
+    - INT-C-TAL-001
+    - INT-C-TAL-002
+    - INT-C-TAL-003
+    - INT-C-TAL-004
+    - INT-C-TAL-005
+    - INT-C-TAL-006
+    - INT-C-TAL-008
+    - INT-C-TAL-070
+    binding: jiuxin_pending
+    note: 久新交 SQL-98（STAT），在我方入站人才 8 表上跑；表名映射未给
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_CULTIVATE_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-052
+    binding: jiuxin_pending
+    note: 对照 seq 165 培育布局
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_DEEP_156_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-043
+    - INT-C-TAL-001
+    - INT-C-TAL-004
+    - INT-C-TAL-006
+    - INT-C-TAL-007
+    binding: jiuxin_pending
+    note: API-156；原料=学者指标（h_index/引用）+ 院士标记
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_157_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-044
+    - INT-C-TAL-002
+    - INT-C-TAL-071
+    - INT-C-TAL-024
+    - INT-C-TAL-025
+    - INT-C-TAL-026
+    binding: jiuxin_pending
+    note: API-157；流动边 DDL 无（SYNTH-P0-3），只能由任职履历派生（INT-C-TAL-071），地理需机构→区划
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_158_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-045
+    - INT-C-TAL-003
+    - INT-C-TAL-002
+    - INT-C-TAL-024
+    binding: jiuxin_pending
+    note: API-158；高校毕业→任职，教育背景无机构 ID
+    pages:
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_159_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-046
+    - INT-C-TAL-001
+    - INT-C-TAL-024
+    - INT-C-TAL-026
+    binding: jiuxin_pending
+    note: API-159；深圳切片须机构 city 归一
+    pages:
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_160_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-047
+    - INT-C-TAL-008
+    - INT-C-TAL-014
+    - INT-C-TAL-061
+    binding: jiuxin_pending
+    note: API-160；合作网 coauthor + 项目共参
+    pages:
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_161_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-048
+    - INT-C-TAL-001
+    - INT-C-TAL-003
+    binding: jiuxin_pending
+    note: API-161；供给侧有学者库，需求侧（岗位/招聘）三方库无源 → 见 OI-C01-07
+    pages:
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_162_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-049
+    - INT-C-TAL-006
+    - INT-C-TAL-007
+    - INT-C-TAL-001
+    binding: jiuxin_pending
+    note: API-162；展示 DS-08-VIZ-001 H 指数 / 004 活跃度同挂此行
+    pages:
+    - DS-01-FACTORS
+    - DS-08-VIZ
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_163_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-050
+    - INT-C-TAL-019
+    - INT-C-TAL-020
+    - INT-C-TAL-022
+    - INT-C-TAL-023
+    - INT-C-TAL-014
+    binding: jiuxin_pending
+    note: API-163；专利发明人/项目/高管只有姓名，须经 072 映射到 scholar_id
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_164_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-051
+    - INT-C-TAL-001
+    - INT-C-TAL-005
+    - INT-C-TAL-071
+    binding: jiuxin_pending
+    note: API-164；需人才领域码（TALENT-P0-2）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DEEP_165_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-052
+    - INT-C-TAL-003
+    - INT-C-TAL-005
+    - INT-C-TAL-024
+    binding: jiuxin_pending
+    note: API-165
+    pages:
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_005
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无语言/沟通行为数据 → 原料与生产方均未定
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_006
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无文化背景/适应数据 → 原料与生产方均未定
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_007
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无签证/出入境/国别政策数据 → 原料与生产方均未定
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_010
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无引进阻力因子数据 → 原料与生产方均未定
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_013
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无薪酬/安家/引才成本数据 → 原料与生产方均未定；DS-16 页 316 成本数据采集为 other_system
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_025
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: A2 missing、05 算法库无专叶；JIUXIN minutes 附录明确「不向久新索要假 API」；三方库 206 张 dwd_* 无团队组成数据 → 原料与生产方均未定；coauthor 只能给合作关系，不等于团队组合评估
+    pages:
+    - DS-16-TALENT-RECRUIT
+  - metric_id: M_TALENT_FLOW_TRACK
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-044
+    - INT-C-TAL-071
+    - INT-C-TAL-002
+    binding: jiuxin_pending
+    note: 对照 seq 157；流动边待派生
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_GRAPH_110_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-041
+    - INT-C-TAL-001
+    - INT-C-TAL-010
+    - INT-C-TAL-011
+    - INT-C-TAL-012
+    - INT-C-TAL-013
+    - INT-C-TAL-016
+    - INT-C-TAL-017
+    - INT-C-TAL-018
+    - INT-C-TAL-019
+    - INT-C-TAL-020
+    - INT-C-TAL-060
+    - INT-C-TAL-072
+    binding: jiuxin_pending
+    note: 久新 Python-110 人才实体识别/消歧：把论文作者、报告作者、发明人、项目主持人对齐到 scholar_id
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_GRAPH_111_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-042
+    - INT-C-TAL-002
+    - INT-C-TAL-006
+    - INT-C-TAL-008
+    - INT-C-TAL-014
+    - INT-C-TAL-015
+    - INT-C-TAL-061
+    binding: jiuxin_pending
+    note: 久新 Python-111 抽人才关系（合作/任职/项目/报告）→ Nebula
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+  - metric_id: M_TALENT_INDUSTRY_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-050
+    binding: jiuxin_pending
+    note: 对照 seq 163 产业力
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_ORG_DIST
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-043
+    - INT-C-TAL-001
+    - INT-C-TAL-002
+    - INT-C-TAL-024
+    binding: jiuxin_pending
+    note: 重点人才（156 产出）× 当前所属机构；scholar_org_id 为空，需名称归一（TALENT-P1-4）
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_REGIONAL_DIST
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-043
+    - INT-C-TAL-024
+    - INT-C-TAL-026
+    binding: jiuxin_pending
+    note: 重点人才 × 机构区划；学者表无地理列（TALENT-P1-5）
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_RELATION_NET
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-047
+    - INT-C-TAL-061
+    - INT-C-TAL-008
+    binding: jiuxin_pending
+    note: 对照 seq 160 关系链
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_STRUCT_QUERY
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-TAL-001
+    - INT-C-TAL-003
+    binding: candidate
+    note: 我方 STAT：查询结果集内按学历/职称/年龄分箱；学历取 education_background.degree，职称/年龄三方库无列（TALENT-P1-3），只能部分覆盖
+    pages:
+    - TOPIC-QUERY（当次查询结果集；口径禁止消费 DS-13～16）
+  - metric_id: M_TALENT_SUPPLY_STRUCT
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-048
+    - INT-C-TAL-003
+    - INT-C-TAL-001
+    binding: jiuxin_pending
+    note: 对照 seq 161；学历有 degree，职称/年龄无列（TALENT-P1-3）
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_SZ_STATUS
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-046
+    binding: jiuxin_pending
+    note: 对照 seq 159
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_SZ_SUPPLY_DEMAND
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-048
+    - INT-C-TAL-026
+    binding: jiuxin_pending
+    note: 对照 seq 161 深圳切片
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+  - metric_id: M_TALENT_UNIV_NEW
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TAL-045
+    - INT-C-TAL-003
+    binding: jiuxin_pending
+    note: 对照 seq 158
+    pages:
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+open_items:
+- id: OI-C01-01
+  item: 人才主数据持有方与 scholar_id 稳定性（TALENT-P0-1 / SYNTH-P2-1）；新建人才主档 / 人员 ID 映射 / 流动边三张结构
+  owner: human:李伟（结构）+ 供应方/久新
+  kind: structure_escalation + 供应方回复
+  blocking: P0
+- id: OI-C01-02
+  item: 人才要素库全量覆盖范围：08-31 各表恰 20,000 行为样例，10-10 已增长但全球/中国/深圳范围与目标规模未书面说明
+  owner: human:郭万迎 → 供应方
+  kind: 数据完整性
+  blocking: P0
+- id: OI-C01-03
+  item: 久新人才 15 行（SRS-98/110/111/156–165 + DS-08-VIZ-001/004）交付形态与数据底座（用我方入站 dwd_scholar 还是其自有人才库）
+  owner: human:郭万迎
+  kind: 对端确认
+  blocking: P0
+- id: OI-C01-04
+  item: 供应方人才 7 题未回：TALENT-P0-1/P0-2/P1-1/P1-2/P1-3/P1-4/P1-5（2026-09-04 现行，只引用不改）
+  owner: human:郭万迎（监管 DATA-SUPPLIER-Q-TALENT-L01）
+  kind: 供应方回复
+  blocking: P0
+- id: OI-C01-05
+  item: 人名消歧规则：置信度阈值、跨语言自动合并、人工复核流程；作者/发明人/主持人/高管归入 scholar_id 的口径
+  owner: PM → 甲方 / algorithm-agent
+  kind: decision_needed
+  blocking: P1
+- id: OI-C01-06
+  item: DS-16 六条 no_source（005/006/007/010/013/025）：库无专叶、三方无原料，是否保留功能、降级或由甲方提供数据
+  owner: PM → 甲方
+  kind: decision_needed（客户决策清单草案）
+  blocking: P1
+- id: OI-C01-07
+  item: 人才供需（161 / SUPPLY_STRUCT / SZ_SUPPLY_DEMAND）需求侧原料（岗位/招聘）三方库无源
+  owner: PM → 甲方 / 久新
+  kind: 源缺口
+  blocking: P1
+- id: OI-C01-08
+  item: 个人信息字段分级与脱敏（email/履历/头像；招入推荐涉海外人才）
+  owner: architect + PM → 甲方
+  kind: decision_needed
+  blocking: P1
+- id: OI-C01-09
+  item: 人才结构维缺列：性别/国籍/出生年/职称/学历层级（DS-13 257、STRUCT_QUERY、SUPPLY_STRUCT）
+  owner: 供应方（TALENT-P1-3）
+  kind: 源缺口
+  blocking: P1
+- id: OI-C01-10
+  item: 「人才」口径边界：企业高管（dwd_org/forg_executive_info）、论文作者、发明人是否计入人才库/分母
+  owner: PM → 甲方
+  kind: decision_needed
+  blocking: P1
+- id: OI-C01-11
+  item: 行数 unknown 需只读 COUNT：dwd_rel_project_scholar / dwd_rel_report_scholar / dwd_quantum_frontier_talent / dwd_author_info 族（08-03 为 0）/ dwd_zh_report_scholar 结构
+  owner: data-agent（下次快照）
+  kind: 核验
+  blocking: P2
+- id: OI-C01-12
+  item: 估数波动：paper_relation 08-19 approx 1,928,994 vs 10-10 887,927；coauthor 1,272,117 → 1,028,293；需精确 COUNT
+  owner: data-agent
+  kind: 核验
+  blocking: P2
+- id: OI-C01-13
+  item: 供应方各表更新频率未书面给出（默认 T+1 仅为草案）
+  owner: 供应方
+  kind: 供应方回复
+  blocking: P1
+- id: OI-C01-14
+  item: TRSGraph 现有人才顶点/边数量与 VID 规则（C04 交接）
+  owner: C04
+  kind: 交接
+  blocking: P1
+- id: OI-C01-15
+  item: H 指数排行（DS-08-VIZ-001）直接用 dwd_scholar.h_index（我方 STAT）还是久新 162 模型产出
+  owner: PM / human:郭万迎
+  kind: decision_needed
+  blocking: P2
+cards:
+- int_id: INT-C-TAL-001
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_156_1
+  - M_TALENT_DEEP_159_1
+  - M_TALENT_DEEP_161_1
+  - M_TALENT_DEEP_162_1
+  - M_TALENT_DEEP_164_1
+  - M_TALENT_GRAPH_110_1
+  - M_TALENT_ORG_DIST
+  - M_TALENT_STRUCT_QUERY
+  - M_TALENT_SUPPLY_STRUCT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id001
+    - id
+    - scholar_id
+    - name_zh
+    - name_en
+    - scholar_org_name_zh/en（多机构分号拼接）
+    - scholar_department_name_zh/en
+    - scholar_org_id
+    - orc_id
+    - bio / bio_zh
+    - paper_nums
+    - citation_nums
+    - reference_nums
+    - h_index
+    - status
+    - update_time
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar
+    table_cn: 人才要素库·学者基本信息
+    key_fields: *id001
+    primary_key: scholar_id（varchar32，业务唯一；物理 id 自增）
+    entity_align_key: 人才实体：scholar_id 为唯一业务 ID；辅助键 orc_id、name_zh/name_en；机构：scholar_org_id 暂为空串 → 只能用 scholar_org_name_* 名称归一到 org_id（C03）
+    coverage: unknown（学者库，含中外学者；全球/中国/深圳范围供应方未说明）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,933
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-08-VIZ
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-QUERY（当次查询结果集；口径禁止消费 DS-13～16）
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: lumen 未接入；lumen-algo-py vendor/innov-py 有 mock ods_scholar(scholar_id) 作 INNOV 图节点（mockgen，非本表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - 无性别/国籍/出生年/学历层级/职称列（DS-13 257 等需求的结构维缺）
+  - 无地理区划码、无人才领域码（TALENT-P0-2/P1-5）
+  - scholar_org_id 为空串，当前机构稳定码缺（TALENT-P1-4）
+  - scholar_id 稳定性（是否跨批次不变）未获书面确认（TALENT-P0-1 / SYNTH-P2-1）
+  conflicts:
+  - 2026-08-31 报告：库侧 69 列 vs Excel 20 列；09-11 摘要称多出业务列已消失，以 live 为准
+  decision_needed:
+  - 人才主数据是否以 dwd_scholar.scholar_id 为准（见 master_data_conclusion）
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：scholar_id 非空且唯一
+  - 对账：与 Excel 20 列字段集一致
+  - 覆盖：orc_id / scholar_org_name 非空率
+  confidence: high
+- int_id: INT-C-TAL-002
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_158_1
+  - M_TALENT_FLOW_TRACK
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_ORG_DIST
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_work_experience → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id002
+    - scholar_id
+    - seq_no
+    - start_time / end_time（YYYY 或 YYYY.MM）
+    - is_current
+    - org_name_zh/en
+    - department
+    - position_zh/en
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_work_experience
+    table_cn: 人才要素库·学者工作履历
+    key_fields: *id002
+    primary_key: (scholar_id, seq_no)
+    entity_align_key: 经 scholar_id；org_name_* 只有名称，需归一到 org_id 后才能派生机构/区域流动
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 56,295
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - 无机构 ID 与地理列
+  - 时间粒度混用 YYYY / YYYY.MM
+  conflicts: []
+  decision_needed:
+  - 人才流动是否以任职履历相邻两段的机构变更派生（口径待甲方确认）
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：同一 scholar_id 的 is_current 至多 1 条
+  - 对账：start_time ≤ end_time
+  confidence: high
+- int_id: INT-C-TAL-003
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_158_1
+  - M_TALENT_DEEP_161_1
+  - M_TALENT_DEEP_165_1
+  - M_TALENT_STRUCT_QUERY
+  - M_TALENT_SUPPLY_STRUCT
+  - M_TALENT_UNIV_NEW
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_education_background → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id003
+    - scholar_id
+    - seq_no
+    - start_time / end_time
+    - org_name_zh/en
+    - degree_zh/en
+    - major_zh/en
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_education_background
+    table_cn: 人才要素库·学者教育背景
+    key_fields: *id003
+    primary_key: (scholar_id, seq_no)
+    entity_align_key: 经 scholar_id；毕业院校名称需归一到高校 org_id
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 42,837
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-QUERY（当次查询结果集；口径禁止消费 DS-13～16）
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - degree 为自由文本，学历分箱需映射表（TALENT-P1-3）
+  - 无院校 ID
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: high
+- int_id: INT-C-TAL-004
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_156_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_talent_flag → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id004
+    - scholar_id
+    - academician（是否院士）
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_talent_flag
+    table_cn: 人才要素库·学者人才标记
+    key_fields: *id004
+    primary_key: scholar_id
+    entity_align_key: 经 scholar_id
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,400
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-15-TALENT-PROFILE
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - 只有院士标记，无杰青/长江/海外高层次等人才称号
+  - DS-13 264 荣誉为 other_system，非本表
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: high
+- int_id: INT-C-TAL-005
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_164_1
+  - M_TALENT_DEEP_165_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_research_direction → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id005
+    - scholar_id
+    - fields（longtext，中文分号分隔）
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_research_direction
+    table_cn: 人才要素库·学者研究方向
+    key_fields: *id005
+    primary_key: scholar_id（live 另有 id）
+    entity_align_key: fields 为自由文本，需归一到技术领域码（C02 INT-C-TECH-181）
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,466
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: C02 INT-C-TECH-119 记技术链用法；本卡为主卡
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - 非编码，领域码缺（TALENT-P0-2）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-006
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_156_1
+  - M_TALENT_DEEP_162_1
+  - M_TALENT_GRAPH_111_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_paper_relation → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id006
+    - scholar_id
+    - paper_id（→ dwd_scholar_papers.id）
+    - related_paper_id
+    - year
+    - citations
+    - publish_time
+    - publication_id
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_paper_relation
+    table_cn: 人才要素库·学者-论文关系
+    key_fields: *id006
+    primary_key: unknown（建议 (scholar_id, paper_id)）
+    entity_align_key: 学者↔论文显式边；学术力/活跃度原料
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 887,927
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-08-VIZ
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明（08-31 精确 20,000 → 10-10 估数 887,927）
+  conflicts:
+  - 08-19 探针 approx 1,928,994 vs 10-10 估数 887,927，估数波动大，需精确 COUNT
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-007
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_156_1
+  - M_TALENT_DEEP_162_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_papers → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id007
+    - id / paper_id
+    - zh_name
+    - en_name
+    - authors
+    - doi
+    - cover_date_start
+    - publication_en_name
+    - zh_abstract / en_abstract
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_papers
+    table_cn: 人才要素库·学者论文信息
+    key_fields: *id007
+    primary_key: id（paper_id）
+    entity_align_key: 与论文要素库 dwd_zh_paper / dwd_en_paper 无共同主键，只能 doi 对齐
+    coverage: 全球（学者库论文）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 597,513
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-08-VIZ
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    shared_with: C02 INT-C-TECH-118 记技术链用法；本卡为主卡
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - 与论文要素库可能重复计数
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-008
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_coauthor → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id008
+    - scholar_id
+    - co_scholar_id
+    - co_scholar_name
+    - co_scholar_org_name
+    - co_scholar_org_id（空）
+    - co_paper_count
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_coauthor
+    table_cn: 人才要素库·学者合作者
+    key_fields: *id008
+    primary_key: (scholar_id, co_scholar_id)
+    entity_align_key: 学者↔学者合作边；co_scholar_id 是否全部落在 dwd_scholar 内未知
+    coverage: 随 dwd_scholar
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,028,293
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 2026-08-31 精确 COUNT 时人才 8 表各恰 20,000 行（样例），10-10 估数虽已增长，全量覆盖范围（全球/中国/深圳）供应方未书面说明
+  - co_scholar_org_id 为空
+  - co_scholar_id 在 dwd_scholar 中的命中率未核（悬挂边风险）
+  conflicts:
+  - 行数 1,272,117（上次估数）→ 1,028,293（10-10 估数）
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：co_scholar_id ∈ dwd_scholar.scholar_id 命中率
+  confidence: medium
+- int_id: INT-C-TAL-010
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_author → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id009
+    - paper_id
+    - author_sequence
+    - author_id（varchar32）
+    - zh_name（覆盖 97.82%）
+    - en_name
+    - email
+    - correspond
+    - institution
+    - affiliation（json）
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_author
+    table_cn: 中文论文要素库·作者信息
+    key_fields: *id009
+    primary_key: (paper_id, author_sequence)；author_id 为供应方作者 ID
+    entity_align_key: author_id 与 scholar_id 是否同一套未知；email / 姓名+机构可作消歧辅助键
+    coverage: 中国（中文期刊）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 63,260
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - author_id 与 scholar_id 映射缺（TALENT-P0-1）
+  conflicts: []
+  decision_needed:
+  - author_id 是否承诺与 scholar_id 同一 ID 空间
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-011
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_author → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id010
+    - paper_id
+    - author_sequence
+    - author_id
+    - en_name
+    - email
+    - institution
+    - affiliation（json）
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_author
+    table_cn: 外文论文要素库·作者信息
+    key_fields: *id010
+    primary_key: (paper_id, author_sequence)
+    entity_align_key: 同 INT-C-TAL-010
+    coverage: 全球（外文）——量极小
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,367
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 10-10 首次计数仅 1,367 行，与英文论文 1,356 行同量级
+  - author_id 与 scholar_id 映射缺
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-012
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_author_info + dwd_author_*_rel 族 → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id011
+    - auid
+    - orcid
+    - 姓名变体
+    - asjc 学科码
+    - current_affiliations
+    - author_id ↔ paper/project/report/global_patent/org_base_info/foreign_org_base_info
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_author_info + dwd_author_*_rel 族
+    table_cn: 作者主表（Scopus 风格）及作者-论文/项目/报告/专利/机构关联
+    key_fields: *id011
+    primary_key: auid（dwd_author_info）；rel 表 (author_id, 目标 id)
+    entity_align_key: auid / orcid 可作跨库消歧强键；若有数据，author_*_rel 是人才↔机构/专利的显式边
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: '0'
+      as_of: '2026-08-03'
+      ref: data/third-party-source/gkx-mysql-raw/_live_dwd_enterprise_probe_2026-08-03.json（approx_rows）：dwd_author_info 与 author_* rel 各表均为 0；结构见 data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（DDL
+        沙箱 2026-07-15）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 当前 0 行，不可用；供应方是否计划灌数未知
+  - 10-10 行数报告未覆盖本族，需只读 COUNT 复核
+  conflicts: []
+  decision_needed:
+  - 若供应方灌数，auid/orcid 是否作为 scholar 对齐强键
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-013
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_author_affiliation → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id012
+    - auid
+    - affiliation_id
+    - city
+    - state
+    - country
+    - country_tag
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_author_affiliation
+    table_cn: 作者-机构归属（含地理）
+    key_fields: *id012
+    primary_key: (auid, affiliation_id)
+    entity_align_key: 唯一带 city/country 的人员归属表；auid→scholar_id 映射缺
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,619
+      as_of: '2026-08-10'
+      ref: data/third-party-source/gkx-mysql-raw/_live_dwd_enterprise_probe_2026-08-10.json（approx_rows）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 行数小且为 08-10 探针 approx；auid 体系与 scholar_id 无对应
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-014
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_DEEP_163_1
+  - M_TALENT_GRAPH_111_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_rel_project_scholar → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id013
+    - project_source
+    - project_id
+    - scholar_id
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_rel_project_scholar
+    table_cn: 项目-学者关联（算法绑定后的学者 ID）
+    key_fields: *id013
+    primary_key: pk_id
+    entity_align_key: DDL 注释「算法绑定后的学者ID」→ 直接是 scholar_id，项目主持/参与人已消歧
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告与 08 月探针覆盖内；结构见 data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（DDL 沙箱 2026-07-15） 与 data/third-party-source/gkx-mysql-raw/SOURCE-TABLES.md
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 行数 unknown，需只读 COUNT
+  - 「算法绑定」由谁执行、口径未知（SYNTH-P2-1）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-015
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_GRAPH_111_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_rel_report_scholar → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id014
+    - report_source
+    - report_id
+    - scholar_id
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_rel_report_scholar
+    table_cn: 报告-学者关联（算法绑定后的学者 ID）
+    key_fields: *id014
+    primary_key: pk_id
+    entity_align_key: 同 INT-C-TAL-014
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告与 08 月探针覆盖内；结构见 data/third-party-source/gkx-mysql-raw/gkx_schema_ddl.sql（DDL 沙箱 2026-07-15）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 行数 unknown，需只读 COUNT
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-016
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_report_scholar → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id015
+    - report_id
+    - scholar_id / 作者姓名（结构本叶未逐列核）
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_report_scholar
+    table_cn: 中文报告-学者关联
+    key_fields: *id015
+    primary_key: unknown
+    entity_align_key: 报告作者→学者
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,956
+      as_of: '2026-08-10'
+      ref: data/third-party-source/gkx-mysql-raw/_live_dwd_enterprise_probe_2026-08-10.json（approx_rows）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 结构未逐列核实；与 dwd_rel_report_scholar 是否重复未知
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-017
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_report_author → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id016
+    - report_id
+    - author_id
+    - author_name
+    - author_unit
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_report_author
+    table_cn: 中文报告要素库·作者
+    key_fields: *id016
+    primary_key: unknown
+    entity_align_key: author_id 与 scholar_id 映射缺；author_unit 名称需机构归一
+    coverage: 中国（国自然与部分智库）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 4,092
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 作者覆盖率 0.55，仅国自然与部分智库报告有作者
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-018
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_report_author → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id017
+    - report_id
+    - authors_id
+    - authors_name
+    - authors_unit
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_report_author
+    table_cn: 外文报告要素库·作者
+    key_fields: *id017
+    primary_key: unknown
+    entity_align_key: 同 INT-C-TAL-017
+    coverage: 全球（外文）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 18,961
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - authors_id 与 scholar_id 映射缺
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-019
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_DEEP_163_1
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent（inventors 列） → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id018
+    - patent_id
+    - inventors.sequence
+    - inventors.name
+    - first_inventor_name
+    - applicants
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent（inventors 列）
+    table_cn: 全球专利要素库·专利发明人
+    key_fields: *id018
+    primary_key: patent_id
+    entity_align_key: 只有姓名、无人员 ID：须经人名消歧（姓名中英变体 + 机构归一 + 共现）对齐到 scholar_id（INT-C-TAL-072）
+    coverage: 全球
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 2,690,167
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: C02 INT-C-TECH-100 为主卡；本卡只记发明人用法
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 发明人无 ID，消歧成本高、误合并风险大
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-020
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_DEEP_163_1
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_project（project_host / participants） → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id019
+    - id
+    - project_host
+    - participants（json 姓名）
+    - funded_institution
+    - funded_province
+    - discipline_code
+    - approval_year
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_project（project_host / participants）
+    table_cn: 国内项目要素库·项目主持人/参与人
+    key_fields: *id019
+    primary_key: pk_id（业务 id）
+    entity_align_key: 只有姓名、无人员 ID：须经人名消歧（姓名中英变体 + 机构归一 + 共现）对齐到 scholar_id（INT-C-TAL-072）；若 dwd_rel_project_scholar 有数据优先用显式边
+    coverage: 中国（funded_province 省级）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 46,455
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: C02 INT-C-TECH-120 为主卡；本卡只记人员用法
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-021
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_quantum_frontier_talent → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id020
+    - person_name
+    - organization_name
+    - research_direction
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_quantum_frontier_talent
+    table_cn: 量子专题·前沿人才
+    key_fields: *id020
+    primary_key: unknown（无稳定人员 ID）
+    entity_align_key: 只有姓名+机构名
+    coverage: 量子专题切片
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: data/third-party-source/gkx-mysql-raw/SOURCE-TABLES.md 有此表；10-10 报告对应 ods_quantum_frontier_talent 为「库中无此表」
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4: null
+  gaps:
+  - dwd 行数 unknown；ods 侧库中无表
+  - 领域切片，不可作全域人才主数据
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-022
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_163_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_executive_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id021
+    - org_id
+    - 高管姓名
+    - 职务
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_executive_info
+    table_cn: 国内机构要素库·高管信息
+    key_fields: *id021
+    primary_key: unknown（本叶未逐列核）
+    entity_align_key: 只有姓名、无人员 ID：须经人名消歧（姓名中英变体 + 机构归一 + 共现）对齐到 scholar_id（INT-C-TAL-072）；org_id 现成
+    coverage: 中国（企业/机构高管）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 385,630
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 高管是否计入「人才」口径未定（企业不算 ORG，但人员维边界未定）
+  conflicts: []
+  decision_needed:
+  - 企业高管是否纳入人才产业力/人才库口径
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-023
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_163_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_forg_executive_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id022
+    - org_id
+    - 高管姓名
+    - 职务
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_forg_executive_info
+    table_cn: 国外机构要素库·高管信息
+    key_fields: *id022
+    primary_key: unknown
+    entity_align_key: 同 INT-C-TAL-022
+    coverage: 全球（国外机构）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,920
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 同 INT-C-TAL-022
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-024
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_158_1
+  - M_TALENT_DEEP_159_1
+  - M_TALENT_DEEP_165_1
+  - M_TALENT_ORG_DIST
+  - M_TALENT_REGIONAL_DIST
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_base_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id023
+    - org_id
+    - name_cn
+    - external_id（统一社会信用代码）
+    - city
+    - province
+    - reg_status
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_base_info
+    table_cn: 国内机构要素库·机构基本信息（人才所属机构归一 + 深圳切片）
+    key_fields: *id023
+    primary_key: org_id
+    entity_align_key: scholar_org_name / work_experience.org_name / education.org_name → org_id（归一规则归 C03）；city/province 提供区域/深圳切片
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 192,464
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: C03 主卡；本卡只记人才用法
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 高校/科研院所在本表的覆盖率未核
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-025
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_forg_base_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id024
+    - org_id
+    - name_en
+    - country
+    granularity:
+      time: year（履历 start/end、论文 year）
+      geo: 经机构归属：country / province / city（深圳切片）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_forg_base_info
+    table_cn: 国外机构要素库·机构基本信息（海外任职/流入流出）
+    key_fields: *id024
+    primary_key: org_id
+    entity_align_key: 海外机构名称归一
+    coverage: 全球（国外）
+    update_freq: unknown（供应方未书面给出；多次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,549
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: C03 主卡
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-etl-es-py / lumen-svc-platform / lumen-ui-science-pc 未引用 dwd_scholar*）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-026
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_159_1
+  - M_TALENT_REGIONAL_DIST
+  - M_TALENT_SZ_SUPPLY_DEMAND
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表或我方维表）
+  contract_draft:
+    request: []
+    response_key_fields: &id025
+    - region_code
+    - region_name
+    - parent_code
+    - level
+    - country_code
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: 版本化，低频
+  data_source:
+    source_system: 我方项目维表（ddl/，非三方库）
+    table: dim_code_region / dim_code_country / dim_region_scope(_g20)
+    table_cn: 地理区划与国家维表
+    key_fields: *id025
+    primary_key: region_code / country_code
+    entity_align_key: 机构 city/province/country → 区划码；人才区域分布/流动经机构二跳
+    coverage: 中国区划 + 国家
+    update_freq: 版本化，低频
+    rows:
+      value: unknown
+      as_of: null
+      ref: agent-delivery/data/ddl/（仅 DDL，本叶未查行数）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: C03 共用
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 人才本身无地理码，只能经机构归属推（TALENT-P1-5）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 多机构任职时区域归属规则未定
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TAL-040
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id:
+  - SRS-98
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 SQL（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id026
+    - scholar_id / 分组键
+    - talent_cnt
+    - share
+    - rank
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: T+1（由我方调度，草案）
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 SQL-98 人才基础指标模型
+    table_cn: 久新 SQL-98 人才基础指标模型
+    key_fields: *id026
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: T+1（由我方调度，草案）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: 人才计数/占比/排名
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - SQL 须能在我方入站 dwd_scholar* / 项目 DWD 上运行；表名映射未给
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-041
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - scholar_id
+  - name_variants
+  - org_id
+  - source_person_refs（author_id/auid/inventor/host）
+  - confidence
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-110
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 Python（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id027
+    - data
+    - algorithm
+    - graph
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: offline（离线 Job，频率待定）
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 Python-110 人才实体识别产出（人才实体集 + 消歧映射）
+    table_cn: 久新 Python-110 人才实体识别产出（人才实体集 + 消歧映射）
+    key_fields: *id027
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: offline（离线 Job，频率待定）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: 人才主数据底稿 / 作者→scholar_id 映射候选生产者
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 脚本输入/依赖未知；须并入 lumen-algo-py 离线 Job，依赖不得超出仓栈
+  conflicts: []
+  decision_needed:
+  - 110 消歧产出是否作为我方人才 ID 映射表（INT-C-TAL-072）的正式来源
+  structure_escalation: true
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-042
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  - graph
+  metric_ids:
+  - M_TALENT_GRAPH_111_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-111
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 Python（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id028
+    - src_scholar_id
+    - dst_id
+    - dst_type
+    - rel_type
+    - weight
+    - evidence
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: offline
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 Python-111 人才关系抽取产出（合作/任职/项目/报告边）
+    table_cn: 久新 Python-111 人才关系抽取产出（合作/任职/项目/报告边）
+    key_fields: *id028
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: offline
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: 人才图谱边
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 关系类型枚举未知；写 Nebula 的 edge 清单归 C04
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-043
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_156_1
+  - M_TALENT_ORG_DIST
+  - M_TALENT_REGIONAL_DIST
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-156
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id029
+    - scholar_id
+    - is_key
+    - score
+    - reasons
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-156 重点人才识别结果集
+    table_cn: 久新 API-156 重点人才识别结果集
+    key_fields: *id029
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 重点人才名单（ORG_DIST / REGIONAL_DIST 的分母口径）
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed:
+  - 「重点人才」判定口径（Q-MO-TALENT-01 相关）
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-044
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_FLOW_TRACK
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-157
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id030
+    - scholar_id
+    - from_org_id
+    - to_org_id
+    - from_region
+    - to_region
+    - year
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-157 人才流动追踪结果集
+    table_cn: 久新 API-157 人才流动追踪结果集
+    key_fields: *id030
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 流动轨迹/流入流出
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 三方库无流动边（TALENT-P1-2 / SYNTH-P0-3）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-045
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_158_1
+  - M_TALENT_UNIV_NEW
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-158
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id031
+    - univ_org_id
+    - college
+    - new_talent_cnt
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-158 高校学院新培育人才结果集
+    table_cn: 久新 API-158 高校学院新培育人才结果集
+    key_fields: *id031
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 高校/学院维新培育人才
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-046
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_159_1
+  - M_TALENT_SZ_STATUS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-159
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id032
+    - domain_code
+    - strength / weakness
+    - score
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-159 深圳重点人才优势短板结果集
+    table_cn: 久新 API-159 深圳重点人才优势短板结果集
+    key_fields: *id032
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 深圳优势/短板
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 依赖人才领域码（TALENT-P0-2）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-047
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  - graph
+  metric_ids:
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-160
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id033
+    - scholar_id
+    - nodes[]
+    - edges[]
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-160 人才关系链结果集
+    table_cn: 久新 API-160 人才关系链结果集
+    key_fields: *id033
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 关系链子图
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-048
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_161_1
+  - M_TALENT_SUPPLY_STRUCT
+  - M_TALENT_SZ_SUPPLY_DEMAND
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-161
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id034
+    - domain_code
+    - region_code
+    - supply
+    - demand
+    - gap
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-161 人才供需分析评价结果集
+    table_cn: 久新 API-161 人才供需分析评价结果集
+    key_fields: *id034
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 供给/需求/缺口
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 需求侧原料（岗位/招聘）三方库无
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-049
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - metric
+  - data
+  metric_ids:
+  - M_TALENT_ACADEMIC_SCORE
+  - M_TALENT_DEEP_162_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-162
+  - DS-08-VIZ-001
+  - DS-08-VIZ-004
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id035
+    - scholar_id
+    - academic_score
+    - h_index
+    - activity
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-162 人才学术力评估结果集（含展示 DS-08-VIZ-001/004）
+    table_cn: 久新 API-162 人才学术力评估结果集（含展示 DS-08-VIZ-001/004）
+    key_fields: *id035
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-01-FACTORS
+    - DS-08-VIZ
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 学术力 / H 指数排行 / 活跃度
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed:
+  - H 指数直接取 dwd_scholar.h_index（我方 STAT）还是久新模型产出
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-050
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_DEEP_163_1
+  - M_TALENT_INDUSTRY_SCORE
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-163
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id036
+    - scholar_id
+    - industry_score
+    - dims
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-163 人才产业力评估结果集
+    table_cn: 久新 API-163 人才产业力评估结果集
+    key_fields: *id036
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-15-TALENT-PROFILE
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 产业力
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-051
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_ATTRACT_SCORE
+  - M_TALENT_DEEP_164_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-164
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id037
+    - scholar_id
+    - recommend_rank
+    - reasons
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-164 招入人才推荐结果集
+    table_cn: 久新 API-164 招入人才推荐结果集
+    key_fields: *id037
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 招入推荐名单
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  - 推荐对象含海外人才，涉及个人信息出境/展示的脱敏口径未定
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-052
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TALENT_CULTIVATE_SCORE
+  - M_TALENT_DEEP_165_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-165
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/talent/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - scholar_id
+    - org_id
+    - region_code
+    - domain_code
+    - time_range
+    - as_of
+    response_key_fields: &id038
+    - domain_code
+    - org_id
+    - layout_score
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-165 培育人才布局结果集
+    table_cn: 久新 API-165 培育人才布局结果集
+    key_fields: *id038
+    primary_key: unknown（建议 scholar_id + as_of + version）
+    entity_align_key: 入参/出参须用 scholar_id；若用久新自有人才 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: 培育布局
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认；minutes 2026-08-24 会前清单，尚未开会）
+  - 返回人才 ID 是否为 scholar_id 未知（见 id_alignment_draft.jiuxin）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有人才库计算，结果与我方入站 dwd_scholar 不同源，下钻/对账断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-060
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - graph
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - graph_load
+  counterpart: trsgraph
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: Nebula TRSGraph space（C04 定）
+  contract_draft:
+    request: []
+    response_key_fields: &id039
+    - vid
+    - name
+    - org
+    - props
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: trsgraph（NebulaGraph TRSGraph graphd 10.50.75.136:9669）
+    table: TAG scholar / person（人才顶点）
+    table_cn: Nebula 人才顶点
+    key_fields: *id039
+    primary_key: VID 规则 unknown（SYNTH 协同图草案用 scholar_id）
+    entity_align_key: VID 须为稳定 scholar_id
+    coverage: unknown
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 本叶未连 Nebula；live 点数由 C04 核
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - live 是否已有人才顶点、数量与 VID 规则 unknown（C04）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 若用姓名作 VID，同名合并错误会污染关系链
+  test_points:
+  - 图谱一致性：人才顶点数 = 人才主档行数
+  confidence: low
+- int_id: INT-C-TAL-061
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - graph
+  metric_ids:
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - graph_load
+  counterpart: trsgraph
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: Nebula TRSGraph space（C04 定）
+  contract_draft:
+    request: []
+    response_key_fields: &id040
+    - src_vid
+    - dst_vid
+    - rel_type
+    - weight
+    - start_year / end_year
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: trsgraph（NebulaGraph TRSGraph）
+    table: 人才相关 EDGE（合作 / 任职 / 毕业 / 项目共参 / 流动）
+    table_cn: Nebula 人才边
+    key_fields: *id040
+    primary_key: (src, dst, rank)
+    entity_align_key: 端点 scholar_id / org_id
+    coverage: unknown
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 本叶未连 Nebula；C04 核
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 边类型清单未在 schema 落地
+  - 机构端点依赖 C03 org_id 归一
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TAL-070
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表或我方维表）
+  contract_draft:
+    request: []
+    response_key_fields: &id041
+    - scholar_id
+    - name_zh
+    - name_en
+    - orc_id
+    - current_org_id
+    - region_code
+    - domain_code[]
+    - degree_level
+    - title_level
+    - is_key
+    - version
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: T+1（随入站，草案）
+  data_source:
+    source_system: 我方项目自建（待建）
+    table: 人才主档（建议 dwd/ads talent_master，名待定）
+    table_cn: 人才主数据
+    key_fields: *id041
+    primary_key: scholar_id（沿用三方 scholar_id；稳定性待确认）
+    entity_align_key: 全部人才维数据的对齐锚点；Nebula VID 用 scholar_id
+    coverage: 随 dwd_scholar
+    update_freq: T+1（随入站，草案）
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: 本叶检索 data/、ddl/、lumen-etl-es-py、lumen-svc-platform 均无人才表
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 表不存在
+  - region/domain/学历/职称维须补齐（三方库无列）
+  conflicts: []
+  decision_needed:
+  - 人才主数据持有方（三方 scholar_id 直用 / 我方代理键 / 久新）
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 契约：scholar_id 唯一；current_org_id 命中 org 主数据率
+  confidence: medium
+- int_id: INT-C-TAL-071
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_164_1
+  - M_TALENT_FLOW_TRACK
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表或我方维表）
+  contract_draft:
+    request: []
+    response_key_fields: &id042
+    - scholar_id
+    - from_org_id
+    - to_org_id
+    - from_region_code
+    - to_region_code
+    - move_year
+    - method（work_exp_diff|jx157）
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: T+1（草案）
+  data_source:
+    source_system: 我方项目自建（待建，派生）
+    table: 人才流动/任职变迁边表（建议 dwd talent_flow，名待定）
+    table_cn: 人才流动边
+    key_fields: *id042
+    primary_key: (scholar_id, move_year, from_org_id, to_org_id)
+    entity_align_key: 由 work_experience 相邻段机构变更派生，机构经 C03 归一、区划经 026
+    coverage: 随 dwd_scholar
+    update_freq: T+1（草案）
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: 三方 DDL 无流动边（SYNTH-P0-3 / TALENT-P1-2）
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-14-TALENT-REGION
+    - DS-16-TALENT-RECRUIT
+    - DS-26-ECO
+    - TOPIC-TALENT-05
+    - TOPIC-TALENT（模块级；MCP srs_refs 无 page_id）
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 表不存在
+  - 履历时间粒度混用
+  conflicts: []
+  decision_needed:
+  - 流动口径：机构变更 / 城市变更 / 国别变更
+  structure_escalation: true
+  risks:
+  - 机构名归一失败会产生伪流动
+  test_points:
+  - 对账：派生流动数 vs 久新 157 产出抽样
+  confidence: medium
+- int_id: INT-C-TAL-072
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表或我方维表）
+  contract_draft:
+    request: []
+    response_key_fields: &id043
+    - src_system
+    - src_person_key（author_id|auid|inventor_name+patent_id|project_host+project_id|exec_name+org_id）
+    - scholar_id
+    - method
+    - confidence
+    - version
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: 随 110 Job
+  data_source:
+    source_system: 我方项目自建（待建）
+    table: 人员 ID 映射表（建议 dwd person_id_map，名待定）
+    table_cn: 次级人员源 → scholar_id 映射
+    key_fields: *id043
+    primary_key: (src_system, src_person_key, version)
+    entity_align_key: 人名消歧结果落表；来源=久新 110 或我方 Python 规则
+    coverage: 随各次级源
+    update_freq: 随 110 Job
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: 同 INT-C-TAL-070
+    pages:
+    - DS-13-TALENT-GLOBAL
+    - DS-15-TALENT-PROFILE
+    - DS-16-TALENT-RECRUIT
+    - TOPIC-TALENT-05
+    shared_with: null
+  status:
+    demo: demo-* 人才页（DS-13～16 / 专题人才）为 Mock，未以 dwd_scholar* 接入（未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 表不存在
+  conflicts: []
+  decision_needed:
+  - 消歧置信度阈值与人工复核流程
+  structure_escalation: true
+  risks:
+  - 同名异人误合并（中文姓名高频）
+  test_points:
+  - 对账：已知 scholar（rel_project_scholar 显式边）回测命中率
+  confidence: medium

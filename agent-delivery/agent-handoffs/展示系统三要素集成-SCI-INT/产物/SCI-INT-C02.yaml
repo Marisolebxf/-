@@ -1,0 +1,4718 @@
+task_id: SCI-INT-C02
+layer: data
+element: TECH（技术链 / 技术点）
+generated_by: 产物/_work/C02-build.py
+as_of: '2026-10-18'
+note: 对端正名「久新」；引用旧路径 metrics/request/九新-技术机构人才/ 保留原名。指标 8 件套/D1–D4 取自 MCP metric-registry（metric-query domain=TECH fields=full，2026-10-18）；行数引用仓内快照，未连库。data_source 为本叶对 §2 schema 的扩展块（派单要求的源系统/主键/覆盖/频率/行数）。
+scope_count: 56
+card_count: 56
+gap: []
+master_data_conclusion:
+  conclusion: 当前没有任何一方持有技术点（technology）实体主数据：甲方三方库 gkx 无技术点表与稳定码，TRSGraph technology 顶点 VID 是名称，久新 104 产出未确认。草案建议由我方项目自建「技术点主表 + 技术领域维表」作为主数据（INT-C-TECH-180/181），内容底稿由久新 Python-104（并入 lumen-algo-py 离线 Job）在我方入站文献上抽取，人工维护经全景维护页写回；久新
+    API 一律以我方 technology_id / domain_code 交互。
+  status: decision_needed（待甲方 / 久新确认，structure_escalation → human:李伟）
+  evidence:
+  - SOURCE-TABLES.md 206 张活跃 dwd_* 无技术点/技术主题主表；TECH-SUPPLIER-QUESTIONS TECH-P0-1/P0-2（2026-09-04）待回复
+  - 唯一含 technology_name 的 dwd_quantum_tech_trend 是量子专题切片、行数 unknown，不可作全域主数据（INT-C-TECH-134）
+  - dwd_org_tech_tag 为机构资质标签、dwd_industry_code / dwd_org_industry_chain_pat_dtl 为产业链环节，均不是技术点（INT-C-TECH-130/136/139）
+  - 技术分类信号只在文献属性：专利 main/further_classification_ipcr/cpc + keywords；论文 scope/scope_zone/keywords；项目 discipline_code/keywords；学者 fields；报告 keywords_cn
+  - data-design/storage/ENT/etl/pipeline-to-nebula.md：TAG technology、VID tech:{名称}、「无专题库技术 ID」「无稳定技术点不上图」
+  - JIUXIN-TECH-ORG-TALENT-L01：SRS-104/105 Python 待确认；jx-tech-topic 两仓 2026-10-15 为空模板（只有 README），无法判断久新数据底座
+  - lumen-algo-py / lumen-etl-es-py / lumen-svc-platform 均无 technology_id
+  candidates:
+  - option: A 我方自建主表（推荐草案）
+    pros: ID 稳定、可审计、与 Nebula/ES/ADS 同源
+    cons: 需新表 + 维表 + 归一流程（结构升级）
+  - option: B 久新持有主数据、我方存映射
+    pros: 我方工作量小
+    cons: 主数据在对端，命中率与变更不可控；违背 Java 只读 ADS 的数据闭环
+  - option: C 以 IPC 分类号直接充当技术点
+    pros: 零建设
+    cons: 粒度是分类不是技术点；论文/项目无 IPC；与 SRS「技术点网」语义不符
+id_alignment_draft:
+  technology_id:
+    format_draft: 我方代理键（如 TECH-{domain_code}-{6 位序号} 或 UUID，待定）；Nebula VID = tech:{technology_id}，替换现行 tech:{名称}
+    normalize:
+    - 名称规范化：全半角/大小写/空白/标点
+    - 别名表 aliases（中/英/缩写）并组
+    - IPC 锚点 + 文本相似度候选合并（Python）
+    - 人工确认经全景维护页写回（A03 写回链路）
+    versioning: 合并/拆分保留旧 ID → 新 ID 映射（redirect），图谱与快照按 version 回放
+  domain_code:
+    draft: 以 IPC 小类（如 H01L）为一级锚点，论文 scope/scope_zone、项目 discipline_code 经映射表挂到同一 domain_code；编码与久新共用
+    forbidden: 禁止用产业链 INB* / dwd_industry_code 环节码冒充
+    decision: 分类体系选型待甲方拍板（OI-C02-02）
+  doc_bridge:
+    table: INT-C-TECH-182
+    doc_keys:
+      patent: dwd_patent.patent_id（同族去重用 dwd_patent_family.simple_family）
+      zh_paper: dwd_zh_paper.id
+      en_paper: dwd_en_paper.id
+      scholar_paper: dwd_scholar_papers.paper_id（与论文库按 doi 去重）
+      project: dwd_zh_project.id / dwd_en_project.项目索引
+      report: dwd_zh_report.report_id
+    methods:
+    - ipc 规则（专利）
+    - keyword 匹配（论文/项目/报告）
+    - ner（久新 104 产出）
+  org_talent:
+    org: 专利申请人/项目承担单位只有名称 → dwd_org_base_info.org_id（国外 dwd_forg_base_info）；若 dwd_org_base_info_patent_rel 有数据优先用显式边；归一规则由 C03 定
+    talent: 学者研究方向 fields、学者论文 → scholar_id；人名消歧由 C01 定
+    geo: 深圳切片 = 机构 city/province（dwd_org_base_info）；中文论文无机构地理，需作者-机构关联（C01/C03）
+  jiuxin:
+    rule: 久新 API 入参/出参使用我方 technology_id / domain_code；若久新用自有 ID，须交映射表 jx_tech_id→technology_id，D03 按命中率对账（阈值待定）
+    status: 待确认（郭万迎主谈）
+metric_coverage:
+  scope_metrics: 39
+  covered: 38
+  no_source: 1
+  diff: []
+  binding_legend:
+    kit_declared: MCP kit.source_tables 点名
+    candidate: 本叶据口径推断的候选原料（kit 仍 pending_ods，未核验）
+    jiuxin_pending: 久新交付（51 行之一，全部待确认）
+    no_source: 无可识别源
+  items:
+  - metric_id: M_TECH_BASE_96_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-150
+    - INT-C-TECH-100
+    - INT-C-TECH-107
+    - INT-C-TECH-113
+    - INT-C-TECH-118
+    - INT-C-TECH-182
+    binding: jiuxin_pending
+    note: 久新交 SQL-96，在我方库跑；原料=论文/专利计数，须经技术点桥接
+    pages:
+    - DS-01-FACTORS
+    - DS-02-ENTITY
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_COMPOSITE_SCORE
+    algorithm_type: third_party
+    source_cards: no_source
+    binding: no_source
+    note: 口径写明只读 ADS 已落库字段、分项与权重未冻、不抄 seq 182–191；不在久新 51 行，也无我方 owner → 生产方与原料均未定
+    pages:
+    - DS-03-RESULT
+    - DS-07-*
+  - metric_id: M_TECH_CONVERT_BOTTLENECK
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-158
+    binding: jiuxin_pending
+    note: seq 136 G3 Job 结果
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_130_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-153
+    - INT-C-TECH-151
+    - INT-C-TECH-152
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    binding: jiuxin_pending
+    note: API-130 结果；输入依赖技术点实体与关系
+    pages:
+    - DS-02-TECHGRAPH
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_131_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-153
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: API-131；深圳切片需机构地理
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_132_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-154
+    binding: jiuxin_pending
+    note: API-132；专题 TOPIC-TECH-015 产品走 CMS
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_133_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-155
+    - INT-C-TECH-181
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: API-133；需技术领域码（TECH-P0-2）
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_134_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-156
+    - INT-C-TECH-181
+    binding: jiuxin_pending
+    note: API-134；需技术领域码
+    pages:
+    - DS-03-RESULT
+    - DS-07-SCI-CREATE
+    - DS-09-COMPREHENSIVE
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_135_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-157
+    binding: jiuxin_pending
+    note: API-135
+    pages:
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_136_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-158
+    binding: jiuxin_pending
+    note: API-136
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_137_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-159
+    binding: jiuxin_pending
+    note: API-137
+    pages:
+    - DS-03-RESULT
+    - DS-07-INDUSTRY-POTENTIAL
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_138_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-160
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: API-138；深圳切片
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_139_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-160
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: API-139；深圳切片
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DEEP_140_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-155
+    - INT-C-TECH-181
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: API-140；需技术领域码
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_DS_07_TECH_INNOV_002
+    algorithm_type: MODEL
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-101
+    - INT-C-TECH-102
+    - INT-C-TECH-128
+    binding: kit_declared
+    note: kit：dwd_patent / _cited / _legal / dwd_org_base_info
+    pages:
+    - DS-07-TECH-INNOV
+  - metric_id: M_TECH_DS_07_TECH_INNOV_004
+    algorithm_type: MODEL
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-101
+    - INT-C-TECH-102
+    - INT-C-TECH-103
+    - INT-C-TECH-128
+    binding: kit_declared
+    note: kit：dwd_patent / _cited / _legal / _transfer / dwd_org_base_info
+    pages:
+    - DS-07-TECH-INNOV
+  - metric_id: M_TECH_DS_07_TECH_INNOV_006
+    algorithm_type: MODEL
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-101
+    - INT-C-TECH-103
+    - INT-C-TECH-128
+    binding: kit_declared
+    note: kit：dwd_patent / _cited / _transfer / dwd_org_base_info
+    pages:
+    - DS-07-TECH-INNOV
+  - metric_id: M_TECH_EDGE_STRENGTH
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-171
+    - INT-C-TECH-152
+    binding: jiuxin_pending
+    note: 技术–技术边权，口径写随 seq 105
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_ENTITY_INFLUENCE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    - INT-C-TECH-182
+    binding: candidate
+    note: A2 missing、05 无专叶；原料只能是技术点图谱+文献桥接，计算 owner 未定
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_ENTITY_REL
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-171
+    - INT-C-TECH-152
+    - INT-C-TECH-182
+    binding: jiuxin_pending
+    note: 消费 seq 105 关系面
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_ENTITY_TOP5
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-171
+    - INT-C-TECH-152
+    - INT-C-TECH-182
+    binding: jiuxin_pending
+    note: 按 105 边权截 Top5（人/机构/论文/专利）
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_GRAPH_104_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-151
+    - INT-C-TECH-170
+    - INT-C-TECH-100
+    - INT-C-TECH-105
+    - INT-C-TECH-106
+    - INT-C-TECH-107
+    - INT-C-TECH-110
+    - INT-C-TECH-113
+    - INT-C-TECH-115
+    - INT-C-TECH-120
+    - INT-C-TECH-126
+    - INT-C-TECH-127
+    binding: jiuxin_pending
+    note: 久新 Python-104 在我方入站文本上抽技术点（输入表为候选）
+    pages:
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_GRAPH_105_1
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-152
+    - INT-C-TECH-171
+    binding: jiuxin_pending
+    note: 久新 Python-105 抽关系 → Nebula
+    pages:
+    - DS-02-ENTITY
+    - DS-02-MAINTAIN-ENTITY
+    - DS-02-TECHGRAPH
+    - DS-03-RESULT
+  - metric_id: M_TECH_GRAPH_STRUCT
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    - INT-C-TECH-152
+    binding: jiuxin_pending
+    note: Nebula A 面技术点子图
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_HEAT_INDEX
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-156
+    binding: jiuxin_pending
+    note: seq 134 G3 Job
+    pages:
+    - DS-07-*
+    - DS-09-*
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_HEAT_QUERY
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-108
+    - INT-C-TECH-114
+    - INT-C-TECH-120
+    - INT-C-TECH-126
+    binding: candidate
+    note: 查询结果集内 term TF；原料=文献 keywords，经 ES 检索（索引归 C05）
+    pages:
+    - DS-09-*
+    - TOPIC-QUERY
+  - metric_id: M_TECH_INVEST_AMOUNT
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-TECH-120
+    - INT-C-TECH-122
+    - INT-C-TECH-131
+    - INT-C-TECH-132
+    - INT-C-TECH-133
+    - INT-C-TECH-182
+    binding: candidate
+    note: 政府专项=项目 funded_amount；社会资本=融资/投资事件；三类均无技术键
+    pages:
+    - DS-03-RESULT
+  - metric_id: M_TECH_LIFE_STAGE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-159
+    binding: jiuxin_pending
+    note: 对照 seq 137
+    pages:
+    - DS-03-RESULT
+    - DS-07-*
+  - metric_id: M_TECH_MATURITY_LEVEL
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-159
+    binding: jiuxin_pending
+    note: 对照 seq 137
+    pages:
+    - DS-03-RESULT
+    - DS-07-*
+  - metric_id: M_TECH_OUTPUT_SCALE
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-107
+    - INT-C-TECH-113
+    - INT-C-TECH-121
+    - INT-C-TECH-123
+    - INT-C-TECH-126
+    - INT-C-TECH-127
+    - INT-C-TECH-182
+    binding: candidate
+    note: 成果与应用体量；「应用」原料未知，口径禁止拿论文/专利量冒充
+    pages:
+    - DS-03-RESULT
+  - metric_id: M_TECH_PAPER_PATENT_CNT
+    algorithm_type: STAT
+    source_cards:
+    - INT-C-TECH-100
+    - INT-C-TECH-107
+    - INT-C-TECH-113
+    - INT-C-TECH-118
+    - INT-C-TECH-182
+    binding: candidate
+    note: COUNT DISTINCT paper_id / patent_id，按 technology_id
+    pages:
+    - DS-02-*
+    - DS-07-*
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_PATH_CENTRALITY
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    binding: candidate
+    note: 图算法输入=技术点网；owner 待 B06（初稿建议我方 Python 自研）
+    pages:
+    - DS-02-*
+    - DS-07-*
+  - metric_id: M_TECH_PATH_KEYNODE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    binding: candidate
+    note: 同上；05 无专叶
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_PATH_PRIORITY
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-170
+    - INT-C-TECH-171
+    binding: candidate
+    note: 同上；05 无专叶
+    pages:
+    - DS-02-*
+  - metric_id: M_TECH_POTENTIAL_SCORE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-157
+    binding: jiuxin_pending
+    note: seq 135 G3 Job
+    pages:
+    - DS-07-*
+    - DS-09-*
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_REL_STRENGTH
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-171
+    - INT-C-TECH-152
+    binding: jiuxin_pending
+    note: 弦线图线粗，边权随 seq 105
+    pages:
+    - DS-03-RESULT
+  - metric_id: M_TECH_STAGE_JUDGE
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-159
+    binding: jiuxin_pending
+    note: G3 Job + LLM 未注册
+    pages:
+    - DS-07-*
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_SZ_ASSESS
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-157
+    - INT-C-TECH-159
+    - INT-C-TECH-160
+    - INT-C-TECH-155
+    - INT-C-TECH-128
+    binding: jiuxin_pending
+    note: 深圳综合评估包，复用潜力/阶段核
+    pages:
+    - DS-07-*
+    - TOPIC-TECH-05
+  - metric_id: M_TECH_TOPIC_HEAT
+    algorithm_type: third_party
+    source_cards:
+    - INT-C-TECH-156
+    - INT-C-TECH-181
+    binding: jiuxin_pending
+    note: 对照 seq 134；需技术领域/话题码
+    pages:
+    - DS-03-RESULT
+    - DS-09-*
+open_items:
+- id: OI-C02-01
+  item: 技术点主数据持有方与全局 technology_id（我方自建 / 久新 / 甲方）
+  owner: human:李伟（结构）+ 甲方/久新
+  kind: structure_escalation + decision_needed
+  blocking: P0
+- id: OI-C02-02
+  item: 技术领域分类体系选型与编码（与久新共用；TECH-P0-2 供应方未回）
+  owner: PM → 甲方
+  kind: decision_needed（客户决策清单草案）
+  blocking: P0
+- id: OI-C02-03
+  item: 久新技术链 25 行交付形态 + 数据底座（用我方 gkx 入站数据还是其自有数据）
+  owner: human:郭万迎
+  kind: 对端确认
+  blocking: P0
+- id: OI-C02-04
+  item: 供应方 5 题未回：TECH-P0-1/P0-2/P1-1/P1-2/P1-3（2026-09-04 出题）
+  owner: human:郭万迎
+  kind: 供应方回复
+  blocking: P0
+- id: OI-C02-05
+  item: 专利附表（cited/legal/transfer/family/title/abstract）仅 ≈1.6–2.1 万行 vs 主表 ≈269 万，是否抽样交付
+  owner: 供应方
+  kind: 数据完整性
+  blocking: P1
+- id: OI-C02-06
+  item: 英文论文仅 1,356 行，全球论文侧覆盖不足；是否补数或以专利为全球主口径
+  owner: 供应方 / 甲方
+  kind: decision_needed
+  blocking: P1
+- id: OI-C02-07
+  item: 行数 unknown 表需只读 COUNT：dwd_en_paper_cited_by / dwd_rel_project_patent / dwd_rel_project_paper / dwd_org_base_info_patent_rel / dwd_quantum_* / dwd_org_industry_chain_pat_dtl / dwd_industry_analysis_*
+  owner: data-agent（下次快照）
+  kind: 核验
+  blocking: P2
+- id: OI-C02-08
+  item: DDL 沙箱（2026-07-15）与 live 列名不一致（dwd_patent 等），且缺 dwd_patent_cited/_transfer、dwd_en_project/_report、dwd_org_tech_tag
+  owner: data-agent
+  kind: 沙箱刷新
+  blocking: P2
+- id: OI-C02-09
+  item: 供应方各表更新频率未书面给出
+  owner: 供应方
+  kind: 供应方回复
+  blocking: P1
+- id: OI-C02-10
+  item: M_TECH_INVEST_AMOUNT：政府专项（项目经费）+ 社会资本（融资/投资）均无技术键，分摊规则与币种单位待定
+  owner: PM → 甲方
+  kind: decision_needed
+  blocking: P1
+- id: OI-C02-11
+  item: M_TECH_COMPOSITE_SCORE 无源（no_source）：生产方与分项未定
+  owner: algorithm-agent（B07）/ PM
+  kind: owner 未定
+  blocking: P1
+- id: OI-C02-12
+  item: PATH_CENTRALITY / KEYNODE / PRIORITY / ENTITY_INFLUENCE 是否改判我方 Python+Nebula 自研（B06），原料只能是技术点图谱
+  owner: algorithm-agent（B06）
+  kind: owner 未定
+  blocking: P1
+- id: OI-C02-13
+  item: MODEL×3（DS-07-TECH-INNOV 002/004/006）入参清单未签（等唐绍祖）；kit 只点名国内机构 dwd_org_base_info，全球申请人需 dwd_forg_base_info
+  owner: human:唐绍祖
+  kind: 入参确认
+  blocking: P1
+- id: OI-C02-14
+  item: 「实时」热点/监测的真实时效（默认 T+1）
+  owner: PM → 甲方
+  kind: decision_needed
+  blocking: P2
+- id: OI-C02-15
+  item: 技术点论文全集口径（论文要素库 ∪ 学者论文，doi 去重）与专利同族去重口径
+  owner: PM → 甲方
+  kind: decision_needed
+  blocking: P2
+- id: OI-C02-16
+  item: TRSGraph 现有 technology 顶点/技术边数量与 VID 规则迁移（tech:{名称}→tech:{technology_id}）
+  owner: C04
+  kind: 交接
+  blocking: P1
+cards:
+- int_id: INT-C-TECH-100
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_DS_07_TECH_INNOV_002
+  - M_TECH_DS_07_TECH_INNOV_004
+  - M_TECH_DS_07_TECH_INNOV_006
+  - M_TECH_GRAPH_104_1
+  - M_TECH_HEAT_QUERY
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type:
+  - MODEL
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id001
+    - patent_id
+    - pn
+    - publication_number
+    - kind
+    - country_code
+    - apdt / apdt_year
+    - pbdt / pbdt_year
+    - applicants / first_applicant_name
+    - assignees / first_current_assignee_name
+    - inventors
+    - main_classification_ipcr
+    - further_classification_ipcr
+    - main_classification_cpc
+    - further_classification_cpc
+    - keywords
+    - claims
+    - granted_number
+    - value
+    - other_Versions
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent
+    table_cn: 全球专利要素库·专利信息表
+    key_fields: *id001
+    primary_key: patent_id（live 另有 pn 公布号）
+    entity_align_key: 技术点：无技术点键，只能经 IPC/CPC 分类号 + keywords 归入技术点/领域（需桥接 INT-C-TECH-182）；机构：first_applicant_name/assignees 只有名称，需归一到 org_id（C03）
+    coverage: 全球（country_code 多国）；深圳切片需申请人→机构地理
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 2,690,167
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - DS-09-*
+    - TOPIC-QUERY
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: lumen-etl-es-py db/dwd_domain_tables.sql 仅有企业维 enterprise_patent_detail（来源 dwd_patent，ENT 域）；无技术维
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无技术点/技术领域稳定码（TECH-P0-1/P0-2 待供应方回复）
+  - 无申请人地址/机构 ID 列，深圳切片要靠名称归一
+  - 本表的附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  conflicts:
+  - DDL 沙箱 gkx_schema_ddl.sql（2026-07-15）列为 classification_ipcr / application_reference_*；live（2026-09-11 结构报告）为 main_classification_ipcr / apdt_year / pn；以 live 为准，kit 与 live 一致
+  - 行数 2026-09-11=2,892,155 → 2026-10-10=2,690,167（估数波动 −20 万）
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：按 country_code / apdt_year 分布与供应方口径抽样
+  - 契约：IPC 主分类非空率、pn 唯一性
+  confidence: high
+- int_id: INT-C-TECH-101
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DS_07_TECH_INNOV_002
+  - M_TECH_DS_07_TECH_INNOV_004
+  - M_TECH_DS_07_TECH_INNOV_006
+  metric_domain_other: []
+  algorithm_type:
+  - MODEL
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_cited → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id002
+    - patent_id
+    - pn
+    - reference_cited_count
+    - cited_by_nums
+    - cited_by
+    - patent_citations
+    - non_patent_count
+    - cited_by_date
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_cited
+    table_cn: 全球专利要素库·专利引用关系表
+    key_fields: *id002
+    primary_key: patent_id（逻辑 id）
+    entity_align_key: 经 patent_id → dwd_patent → 技术点桥接
+    coverage: 随 dwd_patent（全球）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 20,239
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）；表不在 DDL 沙箱，字段见 data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20260911-1550-结构.MD（live
+        列名）
+    pages:
+    - DS-07-TECH-INNOV
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  - DDL 沙箱（07-15）无此表，结构以 09-11 live 报告为准
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：cited_by_nums 与 dwd_patent.cited_by_nums 一致性
+  confidence: medium
+- int_id: INT-C-TECH-102
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DS_07_TECH_INNOV_002
+  - M_TECH_DS_07_TECH_INNOV_004
+  metric_domain_other: []
+  algorithm_type:
+  - MODEL
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_legal → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id003
+    - patent_id
+    - status
+    - legal_events
+    - anticipated_expiration
+    - expiration_year
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_legal
+    table_cn: 全球专利要素库·法律状态信息表
+    key_fields: *id003
+    primary_key: patent_id
+    entity_align_key: 经 patent_id
+    coverage: 随 dwd_patent
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,071
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-07-TECH-INNOV
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-103
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DS_07_TECH_INNOV_004
+  - M_TECH_DS_07_TECH_INNOV_006
+  metric_domain_other: []
+  algorithm_type:
+  - MODEL
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_transfer → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id004
+    - patent_transfer_id
+    - pn
+    - country
+    - transfer_effective_date
+    - transfer_before
+    - transfer_after
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_transfer
+    table_cn: 全球专利要素库·专利转移信息表
+    key_fields: *id004
+    primary_key: patent_transfer_id
+    entity_align_key: 经 pn → dwd_patent；转移前后权利人只有名称，需机构归一
+    coverage: 随 dwd_patent
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 21,193
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）；字段见 data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20260911-1550-结构.MD（live 列名）
+    pages:
+    - DS-07-TECH-INNOV
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  - DDL 沙箱（07-15）无此表
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-104
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_family → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id005
+    - patent_id
+    - simple_family
+    - simple_family_2（成员国家）
+    - simple_family_3（成员公开号）
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_family
+    table_cn: 全球专利要素库·专利家族信息表
+    key_fields: *id005
+    primary_key: patent_id
+    entity_align_key: 同族归并用于专利去重（technology_id 下 COUNT DISTINCT 前先并族，口径待定）
+    coverage: 随 dwd_patent
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,235
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  conflicts: []
+  decision_needed:
+  - 技术点专利计数是否按简单同族去重（影响 M_TECH_PAPER_PATENT_CNT 口径）
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-105
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_title → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id006
+    - patent_id
+    - title_localized
+    - title_localized_2（英文）
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_title
+    table_cn: 全球专利要素库·专利标题信息表
+    key_fields: *id006
+    primary_key: patent_id
+    entity_align_key: 技术实体识别（seq 104）文本输入
+    coverage: 随 dwd_patent
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,420
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样；标题是 NER 主输入，覆盖不足直接限制技术点抽取
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-106
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_patent_abstract → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id007
+    - patent_id
+    - abstract_localized
+    - abstract_localized_2（英文）
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_patent_abstract
+    table_cn: 全球专利要素库·专利摘要信息表
+    key_fields: *id007
+    primary_key: patent_id
+    entity_align_key: 技术实体识别/关系抽取文本输入
+    coverage: 随 dwd_patent
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,247
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 附表行数≈1.6–2.1 万，仅为主表 dwd_patent（≈269 万）的 <1%：法律状态/引用/转移/同族/标题/摘要覆盖面严重不足，需供应方说明是否抽样
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-107
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_GRAPH_104_1
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id008
+    - id
+    - doi
+    - zh_name
+    - en_name
+    - publication_id
+    - publication_zh_name
+    - issn
+    - cover_year_start
+    - cover_date_start
+    - language_classify
+    - paper_url
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper
+    table_cn: 中文论文要素库·中文论文详情信息
+    key_fields: *id008
+    primary_key: id
+    entity_align_key: 无技术点键；经 dwd_zh_paper_classification.keywords/scope 归入技术点/领域；作者机构需 C01/C03 作者-机构关联
+    coverage: 中国为主（中文期刊）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 89,214
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无机构/地理列，深圳切片需作者-机构关联（dwd_author_* 归 C01）
+  - 标题/摘要/分类附表仅 1.4–1.9 万行，约为主表 16–22%
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: high
+- int_id: INT-C-TECH-108
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_HEAT_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper_classification → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id009
+    - id
+    - scope（大类学科）
+    - scope_zone（细分学科）
+    - keywords
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper_classification
+    table_cn: 中文论文要素库·中文论文分类信息
+    key_fields: *id009
+    primary_key: id
+    entity_align_key: 学科 scope/scope_zone 可作技术领域映射锚点之一；keywords 作技术点候选
+    coverage: 随 dwd_zh_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 18,895
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-09-*
+    - TOPIC-QUERY
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 只覆盖约 21% 中文论文
+  - scope 为期刊学科，不等于技术领域码，需映射表（INT-C-TECH-181）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-109
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper_title → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id010
+    - id
+    - 标题文本
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper_title
+    table_cn: 中文论文要素库·中文论文标题信息
+    key_fields: *id010
+    primary_key: id
+    entity_align_key: NER 文本输入
+    coverage: 随 dwd_zh_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,288
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 只覆盖约 22% 中文论文（主表 zh_name 可替代）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-110
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper_abstract → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id011
+    - id
+    - 摘要文本
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper_abstract
+    table_cn: 中文论文要素库·中文论文摘要信息
+    key_fields: *id011
+    primary_key: id
+    entity_align_key: NER/关系抽取文本输入
+    coverage: 随 dwd_zh_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 14,254
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 只覆盖约 16% 中文论文
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-111
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper_citation → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id012
+    - id
+    - publication_id
+    - doi
+    - zh_name
+    - publication_zh_name
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper_citation
+    table_cn: 中文论文要素库·中文论文引用/被引信息
+    key_fields: *id012
+    primary_key: id
+    entity_align_key: 经 id/doi 关联论文；用于技术点影响力/热度候选特征
+    coverage: 随 dwd_zh_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 17,494
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps: []
+  conflicts:
+  - 2026-10-10 报告中「引用文献信息」「被引用信息」两行同指 dwd_zh_paper_citation（17,494），语义需供应方澄清
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-112
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_paper_reference → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id013
+    - id
+    - 参考文献
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_paper_reference
+    table_cn: 中文论文要素库·中文论文参考文献信息
+    key_fields: *id013
+    primary_key: id
+    entity_align_key: 经 id 关联论文；技术演进/引用网络候选
+    coverage: 随 dwd_zh_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 12,914
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-113
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_GRAPH_104_1
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_paper → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id014
+    - id
+    - doi
+    - en_name
+    - publication_en_name
+    - issn_print
+    - cover_year_start
+    - language
+    - data_source
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_paper
+    table_cn: 外文论文要素库·英文论文详情信息
+    key_fields: *id014
+    primary_key: id
+    entity_align_key: 无技术点键；经 dwd_en_paper_classification 归入
+    coverage: 全球（外文）——但量极小
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,356
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 仅 1,356 行，无法支撑「全球」技术态势的论文侧统计
+  - 无机构/国家列
+  conflicts: []
+  decision_needed:
+  - 全球论文侧数据量是否由供应方补足，或甲方接受以专利为全球主口径
+  structure_escalation: false
+  risks:
+  - 全球技术热点/前沿若以论文为输入，结果会严重偏向中文文献
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-114
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_HEAT_QUERY
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_paper_classification → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id015
+    - id
+    - scope
+    - sub_scope
+    - keywords
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_paper_classification
+    table_cn: 外文论文要素库·英文论文分类信息
+    key_fields: *id015
+    primary_key: id
+    entity_align_key: 学科锚点 + keywords
+    coverage: 随 dwd_en_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,386
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-09-*
+    - TOPIC-QUERY
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 量极小，同 INT-C-TECH-113
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-115
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_paper_abstract → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id016
+    - id
+    - 摘要文本
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_paper_abstract
+    table_cn: 外文论文要素库·英文论文摘要信息
+    key_fields: *id016
+    primary_key: id
+    entity_align_key: NER 文本输入
+    coverage: 随 dwd_en_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,192
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 量极小
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-116
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_paper_citation → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id017
+    - id
+    - 引用文献
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_paper_citation
+    table_cn: 外文论文要素库·英文论文引用文献信息
+    key_fields: *id017
+    primary_key: id
+    entity_align_key: 经 id
+    coverage: 随 dwd_en_paper
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,352
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 量极小
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-117
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_paper_cited_by → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id018
+    - id
+    - paper_eid
+    - citing_eid
+    - citing_year
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_paper_cited_by
+    table_cn: 爱思唯尔外文论文引用关系表
+    key_fields: *id018
+    primary_key: id
+    entity_align_key: paper_eid 指向 dwd_en_paper（键名 eid 与 id 的对应待核）
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；存在于 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数） 与 SOURCE-TABLES.md
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown，需只读 COUNT 核验（见 handoff 只读 SQL 草案）
+  - eid 与 dwd_en_paper.id 对齐规则未知
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-118
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_papers → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id019
+    - paper_id
+    - zh_name
+    - en_name
+    - authors
+    - doi
+    - cover_date_start
+    - publication_en_name
+    - zh_abstract
+    - en_abstract
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_papers
+    table_cn: 人才要素库·论文信息（学者论文）
+    key_fields: *id019
+    primary_key: paper_id
+    entity_align_key: 与 dwd_zh_paper / dwd_en_paper 无共同主键，只能 doi 对齐（去重口径待定）；人才侧由 C01 主盘点
+    coverage: 全球（学者库）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 597,513
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-01-FACTORS
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: C01 主卡，本卡只记技术链用法
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 与两套论文库存在重复计数风险（无统一 paper 主键）
+  conflicts: []
+  decision_needed:
+  - 技术点论文量的论文全集 = zh_paper ∪ en_paper ∪ scholar_papers（按 doi 去重）还是仅论文要素库
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-119
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - TAL
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_scholar_research_direction → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id020
+    - scholar_id
+    - fields
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_scholar_research_direction
+    table_cn: 人才要素库·学者研究方向
+    key_fields: *id020
+    primary_key: scholar_id（live 另有 id）
+    entity_align_key: fields 为自由文本研究方向，可作技术点/领域到人才的弱关联
+    coverage: 随 dwd_scholar（16,933 学者）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,466
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: C01 主卡
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - fields 非编码，需归一到技术点/领域
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-120
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  - M_TECH_HEAT_QUERY
+  - M_TECH_INVEST_AMOUNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_project → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id021
+    - id
+    - project_number
+    - title
+    - project_source
+    - funded_institution
+    - funded_amount
+    - discipline
+    - discipline_code
+    - fund_category
+    - funded_province
+    - approval_year
+    - keywords
+    - abstract
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_project
+    table_cn: 国内项目要素库·国内项目信息表
+    key_fields: *id021
+    primary_key: pk_id（业务 id）
+    entity_align_key: discipline_code 可作领域锚点；keywords/abstract 作技术点候选；funded_institution 名称需机构归一
+    coverage: 中国（funded_province 可做省级）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 46,455
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    - DS-09-*
+    - TOPIC-QUERY
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - funded_amount 无技术键，作「政府专项投入」需经技术点桥接
+  - 单位（元/万元）需核验
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 对账：approval_year × funded_province 分布
+  confidence: high
+- int_id: INT-C-TECH-121
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_OUTPUT_SCALE
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_project_output → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id022
+    - id
+    - total_outputs
+    - journal_articles_count
+    - patents_count
+    - products_count
+    - output_patents
+    - output_products
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_project_output
+    table_cn: 国内项目要素库·国内项目-产出信息
+    key_fields: *id022
+    primary_key: pk_id（业务 id）
+    entity_align_key: 经 id 关联 dwd_zh_project
+    coverage: 随 dwd_zh_project
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 17,475
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 产出仅给计数与标题文本，无产出主键（不能直接 JOIN 专利/论文）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-122
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_INVEST_AMOUNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_project → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id023
+    - 项目索引
+    - 项目编号
+    - 项目名称
+    - 受资助金额
+    - 学科 / 学科代码
+    - 项目受资助国家
+    - 立项年度
+    - 关键词
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_project
+    table_cn: 国外项目要素库·国外项目信息表
+    key_fields: *id023
+    primary_key: 项目索引（英文列名以 live 为准）
+    entity_align_key: 同 INT-C-TECH-120
+    coverage: 全球（国外）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 16,281
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）；表不在 DDL 沙箱，字段见 data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20260911-1550-结构.MD（live
+        列名）
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - DDL 沙箱无此表；英文列名未在本叶核实
+  - 币种/单位未知
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-123
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_OUTPUT_SCALE
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_project_output → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id024
+    - 项目索引
+    - 产出计数/标题
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_project_output
+    table_cn: 国外项目要素库·国外项目-产出信息
+    key_fields: *id024
+    primary_key: unknown
+    entity_align_key: 经项目索引
+    coverage: 随 dwd_en_project
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 17,689
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 结构未在本叶核实
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-124
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_rel_project_patent → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id025
+    - project_source
+    - project_id
+    - patent_id
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_rel_project_patent
+    table_cn: 项目-专利关联表
+    key_fields: *id025
+    primary_key: pk_id
+    entity_align_key: 项目 ↔ 专利显式边，可补技术点桥接
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown，需只读 COUNT
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-125
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_rel_project_paper → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id026
+    - project_source
+    - project_id
+    - paper_source
+    - paper_id
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_rel_project_paper
+    table_cn: 项目-论文关联表
+    key_fields: *id026
+    primary_key: pk_id
+    entity_align_key: 项目 ↔ 论文显式边
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown，需只读 COUNT
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-126
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  - M_TECH_HEAT_QUERY
+  - M_TECH_OUTPUT_SCALE
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_zh_report → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id027
+    - report_id
+    - report_category
+    - title_cn
+    - organization
+    - abstract_cn
+    - keywords_cn
+    - preparation_time
+    - related_projects
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_zh_report
+    table_cn: 中文报告要素库·中文科技报告信息表
+    key_fields: *id027
+    primary_key: pk_id（业务 report_id）
+    entity_align_key: keywords_cn 作技术点候选；关联表 dwd_zh_report_paper/_project/_org（5,880/653/1,387 行）
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 13,699
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    - DS-09-*
+    - TOPIC-QUERY
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-127
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_GRAPH_104_1
+  - M_TECH_OUTPUT_SCALE
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_en_report → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id028
+    - 报告 id
+    - 标题
+    - 摘要
+    - 关键词
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_en_report
+    table_cn: 外文报告要素库·外文科技报告信息表
+    key_fields: *id028
+    primary_key: unknown（DDL 沙箱无此表）
+    entity_align_key: 文本作技术点候选
+    coverage: 全球（外文）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 10,070
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 结构未在本叶核实
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-128
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DEEP_131_1
+  - M_TECH_DEEP_133_1
+  - M_TECH_DEEP_138_1
+  - M_TECH_DEEP_139_1
+  - M_TECH_DEEP_140_1
+  - M_TECH_DS_07_TECH_INNOV_002
+  - M_TECH_DS_07_TECH_INNOV_004
+  - M_TECH_DS_07_TECH_INNOV_006
+  - M_TECH_SZ_ASSESS
+  metric_domain_other: []
+  algorithm_type:
+  - MODEL
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_base_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id029
+    - org_id
+    - name_cn
+    - external_id（统一社会信用代码）
+    - city
+    - province
+    - reg_status
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_base_info
+    table_cn: 国内机构要素库·机构基本信息（申请人/承担单位对齐 + 深圳切片）
+    key_fields: *id029
+    primary_key: org_id
+    entity_align_key: 专利申请人/项目承担单位名称 → org_id（名称归一规则归 C03）；city/province 提供深圳切片
+    coverage: 中国（国外机构在 dwd_forg_base_info 19,549 行，kit 未列）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 192,464
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-07-*
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: C03 主卡，本卡只记技术链用法（MODEL×3 kit 点名）
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 全球专利申请人对齐国外机构需 dwd_forg_base_info，kit 未列
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-129
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_base_info_patent_rel → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id030
+    - org_id
+    - base_external_id
+    - patent_id
+    - publication_number
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_base_info_patent_rel
+    table_cn: 国内机构-专利关联表
+    key_fields: *id030
+    primary_key: id
+    entity_align_key: 机构 ↔ 专利显式边，可替代名称归一
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数） 与 SOURCE-TABLES.md
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown；若有数据，应优先于名称归一（与 C03 协同）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-130
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - ORG
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_tech_tag → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id031
+    - org_id
+    - org_tag
+    - data_source
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_tech_tag
+    table_cn: 国内机构要素库·科技型标签
+    key_fields: *id031
+    primary_key: unknown（org_id+org_tag）
+    entity_align_key: 机构资质标签（如高新技术企业类），不是技术点
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 196,662
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps: []
+  conflicts:
+  - 表名含「科技型标签」，易被误当技术点源；实为机构标签，禁止作技术点主数据
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-131
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_INVEST_AMOUNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_financing_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id032
+    - org_id
+    - name_cn
+    - funding_round
+    - funding_amount
+    - funding_currency_code
+    - completion_date
+    - investors_name
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_financing_info
+    table_cn: 国内机构融资事件
+    key_fields: *id032
+    primary_key: pk_id
+    entity_align_key: 只有机构维，无技术键；技术投资额需 org→技术点（经专利/标签）间接归属
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 23,662
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无技术键
+  conflicts: []
+  decision_needed:
+  - 「社会资本投入」按融资事件还是投资事件；按机构归属到技术点的分摊规则
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-132
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_INVEST_AMOUNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_invest_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id033
+    - org_id
+    - inv_org_id
+    - inv_name
+    - investment_amount
+    - investment_ratio
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_invest_info
+    table_cn: 投资事件
+    key_fields: *id033
+    primary_key: pk_id
+    entity_align_key: 同 INT-C-TECH-131
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 53,758
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 无技术键
+  - 无投资日期列（DDL 沙箱），时间窗口无法切
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-133
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_INVEST_AMOUNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_industrial_fund_investment_project_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id034
+    - 结构未在本叶核实
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_industrial_fund_investment_project_info
+    table_cn: 金融要素库·产业基金投资项目信息
+    key_fields: *id034
+    primary_key: unknown
+    entity_align_key: 产业基金→项目，可能含行业/领域文本
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 9,939
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）；DDL 沙箱无此表
+    pages:
+    - DS-03-RESULT
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 结构未核实
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-134
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_quantum_tech_trend → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id035
+    - id
+    - technology_name
+    - technology_category
+    - maturity_stage
+    - application_prospect
+    - main_orgs
+    - publish_time
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_quantum_tech_trend
+    table_cn: 量子专题·量子技术趋势
+    key_fields: *id035
+    primary_key: id
+    entity_align_key: 三方库唯一带 technology_name / maturity_stage 的表，但只覆盖量子领域
+    coverage: 量子专题切片
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown
+  - 领域切片，不能作全域技术点主数据
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 若被当成技术点主表会把全域技术链窄化为量子
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-135
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_quantum_rd_progress → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id036
+    - id
+    - project_name
+    - organization_name
+    - credit_code
+    - rd_direction
+    - rd_stage
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_quantum_rd_progress
+    table_cn: 量子专题·量子研发进展
+    key_fields: *id036
+    primary_key: id
+    entity_align_key: rd_direction / rd_stage 为文本
+    coverage: 量子专题切片
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 data/third-party-source/gkx-mysql-raw/加工/table_inventory.md（2026-07-15 结构盘点，无行数）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-136
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_industry_code → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id037
+    - code
+    - name
+    - parent_code
+    - industry_code
+    - industry_name
+    - level
+    - is_key_link
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_industry_code
+    table_cn: 产业链环节码表（海洋/量子专题共用）
+    key_fields: *id037
+    primary_key: code
+    entity_align_key: 产业链环节码，不是技术领域码
+    coverage: 海洋/量子等专题产业
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 19,855
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps: []
+  conflicts:
+  - TECH-SUPPLIER-QUESTIONS 明确：禁止用产业链 INB*/环节码冒充技术领域码
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: high
+- int_id: INT-C-TECH-137
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_important_news_info → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id038
+    - org_id
+    - 标题
+    - 正文
+    - 发布时间
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_important_news_info
+    table_cn: 国内机构要素库·重点资讯
+    key_fields: *id038
+    primary_key: unknown（本叶未核）
+    entity_align_key: 资讯文本可作技术话题热度原料（需 NER 到技术点/话题）
+    coverage: 中国
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: 1,371,863
+      as_of: '2026-10-10'
+      ref: data/third-party-source/gkx-mysql-raw/加工/GKX数据源表及行数报告-20261010-1055-估数.MD（TABLE_ROWS 估数，未过滤 is_deleted）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 无技术/话题键；SOURCE-TABLES §3.1 裁定可用
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-138
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_industry_analysis_*（六表） → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id039
+    - document_id
+    - title
+    - abstract
+    - body
+    - creation_date
+    - language
+    - topics.*
+    - industries.*
+    - countries.*
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_industry_analysis_*（六表）
+    table_cn: 行业分析要素库（documents/companies/industries/topics/content_types/countries）
+    key_fields: *id039
+    primary_key: document_id（uk）
+    entity_align_key: topics/industries 为供应方主题维，可作技术话题候选；需映射到技术领域码
+    coverage: 全球（countries 维）
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；结构见 data/data-design/storage/CHAIN/sources/inventory-industry-analysis.md（gkx live 存在）
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown
+  - topics 编码与技术领域无对应
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-139
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - OTHER
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: gkx.dwd_org_industry_chain_pat_dtl → 项目 DWD（data 层 ETL）→ ADS / ES（C05）/ Nebula（C04）
+  contract_draft:
+    request: []
+    response_key_fields: &id040
+    - chain_code
+    - node_id
+    - node_name
+    - apno
+    - pn
+    - current_assign
+    granularity:
+      time: year（apdt_year / cover_year_start / approval_year）
+      geo: country / province（深圳需机构 city）
+    freshness: unknown
+  data_source:
+    source_system: gkx_mysql_raw（甲方三方库 MySQL gkx @183.240.141.251:3318，只读 gkx_reader_zp）
+    table: dwd_org_industry_chain_pat_dtl
+    table_cn: 产业链关联专利信息
+    key_fields: *id040
+    primary_key: unknown
+    entity_align_key: 产业链节点 ↔ 专利；节点是产业环节非技术点
+    coverage: unknown
+    update_freq: unknown（供应方未书面给出；两次快照行数有增减，说明在持续加工）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 不在 20 要素库行数报告覆盖内；见 SOURCE-TABLES.md
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen 未读该表）
+    d1_d4: null
+  gaps:
+  - 行数 unknown
+  conflicts:
+  - 产业链节点不得当技术点（同 INT-C-TECH-136）
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-150
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_BASE_96_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id:
+  - SRS-96
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 SQL（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id041
+    - technology_id
+    - paper_cnt
+    - patent_cnt
+    - growth
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: T+1（由我方调度，草案）
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 SQL-96 技术基础指标模型
+    table_cn: 久新 SQL-96 技术基础指标模型
+    key_fields: *id041
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: T+1（由我方调度，草案）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-01-FACTORS
+    - DS-02-ENTITY
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: 基础计数（论文量/专利量/增长）
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  - SQL 须能在我方入站 dwd_* / 项目 DWD 上运行；表名映射未给
+  conflicts: []
+  decision_needed:
+  - SQL-96 的统计对象是我方技术点还是久新自有技术分类
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-151
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - algorithm
+  - graph
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_GRAPH_104_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-104
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 Python（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id042
+    - technology_id（待定）
+    - name
+    - aliases
+    - domain_code
+    - source_doc_refs
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: offline（离线 Job，频率待定）
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 Python-104 技术实体识别产出（技术点实体集）
+    table_cn: 久新 Python-104 技术实体识别产出（技术点实体集）
+    key_fields: *id042
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: offline（离线 Job，频率待定）
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-02-TECHGRAPH
+    - TOPIC-TECH-05
+    shared_with: 技术点主数据候选生产者
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  - 脚本输入表/依赖未知；须并入 lumen-algo-py 离线 Job，依赖不得超出仓栈
+  conflicts: []
+  decision_needed:
+  - 104 产出的技术点是否作为我方技术点主数据底稿（主数据持有方）
+  structure_escalation: true
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-152
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - src_technology_id
+  - dst_id
+  - dst_type
+  - rel_type
+  - weight
+  - evidence_doc_ids
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_EDGE_STRENGTH
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_GRAPH_105_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_REL_STRENGTH
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-105
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 Python（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id043
+    - data
+    - algorithm
+    - graph
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: offline
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 Python-105 技术实体关系抽取产出（技术–技术 / 实体–技术边）
+    table_cn: 久新 Python-105 技术实体关系抽取产出（技术–技术 / 实体–技术边）
+    key_fields: *id043
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: offline
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-02-MAINTAIN-ENTITY
+    - DS-02-TECHGRAPH
+    - DS-03-RESULT
+    - TOPIC-TECH-05
+    shared_with: 技术点图谱边 + 边权（EDGE/REL_STRENGTH、ENTITY_REL/TOP5 消费）
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  - 边权口径/关系类型枚举未知；写 Nebula 的 edge 清单归 C04
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-153
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  - graph
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_DEEP_131_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-130
+  - SRS-131
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id044
+    - technology_id
+    - chain_nodes
+    - chain_edges
+    - region_scope
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-130/131 技术链结构结果集（全景 / 深圳）
+    table_cn: 久新 API-130/131 技术链结构结果集（全景 / 深圳）
+    key_fields: *id044
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-02-TECHGRAPH
+    - TOPIC-TECH-05
+    shared_with: 技术链节点/边结构
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-154
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_132_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-132
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id045
+    - technology_id
+    - events[]
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-132 技术发展历程结果集
+    table_cn: 久新 API-132 技术发展历程结果集
+    key_fields: *id045
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TECH-05
+    shared_with: 历程时间轴
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed:
+  - 专题 TOPIC-TECH-015 历程走 CMS；久新是否仍提供 API
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-155
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_133_1
+  - M_TECH_DEEP_140_1
+  - M_TECH_SZ_ASSESS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-133
+  - SRS-140
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id046
+    - domain_code
+    - share / score
+    - recommend_rank
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-133/140 深圳细分领域分布 / 重点布局推荐结果集
+    table_cn: 久新 API-133/140 深圳细分领域分布 / 重点布局推荐结果集
+    key_fields: *id046
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-07-*
+    - TOPIC-TECH-05
+    shared_with: 领域维结果（依赖技术领域码）
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  - 依赖技术领域码体系（TECH-P0-2）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-156
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_134_1
+  - M_TECH_HEAT_INDEX
+  - M_TECH_TOPIC_HEAT
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-134
+  - DS-03-RESULT-001
+  - DS-03-RESULT-002
+  - DS-07-SCI-CREATE-003
+  - DS-09-COMPREHENSIVE-001
+  - DS-09-COMPREHENSIVE-002
+  - DS-09-COMPREHENSIVE-004
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id047
+    - technology_id / topic_id
+    - heat
+    - growth
+    - term
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-134 前沿热点识别结果集（含展示 6 行）
+    table_cn: 久新 API-134 前沿热点识别结果集（含展示 6 行）
+    key_fields: *id047
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-09-*
+    - DS-09-COMPREHENSIVE
+    - TOPIC-TECH-05
+    shared_with: 热度/增速/话题热度
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed:
+  - 「实时」热点的真实时效（客户决策项草案）
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-157
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_135_1
+  - M_TECH_POTENTIAL_SCORE
+  - M_TECH_SZ_ASSESS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-135
+  - DS-07-TECH-INNOV-003
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id048
+    - technology_id
+    - potential_score
+    - dims
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-135 产业化潜力结果集（含展示 1 行）
+    table_cn: 久新 API-135 产业化潜力结果集（含展示 1 行）
+    key_fields: *id048
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-07-*
+    - DS-07-TECH-INNOV
+    - DS-09-*
+    - TOPIC-TECH-05
+    shared_with: 潜力评分
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-158
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_CONVERT_BOTTLENECK
+  - M_TECH_DEEP_136_1
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-136
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id049
+    - technology_id
+    - bottlenecks[]
+    - reasons[]
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-136 转化瓶颈识别结果集
+    table_cn: 久新 API-136 转化瓶颈识别结果集
+    key_fields: *id049
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - TOPIC-TECH-05
+    shared_with: 瓶颈与原因
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-159
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_137_1
+  - M_TECH_LIFE_STAGE
+  - M_TECH_MATURITY_LEVEL
+  - M_TECH_STAGE_JUDGE
+  - M_TECH_SZ_ASSESS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-137
+  - DS-03-RESULT-004
+  - DS-03-RESULT-005
+  - DS-03-RESULT-006
+  - DS-07-INDUSTRY-POTENTIAL-002
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id050
+    - technology_id
+    - life_stage
+    - maturity_level
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-137 技术阶段 / 成熟度结果集（含展示 4 行）
+    table_cn: 久新 API-137 技术阶段 / 成熟度结果集（含展示 4 行）
+    key_fields: *id050
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-INDUSTRY-POTENTIAL
+    - TOPIC-TECH-05
+    shared_with: 阶段/成熟度
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed:
+  - 生命周期分档是否含「衰退」（QC03 技术成熟度口径）
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-160
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - metric
+  metric_ids:
+  - M_TECH_DEEP_138_1
+  - M_TECH_DEEP_139_1
+  - M_TECH_SZ_ASSESS
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - python_internal
+  - etl
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id:
+  - SRS-138
+  - SRS-139
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: POST /internal/jiuxin/tech/*（draft，适配层归 B01 模式）
+    downstream: 久新 API（待确认）→ Python 适配/Job → 结果快照 ADS（metric_id + as_of + version）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id051
+    - technology_id / domain_code
+    - issues[] / opportunities[]
+    - as_of
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: 北京久新（对端；交付待确认）
+    table: 久新 API-138/139 深圳技术发展问题 / 机遇识别结果集
+    table_cn: 久新 API-138/139 深圳技术发展问题 / 机遇识别结果集
+    key_fields: *id051
+    primary_key: unknown（建议以我方 technology_id + as_of + version 为键）
+    entity_align_key: 入参/出参须用我方 technology_id 与技术领域码；若用久新自有 ID 须附映射表
+    coverage: unknown（久新数据底座未知）
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 对端交付物，无快照
+    pages:
+    - DS-07-*
+    - TOPIC-TECH-05
+    shared_with: 深圳问题/机遇清单
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无（lumen-algo-py 无 /internal/jiuxin/* 适配层）
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 久新交付形态与数据底座一律待确认（JIUXIN 清单 51 行 0 确认）
+  - 返回实体 ID 是否为我方 technology_id 未知（见 id_alignment_draft）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - 久新若以其自有数据计算，结果与我方入站数据不同源，对账与下钻断裂
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-170
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - graph
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_GRAPH_104_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - graph_load
+  counterpart: trsgraph
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: Nebula TRSGraph space（C04 定）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id052
+    - vid
+    - name
+    - node_type
+    - weight
+    - props
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: trsgraph（NebulaGraph TRSGraph graphd 10.50.75.136:9669）
+    table: TAG technology（技术点顶点）
+    table_cn: Nebula 技术点顶点
+    key_fields: *id052
+    primary_key: VID 现规则 tech:{名称}（ENT pipeline-to-nebula §79/§105）
+    entity_align_key: 现行 VID 用名称，非稳定 ID；ENT 管线写明「无专题库技术 ID」、无稳定技术点不上图
+    coverage: unknown
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 本叶未连 Nebula；live 点数由 C04 核
+    pages:
+    - DS-02-*
+    - DS-02-TECHGRAPH
+    - DS-07-*
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - live 是否已有技术点顶点、数量 unknown（C04）
+  - VID 规则 tech:{名称} 无法承接同名异义/别名归一
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 若沿用名称 VID，技术点改名/合并会断边
+  test_points:
+  - 图谱一致性：顶点数 = 技术点主表行数
+  confidence: medium
+- int_id: INT-C-TECH-171
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - ORG
+  - TAL
+  dep_kind:
+  - graph
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_EDGE_STRENGTH
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_GRAPH_105_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  - M_TECH_REL_STRENGTH
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - graph_load
+  counterpart: trsgraph
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: Nebula TRSGraph space（C04 定）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id053
+    - src_vid
+    - dst_vid
+    - rel_type
+    - weight
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: unknown
+  data_source:
+    source_system: trsgraph（NebulaGraph TRSGraph）
+    table: 技术相关 EDGE（技术–技术、实体–技术；ENT 已定义 produces）
+    table_cn: Nebula 技术点边
+    key_fields: *id053
+    primary_key: (src, dst, rank)
+    entity_align_key: 边端点需稳定 technology_id
+    coverage: unknown
+    update_freq: unknown
+    rows:
+      value: unknown
+      as_of: null
+      ref: 本叶未连 Nebula；C04 核
+    pages:
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-02-MAINTAIN-ENTITY
+    - DS-02-TECHGRAPH
+    - DS-03-RESULT
+    - DS-07-*
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 技术–技术边类型（演进/依赖/掌握/应用/产业化，见 srs 04 seq 13）未在 schema 落地
+  - produces 边现网靠新闻推断（infer_org_produces_tech），无稳定技术点即不上图
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 人工维护写回（A03）与 105 自动灌入的优先级未定
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: low
+- int_id: INT-C-TECH-180
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - graph
+  - write_back
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: []
+  integration_pattern: TBD
+  ours:
+  - etl
+  - graph_load
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表，结构升级）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id054
+    - technology_id
+    - name_cn
+    - name_en
+    - aliases[]
+    - domain_code
+    - parent_technology_id
+    - source（jx104|manual）
+    - status
+    - version
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: 随 104 Job + 人工维护
+  data_source:
+    source_system: 我方项目自建（待建，不在任何现有库）
+    table: 技术点主数据表（建议 dwd/ads technology_master，名待定）
+    table_cn: 技术点主数据
+    key_fields: *id054
+    primary_key: technology_id（全局稳定 ID）
+    entity_align_key: 全部技术维数据的对齐锚点；Nebula VID = tech:{technology_id}
+    coverage: 全球（随文献）
+    update_freq: 随 104 Job + 人工维护
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: 本叶检索 data/、ddl/、lumen-etl-es-py、lumen-algo-py、lumen-svc-platform 均无
+    pages: []
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无
+    d1_d4: null
+  gaps:
+  - 表不存在
+  conflicts: []
+  decision_needed:
+  - 技术点主数据持有方（我方 / 久新 / 甲方）
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 契约：technology_id 唯一、别名不跨点
+  confidence: medium
+- int_id: INT-C-TECH-181
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DEEP_133_1
+  - M_TECH_DEEP_134_1
+  - M_TECH_DEEP_140_1
+  - M_TECH_TOPIC_HEAT
+  metric_domain_other: []
+  algorithm_type:
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表，结构升级）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id055
+    - domain_code
+    - domain_name
+    - parent_code
+    - level
+    - ipc_anchor[]
+    - discipline_anchor[]
+    - version
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: 版本化，低频
+  data_source:
+    source_system: 我方项目自建（待建）
+    table: 技术领域分类维表（建议 dim_tech_domain，名待定）
+    table_cn: 技术领域分类体系
+    key_fields: *id055
+    primary_key: domain_code
+    entity_align_key: IPC/CPC、论文 scope、项目 discipline_code 三套映射到同一 domain_code；与久新共用
+    coverage: 全球
+    update_freq: 版本化，低频
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: ddl/ 仅有地区/国家/产业集群维（gkxlumenx_dim_*），无技术领域维
+    pages:
+    - DS-03-RESULT
+    - DS-07-SCI-CREATE
+    - DS-09-*
+    - DS-09-COMPREHENSIVE
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - 表不存在
+  - TECH-P0-2 供应方未回复
+  conflicts:
+  - 禁止用产业链 INB* / dwd_industry_code 冒充
+  decision_needed:
+  - 技术领域分类体系选型：IPC 派生 / 国家学科分类 / 战略性新兴产业分类 / 甲方自定义
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 契约：关键字段非空率/主键唯一
+  - 降级：源缺失时页面空态 + 角标，不填 0
+  confidence: medium
+- int_id: INT-C-TECH-182
+  layer: data
+  srs: null
+  page_ref: null
+  dimension:
+  - TECH
+  - ORG
+  - TAL
+  dep_kind:
+  - data
+  - algorithm
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_INVEST_AMOUNT
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type:
+  - STAT
+  - third_party
+  integration_pattern: TBD
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 只读 ADS（draft；Java 不直连三方库、不写 nGQL）
+    python: lumen-etl-es-py / lumen-algo-py 离线 ETL·Job（draft）
+    downstream: 项目 DWD / ADS（新表，结构升级）
+  contract_draft:
+    request:
+    - technology_id
+    - domain_code
+    - region_scope
+    - time_range
+    - as_of
+    response_key_fields: &id056
+    - technology_id
+    - doc_type（patent|zh_paper|en_paper|scholar_paper|project|report）
+    - doc_id
+    - weight
+    - method（ipc|keyword|ner）
+    - version
+    granularity:
+      time: unknown
+      geo: unknown
+    freshness: 随 104 Job
+  data_source:
+    source_system: 我方项目自建（待建）
+    table: 技术点↔文献/机构/人才桥接表（建议 dwd technology_doc_rel，名待定）
+    table_cn: 技术点桥接
+    key_fields: *id056
+    primary_key: (technology_id, doc_type, doc_id, version)
+    entity_align_key: 把 dwd_* 文献主键挂到 technology_id；机构/人才经文献二跳
+    coverage: 随文献
+    update_freq: 随 104 Job
+    rows:
+      value: 0（不存在）
+      as_of: null
+      ref: 同 INT-C-TECH-180
+    pages:
+    - DS-01-FACTORS
+    - DS-02-*
+    - DS-02-ENTITY
+    - DS-03-RESULT
+    - DS-07-*
+    - DS-07-SCI-CREATE
+    - DS-07-TECH-INNOV
+    - TOPIC-TECH-05
+    shared_with: null
+  status:
+    demo: demo-* 未以 dwd_* 技术维接入（技术链页为 Mock；未逐页核）
+    lumen: 无
+    d1_d4:
+      d1: draft
+      d4: mock
+  gaps:
+  - kit.source_tables=pending_ods（D3 pending_ods），本卡对应关系为候选，未经 data-agent 正式化
+  - 表不存在
+  - TECH-P1-3 供应方未回复
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 归属方法（IPC 规则 vs NER）不同会导致计数差异
+  test_points:
+  - 对账：同一专利在不同 method 下的技术点命中率
+  confidence: medium
