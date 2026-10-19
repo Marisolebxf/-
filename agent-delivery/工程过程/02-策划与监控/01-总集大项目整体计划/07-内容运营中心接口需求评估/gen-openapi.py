@@ -1,10 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""CMS-JX OpenAPI v1.0 生成器：从《CMS-JX接口规格书.md》v1.3 冻结内容机械转换。
+"""CMS-JX OpenAPI v1.0 生成器：从《CMS-JX接口规格书.md》v1.5 冻结内容机械转换。
 真源 = 规格书 + A5 冻结决策。改契约改本表后重跑：python3 gen-openapi.py > CMS-JX-OpenAPI-v1.0.json
 ponytail: 无第三方依赖，输出 JSON（OpenAPI 3.0 兼容，Apifox/Postman/Swagger 可直接导入）。
+
+两档输出（2026-10-19 拆分，久新先接已上线部分）：
+  全量版（默认）      ：python3 gen-openapi.py > CMS-JX-OpenAPI-v1.0.json          # 含预告端点
+  已上线 live 版      ：LIVE_ONLY=1 python3 gen-openapi.py > CMS-JX-OpenAPI-v1.0-live.json  # 仅已实现端点
+未实现端点登记在 PENDING 集合：淮政玮的 EXPIRED + 门户/可视化顺延组。实现合入后从 PENDING 移除并重跑全量版。
 """
 import json
+import os
+
+# 未实现端点（live 版剔除）：淮政玮名下 POL-EXPIRED；顺延组 TOPN/STATS/PANO/ROSTER 等
+PENDING = {
+    "/api/open/cms/v1/policy/expired",
+    "/api/open/cms/v1/policy/topn",
+    "/api/open/cms/v1/policy/stats",
+    "/api/open/cms/v1/enterprise/profile",
+    "/api/open/cms/v1/enterprise/topn",
+    "/api/open/cms/v1/enterprise/panorama",
+    "/api/open/cms/v1/enterprise/star-roster",
+    "/api/open/cms/v1/enterprise/sz-focus",
+    "/api/open/cms/v1/service-org/topn",
+}
+LIVE_ONLY = os.environ.get("LIVE_ONLY") == "1"
 
 # ---------- 字段定义工具 ----------
 def F(name, typ="string", req=False, enum=None, fmt=None, desc=""):
@@ -51,7 +71,7 @@ spec = {
         "title": "CMS-JX 内容运营中心接口（智树侧）",
         "version": "1.0.0",
         "description": (
-            "契约真源：《CMS-JX接口规格书.md》v1.3 + CMS-JX-OVERLAY-A5-L01 冻结决策。\n"
+            "契约真源：《CMS-JX接口规格书.md》v1.5 + CMS-JX-OVERLAY-A5-L01 冻结决策。\n"
             "访问：K8s ClusterIP Service gkxlumen-cms（网关不注册 /cms 路由；无用户态流量）。\n"
             "鉴权：全部请求头 X-CMS-Api-Key（必填，缺失/错误→40101 CMS_AUTH_FAILED）；写操作另带 X-CMS-Operator（操作人，缺省 unknown）。\n"
             "动词铁律：全 POST + JSON body，禁止路径参数（业务 id 一律在 body；{entityType}/{domain} 为有限枚举段例外）。\n"
@@ -289,7 +309,7 @@ rd("enterprise/products", "读侧·企业", "企业产品名称（真源∪overl
 rd("enterprise/topn", "读侧·企业", "企业技术力/商业力 TopN（算法榜单）", {"keyword": {}, "size": {"type": "integer"}})
 rd("enterprise/panorama", "读侧·企业", "企业全景事实包", {"id": {}})
 rd("enterprise/star-roster", "读侧·企业", "明星企业名单（CMS 自管语义）", {"page": {"type": "integer"}, "size": {"type": "integer"}})
-rd("enterprise/sz-focus", "读侧·企业", "深圳聚焦企业", {"page": {"type": "integer"}, "size": {"type": "integer"}})
+rd("enterprise/sz-focus", "读侧·企业", "深圳聚焦企业", {"page": {"type": "integer"}, "size": {"type": "integer"}})  # 顺延：门户可视化（live 剔除，见 PENDING）
 rd("industry/tree", "读侧·产业", "标准产业分类树", {})
 rd("industry/chain-links", "读侧·产业", "标准产业链环节", {})
 rd("service-org/list", "读侧·服务机构", "服务机构列表（join 视角：圈定池∪虚拟）", {"keyword": {}, "page": {"type": "integer"}, "size": {"type": "integer"}})
@@ -305,6 +325,10 @@ rd("policy/expired", "读侧·政策", "已失效政策列表", {"page": {"type"
 rd("bulk/entities", "读侧·批量", "实体基础信息批量查询（ids；不返关系/属性）", {"ids": {"type": "array", "items": {"type": "string"}}})
 
 # tags 汇总
+if LIVE_ONLY:
+    # live 版：剔除未实现端点（PENDING 登记），仅保留已上线契约
+    for p in PENDING:
+        paths.pop(p, None)
 for p in paths.values():
     for method, o in p.items():
         for t in o.get("tags", []):
