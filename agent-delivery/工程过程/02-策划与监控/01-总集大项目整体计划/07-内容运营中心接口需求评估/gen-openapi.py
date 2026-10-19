@@ -320,7 +320,7 @@ rd("policy/detail", "读侧·政策", "政策详情", {"id": {}})
 rd("policy/suggest", "读侧·政策", "政策下拉", {"keyword": {}, "limit": {"type": "integer"}})
 rd("policy/topn", "读侧·政策", "政策力度榜单", {"size": {"type": "integer"}})
 rd("policy/stats", "读侧·政策", "政策统计与区域关联", {})
-rd("policy/expired", "读侧·政策", "已失效政策列表", {"page": {"type": "integer"}, "size": {"type": "integer"}})
+rd("policy/expired", "读侧·政策", "已失效政策列表（updated_after 增量水位，T+1 拉取）", {"updated_after": {"type": "string", "description": "增量水位，如 2026-10-18 02:00:00；不传=全量"}, "page": {"type": "integer"}, "size": {"type": "integer"}})
 rd("bulk/entities", "读侧·批量", "实体基础信息批量查询（ids；不返关系/属性）", {"ids": {"type": "array", "items": {"type": "string"}}})
 
 # tags 汇总

@@ -3,7 +3,7 @@
  "info": {
   "title": "CMS-JX 内容运营中心接口（智树侧）",
   "version": "1.0.0",
-  "description": "契约真源：《CMS-JX接口规格书.md》v1.3 + CMS-JX-OVERLAY-A5-L01 冻结决策。\n访问：K8s ClusterIP Service gkxlumen-cms（网关不注册 /cms 路由；无用户态流量）。\n鉴权：全部请求头 X-CMS-Api-Key（必填，缺失/错误→40101 CMS_AUTH_FAILED）；写操作另带 X-CMS-Operator（操作人，缺省 unknown）。\n动词铁律：全 POST + JSON body，禁止路径参数（业务 id 一律在 body；{entityType}/{domain} 为有限枚举段例外）。\n响应信封：{code:0,msg:'ok',data:...}；列表 data={total,page,size,records[]}。\n写语义：实体资源=overlay 覆盖（真源零写）+软删；内容资源=纯 overlay 行。删除被引用→40901 CMS_DELETE_REFUSED（data.reasons 列引用来源）。全部写操作落 cms_op_audit 留痕。"
+  "description": "契约真源：《CMS-JX接口规格书.md》v1.5 + CMS-JX-OVERLAY-A5-L01 冻结决策。\n访问：K8s ClusterIP Service gkxlumen-cms（网关不注册 /cms 路由；无用户态流量）。\n鉴权：全部请求头 X-CMS-Api-Key（必填，缺失/错误→40101 CMS_AUTH_FAILED）；写操作另带 X-CMS-Operator（操作人，缺省 unknown）。\n动词铁律：全 POST + JSON body，禁止路径参数（业务 id 一律在 body；{entityType}/{domain} 为有限枚举段例外）。\n响应信封：{code:0,msg:'ok',data:...}；列表 data={total,page,size,records[]}。\n写语义：实体资源=overlay 覆盖（真源零写）+软删；内容资源=纯 overlay 行。删除被引用→40901 CMS_DELETE_REFUSED（data.reasons 列引用来源）。全部写操作落 cms_op_audit 留痕。"
  },
  "servers": [
   {
@@ -7877,8 +7877,8 @@
     "tags": [
      "读侧·政策"
     ],
-    "summary": "已失效政策列表",
-    "operationId": "已失效政策列表",
+    "summary": "已失效政策列表（updated_after 增量水位，T+1 拉取）",
+    "operationId": "已失效政策列表（updated_after 增量水位，T+1 拉取）",
     "parameters": [
      {
       "name": "X-CMS-Api-Key",
@@ -7918,6 +7918,10 @@
        "schema": {
         "type": "object",
         "properties": {
+         "updated_after": {
+          "type": "string",
+          "description": "增量水位，如 2026-10-18 02:00:00；不传=全量"
+         },
          "page": {
           "type": "integer"
          },
