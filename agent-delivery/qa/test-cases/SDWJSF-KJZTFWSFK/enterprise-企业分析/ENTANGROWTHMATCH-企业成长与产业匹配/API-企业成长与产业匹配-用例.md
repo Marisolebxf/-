@@ -7,51 +7,42 @@
 > **版本**：v1.0  
 > **模块**：企业分析 / 企业成长与产业匹配  
 > **catalog**：`entry_id=entan.growth-match` · `catalog_page_id=entan.growth-match` · path `/entan/growth-match`  
-> **契约真源**：`lumen-ui-algo-apiview/src/catalog/entan.json` · 页 `entan.growth-match`  
-> **A 线对照**：无独立 `work/Lxx.md`（`_l6-to-catalog-map.yaml` 注明 `entan.growth-match` 不扩六级）；矩阵四行键由 `entan.json` + `_catalog-snapshot.md` 对齐  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I  
+> **A 线对照**：无对应 Lxx（`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `entan.growth-match`，原因「不扩六级」；不改 `work/`，不按 `field_key` 一行一用例）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批4）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00249（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00249」后，可只断言失败/不可用态 |
-| catalog 状态 | 本页 **2** 个 endpoint（`entan.growth-match.potential` / `entan.growth-match.match`）catalog `status=unavailable`；**禁止**将 `sampleResponse` 中 `value` 数值及 `value.dimensions`、`upstream_degree` 等样例嵌套字段作为通过条件 |
-| 试调 | **未试调**（本子任务禁止 curl；执行期按金样步骤与 §0 鉴权复核） |
-| 请求体 | POST JSON；必填 `enterprise_codes`（array）；组合定义见附录 A |
-| 样例与契约差 | `sampleResponse` 中得分常位于 `value` 对象内（如 `value.value`）；契约 `responseFields` 仅声明顶层 **number** 型 `value`。断言以 `responseFields` 为准；样例多出的 dimensions / upstream_degree / hint 不设失败条件 |
+| # | title（功能点列原文） | endpoint_id | status |
+|---|------------------------|-------------|--------|
+| 1 | 成长潜力（企业集合） | entan.growth-match.potential | unavailable |
+| 2 | 产业匹配度（企业集合） | entan.growth-match.match | unavailable |
+| 3 | M_ENT_AGGLOMERATION_INDEX | entan.growth-match.potential.m_ent_agglomeration_index | available |
+| 4 | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | available |
+
+**enterprise_codes 试调取值**：文档 `sampleRequest` 四元组 `0218337e44ca794fee9850cf1627b03b`、`05dc8024336db695425572625773381b`、`0551ccfde6aa2b3c52e647e283204040`、`05ff69620c962ce3bbb852351f077299`（附录 A 引用该组）。
+
+清单以 `lumen-ui-algo-apiview/src/catalog/entan.json` 该页 `endpoints[]` 为准（4 个 title）。as-built yaml 的 `endpoint_count: 2` 为旧计数，本册不采用。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=entan.growth-match`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01149**～**API-01156**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=entan.growth-match`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00249 | 企业分析 | 企业成长与产业匹配 | 契约-不可用 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | catalog 不可用态下成长潜力接口返回可识别非成功契约信封 | 1、已确认 catalog `entan.growth-match.potential` 为 unavailable；2、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含 `code` 字段；3、`code` 不属于成功集合，或 `data` 不构成含 number 型 `value` 的成功业务载荷；4、不得将 sampleResponse 成长潜力示例数值作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | M_ENT_GROWTH_POTENTIAL | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-01 金样 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00250 | 企业分析 | 企业成长与产业匹配 | 异常-缺必填 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口缺少 enterprise_codes 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 API-00249 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作合法空 value 或无得分成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-02；矩阵挂 enterprise_codes、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00251 | 企业分析 | 企业成长与产业匹配 | 异常-空集合 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口 enterprise_codes 为空数组时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得与「合法非空集合下无成长潜力可算」空态混淆 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-03；矩阵挂 _fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00252 | 企业分析 | 企业成长与产业匹配 | 异常-非法编码 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口 enterprise_codes 非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、message 或 msg 可非空；3、不得将失败当作含可信 number 型 value 的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-04 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00253 | 企业分析 | 企业成长与产业匹配 | 异常-类型错误 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口 enterprise_codes 非数组时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-05 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将类型错误当作成功 value 载荷 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-05 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00254 | 企业分析 | 企业成长与产业匹配 | 契约-不可用 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | catalog 不可用态下产业匹配度接口返回可识别非成功契约 | 1、已确认 catalog `entan.growth-match.match` 为 unavailable；2、已按 §0 携带有效 token 与租户头；3、信封规则见 API-00249 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应 code 不属于成功集合，或 data 不构成含 number 型 `value` 的成功产业匹配度载荷；3、不得将 sampleResponse 匹配度示例数值作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | M_ENT_INDUSTRY_MATCH_SCORE | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00255 | 企业分析 | 企业成长与产业匹配 | 异常-缺必填 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口缺少 enterprise_codes 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作空 value 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-02；矩阵挂 enterprise_codes、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00256 | 企业分析 | 企业成长与产业匹配 | 异常-空集合 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口 enterprise_codes 为空数组时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得与「合法非空集合下无匹配度可算」空态混淆 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-03 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00257 | 企业分析 | 企业成长与产业匹配 | 异常-非法编码 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口 enterprise_codes 非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含可信产业匹配度 value 的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-04 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00258 | 企业分析 | 企业成长与产业匹配 | 异常-类型错误 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口 enterprise_codes 非数组时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-05 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将类型错误当作成功 value 载荷 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-05 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00259 | 企业分析 | 企业成长与产业匹配 | 异常-鉴权 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization（可不携带 TENANT-ID） | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务 value 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-01；全页 match 鉴权同本用例 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00260 | 企业分析 | 企业成长与产业匹配 | 备选-最小集合 | 成长潜力（企业集合） | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力接口单元素 enterprise_codes 下契约态可识别 | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 API-00249 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 GMP-06 | 1、HTTP 与 code 可解析；2、不得将单企业样例得分作为通过条件；3、失败态不得冒充单企业空 value 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | M_ENT_GROWTH_POTENTIAL | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=GMP-06；矩阵挂 value 契约占位 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00261 | 企业分析 | 企业成长与产业匹配 | 备选-最小集合 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口单元素 enterprise_codes 下契约态可识别 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-06 | 1、HTTP 与 code 可解析；2、不得将单企业样例匹配度作为通过条件；3、失败态不得冒充单企业空 value 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | M_ENT_INDUSTRY_MATCH_SCORE | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-06；矩阵挂 value 契约占位 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00262 | 企业分析 | 企业成长与产业匹配 | 异常-null值 | 产业匹配度（企业集合） | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度接口 enterprise_codes 为 null 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 GMM-07 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将 null 当作空数组或省略键的成功空 value 态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=GMM-07；矩阵挂 _fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01149 | 企业分析 | 企业成长与产业匹配 | 主流程 | — | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力（企业集合）按文档 sampleRequest 的 enterprise_codes 返回示例字段 | 1、enterprise_codes 使用文档 sampleRequest 四元组 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 POT-01 | 1、返回 body 与 sampleResponse 同层含 metric_id（string，示例 M_ENT_GROWTH_POTENTIAL）、metric_name_zh（string，示例 成长潜力）；2、value 在 sampleResponse 中为对象，内含 value（number，示例 72.5）、dimensions（object：market_expand number 示例 68.0、profit_growth number 示例 74.0、asset_accumulate number 示例 76.0）、hint（string，示例 mock 阶段数据，三维等权重与行业均值比较（Q015 待补））；3、responseFields 声明 value 为 number（成长潜力得分）；4、data_source（string，示例 mock）、confidence（string，示例 medium）；5、calc_process 为对象，含 definition（string，示例 成长潜力）、formula（string，示例 市场扩张/利润增长/资产积累三维等权）、source_tables（array，示例含 成长潜力缺口表）、model_version（string，示例 entan-v1.0） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | M_ENT_GROWTH_POTENTIAL | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=POT-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01150 | 企业分析 | 企业成长与产业匹配 | 异常-入参-缺enterprise_codes | — | 企业成长与产业匹配 | 成长潜力（企业集合） | 成长潜力（企业集合）不传 enterprise_codes | 1、无 | 1.POST /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute，请求体取组合 POT-02 | 1、返回 body 的 message 或 msg 说明缺少 enterprise_codes；2、不返回含 metric_id 为 M_ENT_GROWTH_POTENTIAL 且带 value 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | | INTEG | | | endpoint_id=entan.growth-match.potential catalog_page_id=entan.growth-match 组合=POT-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01151 | 企业分析 | 企业成长与产业匹配 | 主流程 | — | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度（企业集合）按文档 sampleRequest 的 enterprise_codes 返回示例字段 | 1、enterprise_codes 使用文档 sampleRequest 四元组 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 MAT-01 | 1、返回 body 与 sampleResponse 同层含 metric_id（string，示例 M_ENT_INDUSTRY_MATCH_SCORE）、metric_name_zh（string，示例 产业匹配度）；2、value 在 sampleResponse 中为对象，内含 value（number，示例 0.82）、upstream_degree（number，示例 2.4）、centroid_degree（number，示例 0.71）、chain_relevance（number，示例 1.15）、hint（string，示例 mock 阶段数据，依赖投入产出表上游度/质心度（Q015 待补））；3、responseFields 声明 value 为 number（产业匹配度）；4、data_source（string，示例 mock）、confidence（string，示例 medium）；5、calc_process 为对象，含 definition（string，示例 产业匹配度）、formula（string，示例 上游度/质心度/产业链相关性）、source_tables（array，示例含 投入产出表）、model_version（string，示例 entan-v1.0） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | M_ENT_INDUSTRY_MATCH_SCORE | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=MAT-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01152 | 企业分析 | 企业成长与产业匹配 | 异常-入参-缺enterprise_codes | — | 企业成长与产业匹配 | 产业匹配度（企业集合） | 产业匹配度（企业集合）不传 enterprise_codes | 1、无 | 1.POST /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute，请求体取组合 MAT-02 | 1、返回 body 的 message 或 msg 说明缺少 enterprise_codes；2、不返回含 metric_id 为 M_ENT_INDUSTRY_MATCH_SCORE 且带 value 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | | INTEG | | | endpoint_id=entan.growth-match.match catalog_page_id=entan.growth-match 组合=MAT-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01153 | 企业分析 | 企业成长与产业匹配 | 主流程 | — | 企业成长与产业匹配 | M_ENT_AGGLOMERATION_INDEX | M_ENT_AGGLOMERATION_INDEX 按文档 sampleRequest 的 enterprise_codes 返回示例字段 | 1、enterprise_codes 使用文档 sampleRequest 四元组 | 1.POST /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute，请求体取组合 AGG-01 | 1、返回 body 与 sampleResponse 同层含 metric_id（string，示例 M_ENT_AGGLOMERATION_INDEX）、hint（string，示例 compute 响应,以实际调用为准）；2、responseFields 声明 value 为 number（成长潜力得分）；3、sampleResponse 未给出 value 示例值，返回中应出现 responseFields 所列 value | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute | M_ENT_AGGLOMERATION_INDEX | INTEG | | | endpoint_id=entan.growth-match.potential.m_ent_agglomeration_index catalog_page_id=entan.growth-match 组合=AGG-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01154 | 企业分析 | 企业成长与产业匹配 | 异常-入参-缺enterprise_codes | — | 企业成长与产业匹配 | M_ENT_AGGLOMERATION_INDEX | M_ENT_AGGLOMERATION_INDEX 不传 enterprise_codes | 1、无 | 1.POST /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute，请求体取组合 AGG-02 | 1、返回 body 的 message 或 msg 说明缺少 enterprise_codes；2、不返回含 metric_id 为 M_ENT_AGGLOMERATION_INDEX 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute | | INTEG | | | endpoint_id=entan.growth-match.potential.m_ent_agglomeration_index catalog_page_id=entan.growth-match 组合=AGG-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01155 | 企业分析 | 企业成长与产业匹配 | 主流程 | — | 企业成长与产业匹配 | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 按文档 sampleRequest 的 enterprise_codes 返回示例字段 | 1、enterprise_codes 使用文档 sampleRequest 四元组 | 1.POST /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute，请求体取组合 IND-01 | 1、返回 body 与 sampleResponse 同层含 metric_id（string，示例 M_ENT_DS_07_INDUSTRY_POTENTIAL_006）、hint（string，示例 compute 响应,以实际调用为准）；2、responseFields 声明 value 为 number（成长潜力得分）；3、sampleResponse 未给出 value 示例值，返回中应出现 responseFields 所列 value | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | INTEG | | | endpoint_id=entan.growth-match.potential.m_ent_ds_07_industry_potential_006 catalog_page_id=entan.growth-match 组合=IND-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01156 | 企业分析 | 企业成长与产业匹配 | 异常-入参-缺enterprise_codes | — | 企业成长与产业匹配 | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | M_ENT_DS_07_INDUSTRY_POTENTIAL_006 不传 enterprise_codes | 1、无 | 1.POST /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute，请求体取组合 IND-02 | 1、返回 body 的 message 或 msg 说明缺少 enterprise_codes；2、不返回含 metric_id 为 M_ENT_DS_07_INDUSTRY_POTENTIAL_006 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute | | INTEG | | | endpoint_id=entan.growth-match.potential.m_ent_ds_07_industry_potential_006 catalog_page_id=entan.growth-match 组合=IND-02 |
 
 ---
 
@@ -59,28 +50,25 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| GMP-01 | entan.growth-match.potential | `enterprise_codes` = catalog example 四元组（`demo-org-sz-active-listed`、`demo-org-hk`、`demo-org-gz-00`、`demo-org-bj-01`，执行期可替换） | unavailable 契约占位主路径 |
-| GMP-02 | entan.growth-match.potential | 请求体不含 `enterprise_codes` 键 | 缺必填 |
-| GMP-03 | entan.growth-match.potential | `enterprise_codes`: `[]` | 空集合（失败哨兵，非空态） |
-| GMP-04 | entan.growth-match.potential | `enterprise_codes`: `["__invalid_org__"]` | 非法企业编码 |
-| GMP-05 | entan.growth-match.potential | `enterprise_codes`: `"demo-org-sz-active-listed"`（string，非 array） | 类型错误单缺陷 |
-| GMP-06 | entan.growth-match.potential | `enterprise_codes`: `["demo-org-sz-active-listed"]` | 单元素集合契约占位 |
-| GMM-01 | entan.growth-match.match | 同 GMP-01 企业集合 | unavailable 契约占位主路径 |
-| GMM-02 | entan.growth-match.match | 同 GMP-02 | 缺必填 |
-| GMM-03 | entan.growth-match.match | 同 GMP-03 | 空集合 |
-| GMM-04 | entan.growth-match.match | 同 GMP-04 | 非法编码 |
-| GMM-05 | entan.growth-match.match | 同 GMP-05 | 类型错误 |
-| GMM-06 | entan.growth-match.match | 同 GMP-06 | 单元素集合 |
-| GMM-07 | entan.growth-match.match | `enterprise_codes`: `null` | null 值单缺陷 |
+| POT-01 | entan.growth-match.potential | enterprise_codes=["0218337e44ca794fee9850cf1627b03b","05dc8024336db695425572625773381b","0551ccfde6aa2b3c52e647e283204040","05ff69620c962ce3bbb852351f077299"] | 主路径全参（sampleRequest） |
+| POT-02 | entan.growth-match.potential | 请求体不含 enterprise_codes | 缺必填 enterprise_codes |
+| MAT-01 | entan.growth-match.match | enterprise_codes 同 POT-01 四元组 | 主路径全参（sampleRequest） |
+| MAT-02 | entan.growth-match.match | 请求体不含 enterprise_codes | 缺必填 enterprise_codes |
+| AGG-01 | entan.growth-match.potential.m_ent_agglomeration_index | enterprise_codes 同 POT-01 四元组 | 主路径全参（sampleRequest） |
+| AGG-02 | entan.growth-match.potential.m_ent_agglomeration_index | 请求体不含 enterprise_codes | 缺必填 enterprise_codes |
+| IND-01 | entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | enterprise_codes 同 POT-01 四元组 | 主路径全参（sampleRequest） |
+| IND-02 | entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | 请求体不含 enterprise_codes | 缺必填 enterprise_codes |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 必填参数 |
-|-------------|--------|------|--------|----------|
-| entan.growth-match.potential | POST | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | unavailable | enterprise_codes（body） |
-| entan.growth-match.match | POST | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | unavailable | enterprise_codes（body） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 成长潜力（企业集合） | entan.growth-match.potential | POST | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | enterprise_codes* | unavailable |
+| 产业匹配度（企业集合） | entan.growth-match.match | POST | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | enterprise_codes* | unavailable |
+| M_ENT_AGGLOMERATION_INDEX | entan.growth-match.potential.m_ent_agglomeration_index | POST | /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute | enterprise_codes* | available |
+| M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | POST | /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute | enterprise_codes* | available |
 
 ---
 
@@ -88,41 +76,20 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| entan.growth-match.potential | API-00249～00253、00259、00260 |
-| entan.growth-match.match | API-00254～00258、00261、00262 |
+| entan.growth-match.potential | API-01149、01150 |
+| entan.growth-match.match | API-01151、01152 |
+| entan.growth-match.potential.m_ent_agglomeration_index | API-01153、01154 |
+| entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | API-01155、01156 |
 
 ---
 
-## 3. 覆盖自检
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 双 unavailable endpoint 已写契约占位（API-00249、API-00254）
-- [x] 各 endpoint 必填 `enterprise_codes` 已覆盖缺省、空集合、非法编码、类型错误（API-00250～00253、00255～00258）；match 另含 null（API-00262）
-- [x] 异常-鉴权 1 条（API-00259，全页复用）
-- [x] 单元素集合契约占位各 1 条（API-00260、00261）
-- [x] `_empty` 在 `coverage-fp.md` 标 **未覆盖**（endpoint unavailable，无稳定合法空 value 构造）
-- [x] 金样 1 条且断言完整信封（API-00249）
-- [x] §0 标明 **未试调**、禁止 curl
-- [x] `coverage-fp.md` 已更新
-- [x] 本子任务 **不** 改 `code-registry.yaml`（父控回写）
+- [x] 4 个 title 均在功能点列出现且各有 1 条主流程（功能项=主流程）
+- [x] 每接口仅必填 enterprise_codes：正向 1 条（sampleRequest）+ 反向 1 条（缺该参数）；无可选参数，不另写备选
+- [x] unavailable（成长潜力、产业匹配度）仍按 catalog 返回体写主流程，备注注明未交付
+- [x] 正向预期逐字段写 sampleResponse（含嵌套）与 responseFields；反向预期为 message 或 msg 指出缺少 enterprise_codes
+- [x] 无对应 Lxx，不改 work，不按 field_key 一行一用例
+- [x] `coverage-fp.md` 已同步 API-01149～01156
 
-**统计**：用例 **14** 条；编号 **API-00249**～**API-00262**。
-
----
-
-## 4. §I 交卷自检计数
-
-| 检查项 | 结果 |
-|--------|------|
-| FUNC 条数 | **0** |
-| API 条数 | **14**（00249～00262） |
-| 金样（完整信封） | **1**（API-00249） |
-| live 主路径 | **0**（双 endpoint 均 unavailable） |
-| 每 endpoint 用例数 | **potential 7**；**match 7**（含全页鉴权 1 条挂 potential） |
-| 每 endpoint 契约占位 | **2**（potential 00249+00260；match 00254+00261） |
-| `_empty` 矩阵 | **2** 行 **未覆盖** |
-| `_fail` 矩阵 | **2** 行 **已覆盖**（含 catalog 不可用与入参失败哨兵） |
-| A 线独立 Lxx work | **无**（catalog 四行键见 `coverage-fp.md`） |
-| 步骤以 METHOD+path 开头（抽检 00249、00255、00262） | **通过** |
-| 预期无页面/图表表述（抽检 00249、00259、00261） | **通过** |
-| 无一条同时覆盖成功+失败 | **通过** |
-| code-registry 回写 | **父控**（本子任务未改） |
+**统计**：用例 **8** 条（主流程 **4**、反向 **4**）；编号闭区间 **API-01149**～**API-01156**（父控 R2-批4 分配，用满）。

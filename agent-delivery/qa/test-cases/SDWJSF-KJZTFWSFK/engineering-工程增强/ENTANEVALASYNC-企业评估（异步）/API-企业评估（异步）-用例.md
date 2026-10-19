@@ -8,41 +8,31 @@
 > **模块**：工程增强 / 企业评估（异步）  
 > **catalog**：`entry_id=entan.eval-async` · `catalog_page_id=entan.eval-async` · path `/entan/eval-async`  
 > **契约真源**：`lumen-ui-algo-apiview/src/catalog/entan.json` · 页 `entan.eval-async`  
-> **A 线对照**：`fp-split-by-api-run/work/` 内 **无** `entan.eval-async` 行（`_l6-to-catalog-map.yaml`：工程增强，非 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I  
+> **A 线对照**：无对应 Lxx（工程增强，非 60 六级；`_l6-to-catalog-map.yaml` catalog_skip `entan.eval-async`；不改 work）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批4）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00157（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 可解析形态，或网关不可路由时的 HTTP 失败态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00157」后，可只断言失败/不可用态 |
-| catalog 状态 | 本页 **1** 个 endpoint（`entan.eval-async.mock`）catalog `status=unavailable`、`runtime=local_mock`；**`path` 登记为空**（Java REST 未发布，联调台仅前端 Mock 契约）；**禁止**将 `sampleResponse` 各 `mode` 下 `task_id`、`max_score`、`avg_score`、`ranking`、`radar_series`、`diagnosis_rows` 等示例作为通过条件 |
-| 试调 | **未试调**（本子任务禁止 curl；执行期按金样步骤与 §0 鉴权复核） |
-| 请求体 | POST JSON；必填 `mode`（string，枚举 `technology` / `business` / `competitiveness`）；组合定义见附录 A |
-| 样例与契约差 | `sampleResponse` 按 `mode` 分三套嵌套对象（含 `result.ranking` 等）；契约 `responseFields` **仅**声明 `task_id`（string）。断言以 `responseFields` 为准；样例内雷达/表格扩展字段不设失败条件 |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 异步评估契约 | entan.eval-async.mock |
+
+必填参数仅 `mode`（string，枚举 technology / business / competitiveness）。主路径取 `sampleRequest`：`mode=technology`。catalog `path` 为空字符串，`status=unavailable`（文档标记未交付）。本页按父控闭区间只写 1 条主流程 + 1 条缺 mode。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`。`路由route` = catalog `path`（本 endpoint 为空则填 `—`）；`备注` 含 `endpoint_id=`、`catalog_page_id=entan.eval-async`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01139**～**API-01140**）。`路由route` = catalog `path`（本 endpoint 为空则填（空））；`备注` 含 `endpoint_id=`、`catalog_page_id=entan.eval-async`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00157 | 工程增强 | 企业评估（异步） | 契约-不可用 | 异步评估契约 | 企业评估（异步） | 异步评估契约 | catalog 不可用态下异步评估契约接口返回可识别非成功契约 | 1、已确认 catalog `entan.eval-async.mock` 为 unavailable 且 path 为空；2、已按 §0 携带有效 token 与租户头 | 1.POST（catalog path 为空·local_mock）请求体取组合 EVAL-01 | 1、HTTP 状态为 404/405/4xx/5xx 或响应体为 JSON；2、若体为 JSON 则含可解析 `code`；3、`code` 不属于成功集合，或 `data` 不构成含 string 型 `task_id` 的成功业务载荷；4、不得将 sampleResponse 技术力/商业力/综合竞争力示例分值作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-01 金样 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00158 | 工程增强 | 企业评估（异步） | 异常-鉴权 | 异步评估契约 | 企业评估（异步） | 异步评估契约 | 异步评估契约接口缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization（可不携带 TENANT-ID） | 1.POST（catalog path 为空·local_mock）请求体取组合 EVAL-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务 task_id 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00159 | 工程增强 | 企业评估（异步） | 异常-缺必填mode | 异步评估契约 | 企业评估（异步） | 异步评估契约 | 异步评估契约接口缺少 mode 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 API-00157 | 1.POST（catalog path 为空·local_mock）请求体取组合 EVAL-02 | 1、响应为失败态（HTTP 4xx/5xx 或 code 非成功集合）；2、不得将失败当作含可信 `task_id` 的成功异步结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-02；矩阵挂 mode、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00160 | 工程增强 | 企业评估（异步） | 异常-非法mode | 异步评估契约 | 企业评估（异步） | 异步评估契约 | 异步评估契约接口 mode 枚举外取值时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST（catalog path 为空·local_mock）请求体取组合 EVAL-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、message 或 msg 可非空；3、不得将失败当作含可信 `task_id` 的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-03；矩阵挂 mode、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00161 | 工程增强 | 企业评估（异步） | 异常-空mode | 异步评估契约 | 企业评估（异步） | 异步评估契约 | 异步评估契约接口 mode 为空字符串时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.POST（catalog path 为空·local_mock）请求体取组合 EVAL-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、不得与合法 `technology` 主路径成功态混淆 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-04；矩阵挂 _fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01139 | 工程增强 | 企业评估（异步） | 主流程 | — | 企业评估（异步） | 异步评估契约 | 异步评估契约按文档 sampleRequest 传 mode=technology 返回契约示例字段 | 1、mode 使用文档示例 technology | 1.POST （path 为空），请求体取组合 EVAL-01 | 1、返回 body 为对象，含 technology、business、competitiveness 三个对象（与 sampleResponse 一致）；responseFields 的 task_id（string，任务标识）出现在三个对象内；2、technology 含 task_id（string，示例 EVAL-20260730-001）、sub_type（string，technology）、report_status（string，not_created）；enterprises 为数组，元素含 enterprise_code（string）、enterprise_name（string），示例 ORG00000050/智芯科技（深圳）有限公司、ORG00000054/绿能装备制造有限公司；3、technology.summary 含 max_score（number，88.6）、enterprise_count（number，5）、avg_score（number，72.3）、high_risk_count（number，1）；4、technology.result.radar_dimensions 为 string 数组（技术创新、技术人才、技术投入、技术合作、技术转化）；radar_series 为数组，元素含 enterprise_name（string）、values（number 数组），示例智芯 92/88/85/78/90、绿能 55/48/42/50/38；5、technology.result.ranking 为数组，元素含 enterprise_name（string）、score（number）、rank（number），示例智芯 score=88.6 rank=1、绿能 score=46.6 rank=5；6、technology.result.diagnosis_rows 为数组，元素含 enterprise_name（string）、total_score（number）、confidence（string）、gap_text（string），示例智芯 total_score=88.6 confidence=high gap_text=建议加强产业链协同、绿能 total_score=46.6 confidence=low gap_text=研发投入强度偏低；7、business 含 task_id（string，EVAL-20260730-002）、sub_type（string，business）、report_status（string，not_created）；enterprises 元素含 enterprise_code（string，ORG00000050）、enterprise_name（string，智芯科技（深圳）有限公司）；summary 含 max_score（number，85.2）、enterprise_count（number，5）、benchmark_avg_score（number，68.5）；8、business.result.operating_indicators 为数组，元素含 enterprise_name（string）与 indicators 对象（市场 88、产品 90、品牌 82、技术合作 78、产业链覆盖 85、关键环节参与 80，均为 number）；ranking 含 enterprise_name、score（number，85.2）、rank（number，1）；diagnosis_rows 含 enterprise_name、total_score（number，85.2）、confidence（string，high）、gap_text（string，市场与产品表现突出）；9、competitiveness 含 task_id（string，EVAL-20260730-003）、sub_type（string，competitiveness）、report_status（string，not_created）；enterprises 元素含 enterprise_code（ORG00000050）、enterprise_name（智芯科技（深圳）有限公司）；summary 含 max_score（number，85.9）、enterprise_count（number，5）、avg_score（number，66.8）；10、competitiveness.result.radar_dimensions 为 string 数组（创新能力、经营能力、成长能力）；radar_series 元素含 enterprise_name（string）、values（number 数组，智芯 92/88/86，集合均值 75.6/67.0/66.4）；ranking 含 enterprise_name、score（number，88.7）、rank（number，1）；diagnosis_rows 含 enterprise_name、total_score（number，88.7）、confidence（string，high）、gap_text（string，集合龙头） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | （空） | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01140 | 工程增强 | 企业评估（异步） | 异常-入参-缺mode | — | 企业评估（异步） | 异步评估契约 | 异步评估契约不传必填 mode | 1、请求体不含 mode | 1.POST （path 为空），请求体取组合 EVAL-02 | 1、返回 body 的 message 或 msg 指出缺少 mode；2、不返回含 task_id 的成功契约对象（technology、business、competitiveness） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | （空） | | INTEG | | | endpoint_id=entan.eval-async.mock catalog_page_id=entan.eval-async 组合=EVAL-02 catalog_status=unavailable 文档标记未交付 |
 
 ---
 
@@ -50,18 +40,16 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| EVAL-01 | entan.eval-async.mock | `mode`: `technology`（catalog example，执行期可替换为 `business` / `competitiveness`） | unavailable 契约占位主路径 |
-| EVAL-02 | entan.eval-async.mock | 请求体 `{}`（不含 `mode` 键） | 缺必填 |
-| EVAL-03 | entan.eval-async.mock | `mode`: `__invalid_mode__` | 枚举外取值 |
-| EVAL-04 | entan.eval-async.mock | `mode`: `""` | 空字符串 |
+| EVAL-01 | entan.eval-async.mock | mode=technology（sampleRequest） | 主路径全参 |
+| EVAL-02 | entan.eval-async.mock | 请求体不含 mode | 缺必填 mode |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | runtime | 必填参数 |
-|-------------|--------|------|--------|---------|----------|
-| entan.eval-async.mock | POST | （空） | unavailable | local_mock | mode（body） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 异步评估契约 | entan.eval-async.mock | POST | （空） | mode* | unavailable |
 
 ---
 
@@ -69,38 +57,17 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| entan.eval-async.mock | API-00157、API-00158、API-00159、API-00160、API-00161 |
+| entan.eval-async.mock | API-01139、01140 |
 
 ---
 
-## 3. 覆盖自检
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 唯一 unavailable / local_mock endpoint 已写契约占位（API-00157）
-- [x] 必填 `mode` 缺省、枚举外、空字符串已覆盖（API-00159～00161）
-- [x] 异常-鉴权 1 条（API-00158）
-- [x] `_empty` 在 `coverage-fp.md` 标 **未覆盖**（endpoint unavailable，无稳定合法空 task 构造）
-- [x] 金样 1 条且断言信封或网关不可路由失败态（API-00157）
-- [x] §0 标明 **未试调**、禁止 curl
-- [x] `coverage-fp.md` 已更新
-- [x] 本子任务 **不** 改 `code-registry.yaml`（父控回写）
+- [x] 1 个 title「异步评估契约」在功能点列出现，且有 1 条主流程（功能项=主流程）
+- [x] 必填 mode：sampleRequest 正向 1 条 + 缺 mode 反向 1 条（父控闭区间恰好 2 条）
+- [x] unavailable 仍按 catalog sampleResponse 与 responseFields 逐字段写主流程，备注注明未交付
+- [x] 反向预期写 message 或 msg 指出缺 mode
+- [x] 无对应 Lxx，不按 field_key 拆用例；`coverage-fp.md` 已同步 API-01139～01140
+- [x] 编号使用父控闭区间 API-01139～01140；本子任务不改 code-registry
 
-**统计**：用例 **5** 条；编号 **API-00157**～**API-00161**。
-
----
-
-## 4. §I 交卷自检计数
-
-| 检查项 | 结果 |
-|--------|------|
-| FUNC 条数 | **0** |
-| API 条数 | **5**（00157～00161） |
-| 金样（完整信封或不可路由失败态） | **1**（API-00157） |
-| live 主路径 | **0**（endpoint unavailable + path 空） |
-| 每 endpoint 契约占位 | **1**（mock 00157） |
-| 异常-鉴权 | **1**（00158） |
-| `_empty` 矩阵 | **1** 行 **未覆盖** |
-| `_fail` 矩阵 | **1** 行 **已覆盖**（00157、00159～00161） |
-| 步骤以 POST+组合 开头（抽检 3 条：00157、00159、00161） | **通过** |
-| 预期无页面/图表表述（抽检 3 条：00157、00158、00160） | **通过** |
-| 无一条同时覆盖成功+失败 | **通过** |
-| A 线 `work` 检索 `entan.eval-async` | **0 命中**（工程增强，待 A 线合表核对） |
+**统计**：用例 **2** 条（主流程 1、反向 1）；编号闭区间 **API-01139**～**API-01140**（父控 R2-批4 分配）。

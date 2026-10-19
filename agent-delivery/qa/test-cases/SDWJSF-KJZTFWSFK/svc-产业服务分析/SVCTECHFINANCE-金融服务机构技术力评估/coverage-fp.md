@@ -1,58 +1,54 @@
 # 金融服务机构技术力评估 · 功能点覆盖（svc.tech-finance / L43）
 
-> catalog `svc.tech-finance` · 50897 · path `/industry-service/tech-finance`  
-> 用例 `API-金融服务机构技术力评估-用例.md`  
-> A 线范围：**L43**（`fp-split-by-api-run/work/L43.md`）  
-> 功能点键：`L43 | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
+> catalog `svc.tech-finance` · path `#/industry-service/tech-finance`  
+> A 线真源：`fp-split-by-api-run/work/L43.md`  
+> B 线用例：`API-金融服务机构技术力评估-用例.md`（第二轮 **API-01668**～**01673**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| svc.tech-finance.models | GET | /entan/v1/svc/models | API-000599～API-000603 | catalog `status=unavailable`；本页验收取 `kind=tech` |
-
----
-
-## 2. 功能点 → 用例（主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L43 \| svc.tech-finance.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-000599、API-000601、API-000602 | 已覆盖 | STF-01 tech 主路径；非法 kind 见 02/601；非本页 gap 见 03/602 |
-| L43 \| svc.tech-finance.models \| tech \| 算法输出-tech技术力结果体 | catalog tech | API-000603 | 契约占位 | unavailable，禁止 sample 分值/排名/维度分作通过条件 |
-| L43 \| svc.tech-finance.models \| _empty \| 技术力评价无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「kind=tech 必空」试调证据 |
-| L43 \| svc.tech-finance.models \| _fail \| 技术力评价查询失败 | 契约错误态 | API-000599、API-000600、API-000601、API-000602 | 已覆盖 | 含 catalog 不可用、鉴权失败与 kind 失败语义 |
-| L43 \| \| etl_clean_standardize \| 财务融资风险服务多源预处理 | 需规（1）采集预处理 | — | 未覆盖 | req_only |
-| L43 \| \| scale_cost_risk_service_indicators \| 四维指标与阈值体系 | 需规指标体系阈值 | — | 未覆盖 | req_only |
-| L43 \| \| standardize_weight_tech_index \| 标准化加权与技术力指数 | 需规定量计算 | — | 未覆盖 | req_only |
-| L43 \| \| dimension_scores_in_tech \| 各维度单项分值输出语义 | 需规（2）维度分值 | — | 未覆盖 | req_only |
-| L43 \| \| strength_weakness_analysis \| 能力优势与不足分析 | 需规（2）优劣势 | — | 未覆盖 | req_only |
-| L43 \| \| cross_org_trend_reports \| 跨机构比较与历年趋势 | 需规（2）比较趋势 | — | 未覆盖 | req_only |
-| L43 \| \| org_name_tag_time_scope \| 机构名称标签时间周期语义 | 需规（3）调用范围 | — | 未覆盖 | req_only |
-| L43 \| \| batch_auto_monitor_refresh \| 批量处理与自动化趋势监测 | 需规（3）批量监测 | — | 未覆盖 | req_only |
-| L43 \| \| bundled_outputs_in_tech \| 四类核心输出语义打包 | 需规（2）四类输出 | — | 未覆盖 | req_only |
-| L43 \| \| api_sdk_finance_platform \| API SDK 与金融监管平台集成 | 需规（3）系统对接 | — | 未覆盖 | req_only |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| svc.tech-finance.models | GET | /entan/v1/svc/models | API-01668～01670 | unavailable |
+| svc.tech-finance.m_svc_deep_174_1 | POST | /entan/v1/svc-metric/metric/M_SVC_DEEP_174_1/compute | API-01671～01673 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵（挂 L43.md）
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 2（`kind`、`_fail`） |
-| 契约占位 | 1（`tech`） |
-| 未覆盖 | 11（含 `_empty` 1 + req_only 10） |
+| 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
+|----------|----------|--------------|------|------|
+| L43 \| svc.tech-finance.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-01668、01669、01670 | 已覆盖 | 主路径 kind=tech + 省略 kind + 非法 kind=__invalid__ |
+| L43 \| svc.tech-finance.models \| tech \| 算法输出-tech技术力结果体 | catalog tech | API-01668、01669 | 已覆盖 | 主流程断言 tech 元素 org_id、service_type、score、ext、dimension_scores；备选同结构 |
+| L43 \| svc.tech-finance.models \| _empty \| 技术力评价无数据空态 | 契约空结果 | — | 未覆盖 | sampleResponse.tech 为两条非空机构，无稳定空名单构造条件，不单开空态用例 |
+| L43 \| svc.tech-finance.models \| _fail \| 技术力评价查询失败 | 契约错误态 | API-01670 | 部分覆盖 | 仅非法 kind 反向，预期 message 或 msg 指出 kind 非法 |
 
 ---
 
-## 4. B 线交卷摘要
+## req_only 行（无 endpoint 挂接）
 
-| 项 | 值 |
-|----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000599～API-000603 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+L43.md 中 `etl_clean_standardize`、`scale_cost_risk_service_indicators`、`standardize_weight_tech_index`、`dimension_scores_in_tech`、`strength_weakness_analysis`、`cross_org_trend_reports`、`org_name_tag_time_scope`、`batch_auto_monitor_refresh`、`bundled_outputs_in_tech`、`api_sdk_finance_platform` 共 10 行 **req_only**，无 catalog endpoint，B 线记 **无对应功能点**，不单独开 API 用例。
+
+| 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
+|----------|----------|--------------|------|------|
+| L43 \| \| etl_clean_standardize \| 财务融资风险服务多源预处理 | 需规（1）采集预处理 | — | 无对应功能点 | req_only |
+| L43 \| \| scale_cost_risk_service_indicators \| 四维指标与阈值体系 | 需规指标体系阈值 | — | 无对应功能点 | req_only |
+| L43 \| \| standardize_weight_tech_index \| 标准化加权与技术力指数 | 需规定量计算 | — | 无对应功能点 | req_only |
+| L43 \| \| dimension_scores_in_tech \| 各维度单项分值输出语义 | 需规（2）维度分值 | — | 无对应功能点 | req_only；维度分已写入 models 正向预期的 dimension_scores，不另开用例 |
+| L43 \| \| strength_weakness_analysis \| 能力优势与不足分析 | 需规（2）优劣势 | — | 无对应功能点 | req_only |
+| L43 \| \| cross_org_trend_reports \| 跨机构比较与历年趋势 | 需规（2）比较趋势 | — | 无对应功能点 | req_only |
+| L43 \| \| org_name_tag_time_scope \| 机构名称标签时间周期语义 | 需规（3）调用范围 | — | 无对应功能点 | req_only |
+| L43 \| \| batch_auto_monitor_refresh \| 批量处理与自动化趋势监测 | 需规（3）批量监测 | — | 无对应功能点 | req_only |
+| L43 \| \| bundled_outputs_in_tech \| 四类核心输出语义打包 | 需规（2）四类输出 | — | 无对应功能点 | req_only |
+| L43 \| \| api_sdk_finance_platform \| API SDK 与金融监管平台集成 | 需规（3）系统对接 | — | 无对应功能点 | req_only |
+
+---
+
+## B 线独有（A 线未列 endpoint）
+
+| endpoint_id | 对应用例编号 | 状态 | 说明 |
+|-------------|--------------|------|------|
+| svc.tech-finance.m_svc_deep_174_1 | API-01671、01672、01673 | 无对应功能点 | L43 未列该 compute endpoint |
+
+sampleResponse 中 tech 元素的 org_id、service_type、score、ext.name、ext.rank_no、dimension_scores（patents、rdInvestment、experts、cases、standards）已写入 models 正向预期；A 线只列顶层 field_key `tech`，不按子成员拆行。compute 的 sampleResponse 只有 metric_id、hint，responseFields 另列 tech 且无元素示例，正向预期已分开写明。

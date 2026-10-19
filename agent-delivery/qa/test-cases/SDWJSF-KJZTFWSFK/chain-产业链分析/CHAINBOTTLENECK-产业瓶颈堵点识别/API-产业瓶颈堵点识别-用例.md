@@ -7,39 +7,37 @@
 > **版本**：v1.0  
 > **模块**：产业链分析 / 产业瓶颈堵点识别  
 > **catalog**：`entry_id=chain.bottleneck` · `catalog_page_id=chain.bottleneck` · path `/chain/bottleneck`  
+> **契约真源**：`lumen-ui-algo-apiview/src/catalog/chain.json` · 页 `chain.bottleneck`  
 > **A 线对照**：`fp-split-by-api-run/work/L22.md`（覆盖矩阵用，禁止 field 一行一用例）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
-> **维护人**：qa-agent  
-> **更新日期**：2026-10-17  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批6）  
+> **维护人**：agent:qa-agent  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 成功 code 集合 | `0`、`"0"`、`200`、`"200"` |
-| 鉴权失败 | HTTP **401** 或 **424**；业务体可含 `code` 非成功集合及 `message`/`msg` |
-| 鉴权头 | `Authorization: Bearer <access_token>`（联调台 LoginView：OAuth 密码模式，默认账号口径见 `lumen-ui-algo-apiview`）；`TENANT-ID: 1`（与 apiview 默认租户一致） |
-| 断言对象分工 | **API-00051（金样）** 断言 **完整信封**（HTTP + `code` + `data` 形态）；同册其余用例断言 HTTP 与失败/不可用态，不将 catalog `sampleResponse` 中 severity、overall_score 等数值作为通过条件 |
-| catalog 状态 | 本页仅 **1** 个 endpoint：`chain.bottleneck.main`，catalog `status=unavailable`；**不写** live 成功业务数值预期 |
-| 试调（2026-10-17） | 50897 **可达**。无鉴权主路径试调 **1 次**：`GET /api/innov/v1/industry/INB170101/bottlenecks` → HTTP **424**，响应体 `code=1`（非成功集合）、`msg` 非空。**带有效 token 的契约不可用主路径未试调**（登录需联调台密码加密，本轮未完成 OAuth 取 token）；执行期按金样步骤复核信封 |
-| 本页 endpoint 数 | **1**（`chain.bottleneck.main`） |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 瓶颈堵点 | chain.bottleneck.main |
+| 2 | 产业瓶颈堵点识别模型 | chain.bottleneck.m_chain_deep_125_1 |
+
+两个 title 均只有必填 `chainId`。各 1 条主流程 + 1 条缺 `chainId`，不写备选，不按 field 拆条。
+
+**chainId 取值**：`瓶颈堵点` 的 params.example 与 sampleRequest 均为 `INB170101`。`产业瓶颈堵点识别模型` 的 sampleRequest 为 `chain_id=INB1701`，params.example 为 `INB170101`，键名与取值不一致，主路径以 sampleRequest 为准（见附录 A）。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=chain.bottleneck`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01270**～**API-01273**，连续用满）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=chain.bottleneck`、组合 id。作废旧号不复用 API-00001～00888。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00051 | 产业链分析 | 产业瓶颈堵点识别 | 契约-不可用 | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别 | 瓶颈堵点 | catalog 不可用态下瓶颈堵点接口返回可识别非成功契约 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、catalog 登记 status 为 unavailable | 1.GET /innov/v1/industry/{chainId}/bottlenecks，path 取组合 BOT-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应 code 不属于成功集合，或 data 不构成含 severity/overall_score 的成功业务载荷；3、不得将 sampleResponse 示例数值作为通过条件 | P0 | | | | | | N/A-技术项 | | | | | /innov/v1/industry/{chainId}/bottlenecks | | | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-01 金样 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00052 | 产业链分析 | 产业瓶颈堵点识别 | 异常-鉴权 | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别 | 瓶颈堵点 | 瓶颈堵点接口无 token 时网关拒绝访问 | 1、请求 deliberately 不携带 Authorization | 1.GET /innov/v1/industry/{chainId}/bottlenecks，path 取组合 BOT-01，无 Authorization 头 | 1、HTTP 状态为 401 或 424；2、响应体可辨认为鉴权失败（非成功业务 data） | P1 | | | | | | N/A-技术项 | | | | | /innov/v1/industry/{chainId}/bottlenecks | | | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00053 | 产业链分析 | 产业瓶颈堵点识别 | 异常-非法chainId | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别 | 瓶颈堵点 | 非法 chainId 时瓶颈堵点接口返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/{chainId}/bottlenecks，path 取组合 BOT-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作无堵点空 severity/overall_score 成功态 | P1 | | | | | | N/A-技术项 | | | | | /innov/v1/industry/{chainId}/bottlenecks | | | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-02；矩阵覆盖 chainId 与 _fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00054 | 产业链分析 | 产业瓶颈堵点识别 | 异常-缺path产业标识 | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别 | 瓶颈堵点 | path 缺 chainId 时瓶颈堵点接口返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry//bottlenecks（path 无产业标识段，组合 BOT-03） | 1、HTTP 为 4xx 或响应 code 非成功集合；2、响应体不是成功空对象冒充可用瓶颈结果 | P1 | | | | | | N/A-技术项 | | | | | /innov/v1/industry/{chainId}/bottlenecks | | | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01270 | 产业链分析 | 产业瓶颈堵点识别 | 主流程 | — | 产业瓶颈堵点识别 | 瓶颈堵点 | 瓶颈堵点在 chainId=INB170101 时返回文档中的严重度、综合得分、五维得分与建议 | 1、chainId 使用文档示例 INB170101 | 1.GET /innov/v1/industry/{chainId}/bottlenecks，path 取组合 BOT-01 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：severity（string，responseFields 综合严重度，示例 中等）、overall_score（number，responseFields 综合得分，示例 62.4）；2、sampleResponse 还含 tech_score（number，示例 48）、talent_score（number，示例 55）、market_score（number，示例 71）、capital_score（number，示例 64）、policy_score（number，示例 74）；3、suggestions 为数组，元素含 name（string）、advice（string）；示例第 1 条 name=关键设备、advice=加快刻蚀、薄膜沉积与量检测设备的国产替代验证。；示例第 2 条 name=半导体材料、advice=加强高端光刻材料与电子特气的本地化供给。 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/bottlenecks | M_CHAIN_BOTTLENECK_SEVERITY | INTEG | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01271 | 产业链分析 | 产业瓶颈堵点识别 | 异常-入参-缺chainId | — | 产业瓶颈堵点识别 | 瓶颈堵点 | 瓶颈堵点不传 chainId | 1、path 不传 chainId | 1.GET /innov/v1/industry/{chainId}/bottlenecks，path 取组合 BOT-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 severity 或 overall_score 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/bottlenecks | | INTEG | | | endpoint_id=chain.bottleneck.main catalog_page_id=chain.bottleneck 组合=BOT-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01272 | 产业链分析 | 产业瓶颈堵点识别 | 主流程 | — | 产业瓶颈堵点识别 | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别模型按文档 sampleRequest 的 chain_id 计算并返回 metric_id 与 hint | 1、请求体使用文档 sampleRequest 的 chain_id=INB1701 | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute，请求体取组合 BTM-01 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：metric_id（string，responseFields 指标 ID，示例 M_CHAIN_DEEP_125_1）、hint（string，sampleResponse 多出字段，示例 真实 compute 响应,以实际调用为准） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute | M_CHAIN_DEEP_125_1 | INTEG | | | endpoint_id=chain.bottleneck.m_chain_deep_125_1 catalog_page_id=chain.bottleneck 组合=BTM-01 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01273 | 产业链分析 | 产业瓶颈堵点识别 | 异常-入参-缺chainId | — | 产业瓶颈堵点识别 | 产业瓶颈堵点识别模型 | 产业瓶颈堵点识别模型不传 chainId | 1、请求体不传 chainId | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute，请求体取组合 BTM-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 metric_id 为 M_CHAIN_DEEP_125_1 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute | | INTEG | | | endpoint_id=chain.bottleneck.m_chain_deep_125_1 catalog_page_id=chain.bottleneck 组合=BTM-02 |
 
 ---
 
@@ -47,17 +45,19 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| BOT-01 | chain.bottleneck.main | path `chainId=INB170101`（catalog example，执行期可替换为试调有效 id） | 契约占位主路径 |
-| BOT-02 | chain.bottleneck.main | path `chainId=__invalid__` | 非法产业标识 |
-| BOT-03 | chain.bottleneck.main | path 缺 `chainId`：`GET /innov/v1/industry//bottlenecks` | 缺必填 path 参数 |
+| BOT-01 | chain.bottleneck.main | path chainId=INB170101 | 主路径（sampleRequest / params.example） |
+| BOT-02 | chain.bottleneck.main | 不传 path chainId（请求 `/innov/v1/industry//bottlenecks`，path 段为空） | 缺必填 chainId |
+| BTM-01 | chain.bottleneck.m_chain_deep_125_1 | 请求体按 sampleRequest：chain_id=INB1701（params.name=chainId，example=INB170101，键名与取值均与 sampleRequest 不一致，本组合以 sampleRequest 为准） | 主路径（sampleRequest） |
+| BTM-02 | chain.bottleneck.m_chain_deep_125_1 | 不传 chainId，请求体也不含 chain_id | 缺必填 chainId |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 必填参数 |
-|-------------|--------|------|--------|----------|
-| chain.bottleneck.main | GET | /innov/v1/industry/{chainId}/bottlenecks | unavailable | chainId（path） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 瓶颈堵点 | chain.bottleneck.main | GET | /innov/v1/industry/{chainId}/bottlenecks | chainId* | unavailable |
+| 产业瓶颈堵点识别模型 | chain.bottleneck.m_chain_deep_125_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute | chainId* | available |
 
 ---
 
@@ -65,26 +65,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| chain.bottleneck.main | API-00051、API-00052、API-00053、API-00054 |
+| chain.bottleneck.main | API-01270、01271 |
+| chain.bottleneck.m_chain_deep_125_1 | API-01272、01273 |
 
 ---
 
-## 3. 覆盖自检
+## 3. 覆盖自检（第二轮口径）
 
-- [x] unavailable endpoint 已写契约占位（API-00051）
-- [x] 异常-鉴权 1 条（API-00052）
-- [x] 非法 chainId / 缺 path 入参（API-00053、API-00054）
-- [x] ≥1 条备注含 `金样` 且断言信封（API-00051）
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务编号闭区间 API-00051～API-00054）
+- [x] 2 个 title（瓶颈堵点、产业瓶颈堵点识别模型）均在功能点列出现，且各有 1 条主流程（功能项=主流程）
+- [x] 有参接口：文档示例正向各 1 条；必填 chainId 各 1 条缺省反向；无其它参数，不写备选
+- [x] unavailable（瓶颈堵点）仍按 catalog sampleResponse 写主流程，备注注明未交付
+- [x] 无鉴权 / Token / 401 / 424 / 契约占位 / 纯 HTTP 4xx 预期
+- [x] 不按 L22 field_key 拆用例；`coverage-fp.md` 已同步 API-01270～01273
+- [x] 编号使用父控闭区间 API-01270～01273；本子任务不改 code-registry
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **4** |
-| 编号闭区间 | **API-00051**～**API-00054** |
-| `_empty` 未覆盖 | **1**（无稳定空数据构造条件，见矩阵） |
-| FUNC 条数 | **0** |
+**统计**：接口 **2**；用例 **4** 条（主流程 **2**、反向 **2**）；编号闭区间 **API-01270**～**API-01273**（父控 R2-批6 分配，连续用满）。

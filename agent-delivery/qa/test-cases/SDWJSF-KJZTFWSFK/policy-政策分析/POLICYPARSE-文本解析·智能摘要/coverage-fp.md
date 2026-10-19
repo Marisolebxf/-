@@ -1,61 +1,41 @@
-# 文本解析 · 智能摘要 · 功能点覆盖（policy.parse）
+# 文本解析 · 智能摘要 · A 线功能点覆盖（policy.parse）
 
-> catalog `policy.parse` · 50897 · path `/policy/parse`  
-> 用例 `API-文本解析·智能摘要-用例.md`  
-> A 线真源：无独立 `work/Lxx.md`（`_l6-to-catalog-map.yaml`：`policy.parse` 不扩六级）  
-> 功能点键：`catalog | policy.parse.main | field_key | 功能点中文`（待 A 线合表后可改前缀）  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| policy.parse.main | GET | /policy/v1/policy/text/parse | API-000499～API-000503 | catalog `status=unavailable`；与 `policy.text` 页共用 path 但 catalog 页独立 |
+> **catalog_page_id**：`policy.parse` · path `/policy/parse`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.parse`（原因：不扩六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-文本解析·智能摘要-用例.md`（第二轮 **API-01465**～**01474**，共 10 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.parse`  
 
 ---
 
-## 2. 功能点 → 用例（catalog 契约行）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| catalog \| policy.parse.main \| policy_id \| 算法输入-policy_id政策标识 | catalog policy_id | API-000499、API-000501 | 部分覆盖 | PAR-01 列表模式不传 policy_id；非法 id 见 PAR-02 / API-000501；单政策 PAR-04 待 available 后补 |
-| catalog \| policy.parse.main \| limit \| 算法输入-limit结果条数上限 | catalog limit | API-000499、API-000502 | 已覆盖 | 主路径 limit=20 + 非正整数失败 |
-| catalog \| policy.parse.main \| summary \| 算法输出-summary摘要 | catalog responseFields | API-000503 | 契约占位 | unavailable，禁止 sample 摘要文案作通过条件 |
-| catalog \| policy.parse.main \| _empty \| 文本解析无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「合法入参必空」试调证据 |
-| catalog \| policy.parse.main \| _fail \| 文本解析查询失败 | 契约错误态 | API-000499、API-000500、API-000501、API-000502 | 已覆盖 | 含 catalog 不可用、鉴权失败与入参失败语义 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| policy.parse.main | GET | /policy/v1/policy/text/parse | API-01465、API-01466、API-01467、API-01468、API-01469 | unavailable |
+| policy.parse.m_policy_text_parse | POST | /policy/v1/polan/metric/M_POLICY_TEXT_PARSE/compute | API-01470、API-01471、API-01472、API-01473、API-01474 | available |
 
 ---
 
-## 3. A 线 req_only / 未扩六级说明
+## 功能点 → 用例矩阵
 
-| 项 | 状态 | 说明 |
-|----|------|------|
-| 独立 Lxx by-api 表 | 无 | `_l6-to-catalog-map` 未为 `policy.parse` 生成 work 行 |
-| D1 结构化要素（条款/对象/条件等） | 无对应 HTTP 顶层字段 | catalog 摘要写「D1 结构化要素 + 摘要」；契约仅列 `summary`，不发明拆分 endpoint |
-| DS-11-012 智能摘要与结论推送 | 读面承接 | 关联 metric `M_POLICY_DS_11_POLICY_EVAL_012`；无独立 API 字段，待 A 线扩表登记 req_only |
-| `policy.text` 工程合页 | 路径去重 | 同 path `/policy/v1/policy/text/parse` 亦挂在 `policy.text`；B 线按 **本 catalog 页** 验收，不混写 `policy.text` 用例 |
+本页不在 60 六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。每个 title 的 sampleResponse 与 responseFields 都挂在该接口主流程上；与 sample 相反的传/不传挂备选；每个参数恰好 1 条非法反向。
 
----
-
-## 4. 统计
-
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 2（`limit`、`_fail`） |
-| 部分覆盖 | 1（`policy_id`） |
-| 契约占位 | 1（`summary`） |
-| 未覆盖 | 5（含 `_empty` 1 + req_only 口径 4 类合并登记） |
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| policy.parse.main \| 文本解析 | API-01465、API-01466、API-01467、API-01468、API-01469 | 无对应功能点 | 01465 主流程 sampleRequest（不传 policy_id、limit=20），断言 policy_id、title、summary、metric_id；01466 传入 policy_id；01467 省略 limit；01468 非法 policy_id；01469 非法 limit。文档标记未交付 |
+| （无 Lxx） \| policy.parse.m_policy_text_parse \| 政策文本解析 | API-01470、API-01471、API-01472、API-01473、API-01474 | 无对应功能点 | 01470 主流程 sampleRequest（不传 policy_id、limit=20），断言 metric_id、hint 及 responseFields 的 summary；01471 传入 policy_id；01472 省略 limit；01473 非法 policy_id；01474 非法 limit |
 
 ---
 
-## 5. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000499～API-000503 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0；金样执行期复核信封） |
-| FUNC 条数 | 0 |
+| catalog endpoint 数 | 2 |
+| title 数 | 2 |
+| API 用例数 | 10 |
+| 主流程 | 2 |
+| 备选-参数组合 | 4 |
+| 反向 | 4 |
+| 编号 | API-01465～01474 连续 |
+| A 线 Lxx | 无 |

@@ -29,3 +29,8 @@
 | 20 | 2026-10-17 | innov.tech-evaluation(5/819-23)、innov.tech-planning(5/824-28)、innov.tech-landscape(5/829-33)、innov.global-monitoring(5/834-38) | — | 84/89 | 批20父控 §I 签收；§0 未试调；next_seq→839 |
 | 21 | 2026-10-17 | innov.sz-monitoring(5/839-43)、innov.bay-area(5/844-48)、innov.topic-strategy(5/849-53)、innov.service-org(5/854-58) | — | 88/89 | 批21父控 §I 签收；§0 未试调；next_seq→859 |
 | 22 | 2026-10-17 | innov.events(30/859-88) | — | 89/89 | 批22父控 §I 签收；§0 未试调；next_seq→889；B线 catalog 页收口 |
+| R2-1 | 2026-10-18 | chain.basic(23/889-911)、entan.basic(31/912-942)、entan.competitiveness(6/943-948)、entan.history(7/949-955) | — | 4/89 | R2 批1父控 §I 签收；67 条；next_seq→956 |
+| R2-2 | 2026-10-18 | entan.pain-points(8/956-963)、entan.supply-chain(2/964-965)、entan.tech(10/966-975)、entan.biz(8/976-983) | — | 8/89 | R2 批2父控 §I 签收；28 条；next_seq→984 |
+| R2-23 | 2026-10-18 | innov.service-org(6/2205-2210) | — | 89/89 | R2 批23父控 §I 签收；6 条；next_seq→2211；89 页清空，本轮不重合 Excel |
+| R2-合表 | 2026-10-18 | 功能测试用例整表重写 | — | 89/89 | 按第二轮册覆盖 `科技专题服务算法库-API测试用例.xlsx`；1322 条 API-00889～02210；兼容/集成/性能/规则页未改 |
+| R2-合表-步骤 | 2026-10-18 | 功能测试用例步骤展开附录 | — | 89/89 | 测试步骤写入附录 A 参数赋值（含「同某组合」展开）；1322 条不变；册 markdown 未改 |

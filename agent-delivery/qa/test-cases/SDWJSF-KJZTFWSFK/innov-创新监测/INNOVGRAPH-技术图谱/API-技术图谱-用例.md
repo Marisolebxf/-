@@ -7,53 +7,46 @@
 > **版本**：v1.0  
 > **模块**：创新监测 / 技术图谱  
 > **catalog**：`entry_id=innov.graph` · `catalog_page_id=innov.graph` · path `/innov/graph`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` · 页 `innov.graph`（3 endpoints）  
-> **A 线对照**：`fp-split-by-api-run/_l6-to-catalog-map.yaml`（`innov.*` 不在本轮 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1 · §编写细则 A～I  
+> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.graph`  
+> **A 线对照**：无对应 Lxx。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（创新监测不在本轮 60 六级）。不改 `work/`  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批19）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00754（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00754」后，可只断言 **data 载荷** 或失败态 |
-| catalog 状态 | 本页 **3** 个 endpoint 均为 catalog `status=running`、`runtime=java_api`（按 **live** 主路径验收，等价 playbook 之 `available`）；**禁止**将 `sampleResponse` 中领域名、影响分、rank、nodes/edges 条数或示例实体名作为通过条件 |
-| 试调 | **本会话未试调**（子任务约束禁止 curl）；执行期按 §0 鉴权与 catalog 复核，observed 仅记入执行记录 |
-| 请求体 | 本页均为 **GET** 查询参数；组合见附录 A |
-| 样例与契约差 | `domains` 样例为数组元素含 `parentId`/`level`/`domainSource` 等；`subgraph` 样例含 `period`；`rank` 样例含 `total`/`period` 及 `list` 元素内 `rankInDomain` 等。断言 **仅强制** catalog `responseFields`（`domains`：domainId、name；`subgraph`：nodes、edges；`rank`：list） |
-| 稳定领域占位 | catalog example `domainId=D-AI`（执行期可替换，禁止用领域中文名猜 id） |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 领域树 | innov.graph.domains |
+| 2 | 领域子图 | innov.graph.subgraph |
+| 3 | 影响分排行 | innov.graph.rank |
+
+**参数口径**：领域树无参，仅 1 条主流程。领域子图必填 `domainId`、可选 `limit`；主流程对齐 `sampleRequest`（`domainId=D-AI`、`limit=60`）；与 sample 相反为不传 `limit`；必填反向为省略 `domainId`；`limit` 另 1 条非法。影响分排行四个参数均可选；主流程对齐 `sampleRequest`（`domainId=D-AI`、`pageNum=1`、`pageSize=20`，不传 `nodeType`）；与 sample 相反为不传 `domainId`、传 `nodeType=org`、不传 `pageNum`、不传 `pageSize`；每个参数另 1 条非法。三接口 catalog `status=running`。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00754`～`00768`。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.graph`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01853**～**API-01866**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.graph`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00754 | 创新监测 | 技术图谱 | 主流程-列表成功 | 领域树 | M2 创新点落图与赋分 | 领域树 | 领域树在有效鉴权下返回成功信封与契约出参字段 | 1、已确认 catalog `innov.graph.domains` 为 running；2、已按 §0 携带有效 token 与租户头；3、断言对象为完整原始响应信封 | 1.GET /innov/v1/graph/domains（无查询参数，组合 GRA-DOM-01） | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为数组；4、若数组非空则元素含 string 型 domainId 与 name；5、不得将 sampleResponse 领域条数或 level 示例作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph 组合=GRA-DOM-01 金样 catalog_status=running §0未试调 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00755 | 创新监测 | 技术图谱 | 异常-鉴权 | 领域树 | M2 创新点落图与赋分 | 领域树 | 领域树缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization（可不携带 TENANT-ID） | 1.GET /innov/v1/graph/domains，组合 GRA-DOM-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务领域树载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph 组合=GRA-DOM-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00756 | 创新监测 | 技术图谱 | 契约-字段形态 | 领域树 | M2 创新点落图与赋分 | 领域树 | 成功信封下领域树契约字段 domainId/name 形态符合 catalog | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 §0，金样见 API-00754 | 1.GET /innov/v1/graph/domains，组合 GRA-DOM-01 | 1、若 code 属成功集合且 data 为非空数组，则每条元素 domainId、name 存在且为 string；2、不得以样例「人工智能」等名称或 parentId 层级作通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph 组合=GRA-DOM-01；矩阵挂 domainId、name |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00757 | 创新监测 | 技术图谱 | 异常-错误方法 | 领域树 | M2 创新点落图与赋分 | 领域树 | 领域树使用 POST 时返回可识别非 GET 成功态 | 1、已按 §0 携带有效 token 与租户头 | 1.POST /innov/v1/graph/domains（无请求体） | 1、HTTP 状态为 405 或 4xx/5xx，或响应 code 不属于成功集合；2、不得将错误方法响应当作含可信领域数组的成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph；矩阵挂 _fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00758 | 创新监测 | 技术图谱 | 异常-路径不存在 | 领域树 | M2 创新点落图与赋分 | 领域树 | 错误 path 后缀时不得返回领域树成功载荷 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/domains/__not_found__ | 1、HTTP 状态为 404 或 4xx/5xx，或响应 code 不属于成功集合；2、不得将 404 响应当作与 GRA-DOM-01 等价的领域树成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph；矩阵挂 _fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00759 | 创新监测 | 技术图谱 | 主流程-子图成功 | 领域子图 | M2 创新点落图与赋分 | 领域子图 | 领域子图在合法 domainId 下返回成功信封与 nodes/edges 契约字段 | 1、已按 §0 携带有效 token 与租户头；2、信封成功规则见 §0，金样见 API-00754 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 GRA-SUB-01 | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为对象；4、data.nodes 存在且为 array；5、data.edges 存在且为 array；6、不得将 sample 节点影响力或边 weight 作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=GRA-SUB-01 catalog_status=running |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00760 | 创新监测 | 技术图谱 | 异常-鉴权 | 领域子图 | M2 创新点落图与赋分 | 领域子图 | 领域子图缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization | 1.GET /innov/v1/graph/subgraph，查询参数取组合 GRA-SUB-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务子图载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=GRA-SUB-01；鉴权同 API-00755 语义 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00761 | 创新监测 | 技术图谱 | 异常-缺必填domainId | 领域子图 | M2 创新点落图与赋分 | 领域子图 | 领域子图缺少 domainId 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 GRA-SUB-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含可信 nodes/edges 的成功子图 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=GRA-SUB-02；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00762 | 创新监测 | 技术图谱 | 异常-非法domainId | 领域子图 | M2 创新点落图与赋分 | 领域子图 | 领域子图 domainId 明显非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 GRA-SUB-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将非法 domainId 当作空图成功态冒充 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=GRA-SUB-03；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00763 | 创新监测 | 技术图谱 | 异常-limit越界 | 领域子图 | M2 创新点落图与赋分 | 领域子图 | 领域子图 limit 为负时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 GRA-SUB-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=GRA-SUB-04；矩阵挂 limit、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00764 | 创新监测 | 技术图谱 | 主流程-排行成功 | 影响分排行 | M2 创新点落图与赋分 | 影响分排行 | 影响分排行在典型分页参数下返回成功信封与 list 契约字段 | 1、已按 §0 携带有效 token 与租户头；2、信封成功规则见 §0，金样见 API-00754 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 GRA-RNK-01 | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为对象；4、data.list 存在且为 array；5、不得将 sample 中 influenceScore 或 rankInDomain 示例值作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=GRA-RNK-01 catalog_status=running |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00765 | 创新监测 | 技术图谱 | 异常-鉴权 | 影响分排行 | M2 创新点落图与赋分 | 影响分排行 | 影响分排行缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 GRA-RNK-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务 list 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=GRA-RNK-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00766 | 创新监测 | 技术图谱 | 异常-非法domainId | 影响分排行 | M2 创新点落图与赋分 | 影响分排行 | 影响分排行 domainId 明显非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 GRA-RNK-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含可信 list 的成功排行 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=GRA-RNK-02；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00767 | 创新监测 | 技术图谱 | 异常-非法nodeType | 影响分排行 | M2 创新点落图与赋分 | 影响分排行 | 影响分排行 nodeType 枚举外取值时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 GRA-RNK-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将非法 nodeType 当作「全部」成功排行 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=GRA-RNK-03；矩阵挂 nodeType、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00768 | 创新监测 | 技术图谱 | 异常-pageSize越界 | 影响分排行 | M2 创新点落图与赋分 | 影响分排行 | 影响分排行 pageSize 为负时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 GRA-RNK-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·M2 创新点落图与赋分 | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=GRA-RNK-04；矩阵挂 pageSize、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01853 | 创新监测 | 技术图谱 | 主流程 | — | 技术图谱 | 领域树 | 领域树无参查询返回文档示例中的领域列表字段 | 1、无业务前置 | 1.GET /innov/v1/graph/domains（无查询参数） | 1、返回 body 的 data 为数组；2、元素含 domainId（string，responseFields 领域 ID）、name（string，responseFields 领域名）；3、sampleResponse 还含 parentId（string）、level（number）、domainSource（string）；4、示例两行：domainId=D-AI、name=人工智能、parentId 空串、level=1、domainSource=seed；domainId=D-BIO、name=生物医药、parentId 空串、level=1、domainSource=seed | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/domains | | INTEG | | | endpoint_id=innov.graph.domains catalog_page_id=innov.graph 组合=— 金样 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01854 | 创新监测 | 技术图谱 | 主流程 | — | 技术图谱 | 领域子图 | 领域子图按文档 sampleRequest domainId=D-AI、limit=60 查询 | 1、domainId 使用文档示例 D-AI；limit=60 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 SUB-01 | 1、返回 body 的 data 含 period（string，示例 2025Q1）、nodes（array，responseFields 节点）、edges（array，responseFields 边 src/dst）；2、nodes 元素含 nodeId（string）、nodeType（string）、name（string）、influenceScore（number）、rank（number）；3、示例两节点：nodeId=ORG-01、nodeType=org、name=鹏城实验室、influenceScore=88.2、rank=1；nodeId=SCH-01、nodeType=scholar、name=李研、influenceScore=76.4、rank=2；4、edges 元素含 src（string）、dst（string）、edgeType（string）、weight（number）；5、示例边 src=ORG-01、dst=SCH-01、edgeType=employ、weight=0.8 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=SUB-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01855 | 创新监测 | 技术图谱 | 备选-参数组合 | 省略 limit | 技术图谱 | 领域子图 | 领域子图仅传 domainId、不传可选 limit（与 sampleRequest 相反） | 1、domainId=D-AI | 1.GET /innov/v1/graph/subgraph，查询参数取组合 SUB-02 | 1、返回 body 的 data 仍含 period（string）、nodes（array）、edges（array）；2、nodes 元素仍含 nodeId、nodeType、name、influenceScore、rank；3、edges 元素仍含 src、dst、edgeType、weight；4、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=SUB-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01856 | 创新监测 | 技术图谱 | 异常-入参-缺domainId | — | 技术图谱 | 领域子图 | 领域子图不传必填 domainId | 1、limit=60 保持合法 | 1.GET /innov/v1/graph/subgraph，查询参数取组合 SUB-03 | 1、返回 body 的 message 或 msg 指出 domainId 缺失；2、不返回含 nodes、edges 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=SUB-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01857 | 创新监测 | 技术图谱 | 异常-入参-非法limit | — | 技术图谱 | 领域子图 | 领域子图 limit 非法 | 1、domainId=D-AI | 1.GET /innov/v1/graph/subgraph，查询参数取组合 SUB-04 | 1、返回 body 的 message 或 msg 指出 limit 非法；2、不返回含 nodes、edges 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/subgraph | | INTEG | | | endpoint_id=innov.graph.subgraph catalog_page_id=innov.graph 组合=SUB-04 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01858 | 创新监测 | 技术图谱 | 主流程 | — | 技术图谱 | 影响分排行 | 影响分排行按文档 sampleRequest domainId=D-AI、pageNum=1、pageSize=20 查询 | 1、domainId 使用文档示例 D-AI；pageNum=1；pageSize=20；不传 nodeType | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-01 | 1、返回 body 的 data 含 total（number，示例 2）、period（string，示例 2025Q1）、list（array，responseFields 排行）；2、list 元素含 nodeId（string）、nodeType（string）、name（string）、influenceScore（number）、rankInDomain（number）；3、示例两行：nodeId=ORG-01、nodeType=org、name=鹏城实验室、influenceScore=88.2、rankInDomain=1；nodeId=SCH-01、nodeType=scholar、name=李研、influenceScore=76.4、rankInDomain=2 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | M_INNOV_NODE_INFLUENCE | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01859 | 创新监测 | 技术图谱 | 备选-参数组合 | 省略 domainId | 技术图谱 | 影响分排行 | 影响分排行不传可选 domainId（与 sampleRequest 相反） | 1、pageNum=1；pageSize=20；不传 nodeType | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-02 | 1、返回 body 的 data 仍含 total（number）、period（string）、list（array）；2、list 元素仍含 nodeId、nodeType、name、influenceScore、rankInDomain；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | M_INNOV_NODE_INFLUENCE | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01860 | 创新监测 | 技术图谱 | 备选-参数组合 | 传 nodeType | 技术图谱 | 影响分排行 | 影响分排行传可选 nodeType=org（sampleRequest 未传该参数） | 1、domainId=D-AI；nodeType=org；pageNum=1；pageSize=20 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-03 | 1、返回 body 的 data 仍含 total（number）、period（string）、list（array）；2、list 元素仍含 nodeId、nodeType、name、influenceScore、rankInDomain；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | M_INNOV_NODE_INFLUENCE | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01861 | 创新监测 | 技术图谱 | 备选-参数组合 | 省略 pageNum | 技术图谱 | 影响分排行 | 影响分排行不传可选 pageNum（与 sampleRequest 相反） | 1、domainId=D-AI；pageSize=20；不传 nodeType | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-04 | 1、返回 body 的 data 仍含 total（number）、period（string）、list（array）；2、list 元素仍含 nodeId、nodeType、name、influenceScore、rankInDomain；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | M_INNOV_NODE_INFLUENCE | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-04 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01862 | 创新监测 | 技术图谱 | 备选-参数组合 | 省略 pageSize | 技术图谱 | 影响分排行 | 影响分排行不传可选 pageSize（与 sampleRequest 相反） | 1、domainId=D-AI；pageNum=1；不传 nodeType | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-05 | 1、返回 body 的 data 仍含 total（number）、period（string）、list（array）；2、list 元素仍含 nodeId、nodeType、name、influenceScore、rankInDomain；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | M_INNOV_NODE_INFLUENCE | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-05 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01863 | 创新监测 | 技术图谱 | 异常-入参-非法domainId | — | 技术图谱 | 影响分排行 | 影响分排行 domainId 非法 | 1、pageNum=1；pageSize=20 保持合法 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-06 | 1、返回 body 的 message 或 msg 指出 domainId 非法；2、不返回含 list 排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-06 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01864 | 创新监测 | 技术图谱 | 异常-入参-非法nodeType | — | 技术图谱 | 影响分排行 | 影响分排行 nodeType 非法 | 1、domainId=D-AI；pageNum=1；pageSize=20 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-07 | 1、返回 body 的 message 或 msg 指出 nodeType 非法；2、不返回含 list 排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-07 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01865 | 创新监测 | 技术图谱 | 异常-入参-非法pageNum | — | 技术图谱 | 影响分排行 | 影响分排行 pageNum 非法 | 1、domainId=D-AI；pageSize=20 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-08 | 1、返回 body 的 message 或 msg 指出 pageNum 非法；2、不返回含 list 排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-08 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01866 | 创新监测 | 技术图谱 | 异常-入参-非法pageSize | — | 技术图谱 | 影响分排行 | 影响分排行 pageSize 非法 | 1、domainId=D-AI；pageNum=1 | 1.GET /innov/v1/graph/influence/rank，查询参数取组合 RNK-09 | 1、返回 body 的 message 或 msg 指出 pageSize 非法；2、不返回含 list 排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/graph/influence/rank | | INTEG | | | endpoint_id=innov.graph.rank catalog_page_id=innov.graph 组合=RNK-09 |
 
 ---
 
@@ -61,27 +54,29 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| GRA-DOM-01 | innov.graph.domains | 无查询参数 | 领域树主路径 |
-| GRA-SUB-01 | innov.graph.subgraph | `domainId=D-AI`；`limit=60`（对齐 catalog `sampleRequest`） | 子图主路径 |
-| GRA-SUB-02 | innov.graph.subgraph | 不传 `domainId`；`limit=60` | 缺必填 domainId |
-| GRA-SUB-03 | innov.graph.subgraph | `domainId=__invalid__`；`limit=60` | 非法领域 id |
-| GRA-SUB-04 | innov.graph.subgraph | `domainId=D-AI`；`limit=-1` | limit 越界 |
-| GRA-SUB-05 | innov.graph.subgraph | `domainId=`（空字符串）；`limit=60` | 空 domainId；**本轮无独立用例**，与缺必填语义执行期 observed 合并 |
-| GRA-RNK-01 | innov.graph.rank | `domainId=D-AI`；`pageNum=1`；`pageSize=20`（对齐 catalog `sampleRequest`） | 排行主路径 |
-| GRA-RNK-02 | innov.graph.rank | `domainId=__invalid__`；`pageNum=1`；`pageSize=20` | 非法领域 |
-| GRA-RNK-03 | innov.graph.rank | `domainId=D-AI`；`nodeType=__invalid__`；`pageNum=1`；`pageSize=20` | 非法 nodeType |
-| GRA-RNK-04 | innov.graph.rank | `domainId=D-AI`；`pageNum=1`；`pageSize=-1` | pageSize 越界 |
-| GRA-RNK-05 | innov.graph.rank | 不传 `domainId`；`pageNum=1`；`pageSize=20` | 默认 ALL 领域；**本轮无独立用例**，与主路径差异待试调后补备选 |
+| SUB-01 | innov.graph.subgraph | domainId=D-AI；limit=60 | 主路径全参（sampleRequest） |
+| SUB-02 | innov.graph.subgraph | domainId=D-AI；不传 limit | 省略可选 limit（与 sample 相反） |
+| SUB-03 | innov.graph.subgraph | 不传 domainId；limit=60 | 缺必填 domainId |
+| SUB-04 | innov.graph.subgraph | domainId=D-AI；limit=not-a-limit | 只破坏 limit |
+| RNK-01 | innov.graph.rank | domainId=D-AI；不传 nodeType；pageNum=1；pageSize=20 | 主路径（sampleRequest） |
+| RNK-02 | innov.graph.rank | 不传 domainId；不传 nodeType；pageNum=1；pageSize=20 | 省略可选 domainId |
+| RNK-03 | innov.graph.rank | domainId=D-AI；nodeType=org；pageNum=1；pageSize=20 | 传可选 nodeType（sample 未传） |
+| RNK-04 | innov.graph.rank | domainId=D-AI；不传 nodeType；不传 pageNum；pageSize=20 | 省略可选 pageNum |
+| RNK-05 | innov.graph.rank | domainId=D-AI；不传 nodeType；pageNum=1；不传 pageSize | 省略可选 pageSize |
+| RNK-06 | innov.graph.rank | domainId=__invalid__；不传 nodeType；pageNum=1；pageSize=20 | 只破坏 domainId |
+| RNK-07 | innov.graph.rank | domainId=D-AI；nodeType=__invalid__；pageNum=1；pageSize=20 | 只破坏 nodeType |
+| RNK-08 | innov.graph.rank | domainId=D-AI；不传 nodeType；pageNum=not-a-page；pageSize=20 | 只破坏 pageNum |
+| RNK-09 | innov.graph.rank | domainId=D-AI；不传 nodeType；pageNum=1；pageSize=not-a-size | 只破坏 pageSize |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | runtime | 必填参数 |
-|-------------|--------|------|--------|---------|----------|
-| innov.graph.domains | GET | /innov/v1/graph/domains | running | java_api | （无） |
-| innov.graph.subgraph | GET | /innov/v1/graph/subgraph | running | java_api | domainId |
-| innov.graph.rank | GET | /innov/v1/graph/influence/rank | running | java_api | （无；domainId/nodeType/pageNum/pageSize 均可选） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 领域树 | innov.graph.domains | GET | /innov/v1/graph/domains | — | running |
+| 领域子图 | innov.graph.subgraph | GET | /innov/v1/graph/subgraph | domainId*；limit? | running |
+| 影响分排行 | innov.graph.rank | GET | /innov/v1/graph/influence/rank | domainId?；nodeType?；pageNum?；pageSize? | running |
 
 ---
 
@@ -89,34 +84,19 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| innov.graph.domains | API-00754～00758 |
-| innov.graph.subgraph | API-00759～00763 |
-| innov.graph.rank | API-00764～00768 |
+| innov.graph.domains | API-01853 |
+| innov.graph.subgraph | API-01854、01855、01856、01857 |
+| innov.graph.rank | API-01858、01859、01860、01861、01862、01863、01864、01865、01866 |
 
 ---
 
-## 3. 覆盖自检（§S1 / §I）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 3 个 live endpoint 各 1 条主路径（00754、00759、00764）
-- [x] 异常-鉴权 3 条（00755、00760、00765）
-- [x] `domains` 无参 L 类补契约形态 + 错误方法 + 错误 path（00756～00758）
-- [x] `subgraph` 必填 domainId 缺省/非法 + limit 越界（00761～00763）
-- [x] `rank` 非法 domainId/nodeType + pageSize 越界（00766～00768）
-- [x] `_empty` 无稳定构造 → 矩阵 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 1 条（API-00754）断言完整信封
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务 **未改** registry / run-log；闭区间 **API-00754～00768**）
+- [x] 3 个 title 均在功能点列出现，且各有 1 条主流程（01853 领域树、01854 领域子图、01858 影响分排行）
+- [x] 无参领域树仅 1 条主流程；领域子图 1 主流程 + 省略 limit 1 条 + 省略 domainId 1 条 + 非法 limit 1 条；影响分排行 1 主流程 + 4 条与 sample 相反的可选参数 + 4 条非法反向
+- [x] 正向预期逐字段写 sampleResponse；反向预期写 message 或 msg 指出该参数缺失或非法
+- [x] 无登录 / Token / 401 / 424
+- [x] `coverage-fp.md` 已同步 API-01853～01866；A 线写无对应 Lxx
+- [ ] `code-registry.yaml` 由父控回写（本子任务未改 registry）
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **15** |
-| 编号闭区间 | **API-00754**～**API-00768** |
-| endpoint 数 | **3**（各 5 条） |
-| `_empty` 未覆盖 | **3**（每 endpoint 1，无试调空结果证据） |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：用例 **14** 条；主流程 **3**、备选 **5**、反向 **6**；编号闭区间 **API-01853**～**API-01866**（父控 R2-批19 分配）。

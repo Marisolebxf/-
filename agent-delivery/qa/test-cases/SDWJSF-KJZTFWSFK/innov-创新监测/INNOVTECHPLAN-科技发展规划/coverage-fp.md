@@ -1,50 +1,66 @@
-# 科技发展规划 · 功能点覆盖（innov.tech-planning）
+# 科技发展规划 · A 线功能点覆盖（innov.tech-planning）
 
-> catalog `innov.tech-planning` · 50897 · path `/innov/tech-planning`  
-> 用例册：`API-科技发展规划-用例.md`（API-00824～00828）  
-> A 线真源：`fp-split-by-api-run/work/` **未收录** `innov.tech-planning`（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵键按 catalog `params` / `responseFields` + 契约 `_empty` / `_fail`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 用例编号 | 备注 |
-|-------------|--------|------|----------|------|
-| innov.tech-planning.metrics | GET | /innov/v1/innov/metrics | API-00824～00828 | catalog `status=unavailable`、`runtime=java_api`；§0 **未试调** |
+> **catalog_page_id**：`innov.tech-planning` · path `/innov/tech-planning`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-科技发展规划-用例.md`（第二轮 **API-01977**～**02018**，共 42 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.tech-planning`  
 
 ---
 
-## 2. 功能点 → 用例矩阵（catalog 契约 field）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
-|----------|----------|--------------|------|------|
-| innov.tech-planning \| innov.tech-planning.metrics \| module \| 算法输入-module模块 slug | catalog module（query，可选） | API-00824、00826、00827、00828 | 部分覆盖 | 合法 slug + 非法 + 空 + 省略；catalog example=`tech-planning` |
-| innov.tech-planning \| innov.tech-planning.metrics \| metrics \| 算法输出-metrics指标元数据清单 | catalog metrics | API-00824、00828 | 契约占位 | array 形态；禁止 sample 中 metric_id/name 具体条目作通过条件 |
-| innov.tech-planning \| innov.tech-planning.metrics \| total \| 算法输出-total指标数 | catalog total | API-00824、00828 | 契约占位 | number 形态；禁止 sample total=13 作通过条件 |
-| innov.tech-planning \| innov.tech-planning.metrics \| _empty \| 指标清单无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，endpoint unavailable，无稳定「合法 module 下 metrics 必空」证据 |
-| innov.tech-planning \| innov.tech-planning.metrics \| _fail \| 指标清单查询失败 | 契约错误态 | API-00824、00825、00826、00827 | 已覆盖 | 含 catalog 不可用与 module 入参失败哨兵 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| innov.tech-planning.metrics | GET | /innov/v1/innov/metrics | API-01977、API-01978、API-01979 | unavailable |
+| innov.tech-planning.m_innov_plan_direction_alert | POST | /innov/v1/innov/metric/M_INNOV_PLAN_DIRECTION_ALERT/compute | API-01980、API-01981、API-01982 | available |
+| innov.tech-planning.m_innov_plan_local_adv | POST | /innov/v1/innov/metric/M_INNOV_PLAN_LOCAL_ADV/compute | API-01983、API-01984、API-01985 | available |
+| innov.tech-planning.m_innov_plan_talent_flow | POST | /innov/v1/innov/metric/M_INNOV_PLAN_TALENT_FLOW/compute | API-01986、API-01987、API-01988 | available |
+| innov.tech-planning.m_innov_res_ci_level | POST | /innov/v1/innov/metric/M_INNOV_RES_CI_LEVEL/compute | API-01989、API-01990、API-01991 | available |
+| innov.tech-planning.m_innov_res_grade | POST | /innov/v1/innov/metric/M_INNOV_RES_GRADE/compute | API-01992、API-01993、API-01994 | available |
+| innov.tech-planning.m_innov_res_overlap | POST | /innov/v1/innov/metric/M_INNOV_RES_OVERLAP/compute | API-01995、API-01996、API-01997 | available |
+| innov.tech-planning.m_innov_ds_09_comprehensive_005 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_COMPREHENSIVE_005/compute | API-01998、API-01999、API-02000 | available |
+| innov.tech-planning.m_innov_ds_09_comprehensive_006 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_COMPREHENSIVE_006/compute | API-02001、API-02002、API-02003 | available |
+| innov.tech-planning.m_innov_ds_09_comprehensive_008 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_COMPREHENSIVE_008/compute | API-02004、API-02005、API-02006 | available |
+| innov.tech-planning.m_innov_ds_09_research_001 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_RESEARCH_001/compute | API-02007、API-02008、API-02009 | available |
+| innov.tech-planning.m_innov_ds_09_research_002 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_RESEARCH_002/compute | API-02010、API-02011、API-02012 | available |
+| innov.tech-planning.m_innov_ds_09_research_003 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_RESEARCH_003/compute | API-02013、API-02014、API-02015 | available |
+| innov.tech-planning.m_innov_ds_09_research_004 | POST | /innov/v1/innov/metric/M_INNOV_DS_09_RESEARCH_004/compute | API-02016、API-02017、API-02018 | available |
 
 ---
 
-## 3. A 线 / snapshot 说明
+## 功能点 → 用例矩阵
 
-| 项 | 结果 |
-|----|------|
-| `work/*.md` 检索 `innov.tech-planning` | **0 命中** |
-| snapshot | `fp-split-by-api-run/_catalog-snapshot.md` 登记 **1** endpoint、`unavailable`×1（path 与 `GET /innov/v1/innov/metrics` 共用，本页以 `module=tech-planning` 区分） |
+本页不在六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。同名 title 按 endpoint 分列，不合并。每个接口的 sampleResponse 与 responseFields 都挂在该接口主流程上；与 sample 相反的不传可选 `module` 挂备选；`module` 恰好 1 条非法反向。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） · innov.tech-planning.metrics · 科技发展规划指标清单 | API-01977、API-01978、API-01979 | 无对应功能点 | API-01977 主流程 sampleRequest module=tech-planning，断言 data.metrics（元素 metric_id、name、algorithm_type、formula_status、pending_ref 共 13 行）与 total=13；API-01978 不传 module，结构同类；API-01979 非法 module=__invalid__。catalog status=unavailable，备注未交付 |
+| （无 Lxx） · innov.tech-planning.m_innov_plan_direction_alert · 潜在科技发展方向预警 | API-01980、API-01981、API-01982 | 无对应功能点 | API-01980 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_PLAN_DIRECTION_ALERT、hint，以及 responseFields 声明的 metrics、total；API-01981 不传 module；API-01982 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_plan_local_adv · 本地科技创新特色与优势 | API-01983、API-01984、API-01985 | 无对应功能点 | API-01983 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_PLAN_LOCAL_ADV、hint，以及 responseFields 声明的 metrics、total；API-01984 不传 module；API-01985 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_plan_talent_flow · 科技人才流动（产业界↔学术界） | API-01986、API-01987、API-01988 | 无对应功能点 | API-01986 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_PLAN_TALENT_FLOW、hint，以及 responseFields 声明的 metrics、total；API-01987 不传 module；API-01988 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_res_ci_level · 竞争情报等级 | API-01989、API-01990、API-01991 | 无对应功能点 | API-01989 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_RES_CI_LEVEL、hint，以及 responseFields 声明的 metrics、total；API-01990 不传 module；API-01991 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_res_grade · 研究领域等级划分 | API-01992、API-01993、API-01994 | 无对应功能点 | API-01992 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_RES_GRADE、hint，以及 responseFields 声明的 metrics、total；API-01993 不传 module；API-01994 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_res_overlap · 研究领域重叠度 | API-01995、API-01996、API-01997 | 无对应功能点 | API-01995 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_RES_OVERLAP、hint，以及 responseFields 声明的 metrics、total；API-01996 不传 module；API-01997 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_comprehensive_005 · 本地特色与优势分析 | API-01998、API-01999、API-02000 | 无对应功能点 | API-01998 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_COMPREHENSIVE_005、hint，以及 responseFields 声明的 metrics、total；API-01999 不传 module；API-02000 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_comprehensive_006 · 科技人才流动监控 | API-02001、API-02002、API-02003 | 无对应功能点 | API-02001 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_COMPREHENSIVE_006、hint，以及 responseFields 声明的 metrics、total；API-02002 不传 module；API-02003 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_comprehensive_008 · 潜在科技发展方向预警 | API-02004、API-02005、API-02006 | 无对应功能点 | API-02004 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_COMPREHENSIVE_008、hint，以及 responseFields 声明的 metrics、total；API-02005 不传 module；API-02006 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_research_001 · 研究领域重叠度 | API-02007、API-02008、API-02009 | 无对应功能点 | API-02007 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_RESEARCH_001、hint，以及 responseFields 声明的 metrics、total；API-02008 不传 module；API-02009 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_research_002 · 研究领域等级划分 | API-02010、API-02011、API-02012 | 无对应功能点 | API-02010 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_RESEARCH_002、hint，以及 responseFields 声明的 metrics、total；API-02011 不传 module；API-02012 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_research_003 · 竞争情报等级 | API-02013、API-02014、API-02015 | 无对应功能点 | API-02013 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_RESEARCH_003、hint，以及 responseFields 声明的 metrics、total；API-02014 不传 module；API-02015 非法 module=__invalid__ |
+| （无 Lxx） · innov.tech-planning.m_innov_ds_09_research_004 · 多企业竞争情报比对 | API-02016、API-02017、API-02018 | 无对应功能点 | API-02016 主流程 sampleRequest module=tech-planning，断言 metric_id=M_INNOV_DS_09_RESEARCH_004、hint，以及 responseFields 声明的 metrics、total；API-02017 不传 module；API-02018 非法 module=__invalid__ |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | **5**（1 endpoint × 5） |
-| 编号闭区间 | **API-00824**～**API-00828** |
-| 金样 | **API-00824**（完整信封 / 不可用契约占位） |
-| 鉴权代表 | **API-00825**（全页引用） |
-| `_empty` 未覆盖 | **1** |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | **0** |
-| code-registry / run-log | **未改**（父控回写） |
+| catalog endpoint 数 | 14 |
+| title 数 | 14（同名不合并） |
+| API 用例数 | 42 |
+| 主流程 | 14（API-01977、API-01980、API-01983、API-01986、API-01989、API-01992、API-01995、API-01998、API-02001、API-02004、API-02007、API-02010、API-02013、API-02016） |
+| 备选-参数组合 | 14（API-01978、API-01981、API-01984、API-01987、API-01990、API-01993、API-01996、API-01999、API-02002、API-02005、API-02008、API-02011、API-02014、API-02017） |
+| 反向 | 14（API-01979、API-01982、API-01985、API-01988、API-01991、API-01994、API-01997、API-02000、API-02003、API-02006、API-02009、API-02012、API-02015、API-02018） |
+| 编号 | API-01977～02018 连续用满 |
+| A 线 Lxx | 无 |
+| 同名 title 主流程 | 潜在科技发展方向预警 API-01980 / API-02004；竞争情报等级 API-01989 / API-02013；研究领域等级划分 API-01992 / API-02010；研究领域重叠度 API-01995 / API-02007；多企业竞争情报比对 API-02016（本页仅 1 个 endpoint） |

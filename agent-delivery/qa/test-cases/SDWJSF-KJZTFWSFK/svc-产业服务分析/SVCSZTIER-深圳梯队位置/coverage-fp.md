@@ -1,53 +1,41 @@
-# 深圳梯队位置 · 功能点覆盖（svc.sz-tier）
+# 深圳梯队位置 · A 线功能点覆盖（svc.sz-tier）
 
-> catalog `svc.sz-tier` · 50897 · path `/industry-service/sz-tier`  
-> 用例 `API-深圳梯队位置-用例.md`  
-> A 线范围：**不扩六级**（`fp-split-by-api-run/_l6-to-catalog-map.yaml`）；矩阵键以 catalog `svc.sz-tier.main` 入参/出参及契约哨兵为准  
-> 功能点键：`svc.sz-tier | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| svc.sz-tier.main | GET | /entan/v1/svc/sz-tier | API-00644～API-00648 | catalog `status=unavailable`；§0 **未试调** |
+> **catalog_page_id**：`svc.sz-tier` · path `/industry-service/sz-tier`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `svc.sz-tier`（原因：不扩六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-深圳梯队位置-用例.md`（第二轮 **API-01722**～**01727**，共 6 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/svc.json` 页 `svc.sz-tier`  
 
 ---
 
-## 2. 功能点 → 用例（主矩阵）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| svc.sz-tier \| svc.sz-tier.main \| industry \| 算法输入-industry目标产业 | catalog industry | API-00644、API-00646、API-00647 | 部分覆盖 | SVCSZTIER-01 合法产业；非法/空产业见 02/03；不传 industry（SVCSZTIER-04）本轮无独立用例 |
-| svc.sz-tier \| svc.sz-tier.main \| dims \| 算法输出-dims三维度梯队位置 | catalog dims | API-00644、API-00648 | 契约占位 | unavailable，禁止 sample 内 tier 档位作通过条件 |
-| svc.sz-tier \| svc.sz-tier.main \| _empty \| 深圳梯队无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「合法入参必空」试调证据 |
-| svc.sz-tier \| svc.sz-tier.main \| _fail \| 深圳梯队查询失败 | 契约错误态 | API-00644、API-00645、API-00646、API-00647 | 已覆盖 | 含 catalog 不可用、鉴权失败与 industry 入参失败语义 |
-| svc.sz-tier \| \| tier_dim_org_count \| 机构数量维度梯队划分 | 需规（M_SVC_SZ_TIER 口径） | — | 未覆盖 | req_only；catalog 未拆 dim 级独立字段 |
-| svc.sz-tier \| \| tier_dim_tech_score \| 技术力维度梯队划分 | 需规（M_SVC_SZ_TIER 口径） | — | 未覆盖 | req_only |
-| svc.sz-tier \| \| tier_dim_chain_coverage \| 服务链完整度维度梯队划分 | 需规（M_SVC_SZ_TIER 口径） | — | 未覆盖 | req_only |
-| svc.sz-tier \| \| compare_city_scope \| 对比城市名单与分档规则 | 需规 Q-SVCCHAIN-04 | — | 未覆盖 | req_only；业务口径待甲方确认 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| svc.sz-tier.main | GET | /entan/v1/svc/sz-tier | API-01722、API-01723、API-01724 | unavailable |
+| svc.sz-tier.m_svc_sz_tier | POST | /entan/v1/svc-metric/metric/M_SVC_SZ_TIER/compute | API-01725、API-01726、API-01727 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 1（`_fail`） |
-| 部分覆盖 | 1（`industry`） |
-| 契约占位 | 1（`dims`） |
-| 未覆盖 | 5（含 `_empty` 1 + req_only 4） |
+本页不在六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。title「深圳梯队」的 sampleResponse（`dims` 及元素 `dim`、`dim_key`、`tier`）与 responseFields 的 `dims` 都挂在主流程上；title「深圳梯队位置」的 sampleResponse（`metric_id`、`hint`）与 responseFields 的 `dims` 都挂在该接口主流程上。可选 `industry` 与 sample 相反的不传挂备选；每个参数恰好 1 条非法反向。`深圳梯队` catalog `status=unavailable`，备注注明未交付。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| svc.sz-tier.main \| 深圳梯队 | API-01722、API-01723、API-01724 | 无对应功能点 | 01722 主流程 sampleRequest industry=人工智能，断言 dims 及元素 dim、dim_key、tier（示例 机构数量/org_count/T1、技术力得分/tech_score/T2、服务链完整度/chain_coverage/T1）；01723 不传 industry；01724 非法 industry=__invalid__。文档标记未交付 |
+| （无 Lxx） \| svc.sz-tier.m_svc_sz_tier \| 深圳梯队位置 | API-01725、API-01726、API-01727 | 无对应功能点 | 01725 主流程 sampleRequest industry=人工智能，断言 metric_id=M_SVC_SZ_TIER、hint，以及 responseFields 的 dims；01726 不传 industry；01727 非法 industry=__invalid__ |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-00644～API-00648 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+| catalog endpoint 数 | 2 |
+| title 数 | 2 |
+| API 用例数 | 6 |
+| 主流程 | 2（01722 深圳梯队、01725 深圳梯队位置） |
+| 备选-参数组合 | 2（01723、01726） |
+| 反向 | 2（01724、01727） |
+| 编号 | API-01722～01727 连续 |
+| A 线 Lxx | 无 |

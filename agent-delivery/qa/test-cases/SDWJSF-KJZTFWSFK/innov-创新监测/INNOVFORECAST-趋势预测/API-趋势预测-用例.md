@@ -8,52 +8,42 @@
 > **模块**：创新监测 / 趋势预测  
 > **catalog**：`entry_id=innov.forecast` · `catalog_page_id=innov.forecast` · path `/innov/forecast`  
 > **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.forecast`  
-> **A 线对照**：`fp-split-by-api-run/work/` 内 **无** `innov.forecast` 行（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **A 线对照**：无对应 Lxx。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（创新监测不在本轮 60 六级）。不改 `work/`  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批20）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00784（金样）** 断言 **完整原始信封**（HTTP + `code` + 可解析 data）；同册其余用例在前置写「信封成功规则见 §0，金样见 API-00784」后，可只断言 data 载荷或失败态 |
-| catalog 状态 | 本页 **3** 个 endpoint 均为 catalog `status=running`（`runtime=java_api`）；**禁止**将 `sampleResponse` 中历史年度数值、预测点 `predictValue`/`ciLower`/`ciUpper`、`contribution`、`burstScore`、事件标题或主题名称作为通过条件 |
-| 样例与契约差 | `innov.forecast.domain` 样例含 `forecastMode` 等扩展字段；契约 `responseFields` 仅声明 `history`、`predictions`（array）。`innov.forecast.contributions` 样例含 `total` 与 `list` 元素内多字段；契约仅声明 `list`（array）。`innov.forecast.bursts` 样例为 **顶层数组** 形态；契约声明 `topicName`、`burstScore`（元素字段）。断言 **只强制 responseFields**；样例扩展字段不设失败条件 |
-| 试调 | **未试调**（本子任务禁止 curl；执行期按金样步骤与 §0 鉴权复核） |
-| 查询参数 | 三接口均为 GET；path 变量与查询参数组合见附录 A |
-| 本页 endpoint 数 | **3** |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 领域趋势预测 | innov.forecast.domain |
+| 2 | 创新点贡献度 | innov.forecast.contributions |
+| 3 | 主题突变 | innov.forecast.bursts |
+
+**参数口径**：领域趋势预测仅必填 path `domainId`；主流程对齐 `sampleRequest`（`domainId=D-AI`）；必填反向为省略该 path 段。创新点贡献度必填 `domainId`、可选 `pageNum`、`pageSize`；主流程对齐 `sampleRequest`（`domainId=D-AI`、`pageNum=1`、`pageSize=10`）；与 sample 相反为不传 `pageNum`、不传 `pageSize`；必填反向为省略 `domainId`；`pageNum`、`pageSize` 各 1 条非法。主题突变仅可选 `domainId`；主流程对齐 `sampleRequest`（`domainId=D-AI`）；与 sample 相反为不传 `domainId`；`domainId` 另 1 条非法。三接口 catalog `status=running`。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00784`～`00798`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.forecast`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01883**～**API-01893**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.forecast`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00784 | 创新监测 | 趋势预测 | 主流程-领域趋势 | 领域趋势预测 | 趋势预测 | 领域趋势预测 | 合法 domainId 下领域趋势接口返回成功信封与 history/predictions | 1、已按 §0 携带有效 token 与 TENANT-ID；2、断言对象为完整原始响应信封 | 1.GET /innov/v1/forecast/domain/D-AI（path 取组合 DOM-01） | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为对象；4、data.history 存在且为 array；5、data.predictions 存在且为 array；6、禁止将 sample 历史年度或预测点数值作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | M_INNOV_FORECAST_OUTPUT | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-01 金样 §0未试调 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00785 | 创新监测 | 趋势预测 | 异常-鉴权 | 领域趋势预测 | 趋势预测 | 领域趋势预测 | 领域趋势接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/forecast/domain/D-AI，组合 DOM-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功 history/predictions 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-01；全页其它 endpoint 鉴权同本用例 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00786 | 创新监测 | 趋势预测 | 异常-非法domainId | 领域趋势预测 | 趋势预测 | 领域趋势预测 | 非法 domainId 时返回可识别失败而非伪趋势成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/forecast/domain/__invalid__（组合 DOM-02） | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含可信 history/predictions 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-02；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00787 | 创新监测 | 趋势预测 | 异常-空domainId | 领域趋势预测 | 趋势预测 | 领域趋势预测 | path 段 domainId 为空时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/forecast/domain/（path 段为空，组合 DOM-03） | 1、响应为失败态（HTTP 4xx 或 code 非成功集合）；2、不得将空 domainId 当作 D-AI 等价并成功返回 sample 形态预测序列 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-03；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00788 | 创新监测 | 趋势预测 | 契约-字段形态 | 领域趋势预测 | 趋势预测 | 领域趋势预测 | 成功信封下契约出参 history/predictions 若存在是否为 array | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/domain/D-AI，组合 DOM-01 | 1、若 code 属成功集合且载荷含 history/predictions，则二者均为 array；2、不得以 sample 条数或 statYear/predictValue 具体数值作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | M_INNOV_FORECAST_OUTPUT | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-01；矩阵挂 history、predictions |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00789 | 创新监测 | 趋势预测 | 主流程-贡献度 | 创新点贡献度 | 趋势预测 | 创新点贡献度 | 合法 domainId 下贡献度接口返回成功信封与 list 数组 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CONTRIB-01 | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为对象；4、data.list 存在且为 array；5、禁止将 sample contribution 或事件标题作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CONTRIB-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00790 | 创新监测 | 趋势预测 | 异常-鉴权 | 创新点贡献度 | 趋势预测 | 创新点贡献度 | 贡献度接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CONTRIB-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功 list 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CONTRIB-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00791 | 创新监测 | 趋势预测 | 异常-缺必填domainId | 创新点贡献度 | 趋势预测 | 创新点贡献度 | 贡献度接口缺少 domainId 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CONTRIB-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含可信 list 的成功贡献度排行 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CONTRIB-02；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00792 | 创新监测 | 趋势预测 | 异常-非法pageSize | 创新点贡献度 | 趋势预测 | 创新点贡献度 | 非正整数 pageSize 时返回可识别入参失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CONTRIB-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将非法 pageSize 静默截断并成功返回 sample 形态 list | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CONTRIB-03；矩阵挂 pageSize、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00793 | 创新监测 | 趋势预测 | 契约-字段形态 | 创新点贡献度 | 趋势预测 | 创新点贡献度 | 成功信封下契约出参 list 若存在是否为 array | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CONTRIB-01 | 1、若 code 属成功集合且载荷含 list，则 list 为 array；2、不得以 sample 条数或 contribution 数值作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CONTRIB-01；矩阵挂 list |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00794 | 创新监测 | 趋势预测 | 主流程-主题突变 | 主题突变 | 趋势预测 | 主题突变 | 带 domainId 时主题突变接口返回成功信封与可解析载荷 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BURST-01 | 1、HTTP 状态为 200；2、响应 code 属于成功集合；3、data 为 array 或含 array 型突变列表的可解析对象；4、禁止将 sample burstScore 或主题名称作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BURST-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00795 | 创新监测 | 趋势预测 | 异常-鉴权 | 主题突变 | 趋势预测 | 主题突变 | 主题突变接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BURST-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功突变列表载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BURST-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00796 | 创新监测 | 趋势预测 | 异常-非法domainId | 主题突变 | 趋势预测 | 主题突变 | 非法 domainId 查询时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BURST-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含 sample 形态突变列表的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BURST-03；矩阵挂 domainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00797 | 创新监测 | 趋势预测 | 备选-不传domainId | 主题突变 | 趋势预测 | 主题突变 | catalog 可选 domainId 省略时接口仍返回可解析信封 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/bursts（无查询参数，组合 BURST-02） | 1、HTTP 状态为 200 或 4xx；2、响应体含可解析 code；3、若 code 属成功集合则载荷为 array 或可解析列表对象；4、禁止将 sample 主题条数作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BURST-02；矩阵挂 domainId |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00798 | 创新监测 | 趋势预测 | 契约-字段形态 | 主题突变 | 趋势预测 | 主题突变 | 成功载荷中契约字段 topicName/burstScore 若存在是否符合类型 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00784 | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BURST-01 | 1、若 code 属成功集合且列表元素含 topicName，则 topicName 为 string；2、若含 burstScore，则 burstScore 为 number；3、不得以 sample 中 18.4 等强度值作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·趋势预测 | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BURST-01；矩阵挂 topicName、burstScore |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01883 | 创新监测 | 趋势预测 | 主流程 | — | 趋势预测 | 领域趋势预测 | 领域趋势预测按文档 sampleRequest path domainId=D-AI 查询 | 1、path domainId 使用文档示例 D-AI | 1.GET /innov/v1/forecast/domain/{domainId}，path 取组合 DOM-01 | 1、返回 body 的 data 含 forecastMode（string，示例 trend）、history（array，responseFields 历史年度）、predictions（array，responseFields 预测点）；2、history 元素含 statYear（number）、value（number）；3、sampleResponse 四行：statYear=2021、value=1200；statYear=2022、value=1480；statYear=2023、value=1760；statYear=2024、value=2010；4、predictions 元素含 predictPeriod（string）、predictValue（number）、ciLower（number）、ciUpper（number）；5、sampleResponse 两行：predictPeriod=2025、predictValue=2280、ciLower=2100、ciUpper=2460；predictPeriod=2026、predictValue=2510、ciLower=2280、ciUpper=2740 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | M_INNOV_FORECAST_OUTPUT | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-01 金样 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01884 | 创新监测 | 趋势预测 | 异常-入参-缺domainId | — | 趋势预测 | 领域趋势预测 | 领域趋势预测省略必填 path 段 domainId | 1、无其它业务前置 | 1.GET /innov/v1/forecast/domain，省略 path 段，组合 DOM-02 | 1、返回 body 的 message 或 msg 指出 domainId 缺失；2、不返回含 history、predictions 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/domain/{domainId} | | INTEG | | | endpoint_id=innov.forecast.domain catalog_page_id=innov.forecast 组合=DOM-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01885 | 创新监测 | 趋势预测 | 主流程 | — | 趋势预测 | 创新点贡献度 | 创新点贡献度按文档 sampleRequest domainId=D-AI、pageNum=1、pageSize=10 查询 | 1、domainId 使用文档示例 D-AI；pageNum=1；pageSize=10 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-01 | 1、返回 body 的 data 含 total（number，示例 2）、list（array，responseFields 贡献度排行）；2、list 元素含 targetId（string）、title（string）、eventType（string）、contribution（number）、predictValue（number）；3、sampleResponse 两行：targetId=EVT-001、title=深圳大模型开源发布会、eventType=breakthrough、contribution=0.186、predictValue=420；targetId=EVT-002、title=北京量子计算联合实验室揭牌、eventType=cooperation、contribution=0.124、predictValue=280 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01886 | 创新监测 | 趋势预测 | 备选-参数组合 | 省略 pageNum | 趋势预测 | 创新点贡献度 | 创新点贡献度不传可选 pageNum（与 sampleRequest 相反） | 1、domainId=D-AI；pageSize=10 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-02 | 1、返回 body 的 data 仍含 total（number）、list（array）；2、list 元素仍含 targetId、title、eventType、contribution、predictValue；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01887 | 创新监测 | 趋势预测 | 备选-参数组合 | 省略 pageSize | 趋势预测 | 创新点贡献度 | 创新点贡献度不传可选 pageSize（与 sampleRequest 相反） | 1、domainId=D-AI；pageNum=1 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-03 | 1、返回 body 的 data 仍含 total（number）、list（array）；2、list 元素仍含 targetId、title、eventType、contribution、predictValue；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01888 | 创新监测 | 趋势预测 | 异常-入参-缺domainId | — | 趋势预测 | 创新点贡献度 | 创新点贡献度不传必填 domainId | 1、pageNum=1；pageSize=10 保持合法 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-04 | 1、返回 body 的 message 或 msg 指出 domainId 缺失；2、不返回含 list 贡献度排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-04 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01889 | 创新监测 | 趋势预测 | 异常-入参-非法pageNum | — | 趋势预测 | 创新点贡献度 | 创新点贡献度 pageNum 非法 | 1、domainId=D-AI；pageSize=10 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-05 | 1、返回 body 的 message 或 msg 指出 pageNum 非法；2、不返回含 list 贡献度排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-05 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01890 | 创新监测 | 趋势预测 | 异常-入参-非法pageSize | — | 趋势预测 | 创新点贡献度 | 创新点贡献度 pageSize 非法 | 1、domainId=D-AI；pageNum=1 | 1.GET /innov/v1/forecast/contributions，查询参数取组合 CON-06 | 1、返回 body 的 message 或 msg 指出 pageSize 非法；2、不返回含 list 贡献度排行的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/contributions | | INTEG | | | endpoint_id=innov.forecast.contributions catalog_page_id=innov.forecast 组合=CON-06 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01891 | 创新监测 | 趋势预测 | 主流程 | — | 趋势预测 | 主题突变 | 主题突变按文档 sampleRequest domainId=D-AI 查询 | 1、domainId 使用文档示例 D-AI | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BUR-01 | 1、返回 body 的 data 为数组；2、元素含 topicName（string，responseFields 主题）、burstScore（number，responseFields 强度）；3、sampleResponse 还含 domainId（string）、burstStart（string）；4、示例两行：topicName=多模态大模型、domainId=D-AI、burstStart=2023-06、burstScore=18.4；topicName=端侧推理芯片、domainId=D-AI、burstStart=2024-02、burstScore=14.1 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BUR-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01892 | 创新监测 | 趋势预测 | 备选-参数组合 | 省略 domainId | 趋势预测 | 主题突变 | 主题突变不传可选 domainId（与 sampleRequest 相反） | 1、无查询参数 | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BUR-02 | 1、返回 body 的 data 仍为数组；2、元素仍含 topicName（string）、burstScore（number）、domainId（string）、burstStart（string）；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BUR-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01893 | 创新监测 | 趋势预测 | 异常-入参-非法domainId | — | 趋势预测 | 主题突变 | 主题突变 domainId 非法 | 1、无其它合法查询参数 | 1.GET /innov/v1/forecast/bursts，查询参数取组合 BUR-03 | 1、返回 body 的 message 或 msg 指出 domainId 非法；2、不返回含 topicName、burstScore 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/forecast/bursts | | INTEG | | | endpoint_id=innov.forecast.bursts catalog_page_id=innov.forecast 组合=BUR-03 |
 
 ---
 
@@ -61,26 +51,27 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| DOM-01 | innov.forecast.domain | path `domainId=D-AI`（对齐 catalog `sampleRequest`） | 领域趋势主路径 |
-| DOM-02 | innov.forecast.domain | path `domainId=__invalid__` | 非法领域 ID |
-| DOM-03 | innov.forecast.domain | path `domainId` 为空段（`/domain/` 后无值） | 空 path 变量边界 |
-| CONTRIB-01 | innov.forecast.contributions | `domainId=D-AI`；`pageNum=1`；`pageSize=10`（对齐 catalog `sampleRequest`） | 贡献度主路径 |
-| CONTRIB-02 | innov.forecast.contributions | 不传 `domainId`；`pageNum=1`；`pageSize=10` | 缺必填 domainId |
-| CONTRIB-03 | innov.forecast.contributions | `domainId=D-AI`；`pageSize=0`；`pageNum=1` | 非正整数 pageSize |
-| CONTRIB-04 | innov.forecast.contributions | `domainId=D-AI`；不传 `pageNum`/`pageSize` | 省略分页；**本轮无独立用例**，与 CONTRIB-01 待试调后区分 |
-| BURST-01 | innov.forecast.bursts | `domainId=D-AI`（对齐 catalog `sampleRequest`） | 主题突变带领域筛选 |
-| BURST-02 | innov.forecast.bursts | 不传 `domainId` | 可选 domainId 省略 |
-| BURST-03 | innov.forecast.bursts | `domainId=__invalid__` | 非法领域 ID |
+| DOM-01 | innov.forecast.domain | path domainId=D-AI | 主路径（sampleRequest） |
+| DOM-02 | innov.forecast.domain | 省略 path 段 domainId | 缺必填 domainId |
+| CON-01 | innov.forecast.contributions | domainId=D-AI；pageNum=1；pageSize=10 | 主路径全参（sampleRequest） |
+| CON-02 | innov.forecast.contributions | domainId=D-AI；不传 pageNum；pageSize=10 | 省略可选 pageNum（与 sample 相反） |
+| CON-03 | innov.forecast.contributions | domainId=D-AI；pageNum=1；不传 pageSize | 省略可选 pageSize（与 sample 相反） |
+| CON-04 | innov.forecast.contributions | 不传 domainId；pageNum=1；pageSize=10 | 缺必填 domainId |
+| CON-05 | innov.forecast.contributions | domainId=D-AI；pageNum=not-a-page；pageSize=10 | 只破坏 pageNum |
+| CON-06 | innov.forecast.contributions | domainId=D-AI；pageNum=1；pageSize=not-a-size | 只破坏 pageSize |
+| BUR-01 | innov.forecast.bursts | domainId=D-AI | 主路径（sampleRequest） |
+| BUR-02 | innov.forecast.bursts | 不传 domainId | 省略可选 domainId（与 sample 相反） |
+| BUR-03 | innov.forecast.bursts | domainId=__invalid__ | 只破坏 domainId |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 参数 |
-|-------------|--------|------|--------|------|
-| innov.forecast.domain | GET | /innov/v1/forecast/domain/{domainId} | running | path domainId（必填） |
-| innov.forecast.contributions | GET | /innov/v1/forecast/contributions | running | domainId（必填 query）；pageNum、pageSize（可选） |
-| innov.forecast.bursts | GET | /innov/v1/forecast/bursts | running | domainId（可选 query） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 领域趋势预测 | innov.forecast.domain | GET | /innov/v1/forecast/domain/{domainId} | domainId* | running |
+| 创新点贡献度 | innov.forecast.contributions | GET | /innov/v1/forecast/contributions | domainId*；pageNum?；pageSize? | running |
+| 主题突变 | innov.forecast.bursts | GET | /innov/v1/forecast/bursts | domainId? | running |
 
 ---
 
@@ -88,35 +79,19 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| innov.forecast.domain | API-00784、00785、00786、00787、00788 |
-| innov.forecast.contributions | API-00789、00790、00791、00792、00793 |
-| innov.forecast.bursts | API-00794、00795、00796、00797、00798 |
+| innov.forecast.domain | API-01883、01884 |
+| innov.forecast.contributions | API-01885、01886、01887、01888、01889、01890 |
+| innov.forecast.bursts | API-01891、01892、01893 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 3 个 live endpoint 各 1 条主路径（API-00784、00789、00794），未写 sample 数值通过条件
-- [x] 异常-鉴权 3 条（00785、00790、00795）；domain 备注全页鉴权代表
-- [x] 入参单缺陷 6 条（domain 非法/空 path；contributions 缺 domainId、非法 pageSize；bursts 非法 domainId、省略 domainId）
-- [x] responseFields 契约占位 4 条（history/predictions、list、topicName/burstScore）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 1 条且断言完整信封（API-00784）
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [x] 本子任务 **不** 改 `code-registry.yaml` / `run-log.md`（父控回写）
+- [x] 3 个 title 均在功能点列出现，且各有 1 条主流程（01883 领域趋势预测、01885 创新点贡献度、01891 主题突变）
+- [x] 领域趋势预测 1 主流程 + 省略 domainId 1 条；创新点贡献度 1 主流程 + 省略 pageNum、省略 pageSize 各 1 条 + 省略 domainId、非法 pageNum、非法 pageSize 各 1 条；主题突变 1 主流程 + 省略 domainId 1 条 + 非法 domainId 1 条
+- [x] 正向预期逐字段写 sampleResponse；反向预期写 message 或 msg 指出该参数缺失或非法
+- [x] 无登录 / Token / 401 / 424
+- [x] `coverage-fp.md` 已同步 API-01883～01893；A 线写无对应 Lxx
+- [ ] `code-registry.yaml` 由父控回写（本子任务未改 registry）
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **15** |
-| 编号闭区间 | **API-00784**～**API-00798** |
-| endpoint 数 | **3**（各 5 条） |
-| 金样（完整信封） | **1**（API-00784） |
-| live 主路径 | **3**（00784、00789、00794） |
-| `_empty` 未覆盖 | **3**（见 coverage） |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：用例 **11** 条；主流程 **3**、备选 **3**、反向 **5**；编号闭区间 **API-01883**～**API-01893**（父控 R2-批20 分配）。

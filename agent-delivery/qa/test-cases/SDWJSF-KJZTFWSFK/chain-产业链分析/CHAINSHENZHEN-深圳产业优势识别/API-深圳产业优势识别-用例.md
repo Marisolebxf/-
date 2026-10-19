@@ -7,43 +7,39 @@
 > **版本**：v1.0  
 > **模块**：产业链分析 / 深圳产业优势识别  
 > **catalog**：`entry_id=chain.shenzhen` · `catalog_page_id=chain.shenzhen` · path `/chain/shenzhen`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/chain.json` 页 `chain.shenzhen`  
+> **契约真源**：`lumen-ui-algo-apiview/src/catalog/chain.json` · 页 `chain.shenzhen`  
 > **A 线对照**：`fp-split-by-api-run/work/L18.md`（覆盖矩阵用，禁止 field 一行一用例）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批7）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 业务 path | `GET /innov/v1/industry/{chainId}/shenzhen`（path 变量 `chainId`；与 `chain.sz-problem`、`chain.sz-opportunity` **同 path**，以 `endpoint_id=chain.shenzhen.main` + `catalog_page_id=chain.shenzhen` 区分验收语义） |
-| 鉴权 | `POST /auth/oauth2/token`（密码模式，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00374（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 类型）；同册其余用例在前置写「信封成功规则见 §0，金样见 API-00374」后，可只断言失败/不可用态 |
-| catalog 状态 | `chain.shenzhen.main` 登记 **`status=unavailable`**；**禁止**将 `sampleResponse` 中 advantage_index、enterprise_count、advantages 文案等示例数值作为通过条件 |
-| 样例与契约差 | `sampleResponse` 含 `panorama`、`advantage`、`problem`、`opportunity` 等大块；契约 `responseFields` 仅声明 `panorama.enterprise_count`、`panorama.nodes`。断言 **只强制 responseFields**；`advantage`/`viz` 等样例字段不设失败条件 |
-| 试调 | **未试调**（本子任务禁 curl/浏览器；§0 鉴权与现场形态待执行期填写 observed） |
-| 本页 endpoint 数 | **1**（`chain.shenzhen.main`） |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 深圳产业优势识别 | chain.shenzhen.main |
+| 2 | 深圳产业优势识别模型 | chain.shenzhen.m_chain_deep_121_1 |
+
+两个 title 均只有必填 `chainId`。各 1 条主流程 + 1 条缺 `chainId`，不写备选，不按 field 拆条。
+
+**chainId 取值**：`深圳产业优势识别` 的 params.example 与 sampleRequest 均为 `INB170101`（path 参数）。`深圳产业优势识别模型` 的 sampleRequest 为 `chain_id=INB1701`，params.example 为 `INB170101`，键名与取值不一致，主路径以 sampleRequest 为准（见附录 A）。
+
+同 path 的 `chain.sz-problem.main`、`chain.sz-opportunity.main` 与本页 GET 共用 `/innov/v1/industry/{chainId}/shenzhen`。本册只按 `catalog_page_id=chain.shenzhen` 写预期，不混用其它页。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01280**～**API-01283**，连续用满）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=chain.shenzhen`、组合 id。作废旧号 API-00374～00378，不复用 API-00001～00888。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00374 | 产业链分析 | 深圳产业优势识别 | 契约-不可用 | 深圳产业优势识别模型 | 深圳产业优势识别 | 深圳产业优势识别 | catalog 不可用态下深圳优势识别接口可识别非 live 成功 | 1、已确认 catalog `chain.shenzhen.main` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZSH-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含可解析 `code`；3、不得将 sample 中 advantage 分值或 enterprise_count 示例值作为通过条件；4、若 code 属成功集合则 data 形态须在执行期记录且不得当作已接通生产优势识别清单 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | FULL | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZSH-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00375 | 产业链分析 | 深圳产业优势识别 | 异常-鉴权 | 深圳产业优势识别模型 | 深圳产业优势识别 | 深圳产业优势识别 | 深圳优势识别接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZSH-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信优势识别业务载荷的成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | FULL | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZSH-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00376 | 产业链分析 | 深圳产业优势识别 | 异常-非法chainId | 深圳产业优势识别模型 | 深圳产业优势识别 | 深圳产业优势识别 | 非法 chainId 时深圳优势识别接口返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZSH-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、message 或 msg 可非空；3、不得将失败当作无优势识别结果空 panorama 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | FULL | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZSH-02；矩阵挂 chainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00377 | 产业链分析 | 深圳产业优势识别 | 异常-缺path产业标识 | 深圳产业优势识别模型 | 深圳产业优势识别 | 深圳产业优势识别 | path 缺 chainId 时深圳优势识别接口返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry//shenzhen（组合 SZSH-03） | 1、HTTP 为 4xx 或响应 code 非成功集合；2、响应体不是成功空对象冒充可用优势识别结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | FULL | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZSH-03；矩阵挂 chainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00378 | 产业链分析 | 深圳产业优势识别 | 异常-畸形chainId | 深圳产业优势识别模型 | 深圳产业优势识别 | 深圳产业优势识别 | 含非法字符的 chainId 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZSH-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将畸形 id 当作合法产业返回 sample 形态 advantage 数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | FULL | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZSH-04；矩阵挂 _fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01280 | 产业链分析 | 深圳产业优势识别 | 主流程 | — | 深圳产业优势识别 | 深圳产业优势识别 | 深圳产业优势识别在 chainId=INB170101 时返回文档中的全景、优势、问题与机遇字段 | 1、chainId 使用文档示例 INB170101 | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZN-01 | 1、返回 body 与 sampleResponse 同形，顶层为对象，含 panorama、advantage、problem、opportunity；2、panorama.enterprise_count 为 number（responseFields 深圳企业数，sampleResponse 示例 486），panorama.node_count 为 number（示例 6），panorama.nodes 为 array（responseFields 深圳环节节点），元素含 node_name（string）、position（string）、enterprise_count（number），示例芯片设计/中游/96、终端应用/下游/88、封装测试/中游/72；3、panorama.edges 为 array，元素含 src（string）、dst（string），示例芯片设计到封装测试、封装测试到终端应用；4、panorama.district_dist 为 array，元素含 district（string）、enterprise_count（number），示例南山区/168、龙岗区/96、福田区/84；5、advantage 含 sz_enterprise_count（number，示例 486）、sz_share（number，18.6）、sz_rank（number，1）、growth_rate（number，15.2）、advantage_index（number，92）、rank_overall（number，1）、share_score（number，88）、rank_score（number，96）、growth_score（number，90）、advantages（string 数组，示例「企业集聚与链主带动形成可持续优势」「应用场景与终端牵引相对领先」）；6、problem 含 problem_count（number，2）、tech_score（number，52）、talent_score（number，58）、market_score（number，71）、capital_score（number，66）、policy_score（number，74），problems 为 array，元素含 name（string）、severity（string）、score（number），示例关键设备/严重/52、半导体材料/严重/58；7、opportunity 含 opportunity_index（number，87）、cycle_stage（string，成长期后段）、trend_score（number，90）、policy_score（number，88）、market_score（number，84）、rank_overall（number，1） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | M_CHAIN_SZ_ENTERPRISE_COUNT | INTEG | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZN-01 金样 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01281 | 产业链分析 | 深圳产业优势识别 | 异常-入参-缺chainId | — | 深圳产业优势识别 | 深圳产业优势识别 | 深圳产业优势识别不传 chainId | 1、path 不传 chainId | 1.GET /innov/v1/industry/{chainId}/shenzhen，path 取组合 SZN-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 panorama.enterprise_count 或 panorama.nodes 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/shenzhen | | INTEG | | | endpoint_id=chain.shenzhen.main catalog_page_id=chain.shenzhen 组合=SZN-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01282 | 产业链分析 | 深圳产业优势识别 | 主流程 | — | 深圳产业优势识别 | 深圳产业优势识别模型 | 深圳产业优势识别模型按文档 sampleRequest 的 chain_id 计算并返回 metric_id 与 hint | 1、请求体使用文档 sampleRequest 的 chain_id=INB1701 | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_121_1/compute，请求体取组合 SZM-01 | 1、返回 body 为对象，含 metric_id（string，responseFields 指标 ID，sampleResponse 示例 M_CHAIN_DEEP_121_1）、hint（string，sampleResponse 示例「真实 compute 响应,以实际调用为准」） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_121_1/compute | M_CHAIN_DEEP_121_1 | INTEG | | | endpoint_id=chain.shenzhen.m_chain_deep_121_1 catalog_page_id=chain.shenzhen 组合=SZM-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01283 | 产业链分析 | 深圳产业优势识别 | 异常-入参-缺chainId | — | 深圳产业优势识别 | 深圳产业优势识别模型 | 深圳产业优势识别模型不传 chainId | 1、请求体不传 chainId | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_121_1/compute，请求体取组合 SZM-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 metric_id 为 M_CHAIN_DEEP_121_1 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_121_1/compute | | INTEG | | | endpoint_id=chain.shenzhen.m_chain_deep_121_1 catalog_page_id=chain.shenzhen 组合=SZM-02 |
 
 ---
 
@@ -51,18 +47,19 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| SZSH-01 | chain.shenzhen.main | path `chainId=INB170101`（catalog `params.example`，执行期可替换） | unavailable 契约占位主路径 |
-| SZSH-02 | chain.shenzhen.main | path `chainId=__invalid__` | 非法产业标识 |
-| SZSH-03 | chain.shenzhen.main | path 缺 `chainId`：`GET /innov/v1/industry//shenzhen` | 缺失 path 变量 |
-| SZSH-04 | chain.shenzhen.main | path `chainId=INB%2F1701` 或含空格/斜杠的畸形串（以网关实际编码为准） | 畸形 id |
+| SZN-01 | chain.shenzhen.main | path chainId=INB170101 | 主路径（sampleRequest / params.example） |
+| SZN-02 | chain.shenzhen.main | 不传 path chainId（请求 `/innov/v1/industry//shenzhen`，path 段为空） | 缺必填 chainId |
+| SZM-01 | chain.shenzhen.m_chain_deep_121_1 | 请求体按 sampleRequest：chain_id=INB1701（params.name=chainId，example=INB170101，键名与取值均与 sampleRequest 不一致，本组合以 sampleRequest 为准） | 主路径（sampleRequest） |
+| SZM-02 | chain.shenzhen.m_chain_deep_121_1 | 不传 chainId，请求体也不含 chain_id | 缺必填 chainId |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 必填参数 |
-|-------------|--------|------|--------|----------|
-| chain.shenzhen.main | GET | /innov/v1/industry/{chainId}/shenzhen | unavailable | chainId（path） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 深圳产业优势识别 | chain.shenzhen.main | GET | /innov/v1/industry/{chainId}/shenzhen | chainId* | unavailable |
+| 深圳产业优势识别模型 | chain.shenzhen.m_chain_deep_121_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_121_1/compute | chainId* | available |
 
 ---
 
@@ -70,29 +67,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| chain.shenzhen.main | API-00374～API-00378 |
+| chain.shenzhen.main | API-01280、01281 |
+| chain.shenzhen.m_chain_deep_121_1 | API-01282、01283 |
 
 ---
 
-## 3. 覆盖自检（§I）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 本页 **0** 条 FUNC
-- [x] unavailable endpoint 契约占位 + 金样信封（API-00374）
-- [x] 异常-鉴权 1 条（API-00375）
-- [x] 入参单缺陷：非法 id、缺 path、畸形 id（API-00376、00377、00378）
-- [x] `panorama.enterprise_count` / `panorama.nodes` 升 live 后须补主路径用例（本批金样仅 5 条，形态占位见矩阵）
-- [x] `_empty` 无稳定构造 → 矩阵 **未覆盖**（见 `coverage-fp.md`）
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务禁改 registry；闭区间 **API-00374～00378**）
+- [x] 2 个 title（深圳产业优势识别、深圳产业优势识别模型）均在功能点列出现，且各有 1 条主流程（功能项=主流程）
+- [x] 有参接口：文档示例正向各 1 条；必填 chainId 各 1 条缺省反向；无其它参数，不写备选
+- [x] unavailable（深圳产业优势识别）仍按 catalog sampleResponse 逐字段写主流程，备注注明未交付
+- [x] 无鉴权 / Token / 401 / 424 / 契约占位 / 纯 HTTP 4xx 预期
+- [x] 不按 L18 field_key 拆用例；`coverage-fp.md` 已同步 API-01280～01283
+- [x] 编号使用父控闭区间 API-01280～01283；本子任务不改 code-registry
 
----
-
-## 4. 交卷计数（§I）
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-00374**～**API-00378** |
-| 金样 | **API-00374**（备注含 `金样`） |
-| §0 试调 | **未试调** |
-| FUNC 条数 | **0** |
+**统计**：接口 **2**；用例 **4** 条（主流程 **2**、反向 **2**）；编号闭区间 **API-01280**～**API-01283**（父控 R2-批7 分配，连续用满）。

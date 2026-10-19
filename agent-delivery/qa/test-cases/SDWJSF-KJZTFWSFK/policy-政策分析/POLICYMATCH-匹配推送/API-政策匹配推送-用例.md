@@ -7,43 +7,45 @@
 > **版本**：v1.0  
 > **模块**：政策分析 / 匹配推送  
 > **catalog**：`entry_id=policy.match` · `catalog_page_id=policy.match` · path `/policy/match`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.match` · endpoint `policy.match.main`  
-> **A 线对照**：catalog 单 endpoint（`fp-split-by-api-run` 不扩六级，无独立 `Lxx.md`；覆盖矩阵见本目录 `coverage-fp.md`）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.match`  
+> **A 线对照**：无对应 Lxx。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.match`（不扩六级）。不改 `work/`  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批11）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 业务 path | Java REST：`GET /policy/v1/policy/match`（查询参数 `subject_id`、`subject_type`、`limit`，均为可选） |
-| 鉴权头 | `Authorization: Bearer <access_token>`（50897 OAuth 密码模式，账号口径见 `lumen-ui-algo-apiview` LoginView）；`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-000504（金样）** 断言 **完整信封**（HTTP + `code` + 可解析体）；同册其余用例在前置引用金样后，可只断言失败态、鉴权态或字段形态 |
-| catalog 状态 | 本页仅 **1** 个 endpoint：`policy.match.main`，catalog `status=unavailable`；**禁止**将 `sampleResponse` 中 match_score（如 75）、rank_no、主体/政策示例名称等作为通过条件 |
-| 样例与契约差 | `sampleResponse` 为数组，元素含 `rank_no`、`subject_name`、`policy_title`、`match_score`、`metric_id`；契约 `responseFields` **仅**声明 `match_score`。断言 **只强制 responseFields**；其余样例字段不设失败条件 |
-| 试调 | **本会话未试调**（子任务约束禁止 curl）；执行期按 §0 鉴权与 catalog 复核，observed 仅记入执行记录 |
-| 本页 endpoint 数 | **1** |
+| # | title（功能点列原文） | endpoint_id | METHOD | status |
+|---|------------------------|-------------|--------|--------|
+| 1 | 政策匹配 | policy.match.main | GET | unavailable |
+| 2 | 政策匹配推送 | policy.match.m_policy_match | POST | available |
+
+两个接口的可选参数相同：`subject_id`、`subject_type`、`limit`。`sampleRequest` 均为 `subject_type=enterprise`、`limit=20`，不含 `subject_id`。备选各动一个参数，与 sample 相反：传入 `subject_id=E0001`（参数说明示例）、不传 `subject_type`、不传 `limit`。反向各 1 条非法，不把省略写成反向。GET 走查询参数；POST 走 JSON 请求体。`政策匹配` 的 path 为 `/policy/v1/policy/match`；`政策匹配推送` 的 path 按 catalog 原文为 `/policy/v1/polan/metric/M_POLICY_MATCH/compute`。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000504`～`000508`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01475**～**API-01488**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=policy.match`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000504 | 政策分析 | 匹配推送 | 契约-不可用 | 政策匹配推送模型 | 匹配推送 | 政策匹配 | catalog 不可用态下匹配推送接口可识别非 live 成功 | 1、已确认 catalog `policy.match.main` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/match，查询参数取组合 MATCH-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含可解析 code；3、不得将 sample 中 match_score 或示例主体/政策名称作为通过条件；4、若 code 属成功集合则 data 不得被当作已接通生产匹配推送判定 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.2.6 | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MATCH-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000505 | 政策分析 | 匹配推送 | 异常-鉴权 | 政策匹配推送模型 | 匹配推送 | 政策匹配 | 匹配推送接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /policy/v1/policy/match，查询参数取组合 MATCH-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信 match_score 业务载荷的成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.2.6 | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MATCH-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000506 | 政策分析 | 匹配推送 | 异常-非法subject_type | 政策匹配推送模型 | 匹配推送 | 政策匹配 | 枚举外 subject_type 时返回可识别失败而非空匹配成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/match，查询参数取组合 MATCH-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作无匹配空结果或伪 match_score 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.2.6 | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MATCH-02；矩阵挂 subject_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000507 | 政策分析 | 匹配推送 | 异常-非法limit | 政策匹配推送模型 | 匹配推送 | 政策匹配 | 非正整数 limit 时返回可识别入参失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/match，查询参数取组合 MATCH-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将非法 limit 静默截断为默认条数并成功返回 sample 形态列表 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.2.6 | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MATCH-03；矩阵挂 limit、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000508 | 政策分析 | 匹配推送 | 契约-字段形态 | 政策匹配推送模型 | 匹配推送 | 政策匹配 | 成功信封下契约出参 match_score 若存在是否符合 number 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-000504 | 1.GET /policy/v1/policy/match，查询参数取组合 MATCH-01 | 1、若 code 属成功集合且载荷含 match_score（含列表元素内），则 match_score 为 number；2、不得以 sample 中 75 等具体分值作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.2.6 | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MATCH-01；矩阵挂 match_score |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01475 | 政策分析 | 匹配推送 | 主流程 | — | 匹配推送 | 政策匹配 | 政策匹配按文档 sampleRequest 传 subject_type=enterprise、limit=20、不传 subject_id | 1、subject_type=enterprise；limit=20；不传 subject_id | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-01 | 1、返回 body 的 data 为数组；2、元素含 rank_no（number）、subject_name（string）、policy_title（string）、match_score（number，responseFields 匹配分）、metric_id（string）；3、与 sampleResponse 逐字段一致，示例第1条 rank_no=1、subject_name=示例企业、policy_title=示例政策、match_score=75、metric_id=M_POLICY_MATCH | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-01 catalog_status=unavailable 文档标记未交付 金样 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01476 | 政策分析 | 匹配推送 | 备选-参数组合 | 传入 subject_id | 匹配推送 | 政策匹配 | 政策匹配传入可选 subject_id=E0001，subject_type 与 limit 保持 sample | 1、subject_id=E0001；subject_type=enterprise；limit=20 | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-02 | 1、返回 body 的 data 为数组；2、元素仍含 rank_no（number）、subject_name（string）、policy_title（string）、match_score（number，responseFields 匹配分）、metric_id（string）；3、字段与 sampleResponse 逐字段同类，示例值（如 rank_no=1、subject_name=示例企业、policy_title=示例政策、match_score=75、metric_id=M_POLICY_MATCH）说明形态 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01477 | 政策分析 | 匹配推送 | 备选-参数组合 | 省略 subject_type | 匹配推送 | 政策匹配 | 政策匹配不传可选 subject_type，limit 保持 sample 的 20、不传 subject_id | 1、不传 subject_id；不传 subject_type；limit=20 | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-03 | 1、返回 body 的 data 为数组；2、元素仍含 rank_no（number）、subject_name（string）、policy_title（string）、match_score（number，responseFields 匹配分）、metric_id（string）；3、字段与 sampleResponse 逐字段同类，示例值（如 match_score=75、subject_name=示例企业、policy_title=示例政策）说明形态 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01478 | 政策分析 | 匹配推送 | 备选-参数组合 | 省略 limit | 匹配推送 | 政策匹配 | 政策匹配不传可选 limit，subject_type 保持 sample 的 enterprise、不传 subject_id | 1、不传 subject_id；subject_type=enterprise；不传 limit | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-04 | 1、返回 body 的 data 为数组；2、元素仍含 rank_no（number）、subject_name（string）、policy_title（string）、match_score（number，responseFields 匹配分）、metric_id（string）；3、字段与 sampleResponse 逐字段同类，示例值（如 match_score=75、rank_no=1、metric_id=M_POLICY_MATCH）说明形态 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-04 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01479 | 政策分析 | 匹配推送 | 异常-入参-非法subject_id | — | 匹配推送 | 政策匹配 | 政策匹配 subject_id 非法，其余保持 sample | 1、subject_type=enterprise；limit=20 | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-05 | 1、返回 body 的 message 或 msg 指出 subject_id 非法；2、不返回含 match_score 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-05 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01480 | 政策分析 | 匹配推送 | 异常-入参-非法subject_type | — | 匹配推送 | 政策匹配 | 政策匹配 subject_type 非法，其余保持 sample | 1、不传 subject_id；limit=20 | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-06 | 1、返回 body 的 message 或 msg 指出 subject_type 非法；2、不返回含 match_score 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-06 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01481 | 政策分析 | 匹配推送 | 异常-入参-非法limit | — | 匹配推送 | 政策匹配 | 政策匹配 limit 非法，其余保持 sample | 1、不传 subject_id；subject_type=enterprise | 1.GET /policy/v1/policy/match，查询参数取组合 MAT-07 | 1、返回 body 的 message 或 msg 指出 limit 非法；2、不返回含 match_score 的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/match | | INTEG | | | endpoint_id=policy.match.main catalog_page_id=policy.match 组合=MAT-07 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01482 | 政策分析 | 匹配推送 | 主流程 | — | 匹配推送 | 政策匹配推送 | 政策匹配推送按文档 sampleRequest 传 subject_type=enterprise、limit=20、不传 subject_id | 1、请求体 subject_type=enterprise；limit=20；不传 subject_id | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-01 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：metric_id（string，示例 M_POLICY_MATCH）、hint（string，示例 真实 compute 响应,以实际调用为准）；2、responseFields 另含 match_score（number，匹配分） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-01 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01483 | 政策分析 | 匹配推送 | 备选-参数组合 | 传入 subject_id | 匹配推送 | 政策匹配推送 | 政策匹配推送传入可选 subject_id=E0001，subject_type 与 limit 保持 sample | 1、请求体 subject_id=E0001；subject_type=enterprise；limit=20 | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-02 | 1、返回 body 为对象；2、仍含 metric_id（string，示例 M_POLICY_MATCH）、hint（string，示例 真实 compute 响应,以实际调用为准）；3、responseFields 的 match_score 为 number（匹配分） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-02 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01484 | 政策分析 | 匹配推送 | 备选-参数组合 | 省略 subject_type | 匹配推送 | 政策匹配推送 | 政策匹配推送不传可选 subject_type，limit 保持 sample 的 20、不传 subject_id | 1、请求体不传 subject_id；不传 subject_type；limit=20 | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-03 | 1、返回 body 为对象；2、仍含 metric_id（string，示例 M_POLICY_MATCH）、hint（string，示例 真实 compute 响应,以实际调用为准）；3、responseFields 的 match_score 为 number（匹配分） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-03 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01485 | 政策分析 | 匹配推送 | 备选-参数组合 | 省略 limit | 匹配推送 | 政策匹配推送 | 政策匹配推送不传可选 limit，subject_type 保持 sample 的 enterprise、不传 subject_id | 1、请求体不传 subject_id；subject_type=enterprise；不传 limit | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-04 | 1、返回 body 为对象；2、仍含 metric_id（string，示例 M_POLICY_MATCH）、hint（string，示例 真实 compute 响应,以实际调用为准）；3、responseFields 的 match_score 为 number（匹配分） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | M_POLICY_MATCH | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-04 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01486 | 政策分析 | 匹配推送 | 异常-入参-非法subject_id | — | 匹配推送 | 政策匹配推送 | 政策匹配推送 subject_id 非法，其余保持 sample | 1、请求体 subject_type=enterprise；limit=20 | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-05 | 1、返回 body 的 message 或 msg 指出 subject_id 非法；2、不返回含 metric_id 或 match_score 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-05 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01487 | 政策分析 | 匹配推送 | 异常-入参-非法subject_type | — | 匹配推送 | 政策匹配推送 | 政策匹配推送 subject_type 非法，其余保持 sample | 1、请求体不传 subject_id；limit=20 | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-06 | 1、返回 body 的 message 或 msg 指出 subject_type 非法；2、不返回含 metric_id 或 match_score 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-06 catalog_status=available |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01488 | 政策分析 | 匹配推送 | 异常-入参-非法limit | — | 匹配推送 | 政策匹配推送 | 政策匹配推送 limit 非法，其余保持 sample | 1、请求体不传 subject_id；subject_type=enterprise | 1.POST /policy/v1/polan/metric/M_POLICY_MATCH/compute，请求体取组合 PSH-07 | 1、返回 body 的 message 或 msg 指出 limit 非法；2、不返回含 metric_id 或 match_score 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/polan/metric/M_POLICY_MATCH/compute | | INTEG | | | endpoint_id=policy.match.m_policy_match catalog_page_id=policy.match 组合=PSH-07 catalog_status=available |
 
 ---
 
@@ -51,18 +53,29 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| MATCH-01 | policy.match.main | `subject_type=enterprise`；`limit=20`（对齐 catalog `sampleRequest`；`subject_id` 不传） | 契约主路径（unavailable） |
-| MATCH-02 | policy.match.main | `subject_type=__invalid__`；`limit=20` | 枚举外主体类型 |
-| MATCH-03 | policy.match.main | `limit=0`（`subject_type` 不传或留空） | 非正整数条数上限 |
-| MATCH-04 | policy.match.main | `subject_id=__not_exist__`；`subject_type=enterprise`；`limit=20` | 合法形态但可能不存在的主体 ID；**本轮无独立用例**，语义待 endpoint available 后补 |
+| MAT-01 | policy.match.main | subject_type=enterprise；不传 subject_id；limit=20 | 主路径（sampleRequest）；查询参数 |
+| MAT-02 | policy.match.main | subject_id=E0001；subject_type=enterprise；limit=20 | 传入可选 subject_id（sample 不含 subject_id；E0001 取参数说明示例） |
+| MAT-03 | policy.match.main | 不传 subject_id；不传 subject_type；limit=20 | 省略可选 subject_type（sample 含 subject_type） |
+| MAT-04 | policy.match.main | 不传 subject_id；subject_type=enterprise；不传 limit | 省略可选 limit（sample 含 limit） |
+| MAT-05 | policy.match.main | subject_id=__invalid__；subject_type=enterprise；limit=20 | 只破坏 subject_id |
+| MAT-06 | policy.match.main | 不传 subject_id；subject_type=__invalid__（不在空、enterprise、user）；limit=20 | 只破坏 subject_type |
+| MAT-07 | policy.match.main | 不传 subject_id；subject_type=enterprise；limit=-1 | 只破坏 limit |
+| PSH-01 | policy.match.m_policy_match | subject_type=enterprise；不传 subject_id；limit=20 | 主路径（sampleRequest）；JSON 请求体 |
+| PSH-02 | policy.match.m_policy_match | subject_id=E0001；subject_type=enterprise；limit=20 | 传入可选 subject_id（sample 不含 subject_id；E0001 取参数说明示例） |
+| PSH-03 | policy.match.m_policy_match | 不传 subject_id；不传 subject_type；limit=20 | 省略可选 subject_type（sample 含 subject_type） |
+| PSH-04 | policy.match.m_policy_match | 不传 subject_id；subject_type=enterprise；不传 limit | 省略可选 limit（sample 含 limit） |
+| PSH-05 | policy.match.m_policy_match | subject_id=__invalid__；subject_type=enterprise；limit=20 | 只破坏 subject_id |
+| PSH-06 | policy.match.m_policy_match | 不传 subject_id；subject_type=__invalid__（不在空、enterprise、user）；limit=20 | 只破坏 subject_type |
+| PSH-07 | policy.match.m_policy_match | 不传 subject_id；subject_type=enterprise；limit=-1 | 只破坏 limit |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 查询参数 |
-|-------------|--------|------|--------|----------|
-| policy.match.main | GET | /policy/v1/policy/match | unavailable | subject_id、subject_type、limit（均可选） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 政策匹配 | policy.match.main | GET | /policy/v1/policy/match | subject_id?；subject_type?；limit? | unavailable |
+| 政策匹配推送 | policy.match.m_policy_match | POST | /policy/v1/polan/metric/M_POLICY_MATCH/compute | subject_id?；subject_type?；limit? | available |
 
 ---
 
@@ -70,30 +83,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| policy.match.main | API-000504、API-000505、API-000506、API-000507、API-000508 |
+| policy.match.main | API-01475、01476、01477、01478、01479、01480、01481 |
+| policy.match.m_policy_match | API-01482、01483、01484、01485、01486、01487、01488 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] unavailable endpoint 已写契约占位（API-000504），未写 sample 数值通过条件
-- [x] 异常-鉴权 1 条（API-000505）
-- [x] 入参单缺陷 2 条（API-000506 subject_type、API-000507 limit）
-- [x] responseFields 契约占位 1 条（API-000508 match_score）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 1 条且断言信封（API-000504）
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务编号闭区间 API-000504～000508；**未改 registry**）
+- [x] 2 个 title「政策匹配」「政策匹配推送」均在功能点列出现，且各有 1 条主流程（API-01475、API-01482）
+- [x] 与 sample 相反的传/不传各 1 条备选：传入 subject_id（01476、01483）、省略 subject_type（01477、01484）、省略 limit（01478、01485）
+- [x] 每个参数恰好 1 条非法反向（01479～01481、01486～01488）；省略未写成反向
+- [x] unavailable 的「政策匹配」仍按 sampleResponse 写主流程与备选返回字段，备注注明文档标记未交付
+- [x] 反向预期写 message 或 msg 指出该参数非法
+- [x] `coverage-fp.md` 已同步 API-01475～01488；A 线写无对应 Lxx
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-000504**～**API-000508** |
-| `_empty` 未覆盖 | **1** |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：接口 **2**；用例 **14** 条（主流程 2、备选 6、反向 6）；编号闭区间 **API-01475**～**API-01488**（父控 R2-批11 分配，连续用满）。

@@ -1,72 +1,43 @@
-# 载体分析 · 功能点覆盖（innov.carriers）
+# 载体分析 · A 线功能点覆盖（innov.carriers）
 
-> catalog `innov.carriers` · 50897 · path `/innov/carriers`  
-> 用例册：`API-载体分析-用例.md`（API-00769～00783）  
-> A 线真源：`fp-split-by-api-run/work/` **未收录** `innov.carriers`（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵键按 catalog `params` / `responseFields` + 契约 `_empty` / `_fail`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| innov.carriers.rank | GET | /innov/v1/carriers/rank | API-00769～00773 | catalog `status=running` · `runtime=java_api`；§0 **未试调** |
-| innov.carriers.detail | GET | /innov/v1/carriers/{carrierId} | API-00774～00778 | path 必填 `carrierId` |
-| innov.carriers.method | GET | /innov/v1/carriers/index-method | API-00779～00783 | 无查询参数 |
+> **catalog_page_id**：`innov.carriers` · path `/innov/carriers`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-载体分析-用例.md`（第二轮 **API-01867**～**01874**，共 8 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.carriers`  
 
 ---
 
-## 2. 功能点 → 用例（主矩阵）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| innov.carriers \| innov.carriers.rank \| pageNum \| 算法输入-页码 | catalog pageNum | API-00769、00772、00773 | 已覆盖 | 主路径+非法类型+省略可选 |
-| innov.carriers \| innov.carriers.rank \| pageSize \| 算法输入-页大小 | catalog pageSize | API-00769、00771、00773 | 已覆盖 | 主路径+越界+省略可选 |
-| innov.carriers \| innov.carriers.rank \| list \| 算法输出-排行列表 | catalog list | API-00769、00773 | 已覆盖 | array 形态；禁止 sample 指数/排名数值 |
-| innov.carriers \| innov.carriers.rank \| _empty \| 排行无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定「合法分页必空 list」证据 |
-| innov.carriers \| innov.carriers.rank \| _fail \| 排行调用失败 | 契约错误态 | API-00770、00771、00772 | 已覆盖 | 鉴权+pageSize/pageNum 单缺陷 |
-| innov.carriers \| innov.carriers.detail \| carrierId \| 算法输入-载体 ID | catalog carrierId | API-00774、00776、00778 | 已覆盖 | 合法 example+非法 id+依赖链备注 |
-| innov.carriers \| innov.carriers.detail \| info \| 算法输出-基本信息 | catalog info | API-00774、00778 | 已覆盖 | object 形态 |
-| innov.carriers \| innov.carriers.detail \| trend \| 算法输出-多期指数 | catalog trend | API-00774、00778 | 已覆盖 | array 形态 |
-| innov.carriers \| innov.carriers.detail \| _empty \| 详情无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定「合法 carrierId 必空」证据 |
-| innov.carriers \| innov.carriers.detail \| _fail \| 详情调用失败 | 契约错误态 | API-00775、00776 | 已覆盖 | 鉴权+非法 carrierId |
-| innov.carriers \| innov.carriers.method \| methodDesc \| 算法输出-方法说明 | catalog methodDesc | API-00779、00782 | 已覆盖 | string 形态 |
-| innov.carriers \| innov.carriers.method \| weights \| 算法输出-权重列表 | catalog weights | API-00779、00782、00783 | 已覆盖 | array 形态；禁止 sample 权重和为 1 |
-| innov.carriers \| innov.carriers.method \| _empty \| 方法说明无数据空态 | 契约空结果 | — | 未覆盖 | 无参接口，无稳定必空构造 |
-| innov.carriers \| innov.carriers.method \| _fail \| 方法接口调用失败 | 契约错误态 | API-00780、00781 | 已覆盖 | 鉴权+非法查询参数 |
-| innov.carriers \| \| carrier_type_enum \| 载体类型 university/research/incubator | catalog 页 summary | — | 未覆盖 | 类型枚举在 list 元素字段，无单独 REST 入参；待 live 后从 list 元素抽检 |
-| innov.carriers \| \| M_INNOV_CARRIER_INDEX \| 载体指数 metric | catalog metricIds | API-00769 | 部分覆盖 | 仅排行主路径挂 metric_id 列；不对指数分值断言 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| innov.carriers.rank | GET | /innov/v1/carriers/rank | API-01867、API-01868、API-01869、API-01870、API-01871 | running |
+| innov.carriers.detail | GET | /innov/v1/carriers/{carrierId} | API-01872、API-01873 | running |
+| innov.carriers.method | GET | /innov/v1/carriers/index-method | API-01874 | running |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵
 
-| 状态 | 条数（契约 field + 哨兵） |
-|------|---------------------------|
-| 已覆盖 | 10 |
-| 部分覆盖 | 1（metric） |
-| 未覆盖 | 4（`_empty`×3 + carrier_type_enum） |
+本页不在 60 六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。title「载体排行」的 sampleResponse（`total`、`period`、`list` 及元素 `carrierId`、`name`、`carrierType`、`indexScore`、`rankTotal`、`subScores.output` / `quality` / `activity` / `performance`）与 responseFields 的 `list` 都挂在主流程上；可选参数与 sample 相反的不传挂备选；每个参数恰好 1 条非法反向。title「载体详情」的 sampleResponse（`info.carrierId` / `name` / `carrierType`，`trend` 及元素 `statPeriod`、`indexScore`、`rankTotal`，`radar` 及元素 `成果产出`、`成果质量`、`创新活跃`、`转化绩效`）与 responseFields 的 `info`、`trend` 都挂在该接口主流程上；必填 `carrierId` 反向为省略。title「指数方法与权重」的 sampleResponse（`weightVersion`、`methodDesc`、`weights` 及元素 `k`、`desc`、`w`）与 responseFields 的 `methodDesc`、`weights` 都挂在无参主流程上。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| innov.carriers.rank \| 载体排行 | API-01867、API-01868、API-01869、API-01870、API-01871 | 无对应功能点 | 01867 主流程 sampleRequest pageNum=1、pageSize=20，断言 total、period、list（carrierId、name、carrierType、indexScore、rankTotal、subScores.output/quality/activity/performance）；01868 不传 pageNum；01869 不传 pageSize；01870 非法 pageNum=not-a-page；01871 非法 pageSize=not-a-size |
+| （无 Lxx） \| innov.carriers.detail \| 载体详情 | API-01872、API-01873 | 无对应功能点 | 01872 主流程 path carrierId=CAR-01，断言 info（carrierId、name、carrierType）、trend（statPeriod、indexScore、rankTotal）、radar（成果产出、成果质量、创新活跃、转化绩效）；01873 省略必填 carrierId |
+| （无 Lxx） \| innov.carriers.method \| 指数方法与权重 | API-01874 | 无对应功能点 | 01874 无参主流程，断言 weightVersion、methodDesc、weights（k、desc、w） |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | **15**（3 endpoint × 5） |
-| 编号 | **API-00769**～**API-00783** |
-| `_empty` 未覆盖 | **3** |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | **0** |
-| code-registry | **未改**（父控回写） |
-| snapshot | `fp-split-by-api-run/_catalog-snapshot.md` 登记 3 endpoint、`running`×3 |
-
----
-
-## 5. 金样与烟测
-
-| 项 | 编号 |
-|----|------|
-| 金样（全册信封） | API-00769 |
-| 烟测建议 | API-00769、00774、00779 |
+| catalog endpoint 数 | 3 |
+| title 数 | 3 |
+| API 用例数 | 8 |
+| 主流程 | 3（01867 载体排行、01872 载体详情、01874 指数方法与权重） |
+| 备选-参数组合 | 2（01868、01869） |
+| 反向 | 3（01870、01871、01873） |
+| 编号 | API-01867～01874 连续 |
+| A 线 Lxx | 无 |

@@ -1,48 +1,58 @@
 # 产业链关键环节识别 · 功能点覆盖（chain.keynodes / L21）
 
-> catalog `chain.keynodes` · 50897 · path `#/chain/keynodes`  
-> 用例 `API-产业链关键环节识别-用例.md`  
-> 契约：`repos/lumen-ui-algo-apiview/src/catalog/chain.json`（页 `chain.keynodes`）  
-> 功能点键：`L21 | endpoint_id | field_key | 功能点中文`（矩阵键与 A 线 by-api 对齐，本轮未读 `work/L21.md`）  
-> 编排：`algo-lib-api-case-playbook.md` §编写细则 H、§I  
+> catalog `chain.keynodes` · path `#/chain/keynodes`  
+> A 线真源：`fp-split-by-api-run/work/L21.md`  
+> B 线用例：`API-产业链关键环节识别-用例.md`（第二轮 **API-01266**～**01269**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| chain.keynodes.main | GET | /innov/v1/industry/{chainId}/key-nodes | API-00350～00359 | catalog `unavailable`；§0 **未试调** |
-
----
-
-## 2. 功能点 → 用例（主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L21 \| chain.keynodes.main \| chainId \| 算法输入-chainId产业标识 | catalog chainId | API-00350、00352、00353、00354、00358 | 已覆盖 | 合法主路径 + 非法/缺 path + 备选 id |
-| L21 \| chain.keynodes.main \| high_end_index \| 算法输出-high_end_index高端化指数体 | catalog high_end_index | API-00358、00359 | 契约占位 | unavailable；成功形态预备，不写 sample 分值 |
-| L21 \| chain.keynodes.main \| _empty \| 关键环节识别无数据空态 | 契约空结果 | — | **未覆盖** | 无稳定空态构造；§0 未试调 |
-| L21 \| chain.keynodes.main \| _fail \| 关键环节识别查询失败 | 契约错误态 | API-00352、00353、00356、00351、00355 | 已覆盖 | 非法 id、缺 path、鉴权、畸形 id |
-| L21 \| chain.keynodes.main \| etl_clean_standardize \| 多源指标标准化清洗 | 需规段一采集清洗 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| keynode_indicator_threshold \| 关键环节指标与权重阈值 | 需规指标体系 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| keynode_model_identify \| 识别模型训练与关键环节定位 | 需规计算分析阶段 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| strategic_importance_analysis \| 战略重要性及产业影响分析 | 需规战略重要性 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| link_influence_evaluation \| 环节影响力评估 | 需规（2）影响力 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| dynamic_keynode_refresh \| 动态监测与结果更新 | 需规动态监测 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| strategic_importance_report \| 战略重要性分析报告 | 需规（2）战略报告 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| viz_link_structure \| 可视化环节结构图支撑 | 需规（2）结构图 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| link_type_query_scope \| 产业标签与环节类型查询语义 | 需规（3）调用方式 | — | 无对应功能点 | req_only |
-| L21 \| chain.keynodes.main \| analysis_report_export \| 分析报告与数据导出 | 需规（3）导出 | — | 无对应功能点 | req_only |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| chain.keynodes.main | GET | /innov/v1/industry/{chainId}/key-nodes | API-01266、01267 | unavailable |
+| chain.keynodes.m_chain_deep_124_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_124_1/compute | API-01268、01269 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵（挂 L21.md）
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖（可测 API field / 哨兵） | 3（chainId、high_end_index 占位、_fail） |
-| 未覆盖 | 1（_empty） |
-| 无对应功能点（req_only） | 10 |
-| API 用例条数 | 10（00350～00359） |
-| 金样 | API-00350 |
+多条 field 挂同一用例。不按 field 另开用例。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| L21 \| chain.keynodes.main \| chainId \| 算法输入-chainId产业标识 | API-01266、01267 | 已覆盖 | 合法 path chainId=INB170101 + 缺 chainId；规则来源 catalog chainId |
+| L21 \| chain.keynodes.main \| high_end_index \| 算法输出-high_end_index高端化指数体 | API-01266 | 已覆盖 | 主流程断言数组元素 high_end_index（number，responseFields）；规则来源 catalog high_end_index |
+| L21 \| chain.keynodes.main \| _empty \| 关键环节识别无数据空态 | — | 未覆盖 | 无稳定「合法 chainId 且无关键环节」构造条件；规则来源 契约空结果 |
+| L21 \| chain.keynodes.main \| _fail \| 关键环节识别查询失败 | API-01267 | 部分覆盖 | 仅缺 chainId 反向（message/msg）；规则来源 契约错误态 |
+
+---
+
+## req_only 行（无 endpoint 挂接）
+
+L21.md 中下列 field 的 endpoint_id 为空、`catalog_status=req_only`，catalog 无对应入参或 responseFields。B 线记 **无对应功能点**，不单独开 API 用例：
+
+`etl_clean_standardize`（多源指标标准化清洗）、`keynode_indicator_threshold`（关键环节指标与权重阈值）、`keynode_model_identify`（识别模型训练与关键环节定位）、`strategic_importance_analysis`（战略重要性及产业影响分析）、`link_influence_evaluation`（环节影响力评估）、`dynamic_keynode_refresh`（动态监测与结果更新）、`strategic_importance_report`（战略重要性分析报告）、`viz_link_structure`（可视化环节结构图支撑）、`link_type_query_scope`（产业标签与环节类型查询语义）、`analysis_report_export`（分析报告与数据导出）。
+
+---
+
+## B 线独有（catalog 有、L21 未挂 endpoint）
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| L21 \| chain.keynodes.m_chain_deep_124_1 \| — \| 产业链关键环节识别模型 | API-01268、01269 | 无对应功能点 | 下拉 title 仍写主流程（metric_id、hint）与缺 chainId；L21 未给该 endpoint 挂 field 行 |
+
+---
+
+## 计数
+
+| 项 | 值 |
+|----|-----|
+| catalog endpoint 数 | 2 |
+| title 数 | 2 |
+| API 用例数 | 4 |
+| 主流程 | 2（API-01266 关键环节、API-01268 产业链关键环节识别模型） |
+| 反向 | 2（API-01267、API-01269，均为缺 chainId） |
+| 编号 | API-01266～01269 |
+| L21 挂接行 | 4（已覆盖 2、部分覆盖 1、未覆盖 1） |
+| L21 req_only | 10（无对应功能点） |

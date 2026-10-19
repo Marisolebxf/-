@@ -1,107 +1,103 @@
 # 政策实体与关系 · 功能点覆盖（policy.graph / L07+L08）
 
-> catalog `policy.graph` · 50897 · path `/policy/graph`  
-> **用例册**：`API-政策实体与关系-用例.md`（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000419`～`000448`，共 **30** 条）  
-> A 线范围：**L07**（ner/main，20 行含 1 req_only）· **L08**（intra/hang，44 行）  
-> 功能点键：`Lxx | endpoint_id | field_key | 功能点中文`  
-> **A 线核对**：`grep policy.graph fp-split-by-api-run/work/L07.md L08.md`
+> catalog `policy.graph` · path `#/policy/graph`  
+> A 线真源：`fp-split-by-api-run/work/L07.md`、`work/L08.md`  
+> B 线用例：`API-政策实体与关系-用例.md`（第二轮 **API-01333**～**01401**）  
+> 联调台端口 50897（本册不打开页面）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| policy.graph.ner | POST | /policy/v1/policy/graph/ner | API-000419, API-000420, API-000421, API-000422, API-000423 | unavailable |
-| policy.graph.intra | POST | /policy/v1/policy/graph/intra | API-000424, API-000425, API-000426, API-000427, API-000428 | unavailable |
-| policy.graph.hang-support | POST | /policy/v1/policy/graph/hang | API-000429, API-000430, API-000431, API-000432, API-000433 | unavailable |
-| policy.graph.hang-apply | POST | /policy/v1/policy/graph/hang | API-000434, API-000435, API-000436, API-000437, API-000438 | unavailable |
-| policy.graph.hang-regulate | POST | /policy/v1/policy/graph/hang | API-000439, API-000440, API-000441, API-000442, API-000443 | unavailable |
-| policy.graph.main | GET | /policy/v1/policy/graph | API-000444, API-000445, API-000446, API-000447, API-000448 | unavailable |
-
----
-
-## 2. 功能点 → 用例（L07+L08 主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L07 \| policy.graph.ner \| op_id \| 算法输入-op_id写入算子 | catalog op_id | API-000419、API-000420、API-000421、API-000422、API-000423 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L07 \| policy.graph.ner \| scope \| 算法输入-scopeone/batch | catalog scope | API-000419、API-000420、API-000421、API-000422、API-000423 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L07 \| policy.graph.ner \| id \| 算法输入-id政策稳定 ID（scope=one） | catalog id | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| mode \| 算法输入-moderule/llm | catalog mode | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | catalog dry_run | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| filter \| 算法输入-filterscope=batch 过滤对象，高级 JSON 保持 {all:true} | catalog filter | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| written_nodes \| 算法输出-written_nodes写入点 | catalog written_nodes | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| skipped \| 算法输出-skipped四码跳过 | catalog skipped | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| space \| 算法输出-space恒 demo_gkx_chain | catalog space | API-000419 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.ner \| _empty \| 查询无数据空态 | catalog 契约 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L07 \| policy.graph.ner \| _fail \| 调用失败 | catalog 契约 | API-000420、API-000421、API-000422、API-000423 | 已覆盖 | 契约占位+入参失败哨兵 |
-| L07 \| policy.graph.ner \| policy_entity_pipeline \| 政策实体识别需规语义 | 需规 | — | 不纳入 | req_only |
-| L07 \| policy.graph.main \| center \| 算法输入-center中心节点 VID 或 policy_id | catalog center | API-000444、API-000445、API-000446、API-000447、API-000448 | 部分覆盖 | unavailable 占位+非法 center |
-| L07 \| policy.graph.main \| steps \| 算法输入-steps邻域跳数 | catalog steps | API-000444、API-000445、API-000446、API-000447、API-000448 | 部分覆盖 | unavailable 占位+非法 steps |
-| L07 \| policy.graph.main \| limit \| 算法输入-limit节点上限 | catalog limit | API-000444、API-000445、API-000446、API-000447、API-000448 | 部分覆盖 | unavailable 占位+limit 越界 |
-| L07 \| policy.graph.main \| nodes \| 算法输出-nodes节点 | catalog nodes | API-000444 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.main \| edges \| 算法输出-edges关系边 | catalog edges | API-000444 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.main \| source \| 算法输出-sourcenebula／ads／镜像；space 恒 demo_gkx_chain | catalog source | API-000444 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L07 \| policy.graph.main \| _empty \| 查询无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L07 \| policy.graph.main \| _fail \| 调用失败 | 契约错误态 | API-000445、API-000446、API-000447 | 已覆盖 | 契约占位+入参失败哨兵 |
-| L08 \| policy.graph.intra \| op_id \| 算法输入-op_id写入算子 | catalog op_id | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| scope \| 算法输入-scopeone/batch | catalog scope | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| id \| 算法输入-id政策稳定 ID | catalog id | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| mode \| 算法输入-moderule/llm | catalog mode | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | catalog dry_run | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| filter \| 算法输入-filterbatch 过滤对象 | catalog filter | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| relation_whitelist \| 算法输入-relation_whitelist白名单，高级 JSON 用 ["cite"] | catalog relation_whitelist | API-000424, API-000425, API-000426, API-000427, API-000428 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.intra \| written_edges \| 算法输出-written_edgescite 边 | catalog written_edges | API-000424 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.intra \| skipped \| 算法输出-skipped四码跳过 | catalog skipped | API-000424 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.intra \| _empty \| 查询无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L08 \| policy.graph.intra \| _fail \| 调用失败 | 契约错误态 | API-000425, API-000426, API-000427, API-000428 | 已覆盖 | 契约占位+入参失败哨兵 |
-| L08 \| policy.graph.hang-support \| op_id \| 算法输入-op_id必须带 op_id | catalog op_id | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| scope \| 算法输入-scopeone/batch | catalog scope | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| id \| 算法输入-id政策稳定 ID，禁止用名称猜 VID | catalog id | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| mode \| 算法输入-moderule/llm | catalog mode | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | catalog dry_run | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| filter \| 算法输入-filterbatch 过滤对象 | catalog filter | API-000429, API-000430, API-000431, API-000432, API-000433 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-support \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["support"] | catalog relation_whitelist | API-000429 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-support \| written_edges \| 算法输出-written_edgessupport 边 | catalog written_edges | API-000429 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-support \| skipped \| 算法输出-skipped四码跳过 | catalog skipped | API-000429 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-support \| _empty \| 查询无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L08 \| policy.graph.hang-support \| _fail \| 调用失败 | 契约错误态 | API-000430, API-000431, API-000432, API-000433 | 已覆盖 | 契约占位+入参失败哨兵 |
-| L08 \| policy.graph.hang-apply \| op_id \| 算法输入-op_id必须带 op_id | catalog op_id | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| scope \| 算法输入-scopeone/batch | catalog scope | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| id \| 算法输入-id政策稳定 ID | catalog id | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| mode \| 算法输入-moderule/llm | catalog mode | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | catalog dry_run | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| filter \| 算法输入-filterbatch 过滤对象 | catalog filter | API-000434, API-000435, API-000436, API-000437, API-000438 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-apply \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["apply_to"] | catalog relation_whitelist | API-000434 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-apply \| written_edges \| 算法输出-written_edgesapply_to 边 | catalog written_edges | API-000434 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-apply \| skipped \| 算法输出-skipped四码跳过 | catalog skipped | API-000434 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-apply \| _empty \| 查询无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L08 \| policy.graph.hang-apply \| _fail \| 调用失败 | 契约错误态 | API-000435, API-000436, API-000437, API-000438 | 已覆盖 | 契约占位+入参失败哨兵 |
-| L08 \| policy.graph.hang-regulate \| op_id \| 算法输入-op_id必须带 op_id | catalog op_id | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| scope \| 算法输入-scopeone/batch | catalog scope | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| id \| 算法输入-id政策稳定 ID | catalog id | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| mode \| 算法输入-moderule/llm | catalog mode | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | catalog dry_run | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| filter \| 算法输入-filterbatch 过滤对象 | catalog filter | API-000439, API-000440, API-000441, API-000442, API-000443 | 部分覆盖 | unavailable 占位+必填/非法哨兵 |
-| L08 \| policy.graph.hang-regulate \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["regulate"] | catalog relation_whitelist | API-000439 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-regulate \| written_edges \| 算法输出-written_edgesregulate 边 | catalog written_edges | API-000439 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-regulate \| skipped \| 算法输出-skipped四码跳过 | catalog skipped | API-000439 | 契约占位 | 禁止 sample 数值作通过条件 |
-| L08 \| policy.graph.hang-regulate \| _empty \| 查询无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定合法入参下必空证据 |
-| L08 \| policy.graph.hang-regulate \| _fail \| 调用失败 | 契约错误态 | API-000440, API-000441, API-000442, API-000443 | 已覆盖 | 契约占位+入参失败哨兵 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| policy.graph.ner | POST | /policy/v1/policy/graph/ner | API-01333～01343 | unavailable |
+| policy.graph.intra | POST | /policy/v1/policy/graph/intra | API-01344～01355 | unavailable |
+| policy.graph.hang-support | POST | /policy/v1/policy/graph/hang | API-01356～01368 | unavailable |
+| policy.graph.hang-apply | POST | /policy/v1/policy/graph/hang | API-01369～01381 | unavailable |
+| policy.graph.hang-regulate | POST | /policy/v1/policy/graph/hang | API-01382～01394 | unavailable |
+| policy.graph.main | GET | /policy/v1/policy/graph | API-01395～01401 | unavailable |
 
 ---
 
-## 3. §I 计数
+## 功能点 → 用例矩阵（挂 L07.md、L08.md）
 
-| 指标 | 值 |
-|------|-----|
-| API 用例 | 30（000419～000448） |
-| catalog endpoint | 6 |
-| L07+L08 矩阵行（含 req_only） | 67 |
-| `_empty` 未覆盖 | 6 |
-| req_only 不纳入 | 1 |
-| 金样 | API-000419 |
-| 鉴权代表 | API-000420 |
-| FUNC | 0 |
-| code-registry / run-log | 未改（父控） |
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| L07 \| policy.graph.ner \| op_id \| 算法输入-op_id写入算子 | API-01333、API-01338 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L07 \| policy.graph.ner \| scope \| 算法输入-scopeone/batch | API-01333、API-01339 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L07 \| policy.graph.ner \| id \| 算法输入-id政策稳定 ID（scope=one） | API-01333、API-01334、API-01340 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.ner \| mode \| 算法输入-moderule/llm | API-01333、API-01335、API-01341 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.ner \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | API-01333、API-01336、API-01342 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.ner \| filter \| 算法输入-filterscope=batch 过滤对象，高级 JSON 保持 {all:true} | API-01337、API-01343 | 已覆盖 | sample 未带该参数；备选传入合法值，反向非法 |
+| L07 \| policy.graph.ner \| written_nodes \| 算法输出-written_nodes写入点 | API-01333 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.ner \| skipped \| 算法输出-skipped四码跳过 | API-01333 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.ner \| space \| 算法输出-space恒 demo_gkx_chain | API-01333 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.ner \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L07 \| policy.graph.ner \| _fail \| 调用失败 | API-01338、API-01339、API-01340、API-01341、API-01342、API-01343 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+| L07 \| policy.graph.main \| center \| 算法输入-center中心节点 VID 或 policy_id | API-01395、API-01396、API-01399 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.main \| steps \| 算法输入-steps邻域跳数 | API-01395、API-01397、API-01400 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.main \| limit \| 算法输入-limit节点上限 | API-01395、API-01398、API-01401 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L07 \| policy.graph.main \| nodes \| 算法输出-nodes节点 | API-01395 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.main \| edges \| 算法输出-edges关系边 | API-01395 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.main \| source \| 算法输出-sourcenebula／ads／镜像；space 恒 demo_gkx_chain | API-01395 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L07 \| policy.graph.main \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L07 \| policy.graph.main \| _fail \| 调用失败 | API-01399、API-01400、API-01401 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+| L08 \| policy.graph.intra \| op_id \| 算法输入-op_id写入算子 | API-01344、API-01349 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.intra \| scope \| 算法输入-scopeone/batch | API-01344、API-01350 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.intra \| id \| 算法输入-id政策稳定 ID | API-01345、API-01352 | 已覆盖 | sample 未带该参数；备选传入合法值，反向非法 |
+| L08 \| policy.graph.intra \| mode \| 算法输入-moderule/llm | API-01344、API-01346、API-01353 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.intra \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | API-01344、API-01347、API-01354 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.intra \| filter \| 算法输入-filterbatch 过滤对象 | API-01344、API-01348、API-01355 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.intra \| relation_whitelist \| 算法输入-relation_whitelist白名单，高级 JSON 用 ["cite"] | API-01344、API-01351 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.intra \| written_edges \| 算法输出-written_edgescite 边 | API-01344 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.intra \| skipped \| 算法输出-skipped四码跳过 | API-01344 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.intra \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L08 \| policy.graph.intra \| _fail \| 调用失败 | API-01349、API-01350、API-01351、API-01352、API-01353、API-01354、API-01355 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+| L08 \| policy.graph.hang-support \| op_id \| 算法输入-op_id必须带 op_id | API-01356、API-01362 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-support \| scope \| 算法输入-scopeone/batch | API-01356、API-01363 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-support \| id \| 算法输入-id政策稳定 ID，禁止用名称猜 VID | API-01356、API-01357、API-01364 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-support \| mode \| 算法输入-moderule/llm | API-01356、API-01358、API-01365 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-support \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | API-01356、API-01359、API-01366 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-support \| filter \| 算法输入-filterbatch 过滤对象 | API-01360、API-01367 | 已覆盖 | sample 未带该参数；备选传入合法值，反向非法 |
+| L08 \| policy.graph.hang-support \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["support"] | API-01356、API-01361、API-01368 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-support \| written_edges \| 算法输出-written_edgessupport 边 | API-01356 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-support \| skipped \| 算法输出-skipped四码跳过 | API-01356 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-support \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L08 \| policy.graph.hang-support \| _fail \| 调用失败 | API-01362、API-01363、API-01364、API-01365、API-01366、API-01367、API-01368 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+| L08 \| policy.graph.hang-apply \| op_id \| 算法输入-op_id必须带 op_id | API-01369、API-01375 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-apply \| scope \| 算法输入-scopeone/batch | API-01369、API-01376 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-apply \| id \| 算法输入-id政策稳定 ID | API-01369、API-01370、API-01377 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-apply \| mode \| 算法输入-moderule/llm | API-01369、API-01371、API-01378 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-apply \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | API-01369、API-01372、API-01379 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-apply \| filter \| 算法输入-filterbatch 过滤对象 | API-01373、API-01380 | 已覆盖 | sample 未带该参数；备选传入合法值，反向非法 |
+| L08 \| policy.graph.hang-apply \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["apply_to"] | API-01369、API-01374、API-01381 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-apply \| written_edges \| 算法输出-written_edgesapply_to 边 | API-01369 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-apply \| skipped \| 算法输出-skipped四码跳过 | API-01369 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-apply \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L08 \| policy.graph.hang-apply \| _fail \| 调用失败 | API-01375、API-01376、API-01377、API-01378、API-01379、API-01380、API-01381 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+| L08 \| policy.graph.hang-regulate \| op_id \| 算法输入-op_id必须带 op_id | API-01382、API-01388 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-regulate \| scope \| 算法输入-scopeone/batch | API-01382、API-01389 | 已覆盖 | 必填：主流程传入，反向缺省 |
+| L08 \| policy.graph.hang-regulate \| id \| 算法输入-id政策稳定 ID | API-01382、API-01383、API-01390 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-regulate \| mode \| 算法输入-moderule/llm | API-01382、API-01384、API-01391 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-regulate \| dry_run \| 算法输入-dry_run不写 ADS/Nebula | API-01382、API-01385、API-01392 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-regulate \| filter \| 算法输入-filterbatch 过滤对象 | API-01386、API-01393 | 已覆盖 | sample 未带该参数；备选传入合法值，反向非法 |
+| L08 \| policy.graph.hang-regulate \| relation_whitelist \| 算法输入-relation_whitelist高级 JSON 用 ["regulate"] | API-01382、API-01387、API-01394 | 已覆盖 | 主流程按 sample 传入，备选省略，反向非法 |
+| L08 \| policy.graph.hang-regulate \| written_edges \| 算法输出-written_edgesregulate 边 | API-01382 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-regulate \| skipped \| 算法输出-skipped四码跳过 | API-01382 | 已覆盖 | 主流程按 sampleResponse 与 responseFields 断言 |
+| L08 \| policy.graph.hang-regulate \| _empty \| 查询无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
+| L08 \| policy.graph.hang-regulate \| _fail \| 调用失败 | API-01388、API-01389、API-01390、API-01391、API-01392、API-01393、API-01394 | 已覆盖 | 各参数反向，message 或 msg 指出该参数 |
+
+---
+
+## req_only 行（无 endpoint 挂接）
+
+L07.md 中 `policy_entity_pipeline`（政策实体识别需规语义）为 **req_only**，无 catalog endpoint。B 线记 **无对应功能点**，不单独开 API 用例。
+
+## 计数
+
+- L07 挂 endpoint 的功能点 19 行（ner 11 + main 8）；req_only 1 行不进矩阵。
+- L08 功能点 44 行（intra / hang-support / hang-apply / hang-regulate 各 11）。
+- 矩阵 63 行。`_empty` 6 行未覆盖；其余按对应用例标已覆盖。
+- 用例 69 条：主流程 6、备选 26、反向 37。
+
