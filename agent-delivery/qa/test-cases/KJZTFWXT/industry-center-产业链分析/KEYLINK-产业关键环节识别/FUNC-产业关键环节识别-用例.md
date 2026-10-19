@@ -1,114 +1,226 @@
 # 智能服务集群-科技专题服务系统测试用例
 
-> **文档类型**：测试用例（工作区 Markdown）  
-> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md` 红线 1~6）  
-> **测试类型**：FUNC  
-> **系统码**：KJZTFWXT  
-> **版本**：v2.0 · 2026-10-13（全库粒度重写，自 00578 起编）  
-> **模块**：产业关键环节识别（KEYLINK / catalog `chain-key-link` / A 线 **T04 产业关键环节识别**，40 条功能点：全链路环节结构化展示 18 条 + 关键环节智能标注与分析 22 条）  
-> **金样**：**00578 / 00579 / 00581 / 00583 / 00585**（烟测子集 = 跑全部金样：入口路由、对象构成与默认值、三权重指标只读态、开始分析显式触发、结果全链路图谱与环节构成）  
-> **旧号段**：00200~00210 · **2026-10-13 全库粒度重写废弃，归档不删**（历史行存 git 版本；旧→新映射见同目录 `coverage-fp.md` 附录C）  
-> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`（已在业务页且 URL 不含 `/login` 则不要登出）  
-> **入口**：产业中心 →「产业运行诊断」工作区 → 顶部 Tab「产业关键环节识别」  
-> **路由**：`/industry-center/diagnosis?workspace=key_link&tab=key-link`（TRACE `route_contract.key_link` 为 `/industry-center/diagnosis?tab=key-link`，现场带 `workspace=key_link` 前缀，以现场为准）  
-> **禁止**：把同路由兄弟 workspace（cycle「产业周期分析」/ bottleneck「产业瓶颈堵点识别」）写成用例主体（00595 仅核隔离，细目另案）；对比篮浮层为系统级入口（现场共 8 项），专项归 COMPARE 用例集，本页只顺带 observed；结果态勘察未见，期望一律按目标态 observed 口径写，不升 Fail  
-> **USM**：`agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/USM-CHAIN-DIAGNOSIS.md`（US-CHAIN-DIAG-03～04、07；验收 AC-US-CHAIN-DIAG-XX-YY）  
-> **TRACE**：`TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml`（`requirements`：REQ-CHAIN-DIAG-02 / 02A / 02B；诊断包覆盖 cycle / key_link / bottleneck，本用例集只写 key_link）  
-> **原始需求**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.2.4`（`.1` 全链路环节结构化展示 / `.2` 关键环节智能标注与分析）；算法侧 `bid-reference/科技专题服务算法库.md` → `§1.1.1.1.1.1.1.3.8`  
-> **交付口径**：INTEG（前端 → Java → Python `/internal/*`）  
-> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`（v8 T04 全 40 条映射）  
-> **关联任务**：`QA-KJZTFWXT-BLINE-CASE-IND-L01`  
-> **自动化用例ID**：已回填 as-built 脚本 id（P0-01~P0-11 / P1-01~P1-12；金样 P0-01~P0-05 ↔ 00578/00579/00581/00583/00585；2026-10-14 BATCH32）  
-> **维护**：agent:qa-agent · 监管 human:黄敬洲
+> **文档类型**：测试用例（工作区 Markdown）
+> **规范**：`agent-delivery/qa-test-case-spec.md`（编号与主表列）
+> **测试类型**：FUNC
+> **系统码**：KJZTFWXT
+> **版本**：v3.0 · 2026-10-18（对照重写）
+> **模块**：产业关键环节识别（catalog `chain-key-link`）
+> **金样**：03088（只此一条：选齐对象后开始分析，直到成功结果页）
+> **号段**：本册新号 03088–03135（父控段 03088–03187，用到的最大号 **03135**）
+> **旧号**：00578–00600 全部退出本册正文。处置见文末「旧号处置」。00593 删除且不复用。
+> **环境**：http://111.198.38.90:50892/ · 已登录后从左侧「产业链分析」进入「产业关键环节识别」
+> **路由**：`/industry-center/diagnosis?workspace=key_link&tab=key-link`
+> **交付口径**：INTEG
+> **自动化用例ID**：本步留空
+> **维护**：agent:qa-agent
 
-**as_built 摘要（写期望用，不升 Fail，2026-10-12 实勘）**：入口为产业运行诊断工作区「产业关键环节识别」Tab，路由 `/industry-center/diagnosis?workspace=key_link&tab=key-link`，页标题「产业关键环节识别」；顶部双 Tab「产业关键环节识别（选中）/ 诊断记录」；分析配置区：分析对象三级（产业「新一代信息技术」→ 产业链「INB1701」→ 细分产业「半导体与集成电路」）；三个权重指标行（spinbutton 只读 disabled）：34「高价值环节占比」/ 33「战略重要性评分」/ 33「关键环节数」，各行标「注册项只读启用」、带「查看」按钮与上下调节钮（disabled）；只读版本信息：因子版本「关键环节因子 · 演示版」、权重阈值版本「固定演示版 · 正式口径待闭合」、模型版本「key_link-model-v1」、数据截至「由任务快照冻结」；操作按钮「重置参数」「开始分析」；本页为异步分析工作区（切条件不自动起任务，显式「开始分析」起任务）；勘察时评审模式为开启态：需求追溯按钮「产业关键环节识别」「恢复诊断任务与结果」「分析对象上下文」、角标「指标未登记：GAP-CHAIN-DIAG-SEMANTICS」、每指标行「指标说明」按钮与「口径待甲方确认（开放项 Q052）」角标，关闭后须零泄漏；对比篮浮层系统级存在（共 8 项，专项归 COMPARE 不展开）；结果态（关键环节标注 / 图谱高亮等）勘察未见，不出刚性预期，执行时 observed 归 coverage 开放项；注册因子命名与 USM 目标态（附加值率 / 技术壁垒 / 市场集中度）不一致，为演示版口径（Q052 / GAP-CHAIN-DIAG-SEMANTICS 未闭合）。
+## 关评审控件清单
 
----
+入口拓扑：
 
-## 1. 用例总表（总集列 + 右侧 GKX 扩展）
+| 区域 | 现场 | 用例 |
+| --- | --- | --- |
+| 入口 A | 「分析配置」：分析对象两个下拉、所属产业链、注册识别因子；按钮「开始分析」 | 03088 |
+| 入口 B | 无。本页没有对象名单，也不从名单发起 | 无 |
+| 任务列表 | 页签「诊断记录」 | 03112 起 |
+| 结果页 | 「产业关键环节识别结果」 | 03088 到达后的摘要与图谱各条 |
 
-> 排列顺序：**主流程（P0）→ 备选（P0/P1）→ 异常（P1）**；场景类见「功能项」列前缀。  
-> 预期断言常态 1~3 点；4~5 点仅限结构性检查（本册 1 条：00593）。  
-> 结果态条目为勘察未见场景，预期按目标态写、备注标 observed，不升 Fail。  
-> observed 项一律入「备注」，不进预期。
+核心主线：
+
+| 主线 | 用例 |
+| --- | --- |
+| 入口 A · 筛选条件 | 03088（金样）。步骤选齐三个下拉 →「开始分析」→「查看分析结果」→「产业关键环节识别结果」 |
+| 入口 B · 已选对象 | 无 |
+
+结果页（只写入口 A）：
+
+| 格 | 用例或原因 |
+| --- | --- |
+| 摘要·任务号与任务 ID | 03088 |
+| 摘要·分析对象与发起条件一致 | 03098 |
+| 摘要·关键环节数 | 03099 |
+| 摘要·市场规模 | 03100 |
+| 摘要·投融资总额 | 03101 |
+| 摘要·降级说明 | 03102 |
+| 筛选下拉 | 无。结果页没有筛选下拉 |
+| 开始分析·当天 | 03117 |
+| 工具·重新分析 | 无。页上没有「重新分析」 |
+| 工具·调整条件 | 03119「按此配置新建分析」：回到分析配置且对象仍在 |
+| 工具·结果搜索 | 无 |
+| 表·列 / 翻页 / 勾选 / 行按钮 | 无。结果不是表，是全链路图 |
+| 详情·环节详情 | 03106。区块标题「环节详情」，文案「该环节暂无详情说明」 |
+| 详情·代表企业 | 03107。标题「代表企业」 |
+| 详情·企业画像 | 03108。标题「企业画像」 |
+| 图例 | 03105「关键环节」「皇冠明珠」 |
+| 高亮节点 | 未覆盖：成功结果的关键环节数为 0，图上没有被标成关键环节或皇冠明珠的节点，造不出高亮终态 |
+| 排序 | 无。没有升序或降序控件 |
+| 二级 | 无。代表企业为空，没有下一级入口 |
+| 报告·查看 | 03109（结果页）、03128（诊断记录） |
+| 报告·目录 | 03109，七节见附录D |
+| 报告·返回 | 03120 |
+| 报告·生成中 | 未覆盖：已完成任务打开报告时已是成稿，造不出报告生成中 |
+| 报告·导出 | 03135。按钮不可点击 |
+| 报告·下载 | 03134。提示失败，文件未落地 |
+| 入池 | 无 |
+
+入口 B 各格：无。
+
+任务列表 × 入口 A（入口 B 无，不单列）：
+
+| 格 | 用例 |
+| --- | --- |
+| 列：任务、类型、状态、创建时间、操作 | 03112 |
+| 查看结果 | 03113 |
+| 复制配置 | 03118；失败行 03123 |
+| 查看报告 | 03128 |
+| 下载报告 | 03134 |
+| 删除·取消 | 03132 |
+| 删除·确定 | 03133 |
+| 任务状态 4 项 | 03121 |
+| 筛选失败 | 03122 |
+| 失败行不可打开结果和报告 | 03131 |
+| 筛选重置 | 03124 |
+| 翻页 | 03125 |
+| 每页条数 | 03126 |
+| 筛选分析中 | 03127 |
+| 生成页五阶段 | 03110 |
+| 查看分析记录 | 03111 |
+
+配置区：
+
+| 格 | 用例 |
+| --- | --- |
+| 第一个下拉 15 项 | 03090，附录A |
+| 第二个下拉初始 7 项 | 03091，附录B |
+| 所属产业链初始 6 项 | 03092，附录C |
+| 选新能源后的下级个数 | 03114 |
+| 改选生物产业后清空下级 | 03115 |
+| 注册识别因子三行 | 03093 |
+| 权重只读与合计 | 03094 |
+| 指标说明·附加值率 / 技术壁垒 / 市场集中度 | 03095 / 03096 / 03097 |
+| 重置参数 | 03116 |
+| 未点选就开始分析 | 03129 |
+| 产业链为空不能开始 | 03130 |
+| 清空按钮 | 无。下拉没有清空控件 |
+| 配置页版本四项 | 无。版本语句在指标说明抽屉内，不单列 |
+
+## 页面区块 → 用例
+
+| 区块 | 用例 |
+| --- | --- |
+| 菜单进入与双页签 | 03089 |
+| 分析对象与所属产业链 | 03090、03091、03092、03114、03115、03129、03130 |
+| 注册识别因子 | 03093、03094、03095、03096、03097、03116 |
+| 开始分析 / 生成页 / 当天 | 03088、03110、03111、03117 |
+| 结果摘要与全链路 | 03098–03108 |
+| 报告 | 03109、03120、03128、03134、03135 |
+| 诊断记录 | 03112、03113、03118、03121–03128、03131–03133 |
+
+## 1. 用例总表
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00578 | 产业链分析 | 产业关键环节识别 | 主流程-入口与路由 | 页头与双 Tab | 产业关键环节识别 | 进入产业关键环节识别页 | 进入产业运行诊断「产业关键环节识别」页，路由、页标题与双 Tab 正确 | 1、系统正常；2、已登录 admin | 1.进入产业运行诊断工作区；2.切到顶部「产业关键环节识别」Tab | 1、路由路径为 `/industry-center/diagnosis` 且 query 含 `workspace=key_link&tab=key-link`；2、页标题为「产业关键环节识别」；3、顶部双 Tab 为「产业关键环节识别」（选中）与「诊断记录」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜以结构化图谱展示全链路环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-01 | 金样；接旧 00200；路由契约目标态为 `/industry-center/diagnosis?tab=key-link`，现场带 workspace 参数为增量形态，差异不判 Fail（开放项 7）；勘察时评审模式为开启态，评审增量显隐归 00593；对比篮专项深验归 COMPARE 用例集（现场共 8 项） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00579 | 产业链分析 | 产业关键环节识别 | 主流程-分析配置区 | 三级分析对象与默认值 | 产业关键环节识别 | 分析对象三级选择 | 分析对象三级下拉构成齐备且默认已选值正确 | 1、已进入产业关键环节识别页；2、配置为默认条件（脏会话先还原） | 1.展开分析对象区三级下拉；2.读取三级默认已选值 | 1、分析对象区为三级：产业「新一代信息技术」→ 产业链「INB1701」→ 细分产业「半导体与集成电路」；2、三级已选值回显正确 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜将产业拆解为标准化环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-02 | 金样；接旧 00201 部分；勘察默认已选态为三级链（脏会话执行时还原后补核）；对象合同=单个产业链（TRACE object_contract.key_link）；industry_id 三 Tab 兼容共享、chain_id 仅 key_link/bottleneck 共享 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00580 | 产业链分析 | 产业关键环节识别 | 主流程-分析配置区 | 三级联动与切换不触发任务 | 产业关键环节识别 | 分析对象三级选择 | 切换分析对象后下级联动刷新且不自动创建分析任务 | 1、已进入产业关键环节识别页 | 1.切换产业为「生物产业」；2.展开产业链与细分产业下拉；3.切回「新一代信息技术 / INB1701 / 半导体与集成电路」；4.浏览诊断记录列表条目数 | 1、产业链选项随产业联动、细分产业随产业链联动，已选值回显正确；2、对象变更后不自动创建分析任务；3、对象变更不产生诊断记录条目 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜将产业拆解为标准化环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-06 | 接旧 00201 部分；异步工作区铁律=切条件不自动起任务（产品实现规程附录 E / Q-ANALYSIS-01）；联动切换后的刷新过程态（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00581 | 产业链分析 | 产业关键环节识别 | 主流程-分析配置区 | 三权重指标只读态 | 产业关键环节识别 | 三权重指标注册项只读 | 三个权重指标行构成与只读态正确：值、「注册项只读启用」标记、「查看」按钮与 disabled 调节钮 | 1、已进入产业关键环节识别页 | 1.定位三个权重指标行；2.读取各指标名与值；3.读取各行「注册项只读启用」标记与「查看」按钮；4.点上下调节钮尝试调整 | 1、三个权重指标为：高价值环节占比 34、战略重要性评分 33、关键环节数 33；2、各行 spinbutton 只读 disabled，上下调节钮 disabled 不可调；3、各行标「注册项只读启用」且带可见「查看」按钮 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜提供附加值率指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-03 | 金样；接旧 00202；承载 #19–#21（提供附加值率/技术壁垒/市场集中度指标）；34/33/33 为勘察值；命名与 USM 注册因子（附加值率/技术壁垒/市场集中度）不一致为演示版口径（Q052 / GAP-CHAIN-DIAG-SEMANTICS 未闭合，开放项 1，不判 Fail）；不提供伪可编辑正式权重=USM AC-03-02 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00582 | 产业链分析 | 产业关键环节识别 | 主流程-分析配置区 | 版本信息只读 | 产业关键环节识别 | 版本与数据截至只读 | 只读版本信息四项呈现正确且不可编辑 | 1、已进入产业关键环节识别页 | 1.定位版本信息区；2.读取因子版本与权重阈值版本；3.读取模型版本与数据截至；4.尝试编辑版本信息各项 | 1、因子版本为「关键环节因子 · 演示版」、权重阈值版本为「固定演示版 · 正式口径待闭合」；2、模型版本为「key_link-model-v1」、数据截至为「由任务快照冻结」；3、四项均只读不可编辑 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜基于已点名指标计算各环节高端化指数 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-07 | 接旧 00204 部分；版本快照合同=factor_version / threshold_version / model_version / data_snapshot（editable_formal_weight/threshold: prohibited）；权重阈值口径未闭合（Q052）的诚实呈现（开放项 1）；提交任务后与任务快照绑定执行时补核（observed，开放项 3） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00583 | 产业链分析 | 产业关键环节识别 | 主流程-操作区 | 开始分析显式触发 | 产业关键环节识别 | 显式开始分析创建任务 | 「开始分析」显式创建分析任务且切条件不自动起任务 | 1、已进入产业关键环节识别页；2、分析对象已选定（勘察默认态） | 1.按默认配置点击「开始分析」；2.浏览任务过程阶段呈现；3.切换分析对象后不点按钮，浏览诊断记录列表条目数 | 1、显式触发后才创建任务，不自动起任务；2、任务过程为只读进度说明，不出现伪造百分比；3、仅变更对象不点按钮时不创建任务、不产生记录条目 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜展示产业环节拆解处理中状态 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-04 | 金样；接旧 00206 部分；勘察未跑任务，过程态呈现执行时记录（observed）；同用户同条件只允许一条在跑、当天已成功直接打开结果、可「重新分析」强制重跑（附录 E / Q-ANALYSIS-01 口径，执行时补核，开放项 6）；失败不建任务、保留可修正草稿（USM 异常口径，执行时构造核，开放项 3） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00584 | 产业链分析 | 产业关键环节识别 | 主流程-过程态 | 过程阶段能力词 | 产业关键环节识别 | 过程阶段文案 | 任务过程阶段文案含三个阶段的能力词与产物词 | 1、已点击「开始分析」且任务在跑或已产生过程记录 | 1.浏览任务过程阶段文案；2.读取各阶段能力词与产物词 | 1、阶段文案含「全链路环节结构化拆解（研发/设计/制造/销售/服务）」能力词；2、阶段文案含「附加值率、技术壁垒、市场集中度与高端化指数计算」能力词；3、阶段文案含「关键环节智能标注与竞争格局、代表企业、技术趋势归纳，结果可信性校验与分析报告组装」能力词 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜展示产业环节拆解处理中状态 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-08 | 接旧 00206 部分；勘察未跑任务，本条全部为执行时记录口径（observed，开放项 3）；阶段文案=USM AC-03-03 / TRACE process_stage_contract 能力词汇合同（承载 #17/#22/#37/#39 过程态） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00585 | 产业链分析 | 产业关键环节识别 | 主流程-结果区 | 全链路图谱与环节构成 | 产业关键环节识别 | 全链路结构化图谱 | 任务成功后结果呈现全链路结构化图谱与五个标准化环节 | 1、已通过「开始分析」成功完成至少一条关键环节分析任务（或从诊断记录恢复成功结果） | 1.从成功任务打开结果；2.浏览全链路结构化图谱；3.浏览五环节构成与顺序 | 1、结果顶栏为「{分析对象} · 产业关键环节识别结果」；2、图谱为完整全链路结构化图谱，不被截断为仅关键节点列表；3、研发、设计、制造、销售、服务五个标准化环节可见且顺序正确 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.1 | T04 \｜全链路环节结构化展示 \｜以结构化图谱展示全链路环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-05 | 金样；接旧 00210 部分；勘察时未见结果态，本条为执行时记录口径（observed，开放项 2，现场无结果不判 Fail、记开放项）；完整链=AC-04-01（承载 #1–#6、#8、#12、#15）；环节拆解归算法库（黑盒）；图谱定位交互（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00586 | 产业链分析 | 产业关键环节识别 | 主流程-结果区 | 功能边界与衔接逻辑 | 产业关键环节识别 | 环节功能边界与衔接 | 结果呈现各环节功能边界与环节间衔接逻辑 | 1、已打开关键环节识别成功结果 | 1.浏览各环节的功能边界说明；2.浏览环节间衔接逻辑呈现 | 1、各环节可见功能边界说明；2、环节间衔接逻辑可见 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.1 | T04 \｜全链路环节结构化展示 \｜展示各环节功能边界 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-09 | 接旧 00210 部分；功能边界=AC-04-02（承载 #10/#11）；勘察时未见结果态（observed，开放项 2）；呈现形式以现场为准 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00587 | 产业链分析 | 产业关键环节识别 | 主流程-结果区 | 高端化指数与默认排序 | 产业关键环节识别 | 高端化指数呈现与排序 | 结果显式呈现各环节高端化指数且默认按降序排列 | 1、已打开关键环节识别成功结果 | 1.浏览各环节高端化指数呈现；2.读取环节排序方向 | 1、各环节显式呈现高端化指数，不隐藏于折叠加层后；2、默认按高端化指数降序排列各环节 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜展示各环节高端化指数 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-10 | 接旧 00210 部分；指数计算归算法库（黑盒，算法 Bid 1.1.1.1.1.1.1.3.8）；勘察时未见结果态（observed，开放项 2）；缺已点名指标时禁止计算=USM 异常口径（开放项 5 承载 #24） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00588 | 产业链分析 | 产业关键环节识别 | 主流程-结果区 | 关键环节标注与图谱高亮 | 产业关键环节识别 | 关键环节标注 | 结果对关键环节分色标注并在图谱中高亮，证据缺失不补造 | 1、已打开关键环节识别成功结果 | 1.浏览关键环节分色标注；2.浏览图谱中的高亮呈现 | 1、「关键环节」与「皇冠明珠」以分色标注区分；2、对应环节在图谱中高亮呈现；3、证据缺失的环节不补造关键标注 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜标注关键环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-11 | 接旧 00210 部分；分色标注=AC-04-03（承载 #26/#27/#25）；标注判断归算法侧（黑盒）；勘察时未见结果态（observed，开放项 2）；色彩语义以现场图例为准 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00589 | 产业链分析 | 产业关键环节识别 | 主流程-结果区 | 排序方向切换 | 产业关键环节识别 | 高端化指数排序切换 | 结果支持按高端化指数在降序与升序间切换排列 | 1、已打开关键环节识别成功结果；2、结果默认为降序呈现 | 1.切换排序方向为升序；2.切回降序 | 1、切换后各环节按高端化指数升序排列；2、切回后恢复降序排列 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜按高端化指数升序排列各环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-01 | 接旧 00210 部分（承载 #33/#34/#35）；勘察时未见结果态，排序切换控件形态执行时记录（observed，开放项 2）；若现场无切换控件按未覆盖回填矩阵 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00590 | 产业链分析 | 产业关键环节识别 | 备选-操作区 | 重置参数 | 产业关键环节识别 | 重置参数 | 「重置参数」恢复配置默认态且不创建任务、不影响只读版本信息 | 1、已进入产业关键环节识别页；2、已变更过分析对象（形成脏配置） | 1.点击「重置参数」；2.回读分析对象与三权重值；3.回读只读版本信息区 | 1、配置区恢复默认态（对象三级默认已选、权重 34/33/33）；2、重置不创建分析任务、不触发结果跳转；3、重置后只读版本信息保持不变 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜关键环节智能标注与分析 \｜提供附加值率指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-02 | 接旧 00205；恢复细目与重复点按无副作用（observed-执行时记录）；任务仅由显式「开始分析」触发 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00591 | 产业链分析 | 产业关键环节识别 | 备选-分析对象上下文 | 对象上下文按合同共享 | 产业关键环节识别 | 分析对象上下文共享 | 分析对象上下文按合同跨工作区共享且不误伤不越界 | 1、已进入产业关键环节识别页；2、可切到同路由兄弟工作区 | 1.在本页选定产业与产业链；2.切到「产业瓶颈堵点识别」工作区；3.读取其分析对象回显；4.切回本页回读对象 | 1、产业与产业链对象在共享合同的工作区之间保持一致；2、切回本页后对象不被重置 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜将产业拆解为标准化环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-03 | 接旧 00209 部分；上下文共享合同=industry_id 三 Tab 兼容、chain_id 仅 key_link 与 bottleneck 共享（同链一致为合理共享非串扰）；配置与结果焦点按 Tab 隔离归 00595；切 Tab 后 query 形态以现场为准（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00592 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 历史任务列表与过滤 | 产业关键环节识别 | 诊断记录列表与过滤 | 「诊断记录」Tab 列出本工作空间历史任务，可按条件过滤且不混入兄弟类型 | 1、已进入产业关键环节识别页；2、存在至少一条历史诊断任务（无则执行时记录空态） | 1.切到「诊断记录」Tab；2.浏览任务列表字段构成；3.按诊断类型过滤「产业关键环节识别」；4.清空过滤条件 | 1、列表列出本工作空间历史任务且关键环节类型可辨识；2、过滤条件含对象、诊断类型、状态、时间；3、无匹配记录时列表空态占位不报错 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜展示标准化环节清单 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-04 | 接旧 00207 部分；过滤=AC-US-CHAIN-DIAG-07-01；勘察仅确认 Tab 存在，列表字段与过滤细目执行时 observed（开放项 4）；不复制共享任务中心内部实现（US-07 product_interpretation） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00593 | 产业链分析 | 产业关键环节识别 | 备选-评审模式 | 评审增量显隐 | 产业关键环节识别 | 评审模式零泄漏 | 评审模式开启显示追溯按钮与治理角标，关闭后零泄漏且不改变业务态 | 1、顶部人设面板「内部评审模式」开关可用；2、已进入产业关键环节识别页 | 1.开启评审模式，浏览三个需求追溯按钮与「指标说明」按钮；2.浏览治理角标；3.关闭评审模式并刷新页面；4.全页检索评审字样；5.回读分析对象与版本信息 | 1、开启后「产业关键环节识别」「恢复诊断任务与结果」「分析对象上下文」三个追溯按钮可见可点；2、治理角标与「指标说明」按钮评审态可见；3、关闭后页面无「需求追溯」按钮、无评审角标与「指标说明」字样泄漏；4、开关不改变分析对象、权重只读态、版本信息与页面操作 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜关键环节智能标注与分析 \｜提供附加值率指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-05 | 接旧 00208；review 零泄漏铁律：关闭后 DOM 无「需求追溯 / 指标未登记 / GAP-CHAIN-DIAG-SEMANTICS / 口径待甲方确认 / Q052 / 指标说明 / metric_id / Q0xx」字样泄漏；business_mode_contract: must_not_change；评审增量非 T04 独立功能点，挂指标区承载；三按钮对应 F-DIAG-03 / F-DIAG-05 / F-DIAG-01 评审挂点；追溯内容与角标原文（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00594 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 历史任务恢复复用 | 产业关键环节识别 | 恢复诊断任务与结果 | 恢复历史任务复用同一任务且结果回显快照对象 | 1、「诊断记录」列表含至少一条已完成关键环节任务 | 1.过滤出一条已完成关键环节任务；2.恢复其结果；3.浏览恢复后页面状态 | 1、恢复进入对应 Tab 或不可变结果，不重建配置；2、复用同一任务、不新建不覆盖快照；3、结果顶栏回显快照中的分析对象、不显示「未选分析对象」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜展示标准化环节清单 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-06 | 接旧 00207 部分；恢复复用=AC-US-CHAIN-DIAG-07-02（US-07；TRACE US-07：不因对比篮为空显示「未选分析对象」）；勘察仅确认 Tab 存在，恢复行为执行时 observed（开放项 4）；恢复后配置区草稿是否受影响（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00595 | 产业链分析 | 产业关键环节识别 | 备选-工作区壳 | 兄弟 workspace 隔离 | 产业关键环节识别 | cycle/bottleneck workspace 隔离 | 同路由下周期 / 瓶颈工作区配置与结果焦点互不串扰 | 1、已进入产业关键环节识别页 | 1.切到「产业周期分析」工作区；2.切到「产业瓶颈堵点识别」工作区；3.切回「产业关键环节识别」Tab；4.在本页检索周期参数类控件 | 1、周期/瓶颈配置不串入本页、本页权重指标不串入兄弟页；2、切回本页后权重指标与配置保持，不被兄弟工作区重置；3、本页不出现周期参数类控件 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜将产业拆解为标准化环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-07 | 接旧 00209 部分；工作区壳合同=config_result_focus: isolated_per_tab；对象上下文合理共享与越界判别归 00591；兄弟页细目归各自用例集（cycle / bottleneck 另案，本条只核隔离）；诊断记录类型不混入归 00592 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00596 | 产业链分析 | 产业关键环节识别 | 备选-版本信息 | 版本信息与任务快照绑定 | 产业关键环节识别 | 版本信息只读 | 提交任务后版本信息与任务快照绑定且再次进入保持只读 | 1、已成功提交至少一次分析任务 | 1.提交一次「开始分析」后回读版本信息区；2.切到「诊断记录」Tab 再切回；3.回读版本信息区 | 1、提交任务后版本信息与该任务快照绑定呈现；2、Tab 往返后版本信息保持只读且内容不变 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜基于已点名指标计算各环节高端化指数 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-08 | 接旧 00204 部分；勘察未跑任务，绑定呈现执行时记录（observed，开放项 3）；快照绑定后版本不随后台升级漂移的深验归服务侧（黑盒） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00597 | 产业链分析 | 产业关键环节识别 | 备选-结果区 | 竞争格局 / 代表企业 / 技术趋势 | 产业关键环节识别 | 竞争格局与代表企业、技术趋势 | 关键环节同步呈现竞争格局、代表企业与技术趋势归纳 | 1、已打开关键环节识别成功结果；2、结果含至少一个已标注关键环节 | 1.浏览关键环节的竞争格局呈现；2.浏览代表企业卡片；3.浏览技术趋势归纳 | 1、关键环节同步呈现竞争格局；2、代表企业卡片与全景「关联企业」同构、可查看共享企业画像并加入/移出企业篮、不跳企业分析页；3、技术趋势归纳同步呈现 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜同步展示该环节竞争格局 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-09 | 接旧 00210 部分；同构卡片=AC-04-04（承载 #28–#31）；正式报告经 ENT-EXPORT 交接不在本页直验（开放项 5 承载 #32/#40）；勘察时未见结果态（observed，开放项 2）；技术趋势报告生成级联校验见 coverage #32 未覆盖说明 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00598 | 产业链分析 | 产业关键环节识别 | 备选-结果区 | 重新分析强制重跑 | 产业关键环节识别 | 重新分析 | 已有成功结果时「重新分析」可强制重跑且不影响既有结果 | 1、当天已有同条件成功结果；2、结果页可见「重新分析」入口 | 1.在同条件结果页点击「重新分析」；2.浏览任务过程；3.等待完成后浏览结果 | 1、点击后强制重新创建任务执行分析；2、既有结果在重跑期间仍可从诊断记录访问 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.1 | T04 \｜全链路环节结构化展示 \｜以结构化图谱展示全链路环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-10 | 接旧 00210 部分；重跑口径=附录 E / Q-ANALYSIS-01（同用户同条件只允许一条在跑、当天已成功直接打开结果、「重新分析」强制重跑，开放项 6）；勘察时未见结果态，「重新分析」入口位置与过程呈现执行时记录（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00599 | 产业链分析 | 产业关键环节识别 | 异常-分析配置区 | 清空分析对象空态 | 产业关键环节识别 | 空态保持 | 清空分析对象后页面保持空态且不静默写回默认 | 1、已进入产业关键环节识别页；2、分析对象已选任一值 | 1.清空细分产业选择；2.回读分析对象区与页面状态 | 1、对象置空后页面保持空态，不静默写回默认推荐；2、对象为空时不自动创建分析任务 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 | T04 \｜全链路环节结构化展示 \｜展示全链路环节图谱为空提示 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-11 | 接旧 00201 部分；勘察为已选态未触发空态（observed-执行时记录，开放项 4）；空态提示文案以现场为准；「开始分析」在对象为空时的按钮态（observed-执行时记录，现场 spinbutton 只读不构成输入门禁项） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00600 | 产业链分析 | 产业关键环节识别 | 异常-结果区 | 结果数据不足诚实呈现 | 产业关键环节识别 | 数据为空提示 | 结果数据不足时不补造标注与数值 | 1、已执行一次分析且结果数据不足（无已标注关键环节或指数缺失，以现场数据为准） | 1.浏览结果中数据不足的环节呈现；2.检索伪数值痕迹 | 1、数据不足处为空值或「暂无数据」类诚实提示；2、不出现演示数字、0 或推算值冒充正式结果 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 | T04 \｜关键环节智能标注与分析 \｜展示关键环节分析数据为空提示 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-12 | 接旧 00210 部分（承载 #25/#36）；US-04 异常口径「证据缺失不补造」；勘察时未见结果态，数据不足场景需执行时构造（observed，开放项 2/5）；空态占位形式以现场为准 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03088 | 产业链分析 | 产业关键环节识别 | 主流程-发起分析 | 开始分析到结果 | 产业关键环节识别 | 开始分析得到结果 | 选齐分析对象后开始分析，并进入成功结果页 | 1、已登录；2、已进入产业关键环节识别；3、当天尚未用「新能源 / 新能源 / 新能源」成功分析过 | 1.在「分析对象」第一个下拉选择「新能源」；2.在第二个下拉选择「新能源」；3.在「所属产业链」选择「新能源」；4.点击「开始分析」；5.点击「查看分析结果」 | 1、页面出现「产业关键环节识别结果」；2、任务号与任务 ID 为同一编号 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；入口 A 主线 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03089 | 产业链分析 | 产业关键环节识别 | 主流程-入口 | 页签与地址 | 产业关键环节识别 | 进入本页 | 从菜单进入后页标题、页签和地址正确 | 1、已登录 | 1.点击左侧「产业链分析」；2.点击「产业关键环节识别」 | 1、页标题为「产业关键环节识别」；2、页签「产业关键环节识别」为选中；3、地址路径为 /industry-center/diagnosis；4、地址参数含 workspace=key_link 与 tab=key-link | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 4 点为入口结构例外 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03090 | 产业链分析 | 产业关键环节识别 | 主流程-分析对象 | 第一个下拉选项 | 产业关键环节识别 | 分析对象选项 | 分析对象第一个下拉的选项个数 | 1、已进入产业关键环节识别 | 1.展开「分析对象」第一个下拉 | 1、选项共 15 个（名称见附录A） | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03091 | 产业链分析 | 产业关键环节识别 | 主流程-分析对象 | 第二个下拉选项 | 产业关键环节识别 | 分析对象选项 | 初始展示下第二个下拉的选项个数 | 1、已进入本页；2、第一个下拉仍显示「新一代信息技术」 | 1.展开「分析对象」第二个下拉 | 1、选项共 7 个（名称见附录B） | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03092 | 产业链分析 | 产业关键环节识别 | 主流程-所属产业链 | 产业链选项 | 产业关键环节识别 | 所属产业链选项 | 初始展示下所属产业链的选项个数 | 1、已进入本页；2、第二个下拉仍显示「新一代信息技术」 | 1.展开「所属产业链」 | 1、选项共 6 个（名称见附录C） | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03093 | 产业链分析 | 产业关键环节识别 | 主流程-注册识别因子 | 三行指标 | 产业关键环节识别 | 注册识别因子 | 注册识别因子表的三行名称、分组和数据状态 | 1、已进入本页 | 1.定位「注册识别因子」表 | 1、指标为附加值率、技术壁垒、市场集中度；2、分组均为「关键环节识别因子」；3、数据状态均为「可用」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03094 | 产业链分析 | 产业关键环节识别 | 主流程-注册识别因子 | 权重只读 | 产业关键环节识别 | 权重只读 | 权重与行首选择不可改，且合计通过 | 1、已进入本页 | 1.点击权重加减钮；2.点击行首选择框 | 1、权重依次为 34%、33%、33%；2、权重与行首选择均不能改；3、显示「权重合计：100% · 校验通过」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 行首选择为选中态 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03095 | 产业链分析 | 产业关键环节识别 | 主流程-指标说明 | 附加值率 | 产业关键环节识别 | 指标说明 | 附加值率的指标说明抽屉对应当前行 | 1、已进入本页 | 1.点击「附加值率」行的「查看」 | 1、抽屉标题为「附加值率 · 指标说明」；2、可见「说明」和「支撑指标」；3、支撑指标含环节产值、利润贡献、单位产出 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03096 | 产业链分析 | 产业关键环节识别 | 主流程-指标说明 | 技术壁垒 | 产业关键环节识别 | 指标说明 | 技术壁垒的指标说明抽屉对应当前行 | 1、已进入本页 | 1.点击「技术壁垒」行的「查看」 | 1、抽屉标题为「技术壁垒 · 指标说明」；2、可见「说明」和「支撑指标」；3、支撑指标含专利壁垒、工艺复杂度、替代难度 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03097 | 产业链分析 | 产业关键环节识别 | 主流程-指标说明 | 市场集中度 | 产业关键环节识别 | 指标说明 | 市场集中度的指标说明抽屉对应当前行 | 1、已进入本页 | 1.点击「市场集中度」行的「查看」 | 1、抽屉标题为「市场集中度 · 指标说明」；2、可见「说明」和「支撑指标」；3、支撑指标含头部企业份额、主体数量、竞争强度 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03098 | 产业链分析 | 产业关键环节识别 | 主流程-结果摘要 | 分析对象 | 产业关键环节识别 | 结果分析对象 | 结果页分析对象与本次发起条件一致 | 1、已用「新能源 / 新能源 / 新能源」跑完并打开结果 | 1.打开该次「产业关键环节识别结果」 | 1、分析对象显示「新能源 / 新能源」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03099 | 产业链分析 | 产业关键环节识别 | 主流程-结果摘要 | 关键环节数 | 产业关键环节识别 | 关键环节数 | 结果页展示关键环节数 | 1、已打开 03098 同一条成功结果 | 1.定位「关键环节数」 | 1、「关键环节数」显示为 0 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同册互指 03098 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03100 | 产业链分析 | 产业关键环节识别 | 主流程-结果摘要 | 市场规模 | 产业关键环节识别 | 市场规模 | 结果页对市场规模给出诚实空态 | 1、已打开 03098 同一条成功结果 | 1.定位「市场规模」 | 1、「市场规模」为「暂无正式数据源」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同册互指 03098 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03101 | 产业链分析 | 产业关键环节识别 | 主流程-结果摘要 | 投融资总额 | 产业关键环节识别 | 投融资总额 | 结果页对投融资总额给出诚实空态 | 1、已打开 03098 同一条成功结果 | 1.定位「投融资总额」 | 1、「投融资总额」为「数据筹备中」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同册互指 03098 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03102 | 产业链分析 | 产业关键环节识别 | 主流程-结果摘要 | 降级说明 | 产业关键环节识别 | 结果降级说明 | 结果页展示叙述降级说明 | 1、已打开 03098 同一条成功结果 | 1.定位结果页顶部说明 | 1、出现「叙述能力不可用，已按规则结果诚实降级。」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同册互指 03098 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03103 | 产业链分析 | 产业关键环节识别 | 主流程-全链路 | 五环节 | 产业关键环节识别 | 全链路环节 | 结果页按顺序展示五个环节和衔接 | 1、已打开一条成功结果 | 1.定位「全链路环节结构化展示」 | 1、从左到右为研发、设计、制造、销售、服务；2、相邻环节之间标有「衔接」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.1 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03104 | 产业链分析 | 产业关键环节识别 | 主流程-全链路 | 高端化 | 产业关键环节识别 | 环节高端化 | 五个环节都显示高端化占位 | 1、已打开一条成功结果 | 1.定位五个环节圆点 | 1、五个环节均显示「高端化 —」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 步骤「看」改为定位 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03105 | 产业链分析 | 产业关键环节识别 | 主流程-全链路 | 图例 | 产业关键环节识别 | 环节图例 | 全链路图例包含两类标记 | 1、已打开一条成功结果 | 1.定位「全链路环节结构化展示」图例 | 1、图例含「关键环节」；2、图例含「皇冠明珠」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 本结果关键环节数为 0，无被点亮节点，高亮终态见清单未覆盖 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03106 | 产业链分析 | 产业关键环节识别 | 主流程-环节详情 | 暂无详情 | 产业关键环节识别 | 环节详情 | 点击环节后详情区给出暂无说明 | 1、已打开一条成功结果 | 1.点击环节「设计」 | 1、「环节详情」为「该环节暂无详情说明」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.1 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 研发、制造、销售、服务点击后同文案 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03107 | 产业链分析 | 产业关键环节识别 | 主流程-代表企业 | 空态 | 产业关键环节识别 | 代表企业 | 结果页代表企业为空态文案 | 1、已打开一条成功结果 | 1.定位「代表企业」 | 1、文案为「暂无代表企业」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03108 | 产业链分析 | 产业关键环节识别 | 主流程-企业画像 | 空态 | 产业关键环节识别 | 企业画像 | 结果页企业画像为空态文案 | 1、已打开一条成功结果 | 1.定位「企业画像」 | 1、文案为「暂无画像」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4.2 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03109 | 产业链分析 | 产业关键环节识别 | 主流程-报告 | 查看报告 | 产业关键环节识别 | 分析报告 | 从结果页打开分析报告 | 1、已打开一条成功结果 | 1.点击「查看报告」 | 1、进入「产业关键环节识别报告」；2、可见「报告目录」共 7 节（附录D） | P0 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03110 | 产业链分析 | 产业关键环节识别 | 主流程-生成页 | 五阶段 | 产业关键环节识别 | 分析生成过程 | 开始分析后停在生成页，五阶段完成且不自动进结果 | 1、已进入本页；2、当天尚未成功分析过即将选择的这组对象 | 1.选齐分析对象的两个下拉和所属产业链；2.点击「开始分析」 | 1、当前页为「产业关键环节识别生成中」；2、五个阶段均显示「已完成」（附录E）；3、可见「查看分析结果」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 生成结束不自动进入结果页 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03111 | 产业链分析 | 产业关键环节识别 | 主流程-生成页 | 查看分析记录 | 产业关键环节识别 | 回到诊断记录 | 生成页可以回到诊断记录并看到本次任务 | 1、已停在「产业关键环节识别生成中」 | 1.点击「查看分析记录」 | 1、进入「诊断记录」；2、列表中能看到本次任务号 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03112 | 产业链分析 | 产业关键环节识别 | 主流程-诊断记录 | 表头 | 产业关键环节识别 | 诊断记录列表 | 诊断记录表列出本页任务的字段 | 1、已进入本页 | 1.点击「诊断记录」 | 1、表头为任务、类型、状态、创建时间、操作；2、已完成行的类型为「产业关键环节识别」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03113 | 产业链分析 | 产业关键环节识别 | 主流程-诊断记录 | 查看结果 | 产业关键环节识别 | 打开历史结果 | 已完成任务可以打开对应结果 | 1、诊断记录中有一条已完成任务 | 1.点击该行「查看结果」 | 1、进入「产业关键环节识别结果」；2、结果页任务号与该行相同 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03114 | 产业链分析 | 产业关键环节识别 | 主流程-分析对象 | 新能源选项 | 产业关键环节识别 | 新能源选项个数 | 选中新能源后，下级下拉的选项个数 | 1、已进入本页 | 1.在「分析对象」第一个下拉选择「新能源」；2.展开第二个下拉；3.选择「新能源」；4.展开「所属产业链」 | 1、第二个下拉为「新能源」和「新能源(L1)」，共 2 个；2、「所属产业链」只有「新能源」，共 1 个 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 与 03088 同一组对象，本条只数选项 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03115 | 产业链分析 | 产业关键环节识别 | 备选-分析对象 | 切换集群 | 产业关键环节识别 | 下级联动 | 改选集群后清空下级并更换产业选项 | 1、已进入本页 | 1.在「分析对象」第一个下拉改选「生物产业」；2.展开第二个下拉 | 1、第二个下拉和「所属产业链」被清空；2、第二个下拉为生物、生物医药与生命健康、高端医疗器械，共 3 个 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03116 | 产业链分析 | 产业关键环节识别 | 备选-重置参数 | 恢复推荐配置 | 产业关键环节识别 | 重置参数 | 重置参数只提示恢复推荐配置，不改已选对象 | 1、已进入本页；2、已把第一个下拉改为「生物产业」 | 1.点击「重置参数」 | 1、提示「已恢复该分析类型的推荐配置」；2、第一个下拉仍为「生物产业」；3、仍停留在「分析配置」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 权重仍为 34%、33%、33% |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03117 | 产业链分析 | 产业关键环节识别 | 备选-当天复用 | 再次开始分析 | 产业关键环节识别 | 当天打开已有结果 | 同一天同一组对象再次开始分析时打开已有结果 | 1、当天已用「新能源 / 新能源 / 新能源」成功分析过 | 1.再次选中这一组对象；2.点击「开始分析」 | 1、提示「今日已分析过相同条件，已打开结果」；2、打开的任务号与当天已成功的那次相同 | P0 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03118 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 复制配置 | 产业关键环节识别 | 复制配置 | 已完成任务的复制配置回到分析配置且不自动开始 | 1、诊断记录中有一条已完成任务 | 1.点击该行「复制配置」 | 1、回到「分析配置」；2、下拉回显该任务保存的分析对象；3、未进入结果页 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03119 | 产业链分析 | 产业关键环节识别 | 备选-结果工具 | 按此配置新建分析 | 产业关键环节识别 | 按此配置新建分析 | 按此配置新建分析回到配置且对象仍在 | 1、已打开一条成功结果 | 1.点击「按此配置新建分析」 | 1、回到「分析配置」；2、下拉回显该结果的分析对象；3、可见「开始分析」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 不自动创建新任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03120 | 产业链分析 | 产业关键环节识别 | 备选-报告 | 返回分析结果 | 产业关键环节识别 | 返回结果 | 报告页可以返回对应分析结果 | 1、已打开一条成功任务的报告 | 1.点击「返回分析结果」 | 1、回到「产业关键环节识别结果」；2、任务号与该报告所属任务相同 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03121 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 任务状态选项 | 产业关键环节识别 | 任务状态 | 任务状态下拉的选项个数 | 1、已打开「诊断记录」 | 1.展开「任务状态」 | 1、选项为全部状态、分析中、已完成、失败，共 4 个 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03122 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 筛选失败 | 产业关键环节识别 | 失败任务 | 按失败筛选后只留下失败任务 | 1、已打开「诊断记录」 | 1.将「任务状态」选为「失败」 | 1、列表中每条任务的状态都是「失败」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03123 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 失败行复制配置 | 产业关键环节识别 | 失败任务复制配置 | 失败任务仍可复制配置回到分析配置 | 1、「任务状态」已选「失败」；2、列表中有失败任务 | 1.点击该行「复制配置」 | 1、回到「分析配置」；2、下拉回显该任务保存的对象；3、未进入结果页 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03124 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 重置筛选 | 产业关键环节识别 | 重置任务状态 | 重置把任务状态恢复为全部状态 | 1、已把「任务状态」选为「失败」 | 1.点击「重置」 | 1、「任务状态」恢复为「全部状态」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03125 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 翻页 | 产业关键环节识别 | 列表翻页 | 诊断记录翻到第 2 页后换成另一批任务 | 1、诊断记录总数超过 10 条 | 1.点击页码「2」 | 1、首行任务号与第 1 页不同；2、表头仍为任务、类型、状态、创建时间、操作 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03126 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 每页条数 | 产业关键环节识别 | 每页条数 | 每页条数可以改为 20 条 | 1、已打开「诊断记录」；2、任务总数不少于 20 条 | 1.展开每页条数；2.选择「20 条/页」 | 1、选项为 10 条/页、20 条/页、50 条/页，共 3 个；2、当前页显示 20 行 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03127 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 筛选分析中 | 产业关键环节识别 | 分析中任务 | 筛选分析中时不混入已结束任务 | 1、已打开「诊断记录」；2、当前没有进行中的任务 | 1.将「任务状态」选为「分析中」 | 1、列表没有任务行 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 勘察时没有进行中任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03128 | 产业链分析 | 产业关键环节识别 | 备选-诊断记录 | 查看报告 | 产业关键环节识别 | 从记录打开报告 | 已完成任务可以从记录打开报告 | 1、诊断记录中有一条已完成任务 | 1.点击该行「查看报告」 | 1、进入「产业关键环节识别报告」；2、报告中的任务号与该行相同 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03129 | 产业链分析 | 产业关键环节识别 | 异常-未选对象 | 开始分析 | 产业关键环节识别 | 未选对象 | 不改下拉直接开始分析时提示尚未选择 | 1、刚进入本页，尚未在下拉里点选过 | 1.点击「开始分析」 | 1、提示「尚未选择分析对象」；2、仍停留在「分析配置」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 下拉初始文字是占位，点选后才算选定 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03130 | 产业链分析 | 产业关键环节识别 | 异常-未选产业链 | 开始分析不可用 | 产业关键环节识别 | 未选产业链 | 只选到产业、产业链为空时不能开始分析 | 1、已进入本页 | 1.第一个下拉选「生物产业」；2.第二个下拉选「生物医药与生命健康」 | 1、「所属产业链」为空；2、「开始分析」不可点击 | P1 |  |  |  |  |  | US-CHAIN-DIAG-03 | AC-US-CHAIN-DIAG-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03131 | 产业链分析 | 产业关键环节识别 | 异常-失败任务 | 行上按钮 | 产业关键环节识别 | 失败任务不可看结果 | 失败任务不能打开结果和报告 | 1、「任务状态」已选「失败」；2、列表中有失败任务 | 1.点击该行「查看结果」；2.点击该行「查看报告」；3.点击该行「下载报告」 | 1、「查看结果」不可点击；2、「查看报告」不可点击；3、「下载报告」不可点击 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 「复制配置」和「删除」仍可点击，见 03123、03132 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03132 | 产业链分析 | 产业关键环节识别 | 异常-删除 | 取消删除 | 产业关键环节识别 | 取消后记录仍在 | 删除时取消，任务仍留在列表 | 1、诊断记录中有一条任务 | 1.点击该行「删除」；2.点击「取消」 | 1、弹出标题为「删除分析记录」的对话框；2、取消后该任务仍在列表中 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 对话框写明删除后列表不再显示该任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03133 | 产业链分析 | 产业关键环节识别 | 异常-删除 | 确定删除 | 产业关键环节识别 | 确定后记录消失 | 确定删除后该任务从列表消失 | 1、诊断记录中有一条可删任务 | 1.点击该行「删除」；2.点击「确定」 | 1、提示「已删除」；2、该任务不再出现在当前列表 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 勘察时删除了一条失败记录后列表不再显示它 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03134 | 产业链分析 | 产业关键环节识别 | 异常-下载报告 | 下载失败 | 产业关键环节识别 | 下载报告 | 已完成任务下载报告时给出失败提示 | 1、诊断记录中有一条已完成任务 | 1.点击该行「下载报告」 | 1、提示「资产下载失败（HTTP 404）」；2、仍停留在「诊断记录」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 文件未落地 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03135 | 产业链分析 | 产业关键环节识别 | 异常-导出 | 导出不可用 | 产业关键环节识别 | 报告导出 | 报告页的导出当前不可点击 | 1、已打开一条已完成任务的报告 | 1.定位报告页的「导出」 | 1、「导出」不可点击 | P1 |  |  |  |  |  | US-CHAIN-DIAG-04 | AC-US-CHAIN-DIAG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.4 |  | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=key_link&tab=key-link |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 当前账号页眉为未付费，没有已开通导出的另一种账号，不测文件落地 |
 
----
+## 2. 旧号处置
 
-## 2. 覆盖自检（2026-10-13 全库粒度重写）
+| 旧号 | 处置 | 新号或原因 |
+| --- | --- | --- |
+| 00578 | 作废 | 03089。旧步骤写「产业运行诊断」，菜单现场是「产业链分析 / 产业关键环节识别」。旧金样取消 |
+| 00579 | 作废 | 03090–03092。现场不是「产业 / INB1701 / 细分产业」三级 |
+| 00580 | 作废 | 03115。联动对象是两个分析对象下拉加所属产业链 |
+| 00581 | 作废 | 03093、03094。指标名为附加值率、技术壁垒、市场集中度 |
+| 00582 | 作废 | 配置页没有版本四项，不写「不可见」 |
+| 00583 | 作废 | 03088。旧条停在创建任务，未到成功结果页 |
+| 00584 | 作废 | 03110。阶段名以生成页现场五句为准 |
+| 00585 | 作废 | 03103。结果标题是「产业关键环节识别结果」 |
+| 00586 | 作废 | 03103 只保留现场「衔接」。没有单独的功能边界说明，该格为无 |
+| 00587 | 作废 | 03104。现场是「高端化 —」，没有降序排列 |
+| 00588 | 作废 | 03105 只写图例。高亮终态未覆盖，原因见清单 |
+| 00589 | 作废 | 无排序控件 |
+| 00590 | 作废 | 03116。重置不把对象改回初始展示 |
+| 00591 | 作废 | 本次未复测跨页对象共享，不沿用旧断言 |
+| 00592 | 作废 | 03112、03121。列和筛选项以诊断记录现场为准 |
+| 00593 | 删除 | 评审专条。旧号不复用，不新写 |
+| 00594 | 作废 | 03113。行按钮是「查看结果」 |
+| 00595 | 作废 | 本次未复测同路由隔离，不沿用旧控件名 |
+| 00596 | 作废 | 配置页没有版本快照区 |
+| 00597 | 作废 | 03107、03108。没有竞争格局、技术趋势和加入名单 |
+| 00598 | 作废 | 无「重新分析」。当天再次开始为 03117 |
+| 00599 | 作废 | 无清空控件。未点选见 03129 |
+| 00600 | 作废 | 03100–03102。空态用现场原句 |
 
-**覆盖声明**：
+## 3. 红线自检
 
-- T04 范围（40 条功能点）覆盖结论见同目录 `coverage-fp.md`：已覆盖 4 / 部分覆盖 32 / 未覆盖 4（行为集与旧册一致，本次仅按新粒度拆分重排取号，未新增 / 删除现场能力判断）。
-- US-CHAIN-DIAG-03/04/07 的可见路径均有 P0/P1 用例承载。
-- **金样清单**：00578（入口路由）、00579（对象构成与默认值）、00581（三权重指标只读态）、00583（开始分析显式触发）、00585（结果全链路图谱与环节构成）——烟测 = 跑全部金样。
-- 正向密度：每个可见区块默认态 / 典型值 / 边界值至少各 1 条正向用例——分析配置区（00579 默认 / 00580 联动典型 / 00599 清空边界）、权重与版本（00581 / 00582 默认 / 00596 快照绑定）、操作区（00583 显式触发 / 00590 重置）、过程与结果（00584 过程词 / 00585 图谱默认 / 00587 排序默认 / 00589 排序切换典型 / 00597 同步信息 / 00598 重跑边界）、诊断记录（00592 列表 / 00594 恢复）、导航与隔离（00591 / 00595）、评审层（00593）、异常（00599 空态 / 00600 数据不足）。
+- 主流程 27 条（03088–03114）≥ 备选 14 条（03115–03128）+ 异常 7 条（03129–03135）。
+- 金样只有 03088。入口 B、重新分析、结果搜索、结果表、二级、入池、排序均为无。
+- 用到的最大号：03135。03136–03187 未写入。
+- 前置、步骤、预期、功能项四列对评审层字样的扫描为 0。
 
-**断言分布统计**（spec §5.4.1）：
+### 附录A 分析对象第一个下拉（03090，15）
 
-| 指标 | 数值 |
-|------|------|
-| 用例总数 | 23（00578~00600 连续无跳号） |
-| 预期 1~3 点 | 22 条（95.7%，目标 ≥85% ✅） |
-| 预期 4~5 点（结构性例外） | 1 条：00593 评审增量显隐（4 点，结构性检查）；全册 ≤5 条 ✅ |
-| 预期 ≥6 点 | 0 条 ✅ |
-| 场景分布 | 主流程 11（00578~00588）≥ 备选 10（00589~00598）+ 异常 2（00599~00600）= 12 ✅ |
-| 优先级分布 | P0 ×10、P1 ×13 |
+新一代信息技术；生物产业；新能源；新材料；高端装备；智能网联新能源汽车；绿色环保；低空经济与空天；传统与创意产业；海洋产业；未来制造（智能机器人）；未来信息（光载信息、AI 底层生态）；未来能源；未来空间；未来健康（合成生物、细胞基因、脑机工程）。
 
-**红线自检结果**（内容红线 1~6 逐条，2026-10-13 执行）：
+### 附录B 分析对象第二个下拉（03091，初始 7）
 
-- [x] 红线 1 正文零内部引用：四列（测试内容/前置条件/测试步骤/预期结果）扫描 `US-|AC-|Q0\d|GAP-|开放项|归 \d{5}|coverage #|TRACE-|metric_id|\.yaml|\.md` = **0 命中**（「（observed-执行时记录）」仅出现于备注列；正文四列无同册互指）
-- [x] 红线 2 observed 不进预期 / 废弃态不验不可见：结果态未深勘项全部按目标态写预期并备注 observed 出处（00585~00589 / 00594 / 00596~00600）；刷新过程态、恢复行为、绑定呈现等勘察观测全部入备注；无废弃能力「不可见」反向校验
-- [x] 红线 3 步骤只写操作：步骤列扫描 `核对|确认|检查|校验|观察|比对|验证` = **0 命中**；「浏览」「读取」「回读」「定位」「展开」「切换」「清空」「恢复」「等待完成」均为动作动词；「检索」为页面内查找动作（00593 / 00600），同 CYCLE 册口径不属校验动词
-- [x] 红线 4 一句一事与长度：单条步骤/预期均 ≤60 字；步骤 ≤7 步（本册最大 5 步）；无贴上限写作
-- [x] 红线 5 场景分层：主流程 → 备选 → 异常 顺序排列，「功能项」列前缀可辨（主流程-/备选-/异常-）
-- [x] 红线 6 用例级粒度：每条「测试内容」一句话可概括（一测一问一答）；断言分布见上表（全册 1~3 点）；顺带点均满足三条件（零额外操作 / 同域 / 不跨状态）
-- [x] 金样标记：5 条金样在元信息区与备注列双声明，均为正向、可独立执行、覆盖核心功能点
+新一代信息技术；半导体与集成电路；人工智能与应用；智能终端；软件与信息服务；新型网络与通信；超高清视频与显示。
 
----
+### 附录C 所属产业链（03092，初始 6）
 
-## 3. 序号台账（本文件）
+半导体与集成电路；人工智能与应用；新型网络与通信；超高清视频与显示；智能终端；软件与信息服务。
 
-| 测试类型 | 已用序号 | 下一号（系统 FUNC） |
-|----------|----------|---------------------|
-| FUNC | 00578–00600（旧 00200–00210 于 2026-10-13 全库粒度重写废弃归档） | 见 `qa/code-registry.yaml` |
-| API / COMP / INT / PERF | 未用 | 见 `qa/code-registry.yaml` |
+### 附录D 报告目录（03109，7）
 
-**code-registry 回写说明**：本组（industry-center B 组）11 册完成后统一回写一次。
+报告身份；执行摘要；对象与范围；关键发现；证据与分析；数据来源与生成说明；局限性与使用边界。
 
----
+### 附录E 生成页阶段（03110，5）
 
-### 附录A 长枚举清单
-
-**三个权重指标行（用例 00581）**：高价值环节占比 34 / 战略重要性评分 33 / 关键环节数 33；每行含 spinbutton（只读 disabled）+「注册项只读启用」标注 +「查看」按钮 + 上下调节钮（disabled）；命名与 USM 注册因子（附加值率 / 技术壁垒 / 市场集中度）不一致为演示版口径（Q052 / GAP-CHAIN-DIAG-SEMANTICS 未闭合，以现场为准不判 Fail）。
-
-**只读版本信息四项（用例 00582 / 00596）**：因子版本「关键环节因子 · 演示版」；权重阈值版本「固定演示版 · 正式口径待闭合」；模型版本「key_link-model-v1」；数据截至「由任务快照冻结」。
-
-**过程阶段能力词（用例 00584）**：① 全链路环节结构化拆解（研发 / 设计 / 制造 / 销售 / 服务）；② 附加值率、技术壁垒、市场集中度与高端化指数计算；③ 关键环节智能标注与竞争格局、代表企业、技术趋势归纳，结果可信性校验与分析报告组装。
-
-**三个需求追溯按钮（用例 00593，评审态）**：「产业关键环节识别」（F-DIAG-03 挂点）/「恢复诊断任务与结果」（F-DIAG-05 挂点）/「分析对象上下文」（F-DIAG-01 挂点）。
+任务提交与产业链对象冻结；全链路环节结构化拆解（研发/设计/制造/销售/服务）；基于附加值率、技术壁垒、市场集中度计算高端化指数；关键环节智能标注与竞争格局/代表企业/技术趋势归纳；结果可信性校验与分析报告组装。

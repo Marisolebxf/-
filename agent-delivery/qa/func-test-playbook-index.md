@@ -20,7 +20,7 @@
 
 | 阶段 | 人话命令（同义） | 成熟度 | 必读（按序） | 产物 | 编排补充 |
 |------|------------------|--------|--------------|------|----------|
-| **S1 用例编写** | 执行{系统}的用例编写，按 B 线 | ✅ 专题已跑通；展示未开 | ① `as-built/prompts/_case.md` ② `qa-test-case-spec.md` ③ `templates/test-case-template.md` ④ `code-registry.yaml`（取号）⑤ 该系统 A 线 `total-set/{系统}/` 仅作覆盖矩阵对照 | `test-cases/{系统}/**/FUNC-*-用例.md` + `coverage-fp.md` | catalog 建入口；B 线现场起稿，**禁止**按 A 线功能点一对一灌用例 |
+| **S1 用例编写** | 执行{系统}的用例编写，按 B 线；返工或补必修 | ✅ 专题已跑通；展示未开 | ① `as-built/prompts/_case.md` ② **`as-built/case-rework-playbook.md`**（父控 §1、子提示词 §2）③ `qa-test-case-spec.md` ④ `code-registry.yaml`（取号） | `test-cases/{系统}/**/FUNC-*-用例.md` + `coverage-fp.md` | 一入口一子 agent；父不写册。首写 / 补必修的提示词只维护 playbook §2，不要在对话里另写一套 |
 | **S2 脚本编写** | 执行{系统}的用例脚本编写（含补齐缺口） | ✅ 专题金样+补齐手册；展示未开 | ① `_script.md` ② `schema.md` ③ `retro/20261014-batch32-method-patch.md` ④ 有缺口时 `script-backfill-playbook.md` | `as-built/scripts/{系统}/…/index.yaml` + `cases/*.yaml` + `coverage.md` + `fixtures/` | 三角色：闸门→写稿子(≤4)→**独立验收子串行**；禁止谁写谁验；父不跑机跑；子不改 catalog |
 | **S3 脚本执行** | 执行{系统}的用例脚本执行（冒烟/全量/回归） | ✅ 批量编排已建 | ① **`as-built/script-batch-run-playbook.md`** ② `_result.md` ③ `schema.md` §4.2 ④ `tools/run-scripts.mjs` + `aggregate-wave-results.py` | 波次目录 `as-built/runs/{日}-50892-{wave}/`（**不入库**）+ **强制** `results.xlsx` + `EXEC-SUMMARY.md`；正式轮次再拷 `test-records/` + `evidence/` | 三种模式 smoke/full/regress；串行机跑；结束后必须派 Excel+总结两个子任务；禁止改脚本充绿 |
 | **S4 用例交付合并** | 执行{系统}的用例交付文档合并，按 B 线合并 A 线，用例可拆分，需覆盖所有功能点 | 🟡 骨架已建；专题已出 **B∪A** 约 886 行；未覆盖/政策等仍缺口 | ① **`case-delivery-playbook.md`** ② `_submit.md` ③ `scripts/_gen_zt_delivery_func_ab_merge.py` ④ `delivery/…/ab-merge-manifest.md` ⑤ `delivery/README.md` | `delivery/{系统}/6.…_测试用例.xlsx` + manifest | 未覆盖不投影；全覆盖须先消缺口或豁免；专题默认一键重跑 |
@@ -44,18 +44,9 @@
 
 ## 3. Kickoff 模板（复制后改【】）
 
-### S1 · B 线用例编写
+### S1 · B 线用例编写 / 补必修
 
-```text
-【身份】qa-agent。阶段 S1·B 线用例编写。总索引：qa/func-test-playbook-index.md
-【系统】【SYSTEM=KJXXZSXT|KJZTFWXT】
-【工作根】…/gkx-orchestration
-【必读】as-built/prompts/_case.md → qa-test-case-spec.md → templates/test-case-template.md → code-registry 取号
-【做法】现场（已发布前端）勘察 → 按页面场景写 FUNC 册；覆盖矩阵对照 total-set/【SYSTEM】/；未覆盖允许登记，禁止按功能点一对一灌用例
-【产物】test-cases/【SYSTEM】/…/FUNC-*-用例.md + coverage-fp.md
-【禁止】改业务仓；A 线灌用例；未锁 env 时对展示硬开
-开干：先确认 §2 就绪门，再按 catalog 入口清单逐模块派子任务（建议一模块一子会话）。
-```
+父控与子 agent 的提示词全文在 [`as-built/case-rework-playbook.md`](as-built/case-rework-playbook.md) **§1、§2**。本索引不复制第二份。新对话只说：按该 playbook 派单，入口与补丁格用其中的当前补丁单（或改占位符）。
 
 ### S2 · 脚本编写 / 补齐
 

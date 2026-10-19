@@ -1,114 +1,209 @@
 # 智能服务集群-科技专题服务系统测试用例
 
 > **文档类型**：测试用例（工作区 Markdown）  
-> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md` 红线 1~6）  
+> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md`）  
 > **测试类型**：FUNC  
 > **系统码**：KJZTFWXT  
-> **版本**：v2.0 · 2026-10-13（全库粒度重写，新号自 01260 起接续编）  
-> **模块**：培育服务机构推荐分析（SVCCULT / catalog `svc-rec-cultivate` / A 线 **T28 培育服务机构推荐分析**，44 条功能点：培育模型与筛选 22 条 + 培育名单与建议 22 条）  
-> **金样**：**01260 / 01261 / 01266 / 01270 / 01273**（烟测子集 = 跑全部金样：入口路由、分析配置区与产业集群下拉 15 选项、模型区四维度与默认权重、开始分析门控、培育名单结果态呈现）  
-> **旧号段**：00341~00352 · **2026-10-13 全库粒度重写废弃，归档不删**（历史行存 git 版本；旧→新映射见同目录 `coverage-fp.md` 附录 B）  
-> **编号说明**：新号自 **01260** 起连续编（01260~01449 为本路号段，不得越界）  
-> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`（已在业务页且 URL 不含 `/login` 则不要登出）  
-> **入口**：科技专题服务系统 →「培育服务机构推荐分析」（服务机构要素 · 培育 workspace）  
+> **版本**：v3.0 · 2026-10-18（对照重写；新号 04688～04718）  
+> **模块**：培育服务机构推荐分析（SVCCULT / catalog `svc-rec-cultivate`）  
+> **金样**：**01260**（入口）、**01266**（模型默认权重）、**04688**（入口 A 到成功结果页）。入口 B 无，不另标第二条主线金样。  
+> **保留号**：01260、01266、01267、01268、01269。其余 01261～01265、01270～01280、01282 作废不复用；01281 删除不复用。  
+> **新号段**：04688～04787，本册用到 **04718**。  
+> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`  
+> **入口**：科技专题服务系统 →「培育服务机构推荐分析」  
 > **路由**：`/service/institution-decision?workspace=cultivate&tab=cultivate`  
-> **禁止**：把同页 attract workspace（`workspace=attract`，引入服务机构推荐分析）写成通过性用例——招引归 SVCATTR 用例集（v2.0 新册 00780~00802 已交付；旧 00329~00340 同日废弃归档），本册只在 01280 做隔离验证；对比篮浮层为系统级入口（现场共 8 项），专项归 COMPARE 用例集，本页只顺带 observed  
-> **USM**：`agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-RECOMMEND-机构招引培育/USM-SVCCHAIN-RECOMMEND.md`（本册只覆盖 cultivate=培育推荐：US-SVC-REC-03～04 培育侧；验收 AC-US-SVC-REC-03-01～03 / AC-US-SVC-REC-04-01～05）  
-> **TRACE**：`TRACE-SVCCHAIN-RECOMMEND.yaml`（招引培育包覆盖 attract/cultivate；本册只覆盖 cultivate=培育推荐；`requirement_trace`：REQ-SVC-REC-CULTIVATE-MODEL / REQ-SVC-REC-CULTIVATE-LIST，`status: covered_demo`）  
-> **原始需求**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.7.7`（`.7.7.1` 培育模型与筛选 / `.7.7.2` 培育名单与建议；T28 功能点即源自 `.7.7`）  
-> **交付口径**：INTEG（前端 → Java → Python `/internal/*`）  
-> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`（v8 T28 全 44 条映射）  
+> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`  
 > **关联任务**：`QA-KJZTFWXT-BLINE-CASE-SRV-L01`  
 > **维护**：agent:qa-agent · 监管 human:黄敬洲
 
-**as_built 摘要（写期望用，不升 Fail）**：入口路由 `/service/institution-decision?workspace=cultivate&tab=cultivate`，页标题「培育服务机构推荐分析」；顶部 Tab「培育服务机构推荐分析（选中）/ 分析记录」；勘察时评审模式为开启态：三个需求追溯按钮（「培育服务机构推荐分析」「分析配置」「培育模型权重」）+ 角标「指标未登记：培育综合分」与长提示「培育综合分未入正式指标库（仓内无 M_SVC_REC_CULTIVATE_SCORE，禁止自造 seed、禁止挪用 M_SVC_REC_ATTRACT_SCORE）。只展示 Java rec-list 上送的 score / cultivation_index，禁止前端按四维度权重重算，禁止改绿。口径挂 Q063 / Q-SVCCHAIN-05，待核验」，关闭后须零泄漏；分析配置区：产业集群选择（placeholder「选择产业集群」，15 选项同 attract：新一代信息技术/生物/新能源/新材料/高端装备/智能网联新能源汽车/绿色环保/低空经济与空天/传统与创意/海洋/未来制造/未来信息/未来能源/未来空间/未来健康）+ 目标筛选 Tag 组（高校/科研院所/企业，带 Close 钮）+ 链位 Tag 组（上游·研发/标准/知识产权/科研合作；中游·中试/检测/孵化/技术转移；下游·投融资/人才/数字化）；培育评估模型区 H2「培育评估模型（演示模型口径）」与说明「四维度与招标一致（现有规模/技术创新能力/服务成效/市场缺口）」：四维权重 spinbutton（现有规模 25 / 技术创新能力 30 / 服务成效 25 / 市场缺口 20，各带上下调节钮）+ 各维说明（H3 下）：现有规模=核心专家/研发投入体量归一得分（演示口径）、技术创新能力=专利/标准产出归一得分、服务成效=成功服务案例归一得分、市场缺口=目标领域供给稀缺度；底部声明「演示模型口径：综合分由 Java rec-list 上送，前端不按四维度权重重算排名。页面权重仅演示配置，未改名单分数。默认 25/30/25/20。权重与筛选不进入分析指纹，也不写入创建任务参数」；操作：「恢复默认权重」「开始分析」；异步工作区（创建分析任务后进分析记录等待）；结果态为培育名单（评分/排名/培育建议），勘察时无已生成结果，按需记 observed 与开放项；对比篮浮层系统级存在（共 8 项，专项归 COMPARE 不展开）；与 USM v1.0 的默认权重 20/30/25/25、权重合计=100 校验与「按比例归一」、筛选默认全选与持久化、画像下钻抽屉、行内入对比篮、导出 CSV 能力现场未见，归 coverage 口径差异与开放项，不出预期。
+---
+
+## 关评审控件清单
+
+入口拓扑：入口 A = 分析配置里的重点产业方向、机构类型、服务环节，点「开始分析」。入口 B = 无。任务列表 =「分析记录」。结果页 =「本土机构培育名单」。
+
+| 格 | 用例或原因 |
+|----|------------|
+| 核心主线 · 入口 A | 04688（金样：选「生物」→ 开始分析 → 过程页已完成 → 查看结果 → 本土机构培育名单） |
+| 核心主线 · 入口 B | 无。页上没有「先勾选对象再发起分析」的工作台 |
+| 摘要 · 分数口径条 | 04698 |
+| 摘要 · 候选家数 | 04699 |
+| 摘要 · 发起条件回显 | 过程页「分析对象」由 04697 顺带；结果页无单独条件摘要，产业只作上下文，见 04705 |
+| 筛选下拉 · 配置页重点产业方向 | 04689（15 项，附录 A.1） |
+| 筛选下拉 · 配置页服务环节 | 04692（11 项，附录 A.2） |
+| 机构类型勾选 | 04691（高校 / 科研院所 / 企业，不是标签关闭） |
+| 服务环节去掉一项 | 04693 |
+| 重点产业方向清空 | 无。下拉没有清除控件 |
+| 开始分析 · 当天同条件 | 04709。预期按同日打开已有结果且不新增任务；现场会新建任务，备注记缺陷候选 |
+| 工具 · 重新分析 | 04708（无确认框，点后到新过程页，再点「查看结果」进名单） |
+| 工具 · 返回配置 | 04707。预期回到分析配置且产业仍在；现场落到分析记录空列表，备注记缺陷候选 |
+| 工具 · 结果搜索 | 无。结果页没有搜索框 |
+| 工具 · 导出名单 | 04703（即时下载 csv，并提示已导出） |
+| 报告 · 生成中 | 未覆盖：导出是即时下载，没有生成中状态 |
+| 报告 · 失败 | 未覆盖：造不出导出失败 |
+| 表 · 行字段 | 04700、04701 |
+| 表 · 翻页 | 无。名单一次列出；分析记录也没有分页器 |
+| 表 · 勾选与计数 | 无。结果行没有勾选框 |
+| 表 · 加入对比篮 | 04702；再点「已在对比篮」见 04706 |
+| 详情 · 机构画像 | 04713（基本信息、领域覆盖细分、技术力五维、近三年新增服务记录） |
+| 二级 | 无。画像抽屉里没有下一级入口 |
+| 入池 | 无。没有「先加入对象再从名单发起分析」。行上「加入对比篮」不是入池 |
+| 入口 B 整表（过滤 / 删除 / 清空 / 未选不可发起） | 无 |
+| 任务列表 · 列 | 04710（任务、类型、状态、创建时间、操作） |
+| 查看过程 × 已完成 | 04711 |
+| 查看结果 × 已完成 | 04712 |
+| 查看过程 × 失败 | 04717 |
+| 查看结果 × 失败 | 04716（按钮不可用） |
+| 返回配置重试 × 失败 | 04718 |
+| 查看过程 / 查看结果 × 入口 B 起源 | 无 |
+| 删除记录 | 无。行上没有删除 |
+| 进行中再次点击 | 未覆盖：任务约 1 秒即已完成，造不出稳定的进行中重复点击 |
+| 名单空 / 建议空 | 未覆盖：现有任务都会给出名单，造不出空结果 |
+| 第二种账号 | 未覆盖：现场只有一种已登录账号 |
+| 兄弟菜单隔离 | 04714 |
+| 未选产业仍可发起 | 04715 |
+| 过程页不自动进结果 | 04697 |
+| 结果页产业下拉 | 04704（15 项） |
+| 结果页切换产业不改名单 | 04705 |
+| 模型默认权重 | 01266、01267、04694 |
+| 权重加减与键入 | 01268 |
+| 合计偏离与按比例归一 | 04695、04696 |
+| 恢复默认权重 | 01269 |
+
+### 页面区块 → 用例
+
+| 区块 | 用例 |
+|------|------|
+| 页头双页签 | 01260 |
+| 分析配置 · 重点产业方向 | 04689、04690 |
+| 分析配置 · 机构类型 | 04691 |
+| 分析配置 · 服务环节 | 04692、04693 |
+| 培育评估模型 | 01266、01267、04694、01268、04695、04696、01269 |
+| 开始分析到名单 | 04688 |
+| 过程页停留 | 04697 |
+| 未选产业发起 | 04715 |
+| 当天再次开始分析 | 04709 |
+| 结果页口径与家数 | 04698、04699 |
+| 结果页名单行 | 04700、04701、04702、04706 |
+| 导出名单 | 04703 |
+| 返回配置 | 04707 |
+| 重新分析 | 04708 |
+| 结果页产业上下文 | 04704、04705 |
+| 分析记录 | 04710、04711、04712、04716 |
+| 失败过程 | 04717、04718 |
+| 机构画像 | 04713 |
+| 兄弟菜单 | 04714 |
 
 ---
 
 ## 1. 用例总表（总集列 + 右侧 GKX 扩展）
 
-> 排列顺序：**主流程（P0）→ 备选（P0/P1）→ 异常（P1）**；场景类见「功能项」列前缀。  
-> 预期断言常态 1~3 点；本册 4 点结构性例外仅 1 条（01281 评审层多挂点检查）。  
-> observed 项一律入「备注」，不进预期。
+> 排列：**主流程 → 备选 → 异常**。保留行只改了备注里的失效互指，四列正文不动。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01260 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-入口与路由 | cultivate 工作区进入 | 培育服务机构推荐分析 | 进入培育服务机构推荐分析页 | 从直达路由进入培育服务机构推荐分析页，路由与页头双 Tab 正确 | 1、系统正常；2、已登录 admin | 1.地址栏进入本工作区直达路由（完整 URL 见元信息） | 1、路由为培育工作区直达态（workspace=cultivate、tab=cultivate）；2、页标题为「培育服务机构推荐分析」；3、顶部为「培育服务机构推荐分析（选中）/ 分析记录」双 Tab | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；接旧 00341 部分（页面区块构成归 01261）；同页 attract 工作区隔离归 01280；勘察为配置空态（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01261 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-分析配置区构成与产业集群下拉 | 15 选项 | 培育服务机构推荐分析 | 产业集群选择 15 集群 | 分析配置区构成齐备且产业集群下拉选项 15 个与现场清单一致 | 1、已进入页面；2、配置区可见 | 1.展开产业集群下拉浮层 | 1、分析配置区含产业集群选择框、目标与链位筛选 Tag 组、「开始分析」按钮；2、下拉选项共 15 个且与附录 A 一致；3、选择框占位提示为「选择产业集群」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-01 | 金样；接旧 00341/00342/00352 部分（页面四区块构成由本条预期 1 正向承载，不再单设页面总览条）；15 集群全量清单见附录 A；选项集合按临时口径核（observed-执行时记录）；对比篮浮层为系统级入口（共 8 项），专项归 COMPARE 用例集，本页只顺带 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01262 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-产业集群选定回显与清空空态 | 勾选回显与清空 | 培育服务机构推荐分析 | 产业集群选定回显与空态 | 选定与清空产业集群后选择器回显正确且不自动起任务 | 1、已进入页面；2、配置区可见 | 1.选定「新一代信息技术」；2.改选另一产业集群；3.清空产业选择；4.切到「分析记录」Tab 后返回 | 1、选定或重新选定后配置区回显当前产业集群；2、清空后回到未选态、不写回默认集群；3、全程不自动发起分析任务 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-06 | 接旧 00342 部分；门控行为与 01270 互证；空态不写回默认 observed-执行时记录（原勘察：配置空态） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01263 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-目标筛选 Tag 组多选与取消 | 高校/科研院所/企业 | 培育服务机构推荐分析 | 目标类型筛选 Tag 组 | 目标筛选 Tag 组含高校、科研院所、企业三项且可多选、可取消 | 1、已进入页面；2、配置区可见 | 1.逐一点选高校、科研院所、企业三个 Tag；2.点任一已选 Tag 的 Close 钮；3.重新点选被取消的 Tag | 1、目标筛选 Tag 组含高校、科研院所、企业三项且带 Close 钮；2、三项可同时选中、选中态清晰；3、Close 钮可取消选中、重选后恢复选中态 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-07 | 接旧 00343 部分；Tag 组默认是否全选勘察未记录，observed-执行时记录 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01264 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-链位 Tag 组构成与多选 | 上中下游链位 | 培育服务机构推荐分析 | 链位筛选 Tag 组 | 链位 Tag 组按上中下游分组呈现且组内可多选 | 1、已进入页面；2、配置区可见 | 1.定位链位 Tag 分组；2.点选中游两个链位 Tag | 1、链位 Tag 按上游、中游、下游三组呈现（清单见附录 A）；2、组内可多选且选中态清晰 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-08 | 接旧 00343 部分；勘察口径称共 10 链位，逐项清点为 4+4+3=11，执行时以现场为准记 observed；链位全量清单见附录 A |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01265 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-目标与链位跨组并存筛选 | 跨组条件组合 | 培育服务机构推荐分析 | 目标与链位条件并存 | 目标类型组与链位组条件可跨组并存且全部取消后回未选态 | 1、已进入页面；2、配置区可见 | 1.点选高校与企业两个目标 Tag；2.点选上游一个与下游一个链位 Tag；3.逐一点 Close 取消全部已选 Tag | 1、目标组与链位组条件可同时并存；2、全部取消后两组回到未选态 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-09 | 接旧 00343 部分；全不选目标类型时发起行为勘察未记录，observed-执行时记录（开放项 4 承接） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01266 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-培育评估模型区构成与默认权重 | 四维度与默认权重 | 培育服务机构推荐分析 | 培育模型四维度展示 | 培育评估模型区标题、四维度指标与默认权重呈现正确 | 1、已进入页面 | 1.定位培育评估模型区块；2.浏览四维度权重初值 | 1、区块标题为「培育评估模型（演示模型口径）」且说明行明示四维度与招标一致；2、四维度为现有规模、技术创新能力、服务成效、市场缺口；3、四权重初值为 25/30/25/20 且各带上下调节钮 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；接旧 00344/00345 部分；USM 默认权重 20/30/25/25 与现场 25/30/25/20 差异归开放项 2 不判 Fail；维度说明文案归 01267 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01267 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-维度说明文案与演示口径声明 | 说明与底部声明 | 培育服务机构推荐分析 | 模型说明与口径声明 | 四条维度说明文案与底部演示口径声明完整且与现场口径一致 | 1、已进入页面；2、模型区可见 | 1.定位四条维度说明文案；2.定位区块底部声明 | 1、四条说明文案与附录 A 一致；2、底部声明完整可读、与附录 A 一致 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜提供现有规模指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-10 | 接旧 00344 部分（四维说明 #2~#5 由本条与附录 A 一并承载）；说明与声明全文见附录 A；措辞以现场为准 observed-执行时记录；声明要点（服务端上送、前端不重算、权重与筛选不进任务参数）由 01274 交叉承载 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01268 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-权重调节与键入编辑 | spinbutton 与键入 | 培育服务机构推荐分析 | 四维权重编辑 | 权重支持调节钮增减与输入框直接键入两种编辑方式 | 1、已进入页面；2、模型区可见 | 1.点现有规模的上调钮一次再下调一次；2.在权重输入框直接键入新值 | 1、调节钮每次增减 1（现有规模 25 上调一次变 26）；2、权重值支持直接键入修改 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-11 | 接旧 00345 部分；合计=100 校验与按比例归一为 USM 目标态，现场为演示配置口径未实现，不判 Fail（开放项 2）；权重刷新持久化 observed-执行时记录 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01269 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-恢复默认权重一键复位 | 复位 | 培育服务机构推荐分析 | 恢复默认权重 | 调整权重后「恢复默认权重」一键复位为 25/30/25/20 | 1、已进入页面；2、至少一个权重已被调整 | 1.调整任一权重偏离默认值；2.点「恢复默认权重」 | 1、复位后四权重恢复 25/30/25/20 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 接旧 00345 部分；进入页面即默认模型态与 01266 互证；名单分数不受权重影响归 01274 验收 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01270 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-开始分析门控 | 未选不可发起 | 培育服务机构推荐分析 | 未选产业集群门控 | 未选产业集群时「开始分析」不可发起分析任务 | 1、已进入页面 | 1.未选产业集群时点击「开始分析」 | 1、未选产业集群时「开始分析」不可用或给出引导提示 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；接旧 00348 部分；按钮禁用/提示形态勘察未记录，observed-执行时记录（开放项 4） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01271 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-显式触发创建分析任务 | 异步起任务 | 培育服务机构推荐分析 | 开始分析任务创建 | 条件齐备后「开始分析」显式创建异步任务并进入过程态 | 1、已进入页面；2、已选定产业集群 | 1.选定「新一代信息技术」；2.点击「开始分析」；3.切到「分析记录」Tab | 1、显式点击后发起分析任务并进入计算过程态；2、「分析记录」Tab 出现对应新记录；3、未生成结果前结果区呈引导空态 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-12 | 接旧 00348 部分；切条件不自动起任务与 01262 互证；过程态呈现 observed-执行时记录（开放项 3） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01272 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-同用户同条件单飞 | 单飞拦截 | 培育服务机构推荐分析 | 同条件单飞 | 同用户同条件仅允许一条分析任务在跑、重复发起被拦截 | 1、已选定产业集群；2、可发起一次分析 | 1.发起一次分析；2.任务在跑时以同条件再次点击「开始分析」 | 1、同条件重复点击不重复起任务 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-13 | 接旧 00348 部分；单飞口径=Q-ANALYSIS-01（开放项 3）；拦截形态 observed-执行时记录 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01273 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-培育名单结果态呈现 | 名单默认呈现 | 培育服务机构推荐分析 | 培育名单结果态 | 分析完成后结果态以培育名单呈现且含机构与评分信息 | 1、已进入页面；2、可完成一次有效分析（执行时构造） | 1.选定条件后点击「开始分析」并等待完成 | 1、结果态主区为培育名单列表；2、名单行含机构标识与综合评分 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-14 | 金样；接旧 00346/00347 部分；勘察时无已生成结果，全条按目标口径 observed-执行时记录（开放项 5）；名单排序与算法正确性归算法库（SDWJSF/KJZTFWSFK），本册只验呈现结构 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01274 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-综合分只展示不前端重算 | 诚实性核心 | 培育服务机构推荐分析 | 综合分只展示不重算 | 名单综合分只展示服务端上送值、前端不按四维度权重重算排名 | 1、已生成培育名单结果 | 1.浏览名单任一机构行的综合分；2.调整四维权重后回到名单浏览综合分与排序；3.点「恢复默认权重」后再次浏览名单 | 1、综合分与排序为服务端上送口径、页面不重算；2、调整与恢复权重前后名单综合分与排序均不变 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育模型与筛选 \｜按培育推荐模型计算综合评分 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate | M_SVC_REC_CULTIVATE_SCORE | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-15 | 接旧 00346 部分；指标未登记状态不被改绿（评审态角标与长提示归 01281，指标标识当前未入正式注册表）；分值与服务端响应一致性可经接口黑盒核对；observed-执行时记录（开放项 1/5） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01275 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-名单字段构成与默认降序 | 列构成与排序 | 培育服务机构推荐分析 | 培育名单字段与排序 | 名单含四维取值、综合分、名次与培育建议且默认按综合分降序 | 1、已生成培育名单结果 | 1.浏览名单列构成；2.浏览默认排序下的前三行 | 1、名单列含机构标识、四维取值、综合分、名次、培育建议；2、默认按综合分降序（第 1 名综合分不低于第 2 名） | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜默认按综合评分降序展示培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate | M_SVC_REC_CULTIVATE_SCORE | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-19 | 接旧 00347 部分；名单对象均为深圳本土在库机构（属地黑盒归服务侧，执行时记录，开放项 5）；列呈现形态与名单条数以现场为准 observed-执行时记录（开放项 5）；升序切换现场未见控件，归 coverage 未覆盖 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01276 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-培育建议与机构一一对应 | 建议对应 | 培育服务机构推荐分析 | 培育建议对应 | 培育建议逐行与机构一一对应且标签与引用数值一致 | 1、已生成培育名单结果 | 1.浏览两条不同机构的培育建议 | 1、培育建议逐行与机构一一对应、不串行；2、建议标签属资金支持、市场对接、人才引进集合；3、建议文本引用的维度短板数值与该行取值一致 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜培育建议与培育对象一一对应 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 接旧 00347 部分（建议标签三类 #27~#32 由本条预期 2 承载）；建议生成算法归算法库与服务侧（黑盒）；observed-执行时记录（开放项 5） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01277 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-变更条件重析 | 重算不残留 | 培育服务机构推荐分析 | 变更条件重析 | 变更筛选条件后须显式重析且名单按新条件重算、旧数据不残留 | 1、已完成一次有效分析、结果态可见 | 1.变更产业集群（或目标 Tag、链位 Tag）；2.点击「开始分析」并等待完成 | 1、名单与评分按新条件重算；2、上一条件的数据不残留 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-16 | 接旧 00348 部分（切换产业集群后再发起）；变更只更新草稿不自动起任务与 01262 互证；observed-执行时记录（开放项 3/5） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01278 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-分析记录列表与切回保留 | 列表与状态 | 培育服务机构推荐分析 | 分析记录 Tab | 「分析记录」呈现历史任务列表、状态如实呈现且切回主 Tab 配置保留 | 1、已产生至少一条分析记录（无则先发起一次） | 1.点击顶部「分析记录」Tab；2.浏览记录列表；3.切回「培育服务机构推荐分析」Tab | 1、「分析记录」呈现历史任务列表且与主 Tab 互斥；2、在跑、排队、失败状态如实呈现、不伪装成功；3、切回后产业集群、Tag 筛选与权重配置保留 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-17 | 接旧 00349 部分；列表构成勘察未深勘，observed-执行时记录（开放项 3）；打开已成功结果归 01279 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01279 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-当天同条件已成功直接复用 | 当天复用 | 培育服务机构推荐分析 | 当天结果复用 | 当天同条件已成功记录直接打开既有结果不重跑、另提供重新分析 | 1、当天已有一条同条件已成功分析记录 | 1.同条件当天再次点击「开始分析」；2.打开「分析记录」中当天已成功记录 | 1、当天同条件已成功记录直接打开既有结果不重跑；2、另提供「重新分析」可强制重跑 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-18 | 接旧 00348/00349 部分；当天复用与重新分析口径=Q-ANALYSIS-01，observed-执行时记录（开放项 3） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01280 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-兄弟工作区招引隔离 | attract 隔离 | 培育服务机构推荐分析 | 招引 workspace 不伪装培育 | 同页招引工作区与培育工作区隔离且互不串扰 | 1、已进入培育工作区；2、评审模式开启 | 1.将路由 workspace 参数改为 attract；2.浏览招引页标题与页面主题；3.回切 workspace=cultivate&tab=cultivate | 1、招引工作区页面为招引侧内容（页标题为「引入服务机构推荐分析」）；2、招引侧无培育评估模型区、无培育综合分角标与培育口径长提示；3、回切培育后配置、权重与 Tab 状态正常 | P1 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜限定培育推荐范围为深圳本土服务机构 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-20 | 接旧 00351；招引侧能力验收归 SVCATTR 用例集（v2.0 册 00780~00802），本册不重复展开；两侧状态互不串扰细项 observed-执行时记录；培育=本土与招引=外部引进的范围口径互斥执行时记录 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01281 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-评审模式零泄漏 | 追溯显隐 | 培育服务机构推荐分析 | 评审模式零泄漏 | 评审模式开启显示三个需求追溯按钮与指标未登记角标，关闭后零泄漏且业务态不变 | 1、可切换内部评审模式（人设面板内部评审开关） | 1.开启评审模式并进入页面；2.逐一点击三个需求追溯按钮；3.定位「指标未登记：培育综合分」角标与长提示；4.关闭评审模式并刷新页面 | 1、开启后「培育服务机构推荐分析」「分析配置」「培育模型权重」三个追溯按钮可见可点；2、角标「指标未登记：培育综合分」呈现、长提示含未入指标库与禁止前端重算表述；3、关闭后页面无追溯按钮、无指标未登记角标、无评审字样泄漏；4、开关不改变产业集群、Tag 筛选、权重值与页面业务态 | P1 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate | M_SVC_REC_CULTIVATE_SCORE | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-21 | 接旧 00350；本册唯一 4 点结构性例外（评审层多挂点检查类）；长提示全文见附录 A.5（含治理编号 Q063 / Q-SVCCHAIN-05，开放项 7）；零泄漏检索范围含指标标识与治理编号字样；勘察时评审模式为开启态 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01282 | 产业服务链分析 | 培育服务机构推荐分析 | 异常-分析失败态 | 局部错误与重试 | 培育服务机构推荐分析 | 分析失败提示 | 分析失败呈局部错误提示且可重试、页面壳与配置保留 | 1、已选定产业集群；2、可构造分析服务异常（断链） | 1.断开分析服务后点击「开始分析」；2.点击失败态的「重试」入口 | 1、失败时结果区呈局部错误提示；2、失败态提供重试入口且页面壳与配置保留 | P1 |  |  |  |  |  | US-SVC-REC-04 | US-SVC-REC-04 异常路径 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单生成失败提示 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 新增条（旧册无独立失败态承载，coverage #22/#44 升部分覆盖）；失败态需构造异常触发（本轮不判 Fail，开放项 3）；失败态在分析记录中的呈现归 01278 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01260 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-入口与路由 | cultivate 工作区进入 | 培育服务机构推荐分析 | 进入培育服务机构推荐分析页 | 从直达路由进入培育服务机构推荐分析页，路由与页头双 Tab 正确 | 1、系统正常；2、已登录 admin | 1.地址栏进入本工作区直达路由（完整 URL 见元信息） | 1、路由为培育工作区直达态（workspace=cultivate、tab=cultivate）；2、页标题为「培育服务机构推荐分析」；3、顶部为「培育服务机构推荐分析（选中）/ 分析记录」双 Tab | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；兄弟菜单隔离见 04714 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04688 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-按产业发起直到名单 | 入口 A | 培育服务机构推荐分析 | 开始分析得到培育名单 | 选定产业后开始分析，过程结束后点查看结果，进入培育名单 | 1、已打开培育服务机构推荐分析 | 1.在重点产业方向选择「生物」；2.点击「开始分析」；3.在过程页点击「查看结果」 | 1、过程页状态为已完成；2、结果页出现「本土机构培育名单」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；入口 A 唯一主线。过程页写明不会自动进入名单 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04689 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-重点产业方向下拉 | 15 项 | 培育服务机构推荐分析 | 重点产业方向选项 | 重点产业方向下拉的选项个数与清单一致 | 1、已打开分析配置 | 1.展开重点产业方向下拉 | 1、选项共 15 个，名称见附录 A.1；2、未选时占位为「选择产业集群」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 作废 01261 的下拉部分改由本条承接 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04690 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-选定产业回显 | 不自动起任务 | 培育服务机构推荐分析 | 选定产业后仍停在配置 | 选定重点产业方向后回显，且不进入分析过程 | 1、已打开分析配置 | 1.在重点产业方向选择「生物」 | 1、选择框回显「生物」；2、页面仍停留在分析配置；3、配置区仍提示切换产业不会自动创建任务 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 下拉无清除控件，不作清空条。作废 01262 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04691 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-机构类型勾选 | 高校科研院所企业 | 培育服务机构推荐分析 | 机构类型可取消再勾选 | 机构类型三项可取消后再勾回，且不发起分析 | 1、已打开分析配置 | 1.取消勾选「企业」；2.再次勾选「企业」 | 1、取消后「企业」为未勾选；2、再次勾选后「企业」为已勾选；3、页面仍在分析配置 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 默认三项已勾选。现场是勾选框，不是带关闭的标签。作废 01263 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04692 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-服务环节下拉 | 11 项 | 培育服务机构推荐分析 | 服务环节选项 | 服务环节下拉的选项个数与清单一致 | 1、已打开分析配置 | 1.展开服务环节下拉 | 1、选项共 11 个，名称见附录 A.2 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 区块名是「服务环节」。作废 01264 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04693 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-去掉一个服务环节 | 关闭已选标签 | 培育服务机构推荐分析 | 关闭服务环节已选标签 | 关闭已选服务环节后，该项离开已选 | 1、服务环节已有「上游·研发」 | 1.点击已选「上游·研发」上的关闭 | 1、「上游·研发」不再出现在已选标签中 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 没有确认框，点关闭即去掉。默认 11 项全选 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01266 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-培育评估模型区构成与默认权重 | 四维度与默认权重 | 培育服务机构推荐分析 | 培育模型四维度展示 | 培育评估模型区标题、四维度指标与默认权重呈现正确 | 1、已进入页面 | 1.定位培育评估模型区块；2.浏览四维度权重初值 | 1、区块标题为「培育评估模型（演示模型口径）」且说明行明示四维度与招标一致；2、四维度为现有规模、技术创新能力、服务成效、市场缺口；3、四权重初值为 25/30/25/20 且各带上下调节钮 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 金样；接旧 00344/00345 部分；维度说明文案归 01267；合计已对齐见 04694 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01267 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-维度说明文案与演示口径声明 | 说明与底部声明 | 培育服务机构推荐分析 | 模型说明与口径声明 | 四条维度说明文案与底部演示口径声明完整且与现场口径一致 | 1、已进入页面；2、模型区可见 | 1.定位四条维度说明文案；2.定位区块底部声明 | 1、四条说明文案与附录 A 一致；2、底部声明完整可读、与附录 A 一致 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜提供现有规模指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-10 | 说明与声明全文见附录 A.3、A.4；结果页分数口径条见 04698 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04694 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-默认权重合计 | 已对齐 | 培育服务机构推荐分析 | 默认权重合计已对齐 | 默认权重下合计显示为已对齐 | 1、刚进入页面，权重未被改过 | 1.打开培育评估模型区 | 1、权重合计显示 100% 已对齐 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 此时不出现「按比例归一」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01268 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-权重调节与键入编辑 | spinbutton 与键入 | 培育服务机构推荐分析 | 四维权重编辑 | 权重支持调节钮增减与输入框直接键入两种编辑方式 | 1、已进入页面；2、模型区可见 | 1.点现有规模的上调钮一次再下调一次；2.在权重输入框直接键入新值 | 1、调节钮每次增减 1（现有规模 25 上调一次变 26）；2、权重值支持直接键入修改 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 | P0-11 | 合计偏离与「按比例归一」见 04695、04696。键入后现有规模可变为 40 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04695 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-权重合计偏离 | 出现按比例归一 | 培育服务机构推荐分析 | 合计不为 100 时出现归一 | 上调权重后合计偏离，并出现按比例归一 | 1、权重为默认 25/30/25/20 | 1.将「现有规模」上调 1 | 1、权重合计显示 101%（应为 100%，差 -1%）；2、出现按钮「按比例归一」 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 与 01268 的加减 1 分开 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04696 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-按比例归一 | 回到已对齐 | 培育服务机构推荐分析 | 按比例归一使合计对齐 | 点击按比例归一后合计回到已对齐 | 1、权重合计不是 100%，且「按比例归一」可见 | 1.点击「按比例归一」 | 1、权重合计显示 100% 已对齐 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 勘察一次由 26/30/25/20 变为 26/29/25/20 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01269 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-恢复默认权重一键复位 | 复位 | 培育服务机构推荐分析 | 恢复默认权重 | 调整权重后「恢复默认权重」一键复位为 25/30/25/20 | 1、已进入页面；2、至少一个权重已被调整 | 1.调整任一权重偏离默认值；2.点「恢复默认权重」 | 1、复位后四权重恢复 25/30/25/20 | P0 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜展示培育推荐所用指标 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 默认态与 01266 互证；结果页分数口径见 04698 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04697 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-过程页不自动进结果 | 须点查看结果 | 培育服务机构推荐分析 | 完成后仍停在过程页 | 分析完成后过程页不自动打开名单 | 1、已打开分析配置 | 1.在重点产业方向选择「新材料」；2.点击「开始分析」；3.等到过程页状态为已完成 | 1、过程页保持停留，未自动进入名单；2、页面提示不会自动跳转，并提供「查看结果」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育模型与筛选 \｜展示综合评分计算中状态 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 本条停在过程页。进入名单由 04688 负责 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04698 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-结果页分数口径 | 后端签发分 | 培育服务机构推荐分析 | 结果页分数口径提示 | 结果页提示分数由后端签发，页面权重不改名单分数 | 1、已打开本土机构培育名单 | 1.打开培育名单结果页 | 1、提示为「当前为后端签发分，页面权重仅演示配置，未改名单分数」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育模型与筛选 \｜按培育推荐模型计算综合评分 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 作废 01274。提示条是页面原文 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04699 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-候选家数 | 共 N 家候选 | 培育服务机构推荐分析 | 展示培育名单机构数量 | 结果页展示本次候选家数 | 1、已打开本土机构培育名单 | 1.阅读名单标题右侧家数 | 1、家数文案为「共 N 家候选」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单机构数量 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 不把某一次的具体家数写成通过条件 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04700 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-名单行字段 | 名次机构地区分数 | 培育服务机构推荐分析 | 培育名单行上的字段 | 名单每一行展示名次、机构、地区、类型、环节与分数 | 1、已打开本土机构培育名单 | 1.打开培育名单结果页 | 1、行上有名次、机构名、地区与机构类型；2、行上有环节标签与分数 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 行上没有四维取值列。作废 01275 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04701 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-推荐理由与培育建议 | 与机构同条 | 培育服务机构推荐分析 | 建议跟在对应机构上 | 推荐理由和培育建议写在同一机构行内 | 1、已打开本土机构培育名单 | 1.打开培育名单结果页 | 1、每行都有推荐理由；2、每行都有培育建议；3、建议文字落在该机构行内 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜培育建议与培育对象一一对应 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 现场未见资金支持、市场对接、人才引进三类分列标签。作废 01276 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04702 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-加入对比篮 | 行按钮 | 培育服务机构推荐分析 | 行上加入对比篮 | 点击加入对比篮后该按钮变为已在对比篮 | 1、已打开本土机构培育名单；2、至少一行按钮为「加入对比篮」 | 1.点击该行「加入对比篮」 | 1、该行按钮变为「已在对比篮」；2、页面提示已将该机构加入对比篮 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 没有确认框。这不是从名单发起分析 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04703 | 产业服务链分析 | 培育服务机构推荐分析 | 主流程-导出名单 | 即时下载 | 培育服务机构推荐分析 | 导出培育名单 | 点击导出名单后得到文件并出现已导出提示 | 1、已打开本土机构培育名单 | 1.点击「导出名单」 | 1、浏览器下载 csv 文件；2、页面提示已导出 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-05 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 即时下载，无单独生成任务。未指定产业时文件名含「未指定产业」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04704 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-结果页产业下拉 | 15 项 | 培育服务机构推荐分析 | 结果页重点产业方向选项 | 结果页重点产业方向下拉仍是 15 个产业 | 1、已打开本土机构培育名单 | 1.展开结果页的重点产业方向 | 1、选项共 15 个，与附录 A.1 一致 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜筛选最值得政策扶持和资源倾斜的培育对象 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 未选时占位为「产业上下文（不自动创建任务）」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04705 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-结果页切换产业 | 名单不改 | 培育服务机构推荐分析 | 切换产业上下文不改名单 | 在结果页改重点产业方向后，名单首行不变 | 1、已打开本土机构培育名单，并看见首行机构名 | 1.将重点产业方向改为「新能源」 | 1、首行机构名与切换前相同；2、标题仍为「本土机构培育名单」 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 页上说明切产业不会重新请求名单。作废 01277 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04706 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-已在对比篮再点 | 不移出 | 培育服务机构推荐分析 | 已在对比篮再点仍保留 | 再次点击已在对比篮时不把机构移出 | 1、某行按钮已是「已在对比篮」 | 1.再次点击「已在对比篮」 | 1、页面提示该机构已在对比篮中；2、按钮仍为「已在对比篮」 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 再点不是移出 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04707 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-返回配置 | 条件仍在 | 培育服务机构推荐分析 | 返回配置且产业仍在 | 从结果页返回配置后，原先选择的产业仍在 | 1、已用「生物」完成分析并打开结果页 | 1.点击「返回配置」 | 1、回到分析配置；2、重点产业方向仍为「生物」 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 缺陷候选：现场落到分析记录，并显示「暂无分析记录」，未回到配置。从配置页再进分析记录仍能看到历史任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04708 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-重新分析 | 新结果 | 培育服务机构推荐分析 | 重新分析得到新名单 | 重新分析后进入新的已完成过程，再打开新名单 | 1、已打开某次培育名单结果 | 1.点击「重新分析」；2.在过程页点击「查看结果」 | 1、过程页为新的已完成任务；2、结果页出现「本土机构培育名单」 | P0 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 没有确认框。作废 01279 里未走完的重新分析 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04709 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-当天再次开始分析 | 不新增任务 | 培育服务机构推荐分析 | 当天同条件打开已有结果 | 当天已成功后再点开始分析，打开已有结果且不新增任务 | 1、当天已有一条培育分析成功记录 | 1.在分析配置点击「开始分析」 | 1、打开当天已有结果；2、分析记录不新增任务 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 缺陷候选：2026-10-18 现场再次点击会新建任务并进入过程页。预期仍按打开已有结果且不新增任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04710 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-分析记录列表 | 列与状态 | 培育服务机构推荐分析 | 分析记录列 | 分析记录表展示任务、类型、状态、创建时间与操作 | 1、已有培育分析记录 | 1.点击「分析记录」 | 1、表头为任务、类型、状态、创建时间、操作；2、列表中能看到已完成和失败 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 类型列值为 cultivate。无分页器。作废 01278 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04711 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-已完成行查看过程 | 过程页 | 培育服务机构推荐分析 | 已完成任务的查看过程 | 已完成记录点查看过程，进入已完成的过程页 | 1、分析记录中有已完成任务 | 1.在已完成行点击「查看过程」 | 1、过程页状态为已完成；2、页面提供「查看结果」 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单生成中状态 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 过程页还有「查看分析记录」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04712 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-已完成行查看结果 | 打开名单 | 培育服务机构推荐分析 | 已完成任务的查看结果 | 已完成记录点查看结果，直接打开培育名单 | 1、分析记录中有已完成任务 | 1.在已完成行点击「查看结果」 | 1、出现「本土机构培育名单」 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 与 04688 的过程页入口分开 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04713 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-机构画像抽屉 | 四个区块 | 培育服务机构推荐分析 | 打开机构画像 | 点击机构名打开画像，并看到四个区块标题 | 1、已打开本土机构培育名单 | 1.点击名单首行机构名 | 1、抽屉标题含「机构画像」与该机构名；2、可见基本信息、领域覆盖细分、技术力五维、近三年新增服务记录；3、抽屉内有对比篮按钮 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 领域覆盖或服务记录可能显示暂无，区块标题仍在。无下一级页签 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04714 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-兄弟菜单隔离 | 引入与培育 | 培育服务机构推荐分析 | 引入页与培育页互不串页 | 从侧栏进入引入页再回到培育页，模型区标题各自正确 | 1、当前在培育服务机构推荐分析 | 1.点击侧栏「引入服务机构推荐分析」；2.点击侧栏「培育服务机构推荐分析」 | 1、引入页标题为「引入服务机构推荐分析」；2、引入页模型区为「招引推荐模型（演示模型口径）」；3、回到培育页后模型区为「培育评估模型（演示模型口径）」 | P1 |  |  |  |  |  | US-SVC-REC-03 | AC-US-SVC-REC-03-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.1 | T28 \｜培育模型与筛选 \｜限定培育推荐范围为深圳本土服务机构 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 作废 01280。引入页自身能力不在本册展开 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04715 | 产业服务链分析 | 培育服务机构推荐分析 | 备选-未选产业仍可发起 | 开始分析可点 | 培育服务机构推荐分析 | 未选产业也能创建任务 | 未选重点产业方向时开始分析仍会创建任务 | 1、重点产业方向为空 | 1.点击「开始分析」；2.点击「分析记录」 | 1、分析记录出现新任务；2、该任务变为已完成 | P1 |  |  |  |  |  | US-SVC-REC-04 | AC-US-SVC-REC-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜输出本土机构培育名单 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 按钮不是禁用。过程页分析对象为产业方向未选择。作废 01270 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04716 | 产业服务链分析 | 培育服务机构推荐分析 | 异常-失败行不能看结果 | 查看结果不可用 | 培育服务机构推荐分析 | 失败记录的查看结果 | 失败记录的查看结果不可用 | 1、分析记录中有状态为失败的任务 | 1.点击「分析记录」 | 1、失败行的「查看结果」不可用；2、同一行的「查看过程」可用 | P1 |  |  |  |  |  | US-SVC-REC-04 | US-SVC-REC-04 异常路径 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单生成失败提示 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 不可用即终态，点不开结果页 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04717 | 产业服务链分析 | 培育服务机构推荐分析 | 异常-失败过程页 | 生成失败 | 培育服务机构推荐分析 | 失败任务的过程说明 | 失败记录点查看过程后看到生成失败说明 | 1、分析记录中有失败任务 | 1.在失败行点击「查看过程」 | 1、过程页状态为失败；2、页面出现「本次分析生成失败」；3、页面提供「返回配置重试」 | P1 |  |  |  |  |  | US-SVC-REC-04 | US-SVC-REC-04 异常路径 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单生成失败提示 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 另有「任务错误详情」。作废 01282 的断链重试写法 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-04718 | 产业服务链分析 | 培育服务机构推荐分析 | 异常-返回配置重试 | 回到配置 | 培育服务机构推荐分析 | 失败页返回配置重试 | 失败过程页点返回配置重试后回到分析配置 | 1、已打开一条失败任务的过程页 | 1.点击「返回配置重试」 | 1、回到分析配置；2、培育评估模型区仍在 | P1 |  |  |  |  |  | US-SVC-REC-04 | US-SVC-REC-04 异常路径 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.7.7.2 | T28 \｜培育名单与建议 \｜展示培育名单生成失败提示 | TRACE-SVCCHAIN-RECOMMEND.yaml | /service/institution-decision?workspace=cultivate&tab=cultivate |  | INTEG | QA-KJZTFWXT-BLINE-CASE-SRV-L01 |  | 缺陷候选：现场进入分析记录并显示「暂无分析记录」，未回到配置。历史任务未删除 |
 
 ---
 
-## 2. 覆盖自检（2026-10-13 全库粒度重写）
+## 2. 旧号处置（2026-10-18 对照重写）
 
-**覆盖声明**：
+| 旧号 | 处置 | 新号 |
+|------|------|------|
+| 01260 | 保留 | — |
+| 01261 | 作废。预期把机构类型和服务环节写成标签组 | 04689 |
+| 01262 | 作废。含现场不存在的清空产业 | 04690 |
+| 01263 | 作废。现场是勾选框，不是带关闭的标签 | 04691 |
+| 01264 | 作废。区块名是服务环节，不是链位标签组 | 04692 |
+| 01265 | 作废。按标签关闭写跨组取消 | 04691、04693 |
+| 01266 | 保留 | — |
+| 01267 | 保留。附录 A.3 补上现场说明文案 | — |
+| 01268 | 保留。备注去掉「归一未实现」 | 04695、04696 |
+| 01269 | 保留 | — |
+| 01270 | 作废。未选产业时按钮可点，不是不可发起 | 04715 |
+| 01271 | 作废。停在创建过程，没有点「查看结果」进名单 | 04688 |
+| 01272 | 作废。同日再次开始会新建任务，不能把「不重复起任务」写成已发生 | 04709 |
+| 01273 | 作废。没有点到名单终态，字段也未按现场写 | 04688、04699 |
+| 01274 | 作废。改权重再看排序未形成可判定终态 | 04698 |
+| 01275 | 作废。结果行没有四维取值列 | 04700 |
+| 01276 | 作废。把建议写成资金支持、市场对接、人才引进三类标签 | 04701 |
+| 01277 | 作废。切换产业不会重算另一套名单 | 04705 |
+| 01278 | 作废。列名笼统，且把筛选写成标签 | 04710 |
+| 01279 | 作废。重新分析停在「另有入口」，当天复用未点到结果 | 04708、04709 |
+| 01280 | 作废。前置和预期夹带开关显隐 | 04714 |
+| 01281 | 删除。整条只测开关显隐，旧号不复用 | — |
+| 01282 | 作废。按断开服务后点重试来写，现场失败页是「返回配置重试」 | 04716、04717、04718 |
 
-- T28 范围（44 条功能点）覆盖结论见同目录 `coverage-fp.md`：已覆盖 7 / 部分覆盖 25 / 未覆盖 12（v2.0 失败态 2 条由新增 01282 承载升部分覆盖；旧册为 7/23/14）。
-- US-SVC-REC-03 / 04 在本页可见路径均有 P0/P1 用例；同页 attract（招引）工作区隔离由本册 01280 承载（招引侧自身功能归 SVCATTR 用例集，本册不重复出条）。
-- **金样清单**：01260（入口路由）、01261（分析配置区与产业集群下拉 15 选项）、01266（模型区四维度与默认权重）、01270（开始分析门控）、01273（培育名单结果态呈现）——烟测 = 跑全部金样。
-- 正向密度：每个可见区块默认态/典型值/边界值至少各 1 条正向用例——配置区（01261 默认 15 选项 / 01262 典型选定与清空 / 01263~01265 Tag 多选与跨组边界）、模型区（01266 默认权重 / 01267 说明与声明 / 01268~01269 编辑与复位边界）、执行链（01270 门控 / 01271 显式触发 / 01272 单飞）、结果态（01273 默认呈现 / 01274 综合分口径 / 01275~01276 字段排序与建议）、重析（01277）、分析记录（01278/01279）、工作区隔离（01280）、评审层（01281）、失败态（01282）。
+---
 
-**断言分布统计**（spec §5.4.1）：
+## 3. 覆盖自检
 
 | 指标 | 数值 |
 |------|------|
-| 用例总数 | 23（01260~01282 连续无跳号；未越 01260~01449 号段界） |
-| 预期 1~3 点 | 22 条（95.7%，目标 ≥85% ✅） |
-| 预期 4~5 点（结构性例外） | 1 条（01281 评审层多挂点检查，已注明 ✅） |
-| 预期 ≥6 点 | 0 条 ✅ |
-| 断言均值 | 2.4 点/条 |
-| 场景分布 | 主流程 17（01260~01276）≥ 备选 5（01277~01281）+ 异常 1（01282）= 6 ✅ |
-| 优先级分布 | P0 ×18（主流程 17 + 备选-变更重析 1）、P1 ×5 |
-
-**红线自检结果**（内容红线 1~6 逐条，2026-10-13 执行）：
-
-- [x] 红线 1 正文零内部引用：四列（测试内容/前置条件/测试步骤/预期结果）扫描 `US-|AC-|Q0\d|GAP-|开放项|归 \d{5}|coverage #|TRACE-|metric_id|\.yaml|\.md` = **0 命中**（追溯数据全部位于扩展列与备注；附录 A 为本册附录引用，非内部编号）
-- [x] 红线 2 observed 不进预期 / 废弃态不验不可见：勘察观测项（结果态名单/列构成/排序/条数、按钮禁用与拦截形态、过程态、记录列表构成、Tag 默认态、权重持久化、措辞差异、属地核对）全部入备注「observed-执行时记录」；旧 00352「无额外业务区块」负向校验已随重写移除，页面构成由 01261 正向承载；无废弃能力「不可见」反向校验
-- [x] 红线 3 步骤只写操作：步骤列扫描 `核对|确认|检查|校验|观察|比对|验证` = **0 命中**；预期列无操作动词
-- [x] 红线 4 一句一事与长度：单条步骤/预期均 ≤60 字；步骤 ≤7 步（本册最大 4 步）；无贴上限写作
-- [x] 红线 5 场景分层：主流程 → 备选 → 异常 顺序排列，「功能项」列前缀可辨（主流程-/备选-/异常-）
-- [x] 红线 6 用例级粒度：每条「测试内容」一句话可概括（一测一问一答）；断言分布见上表；顺带点均满足三条件（零额外操作/同域/不跨状态）
-- [x] 金样标记：5 条金样在元信息区与备注列双声明，均为正向、可独立执行、覆盖核心功能点
+| 保留 | 5（01260、01266、01267、01268、01269） |
+| 新号 | 04688～04718，共 31。段内 04719～04787 未使用 |
+| 作废 | 17 |
+| 删除 | 1（01281） |
+| 主流程 | 21（5 条保留 + 04688～04703） |
+| 备选 | 12（04704～04715） |
+| 异常 | 3（04716～04718） |
+| 主流程 ≥ 备选+异常 | 21 ≥ 15 |
+| 预期 ≥6 点 | 0 |
+| 金样 | 01260、01266、04688 |
 
 ---
 
-## 3. 序号台账（本文件）
+## 4. 序号台账
 
-| 测试类型 | 已用序号 | 下一号（系统 FUNC） |
-|----------|----------|---------------------|
-| FUNC | 01260–01282（旧 00341–00352 于 2026-10-13 全库粒度重写废弃归档） | 01283 |
-| API / COMP / INT / PERF | 未用 | 见 `qa/code-registry.yaml` |
+| 测试类型 | 已用序号 | 本段最大号 |
+|----------|----------|------------|
+| FUNC 保留 | 01260、01266～01269 | — |
+| FUNC 本段 | 04688～04718 | 04718 |
 
-**code-registry 回写说明**：本册完成后由主对话统一回写 `qa/code-registry.yaml`（next_seq 与 modules 的 SVCCULT 条目），本步禁改该文件。
+本步不改 `code-registry.yaml`。
 
 ### 附录 A · 长枚举清单
 
-- A.1 产业集群下拉选项（15 项，01261 预期 2 的全量清单，真源=现场字典观测，与招引侧同一份字典）：1. 新一代信息技术；2. 生物；3. 新能源；4. 新材料；5. 高端装备；6. 智能网联新能源汽车；7. 绿色环保；8. 低空经济与空天；9. 传统与创意；10. 海洋；11. 未来制造；12. 未来信息；13. 未来能源；14. 未来空间；15. 未来健康
-- A.2 链位 Tag（01264 预期 1 的全量清单；勘察口径称共 10 链位，逐项清点为 4+4+3=11，执行时以现场为准）：上游·研发、上游·标准、上游·知识产权、上游·科研合作；中游·中试、中游·检测、中游·孵化、中游·技术转移；下游·投融资、下游·人才、下游·数字化
-- A.3 培育模型四维度说明文案（01267 预期 1 的全量清单）：
+- A.1 重点产业方向（15 项，04689 / 04704）：1. 新一代信息技术；2. 生物；3. 新能源；4. 新材料；5. 高端装备；6. 智能网联新能源汽车；7. 绿色环保；8. 低空经济与空天；9. 传统与创意；10. 海洋；11. 未来制造；12. 未来信息；13. 未来能源；14. 未来空间；15. 未来健康
+- A.2 服务环节（11 项，04692）：上游·研发、上游·标准、上游·知识产权、上游·科研合作；中游·中试、中游·检测、中游·孵化、中游·技术转移；下游·投融资、下游·人才、下游·数字化
+- A.3 四维说明（01267）：
   - 现有规模＝核心专家/研发投入体量归一得分（演示口径）
-  - 技术创新能力＝专利/标准产出归一得分
-  - 服务成效＝成功服务案例归一得分
-  - 市场缺口＝目标领域供给稀缺度
-- A.4 底部演示口径声明（01267 预期 2 的全文）：演示模型口径：综合分由 Java rec-list 上送，前端不按四维度权重重算排名。页面权重仅演示配置，未改名单分数。默认 25/30/25/20。权重与筛选不进入分析指纹，也不写入创建任务参数。
-- A.5 评审态「指标未登记：培育综合分」长提示全文（01281 预期 2 的对照真源）：培育综合分未入正式指标库（仓内无 M_SVC_REC_CULTIVATE_SCORE，禁止自造 seed、禁止挪用 M_SVC_REC_ATTRACT_SCORE）。只展示 Java rec-list 上送的 score / cultivation_index，禁止前端按四维度权重重算，禁止改绿。口径挂 Q063 / Q-SVCCHAIN-05，待核验
+  - 技术创新能力＝专利/标准产出归一得分（演示口径）
+  - 服务成效＝成功服务案例归一得分（演示口径）
+  - 市场缺口＝目标领域供给稀缺度（演示口径）
+- A.4 底部声明（01267）：演示模型口径：综合分由 Java rec-list 上送，前端不按四维度权重重算排名。页面权重仅演示配置，未改名单分数。默认 25/30/25/20。权重与筛选不进入分析指纹，也不写入创建任务参数。
