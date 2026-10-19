@@ -79,7 +79,7 @@
 
 - 分支：`dev`
 - commit（lumen-ui-science-pc）：`8ffd8b9`
-- commit（gkx-orchestration）：`b66dcf9f`
+- commit（gkx-orchestration）：`f2b9a6db`
 - dev 测试：本地 `pnpm type-check` / `pnpm build` 绿；K8s dev 待 CI deploy
 
 ## cost
