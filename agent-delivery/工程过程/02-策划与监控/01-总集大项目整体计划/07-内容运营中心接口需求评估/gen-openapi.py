@@ -12,9 +12,8 @@ ponytail: 无第三方依赖，输出 JSON（OpenAPI 3.0 兼容，Apifox/Postman
 import json
 import os
 
-# 未实现端点（live 版剔除）：淮政玮名下 POL-EXPIRED；顺延组 TOPN/STATS/PANO/ROSTER 等
+# 未实现端点（live 版剔除）：顺延组 TOPN/STATS/PANO/ROSTER 等（POL-EXPIRED 已上线 c18060c，移出）
 PENDING = {
-    "/api/open/cms/v1/policy/expired",
     "/api/open/cms/v1/policy/topn",
     "/api/open/cms/v1/policy/stats",
     "/api/open/cms/v1/enterprise/profile",
