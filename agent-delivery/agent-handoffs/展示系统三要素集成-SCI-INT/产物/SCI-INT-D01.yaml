@@ -1,0 +1,687 @@
+# SCI-INT-D01 测试策略与环境（spike）
+# 17 张 = 13 个集成模式必测项模板 + 契约方式 / 环境 / 测试数据 / 准入准出
+# 具体接口用例不在本叶（见后续契约用例叶）
+task_id: SCI-INT-D01
+scope_count: 17
+card_count: 17
+gap: []
+cards:
+  - int_id: INT-D-X-001
+    layer: test
+    srs: {excel_row: null, seq: 1, path: "展示系统三要素集成/测试策略/STAT自建统计必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只读 ADS（SELECT ads_*，分页与维度过滤）"
+      python: "本模式不经过 Python /internal（校验无推理 span）"
+      downstream: "GDF 产出的 ADS 标准表"
+    contract_draft:
+      request: [region_code, time_range, domain_code, page, size]
+      response_key_fields: [value, period, metric_id]
+      granularity: {time: null, geo: null}
+      freshness: "T+1"
+    status:
+      demo: "本叶不改原型页面，只定必测项"
+      lumen: "正式读链只经 gkxlumen 网关读 ADS，本叶不改页面"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["三要素 ADS 表名与时间/地理粒度未在本叶重定，用例用调用方实际入参，不另造表"]
+    test_points:
+      - "测聚合口径是否与 8 件套 formula 一致（COUNT/SUM/DISTINCT 等 SQL 聚合）。通过：同一筛选下页面数字与公式重算一致，且响应带 metric_id。失败：页面空态，角标保持只读就绪度，禁止改成看起来合理的数，禁止伪造数值。"
+      - "测当期 ADS 分区缺失时的 period 回落。通过：返回上一期并带 period，页面显示「数据截至」且日期等于该 period。失败：页面空态，不得把无 period 的旧数当成当期，禁止伪造数值。"
+      - "测空表。通过：空态，接口不抛未处理错误，无数值字段或数值为空。失败：仍为空态，禁止 fixture 填数，禁止伪造数值。"
+      - "测 USE_MOCK=false。通过：响应与页面均无 fixture。失败：不得显示种子数，页面空态，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有 trace_id 与接口耗时，Java Agent 有 SQL span，Python instrument 校验点为本请求无推理 span，三处 trace_id 可关联。失败：用例失败；页面空态或仅「数据截至」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-002
+    layer: test
+    srs: {excel_row: null, seq: 2, path: "展示系统三要素集成/测试策略/COMPUTE派生必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data, metric, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: COMPUTE
+    integration_pattern: IP-02
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只读 ADS 计算结果，Java 不做公式"
+      python: "非纯 SQL 的公式在 lumen-algo-py 批 Job 计算后写 ADS"
+      downstream: "ADS 结果表（带计算版本号）"
+    contract_draft:
+      request: [metric_id, region_code, time_range]
+      response_key_fields: [value, algo_version, period]
+      granularity: {time: null, geo: null}
+      freshness: "T+1"
+    status:
+      demo: "本叶不改原型页面；该模式在现行指标集中为预留"
+      lumen: "正式读链只经 gkxlumen 网关读 ADS 结果"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["现行指标集暂无 COMPUTE 类型，本模板供改型后使用，不因此新开表"]
+    test_points:
+      - "测公式 assert：固定输入得到固定输出，且与 8 件套 formula 一致。通过：单测断言成功，页面数字等于该输出。失败：该指标置灰并带 PendingBadge，不以 0 代替，禁止伪造数值。"
+      - "测上游缺一项。通过：该指标置灰 + PendingBadge，响应无被当成 0 的值。失败：页面保持置灰，禁止显示 0 或随机数，禁止伪造数值。"
+      - "测版本号。通过：公式变更后 algo_version 递增，旧结果不被静默覆盖。失败：页面标「非最新」或空态，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有 trace_id 与耗时，Java Agent 有只读 span，Python instrument 有 Job span 与指标行数，trace_id 可关联。失败：用例失败；页面置灰，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-003
+    layer: test
+    srs: {excel_row: null, seq: 3, path: "展示系统三要素集成/测试策略/MODEL同步推理必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: MODEL
+    integration_pattern: IP-03
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 调 Python /internal，超时 3s，透传 trace"
+      python: "lumen-algo-py 同步推理，输入校验，mock_guard"
+      downstream: "只读 ADS 或 Nebula 特征；久新 API 背后的模型在 SLA 未确认前不走本同步模式"
+    contract_draft:
+      request: [condition_hash, object_id]
+      response_key_fields: [result, biz_code, snapshot_id]
+      granularity: {time: null, geo: null}
+      freshness: realtime
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "同步推理只经 gkxlumen 网关到 lumen-algo-py"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["P95、单对象、无写库、可缓存四条任一不满足则不得判同步通过；模型 Owner 未定不在本叶关闭"]
+    test_points:
+      - "测同步资格：P95≤2s、单次输入不超过 1 个对象、无写库副作用、结果可按条件缓存，四条同时成立才允许同步。通过：同步返回且无写库。失败：不得判通过，页面不展示当场编造的结果，空态或留下一结果，禁止伪造数值。"
+      - "测切条件。通过：只改筛选不发起推理，只有「开始分析」才触发。失败：不得出现自动任务，页面保持上一屏或空态，禁止伪造数值。"
+      - "测超时降级（Java 侧超过 3s）。通过：业务码表示模型暂不可用；有上一份结果则展示并标「非最新」，无则空态。失败：禁止 Mock 兜底，禁止伪造数值。"
+      - "测同条件幂等。通过：相同条件重复请求命中同一缓存且不重复写。失败：页面空态或明确不可用，禁止两套不一致的数，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有分析按钮点击与结果耗时，Java Agent 有下游 span，Python instrument 有推理耗时与输入规模，trace_id 贯穿。失败：用例失败；超时则空态或上一结果，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-004
+    layer: test
+    srs: {excel_row: null, seq: 4, path: "展示系统三要素集成/测试策略/异步Job必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: "MODEL,GRAPH"
+    integration_pattern: IP-04
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 提供提交、查询、取结果三接口；任务表只存元数据"
+      python: "lumen-algo-py worker 计算并写结果快照"
+      downstream: "ADS 结果快照；周期类任务的周/日预算未确认"
+    contract_draft:
+      request: [condition_hash, user_id, action]
+      response_key_fields: [job_id, status, reason_code, snapshot_id]
+      granularity: {time: null, geo: null}
+      freshness: "按任务"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "异步任务只经 gkxlumen 网关到 lumen-algo-py worker"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["任务元数据表与快照表若需新结构，沿用已有升级项，本叶不新开表"]
+    test_points:
+      - "测切条件不自动起任务。通过：变更筛选后无新的 running。失败：页面不进入分析中，保持空态或上一结果，禁止伪造数值。"
+      - "测单飞：同用户同条件并发提交。通过：只有一条 running，其余被拒绝或合并。失败：不得并行出两套数，页面提示已有任务或空态，禁止伪造数值。"
+      - "测当天已成功直接打开结果。通过：当天同条件已成功时直接打开该结果且不新跑。失败：不得显示另一套数，页面仍为该次成功结果或空态，禁止伪造数值。"
+      - "测失败保留与重试上限。通过：状态 failed 且带原因码，自动重试不超过 1 次；有上一成功结果则保留并标「非最新」，无则空态。失败：禁止伪造数值。"
+      - "测「重新分析」。通过：只有显式动作才强制重跑，成功后才替换展示。失败：仍留旧结果或空态，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有提交、完成、失败事件，Java Agent 有提交与查询 span，Python instrument 的 job_id 与 trace_id 关联且有阶段耗时。失败：用例失败；页面按失败保留规则，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-005
+    layer: test
+    srs: {excel_row: null, seq: 5, path: "展示系统三要素集成/测试策略/GRAPH自建必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [graph, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: GRAPH
+    integration_pattern: IP-05
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: trsgraph
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 读 ADS 投影；子图查询只调 Python /internal，Java 不写 nGQL"
+      python: "lumen-algo-py 用 nebula3-python 连接 graphd 10.50.75.136:9669（TRSGraph）"
+      downstream: "NebulaGraph TRSGraph 三要素 space，结果投影 ADS"
+    contract_draft:
+      request: [space, entity_id, metric_id]
+      response_key_fields: [nodes, edges, centrality, snapshot_id]
+      granularity: {time: null, geo: null}
+      freshness: weekly
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "图算法只经 gkxlumen 网关到 lumen-algo-py，再连 TRSGraph"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["三要素 space 的 schema 仍未知；中心性/关键节点是否自建未在本叶关闭"]
+    test_points:
+      - "测图引擎只许 TRSGraph。通过：依赖与连接均为 graphd 10.50.75.136:9669，无 Neo4j 依赖与连接。失败：用例失败，页面空态，禁止用其他图库填数，禁止伪造数值。"
+      - "测 space 名不是 demo_*（对照既有 NonDemoNebulaSpaceError 的语义）。通过：读写落在三要素 space。失败：有投影则标「图谱更新中」，无投影则空态，禁止伪造节点，禁止伪造数值。"
+      - "测 Nebula 不可达。通过：读最近投影并显示「图谱更新中」；无投影则空态。失败：禁止伪造节点，禁止伪造数值。"
+      - "测中心性小图 assert。通过：关键节点/中心性与自检及 ADS 投影一致。失败：页面空态，禁止随机节点，禁止伪造数值。"
+      - "测禁止回落 demo-algo-science。通过：出站只有 gkxlumen 网关与 lumen-algo-py。失败：链路判失败，页面空态，该次回落数据不得展示，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有图渲染耗时，Java Agent 有 span，Python instrument 有 nGQL 耗时与返回节点数，trace_id 贯穿。失败：用例失败；页面空态或「图谱更新中」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-006
+    layer: test
+    srs: {excel_row: null, seq: 6, path: "展示系统三要素集成/测试策略/久新SQL必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [frontend, java_facade, etl]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只读 ADS"
+      python: "SQL 依赖检索时才经 lumen-etl-es-py；否则无算法推理 span"
+      downstream: "久新 SQL 经评审后由 GDF 落入 ADS"
+    contract_draft:
+      request: [metric_id, region_code, time_range]
+      response_key_fields: [rows, period, metric_id]
+      granularity: {time: null, geo: null}
+      freshness: "T+1"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "读链同只读 ADS，只经 gkxlumen 网关"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["久新 SQL 所依赖源表是否已在 gkx 三方库仍待确认，本叶不新开表"]
+    test_points:
+      - "测久新 SQL 在 gkx 沙箱可执行，且表名已映射。通过：沙箱执行成功。失败：页面按空表处理为空态，禁止改写 SQL 结果充数，禁止伪造数值。"
+      - "测结果行数与久新样例一致。通过：抽样行数相等。失败：不展示被抹平的差额，页面空态或「数据截至」，禁止伪造数值。"
+      - "测口径与 8 件套 formula 一致。通过：重算一致。失败：页面空态，禁止伪造数值。"
+      - "测空表与 Mock 关闭，规则同只读 ADS。通过：无当期分区显示「数据截至」；空表空态；USE_MOCK=false 无 fixture。失败：禁止 fixture 填数，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有 trace_id 与耗时，Java Agent 有 SQL span；走检索加工时 Python instrument 有任务行数与耗时，否则校验无推理 span。失败：用例失败；页面空态或「数据截至」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-007
+    layer: test
+    srs: {excel_row: null, seq: 7, path: "展示系统三要素集成/测试策略/久新Python必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [algorithm, graph]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [frontend, java_facade, python_internal, graph_load]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只调 Python /internal 或只读 ADS 投影"
+      python: "久新代码并入 lumen-algo-py 后运行，写 TRSGraph 与 ADS 投影"
+      downstream: "TRSGraph 与 ADS；禁止 Neo4j"
+    contract_draft:
+      request: [job_id, space]
+      response_key_fields: [extract_count, model_version, snapshot_id]
+      granularity: {time: null, geo: null}
+      freshness: weekly
+    status:
+      demo: "本叶不改原型页面，也不把原型算法服务当运行目标"
+      lumen: "并入代码只在 lumen-algo-py 运行"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["久新交源码还是封装件、模型权重许可与并入后维护人未定，本叶不新开表"]
+    test_points:
+      - "测并入 lumen-algo-py 的代码有 1 个最小可跑自检。通过：断言成功。失败：该路径不得当通过，页面空态或保留上一版图谱，禁止伪造抽取结果，禁止伪造数值。"
+      - "测无 demo-* import，且依赖许可有审查记录。通过：审查通过且进程只在 lumen-algo-py。失败：用例失败，页面空态，禁止伪造数值。"
+      - "测抽取写入 TRSGraph 且 space 不是 demo_*，无 Neo4j。通过：投影可读且 space 正确。失败：保留上一版，页面空态或「图谱更新中」，禁止伪造数值。"
+      - "测禁止回落 demo-algo-science 以及任何 demo-algo-*。通过：调用链只有 gkxlumen 网关与 lumen-algo-py。失败：链路失败，回落数据不得上屏，页面空态，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有图渲染耗时，Java Agent 有 span，Python instrument 有抽取条数、失败率、模型版本，trace_id 贯穿。失败：用例失败；页面空态或「图谱更新中」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-008
+    layer: test
+    srs: {excel_row: null, seq: 8, path: "展示系统三要素集成/测试策略/久新API必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [service, algorithm]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只调 Python /internal/v1/sci，Java 不知久新字段"
+      python: "lumen-algo-py 适配层持有久新凭据（K8s Secret）并调用久新 API，凭据不下发 Java 与前端"
+      downstream: "久新 API；熔断打开时读已有快照"
+    contract_draft:
+      request: [normalized_params]
+      response_key_fields: [mapped_fields, snapshot_id, degrade_code]
+      granularity: {time: null, geo: null}
+      freshness: "T+1"
+    status:
+      demo: "本叶不改原型页面，不把久新凭据放到前端"
+      lumen: "浏览器与 Java 配置均不得出现久新凭据或久新域名"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["久新接口文档、鉴权方式与 SLA 仍待确认；缓存是否落库不在本叶新开表"]
+    test_points:
+      - "测凭据位置。通过：久新凭据只在 Python 侧 K8s Secret；前端包、浏览器存储、Java 配置均无凭据、无久新域名。失败：用例失败，页面不得改显示假数据，禁止伪造数值。"
+      - "测鉴权失败（401/403）。通过：无快照则空态 + PendingBadge；有快照则最近快照 + 「数据更新中」。失败：禁止把凭据回传前端，禁止伪造数值。"
+      - "测超时（连接 2s / 读 10s 超出）。通过：与鉴权失败相同的空态或快照降级，且无 Mock 兜底。失败：页面空态或「数据更新中」，禁止伪造数值。"
+      - "测熔断：连续 5 次失败或 1 分钟错误率大于 50% 则打开 60s。通过：打开期间不再打久新，页面读快照或空态。失败：禁止用随机数顶上，禁止伪造数值。"
+      - "测字段映射。通过：适配层把久新响应映射为约定字段，Java 响应不含未映射的久新原字段。失败：页面空态，不把原字段冒充指标，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有任务事件，Java Agent 有 span，Python instrument 外呼 span 含耗时、状态码、熔断状态且不含凭据明文，trace_id 贯穿。失败：用例失败；页面空态或「数据更新中」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-009
+    layer: test
+    srs: {excel_row: null, seq: 9, path: "展示系统三要素集成/测试策略/页面派生必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 读父结果快照并按维度切片，不做公式"
+      python: "仅当父链路写快照时一并产出排序或 TopN；不单独调用久新"
+      downstream: "父库叶结果快照"
+    contract_draft:
+      request: [parent_snapshot_id, dimension]
+      response_key_fields: [child_value, parent_snapshot_id]
+      granularity: {time: null, geo: null}
+      freshness: "跟随父快照"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "子字段只读父快照，不新增对端请求"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["父子映射若跨专题与展示共享，归属不在本叶裁断"]
+    test_points:
+      - "测派生值与父快照一致。通过：子字段可回溯到同一 parent_snapshot_id 的切片。失败：子指标空态，禁止单独编数，禁止伪造数值。"
+      - "测父快照缺失。通过：子指标同步空态，角标与父链路一致。失败：子指标不得单独有数，页面空态，禁止伪造数值。"
+      - "测不再向久新要数。通过：该子字段请求不再产生新的久新调用。失败：用例失败，页面仍空态，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有 trace_id，Java Agent 有只读 span，Python instrument 跟随父链路（无父则无二次推理 span）。失败：用例失败；页面空态，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-010
+    layer: test
+    srs: {excel_row: null, seq: 10, path: "展示系统三要素集成/测试策略/无来源空态必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: "third_party,UNKNOWN"
+    integration_pattern: IP-10
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 返回空或 null+reason，不出数值字段"
+      python: "本模式不实现算法（校验无推理 span）"
+      downstream: "无对端"
+    contract_draft:
+      request: [metric_id]
+      response_key_fields: [reason, metric_id]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "无来源指标在正式链路上保持空态与待确认角标"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["来源与权重口径有待确认项，本模板禁止用假数绕过"]
+    test_points:
+      - "测空态与待确认角标。通过：业务态置灰或空态，PendingBadge 文案来自缺口目录，接口无数值或仅为 null+reason。失败：禁止用随机数或 fixture 填数充当通过，禁止伪造数值。"
+      - "测不参与计分与排行。通过：汇总、得分、名次均不含该指标。失败：用例失败，页面保持空态，禁止伪造数值。"
+      - "测不得向久新虚构接口。通过：无新增虚构契约与调用。失败：用例失败，页面空态，禁止伪造数值。"
+      - "测角标显隐。通过：待确认角标在业务态可见；评审关闭后页面无内部缺口编号。失败：仍不得填数，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 对空态或缺口曝光带 trace_id；Java Agent 若有请求则 span 对应空响应且无数值；Python instrument 校验点为无推理 span。失败：把空态记成成功数值即失败，页面保持空态与角标，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-011
+    layer: test
+    srs: {excel_row: null, seq: 11, path: "展示系统三要素集成/测试策略/结果快照必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: "MODEL,GRAPH,third_party,COMPUTE"
+    integration_pattern: IP-11
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 只读快照，响应带 snapshot_id、period、algo_version、source"
+      python: "lumen-algo-py 按指标+条件哈希+period 幂等写快照，写失败不覆盖旧行"
+      downstream: "只引用已有候选表 ads_sci_result_snapshot，不新开表"
+    contract_draft:
+      request: [metric_id, condition_hash, period]
+      response_key_fields: [snapshot_id, period, algo_version, source]
+      granularity: {time: null, geo: null}
+      freshness: "由各模式定义"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "正式链路只读该候选快照表，不另建测试专用结构"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["候选表 ads_sci_result_snapshot 结构未定，测试只引用该名，保留期数不在本叶拍板"]
+    test_points:
+      - "测重复写幂等，对象只引用 ads_sci_result_snapshot。通过：同一指标+条件哈希+period 不堆出多条成功行。失败：不覆盖旧成功行，页面读最新成功或空态，禁止伪造数值。"
+      - "测版本递增。通过：新成功写入使版本增加，响应含 snapshot_id、period、algo_version、source。失败：页面标「非最新」或空态，禁止伪造数值。"
+      - "测读最新成功快照。通过：写失败后读到的仍是上一成功行；没有任何成功行则空态。失败：禁止用新失败载荷覆盖展示，禁止伪造数值。"
+      - "测 trace。通过：前端展示「数据截至」，Java Agent 有只读 span，Python instrument 有写入行数与版本，trace_id 可关联。失败：用例失败；页面空态或「数据截至」，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-012
+    layer: test
+    srs: {excel_row: null, seq: 12, path: "展示系统三要素集成/测试策略/八件套挂接必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [metric]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: "STAT,COMPUTE,MODEL,GRAPH,third_party,MIXED,LITERATURE,UNKNOWN"
+    integration_pattern: IP-12
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: API
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 读 /metrics/v1/catalog（过渡态可用只读镜像，头注释标真源）"
+      python: "本模式不改 8 件套（校验无推理 span）"
+      downstream: "指标目录；改口径不在测试叶"
+    contract_draft:
+      request: [metric_id]
+      response_key_fields: [metric_id, algorithm_type, formula]
+      granularity: {time: null, geo: null}
+      freshness: "随目录版本"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "每个统计数字旁保留口径入口，目录失败也不隐藏"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["目录是否已带 algorithm_type 与就绪度字段，以目录实况为准，本叶不改状态"]
+    test_points:
+      - "测 catalog 可按 metric_id 查到 8 件套且 algorithm_type 有值。通过：口径入口可打开并看到这些字段。失败：入口显示「口径加载失败」且仍在，不隐藏，不伪造口径数值。"
+      - "测定义缺失。通过：红问号只显示治理引用，不显示伪造的 8 件套。失败：页面不得补一套假口径，业务位置空态或问号，禁止伪造数值。"
+      - "测评审关闭零泄漏。通过：关闭后页面无 metric_id 与内部缺口编号。失败：用例失败，业务数字不被替换，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 有口径入口打开事件，Java Agent 有 catalog span，Python instrument 校验点为无推理 span。失败：用例失败；入口仍在，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-013
+    layer: test
+    srs: {excel_row: null, seq: 13, path: "展示系统三要素集成/测试策略/Mock开关必测项"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: null
+    integration_pattern: IP-13
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 的业务接口不做 Mock；无数据则空响应"
+      python: "lumen-algo-py 的 mock_guard 显式失败且不回假数"
+      downstream: "开关关闭时无种子数据源"
+    contract_draft:
+      request: [use_mock]
+      response_key_fields: [empty_or_live]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "本叶不改原型页面"
+      lumen: "正式构建 USE_MOCK 关闭，禁止 fixture 填数"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["个别页面若尚无 mock 模块，关闭开关时的期望仍是空态而不是补模块"]
+    test_points:
+      - "测 USE_MOCK 为唯一开关（含 VITE_APP_USE_MOCK）。通过：true 时只走已注册种子且 MockBadge 仅在 D4=mock 时出现；false 时不执行 mock 注册。失败：页面空态，禁止伪造数值。"
+      - "测关闭时禁止 fixture 填数。通过：USE_MOCK=false 且后端未就绪则为空态；Python mock_guard 报错且响应无假数。失败：出现种子数即失败，页面应空态，禁止伪造数值。"
+      - "测 MockBadge 仅 D4=mock 显示。通过：其他接入状态不显示该角标。失败：不得用角标掩盖假数，页面空态或真实空，禁止伪造数值。"
+      - "测 trace。通过：前端 observability 的启动记录含开关值；Java Agent 校验点为业务接口无 Mock span；Python instrument 有 MockStateError 计数。失败：false 却返回种子即失败，页面空态，禁止伪造数值。"
+    confidence: medium
+  - int_id: INT-D-X-014
+    layer: test
+    srs: {excel_row: null, seq: 14, path: "展示系统三要素集成/测试策略/契约测试方式"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: null
+    integration_pattern: "contract-method"
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "契约校验时 Java 仍只经 gkxlumen-platform-gateway 调 Python /internal"
+      python: "lumen-algo-py 可指向编排侧 Mock 或久新对端测试环境的回放地址"
+      downstream: "契约文件在编排仓本目录产物，不进业务仓"
+    contract_draft:
+      request: [contract_path, mock_base_url]
+      response_key_fields: [parse_ok, mock_up, replay_id]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "契约文件不进入原型仓"
+      lumen: "契约文件不进入正式业务仓"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["本叶若写出逐接口用例会越界，用例留给后续契约用例叶"]
+    test_points:
+      - "测对端 Mock。通过：久新测试环境不可用时，编排侧 Mock 能按契约字段启动并只返回契约内字段。失败：环境判失败，不得把 Mock 数写入正式展示当通过，页面策略仍要求空态，禁止伪造数值。"
+      - "测录制回放。通过：对端测试环境录制经脱敏后可回放，字段与契约一致且无凭据。失败：丢弃该录制，页面不展示脏回放，空态或角标，禁止伪造数值。"
+      - "测契约文件位置。通过：文件在 gkx-orchestration 的 agent-delivery/agent-handoffs/展示系统三要素集成-SCI-INT/产物/contracts/（建议目录，本叶不创建样例文件），且不在业务仓。失败：不得改落到正式仓或原型仓，页面不因此填数。"
+      - "测本叶边界。通过：本文件只有方式，没有逐接口用例。失败：未评审用例不得当成已通过，页面不展示假通过，禁止伪造数值。"
+      - "测 trace。通过：Mock 与回放请求带 trace_id，前端 observability、Java Agent、Python instrument 能对上同一次调用。失败：环境失败，不伪造数值，页面空态。"
+    confidence: high
+  - int_id: INT-D-X-015
+    layer: test
+    srs: {excel_row: null, seq: 15, path: "展示系统三要素集成/测试策略/环境划分"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: null
+    integration_pattern: "env-split"
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "dev、联调、对端测试三条都只经 gkxlumen-platform-gateway 到 gkxlumen-*"
+      python: "只到 lumen-algo-py 或 lumen-etl-es-py 的 /internal"
+      downstream: "久新对端测试环境或 TRSGraph；正式链路不经原型服务"
+    contract_draft:
+      request: [env_name]
+      response_key_fields: [gateway, downstream_host]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "测试出站不得改去原型平台或原型算法"
+      lumen: "三套环境的 lumen 调用链同一网关约束"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["环境变量若把网关指到原型服务，整轮结果作废"]
+    test_points:
+      - "测 dev。通过：本机或集群 dev 的实际出站只经 gkxlumen-platform-gateway 到 gkxlumen-*，算法只到 lumen-algo-py 或 lumen-etl-es-py 的 /internal。失败：链路失败，页面结果不采信，空态，禁止伪造数值。"
+      - "测联调。通过：前后端与 Python 同在联调环境，网关与算法服务约束与 dev 相同。失败：页面空态，禁止伪造数值。"
+      - "测对端测试环境。通过：久新侧为独立测试环境，凭据只在 Python Secret，Java 与前端无久新域名与凭据。失败：用例失败，页面空态或「数据更新中」，禁止伪造数值。"
+      - "测禁止回落 demo-svc-platform、demo-algo-*（含 demo-algo-science）、demo-svc-topic-py。通过：三套环境的配置与抓包都没有这些上游。失败：出现即失败，页面结果不得采信，应空态，禁止伪造数值。"
+      - "测 trace。通过：dev、联调、对端测试各抽一条链路，前端 observability、Java Agent、Python instrument 的 trace_id 一致。失败：该环境不准进入准出，页面不填数，禁止伪造数值。"
+    confidence: high
+  - int_id: INT-D-X-016
+    layer: test
+    srs: {excel_row: null, seq: 16, path: "展示系统三要素集成/测试策略/测试数据"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: null
+    integration_pattern: "test-data"
+    ours: [java_facade, python_internal, etl]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "经 gkxlumen-platform-gateway 读测试数据时，库名必须可从 Java Agent span 审计"
+      python: "lumen-algo-py 或 lumen-etl-es-py 若写读测试库，库名进入 instrument span，且不是正式库"
+      downstream: "待确认落点为专用沙箱库；正式链路不得把带 demo_ 前缀的库当数据源"
+    contract_draft:
+      request: [db_name, env_name]
+      response_key_fields: [is_prod, sandbox_name]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "总派单写明测试数据用 Demo 库 demo_gkxlumenx_*，且禁止正式库"
+      lumen: "架构要求 lumen 运行时不得读写 demo_*；正式链路不得把 demo_* 当数据源"
+      d1_d4: null
+    gaps: []
+    conflicts: ["总派单测试数据用 Demo 库 demo_gkxlumenx_*（禁正式库），与架构 D12 禁止 lumen 运行时读写 demo_* 同时成立；本叶不裁断"]
+    decision_needed: ["DN-D01-01：两条约束都保留。总派单要求测试数据用 Demo 库 demo_gkxlumenx_* 且禁正式库；架构 D12 禁止 lumen 运行时读写 demo_*。本叶不拍板。待确认：测试数据落在专用沙箱库，正式链路不得把 demo_* 当数据源。"]
+    structure_escalation: false
+    risks: ["在拍板前若把正式库或 demo_* 直接接进 lumen 运行时，该轮测试无效；快照只引用 ads_sci_result_snapshot，不新建表"]
+    test_points:
+      - "测禁正式库。通过：连接串与库名可证明不是正式库。失败：立即停止该轮，页面不得展示正式库数据当通过，空态，禁止伪造数值。"
+      - "测总派单约束被记录。通过：用例说明写明派单要求的 Demo 库名为 demo_gkxlumenx_*，且写明这不是已批准的 lumen 运行时数据源。失败：把该库当成默认通过源即失败，页面空态，禁止伪造数值。"
+      - "测架构约束被记录。通过：用例说明写明 lumen 运行时禁止读写 demo_*，正式链路不得把 demo_* 当数据源。失败：运行时连上 demo_* 即失败，页面空态，禁止伪造数值。"
+      - "测 DN-D01-01 未关闭。通过：拍板前数据落点标为待确认的专用沙箱库，不用 Demo 库或正式库充当默认通过。失败：页面空态，禁止伪造数值。"
+      - "测不新建表。通过：需要快照时只引用已有候选 ads_sci_result_snapshot。失败：出现新表脚本即失败，页面不填数，禁止伪造数值。"
+      - "测 trace。通过：Java Agent 或 Python instrument 的数据访问 span 含可审计库名，前端 observability 不含库口令。失败：口令出现在前端即失败，页面空态，禁止伪造数值。"
+    confidence: low
+  - int_id: INT-D-X-017
+    layer: test
+    srs: {excel_row: null, seq: 17, path: "展示系统三要素集成/测试策略/准入准出"}
+    page_ref: null
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: null
+    integration_pattern: "entry-exit"
+    ours: [frontend, java_facade, python_internal]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: null
+      java: "准出抽测仍经 gkxlumen-platform-gateway"
+      python: "准出抽测的 Python span 来自 lumen-algo-py 或 lumen-etl-es-py"
+      downstream: "证据归档在编排仓本目录产物，不进业务仓"
+    contract_draft:
+      request: [contract_path, mock_status, db_name, pattern_id]
+      response_key_fields: [entry_pass, exit_pass, degrade_evidence]
+      granularity: {time: null, geo: null}
+      freshness: "N/A"
+    status:
+      demo: "准入不依赖原型服务存活"
+      lumen: "准出证据来自 gkxlumen 调用链"
+      d1_d4: null
+    gaps: []
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: ["缺降级证据或出现伪造数值时不得准出"]
+    test_points:
+      - "测准入：契约文件可解析、对端 Mock 可启动、测试数据不是正式库。通过：三条同时成立才允许开跑。失败：不得开跑，页面不展示填数结果，禁止伪造数值。"
+      - "测准出：该 IP 必测项全部通过。通过：每条必测项有对应用例结果。失败：不准出，页面保持空态或角标，禁止伪造数值。"
+      - "测准出：降级路径有证据。通过：空态、角标、「数据截至」或「非最新」至少有请求记录与 trace，且与失败注入一致。失败：不准出，禁止用成功数字代替降级，禁止伪造数值。"
+      - "测准出：无伪造数值。通过：全程无随机数、无 fixture 充数、无 Mock 兜底成功。失败：不准出，页面不得改成成功数字。"
+      - "测 trace 准出。通过：抽测链路的前端 observability、Java Agent、Python instrument 都有校验点证据且 trace_id 一致。失败：缺一不准出，页面空态或角标，禁止伪造数值。"
+    confidence: high

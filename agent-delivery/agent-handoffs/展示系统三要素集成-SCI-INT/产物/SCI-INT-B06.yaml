@@ -1,0 +1,1003 @@
+# SCI-INT-B06 技术基础 / 图谱 / 路径派生 12 条（metric 层）
+# 真源：产物/_prep/B06-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-TECH-500～599
+task_id: SCI-INT-B06
+scope_count: 12
+card_count: 12
+gap: []
+execution_count: {sync: 6, async: 6}
+execution_rule: "请求路径计：IP-06 与 IP-09 为同步读 ADS 或父快照；IP-07 抽取 Job 与 IP-05 图批算为异步。生产侧 T+1 或 weekly 不把读请求再记成一条异步。"
+jiuxin_rows: [SRS-96, SRS-104, SRS-105]
+jiuxin_note: "本叶不新增久新行号。SRS-96/104/105 是库叶消费。IP-09 读父快照，不单独再要。四条 IP-05 无久新行，不标 IP-10（IP-10 只表示无源；这四条有图自建候选）。"
+recommendation:
+  path_metrics: [M_TECH_PATH_CENTRALITY, M_TECH_PATH_KEYNODE, M_TECH_PATH_PRIORITY]
+  advice: "建议改由我方 Python 与 Nebula 计算"
+  registry_algorithm_type: third_party
+  owner_open: "DN-02，唐绍祖"
+  note: "建议写入各卡 conflicts。不回写注册 algorithm_type。同族 M_TECH_ENTITY_INFLUENCE 建议并入同一 Job，仍不改注册值。"
+structure_escalations:
+  - id: SE-B06-01
+    owner: "human:李伟"
+    tables: ["ads_tech_graph_node_metric"]
+    cards: [INT-B-TECH-504, INT-B-TECH-508, INT-B-TECH-509, INT-B-TECH-510]
+    reason: "IP-05 中心度、关键节点、优先级、影响力的 ADS 投影，包内表名未定，本叶暂用 ads_tech_graph_node_metric。不替代 C02 技术点主数据 INT-C-TECH-180，不另造第二张技术点主表。关键节点回显若用 Tag 属性，沿用 C04 已有 is_key_node 方案，本叶不新造 Tag。"
+structure_escalation_refs:
+  - id: INT-C-TECH-180
+    owner: "human:李伟"
+    tables: ["C02 技术点主数据（名未定）"]
+    cards: [INT-B-TECH-501, INT-B-TECH-504, INT-B-TECH-507, INT-B-TECH-508, INT-B-TECH-509, INT-B-TECH-510]
+    note: "技术点没有 technology_id。实体集与节点主键只引用该卡，不另造主表。"
+  - id: INT-C-TECH-182
+    owner: "human:李伟"
+    tables: ["C02 技术点与文献机构人才桥接（名未定）"]
+    cards: [INT-B-TECH-500, INT-B-TECH-504, INT-B-TECH-505, INT-B-TECH-506]
+    note: "桥接只引用 C02，不另造第二张桥。"
+  - id: INT-C-TECH-300
+    owner: "human:李伟"
+    tables: ["C04 TAG technology"]
+    cards: [INT-B-TECH-501, INT-B-TECH-504, INT-B-TECH-507, INT-B-TECH-508, INT-B-TECH-509, INT-B-TECH-510]
+    note: "图谱 tag technology 尚未建。本叶不新造 Tag，不新开 space。"
+open_items:
+  - {id: OI-B06-01, text: "SRS-96 SQL 与 SRS-104/105 Python 仍为待确认；IP-09 不另要接口"}
+  - {id: OI-B06-02, text: "中心度、关键节点、优先级建议改由我方 Python 与 Nebula 计算；负责人 DN-02 唐绍祖未定；algorithm_type 保持 third_party"}
+  - {id: OI-B06-03, text: "新投影表 SE-B06-01 升 human:李伟；技术点主数据只引用 INT-C-TECH-180"}
+  - {id: OI-B06-04, text: "C02 无 technology_id；C04 TAG technology 尚未建。图未建则 IP-05 与子图空态"}
+cards:
+  - int_id: INT-B-TECH-500
+    layer: metric
+    metric_id: M_TECH_BASE_96_1
+    name: "技术基础指标模型构建"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 96, path: "算法库 ALGO-TECH-BASE-96 / 技术基础指标模型构建"}
+    page_ref: [DS-01-FACTORS, DS-07-SCI-CREATE, DS-07-TECH-INNOV, DS-02-ENTITY]
+    dep_kind: [data, metric]
+    metric_ids: [M_TECH_BASE_96_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [etl, java_facade]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-96
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术基础指标模型构建"
+    parent_metric: null
+    execution: "同步"
+    execution_note: "IP-06：久新 SQL 经评审后由 GDF 按 T+1 落 ADS，页面请求同步读 ADS。无在线 Python，不计异步 Job。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/overview（draft，只读 ADS，不直连久新）；同页另有 influence、compare、timeline、map；实体页 POST /situation/v1/panorama/entities"
+      python: "无在线调用。SQL 依赖 ES 时由 lumen-etl-es-py 承接，否则只走 GDF。"
+      downstream: "久新 SQL-96 技术基础指标模型 → ADS（落表名未定，不占用技术点主数据）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-107, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-TECH-113, table: dwd_en_paper, fields: "包内未给列名", role: "英文论文"}
+      - {c_card: INT-C-TECH-118, table: dwd_scholar_papers, fields: "包内未给列名", role: "学者论文"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "技术点与文献桥，只引用不另造"}
+    outputs:
+      c_card: INT-C-TECH-150
+      delivery: "久新 SQL-96 技术基础指标模型"
+      table: "ADS 表名未定"
+      response_key_fields: [metric_id, period, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准，本包未展开列"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [metric_id, period, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02:
+        - {seq: 10, name: "增长趋势", page: DS-01-FACTORS}
+        - {seq: 136, name: "科学论文数量分析", page: DS-07-SCI-CREATE}
+        - {seq: 140, name: "专利数量统计分析", page: DS-07-TECH-INNOV}
+        - {seq: 22, name: "论文量 / 专利量", page: DS-02-ENTITY}
+      a_cards:
+        - {int_id: INT-A-TECH-015, page_ref: DS-01-FACTORS, java: "POST /situation/v1/overview（draft）"}
+        - {int_id: INT-A-TECH-023, page_ref: DS-01-FACTORS, java: "POST /situation/v1/influence?type=paper（draft）"}
+        - {int_id: INT-A-X-028, page_ref: DS-01-FACTORS, java: "POST /situation/v1/compare（draft）"}
+        - {int_id: INT-A-X-029, page_ref: DS-01-FACTORS, java: "POST /situation/v1/timeline（draft）"}
+        - {int_id: INT-A-X-032, page_ref: DS-01-FACTORS, java: "POST /situation/v1/map（draft）"}
+        - {int_id: INT-A-TECH-110, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft）"}
+      pages: [DS-01-FACTORS, DS-07-SCI-CREATE, DS-07-TECH-INNOV, DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "在线链 Java 只读 ADS。SQL 落 GDF；依赖 ES 时承接方为 lumen-etl-es-py。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-96 确认为待确认"
+      - "入站表列名本包未给；ADS 落表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-06，不改成在线 Python。"
+    decision_needed:
+      - "DN-B06-01：SRS-96 的 SQL 文本、源表是否在 gkx 三方库、调度 SLA 仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-182]
+    risks:
+      - "D12：包内实现位置是 GDF 与 lumen-etl-es-py，没有指向 demo 仓。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。USE_MOCK=false 时无 ADS 即空态，禁止 fixture 填数。"
+      - "ADS 落表不占用 C02 技术点主数据，不另造第二张主表。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TECH_BASE_96_1，不含久新私有字段名"
+      - "降级：当期 ADS 分区缺失则回上一期并带 period；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-501
+    layer: metric
+    metric_id: M_TECH_GRAPH_104_1
+    name: "技术实体识别构建"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 104, path: "算法库 ALGO-TECH-GRAPH-104 / 技术实体识别构建"}
+    page_ref: [DS-02-TECHGRAPH, DS-02-ENTITY]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_TECH_GRAPH_104_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-104
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体识别构建"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：久新 Python 并入 lumen-algo-py 后跑抽取 Job，写 TRSGraph 与 ADS 投影。刷新 weekly 或增量，未确认。页面读投影，不在请求里同步推理。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/graph（draft，只读 ADS 投影；子图 Feign /internal/graph/*，不写 nGQL）"
+      python: "lumen-algo-py 离线 Job：SRS-104 并入后写技术点实体集（draft）"
+      downstream: "久新 Python-104 技术点实体集 → C02 INT-C-TECH-180；图顶点待 C04 TAG technology"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-105, table: dwd_patent_title, fields: "包内未给列名", role: "专利标题"}
+      - {c_card: INT-C-TECH-106, table: dwd_patent_abstract, fields: "包内未给列名", role: "专利摘要"}
+      - {c_card: INT-C-TECH-107, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-TECH-110, table: dwd_zh_paper_abstract, fields: "包内未给列名", role: "中文论文摘要"}
+      - {c_card: INT-C-TECH-113, table: dwd_en_paper, fields: "包内未给列名", role: "英文论文"}
+      - {c_card: INT-C-TECH-115, table: dwd_en_paper_abstract, fields: "包内未给列名", role: "英文论文摘要"}
+      - {c_card: INT-C-TECH-120, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-TECH-126, table: dwd_zh_report, fields: "包内未给列名", role: "中文报告"}
+      - {c_card: INT-C-TECH-127, table: dwd_en_report, fields: "包内未给列名", role: "英文报告"}
+    outputs:
+      c_card: INT-C-TECH-151
+      delivery: "久新 Python-104 技术实体识别产出（技术点实体集）"
+      graph: "顶点落入 C04 TAG technology（INT-C-TECH-300），该 Tag 尚未建"
+      master_ref: INT-C-TECH-180
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造主表"
+      response_key_fields: [metric_id, period, algo_version, entity_id, source_ids]
+      payload_note: "实体字段以久新交付物为准，文档未到。稳定主键待 technology_id。"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, source_id]
+      response_key_fields: [metric_id, period, algo_version, entity_id]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-103, page_ref: DS-02-TECHGRAPH, java: "POST /situation/v1/panorama/graph（draft）"}
+        - {int_id: INT-A-X-109, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft）"}
+      pages: [DS-02-TECHGRAPH, DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读 ADS 投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-104 确认为待确认：源码、wheel 或镜像未知"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07 并入 lumen-algo-py，不改模式编号。"
+      - "实体集不另造技术点主表，只归入 C02 INT-C-TECH-180。"
+    decision_needed:
+      - "DN-B06-01：SRS-104 是否交源码、权重存放与许可、并入后维护人仍为待确认"
+      - "DN-02：技术点主数据负责人未定（唐绍祖）。本叶不代定持有方。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止 lumen 链路回落 demo-* 或 import demo 仓。"
+      - "Java 不写 nGQL。图 schema 归属 C04，本叶不新造 Tag。"
+    test_points:
+      - "契约：投影含 metric_id=M_TECH_GRAPH_104_1；Java 响应无久新字段名"
+      - "降级：抽取 Job 失败保留上一版实体集；无 technology_id 或 Tag 未建则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-502
+    layer: metric
+    metric_id: M_TECH_GRAPH_105_1
+    name: "技术实体关系抽取"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 105, path: "算法库 ALGO-TECH-GRAPH-105 / 技术实体关系抽取"}
+    page_ref: [DS-02-TECHGRAPH, DS-02-ENTITY, DS-02-MAINTAIN-ENTITY, DS-03-RESULT]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_TECH_GRAPH_105_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-105
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体关系抽取"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：关系抽取 Job 写技术–技术边与实体–技术边到 TRSGraph，并投影 ADS。weekly 或增量，未确认。页面读投影。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/graph（draft，只读投影；子图 Feign /internal/graph/*）"
+      python: "lumen-algo-py 离线 Job：SRS-105 并入后写边与 ADS 投影（draft）"
+      downstream: "久新 Python-105 → INT-C-TECH-152；边类型见 INT-C-TECH-171 / C04 INT-C-TECH-340、INT-C-TECH-341"
+    inputs:
+      - {c_card: INT-C-TECH-151, table: "104 技术点实体集", fields: "实体主键待 technology_id", role: "关系抽取的点集，不另要久新行"}
+    outputs:
+      c_card: INT-C-TECH-152
+      delivery: "久新 Python-105 技术实体关系抽取产出（技术–技术 / 实体–技术边）"
+      graph: "INT-C-TECH-340 tech_relation；INT-C-TECH-341 produces。边尚未建。"
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造"
+      response_key_fields: [metric_id, period, algo_version, src_id, dst_id, rel_type, weight]
+      payload_note: "边字段以久新交付物为准，文档未到"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, rel_type]
+      response_key_fields: [metric_id, period, src_id, dst_id, rel_type]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02:
+        - {seq: 18, name: "关联强度", page: DS-02-TECHGRAPH}
+        - {seq: 22, name: "关联强度", page: DS-02-ENTITY}
+        - {seq: 26, name: "实体关联关系展示", page: DS-02-ENTITY}
+        - {seq: 41, name: "关键实体推荐列表展示", page: DS-02-MAINTAIN-ENTITY}
+        - {seq: 51, name: "弦线图展示", page: DS-03-RESULT}
+      a_cards:
+        - {int_id: INT-A-TECH-104, page_ref: DS-02-TECHGRAPH, java: "POST /situation/v1/panorama/graph（draft）"}
+        - {int_id: INT-A-X-109, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft）"}
+        - {int_id: INT-A-X-114, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entity-relations（draft）"}
+        - {int_id: INT-A-X-213, page_ref: DS-02-MAINTAIN-ENTITY, java: "GET /topic/v1/tech/graph/{technology_id}/recommend-entities（draft）"}
+        - {int_id: INT-A-X-216, page_ref: DS-02-MAINTAIN-ENTITY, java: "无单独接口（随维护提交返回）"}
+        - {int_id: INT-A-TECH-316, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset（draft）"}
+      pages: [DS-02-TECHGRAPH, DS-02-ENTITY, DS-02-MAINTAIN-ENTITY, DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-105 确认为待确认"
+      - "C02：技术点没有 technology_id，边端点无法对齐"
+      - "C04：技术相关 EDGE 尚未建"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07，不改模式编号。"
+    decision_needed:
+      - "DN-B06-01：SRS-105 交付物形态与许可仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-340, INT-C-TECH-341]
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止回落 demo-*。"
+      - "图边类型归属 C04。本叶不新造边类型，不新造技术点主表。"
+    test_points:
+      - "契约：投影边带 metric_id=M_TECH_GRAPH_105_1"
+      - "降级：Job 失败保留上一版边与投影；无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-503
+    layer: metric
+    metric_id: M_TECH_EDGE_STRENGTH
+    name: "技术–技术关联强度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "页面派生 / 母库叶 SRS-105 技术–技术边权"}
+    page_ref: [DS-02-TECHGRAPH]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_EDGE_STRENGTH]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-105
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体关系抽取"
+    parent_metric:
+      metric_id: M_TECH_GRAPH_105_1
+      seq: 105
+      jiuxin_row_id: SRS-105
+      fields: ["技术–技术边权"]
+      field_note: "半成品本号只消费技术–技术边。实体–技术点排序强度归 M_TECH_ENTITY_TOP5，不进本号。禁止 seq 116 / M_SVC_GRAPH_*。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-105 快照的技术–技术边权。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/graph（draft，读父快照边权，不直连久新）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TECH_GRAPH_105_1 的 ADS 投影（INT-C-TECH-152）"
+    inputs:
+      - {c_card: INT-C-TECH-152, table: "105 关系面快照", fields: "技术–技术边权", role: "母指标 seq 105，不新要接口"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "边权", role: "图上的技术–技术边，读投影"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "边权", role: "C04 技术–技术边，尚未建"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：技术–技术边权"
+      snapshot_table: "跟随 105 投影，不另写结果表"
+      response_key_fields: [metric_id, period, src_id, dst_id, weight, parent_metric_id, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随父库叶"
+      freshness: "weekly"
+    contract_draft:
+      request: [technology_id, domain_code]
+      response_key_fields: [metric_id, period, src_id, dst_id, weight, parent_seq]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-104, page_ref: DS-02-TECHGRAPH, java: "POST /situation/v1/panorama/graph（draft）"}
+      pages: [DS-02-TECHGRAPH]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父抽取在 lumen-algo-py。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 为空，页面只来自 a_cards：DS-02-TECHGRAPH"
+      - "久新行确认为待确认，确认归父库叶 SRS-105"
+    conflicts:
+      - "algorithm_type 保持 third_party。父久新行 algorithm_type=GRAPH，不改原值。"
+      - "页面卡 INT-A-TECH-104 的模式是 IP-07，因为与 105 同门面。本卡 integration_pattern 保持 IP-09。"
+      - "久新行交付形态为 Python，那是父库叶。本卡 delivery_form 按 IP-09 为 none，不单独再要。"
+    decision_needed:
+      - "DN-B06-02：边权刻度与归一未签，本叶不裁公式"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: []
+    risks:
+      - "D12：读链在 lumen。禁止为边权去调 demo-*。"
+      - "父快照缺失时本指标空态，不以 0 代替。"
+    test_points:
+      - "契约：返回值与父快照技术–技术边权一致，并带回 parent_seq=105"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-504
+    layer: metric
+    metric_id: M_TECH_ENTITY_INFLUENCE
+    name: "技术点影响力 / 实体优先级"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "IP-05 图自建 / 无久新专叶"}
+    page_ref: [DS-02-ENTITY]
+    dep_kind: [algorithm, graph, metric]
+    metric_ids: [M_TECH_ENTITY_INFLUENCE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: trsgraph
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-05：lumen-algo-py 批 Job 在 TRSGraph 上算影响力，写 ADS 投影。页面请求同步读投影。指标本体计异步。无久新行，但不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/entities（draft，返回 influence 供排序，只读投影）"
+      python: "lumen-algo-py 批 Job：读 TRSGraph 写影响力投影（draft）。在线不现算。"
+      downstream: "TRSGraph graphd 10.50.75.136:9669 → ads_tech_graph_node_metric（SE-B06-01）"
+    inputs:
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "顶点，主键待 technology_id", role: "技术点节点，Tag 尚未建"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "边", role: "影响力的图输入"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "实体与技术点桥，只引用"}
+      - {c_card: INT-C-X-330, table: "enterprise 等已有 Tag", fields: "实体顶点", role: "只 FETCH，不改企业 Tag"}
+    outputs:
+      c_card: null
+      delivery: "技术点影响力 / 实体优先级，供排序"
+      snapshot_table: ads_tech_graph_node_metric
+      response_key_fields: [metric_id, period, algo_version, technology_id, influence, rank]
+      payload_note: "关联强度 Top-K 不进本号，归 M_TECH_ENTITY_TOP5。不另写主表。"
+      granularity: "当前图快照"
+      freshness: "weekly"
+    contract_draft:
+      request: [technology_id, domain_code]
+      response_key_fields: [metric_id, period, influence, rank]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-115, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft）"}
+      pages: [DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "批算只在 lumen-algo-py。Java 只读投影。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "05 无专叶，A2 missing 保持。赋号不是 mapped。"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。b01 备注写 GRAPH 自建候选，与 type=third_party 冲突（C1），不改原值。"
+      - "同 IP-05 族：建议与中心度三条同一条我方 Python + Nebula Job 产出影响力。关联强度排序仍归 TOP5。不回写注册值。"
+      - "A 卡 counterpart 为 none。本卡记 trsgraph，表示图在我方 Nebula，不是新的外部对端。"
+    decision_needed:
+      - "DN-02：是否自建未定，负责人唐绍祖。本叶只给建议。"
+      - "DN-B06-03：影响力公式未签，不拆子号"
+    structure_escalation: true
+    structure_escalation_id: [SE-B06-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：批算在 lumen-algo-py。禁止 lumen 调用 demo-* 现算影响力。"
+      - "Tag 未建或无 technology_id 时不跑 Job，页面空态。"
+    test_points:
+      - "契约：投影带 metric_id=M_TECH_ENTITY_INFLUENCE，且不包含边权 Top-K"
+      - "降级：Nebula 不可达则读最近投影；无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-505
+    layer: metric
+    metric_id: M_TECH_ENTITY_REL
+    name: "实体关联关系网"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "页面派生 / 母库叶 SRS-105 实体关联"}
+    page_ref: [DS-02-ENTITY]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_ENTITY_REL]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-105
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体关系抽取"
+    parent_metric:
+      metric_id: M_TECH_GRAPH_105_1
+      seq: 105
+      jiuxin_row_id: SRS-105
+      fields: ["实体关联边", "关联对象"]
+      field_note: "以连线或网络图展示与当前技术点相关的实体之间关联。消费 seq 105，不另开模型。禁止 seq 116。禁止用 PATH 关键路径顶替。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-105 快照。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/entity-relations（draft，读 105 快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TECH_GRAPH_105_1 的 ADS 投影（INT-C-TECH-152）"
+    inputs:
+      - {c_card: INT-C-TECH-152, table: "105 关系面快照", fields: "实体关联边", role: "母指标 seq 105"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "实体–技术边", role: "读投影"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "只引用"}
+      - {c_card: INT-C-X-330, table: "实体 Tag", fields: "实体顶点", role: "只 FETCH"}
+      - {c_card: INT-C-TECH-341, table: produces, fields: "实体–技术边", role: "C04 边，尚未建"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：当前技术点相关实体的关联网"
+      snapshot_table: "跟随 105 投影，不另写结果表"
+      response_key_fields: [metric_id, period, nodes, edges, parent_metric_id, parent_seq]
+      payload_note: "不另写结果表，不顶替关键路径"
+      granularity: "跟随父库叶"
+      freshness: "weekly"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, nodes, edges, parent_seq]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-X-114, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entity-relations（draft）"}
+      pages: [DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 为空，页面只来自 a_cards：DS-02-ENTITY"
+      - "久新行确认为待确认，确认归父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。父久新行 algorithm_type=GRAPH，不改原值。"
+      - "久新行交付形态为 Python，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B06-02：实体–实体边是否已含在 105，还是只到实体–技术边，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-182]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 拼关系网。"
+      - "父快照缺失则空态。"
+    test_points:
+      - "契约：parent_seq=105，响应不是关键路径"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-506
+    layer: metric
+    metric_id: M_TECH_ENTITY_TOP5
+    name: "根节点 Top5 关键实体与关联强度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "页面派生 / 母库叶 SRS-105 边权 Top5"}
+    page_ref: [DS-02-ENTITY]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_ENTITY_TOP5]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-105
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体关系抽取"
+    parent_metric:
+      metric_id: M_TECH_GRAPH_105_1
+      seq: 105
+      jiuxin_row_id: SRS-105
+      fields: ["实体名称", "实体类型", "关联强度"]
+      field_note: "按已有 105 边权截取与当前根技术点关联的 Top5 实体（人/机构/论文/专利）。不另造排序模型。维护面候选同源，不另开 ID。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父快照上按边权截好的 Top5。截取若在写快照时完成，仍不算本卡另起 Job。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/entities（draft，按 tech_id 懒加载 Top5）"
+      python: "无单独在线调用。Top5 随 105 写快照时一并截取。"
+      downstream: "父指标 M_TECH_GRAPH_105_1 的 ADS 投影（INT-C-TECH-152）"
+    inputs:
+      - {c_card: INT-C-TECH-152, table: "105 关系面快照", fields: "实体名称 / 类型 / 关联强度", role: "母指标 seq 105"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "边权", role: "排序用边权"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "只引用"}
+      - {c_card: INT-C-X-330, table: "实体 Tag", fields: "实体顶点", role: "只 FETCH"}
+      - {c_card: INT-C-TECH-341, table: produces, fields: "实体–技术边权", role: "C04 边，尚未建"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：根技术点 Top5 实体卡片"
+      snapshot_table: "跟随 105 投影，不另写结果表"
+      response_key_fields: [metric_id, period, technology_id, entity_id, entity_type, name, strength, parent_seq]
+      payload_note: "固定 5 条或不足 5 条如实返回，不补假实体"
+      granularity: "跟随父库叶"
+      freshness: "weekly"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, entity_id, entity_type, name, strength, parent_seq]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-X-109, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft）"}
+        - {int_id: INT-A-TECH-111, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft，复用 109）"}
+      pages: [DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 为空，页面只来自 a_cards：DS-02-ENTITY"
+      - "C02：根节点 technology_id 未定，Top5 无法按稳定主键截取"
+    conflicts:
+      - "algorithm_type 保持 third_party。父久新行 algorithm_type=GRAPH，不改原值。"
+      - "本号不是影响力排序。影响力归 M_TECH_ENTITY_INFLUENCE，不并进本卡。"
+      - "久新行交付形态为 Python，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B06-02：Top5 的实体类型范围（人/机构/论文/专利）是否都在 105 边里，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-182]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 截 Top5。"
+      - "父快照缺失则空态，不以占位实体填满 5 条。"
+    test_points:
+      - "契约：parent_seq=105，条数不超过 5，字段含名称、类型、关联强度"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-507
+    layer: metric
+    metric_id: M_TECH_GRAPH_STRUCT
+    name: "技术点网图结构"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "页面派生 / 主挂母库叶 SRS-104，边来自 SRS-105"}
+    page_ref: [DS-02-TECHGRAPH]
+    dep_kind: [metric, graph]
+    metric_ids: [M_TECH_GRAPH_STRUCT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-104
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体识别构建"
+    parent_metric:
+      metric_id: M_TECH_GRAPH_104_1
+      seq: 104
+      jiuxin_row_id: SRS-104
+      fields: ["技术点实体集"]
+      field_note: "主挂 104。边来自 105 的技术–技术关联，不把本卡改挂 105，也不把布局配色另开 ID。对象=技术点主键去重；窗口=当前图快照。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读 104 实体集与 105 技术–技术边组成的子图投影。不在请求里现算布局。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/graph（draft，只读 ADS 投影）"
+      python: "无单独在线调用。子图装载属于 104/105 Job，不在本卡另起。"
+      downstream: "104 实体集 + 105 技术–技术边 → 子图投影"
+    inputs:
+      - {c_card: INT-C-TECH-151, table: "104 技术点实体集", fields: "技术点实体集", role: "母指标 seq 104"}
+      - {c_card: INT-C-TECH-152, table: "105 关系面", fields: "技术–技术边", role: "边，主挂仍是 104"}
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "顶点", role: "Tag 尚未建"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "技术–技术边", role: "读投影"}
+      - {c_card: INT-C-TECH-300, table: "技术点子图", fields: "nodes / edges", role: "读面"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "技术–技术边", role: "C04 边，尚未建"}
+    outputs:
+      c_card: null
+      delivery: "当前技术点子图结构（点去重、技术–技术边）"
+      snapshot_table: "跟随 104/105 投影，不另写结果表"
+      response_key_fields: [metric_id, period, nodes, edges, parent_metric_id, parent_seq]
+      payload_note: "层级、类型配色与布局是图壳，不进本号"
+      granularity: "当前图快照"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, technology_id]
+      response_key_fields: [metric_id, period, nodes, edges, parent_seq]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-102, page_ref: DS-02-TECHGRAPH, java: "POST /situation/v1/panorama/graph（draft）"}
+        - {int_id: INT-A-TECH-105, page_ref: DS-02-TECHGRAPH, java: "POST /situation/v1/panorama/graph（draft，只读 ADS 投影）"}
+      pages: [DS-02-TECHGRAPH]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读投影。装载在 lumen-algo-py 的 104/105 Job。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 为空，页面只来自 a_cards：DS-02-TECHGRAPH"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。父久新行 algorithm_type=GRAPH，不改原值。"
+      - "页面卡 INT-A-TECH-102 模式为 IP-08，INT-A-TECH-105 模式为 IP-05。本卡 integration_pattern 保持包内 IP-09，不改成现算。"
+      - "主挂 104。边输入来自 105，不因此把 jiuxin_row_id 改成 SRS-105。"
+    decision_needed:
+      - "DN-B06-02：子图展开深度未签，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 取子图。"
+      - "Tag 未建则空态，不以名称当 VID。"
+    test_points:
+      - "契约：parent_seq=104，点主键去重，边仅为技术–技术"
+      - "降级：104 或 105 投影缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-508
+    layer: metric
+    metric_id: M_TECH_PATH_CENTRALITY
+    name: "中心度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "IP-05 图自建 / 无久新专叶 / 关键节点识别输入"}
+    page_ref: [DS-02-PATH]
+    dep_kind: [algorithm, graph]
+    metric_ids: [M_TECH_PATH_CENTRALITY]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: trsgraph
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-05：批 Job 在 TRSGraph 上算中心度并写 ADS 投影。页面读投影。指标本体计异步。无久新行，但不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/key-paths（draft，节点带 centrality，只读投影）"
+      python: "lumen-algo-py 批 Job：nebula3 连 graphd 10.50.75.136:9669，写中心度投影（draft）。在线不现算。"
+      downstream: "TAG technology 子图 → ads_tech_graph_node_metric（SE-B06-01）"
+    inputs:
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "技术点顶点", role: "Tag 尚未建，主键待 technology_id"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "技术–技术边", role: "中心度的边"}
+      - {c_card: INT-C-TECH-300, table: "技术点子图", fields: "nodes / edges", role: "读面，不在请求里重算"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "技术–技术边", role: "C04 边，尚未建"}
+    outputs:
+      c_card: null
+      delivery: "技术点节点中心度，供关键节点识别"
+      snapshot_table: ads_tech_graph_node_metric
+      response_key_fields: [metric_id, period, algo_version, technology_id, centrality]
+      payload_note: "度、介数、PageRank 公式未签，不拆子号。禁止 mapped seq 116，禁止消费 M_SVC_GRAPH_*。"
+      granularity: "当前图快照"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, technology_id]
+      response_key_fields: [metric_id, period, technology_id, centrality]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-118, page_ref: DS-02-PATH, java: "POST /situation/v1/panorama/key-paths（draft）"}
+      pages: [DS-02-PATH]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "批算只在 lumen-algo-py。Java 只读投影，不写 nGQL。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "05 无专叶，库 missing 保持。赋号不是 mapped。"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。定义偏 GRAPH，b01 备注为 GRAPH 自建候选，与 third_party 不一致，不改原值。"
+      - "建议改由我方 Python 与 Nebula 计算：M_TECH_PATH_CENTRALITY、M_TECH_PATH_KEYNODE、M_TECH_PATH_PRIORITY 三条同一条 lumen-algo-py 批 Job，在 TRSGraph（graphd 10.50.75.136:9669）上算完写入 SE-B06-01。不向久新新要行，不改挂 seq 116，不用 M_SVC_GRAPH_*，不用 M_CHAIN_KEY_NODE_COUNT。本条是建议，不回写注册值。负责人未定（DN-02，唐绍祖）。"
+      - "A 卡 counterpart 为 none。本卡记 trsgraph，表示计算发生在我方 Nebula。"
+    decision_needed:
+      - "DN-02：是否改由我方计算未定，负责人唐绍祖。"
+      - "DN-B06-03：度 / 介数 / PageRank 取哪一种未签，不拆子号"
+    structure_escalation: true
+    structure_escalation_id: [SE-B06-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：批算在 lumen-algo-py。禁止 lumen 调用 demo-* 算中心度，space 名不得用 demo 前缀。"
+      - "Tag 未建或无 technology_id 时不跑 Job，页面空态。"
+    test_points:
+      - "契约：投影带 metric_id=M_TECH_PATH_CENTRALITY；Java 不返回 nGQL"
+      - "降级：Nebula 不可达则读最近投影；无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-509
+    layer: metric
+    metric_id: M_TECH_PATH_KEYNODE
+    name: "关键节点重要性"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "IP-05 图自建 / 无久新专叶 / 识别结果"}
+    page_ref: [DS-02-PATH]
+    dep_kind: [algorithm, graph, metric]
+    metric_ids: [M_TECH_PATH_KEYNODE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: trsgraph
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-05：与中心度同一条批 Job 写出是否关键节点。页面读投影。放大、变色、图标是前端壳，不另开 ID。无久新行，但不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/key-paths（draft，节点带 is_key，只读投影）"
+      python: "lumen-algo-py 批 Job：中心度阈值识别关键节点并写投影（draft）。在线不现算。"
+      downstream: "中心度投影 → is_key；回显可走 C04 technology.is_key_node，不新造 Tag"
+    inputs:
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "技术点顶点", role: "Tag 尚未建"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "技术–技术边", role: "与中心度同一张子图"}
+      - {c_card: INT-C-TECH-300, table: "技术点子图", fields: "nodes / edges", role: "读面"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "技术–技术边", role: "C04 边，尚未建"}
+      - {metric_id: M_TECH_PATH_CENTRALITY, table: ads_tech_graph_node_metric, fields: "centrality", role: "识别输入，同一 Job 内产出，不另要久新"}
+    outputs:
+      c_card: null
+      delivery: "关键节点识别结果。样式由前端壳完成。"
+      snapshot_table: ads_tech_graph_node_metric
+      response_key_fields: [metric_id, period, algo_version, technology_id, is_key, centrality]
+      payload_note: "禁止改挂 seq 131 深圳链。禁止 M_CHAIN_KEY_NODE_COUNT。"
+      granularity: "当前图快照"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code]
+      response_key_fields: [metric_id, period, technology_id, is_key]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-118, page_ref: DS-02-PATH, java: "POST /situation/v1/panorama/key-paths（draft）"}
+      pages: [DS-02-PATH]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "批算只在 lumen-algo-py。Java 只读投影。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "05 无专叶，missing 保持。赋号不是 mapped。"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。定义偏识别结果，b01 备注为 GRAPH 自建候选，不改原值。"
+      - "建议改由我方 Python 与 Nebula 计算：与 PATH_CENTRALITY、PATH_PRIORITY 同一条 lumen-algo-py 批 Job，在 TRSGraph 上识别关键节点后写入 SE-B06-01。不改挂 seq 131，不用 M_CHAIN_KEY_NODE_COUNT。不回写注册值。负责人未定（DN-02，唐绍祖）。"
+      - "样式（放大、变色、图标）是同一结果的前端壳，不另开指标。"
+    decision_needed:
+      - "DN-02：是否改由我方计算未定，负责人唐绍祖。"
+      - "DN-B06-03：关键节点阈值未签，本叶不裁"
+    structure_escalation: true
+    structure_escalation_id: [SE-B06-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：批算在 lumen-algo-py。禁止 lumen 调用 demo-* 标关键节点。"
+      - "无中心度投影则本指标空态，不在浏览器现算。"
+    test_points:
+      - "契约：is_key 与同一期中心度投影一致；响应不含深圳链计数"
+      - "降级：无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-510
+    layer: metric
+    metric_id: M_TECH_PATH_PRIORITY
+    name: "节点优先级 / 重要度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "IP-05 图自建 / 无久新专叶 / 重要度级别"}
+    page_ref: [DS-02-PATH]
+    dep_kind: [algorithm, graph, metric]
+    metric_ids: [M_TECH_PATH_PRIORITY]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-05
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: trsgraph
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-05：与中心度、关键节点同一条批 Job 写出重要度级别，供筛选。页面读投影。筛选壳不另开 ID。无久新行，但不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/key-paths（draft，带 priority_level 过滤，只读投影）"
+      python: "lumen-algo-py 批 Job：同一子图写出重要度级别（draft）。在线不现算。"
+      downstream: "与中心度同一投影 ads_tech_graph_node_metric（SE-B06-01）"
+    inputs:
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "技术点顶点", role: "Tag 尚未建"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "技术–技术边", role: "同一张子图"}
+      - {c_card: INT-C-TECH-300, table: "技术点子图", fields: "nodes / edges", role: "读面"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "技术–技术边", role: "C04 边，尚未建"}
+      - {metric_id: M_TECH_PATH_CENTRALITY, table: ads_tech_graph_node_metric, fields: "centrality", role: "同识别族输入"}
+    outputs:
+      c_card: null
+      delivery: "节点重要度级别，供筛选。识别结果本身在 KEYNODE。"
+      snapshot_table: ads_tech_graph_node_metric
+      response_key_fields: [metric_id, period, algo_version, technology_id, priority_level]
+      payload_note: "与 KEYNODE 同识别族、半成品分行。missing 保持。赋号不是 mapped。"
+      granularity: "当前图快照"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, priority_level]
+      response_key_fields: [metric_id, period, technology_id, priority_level]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-120, page_ref: DS-02-PATH, java: "POST /situation/v1/panorama/key-paths（draft）"}
+      pages: [DS-02-PATH]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "批算只在 lumen-algo-py。Java 只读投影。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "05 无专叶，missing 保持"
+      - "C02：技术点没有 technology_id（INT-C-TECH-180）"
+      - "C04：TAG technology 尚未建（INT-C-TECH-300）"
+    conflicts:
+      - "algorithm_type 保持 third_party。不因建议自建而改成 GRAPH。"
+      - "建议改由我方 Python 与 Nebula 计算：与 PATH_CENTRALITY、PATH_KEYNODE 同一条 lumen-algo-py 批 Job，在 TRSGraph 上写出重要度级别并写入 SE-B06-01。不回写注册值。负责人未定（DN-02，唐绍祖）。"
+      - "页面卡 INT-A-TECH-120 的 integration_pattern 写成 IP-09。本卡保持包内 b01.pattern=IP-05，不改模式编号。"
+    decision_needed:
+      - "DN-02：是否改由我方计算未定，负责人唐绍祖。"
+      - "DN-B06-03：重要度级别档数未签，本叶不裁"
+    structure_escalation: true
+    structure_escalation_id: [SE-B06-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-180, INT-C-TECH-300]
+    risks:
+      - "D12：批算在 lumen-algo-py。禁止 lumen 调用 demo-* 算重要度。"
+      - "无中心度投影则本指标空态。"
+    test_points:
+      - "契约：priority_level 与同一期中心度投影一致，且 metric_id 不是 KEYNODE"
+      - "降级：无投影则空态；筛选无结果时空列表"
+    confidence: medium
+
+  - int_id: INT-B-TECH-511
+    layer: metric
+    metric_id: M_TECH_REL_STRENGTH
+    name: "技术关联强度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "页面派生 / 母库叶 SRS-105 / 弦线图线粗"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_REL_STRENGTH]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-105
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术实体关系抽取"
+    parent_metric:
+      metric_id: M_TECH_GRAPH_105_1
+      seq: 105
+      jiuxin_row_id: SRS-105
+      fields: ["技术–技术边权"]
+      field_note: "编码为本页弦线图线粗。影响路径=弦上关系流向可视化，不是 DS-02 关键路径，不是中心度。边权内部默认随 seq 105。决策 Q126 只登记。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-105 快照边权，映射为弦线粗细。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset（draft，relations[].strength 只读 ADS 投影）"
+      python: "无单独在线调用。边权随 105 抽取 Job 写入投影。"
+      downstream: "父指标 M_TECH_GRAPH_105_1 的 ADS 投影（INT-C-TECH-152）"
+    inputs:
+      - {c_card: INT-C-TECH-152, table: "105 关系面快照", fields: "技术–技术边权", role: "母指标 seq 105"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "边权", role: "读投影"}
+      - {c_card: INT-C-TECH-340, table: tech_relation, fields: "边权", role: "C04 边，尚未建"}
+      - {c_card: INT-C-TECH-341, table: produces, fields: "边权", role: "弦线图若含实体–技术边，仍读 105，不另要"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：弦线图线粗"
+      snapshot_table: "跟随 105 投影，不另写结果表"
+      response_key_fields: [metric_id, period, src_id, dst_id, strength, parent_metric_id, parent_seq]
+      payload_note: "线粗是展示编码，不另开 ID。不是中心度，不是关键路径。"
+      granularity: "跟随父库叶"
+      freshness: "weekly"
+    contract_draft:
+      request: [technology_id, domain_code]
+      response_key_fields: [metric_id, period, src_id, dst_id, strength, parent_seq]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-317, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset（draft）"}
+        - {int_id: INT-A-TECH-318, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/detail/{technologyId}（draft）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。抽取在 lumen-algo-py 的 105 Job。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 为空，页面只来自 a_cards：DS-03-RESULT"
+      - "久新行确认为待确认，确认归父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。父久新行 algorithm_type=GRAPH，不改原值。"
+      - "页面卡 INT-A-TECH-318 的模式是 IP-11（快照横切）。本卡 integration_pattern 保持 IP-09。"
+      - "本号不是 M_TECH_PATH_CENTRALITY，也不是 DS-02 关键路径。决策 Q126 只登记，不代甲方裁口径。"
+      - "久新行交付形态为 Python，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "Q126：关联强度口径未定，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: []
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 算线粗。"
+      - "父快照缺失则弦线空态，不以默认粗细填数。"
+    test_points:
+      - "契约：strength 与父快照边权一致，parent_seq=105，metric_id 不是中心度"
+      - "降级：父快照缺失则空态"
+    confidence: medium

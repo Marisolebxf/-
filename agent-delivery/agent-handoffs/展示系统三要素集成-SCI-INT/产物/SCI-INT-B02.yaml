@@ -1,0 +1,754 @@
+# SCI-INT-B02 人才深度模型 10 条（metric 层）
+# 真源：产物/_prep/B02-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-TAL-100～199
+task_id: SCI-INT-B02
+scope_count: 10
+card_count: 10
+gap: []
+pattern: IP-08
+execution_count: {async: 10, sync: 0}
+structure_escalations:
+  - id: SE-B02-01
+    owner: "human:李伟"
+    tables: [ads_sci_result_snapshot, ads_sci_jiuxin_adapter_cache]
+    reason: "IP-11 结果快照与 IP-08 适配层缓存为新表，10 条共用；页面只读快照"
+  - id: SE-B02-02
+    owner: "human:李伟"
+    tables: ["dwd_talent_flow"]
+    cards: [INT-B-TAL-101, INT-B-TAL-108]
+    reason: "INT-C-TAL-071 建议的人才流动/任职变迁边表，包内表名未定，本叶暂用 dwd_talent_flow"
+jiuxin_rows: [SRS-156, SRS-157, SRS-158, SRS-159, SRS-160, SRS-161, SRS-162, SRS-163, SRS-164, SRS-165]
+cards:
+  - int_id: INT-B-TAL-100
+    layer: metric
+    metric_id: M_TALENT_DEEP_156_1
+    name: "重点人才识别模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-156 / 重点人才识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_156_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-156
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "重点人才识别模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_156_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-156 重点人才识别结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据"}
+      - {c_card: INT-C-TAL-004, table: dwd_scholar_talent_flag, fields: "包内未给列名", role: "人才标识"}
+      - {c_card: INT-C-TAL-006, table: dwd_scholar_paper_relation, fields: "包内未给列名", role: "论文关系"}
+      - {c_card: INT-C-TAL-007, table: dwd_scholar_papers, fields: "包内未给列名", role: "论文"}
+    outputs:
+      c_card: INT-C-TAL-043
+      delivery: "久新 API-156 重点人才识别结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-156 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "入站表列名本包未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-156 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+      - "R2：久新 API 未确认，SLA 未知；无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TALENT_DEEP_156_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TAL-101
+    layer: metric
+    metric_id: M_TALENT_DEEP_157_1
+    name: "人才流动追踪模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-157 / 人才流动追踪模型"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-14-TALENT-REGION, DS-26-ECO]
+    dep_kind: [data, algorithm, service, graph]
+    metric_ids: [M_TALENT_DEEP_157_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-157
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才流动追踪模型"
+    jiuxin_graph_rows_referenced: [SRS-110, SRS-111, SRS-114]
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_157_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-157 人才流动追踪结果集 → ads_sci_result_snapshot；图谱读面另见 INT-C-TAL-310 / INT-C-TAL-351 / INT-C-ORG-320"
+    inputs:
+      - {c_card: INT-C-TAL-002, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "工作经历，流动轨迹"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "境内机构"}
+      - {c_card: INT-C-TAL-025, table: dwd_forg_base_info, fields: "包内未给列名", role: "境外机构"}
+      - {c_card: INT-C-TAL-026, table: "dim_code_region / dim_code_country / dim_region_scope(_g20)", fields: "包内未给列名", role: "区划与国家维"}
+      - {c_card: INT-C-TAL-071, table: dwd_talent_flow, fields: "包内未给列名，表名未定", role: "人才流动/任职变迁边，新表"}
+      - {c_card: INT-C-TAL-310, table: "人才图谱（SRS-110）", fields: "包内未给列名", role: "图谱读面依赖，非本模型入参表"}
+      - {c_card: INT-C-TAL-351, table: "流动统计投影 / 子图（SRS-111）", fields: "包内未给列名", role: "图谱读面依赖"}
+      - {c_card: INT-C-ORG-320, table: "机构图谱（SRS-114）", fields: "包内未给列名", role: "机构顶点读面依赖"}
+    outputs:
+      c_card: INT-C-TAL-044
+      delivery: "久新 API-157 人才流动追踪结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02:
+        - {seq: 246, name: "人才流动和迁移图示", page: DS-13-TALENT-GLOBAL}
+        - {seq: 252, name: "人才迁徙情况展示", page: DS-13-TALENT-GLOBAL}
+        - {seq: 256, name: "区域动态筛选与趋势追踪", page: DS-13-TALENT-GLOBAL}
+        - {seq: 267, name: "人才分布迁徙图", page: DS-14-TALENT-REGION}
+        - {seq: 490, name: "人才年度增量与成长趋势", page: DS-26-ECO}
+      a_cards: []
+      pages: [DS-13-TALENT-GLOBAL, DS-14-TALENT-REGION, DS-26-ECO]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照；图谱读面走 lumen-algo-py /internal/graph/*"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-157 确认为待确认"
+      - "a_cards 为空；页面只来自 srs_refs_02"
+      - "流动边表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-157 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-03：dwd_talent_flow 是否单独立表，升 human:李伟（SE-B02-02）"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01, SE-B02-02]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+      - "图谱行 SRS-110 / SRS-111 / SRS-114 由 C 卡引用，本叶不新增久新要求，归属 B03/C04。"
+      - "Java 不写 nGQL。"
+    test_points:
+      - "契约：迁徙类页面只读本 metric 快照，不直连久新"
+      - "降级：外呼超时读上一版快照；流动边表缺失时流动图空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-102
+    layer: metric
+    metric_id: M_TALENT_DEEP_158_1
+    name: "高校学院新培育人才模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-158 / 高校学院新培育人才模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_158_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-158
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "高校学院新培育人才模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_158_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-158 高校学院新培育人才结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-002, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "工作经历"}
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "教育背景"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "高校机构"}
+    outputs:
+      c_card: INT-C-TAL-045
+      delivery: "久新 API-158 高校学院新培育人才结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, org_id]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-158 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-158 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+    test_points:
+      - "契约：快照 metric_id=M_TALENT_DEEP_158_1"
+      - "降级：久新超时读上一版快照，无快照则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-103
+    layer: metric
+    metric_id: M_TALENT_DEEP_159_1
+    name: "深圳重点人才优势和短板分析模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-159 / 深圳重点人才优势和短板分析模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_159_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-159
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳重点人才优势和短板分析模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_159_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-159 深圳重点人才优势短板结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "机构"}
+      - {c_card: INT-C-TAL-026, table: "dim_code_region / dim_code_country / dim_region_scope(_g20)", fields: "包内未给列名", role: "深圳地理范围"}
+    outputs:
+      c_card: INT-C-TAL-046
+      delivery: "久新 API-159 深圳重点人才优势短板结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到。优势/短板分项在 payload 内，本包未列字段。"
+      granularity: "对象范围含深圳；统计窗口以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "深圳"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-159 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-159 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+    test_points:
+      - "契约：快照 metric_id=M_TALENT_DEEP_159_1，地理范围可过滤深圳"
+      - "降级：久新超时读上一版快照，无快照则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-104
+    layer: metric
+    metric_id: M_TALENT_DEEP_160_1
+    name: "人才关系链模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-160 / 人才关系链模型"}
+    page_ref: [DS-15-TALENT-PROFILE, DS-16-TALENT-RECRUIT]
+    dep_kind: [data, algorithm, service, graph]
+    metric_ids: [M_TALENT_DEEP_160_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-160
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才关系链模型"
+    jiuxin_graph_rows_referenced: [SRS-111]
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_160_1（draft，只读快照）；图谱子图 Feign /internal/graph/*"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层）；读面 lumen-algo-py /internal/graph/talent-net（draft）"
+      downstream: "久新 API-160 人才关系链结果集 → ads_sci_result_snapshot；EDGE 读 TRSGraph"
+    inputs:
+      - {c_card: INT-C-TAL-008, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "合作者"}
+      - {c_card: INT-C-TAL-014, table: dwd_rel_project_scholar, fields: "包内未给列名", role: "项目-人才关系"}
+      - {c_card: INT-C-TAL-061, table: "人才相关 EDGE（合作 / 任职 / 毕业 / 项目共参 / 流动）", fields: "包内未给列名", role: "图谱边，Java 不写 nGQL"}
+      - {c_card: INT-C-TAL-310, table: "人才图谱（SRS-110）", fields: "包内未给列名", role: "图谱读面依赖"}
+      - {c_card: INT-C-TAL-350, table: "人才网络（SRS-111 + SRS-160）", fields: "包内未给列名", role: "关系链读面"}
+      - {c_card: INT-C-TAL-352, table: "人才网络（SRS-111 + SRS-160）", fields: "包内未给列名", role: "关系链读面"}
+    outputs:
+      c_card: INT-C-TAL-047
+      delivery: "久新 API-160 人才关系链结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "关系边与节点业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [scholar_ref, time_range, relation_type]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02:
+        - {seq: 283, name: "关联数据展示", page: DS-15-TALENT-PROFILE}
+        - {seq: 285, name: "关联关系挖掘", page: DS-15-TALENT-PROFILE}
+        - {seq: 297, name: "合作关系可视化展示", page: DS-15-TALENT-PROFILE}
+        - {seq: 299, name: "智能发现与动态刷新", page: DS-15-TALENT-PROFILE}
+        - {seq: 300, name: "合作详情与溯源", page: DS-15-TALENT-PROFILE}
+        - {seq: 303, name: "智能挖掘与趋势分析", page: DS-15-TALENT-PROFILE}
+        - {seq: 312, name: "过往合作情况回溯", page: DS-16-TALENT-RECRUIT}
+        - {seq: 313, name: "个人科研活跃度与合作网络分析", page: DS-16-TALENT-RECRUIT}
+      a_cards: []
+      pages: [DS-15-TALENT-PROFILE, DS-16-TALENT-RECRUIT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py；Java 只读快照或 Feign 调 /internal/graph/*"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-160 确认为待确认"
+      - "a_cards 为空；页面只来自 srs_refs_02"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-160 接口文档、鉴权、QPS、SLA 仍为待确认"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+      - "EDGE 是否缺类型归 C04；本叶不新开边表。Java 不写 nGQL。禁止用 Neo4j。"
+      - "SRS-111 为图谱读面引用，不作为本叶新增久新行。"
+    test_points:
+      - "契约：画像页与引进页的合作网络读同一快照或同一子图接口"
+      - "降级：久新超时读上一版关系链快照；图谱不可用时网络区空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-105
+    layer: metric
+    metric_id: M_TALENT_DEEP_161_1
+    name: "人才供需分析评价模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-161 / 人才供需分析评价模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_161_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-161
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才供需分析评价模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_161_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-161 人才供需分析评价结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才供给侧主数据"}
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "培养供给"}
+    outputs:
+      c_card: INT-C-TAL-048
+      delivery: "久新 API-161 人才供需分析评价结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "供需评价业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-161 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-161 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+    test_points:
+      - "契约：快照 metric_id=M_TALENT_DEEP_161_1"
+      - "降级：久新超时读上一版快照，无快照则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-106
+    layer: metric
+    metric_id: M_TALENT_DEEP_162_1
+    name: "人才学术力评估模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-162 / 人才学术力评估模型"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-15-TALENT-PROFILE, DS-01-FACTORS]
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_162_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-162
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才学术力评估模型"
+    jiuxin_co_rows: [DS-08-VIZ-001, DS-08-VIZ-004]
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。A 卡写明适配器超时 2s/10s 后熔断并读快照。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/influence?type=scholar（draft，INT-A-TAL-021；只读快照）"
+      python: "POST /internal/v1/sci/talent/academic-power（draft，lumen-algo-py 久新适配器；超时 2s/10s，熔断后读快照）"
+      downstream: "久新 API-162 人才学术力评估结果集（含展示同交 DS-08-VIZ-001 / DS-08-VIZ-004，不单独再要）→ ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据"}
+      - {c_card: INT-C-TAL-006, table: dwd_scholar_paper_relation, fields: "包内未给列名", role: "论文关系"}
+      - {c_card: INT-C-TAL-007, table: dwd_scholar_papers, fields: "包内未给列名", role: "论文"}
+    outputs:
+      c_card: INT-C-TAL-049
+      delivery: "久新 API-162 人才学术力评估结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "学术力分值等业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, scholar_ref]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02:
+        - {seq: 258, name: "科研成果统计", page: DS-13-TALENT-GLOBAL}
+        - {seq: 259, name: "学术影响力分析", page: DS-13-TALENT-GLOBAL}
+        - {seq: 288, name: "多维度分析展示", page: DS-15-TALENT-PROFILE}
+        - {seq: 290, name: "人才引进评估", page: DS-15-TALENT-PROFILE}
+      a_cards:
+        - {int_id: INT-A-TAL-021, page_ref: DS-01-FACTORS, srs_row: 14}
+      pages: [DS-13-TALENT-GLOBAL, DS-15-TALENT-PROFILE, DS-01-FACTORS]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 走 A 卡草案 POST /situation/v1/influence?type=scholar"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-162 确认为待确认"
+      - "展示同交行 DS-08-VIZ-001 / DS-08-VIZ-004 不在 a_cards 内，只记同交"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-162 接口文档、鉴权、QPS、SLA 仍为待确认"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+      - "DS-08-VIZ-001 / DS-08-VIZ-004 与库叶同交，按 IP-08 不单独再向久新要接口。"
+    test_points:
+      - "契约：DS-01-FACTORS 与 DS-13 / DS-15 读同一学术力快照"
+      - "降级：2s/10s 超时或熔断后读快照；无快照则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-107
+    layer: metric
+    metric_id: M_TALENT_DEEP_163_1
+    name: "人才产业力评估模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-163 / 人才产业力评估模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_163_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-163
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才产业力评估模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_163_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-163 人才产业力评估结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-014, table: dwd_rel_project_scholar, fields: "包内未给列名", role: "项目参与"}
+      - {c_card: INT-C-TAL-019, table: dwd_patent, fields: [inventors], role: "专利发明人"}
+      - {c_card: INT-C-TAL-020, table: dwd_zh_project, fields: [project_host, participants], role: "项目主持与参与"}
+      - {c_card: INT-C-TAL-022, table: dwd_org_executive_info, fields: "包内未给列名", role: "境内机构高管"}
+      - {c_card: INT-C-TAL-023, table: dwd_forg_executive_info, fields: "包内未给列名", role: "境外机构高管"}
+    outputs:
+      c_card: INT-C-TAL-050
+      delivery: "久新 API-163 人才产业力评估结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "产业力分值等业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, scholar_ref]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-163 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-163 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+    test_points:
+      - "契约：快照 metric_id=M_TALENT_DEEP_163_1；专利侧只用 inventors"
+      - "降级：久新超时读上一版快照，无快照则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-108
+    layer: metric
+    metric_id: M_TALENT_DEEP_164_1
+    name: "招入人才推荐模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-164 / 招入人才推荐模型"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-16-TALENT-RECRUIT]
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_164_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-164
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "招入人才推荐模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。推荐列表不在请求时现算。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_164_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-164 招入人才推荐结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "候选人主数据"}
+      - {c_card: INT-C-TAL-005, table: dwd_scholar_research_direction, fields: "包内未给列名", role: "研究方向"}
+      - {c_card: INT-C-TAL-071, table: dwd_talent_flow, fields: "包内未给列名，表名未定", role: "流动/任职变迁，新表"}
+    outputs:
+      c_card: INT-C-TAL-051
+      delivery: "久新 API-164 招入人才推荐结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "推荐名单与匹配分以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, org_id]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02:
+        - {seq: 263, name: "人才评估与匹配度分析", page: DS-13-TALENT-GLOBAL}
+        - {seq: 307, name: "智能分析与推荐", page: DS-16-TALENT-RECRUIT}
+        - {seq: 308, name: "学者适应性评估", page: DS-16-TALENT-RECRUIT}
+        - {seq: 324, name: "多维综合评价与评分", page: DS-16-TALENT-RECRUIT}
+        - {seq: 326, name: "专家智能推荐", page: DS-16-TALENT-RECRUIT}
+      a_cards: []
+      pages: [DS-13-TALENT-GLOBAL, DS-16-TALENT-RECRUIT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-164 确认为待确认"
+      - "a_cards 为空；页面只来自 srs_refs_02"
+      - "流动边表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-164 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-03：dwd_talent_flow 是否单独立表，升 human:李伟（SE-B02-02）"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01, SE-B02-02]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+      - "推荐是异步快照，切换筛选条件不得在浏览器里伪造推荐分。"
+    test_points:
+      - "契约：DS-16 推荐列表与 DS-13 匹配度读同一 metric 快照"
+      - "降级：久新超时读上一版推荐快照；无快照则空态，不回落 Mock"
+    confidence: medium
+
+  - int_id: INT-B-TAL-109
+    layer: metric
+    metric_id: M_TALENT_DEEP_165_1
+    name: "培育人才布局模型"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TALENT-DEEP-165 / 培育人才布局模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TALENT_DEEP_165_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-165
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "培育人才布局模型"
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/deep/result?metric_id=M_TALENT_DEEP_165_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/talent/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-165 培育人才布局结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "教育背景"}
+      - {c_card: INT-C-TAL-005, table: dwd_scholar_research_direction, fields: "包内未给列名", role: "研究方向"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "布局所在机构"}
+    outputs:
+      c_card: INT-C-TAL-052
+      delivery: "久新 API-165 培育人才布局结果集"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "布局结果业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-165 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与注册表/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL，本卡调用方式按 B01 模式 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B02-01：SRS-165 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B02-02：本指标未挂展示页，是否只服务专题 SRS-TALENT"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：本包 python 落点为 lumen-algo-py，未见 demo-algo-science。正式实现禁止 lumen 调用 demo-algo-science 或任何 demo-* 服务。"
+    test_points:
+      - "契约：快照 metric_id=M_TALENT_DEEP_165_1"
+      - "降级：久新超时读上一版快照，无快照则空态"
+    confidence: medium

@@ -1,0 +1,534 @@
+# SCI-INT-A13 · 关注地区人才态势 · 页面级系统集成依赖卡片
+# 范围：excel_row 269–279（seq 266–276，11 叶）
+# 页面：DS-14-TALENT-REGION；号段沿用 INT-A-X-1200–1210
+# 材料：产物/_prep/A13-pack.yaml。未扫代码仓。底图、现网路由、lumen/demo 页面文件材料未给，记未核实
+# 人数额外消费同页 SQL-98（M_TALENT_BASE_98_1 / SRS-98）。迁徙只挂材料包已给的 DEEP_157。报告不新要久新行
+
+task_id: SCI-INT-A13
+scope_count: 11
+card_count: 11
+gap: []
+china_map_verdict:
+  question: 中国人才分布地图的人数来源与底图
+  excel_row: 269
+  int_id: INT-A-X-1200
+  source_class: 久新
+  metric_id: M_TALENT_BASE_98_1
+  jiuxin_row_id: SRS-98
+  pattern: IP-06
+  basemap: 未核实
+  conclusion: 材料包本行 metrics 为空。需规要各省市数量，同页 273 已挂 SQL-98，本卡额外消费，不另造指标、不新建主维。底图瓦片与行政区边界材料包没有，未核实。省/市码是否已在区划表里，材料包没有，未核实。现网路由未给，fe_route 保持 null。
+shenzhen_map_verdict:
+  question: 深圳重点领域人才地图的人数、底图与区/园区粒度
+  excel_row: 274
+  int_id: INT-A-X-1205
+  source_class: 久新
+  metric_id: M_TALENT_BASE_98_1
+  jiuxin_row_id: SRS-98
+  pattern: IP-06
+  basemap: 未核实
+  structure_escalation: INT-A-X-1205
+  conclusion: 人数与领域分布读 SQL-98（材料包已挂）。底图未核实。需规要行政区、科技产业园、创新载体逐级，材料包没有这级维表，本卡升结构，不在 Java 现场聚合，也不新造久新行。
+report_export_verdict:
+  question: 地图数据导出与智能报告生成依赖谁
+  excel_row: 279
+  int_id: INT-A-X-1210
+  source_class: 未核实
+  jiuxin_new_row: false
+  pattern: IP-10
+  conclusion: 材料包无指标、无久新行。地图数据导出复用已加载的 SQL-98 快照，前端落文件，不新要久新接口。智能报告的模型、模板和生成服务材料没有，未核实。确认前 IP-10，不出报告，不向久新要假 API。
+cards:
+- int_id: INT-A-X-1200
+  layer: page
+  srs:
+    excel_row: 269
+    seq: 266
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/中国科技人才态势/中国科技人才分布地图
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-06
+  ours: [frontend, java_facade, etl]
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/china-distribution (draft；材料包未给现网路由与 Java 门面，未核实)"
+    python: "在线链路不经 Python；离线 ETL 执行久新 SQL-98 落 ADS（draft）"
+    downstream: "久新 SQL-98（SRS-98，IP-06）。底图瓦片与行政区边界未核实。不新建主维，Java 不现场扫三方库"
+  contract_draft:
+    request: [region_scope, geo_level, domain_code, time_range]
+    response_key_fields: [region_code, region_name, headcount, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: province_city}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "metric_missing:人才密度。需规要密度，面积分母材料包没有，未核实。确认前只出人数，不出密度"
+  - "底图与省/市边界未核实"
+  conflicts:
+  - "CF-A13-1 材料包 row 269 metrics 为空，人数额外消费同页 273 的 M_TALENT_BASE_98_1"
+  decision_needed: [DN-A13-01]
+  structure_escalation: false
+  risks: [R-A13-1]
+  test_points:
+  - "省/市人数与 ADS 聚合一致，前端不二次计数"
+  - "密度分母未核实前热力只表示人数，不显示密度"
+  confidence: medium
+- int_id: INT-A-X-1201
+  layer: page
+  srs:
+    excel_row: 270
+    seq: 267
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/中国科技人才态势/人才分布迁徙图
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_DEEP_157_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-157
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/china-migration (draft；门面未核实。事件定义未拍板时返回空态)"
+    python: "POST /internal/talent/flow-track (draft；Python 适配久新 API-157，Java 不直连久新)"
+    downstream: "久新 API-157（SRS-157，IP-08）。迁徙事件定义未核实。禁止用任职履历自行差分"
+  contract_draft:
+    request: [region_scope, domain_code, time_range, flow_type]
+    response_key_fields: [from_region, to_region, flow_count, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: province_city}
+    freshness: unknown
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "迁徙事件（职位变动、跨省、换机构）材料包没有定义，未核实。确认前空态"
+  conflicts:
+  - "CF-A13-2 材料包 row 270 的 srs_text 复述 269 的分布、热力、区域比较，与叶名迁徙图不一致。集成按叶名和已挂 DEEP_157"
+  decision_needed: [DN-A13-04]
+  structure_escalation: false
+  risks: [R-A13-4]
+  test_points:
+  - "事件定义未拍板时迁徙图空态，不用人数热力顶替"
+  - "Java 不差分任职履历"
+  confidence: medium
+- int_id: INT-A-X-1202
+  layer: page
+  srs:
+    excel_row: 271
+    seq: 268
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/中国科技人才态势/地图操作功能
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric, service]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: jiuxin
+  delivery_form: none
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/china-distribution (draft；与 1200 同一快照，按 geo_level 切片。门面未核实)"
+    python: "在线链路不经 Python（读 1200 的 ADS 快照，IP-09）"
+    downstream: "读 INT-A-X-1200 同一聚合。缩放与滚轮只改镜头。点击省份/城市读该区域统计。搜索定位的地理编码未核实"
+  contract_draft:
+    request: [region_scope, geo_level, region_code, domain_code, time_range]
+    response_key_fields: [region_code, region_name, headcount, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: province_city}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "metric_missing:代表性专家名单。点击弹层的人数读 1200；专家名单无注册指标、无久新行"
+  - "搜索后自动定位所用的地理编码材料包没有，未核实"
+  conflicts: []
+  decision_needed: [DN-A13-01]
+  structure_escalation: false
+  risks: [R-A13-1]
+  test_points:
+  - "缩放不新请求久新，只切 1200 快照的 geo_level"
+  - "专家名单无指标时弹层只出人数，不编造专家"
+  confidence: medium
+- int_id: INT-A-X-1203
+  layer: page
+  srs:
+    excel_row: 272
+    seq: 269
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/中国科技人才态势/筛选与搜索功能
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: jiuxin
+  delivery_form: none
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/china-distribution (draft；domain_code / 关键词只作 1200 快照的筛选。门面未核实)"
+    python: "在线链路不经 Python（IP-09）"
+    downstream: "读 INT-A-X-1200。领域码材料包没有标准清单，未核实。关键词定位到区域，不新造检索索引"
+  contract_draft:
+    request: [domain_code, keyword, region_scope, time_range]
+    response_key_fields: [region_code, region_name, headcount, matched, metric_id, snapshot_id]
+    granularity: {time: year, geo: province_city}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "领域码与关键词词表材料包没有，未核实。确认前筛选项只使用快照里已有的 domain_code"
+  conflicts: []
+  decision_needed: [DN-A13-05]
+  structure_escalation: false
+  risks: [R-A13-5]
+  test_points:
+  - "筛选不另向久新要 SQL"
+  - "词表未核实时不出现写死的专业方向枚举"
+  confidence: medium
+- int_id: INT-A-X-1204
+  layer: page
+  srs:
+    excel_row: 273
+    seq: 270
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/中国科技人才态势/动态统计与对比
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-06
+  ours: [frontend, java_facade, etl]
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/china-rank (draft；门面未核实。Java 只读 ADS，不现场排序三方库)"
+    python: "在线链路不经 Python；离线 ETL 执行久新 SQL-98 落 ADS（draft）"
+    downstream: "久新 SQL-98（SRS-98，IP-06）。排行与人数历史趋势用同一聚合的 period。流动曲线不在本 SQL"
+  contract_draft:
+    request: [region_scope, domain_code, time_range, compare_regions]
+    response_key_fields: [region_code, rank, headcount, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: province_city}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "metric_missing:人才流动历史曲线。数量排行与数量趋势读 SQL-98；流动不拿人数顶替"
+  conflicts: []
+  decision_needed: [DN-A13-04]
+  structure_escalation: false
+  risks: [R-A13-4]
+  test_points:
+  - "排行顺序与 ADS 聚合一致"
+  - "流动序列无指标时该曲线空态"
+  confidence: medium
+- int_id: INT-A-X-1205
+  layer: page
+  srs:
+    excel_row: 274
+    seq: 271
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/重点技术领域人才地图
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-06
+  ours: [frontend, java_facade, etl]
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/shenzhen-domain-map (draft；门面未核实。Java 只读 ADS)"
+    python: "在线链路不经 Python；离线 ETL 执行久新 SQL-98 落 ADS（draft）"
+    downstream: "久新 SQL-98（SRS-98，IP-06）。底图未核实。区/园区/创新载体粒度无表，升结构，不新建久新行"
+  contract_draft:
+    request: [city_scope, geo_level, domain_code, time_range]
+    response_key_fields: [region_code, region_name, domain_code, headcount, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: district_park}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "底图未核实"
+  - "需规点名的人工智能、生物医药、新材料、通信技术、高端制造没有标准领域码，未核实"
+  - "行政区、科技产业园、创新载体三级没有维表"
+  conflicts: []
+  decision_needed: [DN-A13-01, DN-A13-02, DN-A13-05]
+  structure_escalation: true
+  risks: [R-A13-1, R-A13-2]
+  test_points:
+  - "园区与载体码表未落地前，地图只到材料能支撑的层级，不编造园区边界"
+  - "Java 不按园区现场 GROUP BY 三方库"
+  confidence: low
+- int_id: INT-A-X-1206
+  layer: page
+  srs:
+    excel_row: 275
+    seq: 272
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/人才分布信息查询
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric, service]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: jiuxin
+  delivery_form: none
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/shenzhen-domain-map (draft；点击区域读 1205 快照。门面未核实)"
+    python: "在线链路不经 Python（IP-09）"
+    downstream: "人数与领域分布读 INT-A-X-1205。画像、学历、成长趋势、合作网络无本行指标"
+  contract_draft:
+    request: [region_code, domain_code, time_range]
+    response_key_fields: [region_code, headcount, domain_code, metric_id, snapshot_id]
+    granularity: {time: year, geo: district_park}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "metric_missing:学历结构、成长趋势、合作网络、代表性人才简介。数量与领域分布读 SQL-98 快照；其余子块无注册指标"
+  conflicts: []
+  decision_needed: [DN-A13-02]
+  structure_escalation: false
+  risks: [R-A13-2]
+  test_points:
+  - "弹层人数与 1205 一致"
+  - "无指标的画像子块空态，不拿 demo 文案填"
+  confidence: low
+- int_id: INT-A-X-1207
+  layer: page
+  srs:
+    excel_row: 276
+    seq: 273
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/地图操作
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: jiuxin
+  delivery_form: none
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/shenzhen-domain-map (draft；与 1205 同一快照。门面未核实)"
+    python: "在线链路不经 Python（IP-09）"
+    downstream: "读 INT-A-X-1205。多级放大、滚轮、漫游只改镜头。跳转定位的地理编码未核实"
+  contract_draft:
+    request: [city_scope, geo_level, region_code, domain_code, time_range]
+    response_key_fields: [region_code, region_name, headcount, metric_id, snapshot_id]
+    granularity: {time: year, geo: district_park}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "跳转定位与地块级放大所用底图、地理编码未核实。码表未落地前不允许放大到编造的地块"
+  conflicts: []
+  decision_needed: [DN-A13-01, DN-A13-02]
+  structure_escalation: false
+  risks: [R-A13-1, R-A13-2]
+  test_points:
+  - "滚轮与拖拽不新请求久新"
+  - "无园区码时定位停在已有层级"
+  confidence: low
+- int_id: INT-A-X-1208
+  layer: page
+  srs:
+    excel_row: 277
+    seq: 274
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/筛选与搜索功能
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: jiuxin
+  delivery_form: none
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/shenzhen-domain-map (draft；领域与关键词筛选 1205 快照。门面未核实)"
+    python: "在线链路不经 Python（IP-09）"
+    downstream: "读 INT-A-X-1205。姓名、单位、研究方向检索无本行索引。学历与职称列材料包没有"
+  contract_draft:
+    request: [domain_code, keyword, city_scope, time_range]
+    response_key_fields: [region_code, domain_code, headcount, matched, metric_id, snapshot_id]
+    granularity: {time: year, geo: district_park}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "学历、职称筛选列材料包没有，未核实。确认前只提供领域与关键词，不出现学历职称筛选项"
+  - "按姓名或单位跳转无注册检索，未核实。确认前关键词只匹配快照里的区域与领域"
+  conflicts: []
+  decision_needed: [DN-A13-05]
+  structure_escalation: false
+  risks: [R-A13-5]
+  test_points:
+  - "筛选不另向久新要接口"
+  - "学历职称选项在列未核实前不渲染"
+  confidence: low
+- int_id: INT-A-X-1209
+  layer: page
+  srs:
+    excel_row: 278
+    seq: 275
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/动态统计与对比分析
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_BASE_98_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-06
+  ours: [frontend, java_facade, etl]
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: "GET /situation/v1/talent-region/shenzhen-rank (draft；门面未核实。Java 只读 ADS)"
+    python: "在线链路不经 Python；离线 ETL 执行久新 SQL-98 落 ADS（draft）"
+    downstream: "久新 SQL-98（SRS-98，IP-06）。各区数量排行用该聚合。增速与流动路径不在本 SQL"
+  contract_draft:
+    request: [city_scope, domain_code, time_range, period_grain]
+    response_key_fields: [region_code, rank, headcount, period, metric_id, snapshot_id]
+    granularity: {time: year, geo: district}
+    freshness: T+1
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "metric_missing:增速与人才流动路径。数量排行读 SQL-98。增速无指标。流动路径见 1201 的 DEEP_157，材料包未挂到本行，本卡不重复挂"
+  conflicts: []
+  decision_needed: [DN-A13-02, DN-A13-04]
+  structure_escalation: false
+  risks: [R-A13-2, R-A13-4]
+  test_points:
+  - "排行只比较 SQL-98 的人数，不现场算增速"
+  - "流动路径空态，不用迁徙箭头连接各区凑数"
+  confidence: medium
+- int_id: INT-A-X-1210
+  layer: page
+  srs:
+    excel_row: 279
+    seq: 276
+    path: 智能服务集群/科技信息展示系统/科技人才态势/关注地区人才态势/深圳科技人才态势/数据导出与报告生成
+  page_ref: DS-14-TALENT-REGION
+  dimension: [TAL]
+  dep_kind: [export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: file
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: "导出不新开查询，前端下载已加载快照；报告接口确认前不提供 (draft)"
+    python: "在线链路不经 Python。智能报告若以后要模型，只允许走 Python /internal，本叶不预设路径"
+    downstream: "无久新行。不向久新要报告 API。生成服务未核实"
+  contract_draft:
+    request: [region_code, domain_code, time_range, export_format]
+    response_key_fields: [file_name, row_count, snapshot_id, blocked_reason]
+    granularity: {time: year, geo: selected_region}
+    freshness: unknown
+  status:
+    demo: "未核实。材料包无 demo 路径"
+    lumen: "未核实。材料包 fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，未给出页面文件"
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - "metric_missing:智能报告。材料包无指标、无久新行。地图数据导出复用已加载快照。报告生成服务未核实，确认前不出报告"
+  conflicts: []
+  decision_needed: [DN-A13-03]
+  structure_escalation: false
+  risks: [R-A13-3]
+  test_points:
+  - "导出文件只含当前快照已有列，不补未核实字段"
+  - "报告按钮在 DN-A13-03 关闭前不可用，接口不返回编造正文"
+  confidence: low
+summary:
+  cards_by_type:
+    X: 11
+  srs_rows_covered: 11
+  jiuxin_rows_referenced: [SRS-98, SRS-157]
+  jiuxin_new_rows_needed: 0
+  page_metrics_assignment:
+    M_TALENT_BASE_98_1: [269, 271, 272, 273, 274, 275, 276, 277, 278]
+    M_TALENT_DEEP_157_1: [270]
+  metric_missing_cards:
+  - INT-A-X-1200
+  - INT-A-X-1202
+  - INT-A-X-1204
+  - INT-A-X-1206
+  - INT-A-X-1209
+  - INT-A-X-1210
+  structure_escalation_cards:
+  - INT-A-X-1205
+  lumen_page: 未核实
+  demo_page: 未核实
+decision_needed:
+- id: DN-A13-01
+  owner: 甲方
+  item: 中国与深圳底图（瓦片、行政区边界）由谁提供。材料包没有，未核实。确认前不接未点名的地图服务
+- id: DN-A13-02
+  owner: "human:李伟"
+  item: 深圳行政区、科技产业园、创新载体是否单列地理维。材料包没有这级表。INT-A-X-1205 升结构，落地前地图不下钻到园区
+- id: DN-A13-03
+  owner: 甲方
+  item: 智能报告是否建设、是否用大模型、模板谁出。材料包无指标、无久新行，未核实。确认前不出报告，不向久新要假 API
+- id: DN-A13-04
+  owner: 甲方
+  item: 迁徙事件定义。本叶 1201 只挂材料包已给的 API-157。定义未核实时迁徙图与流动曲线空态
+- id: DN-A13-05
+  owner: 甲方
+  item: 重点领域码，以及学历、职称、姓名、单位能否作筛选。材料包没有列和词表，未核实

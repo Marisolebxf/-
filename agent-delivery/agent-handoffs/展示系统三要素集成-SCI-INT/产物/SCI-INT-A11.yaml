@@ -1,0 +1,1026 @@
+# SCI-INT-A11 · 科技发展规划 · 页面级系统集成依赖卡片
+# 范围：SRS 科技发展态势/科技发展规划.md excel_row 181–199（seq 178–196，19 叶）
+# 页面：DS-09-COMPREHENSIVE / DS-09-KEY-DOMAIN / DS-09-RESEARCH（P00 记作 DS-09-*）
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 取自材料包（MCP 口径）
+# 号段：INT-A-X-1000–1018（本页跨要素，统一 X）
+# 引用不重分析：A05 INT-A-X-413、A06 INT-A-X-515（订阅）；A07 报告模板（DN-A07-07）；
+#   A12 INT-A-TAL-1103 / SRS-157 / API-157（迁徙，与本页 row 185 不要并成一件）；
+#   C01 scholar_id P0-1（INT-C-TAL-001）、流动边候选 INT-C-TAL-071（A12 已升结构）
+# 前端：lumen 有页，只调未实现的 GET /situation/v1/planning/dataset。Java / Python 均无本页接口。
+# D12：调用链不指向 demo-* 服务。本叶未扫 demo 仓。
+
+task_id: SCI-INT-A11
+scope_count: 19
+card_count: 19
+gap: []
+talent_flow_verdict:
+  question: 科技人才流动监控（excel_row 185）数据来源
+  source_class: 无源
+  registered: MODEL
+  conclusion: 注册指标 M_INNOV_DS_09_COMPREHENSIVE_006 / M_INNOV_PLAN_TALENT_FLOW 为 MODEL，但无 scholar_id、无流动边表。集成模式 IP-10，空态+⚠️，不归久新。A12 迁徙图主源是久新 API-157（M_TALENT_DEEP_157_1，INT-A-TAL-1103，SRS-157）。二者不要并成一件。
+a12_overlap:
+  a12_yaml: 有
+  excel_row: 185
+  seq: 182
+  name: 科技人才流动监控
+  a11_int_id: INT-A-X-1004
+  a11_metric: M_INNOV_DS_09_COMPREHENSIVE_006
+  a12_int_id: INT-A-TAL-1103
+  a12_metric: M_TALENT_DEEP_157_1
+  a12_source: 久新 API-157
+  note: 迁徙图与本页流动监控不是同一个指标，不要并成一件。
+hotspot_verdict:
+  question: 本页久新依赖
+  confirm: 待确认
+  rows:
+  - DS-09-COMPREHENSIVE-001
+  - DS-09-COMPREHENSIVE-002
+  - DS-09-COMPREHENSIVE-004
+  conclusion: 久新仅这三条热点 API，且均待确认。热度 M_INNOV_PLAN_HEAT 与增速 M_INNOV_PLAN_GROWTH 注册为 MIXED，与久新行 MODEL 冲突，不改注册类型。
+resource_push_verdict:
+  question: 科创资源整合与推送（excel_row 186）服务归属
+  owner: gkxlumen-innov
+  same_service:
+  - INT-A-X-413
+  - INT-A-X-515
+  conclusion: 并入我方 gkxlumen-innov 订阅（A05/A06）。规则匹配不算算法，不经 Python，不经久新。
+report_verdict:
+  question: 竞争情报分析报告（excel_row 198）怎么生成
+  as_is: 前端模板拼装
+  conclusion: 与 A07 相同。目前前端模板拼装。是否大模型润色由甲方定（DN-A11-03，同 DN-A07-07）。
+cards:
+- int_id: INT-A-X-1000
+  layer: page
+  srs:
+    excel_row: 181
+    seq: 178
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/全球热点技术捕捉
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TECH]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_PLAN_HEAT
+  - M_INNOV_PLAN_GROWTH
+  algorithm_type: MIXED
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: DS-09-COMPREHENSIVE-001
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/hotspot (draft；现网无此接口，B01 R5。Java 只调 Python，不直连久新)"
+    python: "POST /internal/v1/sci/planning/hotspot (draft；lumen-algo-py 适配层封装久新 API，鉴权限流超时熔断按 IP-08)"
+    downstream: "久新 API DS-09-COMPREHENSIVE-001（热度）与 DS-09-COMPREHENSIVE-002（增速），均待确认。结果写 IP-11 快照后 Java 只读"
+  contract_draft:
+    request: [domain_code, time_range, ipc4]
+    response_key_fields: [ipc4, name, heat, growth, period, metric_id, snapshot_id]
+    granularity: {time: month, geo: global}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "lumen-ui-science-pc src/views/situation/tech-development-plan/index.vue（有页面）。src/api/situation/techDevelopmentPlan.ts 只调未实现的 GET /situation/v1/planning/dataset"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "现网 dataset 未实现，热点列表来自 mock 种子"
+  - "001 与 002 同叶展示，卡片 jiuxin_row_id 只挂热度行，增速行写在 downstream"
+  conflicts:
+  - CF-A11-1
+  decision_needed:
+  - DN-A11-01
+  - DN-01
+  structure_escalation: false
+  risks:
+  - R-A11-1
+  - R-A11-2
+  test_points:
+  - "热度与增速分别带回 metric_id，前端不把两条合成一个数"
+  - "久新超时走熔断快照；无快照则空态，禁止 mock 回填"
+  - "Java 与前端响应里不出现久新域名"
+  confidence: medium
+- int_id: INT-A-X-1001
+  layer: page
+  srs:
+    excel_row: 182
+    seq: 179
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/多维度指标体系展示
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TECH, ORG, TAL]
+  dep_kind: [service]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/indicator-board (draft；现网无此接口。无 metric_id 的格子返回空，不汇总假指数)"
+    python: "不实现（IP-10。自定义布局是前端偏好，不是算法）"
+    downstream: "各库指标待挂到已有 metric_id 后再读对应快照。本叶不新建汇总表"
+  contract_draft:
+    request: [board_id, category]
+    response_key_fields: [category, metric_id, value, empty_reason]
+    granularity: {time: year, geo: city}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "OverviewTab.vue 多维指标分类来自 dataset.multidimensionalIndicatorCategories（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 技术发展、产业库、机构库、课题库、成果库、统计库、人才库七套指标体系没有本叶 metric_id"
+  conflicts: []
+  decision_needed:
+  - DN-A11-04
+  structure_escalation: false
+  risks:
+  - R-A11-3
+  test_points:
+  - "未挂 metric_id 的类别空态+⚠️，不以 0 填充"
+  - "布局切换不发起新的计算"
+  confidence: medium
+- int_id: INT-A-X-1002
+  layer: page
+  srs:
+    excel_row: 183
+    seq: 180
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/技术与产业热点动态跟踪
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TECH]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: DS-09-COMPREHENSIVE-004
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/hotspot-track (draft；现网无此接口。Java 只调 Python)"
+    python: "POST /internal/v1/sci/planning/hotspot-track (draft；适配久新 DS-09-COMPREHENSIVE-004，待确认)"
+    downstream: "久新 API DS-09-COMPREHENSIVE-004（技术与产业热点动态跟踪，待确认）。时间轴与空间分布读该 API 快照，不另要接口"
+  contract_draft:
+    request: [domain_code, time_range, region_code]
+    response_key_fields: [domain_code, timeline, geo_points, period, snapshot_id]
+    granularity: {time: month, geo: country}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "OverviewTab.vue 趋势图读 dataset.technologyTrendSeriesByRange（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 动态跟踪无注册 metric_id。热度与增速归 1000，不在本叶重复挂"
+  conflicts:
+  - CF-A11-2
+  decision_needed:
+  - DN-A11-01
+  - DN-01
+  structure_escalation: false
+  risks:
+  - R-A11-2
+  test_points:
+  - "领域筛选只改 domain_code，不新起一套久新接口"
+  - "004 未确认或超时则空态，不用 1000 的热度指数顶替时间轴"
+  confidence: medium
+- int_id: INT-A-X-1003
+  layer: page
+  srs:
+    excel_row: 184
+    seq: 181
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/本地特色与优势分析
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TECH]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_COMPREHENSIVE_005
+  - M_INNOV_PLAN_LOCAL_ADV
+  algorithm_type: MODEL
+  integration_pattern: IP-04
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: Python
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/local-advantage (draft；现网无此接口。Java 只读快照，不算区位商)"
+    python: "POST /internal/v1/sci/planning/local-advantage/jobs (draft；lumen-algo-py 按 IPC4 专利区位商，写 IP-11 快照)"
+    downstream: "ADS 专利计数（表名 unknown）+ 快照。不经久新。默认区域深圳，口径 Q149"
+  contract_draft:
+    request: [region_code, time_range, ipc4]
+    response_key_fields: [ipc4, lq, is_advantage, region_code, metric_id, snapshot_id]
+    granularity: {time: year, geo: city}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "OverviewTab.vue 本地优势图读 dataset.localAdvantageChart / localAdvantageInnovation / localAdvantageOutput（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "005 与 M_INNOV_PLAN_LOCAL_ADV 定义互指，本叶挂两条，不合并注册项"
+  - "专利 ADS 是否已有 IPC4 计数 = unknown，确认前任务失败走空态"
+  conflicts: []
+  decision_needed:
+  - Q149
+  structure_escalation: false
+  risks:
+  - R-A11-1
+  test_points:
+  - "区位商大于 1 才标优势，阈值不在前端写死"
+  - "未选区域时默认深圳，响应带回 region_code"
+  confidence: medium
+- int_id: INT-A-X-1004
+  layer: page
+  srs:
+    excel_row: 185
+    seq: 182
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/科技人才流动监控
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_COMPREHENSIVE_006
+  - M_INNOV_PLAN_TALENT_FLOW
+  algorithm_type: MODEL
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/talent-flow (draft；现网无此接口。无 scholar_id 且无流动边时只返回空态，不出人数)"
+    python: "不实现（IP-10。不差分任职履历，不向久新要流动 API）"
+    downstream: "无。不读久新 API-157。流动边候选 INT-C-TAL-071 已由 A12 INT-A-TAL-1103 升结构，本叶不另建表"
+  contract_draft:
+    request: [region_code, time_range, flow_type]
+    response_key_fields: [empty_reason, metric_id]
+    granularity: {time: month, geo: city}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "models/techDevelopmentPlanModel.ts buildTalentOdLinks 写死人数（深圳 18932、外地 12458）。OverviewTab.vue 用该 OD 图"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "无 scholar_id（P0-1，INT-C-TAL-001），无流动边表。IP-10 空态+⚠️，不归久新"
+  - "与 A12 迁徙图不要并成一件。A12 主源是久新 API-157（M_TALENT_DEEP_157_1，INT-A-TAL-1103，SRS-157）。本叶是注册 MODEL 的流动监控"
+  conflicts:
+  - CF-A11-3
+  decision_needed:
+  - DN-A11-02
+  - Q150
+  - DN-A12-02
+  structure_escalation: false
+  risks:
+  - R-A11-4
+  test_points:
+  - "接口无 headcount 字段。USE_MOCK=false 不回放写死的 18932 / 12458"
+  - "响应不引用 SRS-157"
+  confidence: high
+- int_id: INT-A-X-1005
+  layer: page
+  srs:
+    excel_row: 186
+    seq: 183
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/科创资源整合与推送
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [NONE_3E]
+  dep_kind: [service, push, write_back]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-13
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "POST/GET/DELETE /innov/v1/subscriptions (draft；rule_type=planning_resource。并入 A05 INT-A-X-413 与 A06 INT-A-X-515 同一 gkxlumen-innov 订阅，不另建服务)"
+    python: "N/A（规则匹配不算算法，不经 Python，不经久新）"
+    downstream: "订阅规则表与推送记录表沿用 A05/A06 候选 innov_subscription。消息通道沿用 DN-A05-06，本叶不新选通道"
+  contract_draft:
+    request: [rule_type, domain_code, keywords, channel, cron]
+    response_key_fields: [subscription_id, user_id, rule_type, last_pushed_at]
+    granularity: {time: day, geo: n/a}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "OverviewTab.vue pushSettings 来自 dataset.defaultPushSettings，规则留在前端本地状态"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "gkxlumen-innov 尚无订阅模块。规则表未建，归属 A05/A06，本叶不另建表"
+  conflicts: []
+  decision_needed:
+  - DN-A05-06
+  structure_escalation: false
+  risks:
+  - R-A11-5
+  test_points:
+  - "命中规则后下一周期写推送记录，取消后不再推送"
+  - "匹配在 Java 定时任务完成，调用链无 /internal"
+  confidence: high
+- int_id: INT-A-X-1006
+  layer: page
+  srs:
+    excel_row: 187
+    seq: 184
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/综合发展规划/潜在科技发展方向预警
+  page_ref: DS-09-COMPREHENSIVE
+  dimension: [TECH]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_COMPREHENSIVE_008
+  - M_INNOV_PLAN_DIRECTION_ALERT
+  algorithm_type: MODEL
+  integration_pattern: IP-04
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: Python
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "POST /situation/v1/planning/direction-alert/jobs + GET result (draft；现网无此接口。Java 只读快照)"
+    python: "POST /internal/v1/sci/planning/direction-alert/jobs (draft；IPC4 六源增速加权得 F，写 IP-11 快照)"
+    downstream: "论文、专利、项目、人才、产业、政策六源 ADS（表名 unknown）。不经久新"
+  contract_draft:
+    request: [ipc4, time_range, baseline]
+    response_key_fields: [ipc4, score_f, level, period, metric_id, snapshot_id]
+    granularity: {time: quarter, geo: global}
+    freshness: weekly
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "OverviewTab.vue 预警标签读 dataset.directionWarningMeta / directionMonitorItems（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "008 与 M_INNOV_PLAN_DIRECTION_ALERT 定义互指，挂两条，不合并"
+  - "六源 ADS 是否齐 = unknown。缺一源则该方向置灰，不以 0 代替"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - R-A11-1
+  test_points:
+  - "切领域不自动起任务，要点开始分析（附录 E）"
+  - "同用户同条件只一条在跑"
+  confidence: medium
+- int_id: INT-A-X-1007
+  layer: page
+  srs:
+    excel_row: 188
+    seq: 185
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/区域科技创新空间布局分析
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [TECH, ORG]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_KEYD_SPATIAL
+  algorithm_type: STAT
+  integration_pattern: IP-01
+  ours: [frontend, java_facade, etl]
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/spatial (draft；现网无此接口。Java 只读 ADS，不现场算密度)"
+    python: "在线链路不经 Python。离线 GDF 做空间聚合"
+    downstream: "候选新表 ads_innov_spatial_density（未建）。对象是地理密度，不是协同网络密度"
+  contract_draft:
+    request: [region_code, domain_code, grid]
+    response_key_fields: [cell_id, density, agglomeration, period, metric_id]
+    granularity: {time: year, geo: district}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue 地图读 dataset.carrierLocations / industryClusters（mock，与密度指标尚未分开）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "密度与集聚度共核，不拆两条指标"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - R-A11-6
+  test_points:
+  - "密度值等于 ADS 格网计数，前端不二次聚合"
+  - "表未建时空态，不用载体点位数冒充密度"
+  confidence: medium
+- int_id: INT-A-X-1008
+  layer: page
+  srs:
+    excel_row: 189
+    seq: 186
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/竞争力水平与潜力评估
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [TECH, ORG]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: []
+  metric_domain_other:
+  - M_SYNTH_186_1
+  - M_INNOV_KEYD_COMPETITIVENESS
+  - M_INNOV_KEYD_POTENTIAL
+  algorithm_type: MIXED
+  integration_pattern: IP-04
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: Python
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/competitiveness (draft；现网无此接口。Java 只读 0–100 快照)"
+    python: "POST /internal/v1/sci/planning/competitiveness/jobs (draft；竞争力三维与潜力三维分写，不在 Java 加权)"
+    downstream: "IP-11 共享快照。不经久新。区域未选默认深圳（Q152）"
+  contract_draft:
+    request: [region_code, peer_region_code, time_range]
+    response_key_fields: [region_code, competitiveness, potential, peer_delta, metric_id, snapshot_id]
+    granularity: {time: year, geo: city}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue 竞争力条读 dataset.keyAreaCompetitivenessMetrics / keyAreaDimensionScores / keyAreaBenchmarkRows（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "M_SYNTH_186_1 是综合模型，KEYD 竞争力与潜力是本页两个分值，三条都挂，不合并"
+  conflicts: []
+  decision_needed:
+  - Q152
+  structure_escalation: false
+  risks:
+  - R-A11-1
+  test_points:
+  - "竞争力与潜力分列返回，前端不合成一个综合分"
+  - "对标区缺失时只显示本区，不用 0 填充对标"
+  confidence: medium
+- int_id: INT-A-X-1009
+  layer: page
+  srs:
+    excel_row: 190
+    seq: 187
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/土地用途与效益分析
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [TECH]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_KEYD_LAND
+  algorithm_type: STAT
+  integration_pattern: IP-01
+  ours: [frontend, java_facade, etl]
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/land (draft；现网无此接口。Java 只读 ADS，不算效益)"
+    python: "在线链路不经 Python。离线 GDF 聚合用地与创新产出"
+    downstream: "候选新表 ads_innov_land_benefit（未建）+ GIS 用地图层。不是要素类型综合评价"
+  contract_draft:
+    request: [region_code, land_use]
+    response_key_fields: [land_use, output, efficiency, period, metric_id]
+    granularity: {time: year, geo: parcel}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue buildLandEfficiencyOption(dataset.landUseData)（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "效益与利用效率共核，不拆两条"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - R-A11-6
+  test_points:
+  - "无图层时空态，不把载体坐标画成用地"
+  - "Java 响应无临时聚合字段"
+  confidence: medium
+- int_id: INT-A-X-1010
+  layer: page
+  srs:
+    excel_row: 191
+    seq: 188
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/科技载体分布展示
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [ORG]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/carriers (draft；现网无此接口。无指标时返回空列表)"
+    python: "不实现（IP-10。不在前端用 mock 点位计数）"
+    downstream: "载体是否等于机构沿用 A06 口径，未定前不借用机构主数据充数"
+  contract_draft:
+    request: [carrier_type, region_code]
+    response_key_fields: [empty_reason]
+    granularity: {time: year, geo: district}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue 载体点与类型读 dataset.carrierLocations / carrierTypes（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 载体数量、创新活动没有注册 metric_id"
+  conflicts: []
+  decision_needed:
+  - DN-A11-06
+  structure_escalation: false
+  risks:
+  - R-A11-3
+  test_points:
+  - "无指标时地图无点，不用 mock 坐标"
+  - "类型筛选不改变空态原因码"
+  confidence: medium
+- int_id: INT-A-X-1011
+  layer: page
+  srs:
+    excel_row: 192
+    seq: 189
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/产业与领域筛选联动
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [TECH]
+  dep_kind: [service]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/spatial?industry=&domain= (draft；读 INT-A-X-1007 同一快照，只改筛选)"
+    python: "在线链路不经 Python（读父快照，IP-09）"
+    downstream: "INT-A-X-1007 的 ads_innov_spatial_density。不新要久新"
+  contract_draft:
+    request: [industry_code, domain_code, region_code]
+    response_key_fields: [cell_id, density, snapshot_id]
+    granularity: {time: year, geo: district}
+    freshness: T+1
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue industryClusters 筛选只改前端选中项（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 技术规模、技术发展状态、领军主题没有注册 metric_id，这三块空态"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - R-A11-3
+  test_points:
+  - "切换产业不新起计算任务"
+  - "三块缺失文案不显示假规模"
+  confidence: medium
+- int_id: INT-A-X-1012
+  layer: page
+  srs:
+    excel_row: 193
+    seq: 190
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/重点领域规划/资源配置优化建议
+  page_ref: DS-09-KEY-DOMAIN
+  dimension: [TECH]
+  dep_kind: [service]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/resource-advice (draft；现网无此接口。方案模拟未定前返回空)"
+    python: "不实现（IP-10。效果预测没有注册模型，不在 Java 里做情景演算）"
+    downstream: "无。可读 1007/1008 的文字说明，但不生成预测分"
+  contract_draft:
+    request: [region_code, scenario_id]
+    response_key_fields: [empty_reason]
+    granularity: {time: year, geo: city}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "KeyAreaTab.vue keyAreaScenarioPlans 为 dataset 里的静态方案卡（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 资源投入建议、布局方案、模拟效果没有注册 metric_id"
+  conflicts: []
+  decision_needed:
+  - DN-A11-04
+  structure_escalation: false
+  risks:
+  - R-A11-3
+  test_points:
+  - "模拟按钮在口径确认前不可用，不返回预测分"
+  - "静态方案文案不得标成模型结果"
+  confidence: medium
+- int_id: INT-A-X-1013
+  layer: page
+  srs:
+    excel_row: 194
+    seq: 191
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/研究领域重叠度分析
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG, TECH]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_RESEARCH_001
+  - M_INNOV_RES_OVERLAP
+  algorithm_type: MODEL
+  integration_pattern: IP-04
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: Python
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/overlap (draft；现网无此接口。Java 只读 0–1 快照，不做名称哈希)"
+    python: "POST /internal/v1/sci/planning/overlap/jobs (draft；集合取自专利 IPC、专利/论文关键词、所属学者现表)"
+    downstream: "现有专利/论文/学者表（表名以 C02/C01 为准）。定义写明不另建关键词集合。不经久新"
+  contract_draft:
+    request: [org_a, org_b, time_range]
+    response_key_fields: [org_a, org_b, overlap, metric_id, snapshot_id]
+    granularity: {time: year, geo: n/a}
+    freshness: weekly
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "models/techDevelopmentPlanModel.ts getDeterministicOverlap 用企业名称哈希（charCode 取模，夹在 20–95）。ResearchTab.vue 用该值"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "现状重叠度是名称哈希，不是知识图谱集合。正式值只来自 Python 快照"
+  - "001 与 M_INNOV_RES_OVERLAP 定义互指，挂两条"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - R-A11-7
+  test_points:
+  - "USE_MOCK=false 时接口不走 getDeterministicOverlap"
+  - "重叠度取值 0–1，与前端目前的百分数刻度分开，由 ⓘ 说明"
+  confidence: high
+- int_id: INT-A-X-1014
+  layer: page
+  srs:
+    excel_row: 195
+    seq: 192
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/研究领域等级划分
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG]
+  dep_kind: [metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_RESEARCH_002
+  - M_INNOV_DS_09_RESEARCH_003
+  - M_INNOV_RES_GRADE
+  - M_INNOV_RES_CI_LEVEL
+  algorithm_type: MODEL
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/overlap-grade (draft；读 INT-A-X-1013 快照按阈值切高/中/低。Java 不另跑模型)"
+    python: "在线链路不经 Python。阈值切分若要落盘，在 1013 Job 写快照时一并写出"
+    downstream: "INT-A-X-1013 重叠度快照。默认 P70/P30（Q151），页面可改。不另建等级字段"
+  contract_draft:
+    request: [org_ids, high_pct, low_pct]
+    response_key_fields: [org_a, org_b, overlap, grade, ci_level, metric_id, snapshot_id]
+    granularity: {time: year, geo: n/a}
+    freshness: weekly
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "ResearchTab.vue 等级来自 overlapRuleProfiles 与 getOverlapLevel（前端阈值）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "等级与竞争情报等级共用 GRADE 阈值。002 / 003 / GRADE / CI_LEVEL 四条都挂，不合并注册项"
+  conflicts:
+  - CF-A11-4
+  decision_needed:
+  - Q151
+  structure_escalation: false
+  risks:
+  - R-A11-7
+  test_points:
+  - "改阈值只重切父快照，不新起久新或第二套模型"
+  - "父快照缺失时等级空态"
+  confidence: medium
+- int_id: INT-A-X-1015
+  layer: page
+  srs:
+    excel_row: 196
+    seq: 193
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/多企业竞争情报比对
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG]
+  dep_kind: [metric]
+  metric_ids: []
+  metric_domain_other:
+  - M_INNOV_DS_09_RESEARCH_004
+  - M_INNOV_RES_CI_COMPARE
+  algorithm_type: MIXED
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/ci-matrix (draft；读 1014 等级快照拼矩阵。Java 不算战略分)"
+    python: "在线链路不经 Python。矩阵在 1013 Job 写快照时一并产出"
+    downstream: "INT-A-X-1014 等级快照。不经久新"
+  contract_draft:
+    request: [org_ids]
+    response_key_fields: [matrix, position, metric_id, snapshot_id]
+    granularity: {time: year, geo: n/a}
+    freshness: weekly
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "ResearchTab.vue 比对表由所选企业与 overlapMatrix 在前端拼出（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "004 与 M_INNOV_RES_CI_COMPARE 定义互指，挂两条"
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks:
+  - R-A11-7
+  test_points:
+  - "矩阵格点与 1014 等级一致"
+  - "企业不足两家时不画矩阵"
+  confidence: medium
+- int_id: INT-A-X-1016
+  layer: page
+  srs:
+    excel_row: 197
+    seq: 194
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/研究领域知识图谱展示
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG, TAL, TECH]
+  dep_kind: [graph]
+  metric_ids: []
+  metric_domain_other:
+  - M_SYNTH_GRAPHAPI_116_1
+  algorithm_type: THIRD_PARTY
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: unknown
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/research-graph (draft；现网无此接口。归属未定前返回空图)"
+    python: "不实现（IP-10）。确认自建后才允许 lumen-algo-py 读 TRSGraph 并投影 ADS，Java 不写 nGQL"
+    downstream: "无稳定对端。M_SYNTH_GRAPHAPI_116_1 注册为 THIRD_PARTY，但不在本页三条热点 API 内，行号 unknown"
+  contract_draft:
+    request: [org_id, depth]
+    response_key_fields: [empty_reason]
+    granularity: {time: year, geo: n/a}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "ResearchTab.vue researchGraphOption 读 dataset.researchGraphNodes（mock）"
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - "图谱 API 归属未定。确认前空图，不用 mock 节点"
+  conflicts:
+  - CF-A11-5
+  decision_needed:
+  - DN-A11-05
+  structure_escalation: false
+  risks:
+  - R-A11-8
+  test_points:
+  - "空图不渲染假的企业/专家/文献节点"
+  - "调用链不出现 Neo4j，也不出现 demo-* space"
+  confidence: low
+- int_id: INT-A-X-1017
+  layer: page
+  srs:
+    excel_row: 198
+    seq: 195
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/竞争情报分析报告
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG]
+  dep_kind: [export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-13
+  ours: [frontend]
+  counterpart: none
+  delivery_form: file
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "无（现状不落服务端。若改为服务端模板再定 GET /situation/v1/planning/ci-report，draft）"
+    python: "无（lumen 无大模型报告能力。若甲方要润色，再新增 /internal/report/polish，并加人审，不在本叶预设）"
+    downstream: "报告中的重叠与等级数字来自 INT-A-X-1013 / 1014 / 1015，本叶不新算。不经久新"
+  contract_draft:
+    request: [org_ids, format]
+    response_key_fields: [title, generated_at, body_html]
+    granularity: {time: year, geo: n/a}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "ResearchTab.vue 竞争情报分析报告弹窗为前端模板拼装。models/techDevelopmentPlanModel.ts 另有 HTML 导出（downloadHtmlAsWord）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "报告生成全在前端，无服务端留痕、无审核"
+  - "数字必须来自父快照。父快照为空时报告只留空态，不把名称哈希写进报告"
+  conflicts: []
+  decision_needed:
+  - DN-A11-03
+  - DN-A07-07
+  structure_escalation: false
+  risks:
+  - R-A11-9
+  test_points:
+  - "下载文件中的重叠度与 1013 快照一致"
+  - "未拍板前不调用大模型"
+  confidence: high
+- int_id: INT-A-X-1018
+  layer: page
+  srs:
+    excel_row: 199
+    seq: 196
+    path: 智能服务集群/科技信息展示系统/科技发展态势/科技发展规划/研究领域分析/企业发展战略建议
+  page_ref: DS-09-RESEARCH
+  dimension: [ORG]
+  dep_kind: [export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: "GET /situation/v1/planning/strategy (draft；现网无此接口。模拟评估未定前无分值)"
+    python: "不实现（IP-10。建议正文若保持模板，也不经 Python）"
+    downstream: "无模型。技术路线 / 资源配置 / 合作机会的文字可引用 1013 的重叠事实，但不生成评估分"
+  contract_draft:
+    request: [org_id]
+    response_key_fields: [empty_reason]
+    granularity: {time: year, geo: n/a}
+    freshness: unknown
+  status:
+    demo: "unknown（本叶只点查 pack 的 fe_files_hit，未扫 demo 仓）"
+    lumen: "ResearchTab.vue 企业发展战略建议弹窗为前端模板，合作对象来自 researchOverlapBenchmarks（mock）"
+    d1_d4: {d1: unknown, d4: unknown}
+  gaps:
+  - "metric_missing: 方案模拟和评估没有注册 metric_id，确认前不出分"
+  - "建议正文目前同样是前端模板，是否大模型润色与 1017 同一决定"
+  conflicts: []
+  decision_needed:
+  - DN-A11-03
+  - DN-A11-04
+  structure_escalation: false
+  risks:
+  - R-A11-9
+  test_points:
+  - "无评估分字段"
+  - "模板句子不得标成模型结论"
+  confidence: medium
+summary:
+  cards_by_type:
+    X: 19
+  srs_rows_covered: 19
+  jiuxin_rows_referenced:
+  - DS-09-COMPREHENSIVE-001
+  - DS-09-COMPREHENSIVE-002
+  - DS-09-COMPREHENSIVE-004
+  jiuxin_new_rows_needed: 0
+  page_metrics_assignment:
+    M_INNOV_DS_09_COMPREHENSIVE_005: [184]
+    M_INNOV_DS_09_COMPREHENSIVE_006: [185]
+    M_INNOV_DS_09_COMPREHENSIVE_008: [187]
+    M_SYNTH_186_1: [189]
+    M_INNOV_DS_09_RESEARCH_001: [194]
+    M_INNOV_DS_09_RESEARCH_002: [195]
+    M_INNOV_DS_09_RESEARCH_003: [195]
+    M_INNOV_DS_09_RESEARCH_004: [196]
+    M_SYNTH_GRAPHAPI_116_1: [197]
+    M_INNOV_KEYD_COMPETITIVENESS: [189]
+    M_INNOV_KEYD_LAND: [190]
+    M_INNOV_KEYD_POTENTIAL: [189]
+    M_INNOV_KEYD_SPATIAL: [188]
+    M_INNOV_PLAN_DIRECTION_ALERT: [187]
+    M_INNOV_PLAN_GROWTH: [181]
+    M_INNOV_PLAN_HEAT: [181]
+    M_INNOV_PLAN_LOCAL_ADV: [184]
+    M_INNOV_PLAN_TALENT_FLOW: [185]
+    M_INNOV_RES_CI_COMPARE: [196]
+    M_INNOV_RES_CI_LEVEL: [195]
+    M_INNOV_RES_GRADE: [195]
+    M_INNOV_RES_OVERLAP: [194]
+  metric_missing_cards:
+  - INT-A-X-1001
+  - INT-A-X-1002
+  - INT-A-X-1010
+  - INT-A-X-1011
+  - INT-A-X-1012
+  - INT-A-X-1018
+  structure_escalation_cards:
+  - INT-A-X-1007
+  - INT-A-X-1009
+  lumen_page: 有
+  demo_page: unknown
+decision_needed:
+- id: DN-A11-01
+  owner: 久新 + 甲方
+  item: 热点三条 API（DS-09-COMPREHENSIVE-001/002/004）是否交付、文档与 SLA。热度/增速注册 MIXED，久新行标 MODEL，确认前不改型
+- id: DN-A11-02
+  owner: 甲方
+  item: 本页流动监控与 A12 迁徙图保持两件。scholar_id 与流动边未就绪前 1004 维持 IP-10，不归久新
+- id: DN-A11-03
+  owner: 甲方
+  item: 竞争情报报告是否大模型润色并人工审核。现状是前端模板，同 DN-A07-07
+- id: DN-A11-04
+  owner: 甲方
+  item: 七库指标盘、资源配置方案模拟、战略建议模拟是否单独立项。未定前 IP-10 不出分
+- id: DN-A11-05
+  owner: 甲方 + 架构
+  item: M_SYNTH_GRAPHAPI_116_1 的对端是谁。不在本页三条热点 API 内。自建则走 TRSGraph，确认前空图
+- id: DN-A11-06
+  owner: 产品
+  item: 科技载体是否等于机构。未定前 1010 不借用机构主数据
+decision_referenced:
+- Q149
+- Q150
+- Q151
+- Q152
+- DN-01
+- DN-07
+- DN-A05-06
+- DN-A07-07
+- DN-A12-02
+risks:
+- id: R-A11-1
+  level: high
+  desc: 页面只调未实现的 /situation/v1/planning/dataset。Java 与 Python 都没有本页接口（B01 R5 / DN-07）
+  mitigation: 按卡片拆 Java 门面。算法只进 lumen-algo-py /internal
+- id: R-A11-2
+  level: high
+  desc: 三条热点 API 均待确认，且热度/增速类型与久新 MODEL 冲突
+  mitigation: CF-A11-1。IP-08 熔断读快照，无快照空态
+- id: R-A11-3
+  level: medium
+  desc: 七库指标、载体、筛选三块、方案模拟都没有注册指标。mock 种子会看起来像已有数
+  mitigation: metric_missing + IP-10。USE_MOCK=false 不回放种子
+- id: R-A11-4
+  level: high
+  desc: 把本页流动监控并进久新 API-157，或继续用写死人数，都会伪闭合
+  mitigation: 1004 IP-10。与 INT-A-TAL-1103 并列，不合并
+- id: R-A11-5
+  level: medium
+  desc: 若为本页单独做一套推送，会与 A05/A06 订阅重复
+  mitigation: 只加 rule_type=planning_resource
+- id: R-A11-6
+  level: high
+  desc: 空间密度与土地效益若在 Java 里临时聚合，违反 Java 只读 ADS
+  mitigation: 新表 ads_innov_spatial_density、ads_innov_land_benefit 升 human:李伟
+- id: R-A11-7
+  level: high
+  desc: 名称哈希会被当成重叠度，并被等级、矩阵、报告继续引用
+  mitigation: 正式重叠度只认 Python 快照。哈希不得进入 USE_MOCK=false
+- id: R-A11-8
+  level: medium
+  desc: 全要素图谱 API 注册为 THIRD_PARTY，但本页对不上久新行。若改走非 TRSGraph 会违反铁律
+  mitigation: DN-A11-05 确认前 IP-10 空图
+- id: R-A11-9
+  level: medium
+  desc: 报告和建议若直接加大模型，缺少甲方决定和人审
+  mitigation: 维持前端模板。润色等待 DN-A11-03
+conflicts:
+- id: CF-A11-1
+  desc: M_INNOV_PLAN_HEAT 与 M_INNOV_PLAN_GROWTH 注册 algorithm_type=MIXED。久新 DS-09-COMPREHENSIVE-001/002 标 MODEL，确认状态为待确认。卡片保持 MIXED，不把热度与增速并成一件
+- id: CF-A11-2
+  desc: DS-09-COMPREHENSIVE-004 久新行标 MODEL，本叶没有注册 metric_id。不把 UNKNOWN 改成 MODEL，也不用 1000 的热度指数顶替动态跟踪
+- id: CF-A11-3
+  desc: 本页 excel 185 流动监控（M_INNOV_DS_09_COMPREHENSIVE_006，MODEL，IP-10）与 A12 迁徙图（M_TALENT_DEEP_157_1，久新 API-157）不是同一个指标，不要并成一件
+- id: CF-A11-4
+  desc: 研究领域等级与竞争情报等级注册为 MODEL。口径是重叠度阈值切分（默认 P70/P30），不另跑模型，也不改注册类型
+- id: CF-A11-5
+  desc: M_SYNTH_GRAPHAPI_116_1 注册 THIRD_PARTY，但本页久新清单只有三条热点 API，图谱行号 unknown。确认前 IP-10
+structure_escalation_to: human:李伟

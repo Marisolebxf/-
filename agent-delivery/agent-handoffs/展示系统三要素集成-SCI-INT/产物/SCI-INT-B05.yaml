@@ -1,0 +1,869 @@
+# SCI-INT-B05 技术深度模型 11 条（metric 层）
+# 真源：产物/_prep/B05-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-TECH-400～499。有久新行，不标 IP-10。
+task_id: SCI-INT-B05
+scope_count: 11
+card_count: 11
+gap: []
+pattern: IP-08
+execution_count: {async: 11, sync: 0}
+execution_rule: "IP-08 默认 T+1 快照，页面只读 ads_sci_result_snapshot。适配层内部可发连接 2s / 读 10s 的同步外呼，超时转 IP-04。本叶按页面消费计，11 条都是异步。"
+jiuxin_rows: [SRS-130, SRS-131, SRS-132, SRS-133, SRS-134, SRS-135, SRS-136, SRS-137, SRS-138, SRS-139, SRS-140]
+jiuxin_note: "11 行都有久新库叶，交付形态 API，确认均为待确认。不标 IP-10。展示行与库叶同交，不单独再要。"
+structure_escalations:
+  - id: SE-B05-01
+    owner: "human:李伟"
+    tables: [dim_tech_domain]
+    cards: [INT-B-TECH-403, INT-B-TECH-404, INT-B-TECH-410]
+    c_card: INT-C-TECH-181
+    reason: "技术领域分类维表。包内建议名 dim_tech_domain，表名未定稿。只此一张。不与 C02 技术点主数据各造一张。"
+structure_escalation_refs:
+  - id: SE-B02-01
+    owner: "human:李伟"
+    tables: [ads_sci_result_snapshot, ads_sci_jiuxin_adapter_cache]
+    note: "11 张卡的结果快照与适配层缓存只引用 B02 已升级的两张表，不另造。"
+tech_point:
+  technology_id: "无。C02 技术点主数据没有 technology_id"
+  tag_technology: "未建（C04，INT-C-TECH-170）"
+  new_master_table: false
+  note: "技术点只引用 C02 主数据。本叶不新造技术点主表，也不以 TAG technology 顶替主数据。"
+d12: "包内 Python 落点为 lumen-algo-py / lumen-etl-es-py 与 /internal/*。未见 demo-*。正式实现禁止调用 demo-algo-science、demo-svc-platform 或任何 demo-*。"
+cards:
+  - int_id: INT-B-TECH-400
+    layer: metric
+    metric_id: M_TECH_DEEP_130_1
+    name: "全景技术链模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 18, path: "算法库 ALGO-TECH-DEEP-130 / 全景技术链模型"}
+    page_ref: DS-02-TECHGRAPH
+    dep_kind: [data, algorithm, service, graph]
+    metric_ids: [M_TECH_DEEP_130_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-130
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "全景技术链模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/graph（draft；A 卡写明前端已调用，Java 未实现；只读 ADS 快照，不直连久新，不写 nGQL）"
+      python: "POST /internal/v1/sci/tech-graph/chain-structure（draft，lumen-algo-py；凭据只在 Python）。图谱读面 POST /internal/graph/tech-subgraph（draft，lumen-algo-py）"
+      downstream: "久新 API-130 全景技术链结果集 → ads_sci_result_snapshot；技术点读 C02 主数据，不读 demo-*"
+    inputs:
+      - {c_card: INT-C-TECH-151, table: "久新 Python-104 技术实体识别产出（技术点实体集）", fields: "包内未给列名", role: "技术点实体。无 technology_id，不另造主数据表"}
+      - {c_card: INT-C-TECH-152, table: "久新 Python-105 技术实体关系抽取产出", fields: "包内未给列名", role: "技术–技术 / 实体–技术边"}
+      - {c_card: INT-C-TECH-170, table: "TAG technology", fields: "未建", role: "技术点顶点。C04 未建。不把该 TAG 当成新的技术点主数据"}
+      - {c_card: INT-C-TECH-171, table: "技术相关 EDGE", fields: "包内未给列名", role: "技术–技术、实体–技术边；ENT 已定义 produces"}
+      - {c_card: INT-C-TECH-300, table: "技术子图（SRS-104）", fields: "包内未给列名", role: "图谱读面"}
+      - {c_card: INT-C-TECH-340, table: "技术关系子图（SRS-105）", fields: "包内未给列名", role: "图谱读面"}
+    outputs:
+      c_card: INT-C-TECH-153
+      delivery: "久新 API-130 技术链结构结果集（全景）"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02:
+        - {seq: 18, name: "图结构自动生成", page: DS-02-TECHGRAPH}
+      a_cards:
+        - {int_id: INT-A-TECH-102, page: DS-02-TECHGRAPH, jiuxin_row_id: SRS-130, srs_row: 21}
+      pages: [DS-02-TECHGRAPH]
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照；图谱走 lumen-algo-py /internal/graph/*"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-130 确认为待确认"
+      - "技术点没有 technology_id（C02）"
+      - "TAG technology 未建（C04）"
+      - "入站列名本包未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01 / P00 的 third_party 不一致，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡调用方式按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-130 接口文档、鉴权、QPS、SLA 仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-algo-science 或任何 demo-*。"
+      - "技术点主数据只引用 C02。本卡不新造技术点表。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_130_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+      - "图谱：Java 不写 nGQL，只调 /internal/graph/*"
+    confidence: medium
+
+  - int_id: INT-B-TECH-401
+    layer: metric
+    metric_id: M_TECH_DEEP_131_1
+    name: "深圳技术链模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-131 / 深圳技术链模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service, graph]
+    metric_ids: [M_TECH_DEEP_131_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-131
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳技术链模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_131_1（draft，只读快照，不直连久新，不写 nGQL）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）。图谱读面 /internal/graph/tech-subgraph"
+      downstream: "久新 API-131 深圳技术链结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构主数据，只读 ADS"}
+      - {c_card: INT-C-TECH-300, table: "技术子图（SRS-104）", fields: "包内未给列名", role: "图谱读面，与 130 共用"}
+      - {c_card: INT-C-TECH-340, table: "技术关系子图（SRS-105）", fields: "包内未给列名", role: "图谱读面，与 130 共用"}
+    outputs:
+      c_card: INT-C-TECH-153
+      delivery: "久新 API-131 技术链结构结果集（深圳）"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: city}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-131 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "入站列名本包未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-131 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_131_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-402
+    layer: metric
+    metric_id: M_TECH_DEEP_132_1
+    name: "技术发展历程模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-132 / 技术发展历程模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_132_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-132
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术发展历程模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_132_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-132 技术发展历程结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: null, table: "包内未单列输入表", fields: "包内未给列名", role: "C 段只给出结果集 INT-C-TECH-154，不补造输入表"}
+    outputs:
+      c_card: INT-C-TECH-154
+      delivery: "久新 API-132 技术发展历程结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-132 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "包内未单列输入表"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+    decision_needed:
+      - "DN-B05-01：SRS-132 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_132_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-403
+    layer: metric
+    metric_id: M_TECH_DEEP_133_1
+    name: "深圳细分领域分布模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-133 / 深圳细分领域分布模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_133_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-133
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳细分领域分布模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_133_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-133 深圳细分领域分布结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构主数据，只读 ADS"}
+      - {c_card: INT-C-TECH-181, table: dim_tech_domain, fields: "包内未给列名", role: "技术领域分类维。新表，升 SE-B05-01"}
+    outputs:
+      c_card: INT-C-TECH-155
+      delivery: "久新 API-133 深圳细分领域分布结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: city}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-133 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "领域维表名未定稿"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-133 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+      - "DN-B05-03：dim_tech_domain 是否立表，由 human:李伟 定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B05-01]
+    structure_escalation_owner: "human:李伟"
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_133_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-404
+    layer: metric
+    metric_id: M_TECH_DEEP_134_1
+    name: "技术前沿热点领域识别模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-134 / 技术前沿热点领域识别模型"}
+    page_ref: [DS-03-RESULT, DS-03-WORKFLOW]
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_134_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-134
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术前沿热点领域识别模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "A 卡写明批量 T+1：适配层 refresh 写快照，页面读快照。适配层外呼超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → heatMatrix[]（draft，只读 ADS 快照）。仅在决策 (b) 时 POST /situation/v1/tracking/runs 透传模型参数；默认不透传"
+      python: "POST /internal/v1/sci/tech/hotspot/refresh（draft，lumen-algo-py；久新 API-134 适配层 + 写快照，批量 T+1）"
+      downstream: "久新 API-134 前沿热点识别结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-181, table: dim_tech_domain, fields: "包内未给列名", role: "技术领域分类维。新表，升 SE-B05-01"}
+    outputs:
+      c_card: INT-C-TECH-156
+      delivery: "久新 API-134 前沿热点识别结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, keyword_weight, threshold]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-300, page: DS-03-RESULT, jiuxin_row_id: DS-03-RESULT-001, srs_row: 51}
+        - {int_id: INT-A-TECH-326, page: DS-03-WORKFLOW, jiuxin_row_id: SRS-134, srs_row: 57}
+      pages: [DS-03-RESULT, DS-03-WORKFLOW]
+      display_rows:
+        - {row: DS-03-RESULT-001, page: DS-03-RESULT, a_card: INT-A-TECH-300}
+        - {row: DS-03-RESULT-002, page: "未挂页", a_card: null}
+        - {row: DS-09-COMPREHENSIVE-001, page: "未挂页", a_card: null}
+        - {row: DS-09-COMPREHENSIVE-002, page: "未挂页", a_card: null}
+        - {row: DS-09-COMPREHENSIVE-004, page: "未挂页", a_card: null}
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-134 确认为待确认"
+      - "展示行 DS-03-RESULT-002、DS-09-COMPREHENSIVE-001/002/004 无 A 卡页面，写未挂页"
+      - "领域维表名未定稿"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "INT-C-TECH-156 把 DS-07-SCI-CREATE-003 列在 134。b01 备注将该展示行同交到 137。本卡按 b01 备注，不把该行记在 134。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-134 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-04：DS-07-SCI-CREATE-003 归属以 b01 备注（137）为准，还是以 C-156（134）为准，需对齐"
+      - "DN-B05-03：dim_tech_domain 是否立表，由 human:李伟 定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B05-01]
+    structure_escalation_owner: "human:李伟"
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_134_1，heatMatrix 来自快照，Java 响应不出现久新字段名"
+      - "降级：refresh 超时或熔断读上一版快照；无快照则空态加待接入角标"
+      - "默认不透传工作流参数；仅决策 (b) 才透传"
+    confidence: medium
+
+  - int_id: INT-B-TECH-405
+    layer: metric
+    metric_id: M_TECH_DEEP_135_1
+    name: "技术产业化潜力识别模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-135 / 技术产业化潜力识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_135_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-135
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术产业化潜力识别模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_135_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-135 产业化潜力结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: null, table: "包内未单列输入表", fields: "包内未给列名", role: "C 段只给出结果集 INT-C-TECH-157，不补造输入表"}
+    outputs:
+      c_card: INT-C-TECH-157
+      delivery: "久新 API-135 产业化潜力结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows:
+        - {row: DS-07-TECH-INNOV-003, page: "未挂页", a_card: null}
+        - {row: DS-07-INDUSTRY-POTENTIAL-002, page: "未挂页", a_card: null}
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-135 确认为待确认"
+      - "两条展示行都没有 A 卡页面，写未挂页"
+      - "包内未单列输入表"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "INT-C-TECH-157 只列 DS-07-TECH-INNOV-003。b01 备注另把 DS-07-INDUSTRY-POTENTIAL-002 同交到 135，而 C-159 把该行列在 137。本卡按 b01 备注，两行都记在 135。"
+    decision_needed:
+      - "DN-B05-01：SRS-135 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：展示行未挂页，是否只服务专题 SRS-TECH"
+      - "DN-B05-04：DS-07-INDUSTRY-POTENTIAL-002 归属以 b01 备注（135）为准，还是以 C-159（137）为准，需对齐"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_135_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-406
+    layer: metric
+    metric_id: M_TECH_DEEP_136_1
+    name: "技术转化瓶颈堵点原因识别模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-136 / 技术转化瓶颈堵点原因识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_136_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-136
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术转化瓶颈堵点原因识别模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_136_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-136 转化瓶颈识别结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: null, table: "包内未单列输入表", fields: "包内未给列名", role: "C 段只给出结果集 INT-C-TECH-158，不补造输入表"}
+    outputs:
+      c_card: INT-C-TECH-158
+      delivery: "久新 API-136 转化瓶颈识别结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-136 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "包内未单列输入表"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+    decision_needed:
+      - "DN-B05-01：SRS-136 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_136_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-407
+    layer: metric
+    metric_id: M_TECH_DEEP_137_1
+    name: "技术阶段分析模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-137 / 技术阶段分析模型"}
+    page_ref: [DS-03-RESULT, DS-03-WORKFLOW]
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_137_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-137
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术阶段分析模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "A 卡写明批量 T+1：适配层 refresh 写快照，页面读快照。适配层外呼超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → bubbles[]（draft，只读 ADS 快照）。仅在决策 (b) 时 POST /situation/v1/tracking/runs 透传阶段阈值；默认不透传"
+      python: "POST /internal/v1/sci/tech/stage/refresh（draft，lumen-algo-py；久新 API-137 适配层 + 写快照，批量 T+1）"
+      downstream: "久新 API-137 技术阶段 / 成熟度结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: null, table: "包内未单列输入表", fields: "包内未给列名", role: "C 段只给出结果集 INT-C-TECH-159，不补造输入表"}
+    outputs:
+      c_card: INT-C-TECH-159
+      delivery: "久新 API-137 技术阶段 / 成熟度结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code, maturity_threshold]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: "本包未展开"}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-309, page: DS-03-RESULT, jiuxin_row_id: DS-03-RESULT-004, srs_row: 53}
+        - {int_id: INT-A-TECH-327, page: DS-03-WORKFLOW, jiuxin_row_id: SRS-137, srs_row: 57}
+      pages: [DS-03-RESULT, DS-03-WORKFLOW]
+      display_rows:
+        - {row: DS-03-RESULT-004, page: DS-03-RESULT, a_card: INT-A-TECH-309}
+        - {row: DS-03-RESULT-005, page: "未挂页", a_card: null}
+        - {row: DS-03-RESULT-006, page: "未挂页", a_card: null}
+        - {row: DS-07-SCI-CREATE-003, page: "未挂页", a_card: null}
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-137 确认为待确认"
+      - "展示行 DS-03-RESULT-005/006、DS-07-SCI-CREATE-003 无 A 卡页面，写未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "INT-C-TECH-159 把 DS-07-INDUSTRY-POTENTIAL-002 列在 137。b01 备注将该展示行同交到 135。本卡按 b01 备注，不把该行记在 137。"
+      - "INT-C-TECH-156 把 DS-07-SCI-CREATE-003 列在 134。b01 备注同交到 137。本卡按 b01 备注，记在 137，页面未挂页。"
+    decision_needed:
+      - "DN-B05-01：SRS-137 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-04：展示行归属 C 卡与 b01 备注不一致，需对齐"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_137_1，bubbles 来自快照，Java 响应不出现久新字段名"
+      - "降级：refresh 超时或熔断读上一版快照；无快照则空态加待接入角标"
+      - "默认不透传阶段阈值；仅决策 (b) 才透传"
+    confidence: medium
+
+  - int_id: INT-B-TECH-408
+    layer: metric
+    metric_id: M_TECH_DEEP_138_1
+    name: "深圳技术发展问题识别模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-138 / 深圳技术发展问题识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_138_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-138
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳技术发展问题识别模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_138_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-138 深圳技术发展问题识别结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构主数据，只读 ADS"}
+    outputs:
+      c_card: INT-C-TECH-160
+      delivery: "久新 API-138 深圳技术发展问题识别结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: city}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-138 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "入站列名本包未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-138 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_138_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-409
+    layer: metric
+    metric_id: M_TECH_DEEP_139_1
+    name: "深圳技术发展机遇识别模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-139 / 深圳技术发展机遇识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_139_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-139
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳技术发展机遇识别模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_139_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-139 深圳技术发展机遇识别结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构主数据，只读 ADS"}
+    outputs:
+      c_card: INT-C-TECH-160
+      delivery: "久新 API-139 深圳技术发展机遇识别结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: city}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-139 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "入站列名本包未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-139 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+    structure_escalation: false
+    structure_escalation_id: []
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_139_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium
+
+  - int_id: INT-B-TECH-410
+    layer: metric
+    metric_id: M_TECH_DEEP_140_1
+    name: "深圳技术发展重点布局领域推荐模型"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "算法库 ALGO-TECH-DEEP-140 / 深圳技术发展重点布局领域推荐模型"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, service]
+    metric_ids: [M_TECH_DEEP_140_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-140
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳技术发展重点布局领域推荐模型"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-TECH
+    execution: "异步"
+    execution_note: "IP-08 默认 T+1 快照，页面只读快照。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tech/deep/result?metric_id=M_TECH_DEEP_140_1（draft，只读快照，不直连久新）"
+      python: "POST /internal/jiuxin/tech/*（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-140 重点布局推荐结果集 → ads_sci_result_snapshot"
+    inputs:
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构主数据，只读 ADS"}
+      - {c_card: INT-C-TECH-181, table: dim_tech_domain, fields: "包内未给列名", role: "技术领域分类维。新表，升 SE-B05-01"}
+    outputs:
+      c_card: INT-C-TECH-155
+      delivery: "久新 API-140 重点布局推荐结果集"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      payload_note: "业务字段以久新接口文档为准，文档未到"
+      granularity: "统计窗口与对象范围以需规文本为准，本包未展开"
+      freshness: T+1
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, payload]
+      granularity: {time: T+1, geo: city}
+      freshness: T+1
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+      display_rows: []
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "正式实现只在 lumen-algo-py 适配层；Java 只读 ADS 快照"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-140 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "领域维表名未定稿"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "C 卡入站写成离线 ETL。本卡按 IP-08，不改成 ETL。"
+    decision_needed:
+      - "DN-B05-01：SRS-140 接口文档、鉴权、QPS、SLA 仍为待确认"
+      - "DN-B05-02：本指标未挂展示页，是否只服务专题 SRS-TECH"
+      - "DN-B05-03：dim_tech_domain 是否立表，由 human:李伟 定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B05-01]
+    structure_escalation_owner: "human:李伟"
+    snapshot_ref: SE-B02-01
+    risks:
+      - "D12：Python 落点为 lumen-algo-py。正式实现禁止调用 demo-*。"
+      - "无快照时必须空态，禁止 Mock 兜底。"
+    test_points:
+      - "契约：快照含 metric_id=M_TECH_DEEP_140_1，Java 响应不出现久新字段名"
+      - "降级：外呼超时或熔断读上一版快照；无快照则空态加待接入角标"
+    confidence: medium

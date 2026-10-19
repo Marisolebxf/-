@@ -1,0 +1,1128 @@
+# SCI-INT-A14 · 重点科技人才画像 · 页面级系统集成依赖卡片
+# 范围：SRS 科技人才态势/重点科技人才画像.md excel_row 280–307（seq 277–304，28 叶）
+# 页面：DS-15-TALENT-PROFILE；号段沿用骨架 INT-A-X-1300–1327
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 取自 _prep/A14-pack.yaml（MCP 口径）
+# 引用不重分析：人才主键未定（C01）；H 指数/活跃度只引用 A10
+# 写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）
+# 前端点查：fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，菜单落到 DevelopingView，无独立页面
+
+task_id: SCI-INT-A14
+scope_count: 28
+card_count: 28
+gap: []
+talent_key_verdict:
+  question: 人才主键
+  ref: C01 P0-1
+  conclusion: 人才主键未定（C01）。本页契约只用 talent_key 占位，不把 dwd_scholar.scholar_id 写成已定主键。主键落地前，画像、检索、写回和合作网络都不按已定键开查。
+hindex_verdict:
+  question: 画像中的 H 指数与活跃度由谁计算
+  ref: A10
+  jiuxin_row_id:
+  - DS-08-VIZ-001
+  - DS-08-VIZ-004
+  conclusion: H 指数/活跃度在久新 DS-08-VIZ-001/004（A10），只引用。DS-08-VIZ-001 与 DS-08-VIZ-004 已并入 API-162。本叶不把 M_INNOV_EXPERT_HINDEX / M_INNOV_EXPERT_ACTIVITY 写入 metric_ids，不在前端或 Java 重算。学术力读面只用材料包已挂的 M_TALENT_DEEP_162_1。
+writeback_verdict:
+  question: 基础信息校验与更新写到哪里
+  pattern: IP-10
+  escalation: "human:李伟"
+  conclusion: "写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）。Java 只受理；Python /internal 写 ADS 人工修订层；审核通过后再由投影 Job 更新图。人工层是新表，升 human:李伟。导入与纠错复用这一层，不另建表。"
+privacy_verdict:
+  question: 人才敏感信息的权限、脱敏与加密
+  status: decision_needed
+  id: DN-A14-PRIVACY
+  owner: 甲方
+  conclusion: 敏感字段范围、授权角色、脱敏规则、传输与存储加密要求都未拍板。登记 decision_needed，不替甲方选定。关闭前接口不返回敏感字段。
+graph_verdict:
+  question: 合作网络与领域图引用哪些点边
+  names:
+  - talent
+  - talent_coop
+  c_index_hit:
+    talent: false
+    talent_coop: false
+  cite:
+  - INT-C-TAL-310
+  - INT-C-TAL-350
+  escalation: "human:李伟"
+  conclusion: 图谱只引用 C04 的 talent（INT-C-TAL-310）与 talent_coop（INT-C-TAL-350）。在 _prep/C-index.yaml 检索这两个名字，talent_coop 无命中，talent 也没有作为 Tag 名出现。没有就 structure_escalation，不另造点边。在线 Java 只读 ADS 投影，不写 nGQL。
+cards:
+- int_id: INT-A-X-1300
+  layer: page
+  srs: {excel_row: 280, seq: 277, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/信息展示方式}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/base（draft，只读 ADS，本叶不出统计数）
+    python: 在线链路不经 Python
+    downstream: 主档读链引用 INT-C-TAL-001。人才主键未定（C01）。不向久新新要行
+  contract_draft:
+    request: [talent_key, detail_level]
+    response_key_fields: [talent_key, display_level, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [分级、标签、卡片无注册指标，确认前空态，不造标签统计]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1, R-A14-2]
+  test_points: [响应无统计数字段, 主键未定时不按 scholar_id 发请求]
+  confidence: medium
+- int_id: INT-A-X-1301
+  layer: page
+  srs: {excel_row: 281, seq: 278, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/搜索与筛选}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/search（draft，只读 ADS 主档，不出统计数）
+    python: 在线链路不经 Python
+    downstream: 条件作用在 INT-C-TAL-001 读模型上。人才主键未定（C01），确认前列表空态
+  contract_draft:
+    request: [talent_key, keyword, org_name, title, region_code, field_code, page, size]
+    response_key_fields: [talent_key, name, org_name, reason]
+    granularity: {time: none, geo: city}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [姓名、单位、方向检索没有单独指标。主键未落地前不返回命中列表]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1, R-A14-2]
+  test_points: [空关键字返回空列表而不是全表, 主键未定时不按 scholar_id 发请求]
+  confidence: medium
+- int_id: INT-A-X-1302
+  layer: page
+  srs: {excel_row: 282, seq: 279, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/基础信息校验与更新}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, write_back]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: POST /talent/v1/profile/overrides（draft）。Java 只受理并只读 ADS，不写 nGQL，不直接写 Nebula
+    python: POST /internal/talent/profile/overrides（draft）。写 ADS 人工层，审核通过后再投影
+    downstream: "写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）。新表升 human:李伟"
+  contract_draft:
+    request: [talent_key, field_name, old_value, new_value, reason]
+    response_key_fields: [talent_key, override_id, review_status, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - 写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）
+  - 人才主键未定（C01），键未落地前不受理修订
+  - 校验规则与提醒周期未拍板，确认前不自动改主档
+  conflicts: []
+  decision_needed: [DN-A14-WRITE, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-2, R-A14-4]
+  test_points: [Java 请求路径不出现 nGQL, 审核未通过时图投影不变, 主键未定时拒绝写入]
+  confidence: medium
+- int_id: INT-A-X-1303
+  layer: page
+  srs: {excel_row: 283, seq: 280, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/数据安全与隐私保护}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。敏感字段在 DN-A14-PRIVACY 关闭前不返回（只读 ADS 的非敏感列）
+    python: 在线链路不经 Python
+    downstream: 不向久新追加隐私 API。规则未定前没有脱敏实现
+  contract_draft:
+    request: [talent_key, view_role]
+    response_key_fields: [talent_key, redacted, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [需规要求分权与加密。字段范围、角色、脱敏和加密方式都未拍板，不替甲方选定]
+  conflicts: []
+  decision_needed: [DN-A14-PRIVACY, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-3]
+  test_points: [决策关闭前响应不含联系方式, 不因示例文案自行规定脱敏算法]
+  confidence: medium
+- int_id: INT-A-X-1304
+  layer: page
+  srs: {excel_row: 284, seq: 281, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/导入与导出}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, export, write_back]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade, python_internal]
+  counterpart: none
+  delivery_form: file
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: POST /talent/v1/profile/imports（draft）。导入只受理到 1302 的 ADS 人工层；导出只读 ADS。Java 不写 nGQL
+    python: POST /internal/talent/profile/imports（draft）。不另建表，不直接写 Nebula
+    downstream: 复用 1302 人工层。导出文件不含未拍板的敏感字段
+  contract_draft:
+    request: [talent_key, file_format, field_set]
+    response_key_fields: [talent_key, job_id, review_status, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [批量导入没有注册指标。模板字段随主键与隐私决策，确认前不落主档]
+  conflicts: []
+  decision_needed: [DN-A14-WRITE, DN-A14-PRIVACY, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-3, R-A14-4]
+  test_points: [导入不产生第二张新表, 导出文件无敏感字段]
+  confidence: medium
+- int_id: INT-A-X-1305
+  layer: page
+  srs: {excel_row: 285, seq: 282, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/基础画像/用户互动}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, write_back, push]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: POST /talent/v1/profile/feedback（draft）。纠错进入 1302 人工层待审核。订阅在事件源落地前不发送
+    python: 在线链路不经 Python
+    downstream: 不新要久新推送 API。反馈不直接写 Nebula
+  contract_draft:
+    request: [talent_key, feedback_text, subscribe]
+    response_key_fields: [talent_key, feedback_id, review_status, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [订阅依赖的新成果事件无源。确认前订阅开关不可用，不发通知]
+  conflicts: []
+  decision_needed: [DN-A14-WRITE, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-2]
+  test_points: [纠错不改主档直到审核通过, 无事件源时订阅接口返回空态]
+  confidence: medium
+- int_id: INT-A-X-1306
+  layer: page
+  srs: {excel_row: 286, seq: 283, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/关联画像/关联数据展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/relations（draft，只读 ADS 快照）
+    python: POST /internal/jiuxin/talent/relation-chain（draft，适配 API-160）
+    downstream: 久新 API-160（SRS-160，材料包 b01_mapping）。图只引用 C04 talent / talent_coop。Java 不写 nGQL
+  contract_draft:
+    request: [talent_key, depth, page, size]
+    response_key_fields: [talent_key, snapshot_id, src, dst, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 论文、专利、项目穿透宽于 160 的关系链。多出来的成果清单无指标，确认前只展示 160 快照
+  - C-index 无 talent、无 talent_coop，不另造点边
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-2, R-A14-5]
+  test_points: [快照缺失时关联区空态, 响应不出现未注册的成果计数]
+  confidence: medium
+- int_id: INT-A-X-1307
+  layer: page
+  srs: {excel_row: 287, seq: 284, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/关联画像/智能检索与筛选}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。筛选只消费 1306 已返回载荷
+    python: 在线链路不经 Python。语义检索不放在 Java
+    downstream: 消费 INT-A-X-1306（API-160 快照）。不另取数
+  contract_draft:
+    request: [talent_key, output_type, time_range, keyword]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: ["metric_missing:语义检索无注册指标。确认前只做关键词筛选"]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [1306 为空时筛选区空态, Java 响应无语义相关分]
+  confidence: medium
+- int_id: INT-A-X-1308
+  layer: page
+  srs: {excel_row: 288, seq: 285, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/关联画像/关联关系挖掘}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/relations（draft，只读 ADS 快照，与 1306 同一读面）
+    python: POST /internal/jiuxin/talent/relation-chain（draft，适配 API-160，不另开模型）
+    downstream: 久新 API-160。隐含关系不另造边，只引用 C04 talent_coop。Java 不写 nGQL
+  contract_draft:
+    request: [talent_key, depth]
+    response_key_fields: [talent_key, snapshot_id, src, dst, strength, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [重点关联的阈值未拍板。确认前不额外打标，只回 160 快照已有字段]
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [不出现第二套关系模型接口, 快照缺失时空态]
+  confidence: medium
+- int_id: INT-A-X-1309
+  layer: page
+  srs: {excel_row: 289, seq: 286, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/关联画像/可视化图谱操作}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, graph]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。缩放、拖拽、聚焦只消费 1306 与 1308 已返回载荷
+    python: 在线链路不经 Python
+    downstream: 不另取数，不另造点边
+  contract_draft:
+    request: [talent_key, zoom_level, focus_node_id]
+    response_key_fields: [talent_key, focus_node_id, reason]
+    granularity: {time: none, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [布局保存没有指标。确认前刷新不保留拖拽坐标]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [1306 为空时图谱区空态, 前端不本地生成关系边]
+  confidence: medium
+- int_id: INT-A-X-1310
+  layer: page
+  srs: {excel_row: 290, seq: 287, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/关联画像/数据溯源与详情展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。证据与变更只读 1306 快照和 1302 人工层
+    python: 在线链路不经 Python
+    downstream: 不直接写 Nebula。无证据时空态
+  contract_draft:
+    request: [talent_key, relation_id]
+    response_key_fields: [talent_key, evidence_id, review_status, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [原文链接没有注册指标。快照未带证据时不编造来源]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [无 evidence 时详情区空态, 变更记录只反映已审核人工层]
+  confidence: medium
+- int_id: INT-A-X-1311
+  layer: page
+  srs: {excel_row: 291, seq: 288, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/分析画像/多维度分析展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_DEEP_162_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-162
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/academic（draft，只读 ADS 快照）
+    python: POST /internal/jiuxin/talent/academic-score（draft，适配 API-162）
+    downstream: 久新 API-162（SRS-162）。H 指数/活跃度在久新 DS-08-VIZ-001/004（A10），只引用
+  contract_draft:
+    request: [talent_key, domain_code]
+    response_key_fields: [talent_key, snapshot_id, academic_score, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [雷达图与贡献度分布宽于 162。162 没有的切面空态。不在本叶重算 H 指数]
+  conflicts: [CF-A14-2]
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-2, R-A14-6]
+  test_points: [响应不包含本叶自算的 h_index, 快照缺失时分析区空态]
+  confidence: medium
+- int_id: INT-A-X-1312
+  layer: page
+  srs: {excel_row: 292, seq: 289, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/分析画像/智能筛选与比较}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。已有学术力筛选去 1311。相似与趋势本叶不出数
+    python: 在线链路不经 Python
+    downstream: 不向久新追加相似人才 API
+  contract_draft:
+    request: [talent_key, time_range, domain_code]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: year, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: ["metric_missing:相似人才与历史趋势无注册指标"]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [响应无相似分, 不把 162 分差写成相似度]
+  confidence: medium
+- int_id: INT-A-X-1313
+  layer: page
+  srs: {excel_row: 293, seq: 290, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/分析画像/人才引进评估}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: [M_TALENT_DEEP_162_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-162
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/academic（draft，只读 ADS 快照）。成本与难度字段不返回
+    python: POST /internal/jiuxin/talent/academic-score（draft，适配 API-162）
+    downstream: 久新 API-162。引进成本沿用 A15，不新建成本表。H 指数/活跃度在久新 DS-08-VIZ-001/004（A10），只引用
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [talent_key, snapshot_id, academic_score, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [难度、成本、影响因子不是 162 的字段。确认前这三块空态，不向久新要采集 API]
+  conflicts: [CF-A14-2, CF-A14-3]
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-6]
+  test_points: [响应无费用数字, 响应无本叶自算的活跃度]
+  confidence: medium
+- int_id: INT-A-X-1314
+  layer: page
+  srs: {excel_row: 294, seq: 291, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/分析画像/可视化操作支持}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。缩放与聚焦只消费 1311 已返回载荷
+    python: 在线链路不经 Python
+    downstream: 消费 INT-A-X-1311。不另取数
+  contract_draft:
+    request: [talent_key, chart_id, zoom_level]
+    response_key_fields: [talent_key, focus_id, reason]
+    granularity: {time: none, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [图表交互不单独出指标]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [1311 为空时图表区空态, 前端不本地计算贡献分]
+  confidence: medium
+- int_id: INT-A-X-1315
+  layer: page
+  srs: {excel_row: 295, seq: 292, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/分析画像/交互与报告输出}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: file
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: POST /talent/v1/profile/reports（draft）。只拼装已有快照，无源章节留空
+    python: 在线链路不经 Python
+    downstream: 不新要报告 API。敏感字段遵循 DN-A14-PRIVACY
+  contract_draft:
+    request: [talent_key, file_format, section_set]
+    response_key_fields: [talent_key, report_id, empty_sections, reason]
+    granularity: {time: year, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [报告模板与空态章节未定。无指标的章节禁止补写]
+  conflicts: []
+  decision_needed: [DN-A14-PRIVACY, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-3]
+  test_points: [相似人才、成本、成果计数章节为空, 报告不写入敏感字段]
+  confidence: medium
+- int_id: INT-A-X-1316
+  layer: page
+  srs: {excel_row: 296, seq: 293, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/近期成果展示/成果信息分层展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/outputs（draft）。无指标时返回空列表，不填成果数
+    python: 在线链路不经 Python
+    downstream: 论文、专利、项目清单无本叶指标，不向久新新要行
+  contract_draft:
+    request: [talent_key, output_type, time_range, page, size]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: year, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: ["metric_missing:论文、专利、项目列表无注册指标"]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [响应 items 为空, 不用样例论文填列表]
+  confidence: medium
+- int_id: INT-A-X-1317
+  layer: page
+  srs: {excel_row: 297, seq: 294, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/近期成果展示/可视化操作}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。缩放、聚焦、全屏只消费同页成果载荷
+    python: 在线链路不经 Python
+    downstream: 消费 INT-A-X-1316。不另取数
+  contract_draft:
+    request: [talent_key, zoom_level, focus_id]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: none, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [1316 无列表时操作区空态]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [前端不本地编造成果节点]
+  confidence: medium
+- int_id: INT-A-X-1318
+  layer: page
+  srs: {excel_row: 298, seq: 295, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/近期成果展示/智能推送与动态更新}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [push]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增推送接口。无增量源时不注册订阅
+    python: 在线链路不经 Python
+    downstream: 不向久新要抓取 API。确认前不承诺实时
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: none, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: ["metric_missing:新成果事件无增量源"]
+  conflicts: []
+  decision_needed: [DN-A14-PUSH, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [接口不返回最近成果条数, 页面不写秒级刷新]
+  confidence: medium
+- int_id: INT-A-X-1319
+  layer: page
+  srs: {excel_row: 299, seq: 296, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/近期成果展示/成果详情与原文链接}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/outputs/{output_key}（draft）。无指标时详情为空
+    python: 在线链路不经 Python
+    downstream: 原文与关联推荐无本叶指标，不编造链接
+  contract_draft:
+    request: [talent_key, output_key]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: year, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: ["metric_missing:成果详情、原文链接与关联推荐无注册指标"]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [响应无 url 占位, 不把 160 邻居当成推荐成果]
+  confidence: medium
+- int_id: INT-A-X-1320
+  layer: page
+  srs: {excel_row: 300, seq: 297, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/合作网络图谱/合作关系可视化展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/coop（draft，只读 ADS 投影，不写 nGQL）
+    python: POST /internal/graph/talent-net（draft，读投影；适配仍走 API-160）
+    downstream: 久新 API-160。图谱只引用 C04 talent 与 talent_coop（INT-C-TAL-310 / INT-C-TAL-350）
+  contract_draft:
+    request: [talent_key, depth, coop_type]
+    response_key_fields: [talent_key, snapshot_id, src, dst, coop_type, strength, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 师承、项目、论文、技术交流不另造边，只打算复用 C04 talent_coop
+  - C-index 无 talent_coop，结构未建，确认前网络空态
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [响应点边名只有 talent 与 talent_coop, 投影缺失时空态]
+  confidence: medium
+- int_id: INT-A-X-1321
+  layer: page
+  srs: {excel_row: 301, seq: 298, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/合作网络图谱/图谱交互操作}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [graph]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。缩放、聚焦、聚合只消费 1320 已返回载荷
+    python: 在线链路不经 Python
+    downstream: 按机构或学科聚合不另造点，只对已返回的 talent 做前端分组
+  contract_draft:
+    request: [talent_key, zoom_level, group_by]
+    response_key_fields: [talent_key, focus_node_id, reason]
+    granularity: {time: none, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [1320 为空时交互区空态]
+  conflicts: []
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-5]
+  test_points: [分组不产生新的点类型, 前端不补边]
+  confidence: medium
+- int_id: INT-A-X-1322
+  layer: page
+  srs: {excel_row: 302, seq: 299, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/合作网络图谱/智能发现与动态刷新}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/coop（draft，只读 ADS 快照）。无增量流，不提供实时刷新
+    python: POST /internal/jiuxin/talent/relation-chain（draft，适配 API-160，不另开发现模型）
+    downstream: 久新 API-160。潜在合作不另造边，只引用 talent_coop。刷新跟随快照
+  contract_draft:
+    request: [talent_key, depth]
+    response_key_fields: [talent_key, snapshot_id, src, dst, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [需规写实时更新。现有 160 是快照，没有事件流。确认前不承诺实时]
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, DN-A14-PUSH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [响应无推荐分, 页面不写秒级刷新]
+  confidence: medium
+- int_id: INT-A-X-1323
+  layer: page
+  srs: {excel_row: 303, seq: 300, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/合作网络图谱/合作详情与溯源}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/coop/{pair_key}（draft，只读 ADS 快照）
+    python: POST /internal/jiuxin/talent/relation-chain（draft，适配 API-160）
+    downstream: 久新 API-160 的证据字段。合作链不另造边，只沿 talent_coop
+  contract_draft:
+    request: [talent_key, pair_key]
+    response_key_fields: [talent_key, src, dst, evidence_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [快照没有证据时详情空态，不编造合作链条]
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [无 evidence 时详情为空, 点边名不超出 talent 与 talent_coop]
+  confidence: medium
+- int_id: INT-A-X-1324
+  layer: page
+  srs: {excel_row: 304, seq: 301, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/研究领域图谱/研究领域分层展示}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_GRAPH_110_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-07
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-110
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/fields（draft，只读 ADS 投影，不写 nGQL）
+    python: POST /internal/graph/talent-net（draft，110 离线识别）
+    downstream: 久新 Python-110（SRS-110）。领域只挂 C04 talent，不另造领域点
+  contract_draft:
+    request: [talent_key, field_code, depth]
+    response_key_fields: [talent_key, field_code, snapshot_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: weekly
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - C-index 无 Tag 名 talent。110 的实体结果在点名落地前空态
+  - 人才主键未定（C01）
+  conflicts: [CF-A14-1]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [响应不出现新的点类型, 投影缺失时领域树空态]
+  confidence: medium
+- int_id: INT-A-X-1325
+  layer: page
+  srs: {excel_row: 305, seq: 302, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/研究领域图谱/可视化操作与交互}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [graph]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: 本叶不新增接口。缩放、聚焦、全景切换只消费 1324 已返回载荷
+    python: 在线链路不经 Python
+    downstream: 消费 INT-A-X-1324。不另造点边
+  contract_draft:
+    request: [talent_key, zoom_level, focus_id]
+    response_key_fields: [talent_key, reason]
+    granularity: {time: none, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps: [1324 为空时领域图空态]
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A14-1]
+  test_points: [前端不本地生成领域节点]
+  confidence: medium
+- int_id: INT-A-X-1326
+  layer: page
+  srs: {excel_row: 306, seq: 303, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/研究领域图谱/智能挖掘与趋势分析}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/coop（draft，只读 ADS 快照）。主题演化与热点不返回数值
+    python: POST /internal/jiuxin/talent/relation-chain（draft，适配 API-160）
+    downstream: 久新 API-160。不另造趋势点。图仍只引用 talent / talent_coop
+  contract_draft:
+    request: [talent_key, time_range]
+    response_key_fields: [talent_key, snapshot_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [主题演化、关联领域推荐、动态热点没有单独指标。材料包只挂了 160，这三块确认前空态]
+  conflicts: [CF-A14-4]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [响应无热度分, 不把 160 边权写成主题演化]
+  confidence: medium
+- int_id: INT-A-X-1327
+  layer: page
+  srs: {excel_row: 307, seq: 304, path: 智能服务集群/科技信息展示系统/科技人才态势/重点科技人才画像/研究领域图谱/详情展示与溯源}
+  page_ref: DS-15-TALENT-PROFILE
+  dimension: [TAL]
+  dep_kind: [data, metric, graph]
+  metric_ids: [M_TALENT_GRAPH_110_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-07
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-110
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/fields/{field_code}（draft，只读 ADS 投影，不写 nGQL）
+    python: POST /internal/graph/talent-net（draft，110 离线识别）
+    downstream: 久新 Python-110。详情只挂 C04 talent。关键词演变不另造点
+  contract_draft:
+    request: [talent_key, field_code]
+    response_key_fields: [talent_key, field_code, snapshot_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: weekly
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/key-talent-profile，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps: [代表性论文与关键词演变无单独指标。110 投影没有这些字段时详情空态]
+  conflicts: [CF-A14-4]
+  decision_needed: [DN-A14-GRAPH, C01-P0-1]
+  structure_escalation: true
+  risks: [R-A14-5]
+  test_points: [响应不编造论文列表, 点名只有 talent]
+  confidence: medium
+summary:
+  cards_by_type:
+    X: 28
+  srs_rows_covered: 28
+  jiuxin_rows_referenced:
+  - SRS-110
+  - SRS-160
+  - SRS-162
+  jiuxin_rows_cited_only:
+  - DS-08-VIZ-001
+  - DS-08-VIZ-004
+  jiuxin_new_rows_needed: 0
+  page_metrics_assignment:
+    M_TALENT_DEEP_160_1: [286, 288, 300, 302, 303, 306]
+    M_TALENT_DEEP_162_1: [291, 293]
+    M_TALENT_GRAPH_110_1: [304, 307]
+  metric_missing_cards:
+  - INT-A-X-1307
+  - INT-A-X-1312
+  - INT-A-X-1316
+  - INT-A-X-1318
+  - INT-A-X-1319
+  structure_escalation_cards:
+  - INT-A-X-1302
+  - INT-A-X-1306
+  - INT-A-X-1308
+  - INT-A-X-1320
+  - INT-A-X-1322
+  - INT-A-X-1323
+  - INT-A-X-1324
+  - INT-A-X-1326
+  - INT-A-X-1327
+  lumen_page: 无
+  demo_page: 未点查
+decision_needed:
+- id: DN-A14-PRIVACY
+  owner: 甲方
+  status: decision_needed
+  item: 人才基础画像的权限、敏感字段、脱敏规则、加密要求未拍板。关闭前不返回敏感字段，不替甲方选定规则
+- id: DN-A14-WRITE
+  owner: "human:李伟"
+  item: 基础信息修订的人工层表结构、审核是否必经、提醒周期。写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）
+- id: DN-A14-GRAPH
+  owner: "human:李伟"
+  item: C-index 没有 talent 与 talent_coop。合作网络和领域图只引用 C04 这两名，不另造。结构落地前相关卡空态
+- id: DN-A14-PUSH
+  owner: 待定
+  item: 新成果订阅与合作网络实时刷新没有增量源。确认前不承诺实时，不向久新要抓取 API
+- id: C01-P0-1
+  owner: 甲方
+  item: 人才主键未定（C01）。本页只占位 talent_key
+decision_referenced:
+- C01-P0-1
+- DN-A14-PRIVACY
+- DN-A14-WRITE
+- DN-A14-GRAPH
+- DN-A14-PUSH
+risks:
+- id: R-A14-1
+  level: high
+  desc: lumen 无本页。菜单 talent/key-talent-profile 落到 DevelopingView
+  mitigation: 有页面实现叶后再按本卡拆端点
+- id: R-A14-2
+  level: high
+  desc: 人才主键未定（C01）。契约若写死 scholar_id，主档迁移会断键
+  mitigation: 请求与响应只用 talent_key
+- id: R-A14-3
+  level: high
+  desc: 隐私规则未拍板。若按需规举例直接展示联系方式，会在决策前泄露敏感字段
+  mitigation: DN-A14-PRIVACY 关闭前接口不返回敏感字段
+- id: R-A14-4
+  level: high
+  desc: 校验更新、导入、纠错若由 Java 直接写 Nebula，会越过 ADS 人工层
+  mitigation: "写回走 ADS 人工层再投影，不直接写 Nebula（A03/C04）。新表只升 human:李伟 这一次"
+- id: R-A14-5
+  level: high
+  desc: C-index 无 talent / talent_coop。页面若自造点边，会和 C04 草案冲突
+  mitigation: 只引用 INT-C-TAL-310 与 INT-C-TAL-350，结构未落地前空态
+- id: R-A14-6
+  level: medium
+  desc: 分析画像容易在前端重算 H 指数或活跃度
+  mitigation: 只引用 A10 的 DS-08-VIZ-001/004，本叶不挂 INNOV 指标、不重算
+conflicts:
+- id: CF-A14-1
+  desc: 需规合作类型宽于 C04 talent_coop 草案。不另造边，C-index 又无该边名，故结构升级后才能展示
+- id: CF-A14-2
+  desc: H 指数与活跃度的久新行在 A10（DS-08-VIZ-001/004，并入 API-162）。本叶材料包只挂 M_TALENT_DEEP_162_1，不改挂 INNOV 指标
+- id: CF-A14-3
+  desc: 293 的引进难度与成本不是 162。不改挂、不新建成本表，空态沿用 A15
+- id: CF-A14-4
+  desc: 306/307 要主题演化、热点和关键词演变，材料包只有 160 或 110。未覆盖的切面空态，不发明指标

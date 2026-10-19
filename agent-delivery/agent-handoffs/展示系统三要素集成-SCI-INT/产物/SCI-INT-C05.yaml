@@ -1,0 +1,6143 @@
+# SCI-INT-C05 标准层结构清单（ADS / ES / 维表 / 快照）· 生成：_work/C05-build.py · 校验：_work/C05-check.py
+# 对端 = 北京久新；久新行全部「待确认」；新结构一律 structure_escalation → human:李伟（草案，未评审）
+task_id: SCI-INT-C05
+layer: data
+counterpart_name: 北京久新（旧写「九新」）
+scope_count: 162
+card_count: 57
+gap: []
+scope_note: scope_count = C05-collect 采集的原始 structure_escalation 提法数（开工 B01/C01–C04/A01–A05 共 80 + 晚到 A06–A15/B02–B09）；card_count = 归并后的规范结构卡数
+summary:
+  raw_mentions: 162
+  raw_by_kind:
+    card: 154
+    top: 8
+  canonical_by_kind:
+    ads: 22
+    es: 2
+    dim: 5
+    snapshot: 5
+    dwd_master: 3
+    map_bridge: 7
+    override: 3
+    cfg: 3
+    user_own: 4
+    ods: 1
+    cache: 1
+    nebula_schema: 1
+  structure_escalation: 55
+  conflicts: 19
+  supplement:
+    late_mentions: 82
+    merged_into_existing: 58
+    new_cards: 8
+cards:
+- int_id: INT-C-TAL-400
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-15-TALENT-PROFILE
+  - DS-13
+  - DS-16
+  - TOPIC-TALENT-05
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  - M_TALENT_GRAPH_110_1
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_FLOW_TRACK
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-07
+  ours:
+  - etl
+  - python_internal
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: SRS-110
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.talent_master（物理名待定；ADS 只读投影 gkxlumenx_ads.sci_talent_profile）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - scholar_id
+    - name_zh
+    - name_en
+    - orc_id
+    - gender
+    - nationality_code(code_country)
+    granularity:
+      pk: scholar_id（沿用三方 dwd_scholar.scholar_id，稳定性待确认）
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - nationality / 华人标识口径（DS-13 seq 248）无源字段，unknown
+  - 久新交付形态/字段/频率：待确认（SRS-110）
+  conflicts: []
+  decision_needed:
+  - DN-C05-01 人才主数据持有方：三方 scholar_id 直用 / 我方代理键 / 久新 110 产出（同 C01 决策）→ human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 主键唯一：scholar_id 去重后行数 = dwd_scholar 行数
+  - Nebula talent VID = talent:{scholar_id} 一一对应
+  confidence: medium
+  canonical:
+    kind: dwd_master
+    kind_cn: 主数据
+    name: 人才主档 talent_master
+    physical: gkxlumenx_dim.talent_master（物理名待定；ADS 只读投影 gkxlumenx_ads.sci_talent_profile）
+    existence: missing
+    fields_draft:
+    - scholar_id
+    - name_zh
+    - name_en
+    - orc_id
+    - gender
+    - nationality_code(code_country)
+    - is_chinese_ethnic(待确认口径)
+    - current_org_uid
+    - region_code(code_region)
+    - domain_code[](tech_domain)
+    - degree_level
+    - title_level
+    - is_key
+    - source
+    - version
+    - updated_at
+    primary_key: scholar_id（沿用三方 dwd_scholar.scholar_id，稳定性待确认）
+    refresh: T+1 随入站 ETL；人工修订经 TAL-403 合并视图
+    writer: lumen-algo-py 主数据 Job（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-070
+  - INT-C-TAL-041
+  - INT-C-TAL-060
+  - INT-C-TAL-310
+  - INT-C-TAL-020
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  - DS-15-TALENT-PROFILE
+  - DS-16-TALENT-RECRUIT
+  merged_from:
+  - SCI-INT-C01:INT-C-TAL-070
+  - SCI-INT-A10:INT-A-TAL-910
+  - SCI-INT-A12:INT-A-TAL-1114
+  - SCI-INT-B03:INT-B-TAL-200
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-041
+  - SCI-INT-C01:INT-C-TAL-060
+  - SCI-INT-C04:INT-C-TAL-310
+  - SCI-INT-A08:INT-A-TAL-728
+  supplement_note: 补归并：A12 INT-A-TAL-1114 与 B03 SE-B03-01 的 dwd_talent_master 挂本主档，A10 学术力只作对照，不另造第二张人才主表。
+- int_id: INT-C-TAL-401
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-07
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-110
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.person_id_map
+  contract_draft:
+    request: []
+    response_key_fields:
+    - src_system
+    - src_person_key
+    - scholar_id
+    - method(rule|jx110|manual)
+    - confidence
+    - version
+    granularity:
+      pk: (src_system, src_person_key, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-110）
+  conflicts: []
+  decision_needed:
+  - DN-C05-02 久新 110 消歧产出是否作为本表正式来源（同 C01 OI）→ 久新/human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.person_id_map 主键 = (src_system, src_person_key, version)
+  - 写者唯一：只有 lumen-algo-py 消歧 Job 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 人员 ID 映射 person_id_map
+    physical: gkxlumenx_dim.person_id_map
+    existence: missing
+    fields_draft:
+    - src_system
+    - src_person_key
+    - scholar_id
+    - method(rule|jx110|manual)
+    - confidence
+    - version
+    - updated_at
+    primary_key: (src_system, src_person_key, version)
+    refresh: T+1；久新 110 消歧产出按 run 合入（待确认）
+    writer: lumen-algo-py 消歧 Job（久新 Python-110 并入后）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-041
+  - INT-C-TAL-072
+  consumer_cards: []
+  merged_from:
+  - SCI-INT-C01:INT-C-TAL-041
+  - SCI-INT-C01:INT-C-TAL-072
+  - SCI-INT-B03:INT-B-TAL-201
+  merged_also:
+  - SCI-INT-A12:INT-A-TAL-1114
+  supplement_note: 补归并：B03 SE-B03-02 的 dwd_person_id_map 即本映射；A12 INT-A-TAL-1114 同时引用，不另造。
+- int_id: INT-C-TAL-402
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-15-TALENT-PROFILE
+  - DS-16
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_164_1
+  - M_TALENT_FLOW_TRACK
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-02/IP-07
+  ours:
+  - python_internal
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id:
+  - SRS-111
+  - SRS-157
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_talent_flow
+  contract_draft:
+    request: []
+    response_key_fields:
+    - scholar_id
+    - from_org_uid
+    - to_org_uid
+    - from_region_code
+    - to_region_code
+    - move_year
+    granularity:
+      pk: (scholar_id, move_year, from_org_uid, to_org_uid)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 流动 = 关系边 + 时间属性，非 GPS 轨迹（DS-13/14 裁定）
+  - 久新交付形态/字段/频率：待确认（SRS-111, SRS-157）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_flow 主键 = (scholar_id, move_year, from_org_uid, to_org_uid)
+  - 写者唯一：只有 lumen-algo-py 流动派生 Job 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 人才任职/流动边 talent_flow
+    physical: gkxlumenx_ads.sci_talent_flow
+    existence: missing
+    fields_draft:
+    - scholar_id
+    - from_org_uid
+    - to_org_uid
+    - from_region_code
+    - to_region_code
+    - move_year
+    - title
+    - method(work_exp_diff|jx157)
+    - version
+    primary_key: (scholar_id, move_year, from_org_uid, to_org_uid)
+    refresh: T+1（派生自 dwd_scholar_work_experience）
+    writer: lumen-algo-py 流动派生 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-071
+  - INT-C-TAL-061
+  - INT-C-TAL-351
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from:
+  - SCI-INT-C01:INT-C-TAL-071
+  - SCI-INT-A12:INT-A-TAL-1103
+  - SCI-INT-B02:INT-B-TAL-101
+  - SCI-INT-B02:INT-B-TAL-108
+  - SCI-INT-B03:INT-B-TAL-207
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-061
+  - SCI-INT-C04:INT-C-TAL-351
+  supplement_note: 补归并：A12 INT-A-TAL-1103 与 B02 SE-B02-02（INT-B-TAL-101/108）及 B03 INT-B-TAL-207 的 dwd_talent_flow 即本流动边，不另立表。
+- int_id: INT-C-TAL-403
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  - write_back
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - java_facade
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_talent_override
+  contract_draft:
+    request: []
+    response_key_fields:
+    - scholar_id
+    - field_name
+    - old_value
+    - new_value
+    - audit_status(pending|approved|rejected)
+    - operator
+    granularity:
+      pk: (scholar_id, field_name, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed:
+  - DN-C05-03 人才修订层写入口：Java 提交→Python 落表 是否被 Java 只读 ADS 铁律接受（写口归 Python）→ human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_override 主键 = (scholar_id, field_name, version)
+  - 写者唯一：只有 lumen-algo-py 写 写入
+  confidence: medium
+  canonical:
+    kind: override
+    kind_cn: 人工层
+    name: 人才修订层 talent_override
+    physical: gkxlumenx_ads.sci_talent_override
+    existence: missing
+    fields_draft:
+    - scholar_id
+    - field_name
+    - old_value
+    - new_value
+    - audit_status(pending|approved|rejected)
+    - operator
+    - trace_id
+    - version
+    - created_at
+    primary_key: (scholar_id, field_name, version)
+    refresh: 事件驱动（审核通过即合入合并视图）
+    writer: lumen-algo-py 写（Java 经 /internal/* 提交，不直写）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - DS-15-TALENT-PROFILE
+  merged_from:
+  - SCI-INT-C04:write_back_conflicts.items[3]
+  - SCI-INT-A14:INT-A-X-1302
+  merged_also: []
+  supplement_note: 补归并：A14 INT-A-X-1302 写回走本人工层再投影，不直接写 Nebula，不另造表。
+- int_id: INT-C-TAL-404
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-15-TALENT-PROFILE
+  - TOPIC-TALENT-05
+  dimension:
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_RELATION_NET
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05/IP-07
+  ours:
+  - python_internal
+  - graph_load
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-111
+  - SRS-160
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_talent_relation
+  contract_draft:
+    request: []
+    response_key_fields:
+    - src_scholar_id
+    - dst_type(talent|inst|ent|project)
+    - dst_id
+    - rel_type(coauthor|project|mentor|educated_at)
+    - coop_count
+    - first_year
+    granularity:
+      pk: (src_scholar_id, dst_type, dst_id, rel_type, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-111, SRS-160）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_relation 主键 = (src_scholar_id, dst_type, dst_id, rel_type, version)
+  - 写者唯一：只有 lumen-algo-py 关系抽取/派生 Job → 再投影 Nebula 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 人才关系边 talent_relation（合作/教育/项目共参）
+    physical: gkxlumenx_ads.sci_talent_relation
+    existence: missing
+    fields_draft:
+    - src_scholar_id
+    - dst_type(talent|inst|ent|project)
+    - dst_id
+    - rel_type(coauthor|project|mentor|educated_at)
+    - coop_count
+    - first_year
+    - last_year
+    - strength
+    - evidence_ids
+    - source(rule|jx111|manual)
+    - version
+    primary_key: (src_scholar_id, dst_type, dst_id, rel_type, version)
+    refresh: weekly 增量（待确认）
+    writer: lumen-algo-py 关系抽取/派生 Job → 再投影 Nebula（X-490）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-042
+  - INT-C-TAL-061
+  - INT-C-TAL-350
+  - INT-C-TAL-352
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-15-TALENT-PROFILE
+  merged_from:
+  - SCI-INT-C01:INT-C-TAL-042
+  - SCI-INT-A10:INT-A-TAL-914
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-061
+  - SCI-INT-C04:INT-C-TAL-350
+  - SCI-INT-C04:INT-C-TAL-352
+  supplement_note: 补归并：A10 INT-A-TAL-914 的论文/项目参与挂本关系边，不另造参与主表。
+- int_id: INT-C-TAL-405
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_BASE_98_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-06
+  ours:
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-98
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_talent_base
+  contract_draft:
+    request: []
+    response_key_fields:
+    - region_code
+    - geo_level(country|admin1|city|district|street)
+    - domain_code
+    - org_type
+    - degree_level
+    - stat_year
+    granularity:
+      pk: (metric_id, region_code, domain_code, org_type, degree_level, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - DS-13/14 粒度（全球→国家→省州→城市；深圳 市→区→园区）为预判（confidence low）
+  - 久新交付形态/字段/频率：待确认（SRS-98）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_base 主键 = (metric_id, region_code, domain_code, org_type, degree_level, stat_year, as_of)
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: low
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 人才基础指标 sci_talent_base（地区×领域×年度聚合）
+    physical: gkxlumenx_ads.sci_talent_base
+    existence: missing
+    fields_draft:
+    - region_code
+    - geo_level(country|admin1|city|district|street)
+    - domain_code
+    - org_type
+    - degree_level
+    - stat_year
+    - talent_cnt
+    - org_cnt
+    - yoy_rate
+    - metric_id
+    - as_of
+    - batch_id
+    primary_key: (metric_id, region_code, domain_code, org_type, degree_level, stat_year, as_of)
+    refresh: T+1 / 月（久新 SQL-98 由我方 GDF/ETL 执行，待确认）
+    writer: GDF/ETL（执行久新 SQL-98）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TAL-016
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from:
+  - SCI-INT-A01:INT-A-TAL-016
+  - SCI-INT-A12:INT-A-TAL-1100
+  merged_also: []
+  supplement_note: 补归并：A12 INT-A-TAL-1100 的 ads_talent_geo_agg 即本地区×领域×年度聚合，不另起表。
+- int_id: INT-C-TAL-406
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_DEEP_164_1
+  - M_TALENT_FLOW_TRACK
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-07/IP-11
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_talent_flow_od
+  contract_draft:
+    request: []
+    response_key_fields:
+    - from_region_code
+    - to_region_code
+    - geo_level
+    - domain_code
+    - stat_year
+    - inflow_cnt
+    granularity:
+      pk: (metric_id, from_region_code, to_region_code, domain_code, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（久新行未逐行挂接）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_flow_od 主键 = (metric_id, from_region_code, to_region_code, domain_code, stat_year, as_of)
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: low
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 人才流动 OD 聚合 sci_talent_flow_od（预判）
+    physical: gkxlumenx_ads.sci_talent_flow_od
+    existence: missing
+    fields_draft:
+    - from_region_code
+    - to_region_code
+    - geo_level
+    - domain_code
+    - stat_year
+    - inflow_cnt
+    - outflow_cnt
+    - retain_cnt
+    - metric_id
+    - as_of
+    - version
+    primary_key: (metric_id, from_region_code, to_region_code, domain_code, stat_year, as_of)
+    refresh: 月（待确认）
+    writer: lumen-algo-py（157 人才流动追踪；久新 Python 并入，待确认）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    predicted_for:
+    - DS-13 seq 246/252/256
+    - DS-14 seq 267
+  source_cards:
+  - INT-C-TAL-071
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from: []
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-071
+- int_id: INT-C-TAL-407
+  layer: data
+  srs:
+    ref: 预判：DS-13 seq 262/264/265；DS-15 成果/动态
+  page_ref: []
+  dimension:
+  - TAL
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-10
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_talent_ext
+  contract_draft:
+    request: []
+    response_key_fields:
+    - scholar_id
+    - ext_type(honor|visit|news|lecture)
+    - title
+    - org_or_place
+    - country_code
+    - event_date
+    granularity:
+      pk: (scholar_id, ext_type, title, event_date)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 荣誉/出访/动态无已知三方源表（unknown），无源则 IP-10 空态
+  - 无原始 structure_escalation 提法；C05 按 geo/domain/人才态势预判补卡
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_talent_ext 主键 = (scholar_id, ext_type, title, event_date)
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: low
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 人才扩展档案 sci_talent_ext（荣誉/出访/动态 feed，预判）
+    physical: gkxlumenx_ads.sci_talent_ext
+    existence: missing
+    fields_draft:
+    - scholar_id
+    - ext_type(honor|visit|news|lecture)
+    - title
+    - org_or_place
+    - country_code
+    - event_date
+    - source_url
+    - source
+    - as_of
+    primary_key: (scholar_id, ext_type, title, event_date)
+    refresh: unknown
+    writer: GDF/ETL（源表 unknown）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    predicted_for:
+    - DS-13 seq 262/264/265
+    - DS-15 成果/动态
+  source_cards: []
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-15-TALENT-PROFILE
+  merged_from: []
+  merged_also: []
+- int_id: INT-C-TECH-420
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-TECHGRAPH
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-ENTITY
+  - DS-02-PATH
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_GRAPH_104_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  - M_TECH_DEEP_131_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-07/IP-11
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-104
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.technology_master（ADS 只读投影 gkxlumenx_ads.sci_technology）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - technology_id
+    - name_cn
+    - name_en
+    - aliases[]
+    - domain_code
+    - parent_technology_id
+    granularity:
+      pk: technology_id（我方 ADS 主表发号，C04 WB-C04-03）
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-104）
+  conflicts: []
+  decision_needed:
+  - DN-C05-04 技术点主数据持有方 + technology_id 发号规则（= C02 OI-C02-01 / A03 DN-A03-01）→ human:李伟
+  structure_escalation: true
+  risks:
+  - 主数据未定前 104/105 写入的顶点后续需迁移 VID（全图重灌风险）
+  test_points:
+  - DDL 评审：gkxlumenx_dim.technology_master（ADS 只读投影 gkxlumenx_ads.sci_technology） 主键 = technology_id（我方 ADS 主表发号，C04 WB-C04-03）
+  - 写者唯一：只有 lumen-algo-py 主数据 Job 写入
+  confidence: medium
+  canonical:
+    kind: dwd_master
+    kind_cn: 主数据
+    name: 技术点主数据 technology_master
+    physical: gkxlumenx_dim.technology_master（ADS 只读投影 gkxlumenx_ads.sci_technology）
+    existence: missing
+    fields_draft:
+    - technology_id
+    - name_cn
+    - name_en
+    - aliases[]
+    - domain_code
+    - parent_technology_id
+    - importance_level
+    - status(active|deleted)
+    - source(jx104|manual)
+    - version
+    - updated_at
+    primary_key: technology_id（我方 ADS 主表发号，C04 WB-C04-03）
+    refresh: 随 104 auto 层 run + 人工 change_set 发布
+    writer: lumen-algo-py 主数据 Job（人工发布经 TECH-425）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TECH-151
+  - INT-C-TECH-180
+  - INT-C-TECH-170
+  - INT-C-TECH-300
+  consumer_cards:
+  - INT-A-TECH-105
+  - INT-A-TECH-202
+  - INT-A-TECH-107
+  - INT-A-TECH-200
+  - INT-A-TECH-201
+  - INT-A-TECH-206
+  - INT-A-X-020
+  - INT-A-TECH-103
+  - INT-A-TECH-117
+  - INT-A-TECH-118
+  merged_from:
+  - SCI-INT-C02:INT-C-TECH-151
+  - SCI-INT-C02:INT-C-TECH-180
+  - SCI-INT-C04:write_back_conflicts.items[2]
+  - SCI-INT-A02:INT-A-TECH-105
+  - SCI-INT-A03:INT-A-TECH-202
+  merged_also:
+  - SCI-INT-C02:INT-C-TECH-170
+  - SCI-INT-C04:INT-C-TECH-300
+  - SCI-INT-A02:INT-A-TECH-107
+  - SCI-INT-A03:INT-A-TECH-200
+  - SCI-INT-A03:INT-A-TECH-201
+  - SCI-INT-A03:INT-A-TECH-206
+- int_id: INT-C-TECH-421
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-TECHGRAPH
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DEEP_133_1
+  - M_TECH_DEEP_134_1
+  - M_TECH_DEEP_140_1
+  - M_TECH_TOPIC_HEAT
+  - M_TECH_GRAPH_STRUCT
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.tech_domain
+  contract_draft:
+    request: []
+    response_key_fields:
+    - domain_code
+    - domain_name
+    - parent_code
+    - level
+    - is_focus(重点技术领域)
+    - taxonomy_source
+    granularity:
+      pk: domain_code
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-05
+  decision_needed:
+  - DN-C05-05 分类体系选型（IPC/学科/自建；= C02 OI-C02-02，供应方 TECH-P0-2 未回）→ 甲方/human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.tech_domain 主键 = domain_code
+  - 写者唯一：只有 lumen-algo-py 维表发布脚本 / data-agent 正式化 写入
+  confidence: medium
+  canonical:
+    kind: dim
+    kind_cn: 维表
+    name: 技术领域分类维 tech_domain
+    physical: gkxlumenx_dim.tech_domain
+    existence: missing
+    fields_draft:
+    - domain_code
+    - domain_name
+    - parent_code
+    - level
+    - is_focus(重点技术领域)
+    - taxonomy_source
+    - version
+    primary_key: domain_code
+    refresh: 版本化，低频（人工发布）
+    writer: lumen-algo-py 维表发布脚本 / data-agent 正式化
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TECH-181
+  consumer_cards:
+  - INT-A-TECH-201
+  - INT-A-TECH-105
+  merged_from:
+  - SCI-INT-C02:INT-C-TECH-181
+  - SCI-INT-A03:INT-A-TECH-201
+  - SCI-INT-A08:INT-A-TECH-733
+  - SCI-INT-B05:INT-B-TECH-403
+  - SCI-INT-B05:INT-B-TECH-404
+  - SCI-INT-B05:INT-B-TECH-410
+  merged_also:
+  - SCI-INT-A02:INT-A-TECH-105
+  - SCI-INT-A06:INT-A-TECH-516
+  - SCI-INT-A08:INT-A-X-717
+  supplement_note: 补归并：B05 SE-B05-01 的 dim_tech_domain 与 A08 INT-A-TECH-733 并入本领域维，不另造第二张。
+- int_id: INT-C-TECH-422
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DEEP_133_1
+  - M_TECH_DEEP_134_1
+  - M_TECH_DEEP_140_1
+  - M_TECH_TOPIC_HEAT
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_dim.map_tech_domain_anchor
+  contract_draft:
+    request: []
+    response_key_fields:
+    - anchor_system(ipc|cpc|gb13745|project_discipline|wos_category|paper_scope)
+    - anchor_code
+    - domain_code
+    - weight
+    - version
+    granularity:
+      pk: (anchor_system, anchor_code, domain_code, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.map_tech_domain_anchor 主键 = (anchor_system, anchor_code, domain_code, version)
+  - 写者唯一：只有 data-agent 正式化 + ETL 导入 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 领域锚点映射 map_tech_domain_anchor
+    physical: gkxlumenx_dim.map_tech_domain_anchor
+    existence: missing
+    fields_draft:
+    - anchor_system(ipc|cpc|gb13745|project_discipline|wos_category|paper_scope)
+    - anchor_code
+    - domain_code
+    - weight
+    - version
+    primary_key: (anchor_system, anchor_code, domain_code, version)
+    refresh: 随 tech_domain 版本
+    writer: data-agent 正式化 + ETL 导入
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: 由 C02 INT-C-TECH-181 的 ipc_anchor[] / discipline_anchor[] 数组字段拆出为桥表
+  source_cards:
+  - INT-C-TECH-181
+  consumer_cards: []
+  merged_from: []
+  merged_also:
+  - SCI-INT-C02:INT-C-TECH-181
+  - SCI-INT-A08:INT-A-TECH-733
+  supplement_note: 补归并：A08 INT-A-TECH-733 的 IPC/行业映射挂本锚点桥，不另造映射主表。
+- int_id: INT-C-TECH-423
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-TECHGRAPH
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_INVEST_AMOUNT
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  - M_TECH_GRAPH_STRUCT
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-02/IP-07
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_technology_doc_rel
+  contract_draft:
+    request: []
+    response_key_fields:
+    - technology_id
+    - doc_type(patent|zh_paper|en_paper|scholar_paper|project|report)
+    - doc_id
+    - weight
+    - method(ipc|keyword|ner)
+    - version
+    granularity:
+      pk: (technology_id, doc_type, doc_id, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_technology_doc_rel 主键 = (technology_id, doc_type, doc_id, version)
+  - 写者唯一：只有 lumen-algo-py 文献挂接 Job 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 技术点桥接 technology_doc_rel
+    physical: gkxlumenx_ads.sci_technology_doc_rel
+    existence: missing
+    fields_draft:
+    - technology_id
+    - doc_type(patent|zh_paper|en_paper|scholar_paper|project|report)
+    - doc_id
+    - weight
+    - method(ipc|keyword|ner)
+    - version
+    primary_key: (technology_id, doc_type, doc_id, version)
+    refresh: T+1 / 随 104 run
+    writer: lumen-algo-py 文献挂接 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TECH-182
+  consumer_cards:
+  - INT-A-TECH-105
+  merged_from:
+  - SCI-INT-C02:INT-C-TECH-182
+  merged_also:
+  - SCI-INT-A02:INT-A-TECH-105
+- int_id: INT-C-TECH-424
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-MAINTAIN-ENTITY
+  - DS-02-TECHGRAPH
+  - DS-02-PATH
+  - DS-02-ENTITY
+  - DS-03-RESULT
+  - DS-07
+  dimension:
+  - TECH
+  - ORG
+  - TAL
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_EDGE_STRENGTH
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_GRAPH_105_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_REL_STRENGTH
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  - M_TECH_DEEP_131_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05/IP-07
+  ours:
+  - python_internal
+  - graph_load
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-105
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_tech_relation
+  contract_draft:
+    request: []
+    response_key_fields:
+    - src_type(tech|ent|inst|talent)
+    - src_id
+    - dst_technology_id
+    - rel_type(evolve|depend|contain|substitute|rd|apply|industrialize|master)
+    - strength
+    - evidence_ids
+    granularity:
+      pk: (src_type, src_id, dst_technology_id, rel_type, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-105）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_tech_relation 主键 = (src_type, src_id, dst_technology_id, rel_type, version)
+  - 写者唯一：只有 lumen-algo-py 关系 Job + 人工发布 → 投影 Nebula tech_relation/produces 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 技术关系真源 sci_tech_relation（技术–技术 / 实体–技术）
+    physical: gkxlumenx_ads.sci_tech_relation
+    existence: missing
+    fields_draft:
+    - src_type(tech|ent|inst|talent)
+    - src_id
+    - dst_technology_id
+    - rel_type(evolve|depend|contain|substitute|rd|apply|industrialize|master)
+    - strength
+    - evidence_ids
+    - source(manual|jx105|rule)
+    - locked
+    - version
+    - is_deleted
+    primary_key: (src_type, src_id, dst_technology_id, rel_type, version)
+    refresh: weekly 增量（待确认）+ A03 发布事件
+    writer: lumen-algo-py 关系 Job + 人工发布 → 投影 Nebula tech_relation/produces
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TECH-152
+  - INT-C-TECH-171
+  - INT-C-TECH-340
+  - INT-C-TECH-341
+  consumer_cards:
+  - INT-A-TECH-204
+  - INT-A-TECH-205
+  - INT-A-X-218
+  - INT-A-TECH-104
+  - INT-A-TECH-105
+  - INT-A-TECH-117
+  - INT-A-TECH-118
+  - INT-A-X-109
+  - INT-A-X-114
+  - INT-A-TECH-115
+  merged_from:
+  - SCI-INT-C02:INT-C-TECH-152
+  - SCI-INT-A03:INT-A-TECH-204
+  - SCI-INT-A03:INT-A-TECH-205
+  - SCI-INT-A03:INT-A-X-218
+  merged_also:
+  - SCI-INT-C02:INT-C-TECH-171
+  - SCI-INT-C04:INT-C-TECH-340
+  - SCI-INT-C04:INT-C-TECH-341
+- int_id: INT-C-TECH-425
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-MAINTAIN-ENTITY
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - java_facade
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: SRS-104
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_change_set
+  contract_draft:
+    request: []
+    response_key_fields:
+    - change_set_id
+    - graph_scope(tech|panorama)
+    - ops_json
+    - status(draft|submitted|approved|published|rejected)
+    - operator
+    - reviewer
+    granularity:
+      pk: change_set_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-104）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 若 Java 直接 INSERT VERTEX / 直写主表 → 违反 Java 不写 nGQL / 只读 ADS（A03 risk）
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_change_set 主键 = change_set_id
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 图变更集 graph_change_set（含批量 ops / 状态机）
+    physical: gkxlumenx_ads.sci_graph_change_set
+    existence: missing
+    fields_draft:
+    - change_set_id
+    - graph_scope(tech|panorama)
+    - ops_json
+    - status(draft|submitted|approved|published|rejected)
+    - operator
+    - reviewer
+    - trace_id
+    - created_at
+    - published_at
+    primary_key: change_set_id
+    refresh: 事件驱动
+    writer: lumen-algo-py（Java 经 /internal/* 提交；发布执行 nGQL 只在 Python）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-200
+  - INT-A-TECH-212
+  - INT-A-X-221
+  - INT-A-TECH-211
+  merged_from:
+  - SCI-INT-A03:INT-A-TECH-200
+  - SCI-INT-A03:INT-A-TECH-212
+  - SCI-INT-A03:INT-A-X-221
+  merged_also:
+  - SCI-INT-A03:INT-A-TECH-211
+- int_id: INT-C-TECH-426
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-MAINTAIN-ENTITY
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - write_back
+  metric_ids:
+  - M_TECH_DEEP_130_1
+  - M_TECH_GRAPH_104_1
+  - M_TECH_EDGE_STRENGTH
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_GRAPH_105_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_REL_STRENGTH
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id:
+  - SRS-104
+  - SRS-105
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_manual
+  contract_draft:
+    request: []
+    response_key_fields:
+    - object_type(node|edge)
+    - object_key
+    - field_name
+    - manual_value
+    - tombstone
+    - priority(manual>jx>rule)
+    granularity:
+      pk: (object_type, object_key, field_name, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-104, SRS-105）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_manual 主键 = (object_type, object_key, field_name, version)
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: override
+    kind_cn: 人工层
+    name: 图人工层 graph_manual_layer（manual 关系/属性覆盖 + tombstone）
+    physical: gkxlumenx_ads.sci_graph_manual
+    existence: missing
+    fields_draft:
+    - object_type(node|edge)
+    - object_key
+    - field_name
+    - manual_value
+    - tombstone
+    - priority(manual>jx>rule)
+    - change_set_id
+    - version
+    primary_key: (object_type, object_key, field_name, version)
+    refresh: 事件驱动（change_set 发布）
+    writer: lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: auto 层 = 久新 104/105 按 run_id 产出；published = auto ⊕ manual（manual 优先）
+  source_cards:
+  - INT-C-TECH-151
+  - INT-C-TECH-152
+  consumer_cards:
+  - INT-A-TECH-203
+  - INT-A-TECH-206
+  - INT-A-TECH-211
+  - INT-A-TECH-205
+  - INT-A-X-218
+  - INT-A-X-220
+  merged_from:
+  - SCI-INT-C04:write_back_conflicts.items[0]
+  - SCI-INT-A03:INT-A-TECH-203
+  - SCI-INT-A03:INT-A-TECH-206
+  - SCI-INT-A03:INT-A-TECH-211
+  merged_also:
+  - SCI-INT-C02:INT-C-TECH-151
+  - SCI-INT-C02:INT-C-TECH-152
+  - SCI-INT-A03:INT-A-TECH-205
+  - SCI-INT-A03:INT-A-X-218
+  - SCI-INT-A03:INT-A-X-220
+- int_id: INT-C-TECH-427
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_change_log
+  contract_draft:
+    request: []
+    response_key_fields:
+    - log_id
+    - change_set_id
+    - object_type
+    - object_key
+    - before_json
+    - after_json
+    granularity:
+      pk: log_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_change_log 主键 = log_id
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 图变更日志 graph_change_log
+    physical: gkxlumenx_ads.sci_graph_change_log
+    existence: missing
+    fields_draft:
+    - log_id
+    - change_set_id
+    - object_type
+    - object_key
+    - before_json
+    - after_json
+    - operator
+    - trace_id
+    - created_at
+    primary_key: log_id
+    refresh: 事件驱动（追加写）
+    writer: lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-208
+  merged_from:
+  - SCI-INT-A03:INT-A-TECH-208
+  merged_also:
+  - SCI-INT-C04:write_back_conflicts.items[1]
+- int_id: INT-C-TECH-428
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-GRAPH
+  - DS-02-TECHGRAPH
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_GRAPH_STRUCT
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_version（+ sci_graph_version_snapshot）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - version_id
+    - graph_scope
+    - base_version_id
+    - change_set_ids[]
+    - snapshot_uri_or_rows
+    - node_cnt
+    granularity:
+      pk: version_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-11
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_version（+ sci_graph_version_snapshot） 主键 = version_id
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: snapshot
+    kind_cn: 快照
+    name: 图版本与快照 graph_version
+    physical: gkxlumenx_ads.sci_graph_version（+ sci_graph_version_snapshot）
+    existence: missing
+    fields_draft:
+    - version_id
+    - graph_scope
+    - base_version_id
+    - change_set_ids[]
+    - snapshot_uri_or_rows
+    - node_cnt
+    - edge_cnt
+    - operator
+    - published_at
+    - status(published|retired)
+    primary_key: version_id
+    refresh: 每次发布一版
+    writer: lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: Nebula 只存当前版；回滚 = 由 ADS 版本重投影（C04 WB-C04-02）
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-209
+  - INT-A-TECH-105
+  merged_from:
+  - SCI-INT-C04:write_back_conflicts.items[1]
+  - SCI-INT-A03:INT-A-TECH-209
+  merged_also:
+  - SCI-INT-A02:INT-A-TECH-105
+- int_id: INT-C-TECH-429
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-ENTITY
+  - DS-02-PATH
+  - DS-04-REALTIME
+  dimension:
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05/IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_metric_snapshot
+  contract_draft:
+    request: []
+    response_key_fields:
+    - graph_version_id
+    - node_vid
+    - entity_type
+    - entity_id
+    - metric_id
+    - value
+    granularity:
+      pk: (metric_id, graph_version_id, node_vid, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-06
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 不得复用 innov demo ads_node_influence（A02）
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_metric_snapshot 主键 = (metric_id, graph_version_id, node_vid, as_of)
+  - 写者唯一：只有 lumen-algo-py 图算法 Job 写入
+  confidence: medium
+  canonical:
+    kind: snapshot
+    kind_cn: 快照
+    name: 图节点指标快照 sci_graph_metric_snapshot（中心性/影响力/影响分）
+    physical: gkxlumenx_ads.sci_graph_metric_snapshot
+    existence: missing
+    fields_draft:
+    - graph_version_id
+    - node_vid
+    - entity_type
+    - entity_id
+    - metric_id
+    - value
+    - rank
+    - is_key_node
+    - run_id
+    - model_version
+    - as_of
+    primary_key: (metric_id, graph_version_id, node_vid, as_of)
+    refresh: weekly / 随图版本（待确认）
+    writer: lumen-algo-py 图算法 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-115
+  - INT-A-TECH-118
+  - INT-A-X-421
+  merged_from:
+  - SCI-INT-A02:INT-A-TECH-115
+  - SCI-INT-A02:INT-A-TECH-118
+  - SCI-INT-A05:INT-A-X-421
+  merged_also: []
+- int_id: INT-C-TECH-430
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-PATH
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  - graph
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05/IP-11/IP-10
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_path_snapshot
+  contract_draft:
+    request: []
+    response_key_fields:
+    - path_id
+    - graph_version_id
+    - path_type(key_path)
+    - node_seq[]
+    - edge_seq[]
+    - score
+    granularity:
+      pk: (path_id, graph_version_id)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 路径技术含义/发展历程/关键突破无来源（A02 TECH-119），narrative 可空
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 禁止复用 lumen-algo-py /internal/v1/chain 产业链 Job（写 demo_* 快照，D12）
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_path_snapshot 主键 = (path_id, graph_version_id)
+  - 写者唯一：只有 lumen-algo-py 图算法 Job 写入
+  confidence: medium
+  canonical:
+    kind: snapshot
+    kind_cn: 快照
+    name: 图路径快照 sci_graph_path_snapshot（关键路径 + 路径详情）
+    physical: gkxlumenx_ads.sci_graph_path_snapshot
+    existence: missing
+    fields_draft:
+    - path_id
+    - graph_version_id
+    - path_type(key_path)
+    - node_seq[]
+    - edge_seq[]
+    - score
+    - narrative(技术含义/历程/突破)
+    - run_id
+    - as_of
+    primary_key: (path_id, graph_version_id)
+    refresh: 随图版本
+    writer: lumen-algo-py 图算法 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-117
+  - INT-A-TECH-119
+  merged_from:
+  - SCI-INT-A02:INT-A-TECH-117
+  - SCI-INT-A02:INT-A-TECH-119
+  merged_also: []
+- int_id: INT-C-TECH-431
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_BASE_96_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-06
+  ours:
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-96
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_tech_base
+  contract_draft:
+    request: []
+    response_key_fields:
+    - domain_code
+    - technology_id
+    - region_code
+    - stat_year
+    - doc_type
+    - doc_cnt
+    granularity:
+      pk: (metric_id, domain_code, technology_id, region_code, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-96）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_tech_base 主键 = (metric_id, domain_code, technology_id, region_code, stat_year, as_of)
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 技术基础指标 sci_tech_base
+    physical: gkxlumenx_ads.sci_tech_base
+    existence: missing
+    fields_draft:
+    - domain_code
+    - technology_id
+    - region_code
+    - stat_year
+    - doc_type
+    - doc_cnt
+    - growth_rate
+    - metric_id
+    - as_of
+    - batch_id
+    primary_key: (metric_id, domain_code, technology_id, region_code, stat_year, as_of)
+    refresh: T+1 / 月（久新 SQL-96，待确认）
+    writer: GDF/ETL（执行久新 SQL-96）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-015
+  merged_from:
+  - SCI-INT-A01:INT-A-TECH-015
+  merged_also: []
+- int_id: INT-C-TECH-432
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-03-RESULT
+  dimension:
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-02/IP-11
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_region_tech_eval
+  contract_draft:
+    request: []
+    response_key_fields:
+    - region_code
+    - geo_level
+    - domain_code
+    - technology_id
+    - dev_level_score
+    - application_score
+    granularity:
+      pk: (metric_id, region_code, domain_code, technology_id, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 区域「技术发展水平」「应用情况」无注册 metric_id（A04）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_region_tech_eval 主键 = (metric_id, region_code, domain_code, technology_id, as_of)
+  - 写者唯一：只有 GDF/ETL 聚合 或 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 区域技术评估 sci_region_tech_eval
+    physical: gkxlumenx_ads.sci_region_tech_eval
+    existence: missing
+    fields_draft:
+    - region_code
+    - geo_level
+    - domain_code
+    - technology_id
+    - dev_level_score
+    - application_score
+    - doc_cnt
+    - org_cnt
+    - metric_id
+    - as_of
+    - version
+    primary_key: (metric_id, region_code, domain_code, technology_id, as_of)
+    refresh: 月（待确认）
+    writer: GDF/ETL 聚合 或 lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-305
+  merged_from:
+  - SCI-INT-A04:INT-A-X-305
+  merged_also: []
+- int_id: INT-C-TECH-433
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-03-WORKFLOW
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_COMPOSITE_SCORE
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-04/IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_cfg.lumen_analysis_task / _task_node / _task_retry（存量）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - task_id
+    - task_type(sci_tech_eval)
+    - user_id
+    - params_hash
+    - status
+    - result_ref(X-480 snapshot_version)
+    granularity:
+      pk: task_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 存量需扩展
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed:
+  - DN-C05-06「开始评估」语义 a/b/c 三选一（= A04 决策）→ 甲方+产品
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.lumen_analysis_task / _task_node / _task_retry（存量） 主键 = task_id
+  - 写者唯一：只有 lumen-algo-py 异步 Job 写入
+  confidence: medium
+  canonical:
+    kind: cfg
+    kind_cn: 配置
+    name: 评估运行记录（复用 lumen_analysis_task 三表）
+    physical: gkxlumenx_cfg.lumen_analysis_task / _task_node / _task_retry（存量）
+    existence: existing_alter
+    fields_draft:
+    - task_id
+    - task_type(sci_tech_eval)
+    - user_id
+    - params_hash
+    - status
+    - result_ref(X-480 snapshot_version)
+    - created_at
+    primary_key: task_id
+    refresh: 按用户触发
+    writer: lumen-algo-py 异步 Job（存量任务框架）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: 复用已有任务表，仅新增 task_type 枚举；结果入 X-480 统一快照
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-320
+  merged_from:
+  - SCI-INT-A04:INT-A-TECH-320
+  merged_also: []
+- int_id: INT-C-TECH-434
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-03-WORKFLOW
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（读写自有配置表）
+    python: null
+    downstream: gkxlumenx_cfg.sci_eval_param_template
+  contract_draft:
+    request: []
+    response_key_fields:
+    - template_id
+    - user_id
+    - scope(system|user)
+    - name
+    - params_json
+    - created_at
+    granularity:
+      pk: template_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-16
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.sci_eval_param_template 主键 = template_id
+  - 写者唯一：只有 Java 自有配置写 写入
+  confidence: medium
+  canonical:
+    kind: user_own
+    kind_cn: 用户自有
+    name: 用户参数模板 sci_eval_param_template
+    physical: gkxlumenx_cfg.sci_eval_param_template
+    existence: missing
+    fields_draft:
+    - template_id
+    - user_id
+    - scope(system|user)
+    - name
+    - params_json
+    - created_at
+    - updated_at
+    primary_key: template_id
+    refresh: 用户写
+    writer: Java 自有配置写（非 ADS，业务配置表）
+    read_by: lumen-svc-platform（读写自有配置表）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-TECH-323
+  merged_from:
+  - SCI-INT-A04:INT-A-TECH-323
+  merged_also: []
+- int_id: INT-C-ORG-440
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - SRS-ORG
+  - TOPIC-ORG-05
+  - DS-15-TALENT-PROFILE
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_ATTENTION_TREND
+  - M_ORG_BASE_99_1
+  - M_ORG_INDUSTRY_COVER
+  - M_ORG_NEW_TREND
+  - M_ORG_PERF_QUERY
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_114_1
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_FLOW_TRACK
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-07
+  ours:
+  - etl
+  - python_internal
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: SRS-114
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.research_org（ADS 只读投影 gkxlumenx_ads.sci_research_org）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - org_uid
+    - src_refs[{system,table,org_id}]
+    - credit_code
+    - school_code
+    - name_cn
+    - name_en
+    granularity:
+      pk: org_uid
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-114）
+  conflicts:
+  - CF-C05-01
+  - CF-C05-17
+  decision_needed:
+  - DN-C05-07 机构主数据持有方（同 C03）→ human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.research_org（ADS 只读投影 gkxlumenx_ads.sci_research_org） 主键 = org_uid
+  - 写者唯一：只有 lumen-algo-py 机构归一 Job 写入
+  confidence: medium
+  canonical:
+    kind: dwd_master
+    kind_cn: 主数据
+    name: 科研机构主数据 research_org
+    physical: gkxlumenx_dim.research_org（ADS 只读投影 gkxlumenx_ads.sci_research_org）
+    existence: missing
+    fields_draft:
+    - org_uid
+    - src_refs[{system,table,org_id}]
+    - credit_code
+    - school_code
+    - name_cn
+    - name_en
+    - aliases
+    - org_category
+    - adcode(code_region)
+    - country_code
+    - city_code
+    - lng
+    - lat
+    - parent_org_uid
+    - status
+    - version
+    primary_key: org_uid
+    refresh: T+1 随入站 ETL
+    writer: lumen-algo-py 机构归一 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-240
+  - INT-C-ORG-320
+  - INT-C-ORG-230
+  consumer_cards: []
+  merged_from:
+  - SCI-INT-C03:INT-C-ORG-240
+  - SCI-INT-A06:INT-A-ORG-501
+  - SCI-INT-A08:INT-A-ORG-702
+  merged_also:
+  - SCI-INT-C04:INT-C-ORG-320
+  - SCI-INT-A06:INT-A-ORG-500
+  supplement_note: 补归并：A06/A08 的 dim_carrier 作机构子类型挂本主数据（CF-C05-17），不另造载体主表。
+- int_id: INT-C-ORG-441
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_GRAPH_114_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-07
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.map_org_alias
+  contract_draft:
+    request: []
+    response_key_fields:
+    - raw_name
+    - lang
+    - source_table
+    - org_uid
+    - match_method(xydm|school_code|exact|fuzzy|ner|manual)
+    - score
+    granularity:
+      pk: (raw_name, source_table)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.map_org_alias 主键 = (raw_name, source_table)
+  - 写者唯一：只有 lumen-algo-py 归一 Job 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 机构名称归一 map_org_alias
+    physical: gkxlumenx_dim.map_org_alias
+    existence: missing
+    fields_draft:
+    - raw_name
+    - lang
+    - source_table
+    - org_uid
+    - match_method(xydm|school_code|exact|fuzzy|ner|manual)
+    - score
+    - confirmed_by
+    primary_key: (raw_name, source_table)
+    refresh: T+1
+    writer: lumen-algo-py 归一 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-241
+  consumer_cards: []
+  merged_from:
+  - SCI-INT-C03:INT-C-ORG-241
+  merged_also: []
+- int_id: INT-C-ORG-442
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-ACHIEVE-DETAIL
+  dimension:
+  - ORG
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_149_1
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_115_1
+  - M_ORG_PERF_QUERY
+  - M_ORG_TECH_LAYOUT
+  - M_ORG_TECH_SCORE
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-02
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_rel_doc_org
+  contract_draft:
+    request: []
+    response_key_fields:
+    - doc_type(paper|patent|project|report|scholar|achievement)
+    - doc_id
+    - org_uid
+    - carrier_id(可空)
+    - role(作者单位|申请人|承担|参与|转让)
+    - source
+    granularity:
+      pk: (doc_type, doc_id, org_uid, role)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-17
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_rel_doc_org 主键 = (doc_type, doc_id, org_uid, role)
+  - 写者唯一：只有 lumen-algo-py 归一 Job 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 文献/成果–机构桥接 rel_doc_org（含成果–载体）
+    physical: gkxlumenx_ads.sci_rel_doc_org
+    existence: missing
+    fields_draft:
+    - doc_type(paper|patent|project|report|scholar|achievement)
+    - doc_id
+    - org_uid
+    - carrier_id(可空)
+    - role(作者单位|申请人|承担|参与|转让)
+    - source
+    - version
+    primary_key: (doc_type, doc_id, org_uid, role)
+    refresh: T+1
+    writer: lumen-algo-py 归一 Job
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-242
+  consumer_cards:
+  - INT-A-ORG-411
+  merged_from:
+  - SCI-INT-C03:INT-C-ORG-242
+  - SCI-INT-A05:INT-A-ORG-411
+  merged_also: []
+- int_id: INT-C-ORG-443
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_BASE_99_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-06
+  ours:
+  - etl
+  counterpart: jiuxin
+  delivery_form: SQL
+  jiuxin_row_id: SRS-99
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_org_base
+  contract_draft:
+    request: []
+    response_key_fields:
+    - org_uid
+    - region_code
+    - org_category
+    - domain_code
+    - stat_year
+    - paper_cnt
+    granularity:
+      pk: (metric_id, org_uid, domain_code, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-99）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_org_base 主键 = (metric_id, org_uid, domain_code, stat_year, as_of)
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 机构基础指标 sci_org_base
+    physical: gkxlumenx_ads.sci_org_base
+    existence: missing
+    fields_draft:
+    - org_uid
+    - region_code
+    - org_category
+    - domain_code
+    - stat_year
+    - paper_cnt
+    - patent_cnt
+    - project_cnt
+    - talent_cnt
+    - metric_id
+    - as_of
+    - batch_id
+    primary_key: (metric_id, org_uid, domain_code, stat_year, as_of)
+    refresh: T+1 / 月（久新 SQL-99，待确认）
+    writer: GDF/ETL（执行久新 SQL-99）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: DS-13 seq 250 顶尖机构人才排名可读本表 talent_cnt（预判 low）
+  source_cards: []
+  consumer_cards:
+  - INT-A-ORG-017
+  - DS-13-TALENT-GLOBAL
+  merged_from:
+  - SCI-INT-A01:INT-A-ORG-017
+  - SCI-INT-A06:INT-A-X-507
+  merged_also: []
+  supplement_note: 补归并：A06 INT-A-X-507 载体成果计数复用本机构基础指标，不另造聚合主表。
+- int_id: INT-C-X-460
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  - DS-02-MAINTAIN-GRAPH
+  - SRS-ORG
+  - TOPIC-ORG-05
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id:
+  - SRS-115
+  - SRS-153
+  - TOPIC-RORG-012
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_node / sci_graph_edge
+  contract_draft:
+    request: []
+    response_key_fields:
+    - graph_version_id
+    - vid
+    - entity_type
+    - entity_id
+    - label
+    - props_json
+    granularity:
+      pk: 节点 (graph_version_id, vid)；边 (graph_version_id, src_vid, edge_type, dst_vid, rank)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-115, SRS-153, TOPIC-RORG-012）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - innov GraphController 直读 dwm_graph_*（B01 R4），三要素门面不得沿用
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_node / sci_graph_edge 主键 = 节点 (graph_version_id, vid)；边 (graph_version_id, src_vid, edge_type, dst_vid, rank)
+  - 写者唯一：只有 lumen-algo-py 投影 Job 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 三要素图 ADS 投影 sci_graph_node / sci_graph_edge（供 Java 只读）
+    physical: gkxlumenx_ads.sci_graph_node / sci_graph_edge
+    existence: missing
+    fields_draft:
+    - graph_version_id
+    - vid
+    - entity_type
+    - entity_id
+    - label
+    - props_json
+    - src_vid
+    - dst_vid
+    - edge_type
+    - rank
+    - weight
+    primary_key: 节点 (graph_version_id, vid)；边 (graph_version_id, src_vid, edge_type, dst_vid, rank)
+    refresh: 随图版本 / weekly
+    writer: lumen-algo-py 投影 Job（与 Nebula 投影同批，先 ADS 再图）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-360
+  consumer_cards:
+  - INT-A-X-020
+  - INT-A-TECH-210
+  merged_from:
+  - SCI-INT-A01:INT-A-X-020
+  - SCI-INT-A03:INT-A-TECH-210
+  merged_also:
+  - SCI-INT-C04:INT-C-ORG-360
+- int_id: INT-C-X-461
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-ENTITY
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_entity_membership
+  contract_draft:
+    request: []
+    response_key_fields:
+    - graph_scope
+    - entity_type(talent|inst|ent|paper|patent)
+    - entity_id
+    - status(active|removed)
+    - change_set_id
+    - version
+    granularity:
+      pk: (graph_scope, entity_type, entity_id, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 移除挂接只删作用域内实体–技术边，禁止 DELETE VERTEX 主数据投影（A03 X-217）
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_entity_membership 主键 = (graph_scope, entity_type, entity_id, version)
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 全景图实体挂接 sci_graph_entity_membership
+    physical: gkxlumenx_ads.sci_graph_entity_membership
+    existence: missing
+    fields_draft:
+    - graph_scope
+    - entity_type(talent|inst|ent|paper|patent)
+    - entity_id
+    - status(active|removed)
+    - change_set_id
+    - version
+    primary_key: (graph_scope, entity_type, entity_id, version)
+    refresh: 事件驱动
+    writer: lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-215
+  - INT-A-X-217
+  merged_from:
+  - SCI-INT-A03:INT-A-X-215
+  - SCI-INT-A03:INT-A-X-217
+  merged_also: []
+- int_id: INT-C-X-462
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-MAINTAIN-ENTITY
+  dimension:
+  - TAL
+  - ORG
+  - TECH
+  dep_kind:
+  - data
+  - write_back
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_graph_entity_override
+  contract_draft:
+    request: []
+    response_key_fields:
+    - graph_scope
+    - entity_type
+    - entity_id
+    - field_name
+    - override_value
+    - change_set_id
+    granularity:
+      pk: (graph_scope, entity_type, entity_id, field_name, version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-10
+  decision_needed:
+  - DN-C05-08 全景页实体属性编辑生效范围（= A03 DN-A03-04）→ 产品/human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_graph_entity_override 主键 = (graph_scope, entity_type, entity_id, field_name, version)
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: override
+    kind_cn: 人工层
+    name: 全景图实体覆盖层 sci_graph_entity_override
+    physical: gkxlumenx_ads.sci_graph_entity_override
+    existence: missing
+    fields_draft:
+    - graph_scope
+    - entity_type
+    - entity_id
+    - field_name
+    - override_value
+    - change_set_id
+    - version
+    primary_key: (graph_scope, entity_type, entity_id, field_name, version)
+    refresh: 事件驱动
+    writer: lumen-algo-py
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-219
+  - INT-A-X-220
+  merged_from:
+  - SCI-INT-A03:INT-A-X-219
+  - SCI-INT-A03:INT-A-X-220
+  merged_also: []
+- int_id: INT-C-X-463
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-MAP
+  - DS-02-TECHGRAPH
+  dimension:
+  - TAL
+  - ORG
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（ES 只读检索）
+    python: null
+    downstream: ES alias sci_factor → 物理 sci_factor_v1
+  contract_draft:
+    request: []
+    response_key_fields:
+    - factor_type
+    - factor_id(scholar_id|org_uid|technology_id|org_id)
+    - name
+    - aliases
+    - region_code
+    - domain_code[]
+    granularity:
+      pk: _id = {factor_type}:{factor_id}
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - lumen-etl-es-py 现仅 gkx_enterprise / gkx_enterprise_global 企业索引
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 主数据 ID 未定前索引 _id 不稳定 → 收藏/飞点断链
+  test_points:
+  - DDL 评审：ES alias sci_factor → 物理 sci_factor_v1 主键 = _id = {factor_type}:{factor_id}
+  - 写者唯一：只有 lumen-etl-es-py 写入
+  confidence: medium
+  canonical:
+    kind: es
+    kind_cn: ES
+    name: 三要素检索索引 sci_factor（人才/机构/技术点/服务机构）
+    physical: ES alias sci_factor → 物理 sci_factor_v1
+    existence: missing
+    fields_draft:
+    - factor_type
+    - factor_id(scholar_id|org_uid|technology_id|org_id)
+    - name
+    - aliases
+    - region_code
+    - domain_code[]
+    - lat
+    - lng
+    - org_category
+    - updated_at
+    primary_key: _id = {factor_type}:{factor_id}
+    refresh: T+1 增量（水位表 gkxlumenx_cfg.es_sync_watermark 复用）
+    writer: lumen-etl-es-py（新增 sci_factor 模块，读 gkxlumenx_dim/ads，不读三方库直连）
+    read_by: lumen-svc-platform（ES 只读检索）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-004
+  - INT-A-TECH-107
+  merged_from:
+  - SCI-INT-A01:INT-A-X-004
+  - SCI-INT-A02:INT-A-TECH-107
+  merged_also: []
+- int_id: INT-C-X-464
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-ACHIEVE-OVERVIEW
+  dimension:
+  - TECH
+  - ORG
+  - TAL
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: gkx_mysql_raw
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_achievement
+  contract_draft:
+    request: []
+    response_key_fields:
+    - achievement_id
+    - achievement_type(paper|patent|project|award|report)
+    - src_table
+    - src_id
+    - title
+    - pub_date
+    granularity:
+      pk: achievement_id（= {type}:{src_id}）
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-14
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_achievement 主键 = achievement_id（= {type}:{src_id}）
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 成果统一表 sci_achievement
+    physical: gkxlumenx_ads.sci_achievement
+    existence: missing
+    fields_draft:
+    - achievement_id
+    - achievement_type(paper|patent|project|award|report)
+    - src_table
+    - src_id
+    - title
+    - pub_date
+    - region_code
+    - domain_code
+    - technology_ids[]
+    - org_uids[]
+    - scholar_ids[]
+    - value_score_ref
+    - as_of
+    primary_key: achievement_id（= {type}:{src_id}）
+    refresh: T+1
+    writer: GDF/ETL
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-401
+  merged_from:
+  - SCI-INT-A05:INT-A-X-401
+  merged_also: []
+- int_id: INT-C-X-465
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-ACHIEVE-OVERVIEW
+  dimension:
+  - TECH
+  - ORG
+  - TAL
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（ES 只读检索）
+    python: null
+    downstream: ES alias sci_achievement → 物理 sci_achievement_v1
+  contract_draft:
+    request: []
+    response_key_fields:
+    - achievement_id
+    - achievement_type
+    - title
+    - abstract
+    - pub_date
+    - region_code
+    granularity:
+      pk: _id = achievement_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：ES alias sci_achievement → 物理 sci_achievement_v1 主键 = _id = achievement_id
+  - 写者唯一：只有 lumen-etl-es-py 写入
+  confidence: medium
+  canonical:
+    kind: es
+    kind_cn: ES
+    name: 成果检索索引 sci_achievement
+    physical: ES alias sci_achievement → 物理 sci_achievement_v1
+    existence: missing
+    fields_draft:
+    - achievement_id
+    - achievement_type
+    - title
+    - abstract
+    - pub_date
+    - region_code
+    - domain_code
+    - org_uids
+    - scholar_ids
+    primary_key: _id = achievement_id
+    refresh: T+1 增量
+    writer: lumen-etl-es-py（读 X-464）
+    read_by: lumen-svc-platform（ES 只读检索）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-401
+  merged_from: []
+  merged_also:
+  - SCI-INT-A05:INT-A-X-401
+- int_id: INT-C-X-466
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-LAYERS
+  - DS-04-REALTIME
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-05
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: SRS-104
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_factor_geo
+  contract_draft:
+    request: []
+    response_key_fields:
+    - factor_type(paper|patent|talent|org|meeting|project|innovation_point|user_fill)
+    - factor_id
+    - region_code
+    - geo_level
+    - lat
+    - lng
+    granularity:
+      pk: (factor_type, factor_id, layer_id, as_of) / 聚合行 (factor_type, region_code, geo_level, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-104）
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_factor_geo 主键 = (factor_type, factor_id, layer_id, as_of) / 聚合行 (factor_type, region_code, geo_level, as_of)
+  - 写者唯一：只有 GDF/ETL + lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 要素落点 sci_factor_geo（含创新点落点）
+    physical: gkxlumenx_ads.sci_factor_geo
+    existence: missing
+    fields_draft:
+    - factor_type(paper|patent|talent|org|meeting|project|innovation_point|user_fill)
+    - factor_id
+    - region_code
+    - geo_level
+    - lat
+    - lng
+    - cnt
+    - layer_id
+    - as_of
+    primary_key: (factor_type, factor_id, layer_id, as_of) / 聚合行 (factor_type, region_code, geo_level, as_of)
+    refresh: T+1
+    writer: GDF/ETL + lumen-algo-py（创新点落点）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: innov demo 已有 ads_innovation_point_map（demo_gkxlumenx_ads），lumen 不得读 demo 表，改读本表
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-005
+  - INT-A-X-009
+  - INT-A-TECH-418
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from:
+  - SCI-INT-A01:INT-A-X-005
+  - SCI-INT-A07:INT-A-TECH-602
+  - SCI-INT-A08:INT-A-X-717
+  merged_also:
+  - SCI-INT-A01:INT-A-X-009
+  - SCI-INT-A05:INT-A-TECH-418
+  - SCI-INT-A07:INT-A-TECH-607
+  supplement_note: 补归并：A07 成果地理落点 ads_gba_achievement_geo 与 A08 ads_sz_domain_geo 并入本落点表，不另造地理事实表。
+- int_id: INT-C-X-467
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-LAYERS
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（写 ODS 自有入口）
+    python: null
+    downstream: gkxlumenx_ods.user_layer_fill
+  contract_draft:
+    request: []
+    response_key_fields:
+    - fill_id
+    - user_id
+    - layer_id
+    - name
+    - lat
+    - lng
+    granularity:
+      pk: fill_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-16
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ods.user_layer_fill 主键 = fill_id
+  - 写者唯一：只有 Java 自有写 写入
+  confidence: medium
+  canonical:
+    kind: ods
+    kind_cn: ODS
+    name: 用户图层填报 ods_user_layer_fill
+    physical: gkxlumenx_ods.user_layer_fill
+    existence: missing
+    fields_draft:
+    - fill_id
+    - user_id
+    - layer_id
+    - name
+    - lat
+    - lng
+    - region_code
+    - attrs_json
+    - audit_status
+    - created_at
+    primary_key: fill_id
+    refresh: 用户写 → T+1 ETL 并入 X-466
+    writer: Java 自有写（ODS 入口）→ ETL
+    read_by: lumen-svc-platform（写 ODS 自有入口）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-009
+  merged_from:
+  - SCI-INT-A01:INT-A-X-009
+  merged_also: []
+- int_id: INT-C-X-468
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-LAYERS
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（读写自有配置）
+    python: null
+    downstream: gkxlumenx_cfg.layer_datasource
+  contract_draft:
+    request: []
+    response_key_fields:
+    - datasource_id
+    - layer_id
+    - kind(ads_table|es_index|external_api_ref)
+    - ref_name
+    - secret_ref(仅 Python 侧 K8s Secret 名)
+    - freshness
+    granularity:
+      pk: datasource_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - 任意 API 配置存在 SSRF/凭据泄露：凭据只在 Python 侧，Java 只登记引用（A01）
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.layer_datasource 主键 = datasource_id
+  - 写者唯一：只有 Java 登记 写入
+  confidence: medium
+  canonical:
+    kind: cfg
+    kind_cn: 配置
+    name: 图层数据源登记 cfg_layer_datasource
+    physical: gkxlumenx_cfg.layer_datasource
+    existence: missing
+    fields_draft:
+    - datasource_id
+    - layer_id
+    - kind(ads_table|es_index|external_api_ref)
+    - ref_name
+    - secret_ref(仅 Python 侧 K8s Secret 名)
+    - freshness
+    - owner
+    - status
+    primary_key: datasource_id
+    refresh: 人工配置
+    writer: Java 登记（只存引用，不存凭据）+ ETL/Python 执行
+    read_by: lumen-svc-platform（读写自有配置）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-008
+  merged_from:
+  - SCI-INT-A01:INT-A-X-008
+  merged_also: []
+- int_id: INT-C-X-469
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-LAYERS
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（读写自有表）
+    python: null
+    downstream: gkxlumenx_cfg.sys_user_layer_group（或 PigX upms 库，待定）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - group_id
+    - user_id
+    - name
+    - layer_ids[]
+    - sort
+    - created_at
+    granularity:
+      pk: group_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-16
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.sys_user_layer_group（或 PigX upms 库，待定） 主键 = group_id
+  - 写者唯一：只有 Java 自有表 写入
+  confidence: medium
+  canonical:
+    kind: user_own
+    kind_cn: 用户自有
+    name: 用户图层分组 sys_user_layer_group
+    physical: gkxlumenx_cfg.sys_user_layer_group（或 PigX upms 库，待定）
+    existence: missing
+    fields_draft:
+    - group_id
+    - user_id
+    - name
+    - layer_ids[]
+    - sort
+    - created_at
+    primary_key: group_id
+    refresh: 用户写
+    writer: Java 自有表
+    read_by: lumen-svc-platform（读写自有表）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-007
+  merged_from:
+  - SCI-INT-A01:INT-A-X-007
+  merged_also: []
+- int_id: INT-C-X-470
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  dimension:
+  - TAL
+  - ORG
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（读写自有表）
+    python: null
+    downstream: gkxlumenx_cfg.sys_user_favorite / sys_user_factor_tag
+  contract_draft:
+    request: []
+    response_key_fields:
+    - user_id
+    - entity_type
+    - entity_id
+    - tag
+    - created_at
+    granularity:
+      pk: (user_id, entity_type, entity_id[, tag])
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-16
+  decision_needed: []
+  structure_escalation: true
+  risks:
+  - entity_id 依赖主数据 ID 稳定；主数据重建产生孤儿收藏（A01）
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.sys_user_favorite / sys_user_factor_tag 主键 = (user_id, entity_type, entity_id[, tag])
+  - 写者唯一：只有 Java 自有表 写入
+  confidence: medium
+  canonical:
+    kind: user_own
+    kind_cn: 用户自有
+    name: 用户收藏/标签 sys_user_favorite / sys_user_factor_tag
+    physical: gkxlumenx_cfg.sys_user_favorite / sys_user_factor_tag
+    existence: missing
+    fields_draft:
+    - user_id
+    - entity_type
+    - entity_id
+    - tag
+    - created_at
+    primary_key: (user_id, entity_type, entity_id[, tag])
+    refresh: 用户写
+    writer: Java 自有表
+    read_by: lumen-svc-platform（读写自有表）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-014
+  merged_from:
+  - SCI-INT-A01:INT-A-X-014
+  merged_also: []
+- int_id: INT-C-X-471
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-ACHIEVE-DETAIL
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-13
+  ours:
+  - java_facade
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（读写自有表）
+    python: null
+    downstream: gkxlumenx_cfg.sys_user_subscription / sys_push_record
+  contract_draft:
+    request: []
+    response_key_fields:
+    - sub_id
+    - user_id
+    - rule_json
+    - channel
+    - status
+    - push_id
+    granularity:
+      pk: sub_id / push_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-16
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.sys_user_subscription / sys_push_record 主键 = sub_id / push_id
+  - 写者唯一：只有 Java 自有表 + 推送任务 写入
+  confidence: medium
+  canonical:
+    kind: user_own
+    kind_cn: 用户自有
+    name: 订阅规则 + 推送记录 sys_user_subscription / sys_push_record
+    physical: gkxlumenx_cfg.sys_user_subscription / sys_push_record
+    existence: missing
+    fields_draft:
+    - sub_id
+    - user_id
+    - rule_json
+    - channel
+    - status
+    - push_id
+    - sent_at
+    - result
+    primary_key: sub_id / push_id
+    refresh: 用户写 + 推送任务写
+    writer: Java 自有表 + 推送任务
+    read_by: lumen-svc-platform（读写自有表）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-413
+  merged_from:
+  - SCI-INT-A05:INT-A-X-413
+  - SCI-INT-A06:INT-A-X-510
+  - SCI-INT-A06:INT-A-X-515
+  - SCI-INT-A06:INT-A-TECH-516
+  - SCI-INT-A06:INT-A-X-517
+  - SCI-INT-A06:INT-A-X-526
+  - SCI-INT-A07:INT-A-X-618
+  - SCI-INT-A08:INT-A-X-705
+  merged_also: []
+  supplement_note: 补归并：A06/A08 订阅、监测配置与推送记录并入本用户订阅/推送表，不另造订阅主表。
+- int_id: INT-C-X-472
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-REALTIME
+  dimension:
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-06
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_ads.sci_kpi_agg
+  contract_draft:
+    request: []
+    response_key_fields:
+    - metric_id
+    - region_code
+    - domain_code
+    - period(day|month)
+    - value
+    - as_of
+    granularity:
+      pk: (metric_id, region_code, domain_code, period, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 前端自造 M_INNOV_*_RT 不在 registry（A05）
+  conflicts:
+  - CF-C05-15
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_kpi_agg 主键 = (metric_id, region_code, domain_code, period, as_of)
+  - 写者唯一：只有 GDF/ETL 写入
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 实时 KPI 聚合 sci_kpi_agg
+    physical: gkxlumenx_ads.sci_kpi_agg
+    existence: missing
+    fields_draft:
+    - metric_id
+    - region_code
+    - domain_code
+    - period(day|month)
+    - value
+    - as_of
+    primary_key: (metric_id, region_code, domain_code, period, as_of)
+    refresh: T+1（默认，展示「数据截至」；A05 realtime_verdict）
+    writer: GDF/ETL
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-415
+  merged_from:
+  - SCI-INT-A05:INT-A-X-415
+  - SCI-INT-A07:INT-A-X-631
+  - SCI-INT-A08:INT-A-X-708
+  merged_also:
+  - SCI-INT-A07:INT-A-X-619
+  supplement_note: 补归并：A07 年鉴 ads_gba_city_stat_yearly 与 A08 深圳指标看板并入本 KPI 聚合，不另造年鉴主表。
+- int_id: INT-C-X-474
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-03-RESULT
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_dim.code_region（存量 ALTER/补数）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - code
+    - parent_code
+    - name
+    - level(1省|2市|3区县|4街道 新增)
+    - lng
+    - lat
+    granularity:
+      pk: code
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 存量需扩展
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts:
+  - CF-C05-13
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.code_region（存量 ALTER/补数） 主键 = code
+  - 写者唯一：只有 data-agent 正式化 写入
+  confidence: medium
+  canonical:
+    kind: dim
+    kind_cn: 维表
+    name: 行政区划维扩展 code_region（+街道 / 港澳台 / 大鹏新区）
+    physical: gkxlumenx_dim.code_region（存量 ALTER/补数）
+    existence: existing_alter
+    fields_draft:
+    - code
+    - parent_code
+    - name
+    - level(1省|2市|3区县|4街道 新增)
+    - lng
+    - lat
+    - code_std(GB/T 2260|统计用区划12位)
+    - valid_from
+    - valid_to
+    primary_key: code
+    refresh: 年度（随国标/统计用区划发布）
+    writer: data-agent 正式化（DDL 在 agent-delivery/data/ddl/）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-222
+  - INT-C-TAL-026
+  consumer_cards:
+  - INT-A-X-305
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from: []
+  merged_also:
+  - SCI-INT-A04:INT-A-X-305
+  - SCI-INT-A08:INT-A-X-701
+  - SCI-INT-A12:INT-A-TAL-1100
+  supplement_note: 补归并：A08 街道级区划与 A12 人才地理维仍用本 code_region 扩展，不新建地理主数据。
+- int_id: INT-C-X-475
+  layer: data
+  srs:
+    ref: C05 维表规划
+  page_ref: []
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_dim.region_scope / region_scope_member（存量 ALTER/补数）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - scope_code(global|national|jjj|yrd|gba|hot_city|shenzhen|focus_park)
+    - member_code
+    - member_level
+    - member_type(country|admin1|city|district|street|park)
+    - sort
+    - version
+    granularity:
+      pk: (scope_code, member_code)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 存量需扩展
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 无原始 structure_escalation 提法；C05 按 geo/domain/人才态势预判补卡
+  conflicts:
+  - CF-C05-13
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.region_scope / region_scope_member（存量 ALTER/补数） 主键 = (scope_code, member_code)
+  - 写者唯一：只有 data-agent 正式化 写入
+  confidence: medium
+  canonical:
+    kind: dim
+    kind_cn: 维表
+    name: 区域范围维扩展 region_scope / region_scope_member
+    physical: gkxlumenx_dim.region_scope / region_scope_member（存量 ALTER/补数）
+    existence: existing_alter
+    fields_draft:
+    - scope_code(global|national|jjj|yrd|gba|hot_city|shenzhen|focus_park)
+    - member_code
+    - member_level
+    - member_type(country|admin1|city|district|street|park)
+    - sort
+    - version
+    primary_key: (scope_code, member_code)
+    refresh: 人工发布
+    writer: data-agent 正式化
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards:
+  - DS-13-TALENT-GLOBAL
+  - DS-14-TALENT-REGION
+  merged_from:
+  - SCI-INT-A07:INT-A-X-601
+  - SCI-INT-A08:INT-A-X-701
+  - SCI-INT-A13:INT-A-X-1205
+  merged_also: []
+  supplement_note: 补归并：A07 dim_gba_city（湾区 11 市）与 A08 园区/校区、A13 INT-A-X-1205 深圳区/园区/载体同属本 region_scope 扩展，不另造三张地理表。
+- int_id: INT-C-X-476
+  layer: data
+  srs:
+    ref: C05 维表规划
+  page_ref: []
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_dim.code_country
+  contract_draft:
+    request: []
+    response_key_fields:
+    - alpha3
+    - alpha2
+    - name_cn
+    - name_en
+    - is_g20
+    granularity:
+      pk: alpha3
+    freshness: T+1
+  status:
+    demo: 存量
+    lumen: 存量可复用
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 全球「省/州」admin1 级（DS-13 seq 244）无维表：ISO 3166-2 是否引入待定（OI-C05-04）
+  - 无原始 structure_escalation 提法；C05 按 geo/domain/人才态势预判补卡
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.code_country 主键 = alpha3
+  - 写者唯一：只有 存量 写入
+  confidence: medium
+  canonical:
+    kind: dim
+    kind_cn: 维表
+    name: 国家维 code_country（复用，不改）
+    physical: gkxlumenx_dim.code_country
+    existence: existing
+    fields_draft:
+    - alpha3
+    - alpha2
+    - name_cn
+    - name_en
+    - is_g20
+    primary_key: alpha3
+    refresh: 低频
+    writer: 存量
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: null
+  source_cards: []
+  consumer_cards: []
+  merged_from: []
+  merged_also: []
+- int_id: INT-C-X-477
+  layer: data
+  srs:
+    ref: C05 维表规划
+  page_ref: []
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-02
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_dim.map_region_alias
+  contract_draft:
+    request: []
+    response_key_fields:
+    - src_system
+    - src_value(cur_code|地名文本|城市英文名)
+    - lang
+    - region_code
+    - country_code
+    - match_method
+    granularity:
+      pk: (src_system, src_value)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 无原始 structure_escalation 提法；C05 按 geo/domain/人才态势预判补卡
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.map_region_alias 主键 = (src_system, src_value)
+  - 写者唯一：只有 lumen-algo-py / ETL 地理归一 写入
+  confidence: medium
+  canonical:
+    kind: map_bridge
+    kind_cn: 映射/桥表
+    name: 地名/区划归一映射 map_region_alias
+    physical: gkxlumenx_dim.map_region_alias
+    existence: missing
+    fields_draft:
+    - src_system
+    - src_value(cur_code|地名文本|城市英文名)
+    - lang
+    - region_code
+    - country_code
+    - match_method
+    - confidence
+    - version
+    primary_key: (src_system, src_value)
+    refresh: T+1 随入站 ETL
+    writer: lumen-algo-py / ETL 地理归一（复用 lumen-etl-es-py etl/geo_code.py、region_code.py 逻辑）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-ORG-222
+  - INT-C-TAL-026
+  consumer_cards: []
+  merged_from: []
+  merged_also: []
+- int_id: INT-C-X-478
+  layer: data
+  srs:
+    ref: C05 维表规划
+  page_ref: []
+  dimension:
+  - NONE_3E
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: null
+    downstream: gkxlumenx_dim.industry_cluster（存量）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - cluster_code
+    - name
+    - parent_code
+    - level
+    granularity:
+      pk: cluster_code
+    freshness: T+1
+  status:
+    demo: 存量
+    lumen: 存量可复用
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 无原始 structure_escalation 提法；C05 按 geo/domain/人才态势预判补卡
+  conflicts: []
+  decision_needed: []
+  structure_escalation: false
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_dim.industry_cluster（存量） 主键 = cluster_code
+  - 写者唯一：只有 存量 写入
+  confidence: medium
+  canonical:
+    kind: dim
+    kind_cn: 维表
+    name: 产业集群维 dim_industry_cluster（复用，不并入技术领域）
+    physical: gkxlumenx_dim.industry_cluster（存量）
+    existence: existing
+    fields_draft:
+    - cluster_code
+    - name
+    - parent_code
+    - level
+    primary_key: cluster_code
+    refresh: 低频
+    writer: 存量
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: null
+  source_cards: []
+  consumer_cards: []
+  merged_from: []
+  merged_also: []
+- int_id: INT-C-X-480
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-01-FACTORS
+  - DS-04-ACHIEVE-OVERVIEW
+  - DS-04-REALTIME
+  - DS-03-WORKFLOW
+  dimension:
+  - TAL
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TALENT_DEEP_162_1
+  - M_TALENT_GRAPH_110_1
+  - M_TECH_DEEP_130_1
+  - M_TECH_GRAPH_104_1
+  - M_TECH_COMPOSITE_SCORE
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-07/IP-08/IP-11
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id:
+  - SRS-162
+  - SRS-110
+  - SRS-104
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_result_snapshot
+  contract_draft:
+    request: []
+    response_key_fields:
+    - metric_id
+    - entity_type(talent|tech|org|region|none)
+    - entity_id
+    - region_code
+    - domain_code
+    - dims_json
+    granularity:
+      pk: (metric_id, entity_type, entity_id, dims_hash, snapshot_version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-162, SRS-110, SRS-104）
+  conflicts:
+  - CF-C05-12
+  - CF-C05-15
+  decision_needed:
+  - DN-C05-09 久新 API 结果是否允许落库（= B01 DN-09）→ 甲方
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_ads.sci_result_snapshot 主键 = (metric_id, entity_type, entity_id, dims_hash, snapshot_version)
+  - 写者唯一：只有 lumen-algo-py 写入
+  confidence: medium
+  canonical:
+    kind: snapshot
+    kind_cn: 快照
+    name: 模型结果统一快照 sci_result_snapshot（久新 Python/API 回流 + 我方模型）
+    physical: gkxlumenx_ads.sci_result_snapshot
+    existence: missing
+    fields_draft:
+    - metric_id
+    - entity_type(talent|tech|org|region|none)
+    - entity_id
+    - region_code
+    - domain_code
+    - dims_json
+    - value
+    - value_json
+    - ci_low
+    - ci_high
+    - source(jx_py|jx_api|own)
+    - run_id
+    - model_version
+    - snapshot_version
+    - as_of
+    - created_at
+    primary_key: (metric_id, entity_type, entity_id, dims_hash, snapshot_version)
+    refresh: 按模型 freshness（offline / weekly / T+1）
+    writer: lumen-algo-py（久新 Python 并入后的 Job / 适配层落库）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-041
+  - INT-C-TECH-151
+  consumer_cards:
+  - INT-A-TAL-021
+  - INT-A-X-405
+  - INT-A-X-423
+  - INT-A-TECH-320
+  merged_from:
+  - 'SCI-INT-B01:'
+  - SCI-INT-B01:patterns[10]
+  - SCI-INT-A01:INT-A-TAL-021
+  - SCI-INT-A05:INT-A-X-405
+  - SCI-INT-A05:INT-A-X-423
+  - SCI-INT-A07:INT-A-TECH-607
+  - SCI-INT-A07:INT-A-X-610
+  - SCI-INT-A07:INT-A-X-619
+  - SCI-INT-B02:INT-B-TAL-100
+  - SCI-INT-B02:INT-B-TAL-102
+  - SCI-INT-B02:INT-B-TAL-103
+  - SCI-INT-B02:INT-B-TAL-104
+  - SCI-INT-B02:INT-B-TAL-105
+  - SCI-INT-B02:INT-B-TAL-106
+  - SCI-INT-B02:INT-B-TAL-107
+  - SCI-INT-B02:INT-B-TAL-109
+  - SCI-INT-B08:INT-B-ORG-700
+  - SCI-INT-B08:INT-B-ORG-701
+  - SCI-INT-B08:INT-B-ORG-702
+  - SCI-INT-B08:INT-B-ORG-703
+  - SCI-INT-B08:INT-B-ORG-704
+  - SCI-INT-B08:INT-B-ORG-705
+  - SCI-INT-B08:INT-B-ORG-706
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-041
+  - SCI-INT-C02:INT-C-TECH-151
+  - SCI-INT-A04:INT-A-TECH-320
+  - SCI-INT-A07:INT-A-X-618
+  - SCI-INT-A10:INT-A-TAL-910
+  - SCI-INT-A10:INT-A-TAL-914
+  - SCI-INT-A12:INT-A-TAL-1103
+  - SCI-INT-A14:INT-A-X-1306
+  - SCI-INT-A14:INT-A-X-1308
+  - SCI-INT-A14:INT-A-X-1322
+  - SCI-INT-A14:INT-A-X-1326
+  - SCI-INT-B02:INT-B-TAL-101
+  - SCI-INT-B02:INT-B-TAL-108
+  - SCI-INT-B05:INT-B-TECH-403
+  - SCI-INT-B05:INT-B-TECH-404
+  - SCI-INT-B05:INT-B-TECH-410
+  - SCI-INT-B07:INT-B-TECH-600
+  - SCI-INT-B07:INT-B-TECH-601
+  - SCI-INT-B07:INT-B-TECH-602
+  supplement_note: 补归并：B02 SE-B02-01 的 ads_sci_result_snapshot 为共享快照；B08 SE-B08-01 ads_sci_org_deep_snapshot 用 kind/分区并入本表；B07 与湾区快照只引用，不另开快照产品。
+- int_id: INT-C-X-481
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TAL
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-08
+  ours:
+  - python_internal
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: 仅 lumen-algo-py（Java 不读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: Redis（键 jx:{接口}:{参数hash}）；可选 gkxlumenx_cfg.jx_api_cache
+  contract_draft:
+    request: []
+    response_key_fields:
+    - cache_key(接口, 规范化参数)
+    - response_json(已映射我方字段)
+    - fetched_at
+    - ttl
+    - jx_api_version
+    - status_code
+    granularity:
+      pk: cache_key
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（久新行未逐行挂接）
+  conflicts: []
+  decision_needed:
+  - DN-C05-09 同上（缓存/落库合规）→ 甲方
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：Redis（键 jx:{接口}:{参数hash}）；可选 gkxlumenx_cfg.jx_api_cache 主键 = cache_key
+  - 写者唯一：只有 lumen-algo-py 适配层 写入
+  confidence: medium
+  canonical:
+    kind: cache
+    kind_cn: 缓存
+    name: 久新 API 适配缓存 jx_api_cache
+    physical: Redis（键 jx:{接口}:{参数hash}）；可选 gkxlumenx_cfg.jx_api_cache
+    existence: missing
+    fields_draft:
+    - cache_key(接口, 规范化参数)
+    - response_json(已映射我方字段)
+    - fetched_at
+    - ttl
+    - jx_api_version
+    - status_code
+    primary_key: cache_key
+    refresh: TTL = freshness
+    writer: lumen-algo-py 适配层（凭据只在 Python K8s Secret）
+    read_by: 仅 lumen-algo-py（Java 不读）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards: []
+  merged_from:
+  - SCI-INT-B01:patterns[7]
+  merged_also:
+  - 'SCI-INT-B01:'
+  - SCI-INT-B02:INT-B-TAL-100
+  - SCI-INT-B02:INT-B-TAL-101
+  - SCI-INT-B02:INT-B-TAL-102
+  - SCI-INT-B02:INT-B-TAL-103
+  - SCI-INT-B02:INT-B-TAL-104
+  - SCI-INT-B02:INT-B-TAL-105
+  - SCI-INT-B02:INT-B-TAL-106
+  - SCI-INT-B02:INT-B-TAL-107
+  - SCI-INT-B02:INT-B-TAL-108
+  - SCI-INT-B02:INT-B-TAL-109
+  supplement_note: 补归并：B02 SE-B02-01 的适配层缓存即本 jx_api_cache，不另造缓存表。
+- int_id: INT-C-X-482
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref: []
+  dimension:
+  - TAL
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-11
+  ours:
+  - python_internal
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）（读当前 published 版本号）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_cfg.sci_snapshot_version
+  contract_draft:
+    request: []
+    response_key_fields:
+    - snapshot_version
+    - scope(metric_id|graph_scope|task_type)
+    - source(jx_sql|jx_py|jx_api|own)
+    - as_of
+    - row_cnt
+    - status(staging|published|retired)
+    granularity:
+      pk: snapshot_version
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps: []
+  conflicts: []
+  decision_needed: []
+  structure_escalation: true
+  risks: []
+  test_points:
+  - DDL 评审：gkxlumenx_cfg.sci_snapshot_version 主键 = snapshot_version
+  - 写者唯一：只有 lumen-algo-py / GDF/ETL 写批次 写入
+  confidence: medium
+  canonical:
+    kind: cfg
+    kind_cn: 配置
+    name: 快照版本登记 sci_snapshot_version
+    physical: gkxlumenx_cfg.sci_snapshot_version
+    existence: missing
+    fields_draft:
+    - snapshot_version
+    - scope(metric_id|graph_scope|task_type)
+    - source(jx_sql|jx_py|jx_api|own)
+    - as_of
+    - row_cnt
+    - status(staging|published|retired)
+    - published_at
+    - retire_at
+    - checksum
+    primary_key: snapshot_version
+    refresh: 每批一条
+    writer: lumen-algo-py / GDF/ETL 写批次
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）（读当前 published 版本号）
+    escalate_to: human:李伟
+  source_cards: []
+  consumer_cards: []
+  merged_from: []
+  merged_also:
+  - 'SCI-INT-B01:'
+  - SCI-INT-B01:patterns[10]
+- int_id: INT-C-X-490
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-TECHGRAPH
+  - DS-02-ENTITY
+  - DS-02-PATH
+  - DS-02-MAINTAIN-GRAPH
+  - DS-15-TALENT-PROFILE
+  - DS-13
+  - DS-16
+  - TOPIC-TALENT-05
+  - SRS-ORG
+  - TOPIC-ORG-05
+  - DS-02-MAINTAIN-ENTITY
+  - DS-03-RESULT
+  - DS-07
+  - DS-04-REALTIME
+  - DS-01-FACTORS
+  dimension:
+  - TECH
+  - TAL
+  - ORG
+  dep_kind:
+  - data
+  - graph
+  metric_ids:
+  - M_TALENT_GRAPH_110_1
+  - M_TALENT_DEEP_160_1
+  - M_TALENT_GRAPH_111_1
+  - M_TALENT_RELATION_NET
+  - M_TECH_DEEP_130_1
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_GRAPH_104_1
+  - M_TECH_GRAPH_STRUCT
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  - M_TECH_EDGE_STRENGTH
+  - M_TECH_ENTITY_REL
+  - M_TECH_ENTITY_TOP5
+  - M_TECH_GRAPH_105_1
+  - M_TECH_REL_STRENGTH
+  - M_TECH_DEEP_131_1
+  - M_TALENT_DEEP_157_1
+  - M_TALENT_FLOW_TRACK
+  - M_ORG_COLLAB_CHAIN
+  - M_ORG_DEEP_153_1
+  - M_ORG_GRAPH_114_1
+  - M_ORG_GRAPH_115_1
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05
+  ours:
+  - graph_load
+  counterpart: trsgraph
+  delivery_form: none
+  jiuxin_row_id:
+  - SRS-104
+  - SRS-110
+  - SRS-114
+  - SRS-105
+  - SRS-111
+  - SRS-160
+  - SRS-157
+  - SRS-115
+  - SRS-153
+  - TOPIC-RORG-012
+  call_chain:
+    fe_route: null
+    java: lumen-algo-py /internal/*（Java 不直连 nGQL）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: NebulaGraph TRSGraph space demo_gkx_chain（正式 gkx_chain 待定）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - TAG technology / talent / institution(ALTER)
+    - EDGE tech_relation / produces / talent_coop / work_at / educated_at / research_coop
+    - innovation_point（A05 提，C04 未收，待定）
+    granularity:
+      pk: 'VID: tech:{technology_id} / talent:{scholar_id} / inst:{org_uid} / ent:{org_id}'
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 久新交付形态/字段/频率：待确认（SRS-104, SRS-110, SRS-114, SRS-105, SRS-111, SRS-160, SRS-157, SRS-115, SRS-153, TOPIC-RORG-012）
+  conflicts:
+  - CF-C05-01
+  - CF-C05-02
+  - CF-C05-08
+  - CF-C05-18
+  decision_needed:
+  - DN-C05-10 三要素图 space：demo_gkx_chain 追加 vs 正式 gkx_chain（= C04 DN-C04-01）→ human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 'DDL 评审：NebulaGraph TRSGraph space demo_gkx_chain（正式 gkx_chain 待定） 主键 = VID: tech:{technology_id} / talent:{scholar_id} / inst:{org_uid} / ent:{org_id}'
+  - 写者唯一：只有 lumen-algo-py 三要素投影 Job 写入
+  confidence: medium
+  canonical:
+    kind: nebula_schema
+    kind_cn: Nebula
+    name: 三要素 Nebula 增量 schema（引用 C04 9 卡 + innovation_point 待定）
+    physical: NebulaGraph TRSGraph space demo_gkx_chain（正式 gkx_chain 待定）
+    existence: missing
+    fields_draft:
+    - TAG technology / talent / institution(ALTER)
+    - EDGE tech_relation / produces / talent_coop / work_at / educated_at / research_coop
+    - innovation_point（A05 提，C04 未收，待定）
+    primary_key: 'VID: tech:{technology_id} / talent:{scholar_id} / inst:{org_uid} / ent:{org_id}'
+    refresh: 先 ADS 再投影；weekly 增量（待确认）
+    writer: lumen-algo-py 三要素投影 Job（单写者）
+    read_by: lumen-algo-py /internal/*（Java 不直连 nGQL）
+    escalate_to: human:李伟
+  source_cards:
+  - INT-C-TAL-060
+  - INT-C-TAL-061
+  - INT-C-TECH-170
+  - INT-C-TECH-171
+  - INT-C-TECH-300
+  - INT-C-TAL-310
+  - INT-C-ORG-320
+  - INT-C-TECH-340
+  - INT-C-TECH-341
+  - INT-C-TAL-350
+  - INT-C-TAL-351
+  - INT-C-TAL-352
+  - INT-C-ORG-360
+  - INT-C-TAL-042
+  consumer_cards:
+  - INT-A-TECH-418
+  - INT-A-X-020
+  - INT-A-TECH-202
+  - INT-A-TECH-210
+  - INT-A-TECH-103
+  - INT-A-TECH-105
+  - INT-A-TECH-117
+  - INT-A-TECH-118
+  - INT-A-TECH-104
+  - INT-A-X-109
+  - INT-A-X-114
+  - INT-A-TECH-115
+  merged_from:
+  - SCI-INT-C01:INT-C-TAL-060
+  - SCI-INT-C01:INT-C-TAL-061
+  - SCI-INT-C02:INT-C-TECH-170
+  - SCI-INT-C02:INT-C-TECH-171
+  - SCI-INT-C04:INT-C-TECH-300
+  - SCI-INT-C04:INT-C-TAL-310
+  - SCI-INT-C04:INT-C-ORG-320
+  - SCI-INT-C04:INT-C-TECH-340
+  - SCI-INT-C04:INT-C-TECH-341
+  - SCI-INT-C04:INT-C-TAL-350
+  - SCI-INT-C04:INT-C-TAL-351
+  - SCI-INT-C04:INT-C-TAL-352
+  - SCI-INT-C04:INT-C-ORG-360
+  - SCI-INT-C04:space_plan
+  - SCI-INT-A05:INT-A-TECH-418
+  - SCI-INT-A14:INT-A-X-1306
+  - SCI-INT-A14:INT-A-X-1308
+  - SCI-INT-A14:INT-A-X-1320
+  - SCI-INT-A14:INT-A-X-1322
+  - SCI-INT-A14:INT-A-X-1323
+  - SCI-INT-A14:INT-A-X-1324
+  - SCI-INT-A14:INT-A-X-1326
+  - SCI-INT-A14:INT-A-X-1327
+  merged_also:
+  - SCI-INT-C01:INT-C-TAL-042
+  - SCI-INT-A01:INT-A-X-020
+  - SCI-INT-A03:INT-A-TECH-202
+  - SCI-INT-A03:INT-A-TECH-210
+  - SCI-INT-A14:INT-A-X-1302
+  supplement_note: 补归并：A14 的 talent / talent_coop 只引用 C04 图谱 schema，不为未建标签另造 ADS 主表。
+- int_id: INT-C-X-491
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-08-INDICATOR
+  - DS-08-VIZ
+  - DS-08-RANK
+  dimension:
+  - TAL
+  - TECH
+  - ORG
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01/IP-11
+  ours:
+  - etl
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_index_rank_snapshot（家族同卡：sci_index_value / sci_index_trend；指标树 gkxlumenx_dim.sci_index_indicator）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - period_id
+    - board
+    - object_id
+    - indicator_key
+    - index_value
+    - rank
+    granularity:
+      pk: (period_id, board, object_id, indicator_key, weight_version)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - A10 四类指数对象（指标树/指数值/趋势/排名快照）只此一张家族卡，不拆四张主表
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 同一 (period_id, board, object_id, weight_version) 不重复
+  - 正式库 gkxlumenx_ads / gkxlumenx_dim，不写 demo 库
+  confidence: medium
+  canonical:
+    kind: snapshot
+    kind_cn: 快照
+    name: 科技指数家族 sci_index（排名快照 / 指数值 / 趋势 / 指标树，同卡）
+    physical: gkxlumenx_ads.sci_index_rank_snapshot（家族同卡：sci_index_value / sci_index_trend；指标树 gkxlumenx_dim.sci_index_indicator）
+    existence: missing
+    fields_draft:
+    - period_id
+    - board
+    - object_id
+    - indicator_key
+    - index_value
+    - rank
+    - weight_version
+    - parent_indicator_id
+    - level
+    - as_of
+    primary_key: (period_id, board, object_id, indicator_key, weight_version)
+    refresh: 按期次追加；保留期数待确认
+    writer: lumen-algo-py 指数 Job（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: 逻辑名 ads_sci_index_rank_snapshot；value/trend/indicator 用 kind 区分
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-900
+  - INT-A-X-912
+  - INT-A-X-913
+  - INT-A-X-920
+  - INT-A-X-924
+  merged_from:
+  - SCI-INT-A10:INT-A-X-900
+  - SCI-INT-A10:INT-A-X-912
+  - SCI-INT-A10:INT-A-X-913
+  - SCI-INT-A10:INT-A-X-920
+  - SCI-INT-A10:INT-A-X-924
+  merged_also: []
+- int_id: INT-C-TECH-492
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-02-ENTITY
+  - DS-02-PATH
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_ENTITY_INFLUENCE
+  - M_TECH_PATH_CENTRALITY
+  - M_TECH_PATH_KEYNODE
+  - M_TECH_PATH_PRIORITY
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-05
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_tech_graph_node_metric
+  contract_draft:
+    request: []
+    response_key_fields:
+    - technology_id
+    - metric_id
+    - metric_value
+    - as_of
+    - version
+    granularity:
+      pk: (technology_id, metric_id, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 技术主数据只引用 C02 INT-C-TECH-180（C05 INT-C-TECH-420），不新造 technology 主表
+  - 与 INT-C-TECH-429 图指标快照不同名；是否合并由 human:李伟 定，本叶不拆四张
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - technology_id 必须能在 technology_master 找到
+  - 不出现第二张技术点主表
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 技术图节点指标 ads_tech_graph_node_metric
+    physical: gkxlumenx_ads.sci_tech_graph_node_metric
+    existence: missing
+    fields_draft:
+    - technology_id
+    - metric_id
+    - metric_value
+    - as_of
+    - version
+    primary_key: (technology_id, metric_id, as_of)
+    refresh: T+1 / 异步 Job 回写
+    writer: lumen-algo-py 图指标 Job（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: SE-B06-01。中心度/关键节点/优先级/影响力用 metric_id 区分
+  source_cards:
+  - INT-C-TECH-180
+  consumer_cards:
+  - INT-B-TECH-504
+  - INT-B-TECH-508
+  - INT-B-TECH-509
+  - INT-B-TECH-510
+  merged_from:
+  - SCI-INT-B06:INT-B-TECH-504
+  - SCI-INT-B06:INT-B-TECH-508
+  - SCI-INT-B06:INT-B-TECH-509
+  - SCI-INT-B06:INT-B-TECH-510
+  merged_also: []
+- int_id: INT-C-X-493
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-07-TECH-INNOV
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_DS_07_TECH_INNOV_002
+  - M_TECH_DS_07_TECH_INNOV_004
+  - M_TECH_DS_07_TECH_INNOV_006
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-04
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_async_task
+  contract_draft:
+    request: []
+    response_key_fields:
+    - task_id
+    - metric_id
+    - owner
+    - status
+    - result_snapshot_id
+    - created_at
+    granularity:
+      pk: task_id
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 结果快照不新造，result_snapshot_id 引用 INT-C-X-480（SE-B02-01 ads_sci_result_snapshot）
+  - 不替代存量 lumen_analysis_task（INT-C-TECH-433）；是否并表由 human:李伟 定
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - 同一用户同一条件至多一条在跑（产品口径另见分析工作区）
+  - 完成行的 result_snapshot_id 在 sci_result_snapshot 中存在
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 异步分析任务 ads_sci_async_task
+    physical: gkxlumenx_ads.sci_async_task
+    existence: missing
+    fields_draft:
+    - task_id
+    - metric_id
+    - owner
+    - status
+    - result_snapshot_id
+    - created_at
+    - updated_at
+    primary_key: task_id
+    refresh: 事件驱动
+    writer: lumen-algo-py 任务登记（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: SE-B07-01。逻辑名 ads_sci_async_task
+  source_cards: []
+  consumer_cards:
+  - INT-B-TECH-600
+  - INT-B-TECH-601
+  - INT-B-TECH-602
+  merged_from:
+  - SCI-INT-B07:INT-B-TECH-600
+  - SCI-INT-B07:INT-B-TECH-601
+  - SCI-INT-B07:INT-B-TECH-602
+  merged_also: []
+- int_id: INT-C-TECH-494
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - 未挂页
+  - DS-03-RESULT
+  - DS-02-ENTITY
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids:
+  - M_TECH_HEAT_QUERY
+  - M_TECH_INVEST_AMOUNT
+  - M_TECH_OUTPUT_SCALE
+  - M_TECH_PAPER_PATENT_CNT
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_tech_stat_preagg（家族同卡：ads_tech_query_term_tf / ads_tech_invest_amount / ads_tech_output_scale / ads_tech_paper_patent_cnt）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - kind(query_term_tf|invest_amount|output_scale|paper_patent_cnt)
+    - technology_id
+    - stat_year
+    - metric_id
+    - value
+    - as_of
+    granularity:
+      pk: (kind, technology_id, metric_id, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - SE-B07-02 四张候选 STAT 只此一张家族卡，不拆四张互不相关的主表
+  - 不替代 C02 技术点主数据，不另造桥接表
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - kind 只允许四枚举
+  - technology_id 引用 technology_master
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 技术 STAT 预聚合家族（热度/投资额/规模/论文专利量，同卡）
+    physical: gkxlumenx_ads.sci_tech_stat_preagg（家族同卡：ads_tech_query_term_tf / ads_tech_invest_amount / ads_tech_output_scale / ads_tech_paper_patent_cnt）
+    existence: missing
+    fields_draft:
+    - kind(query_term_tf|invest_amount|output_scale|paper_patent_cnt)
+    - technology_id
+    - stat_year
+    - metric_id
+    - value
+    - as_of
+    primary_key: (kind, technology_id, metric_id, stat_year, as_of)
+    refresh: T+1
+    writer: GDF/ETL（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: 四逻辑名用 kind 区分，物理上一张预聚合家族
+  source_cards:
+  - INT-C-TECH-180
+  consumer_cards:
+  - INT-B-TECH-603
+  - INT-B-TECH-604
+  - INT-B-TECH-605
+  - INT-B-TECH-606
+  merged_from:
+  - SCI-INT-B07:INT-B-TECH-603
+  - SCI-INT-B07:INT-B-TECH-604
+  - SCI-INT-B07:INT-B-TECH-605
+  - SCI-INT-B07:INT-B-TECH-606
+  merged_also: []
+- int_id: INT-C-ORG-495
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - 未挂页
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_ORG_PERF_QUERY
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_org_perf_query
+  contract_draft:
+    request: []
+    response_key_fields:
+    - org_key（引用 INT-C-ORG-240 / INT-C-ORG-440 主键，本表不另造 org_uid）
+    - metric_id
+    - stat_year
+    - value
+    - as_of
+    granularity:
+      pk: (org_key, metric_id, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 机构键只引用已有主数据 INT-C-ORG-240（C05 卡 INT-C-ORG-440），不造第二张机构主表
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - org_key 都能连到 research_org
+  - 本表字段清单无独立 org_uid 列
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 机构绩效查询 ads_org_perf_query
+    physical: gkxlumenx_ads.sci_org_perf_query
+    existence: missing
+    fields_draft:
+    - org_key（引用 INT-C-ORG-240 / INT-C-ORG-440 主键，本表不另造 org_uid）
+    - metric_id
+    - stat_year
+    - value
+    - as_of
+    primary_key: (org_key, metric_id, stat_year, as_of)
+    refresh: T+1
+    writer: GDF/ETL（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: SE-B09-01
+  source_cards:
+  - INT-C-ORG-240
+  consumer_cards:
+  - INT-B-ORG-814
+  merged_from:
+  - SCI-INT-B09:INT-B-ORG-814
+  merged_also: []
+- int_id: INT-C-ORG-496
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-CARRIER-RANK
+  - DS-06-CARRIER
+  dimension:
+  - ORG
+  dep_kind:
+  - data
+  metric_ids:
+  - M_INNOV_DS_04_CARRIER_RANK_001
+  - M_INNOV_CARRIER_INDEX_GLOBAL
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-04
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_carrier_index
+  contract_draft:
+    request: []
+    response_key_fields:
+    - org_key（引用 INT-C-ORG-440）
+    - index_value
+    - weight_version
+    - stat_period
+    - as_of
+    granularity:
+      pk: (org_key, weight_version, stat_period)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - dim_carrier 不单独立表，载体作机构子类型见 INT-C-ORG-440（CF-C05-17）
+  - cfg 权重作本表 weight_version，不另造 cfg 主表
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - org_key 都能连到 research_org
+  - 正式库 gkxlumenx_ads
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 载体指数 ads_carrier_index（含权重，不另造载体主表）
+    physical: gkxlumenx_ads.sci_carrier_index
+    existence: missing
+    fields_draft:
+    - org_key（引用 INT-C-ORG-440）
+    - index_value
+    - weight_version
+    - stat_period
+    - as_of
+    primary_key: (org_key, weight_version, stat_period)
+    refresh: T+1 / 周
+    writer: lumen-algo-py 载体指数 Job（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: 逻辑名 ads_carrier_index。demo 库里的 carrier 只作风险参照，不是落点
+  source_cards:
+  - INT-C-ORG-240
+  consumer_cards:
+  - INT-A-ORG-500
+  - INT-A-ORG-704
+  merged_from:
+  - SCI-INT-A06:INT-A-ORG-500
+  - SCI-INT-A08:INT-A-ORG-704
+  merged_also: []
+- int_id: INT-C-X-497
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-04-CITY
+  - DS-06-CITY
+  dimension:
+  - ORG
+  - TAL
+  dep_kind:
+  - data
+  metric_ids:
+  - M_SYNTH_186_1
+  - M_INNOV_CITY_RANK_GLOBAL
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-04
+  ours:
+  - python_internal
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_city_index
+  contract_draft:
+    request: []
+    response_key_fields:
+    - region_code(code_region)
+    - index_score
+    - rank_domestic
+    - rank_global
+    - weight_version
+    - stat_period
+    granularity:
+      pk: (region_code, weight_version, stat_period)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - 不并入 A10 科技指数家族；城市排名与深圳人才指数 tab 同此一张
+  - 地理码引用 code_region / region_scope，不新建地理主数据
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - region_code 都能在 code_region 或 region_scope 找到
+  - 正式库 gkxlumenx_ads
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 城市指数 ads_city_index
+    physical: gkxlumenx_ads.sci_city_index
+    existence: missing
+    fields_draft:
+    - region_code(code_region)
+    - index_score
+    - rank_domestic
+    - rank_global
+    - weight_version
+    - stat_period
+    - as_of
+    primary_key: (region_code, weight_version, stat_period)
+    refresh: 周 / 年（待确认）
+    writer: lumen-algo-py 城市指数 Job（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: A06 城市指数与 A08 城市/人才指数 tab
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-521
+  - INT-A-X-727
+  - INT-A-TAL-728
+  merged_from:
+  - SCI-INT-A06:INT-A-X-521
+  - SCI-INT-A08:INT-A-X-727
+  - SCI-INT-A08:INT-A-TAL-728
+  merged_also:
+  - SCI-INT-A06:INT-A-X-526
+- int_id: INT-C-X-498
+  layer: data
+  srs:
+    ref: 见 merged_from 原卡 srs
+  page_ref:
+  - DS-09-KEY-DOMAIN
+  dimension:
+  - TECH
+  dep_kind:
+  - data
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a（结构卡；指标算法类型见原卡 / MCP）
+  integration_pattern: IP-01
+  ours:
+  - etl
+  counterpart: none
+  delivery_form: table
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: null
+    java: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    python: lumen-algo-py /internal/*（写者）
+    downstream: gkxlumenx_ads.sci_innov_spatial（家族同卡：ads_innov_spatial_density / ads_innov_land_benefit）
+  contract_draft:
+    request: []
+    response_key_fields:
+    - kind(spatial_density|land_benefit)
+    - region_code
+    - domain_code
+    - stat_year
+    - value
+    - as_of
+    granularity:
+      pk: (kind, region_code, domain_code, stat_year, as_of)
+    freshness: T+1
+  status:
+    demo: 无（三要素标准层未建）
+    lumen: 未建
+    d1_d4: n/a（结构卡）
+  gaps:
+  - A11 密度与用地效益共一张家族卡，不拆两张主表
+  - 地理码引用已有维，不新建地理主数据
+  conflicts: []
+  decision_needed:
+  - DDL 与是否单独立表 → human:李伟
+  structure_escalation: true
+  risks: []
+  test_points:
+  - kind 只允许两枚举
+  - region_code 引用 code_region
+  confidence: medium
+  canonical:
+    kind: ads
+    kind_cn: ADS
+    name: 创新空间预聚合家族（密度 / 用地效益，同卡）
+    physical: gkxlumenx_ads.sci_innov_spatial（家族同卡：ads_innov_spatial_density / ads_innov_land_benefit）
+    existence: missing
+    fields_draft:
+    - kind(spatial_density|land_benefit)
+    - region_code
+    - domain_code
+    - stat_year
+    - value
+    - as_of
+    primary_key: (kind, region_code, domain_code, stat_year, as_of)
+    refresh: T+1
+    writer: GDF/ETL（单写者）
+    read_by: lumen-svc-platform（gkxlumen-* Java 门面，只读）
+    escalate_to: human:李伟
+    note: DS-09 两条共核指标
+  source_cards: []
+  consumer_cards:
+  - INT-A-X-1007
+  - INT-A-X-1009
+  merged_from:
+  - SCI-INT-A11:INT-A-X-1007
+  - SCI-INT-A11:INT-A-X-1009
+  merged_also: []
+
+dedup_map:
+- raw_id: 'SCI-INT-B01:'
+  kind: top
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+  - INT-C-X-482
+- raw_id: SCI-INT-B01:patterns[7]
+  kind: top
+  to: INT-C-X-481
+  also: []
+- raw_id: SCI-INT-B01:patterns[10]
+  kind: top
+  to: INT-C-X-480
+  also:
+  - INT-C-X-482
+- raw_id: SCI-INT-C01:INT-C-TAL-041
+  kind: card
+  to: INT-C-TAL-401
+  also:
+  - INT-C-TAL-400
+  - INT-C-X-480
+- raw_id: SCI-INT-C01:INT-C-TAL-042
+  kind: card
+  to: INT-C-TAL-404
+  also:
+  - INT-C-X-490
+- raw_id: SCI-INT-C01:INT-C-TAL-060
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-400
+- raw_id: SCI-INT-C01:INT-C-TAL-061
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-404
+  - INT-C-TAL-402
+- raw_id: SCI-INT-C01:INT-C-TAL-070
+  kind: card
+  to: INT-C-TAL-400
+  also: []
+- raw_id: SCI-INT-C01:INT-C-TAL-071
+  kind: card
+  to: INT-C-TAL-402
+  also:
+  - INT-C-TAL-406
+- raw_id: SCI-INT-C01:INT-C-TAL-072
+  kind: card
+  to: INT-C-TAL-401
+  also: []
+- raw_id: SCI-INT-C02:INT-C-TECH-151
+  kind: card
+  to: INT-C-TECH-420
+  also:
+  - INT-C-TECH-426
+  - INT-C-X-480
+- raw_id: SCI-INT-C02:INT-C-TECH-152
+  kind: card
+  to: INT-C-TECH-424
+  also:
+  - INT-C-TECH-426
+- raw_id: SCI-INT-C02:INT-C-TECH-170
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-C02:INT-C-TECH-171
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TECH-424
+- raw_id: SCI-INT-C02:INT-C-TECH-180
+  kind: card
+  to: INT-C-TECH-420
+  also: []
+- raw_id: SCI-INT-C02:INT-C-TECH-181
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-TECH-422
+- raw_id: SCI-INT-C02:INT-C-TECH-182
+  kind: card
+  to: INT-C-TECH-423
+  also: []
+- raw_id: SCI-INT-C03:INT-C-ORG-240
+  kind: card
+  to: INT-C-ORG-440
+  also: []
+- raw_id: SCI-INT-C03:INT-C-ORG-241
+  kind: card
+  to: INT-C-ORG-441
+  also: []
+- raw_id: SCI-INT-C03:INT-C-ORG-242
+  kind: card
+  to: INT-C-ORG-442
+  also: []
+- raw_id: SCI-INT-C04:INT-C-TECH-300
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-C04:INT-C-TAL-310
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-400
+- raw_id: SCI-INT-C04:INT-C-ORG-320
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-ORG-440
+- raw_id: SCI-INT-C04:INT-C-TECH-340
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TECH-424
+- raw_id: SCI-INT-C04:INT-C-TECH-341
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TECH-424
+- raw_id: SCI-INT-C04:INT-C-TAL-350
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-404
+- raw_id: SCI-INT-C04:INT-C-TAL-351
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-402
+- raw_id: SCI-INT-C04:INT-C-TAL-352
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-TAL-404
+- raw_id: SCI-INT-C04:INT-C-ORG-360
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-460
+- raw_id: SCI-INT-C04:space_plan
+  kind: top
+  to: INT-C-X-490
+  also: []
+- raw_id: SCI-INT-C04:write_back_conflicts.items[0]
+  kind: top
+  to: INT-C-TECH-426
+  also: []
+- raw_id: SCI-INT-C04:write_back_conflicts.items[1]
+  kind: top
+  to: INT-C-TECH-428
+  also:
+  - INT-C-TECH-427
+- raw_id: SCI-INT-C04:write_back_conflicts.items[2]
+  kind: top
+  to: INT-C-TECH-420
+  also: []
+- raw_id: SCI-INT-C04:write_back_conflicts.items[3]
+  kind: top
+  to: INT-C-TAL-403
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-004
+  kind: card
+  to: INT-C-X-463
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-005
+  kind: card
+  to: INT-C-X-466
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-007
+  kind: card
+  to: INT-C-X-469
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-008
+  kind: card
+  to: INT-C-X-468
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-009
+  kind: card
+  to: INT-C-X-467
+  also:
+  - INT-C-X-466
+- raw_id: SCI-INT-A01:INT-A-X-014
+  kind: card
+  to: INT-C-X-470
+  also: []
+- raw_id: SCI-INT-A01:INT-A-TECH-015
+  kind: card
+  to: INT-C-TECH-431
+  also: []
+- raw_id: SCI-INT-A01:INT-A-TAL-016
+  kind: card
+  to: INT-C-TAL-405
+  also: []
+- raw_id: SCI-INT-A01:INT-A-ORG-017
+  kind: card
+  to: INT-C-ORG-443
+  also: []
+- raw_id: SCI-INT-A01:INT-A-X-020
+  kind: card
+  to: INT-C-X-460
+  also:
+  - INT-C-X-490
+- raw_id: SCI-INT-A01:INT-A-TAL-021
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-A02:INT-A-TECH-105
+  kind: card
+  to: INT-C-TECH-420
+  also:
+  - INT-C-TECH-421
+  - INT-C-TECH-423
+  - INT-C-TECH-428
+- raw_id: SCI-INT-A02:INT-A-TECH-107
+  kind: card
+  to: INT-C-X-463
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-A02:INT-A-TECH-115
+  kind: card
+  to: INT-C-TECH-429
+  also: []
+- raw_id: SCI-INT-A02:INT-A-TECH-117
+  kind: card
+  to: INT-C-TECH-430
+  also: []
+- raw_id: SCI-INT-A02:INT-A-TECH-118
+  kind: card
+  to: INT-C-TECH-429
+  also: []
+- raw_id: SCI-INT-A02:INT-A-TECH-119
+  kind: card
+  to: INT-C-TECH-430
+  also: []
+- raw_id: SCI-INT-A03:INT-A-TECH-200
+  kind: card
+  to: INT-C-TECH-425
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-A03:INT-A-TECH-201
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-A03:INT-A-TECH-202
+  kind: card
+  to: INT-C-TECH-420
+  also:
+  - INT-C-X-490
+- raw_id: SCI-INT-A03:INT-A-TECH-203
+  kind: card
+  to: INT-C-TECH-426
+  also: []
+- raw_id: SCI-INT-A03:INT-A-TECH-204
+  kind: card
+  to: INT-C-TECH-424
+  also: []
+- raw_id: SCI-INT-A03:INT-A-TECH-205
+  kind: card
+  to: INT-C-TECH-424
+  also:
+  - INT-C-TECH-426
+- raw_id: SCI-INT-A03:INT-A-TECH-206
+  kind: card
+  to: INT-C-TECH-426
+  also:
+  - INT-C-TECH-420
+- raw_id: SCI-INT-A03:INT-A-TECH-208
+  kind: card
+  to: INT-C-TECH-427
+  also: []
+- raw_id: SCI-INT-A03:INT-A-TECH-209
+  kind: card
+  to: INT-C-TECH-428
+  also: []
+- raw_id: SCI-INT-A03:INT-A-TECH-210
+  kind: card
+  to: INT-C-X-460
+  also:
+  - INT-C-X-490
+- raw_id: SCI-INT-A03:INT-A-TECH-211
+  kind: card
+  to: INT-C-TECH-426
+  also:
+  - INT-C-TECH-425
+- raw_id: SCI-INT-A03:INT-A-TECH-212
+  kind: card
+  to: INT-C-TECH-425
+  also: []
+- raw_id: SCI-INT-A03:INT-A-X-215
+  kind: card
+  to: INT-C-X-461
+  also: []
+- raw_id: SCI-INT-A03:INT-A-X-217
+  kind: card
+  to: INT-C-X-461
+  also: []
+- raw_id: SCI-INT-A03:INT-A-X-218
+  kind: card
+  to: INT-C-TECH-424
+  also:
+  - INT-C-TECH-426
+- raw_id: SCI-INT-A03:INT-A-X-219
+  kind: card
+  to: INT-C-X-462
+  also: []
+- raw_id: SCI-INT-A03:INT-A-X-220
+  kind: card
+  to: INT-C-X-462
+  also:
+  - INT-C-TECH-426
+- raw_id: SCI-INT-A03:INT-A-X-221
+  kind: card
+  to: INT-C-TECH-425
+  also: []
+- raw_id: SCI-INT-A04:INT-A-X-305
+  kind: card
+  to: INT-C-TECH-432
+  also:
+  - INT-C-X-474
+- raw_id: SCI-INT-A04:INT-A-TECH-320
+  kind: card
+  to: INT-C-TECH-433
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A04:INT-A-TECH-323
+  kind: card
+  to: INT-C-TECH-434
+  also: []
+- raw_id: SCI-INT-A05:INT-A-X-401
+  kind: card
+  to: INT-C-X-464
+  also:
+  - INT-C-X-465
+- raw_id: SCI-INT-A05:INT-A-X-405
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-A05:INT-A-ORG-411
+  kind: card
+  to: INT-C-ORG-442
+  also: []
+- raw_id: SCI-INT-A05:INT-A-X-413
+  kind: card
+  to: INT-C-X-471
+  also: []
+- raw_id: SCI-INT-A05:INT-A-X-415
+  kind: card
+  to: INT-C-X-472
+  also: []
+- raw_id: SCI-INT-A05:INT-A-TECH-418
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-466
+- raw_id: SCI-INT-A05:INT-A-X-421
+  kind: card
+  to: INT-C-TECH-429
+  also: []
+- raw_id: SCI-INT-A05:INT-A-X-423
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-A06:INT-A-ORG-500
+  kind: card
+  to: INT-C-ORG-496
+  also:
+  - INT-C-ORG-440
+- raw_id: SCI-INT-A06:INT-A-ORG-501
+  kind: card
+  to: INT-C-ORG-440
+  also: []
+- raw_id: SCI-INT-A06:INT-A-X-507
+  kind: card
+  to: INT-C-ORG-443
+  also: []
+- raw_id: SCI-INT-A06:INT-A-X-510
+  kind: card
+  to: INT-C-X-471
+  also: []
+- raw_id: SCI-INT-A06:INT-A-X-515
+  kind: card
+  to: INT-C-X-471
+  also: []
+- raw_id: SCI-INT-A06:INT-A-TECH-516
+  kind: card
+  to: INT-C-X-471
+  also:
+  - INT-C-TECH-421
+- raw_id: SCI-INT-A06:INT-A-X-517
+  kind: card
+  to: INT-C-X-471
+  also: []
+- raw_id: SCI-INT-A06:INT-A-X-521
+  kind: card
+  to: INT-C-X-497
+  also: []
+- raw_id: SCI-INT-A06:INT-A-X-526
+  kind: card
+  to: INT-C-X-471
+  also:
+  - INT-C-X-497
+- raw_id: SCI-INT-A07:INT-A-X-601
+  kind: card
+  to: INT-C-X-475
+  also: []
+- raw_id: SCI-INT-A07:INT-A-TECH-602
+  kind: card
+  to: INT-C-X-466
+  also: []
+- raw_id: SCI-INT-A07:INT-A-TECH-607
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-466
+- raw_id: SCI-INT-A07:INT-A-X-610
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-A07:INT-A-X-618
+  kind: card
+  to: INT-C-X-471
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A07:INT-A-X-619
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-472
+- raw_id: SCI-INT-A07:INT-A-X-631
+  kind: card
+  to: INT-C-X-472
+  also: []
+- raw_id: SCI-INT-A08:INT-A-X-701
+  kind: card
+  to: INT-C-X-475
+  also:
+  - INT-C-X-474
+- raw_id: SCI-INT-A08:INT-A-ORG-702
+  kind: card
+  to: INT-C-ORG-440
+  also: []
+- raw_id: SCI-INT-A08:INT-A-ORG-704
+  kind: card
+  to: INT-C-ORG-496
+  also: []
+- raw_id: SCI-INT-A08:INT-A-X-705
+  kind: card
+  to: INT-C-X-471
+  also: []
+- raw_id: SCI-INT-A08:INT-A-X-708
+  kind: card
+  to: INT-C-X-472
+  also: []
+- raw_id: SCI-INT-A08:INT-A-X-717
+  kind: card
+  to: INT-C-X-466
+  also:
+  - INT-C-TECH-421
+- raw_id: SCI-INT-A08:INT-A-TECH-733
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-TECH-422
+- raw_id: SCI-INT-A08:INT-A-X-727
+  kind: card
+  to: INT-C-X-497
+  also: []
+- raw_id: SCI-INT-A08:INT-A-TAL-728
+  kind: card
+  to: INT-C-X-497
+  also:
+  - INT-C-TAL-400
+- raw_id: SCI-INT-A10:INT-A-X-900
+  kind: card
+  to: INT-C-X-491
+  also: []
+- raw_id: SCI-INT-A10:INT-A-TAL-910
+  kind: card
+  to: INT-C-TAL-400
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A10:INT-A-X-912
+  kind: card
+  to: INT-C-X-491
+  also: []
+- raw_id: SCI-INT-A10:INT-A-X-913
+  kind: card
+  to: INT-C-X-491
+  also: []
+- raw_id: SCI-INT-A10:INT-A-TAL-914
+  kind: card
+  to: INT-C-TAL-404
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A10:INT-A-X-920
+  kind: card
+  to: INT-C-X-491
+  also: []
+- raw_id: SCI-INT-A10:INT-A-X-924
+  kind: card
+  to: INT-C-X-491
+  also: []
+- raw_id: SCI-INT-A11:INT-A-X-1007
+  kind: card
+  to: INT-C-X-498
+  also: []
+- raw_id: SCI-INT-A11:INT-A-X-1009
+  kind: card
+  to: INT-C-X-498
+  also: []
+- raw_id: SCI-INT-A12:INT-A-TAL-1100
+  kind: card
+  to: INT-C-TAL-405
+  also:
+  - INT-C-X-474
+- raw_id: SCI-INT-A12:INT-A-TAL-1103
+  kind: card
+  to: INT-C-TAL-402
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A12:INT-A-TAL-1114
+  kind: card
+  to: INT-C-TAL-400
+  also:
+  - INT-C-TAL-401
+- raw_id: SCI-INT-A13:INT-A-X-1205
+  kind: card
+  to: INT-C-X-475
+  also: []
+- raw_id: SCI-INT-A14:INT-A-X-1302
+  kind: card
+  to: INT-C-TAL-403
+  also:
+  - INT-C-X-490
+- raw_id: SCI-INT-A14:INT-A-X-1306
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A14:INT-A-X-1308
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A14:INT-A-X-1320
+  kind: card
+  to: INT-C-X-490
+  also: []
+- raw_id: SCI-INT-A14:INT-A-X-1322
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A14:INT-A-X-1323
+  kind: card
+  to: INT-C-X-490
+  also: []
+- raw_id: SCI-INT-A14:INT-A-X-1324
+  kind: card
+  to: INT-C-X-490
+  also: []
+- raw_id: SCI-INT-A14:INT-A-X-1326
+  kind: card
+  to: INT-C-X-490
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-A14:INT-A-X-1327
+  kind: card
+  to: INT-C-X-490
+  also: []
+- raw_id: SCI-INT-B02:INT-B-TAL-100
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-101
+  kind: card
+  to: INT-C-TAL-402
+  also:
+  - INT-C-X-480
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-102
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-103
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-104
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-105
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-106
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-107
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-108
+  kind: card
+  to: INT-C-TAL-402
+  also:
+  - INT-C-X-480
+  - INT-C-X-481
+- raw_id: SCI-INT-B02:INT-B-TAL-109
+  kind: card
+  to: INT-C-X-480
+  also:
+  - INT-C-X-481
+- raw_id: SCI-INT-B03:INT-B-TAL-200
+  kind: card
+  to: INT-C-TAL-400
+  also: []
+- raw_id: SCI-INT-B03:INT-B-TAL-201
+  kind: card
+  to: INT-C-TAL-401
+  also: []
+- raw_id: SCI-INT-B03:INT-B-TAL-207
+  kind: card
+  to: INT-C-TAL-402
+  also: []
+- raw_id: SCI-INT-B05:INT-B-TECH-403
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B05:INT-B-TECH-404
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B05:INT-B-TECH-410
+  kind: card
+  to: INT-C-TECH-421
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B06:INT-B-TECH-504
+  kind: card
+  to: INT-C-TECH-492
+  also: []
+- raw_id: SCI-INT-B06:INT-B-TECH-508
+  kind: card
+  to: INT-C-TECH-492
+  also: []
+- raw_id: SCI-INT-B06:INT-B-TECH-509
+  kind: card
+  to: INT-C-TECH-492
+  also: []
+- raw_id: SCI-INT-B06:INT-B-TECH-510
+  kind: card
+  to: INT-C-TECH-492
+  also: []
+- raw_id: SCI-INT-B07:INT-B-TECH-600
+  kind: card
+  to: INT-C-X-493
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B07:INT-B-TECH-601
+  kind: card
+  to: INT-C-X-493
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B07:INT-B-TECH-602
+  kind: card
+  to: INT-C-X-493
+  also:
+  - INT-C-X-480
+- raw_id: SCI-INT-B07:INT-B-TECH-603
+  kind: card
+  to: INT-C-TECH-494
+  also: []
+- raw_id: SCI-INT-B07:INT-B-TECH-604
+  kind: card
+  to: INT-C-TECH-494
+  also: []
+- raw_id: SCI-INT-B07:INT-B-TECH-605
+  kind: card
+  to: INT-C-TECH-494
+  also: []
+- raw_id: SCI-INT-B07:INT-B-TECH-606
+  kind: card
+  to: INT-C-TECH-494
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-700
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-701
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-702
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-703
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-704
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-705
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B08:INT-B-ORG-706
+  kind: card
+  to: INT-C-X-480
+  also: []
+- raw_id: SCI-INT-B09:INT-B-ORG-814
+  kind: card
+  to: INT-C-ORG-495
+  also: []
+geo_dim_plan:
+  conclusion: 不新建地理主维：复用 gkxlumenx_dim.code_region / region_scope / code_country / city；扩展街道级、港澳台、大鹏新区码与园区成员，并新增一张地名/区划归一映射表；全球省州级（admin1）待定
+  levels:
+  - level: global
+    carrier: region_scope scope_code=global（国家集合）
+    card: INT-C-X-475
+    status: existing
+  - level: country
+    carrier: code_country（ISO alpha-3）
+    card: INT-C-X-476
+    status: existing
+  - level: admin1（境外省/州）
+    carrier: unknown（ISO 3166-2 候选）
+    card: null
+    status: missing
+    open_item: OI-C05-04
+  - level: province / city / district（中国）
+    carrier: code_region level 1–3（GB/T 2260）
+    card: INT-C-X-474
+    status: existing
+  - level: street（深圳街道）
+    carrier: code_region level=4（统计用区划 9/12 位码）
+    card: INT-C-X-474
+    status: existing_alter
+  - level: park（园区）
+    carrier: region_scope member_type=park（边界/码源 unknown）
+    card: INT-C-X-475
+    status: existing_alter
+    open_item: OI-C05-05
+  - level: 湾区 / 京津冀 / 长三角 / 热点城市
+    carrier: region_scope（gba 缺港澳）
+    card: INT-C-X-475
+    status: existing_alter
+  mapping: 三方 dwd_dim_admin_area.cur_code（C03 INT-C-ORG-222）、人才履历地名文本、境外城市名 → map_region_alias（INT-C-X-477）→ region_code / country_code
+  boundary_assets: GIS 边界（GeoJSON/瓦片）为前端静态资产或天地图服务，不入 MySQL 维表；与 region_code 对齐即可
+  prior_art: innov vendor dim_admin_division 已有 level 4 街道 / 5 园区 设计（demo 库、仅城市级种子）——只作参考，lumen 不读 demo 表
+  page_needs_low_confidence:
+    DS-13: 全球→国家→省州→城市 四级缩放与分布计数
+    DS-14: 中国 省→市；深圳 市→区→街道/园区
+  structure_escalation: true
+  escalate_to: human:李伟
+  business_decision: 行政区划精度属业务口径（公约 §3.8），按团队临时默认值先跑（🟡），须登记客户决策清单
+domain_dim_plan:
+  conclusion: 技术领域单一真源 gkxlumenx_dim.tech_domain（domain_code），人才研究领域 / 机构领域 / 技术点共用；外部分类经锚点映射桥表挂接；产业维复用 industry_cluster，不与技术领域混用
+  tables:
+  - card: INT-C-TECH-421
+    name: tech_domain
+    role: 领域码树 + is_focus 重点技术领域（DS-14 人工智能、生物医药…）
+  - card: INT-C-TECH-422
+    name: map_tech_domain_anchor
+    role: IPC/CPC、学科 GB/T 13745、项目 discipline_code、论文 WoS/scope → domain_code
+  - card: INT-C-X-478
+    name: industry_cluster（存量）
+    role: 产业维，企业/产业链用；不并入技术领域
+  taxonomy_choice: unknown：IPC / 学科 / 自建 三选一（= C02 OI-C02-02；供应方 TECH-P0-2 未回）
+  conflict: CF-C05-05（innov demo dim_tech_domain 同名异构）
+  jiuxin: 久新模型领域码须对齐 domain_code；对端是否接受我方码表：待确认
+  structure_escalation: true
+  escalate_to: human:李伟
+jiuxin_result_backflow:
+  principle: 久新所有交付行均「待确认」。结果一律回流到我方 gkxlumenx_ads（Python/ETL 写，Java 只读）；lumen 链路禁止落 demo_* 库（D12，CF-C05-03/04）
+  by_form:
+  - form: SQL
+    pattern: IP-06
+    executor: 我方 GDF/ETL 执行久新 SQL
+    landing:
+    - INT-C-TAL-405 sci_talent_base
+    - INT-C-TECH-431 sci_tech_base
+    - INT-C-ORG-443 sci_org_base
+    - INT-C-X-472 sci_kpi_agg
+    - INT-C-X-466 sci_factor_geo
+    version: batch_id + as_of（数据截至）+ sql_version（久新脚本版本/哈希），批次登记 INT-C-X-482
+    retention: 业务表保留当前版 + 按 as_of 月末版历史（建议 24 个月，待确认）
+    status: 待确认
+  - form: Python
+    pattern: IP-07
+    executor: 并入 lumen-algo-py Job（/internal/*）
+    landing:
+    - INT-C-X-480 sci_result_snapshot（指标值）
+    - INT-C-TECH-429/430 图算法快照
+    - INT-C-TAL-404 / INT-C-TECH-424 关系真源
+    - INT-C-TECH-426 auto 层候选（104/105/110）
+    - INT-C-TAL-401 消歧映射
+    version: run_id + model_version + snapshot_version + as_of；published 版本号登记 INT-C-X-482，Java 只读 published
+    retention: published 保留最近 3 版 + 每月首版；retired 90 天后清理（建议，待确认）
+    status: 待确认
+  - form: API
+    pattern: IP-08
+    executor: lumen-algo-py 适配层（凭据只在 Python K8s Secret；令牌桶 5 QPS；超时 2s/10s；熔断读快照）
+    landing:
+    - INT-C-X-481 jx_api_cache（Redis，TTL=freshness）
+    - INT-C-X-480 sci_result_snapshot source=jx_api（仅当甲方 DN-09 允许落库）
+    version: fetched_at + 响应哈希 + jx_api_version；落库时同样分配 snapshot_version
+    retention: 缓存按 TTL；不允许落库时熔断期间无快照 → IP-10 空态 + 角标
+    status: 待确认
+  decision: DN-C05-09 / B01 DN-09（甲方）：久新 API 结果是否允许缓存/落库
+  structure_escalation: true
+  escalate_to: human:李伟
+conflicts:
+- id: CF-C05-01
+  topic: 机构 VID 前缀
+  sides:
+  - C03 草案 org:{org_uid}
+  - C04 inst:{org_uid}（CF-C04-01）
+  - 'SVC as-built institution:'
+  suggestion: '归一 inst:{org_uid}（与 C04 九卡 / tech:/talent:/ent: 短前缀一致）；C03 草案改文、SVC as-built 迁移批次另排'
+  decide_by: human:李伟
+  cards:
+  - INT-C-ORG-440
+  - INT-C-X-490
+- id: CF-C05-02
+  topic: 三要素图 space：demo_gkx_chain vs gkx_chain（D12）
+  sides:
+  - C04 space_plan：在 demo_gkx_chain 追加
+  - A03 卡写 gkx_chain
+  - storage README 决策#7 一张 G
+  suggestion: demo 环境写 demo_gkx_chain；lumen 环境须写正式 gkx_chain（demo_ 进入 lumen 链路违反 D12）；正式 space 建否由李伟拍板，未拍板前 lumen 图写入阻塞
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-490
+  d12: true
+- id: CF-C05-03
+  topic: gkxlumen-innov 读 demo_gkxlumenx_*（D12）
+  sides:
+  - A05 R-A05-1：InnovSql 把 ads_*/dwd_* 解析到 demo_gkxlumenx_*
+  - helm values-lumen.yaml INNOV_MYSQL_DB=demo_gkxlumenx_ads / INNOV_DIM_SCHEMA=demo_gkxlumenx_dim
+  suggestion: 三要素新表一律建在 gkxlumenx_*；innov 存量切库另立 bugfix 单（不在 C05 改）
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-464
+  - INT-C-X-466
+  - INT-C-TECH-429
+  d12: true
+- id: CF-C05-04
+  topic: lumen-algo-py K8s 写 demo_* 库（D12）
+  sides:
+  - lumen_common/db.py 默认 gkxlumenx_ads
+  - k8s/api.yaml、worker.yaml 覆盖 LUMEN_ALGO_MYSQL_ADS_DB=demo_gkxlumenx_ads、DWD_DB=demo_gkxlumenx_dwd
+  suggestion: 三要素写者全部在 lumen-algo-py；上线前 K8s env 须切 gkxlumenx_*，否则本清单所有 Python 写表都落 demo 库
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-480
+  - INT-C-TECH-420
+  - INT-C-TAL-400
+  d12: true
+- id: CF-C05-05
+  topic: dim_tech_domain 同名异构
+  sides:
+  - C02/A03：技术领域维表不存在
+  - lumen-algo-py vendor/innov-py schema_mysql.sql 已有 dim_tech_domain(domain_id,name,parent_id,level,domain_source,source_code)，mock 种子，demo 库
+  suggestion: 规范名 gkxlumenx_dim.tech_domain（主键 domain_code）；innov 存量表视为 demo 原型，由 innov 迁移时改读规范表；不另起第三套
+  decide_by: human:李伟
+  cards:
+  - INT-C-TECH-421
+- id: CF-C05-06
+  topic: 节点中心性/影响力/影响分 三处提法
+  sides:
+  - A02 TECH-115/118（不得复用 innov ads_node_influence）
+  - A05 X-421 节点影响分快照
+  - C04 ads_sci_graph_metric_snapshot 候选
+  suggestion: 统一长表 sci_graph_metric_snapshot，以 metric_id 区分；innov ads_node_influence 存量不动
+  decide_by: human:李伟
+  cards:
+  - INT-C-TECH-429
+- id: CF-C05-07
+  topic: ADS 物理命名前缀
+  sides:
+  - 各叶候选名 ads_sci_*（A01/A02/A05/C04）
+  - storage 约定：gkxlumenx_ads 下物理表名不带 ads_ 前缀（如 enterprise_score）
+  suggestion: 物理名 gkxlumenx_ads.sci_*；ads_sci_* 仅作逻辑名/文档别名
+  decide_by: human:李伟
+  cards: []
+- id: CF-C05-08
+  topic: talent_coop / research_coop 端点语义
+  sides:
+  - ENT 既有 ent→talent / ent→inst
+  - 三要素需要 talent↔talent / inst↔inst（CF-C04-04）
+  suggestion: 同名边多端点类型（Nebula 允许），用 coop_type 区分；ADS 真源分别在 TAL-404 / X-460
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-490
+  - INT-C-TAL-404
+- id: CF-C05-09
+  topic: technology_id 发号方
+  sides:
+  - C04 WB-C04-03：我方 ADS 主表发号
+  - A03 TECH-211：若 104/105 改 API 需双向同步回推久新
+  suggestion: 我方发号；久新产出以 auto 层候选入表，经 TECH-426 合并；久新侧 ID 进映射列
+  decide_by: human:李伟 / 久新（待确认）
+  cards:
+  - INT-C-TECH-420
+- id: CF-C05-10
+  topic: 全景页实体属性编辑 vs 三方库只读
+  sides:
+  - SRS-45 可改实体名称/类型
+  - 人才/机构主数据来自三方只读库，C01/C03 持有
+  suggestion: 仅作全景图作用域覆盖（X-462），不回写主数据
+  decide_by: 产品 / human:李伟
+  cards:
+  - INT-C-X-462
+- id: CF-C05-11
+  topic: 图版本表三处提法
+  sides:
+  - A02 snapshot_version 回放对比
+  - A03 graph_version + 版本快照
+  - CHAIN industry_chain_graph_snapshot 全景发布快照
+  suggestion: 三要素统一 sci_graph_version（graph_scope 区分技术图/全景图）；与产业链快照不混表
+  decide_by: human:李伟
+  cards:
+  - INT-C-TECH-428
+- id: CF-C05-12
+  topic: 结果快照：统一长表 vs 每指标一表
+  sides:
+  - B01 IP-11 横切单一快照
+  - A05 创新价值/影响预测各自快照
+  - CHAIN：Analysis Job Snapshot 禁止混表
+  suggestion: 久新/模型「指标值」回流用统一长表 X-480（metric_id+snapshot_version）；用户触发的分析 Job 结果仍按任务表 result_ref 隔离（TECH-433），不混入发布快照
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-480
+- id: CF-C05-13
+  topic: 地理维粒度缺口
+  sides:
+  - code_region 只到区县，无街道
+  - region_scope gba 只含 9 内地市，港澳另议
+  - 深圳 大鹏新区 code 为空
+  - DS-14 要 市→区→园区；DS-13 要 全球→国家→省州→城市
+  suggestion: code_region 加 level=4 街道；港澳台按 GB/T 2260 码补；大鹏新区用统计用区划码或我方扩展码（标注）；园区走 region_scope member_type=park；境外 admin1 见 OI-C05-04
+  decide_by: 甲方（行政区划精度为业务口径）/ human:李伟
+  cards:
+  - INT-C-X-474
+  - INT-C-X-475
+- id: CF-C05-14
+  topic: 成果模型 vs innov 事件模型
+  sides:
+  - A05 SRS 成果五分类
+  - innov ads_innovation_event（importance_score 事件）
+  suggestion: 新建 sci_achievement；事件模型保留给 innov 存量
+  decide_by: 产品 / human:李伟
+  cards:
+  - INT-C-X-464
+- id: CF-C05-15
+  topic: 快照键 metric_id 重复登记
+  sides:
+  - M_INNOV_DS_04_* 与 M_INNOV_ACHIEVE_VALUE / IMPACT_SCORE / IMPACT_FORECAST 重复（A05）
+  - 前端自造 M_INNOV_*_RT
+  suggestion: 快照只用 registry 正式 metric_id；重复项由 data-agent 正名后再落快照
+  decide_by: data-agent / human:李伟
+  cards:
+  - INT-C-X-480
+  - INT-C-X-472
+- id: CF-C05-16
+  topic: Java 自有写表 vs 「Java 只读 ADS」
+  sides:
+  - 收藏/分组/订阅/模板/填报为用户态数据，需 Java 写
+  - 公约：Java 只读 ADS
+  suggestion: 用户态表放 gkxlumenx_cfg / upms（非 ADS），Java 可写；ADS 仍只读。请李伟确认库归属
+  decide_by: human:李伟
+  cards:
+  - INT-C-TECH-434
+  - INT-C-X-467
+  - INT-C-X-469
+  - INT-C-X-470
+  - INT-C-X-471
+- id: CF-C05-17
+  topic: 机构 vs 载体
+  sides:
+  - C03 research_org（org_uid）
+  - innov dim_carrier / dim_carrier_org_rel
+  - A05 成果–载体桥
+  suggestion: 载体作 org 的子类型或经 dim_carrier_org_rel 映射到 org_uid；桥表保留 carrier_id 可空列
+  decide_by: human:李伟
+  cards:
+  - INT-C-ORG-440
+  - INT-C-ORG-442
+- id: CF-C05-18
+  topic: innovation_point 新 Tag
+  sides:
+  - A05 TECH-418 提 innovation_point tag / LOCATED_IN edge
+  - C04 九卡未收；storage 决策#7 一张 G 只增 Tag
+  suggestion: 先评估用 technology + sci_factor_geo（X-466）落点表达，不新增 Tag；确需时经 C04 同 space 追加
+  decide_by: human:李伟
+  cards:
+  - INT-C-X-490
+  - INT-C-X-466
+- id: CF-C05-19
+  topic: 主数据落 DIM 还是 ADS
+  sides:
+  - C01/C02 写「dwd/ads」
+  - C03 dim_research_org
+  - 公约 Java 只读 ADS；innov 存量 Java 读 dim schema
+  suggestion: 主数据真源 gkxlumenx_dim.*（Python 写），另出 ADS 只读投影给 Java；若李伟认可 Java 读 DIM 则可省投影
+  decide_by: human:李伟
+  cards:
+  - INT-C-TAL-400
+  - INT-C-TECH-420
+  - INT-C-ORG-440
+risks:
+- id: R-C05-01
+  level: high
+  desc: lumen-algo-py K8s 写 demo_gkxlumenx_*：本清单所有 Python 写表上线即落 demo 库（D12）
+  cards:
+  - INT-C-X-480
+- id: R-C05-02
+  level: high
+  desc: C04 方案在 demo_gkx_chain 追加三要素 Tag/Edge；若 lumen 环境沿用即违反 D12（禁止 demo_* 进入 lumen 链路）
+  cards:
+  - INT-C-X-490
+- id: R-C05-03
+  level: high
+  desc: gkxlumen-innov（lumen）读 demo_gkxlumenx_ads/dim（A05 发现，helm values-lumen.yaml 佐证）
+  cards:
+  - INT-C-X-464
+- id: R-C05-04
+  level: medium
+  desc: 主数据 ID 未定前建 ES/收藏/图 VID，后续全量迁移
+  cards:
+  - INT-C-X-463
+  - INT-C-X-470
+- id: R-C05-05
+  level: medium
+  desc: 人工层写入口若被实现成 Java 直写 ADS / 直连 nGQL 即违反铁律；写口必须经 Python /internal/*
+  cards:
+  - INT-C-TECH-425
+  - INT-C-TAL-403
+open_items:
+- id: OI-C05-01
+  priority: P1
+  item: 未完成叶 A06–A15、B02–B09 的 structure_escalation 提法未纳入本次归并 → 待 Z01 补归并（C05-check 打印当前已出现产物的提法数，供 Z01 参考）
+  owner: coordinator → Z01
+- id: OI-C05-02
+  priority: P0
+  item: 主数据持有方（人才 scholar_id / 技术点 technology_id / 机构 org_uid）未定，所有主键草案依赖它（DN-C05-01/04/07）
+  owner: human:李伟
+- id: OI-C05-03
+  priority: P0
+  item: lumen 链路 demo_* 风险：三要素图 space（CF-C05-02）、lumen-algo-py K8s 库名（CF-C05-04）、innov 读 demo 库（CF-C05-03）
+  owner: human:李伟
+- id: OI-C05-04
+  priority: P2
+  item: 全球省/州 admin1 维是否引入（ISO 3166-2）及数据源
+  owner: 产品 / human:李伟
+- id: OI-C05-05
+  priority: P2
+  item: 深圳街道码源与园区边界/编码来源 unknown
+  owner: data-agent / 甲方
+- id: OI-C05-06
+  priority: P1
+  item: 久新 API 结果缓存/落库合规（DN-09）
+  owner: 甲方
+- id: OI-C05-07
+  priority: P1
+  item: 技术领域分类体系选型（OI-C02-02）
+  owner: 甲方 / 供应方
+- id: OI-C05-08
+  priority: P2
+  item: 快照/历史保留策略数值（24 月 / 3 版 / 90 天）为建议值
+  owner: human:李伟
+- id: OI-C05-09
+  priority: P2
+  item: 人才态势 DS-13～16 预判卡（TAL-405/406/407、X-466 等）confidence=low；DS-15/16 未逐叶核（画像隐私分级、成本数据源、团队组合 missing）
+  owner: A13–A15 / Z01
+- id: OI-C05-10
+  priority: P2
+  item: 华人占比、荣誉奖项、出访记录、最新动态 feed 无已知源表（unknown）
+  owner: data-agent / 甲方
+- id: OI-C05-11
+  priority: P2
+  item: 主数据落 DIM 还是 ADS、Java 能否读 DIM（CF-C05-19）；用户态表库归属（CF-C05-16）
+  owner: human:李伟
+structure_escalation: 55

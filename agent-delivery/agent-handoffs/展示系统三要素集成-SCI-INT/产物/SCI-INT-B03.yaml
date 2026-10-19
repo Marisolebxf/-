@@ -1,0 +1,1177 @@
+# SCI-INT-B03 人才基础 / 图谱 / 页面派生 15 条（metric 层）
+# 真源：产物/_prep/B03-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-TAL-200～299
+task_id: SCI-INT-B03
+scope_count: 15
+card_count: 15
+gap: []
+execution_count: {sync: 13, async: 2}
+execution_rule: "请求路径计：IP-06 与 IP-09 为同步读 ADS 或父快照；IP-07 抽取 Job 为异步。生产侧 T+1 或 weekly 不把读请求改记成异步 Job。"
+jiuxin_rows: [SRS-98, SRS-110, SRS-111, SRS-157, SRS-158, SRS-159, SRS-160, SRS-161, SRS-162, SRS-163, SRS-164, SRS-165]
+jiuxin_note: "本叶不新增久新行号。SRS-98/110/111 是库叶消费；SRS-157…165 由 IP-09 读父快照，不单独再要。"
+structure_escalations:
+  - id: SE-B03-01
+    owner: "human:李伟"
+    tables: ["dwd_talent_master"]
+    cards: [INT-B-TAL-200]
+    reason: "INT-C-TAL-070 建议的人才主档，包内表名未定，本叶暂用 dwd_talent_master。不替代 dwd_scholar。IP-06 的 ADS 落表名包内未给，本叶不另起表名，是否并入主档由李伟定。"
+  - id: SE-B03-02
+    owner: "human:李伟"
+    tables: ["dwd_person_id_map"]
+    cards: [INT-B-TAL-201]
+    reason: "INT-C-TAL-072 建议的人员 ID 映射，包内表名未定，本叶暂用 dwd_person_id_map。"
+structure_escalation_refs:
+  - id: SE-B02-02
+    owner: "human:李伟"
+    tables: ["dwd_talent_flow"]
+    cards: [INT-B-TAL-207]
+    note: "流动边只引用 B02 已升级的 dwd_talent_flow，不另造第二张流动边表。"
+open_items:
+  - {id: OI-B03-01, text: "SRS-98 SQL 与 SRS-110/111 Python 仍为待确认；IP-09 不另要 157…165 接口"}
+  - {id: OI-B03-02, text: "12 条页面派生的 srs_refs_02 与 a_cards 皆空，页面写未挂页"}
+  - {id: OI-B03-03, text: "新表 SE-B03-01、SE-B03-02 升 human:李伟；流动只引用 SE-B02-02"}
+cards:
+  - int_id: INT-B-TAL-200
+    layer: metric
+    metric_id: M_TALENT_BASE_98_1
+    name: "人才基础指标模型构建"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: 98, path: "算法库 ALGO-TALENT-BASE-98 / 人才基础指标模型构建"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-14-TALENT-REGION, DS-26-ECO, DS-01-FACTORS]
+    dep_kind: [data, metric]
+    metric_ids: [M_TALENT_BASE_98_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [etl, java_facade]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-98
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才基础指标模型构建"
+    parent_metric: null
+    execution: "同步"
+    execution_note: "IP-06：久新 SQL 经评审后由 GDF 按 T+1 落 ADS，页面请求同步读 ADS。L3 无在线调用，不计异步 Job。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/base/result?metric_id=M_TALENT_BASE_98_1（draft，只读 ADS，不直连久新）"
+      python: "无在线调用。SQL 依赖 ES 时由 lumen-etl-es-py 承接，否则只走 GDF。"
+      downstream: "久新 SQL-98 人才基础指标模型 → ADS（表名未定，见 SE-B03-01）"
+    inputs:
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据"}
+      - {c_card: INT-C-TAL-002, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "工作经历"}
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "教育背景"}
+      - {c_card: INT-C-TAL-004, table: dwd_scholar_talent_flag, fields: "包内未给列名", role: "人才标识"}
+      - {c_card: INT-C-TAL-005, table: dwd_scholar_research_direction, fields: "包内未给列名", role: "研究方向"}
+      - {c_card: INT-C-TAL-006, table: dwd_scholar_paper_relation, fields: "包内未给列名", role: "论文关系"}
+      - {c_card: INT-C-TAL-008, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "合作者"}
+      - {c_card: INT-C-TAL-070, table: dwd_talent_master, fields: "包内未给列名，表名未定", role: "建议主档，新表，不替代 dwd_scholar"}
+    outputs:
+      c_card: INT-C-TAL-040
+      delivery: "久新 SQL-98 人才基础指标模型"
+      table: "ADS 表名未定"
+      response_key_fields: [metric_id, period, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准，本包未展开列"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [metric_id, period, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02:
+        - {seq: 243, name: "人才分布信息查看", page: DS-13-TALENT-GLOBAL}
+        - {seq: 249, name: "地区分布洞察", page: DS-13-TALENT-GLOBAL}
+        - {seq: 251, name: "产研对比分析", page: DS-13-TALENT-GLOBAL}
+        - {seq: 270, name: "动态统计与对比", page: DS-14-TALENT-REGION}
+        - {seq: 271, name: "重点技术领域人才地图", page: DS-14-TALENT-REGION}
+        - {seq: 275, name: "动态统计与对比分析", page: DS-14-TALENT-REGION}
+        - {seq: 489, name: "高端人才分布与结构统计", page: DS-26-ECO}
+        - {seq: 491, name: "人才类别与专业细分对比", page: DS-26-ECO}
+      a_cards:
+        - {int_id: INT-A-TAL-016, page_ref: DS-01-FACTORS, java: "POST /situation/v1/overview (draft)"}
+        - {int_id: INT-A-X-028, page_ref: DS-01-FACTORS, java: "POST /situation/v1/compare（前端已调；Java 未实现，draft）"}
+        - {int_id: INT-A-X-029, page_ref: DS-01-FACTORS, java: "POST /situation/v1/timeline（前端已调；Java 未实现，draft）"}
+        - {int_id: INT-A-X-032, page_ref: DS-01-FACTORS, java: "POST /situation/v1/map (draft，热力=区域聚合计数)"}
+      pages: [DS-13-TALENT-GLOBAL, DS-14-TALENT-REGION, DS-26-ECO, DS-01-FACTORS]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "在线链 Java 只读 ADS。SQL 落 GDF；依赖 ES 时承接方为 lumen-etl-es-py。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-98 确认为待确认"
+      - "备注称 srs_refs 15 条，包内 srs_refs_02 只有 8 条"
+      - "入站表列名本包未给；ADS 落表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "b01.备注写 srs_refs 15 条并含 TOPIC-TALENT-05。包内只有 8 条 srs_refs_02，且 a_cards 无该专题页。页面只按包内清单，不补造。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-06，不改成在线 Python。"
+    decision_needed:
+      - "DN-B03-01：SRS-98 的 SQL 文本、源表是否在 gkx 三方库、调度 SLA 仍为待确认"
+      - "DN-B03-04：dwd_talent_master 是否单独立表，升 human:李伟（SE-B03-01）"
+    structure_escalation: true
+    structure_escalation_id: [SE-B03-01]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：实现落在 GDF 与 lumen-etl-es-py，不见 demo-algo-science。正式实现禁止 lumen 调用 demo-svc-platform、demo-algo-science 或任何 demo-*。"
+      - "D4=mock 只记现状。USE_MOCK=false 时无 ADS 即空态，禁止 fixture 填数。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TALENT_BASE_98_1，不含久新私有字段名"
+      - "降级：当期 ADS 分区缺失则回上一期并带 period；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-201
+    layer: metric
+    metric_id: M_TALENT_GRAPH_110_1
+    name: "人才实体识别构建"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: 110, path: "算法库 ALGO-TALENT-GRAPH-110 / 人才实体识别构建"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-15-TALENT-PROFILE, DS-16-TALENT-RECRUIT, DS-04-REALTIME]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_TALENT_GRAPH_110_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-110
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才实体识别构建"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：久新 Python 并入 lumen-algo-py 后按 IP-04/IP-05 跑抽取 Job，写 TRSGraph 与 ADS 投影。刷新 weekly 或增量，未确认。页面读投影，不在请求里同步推理。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/graph/entity?metric_id=M_TALENT_GRAPH_110_1（draft，只读 ADS 投影；子图 Feign /internal/graph/*，不写 nGQL）"
+      python: "lumen-algo-py 离线 Job：SRS-110 并入后写 TRSGraph TAG 与 ADS 投影（draft）"
+      downstream: "久新 Python-110 人才实体集与消歧映射 → TAG scholar/person；graphd 10.50.75.136:9669"
+    inputs:
+      - {c_card: INT-C-TAL-010, table: dwd_zh_author, fields: "包内未给列名", role: "中文作者"}
+      - {c_card: INT-C-TAL-011, table: dwd_en_author, fields: "包内未给列名", role: "英文作者"}
+      - {c_card: INT-C-TAL-012, table: "dwd_author_info + dwd_author_*_rel 族", fields: "包内未给列名", role: "作者主档与关系族"}
+      - {c_card: INT-C-TAL-013, table: dwd_author_affiliation, fields: "包内未给列名", role: "作者单位"}
+      - {c_card: INT-C-TAL-016, table: dwd_zh_report_scholar, fields: "包内未给列名", role: "中文报告学者"}
+      - {c_card: INT-C-TAL-017, table: dwd_zh_report_author, fields: "包内未给列名", role: "中文报告作者"}
+      - {c_card: INT-C-TAL-018, table: dwd_en_report_author, fields: "包内未给列名", role: "英文报告作者"}
+      - {c_card: INT-C-TAL-019, table: dwd_patent, fields: inventors, role: "专利发明人"}
+      - {c_card: INT-C-TAL-020, table: dwd_zh_project, fields: "project_host / participants", role: "项目主持与参与"}
+      - {c_card: INT-C-TAL-072, table: dwd_person_id_map, fields: "包内未给列名，表名未定", role: "人员 ID 映射，新表"}
+    outputs:
+      c_card: INT-C-TAL-041
+      delivery: "久新 Python-110 人才实体识别产出（人才实体集 + 消歧映射）"
+      graph: "INT-C-TAL-060 TAG scholar / person；读面另见 INT-C-TAL-310"
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造"
+      response_key_fields: [metric_id, period, algo_version, entity_id, source_ids]
+      payload_note: "实体字段以久新交付物为准，文档未到"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, source_id]
+      response_key_fields: [metric_id, period, algo_version, entity_id]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02:
+        - {seq: 257, name: "基础信息展示", page: DS-13-TALENT-GLOBAL}
+        - {seq: 260, name: "研究领域与方向标签", page: DS-13-TALENT-GLOBAL}
+        - {seq: 301, name: "研究领域分层展示", page: DS-15-TALENT-PROFILE}
+        - {seq: 304, name: "详情展示与溯源", page: DS-15-TALENT-PROFILE}
+        - {seq: 323, name: "专家画像智能生成", page: DS-16-TALENT-RECRUIT}
+      a_cards:
+        - {int_id: INT-A-TAL-419, page_ref: DS-04-REALTIME, java: "经 INT-A-TECH-417 读面（entity_types 含 scholar）"}
+      pages: [DS-13-TALENT-GLOBAL, DS-15-TALENT-PROFILE, DS-16-TALENT-RECRUIT, DS-04-REALTIME]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读 ADS 投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-110 确认为待确认：源码、wheel 或镜像未知"
+      - "a_cards 只有 DS-04-REALTIME 一张；其余页来自 srs_refs_02"
+      - "人员映射表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07 并入 lumen-algo-py，不改成独立 ETL 模式。"
+    decision_needed:
+      - "DN-B03-01：SRS-110 是否交源码、权重存放与许可、并入后维护人仍为待确认"
+      - "DN-B03-05：dwd_person_id_map 是否单独立表，升 human:李伟（SE-B03-02）"
+    structure_escalation: true
+    structure_escalation_id: [SE-B03-02]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止 lumen 链路回落 demo-algo-science 或 import demo-*。"
+      - "Java 不写 nGQL。图 schema 归属 C04，本叶不新造 Tag。"
+    test_points:
+      - "契约：投影含 metric_id=M_TALENT_GRAPH_110_1；Java 响应无久新字段名"
+      - "降级：抽取 Job 失败保留上一版实体集与投影；无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-202
+    layer: metric
+    metric_id: M_TALENT_GRAPH_111_1
+    name: "人才实体关系抽取"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: 111, path: "算法库 ALGO-TALENT-GRAPH-111 / 人才实体关系抽取"}
+    page_ref: [DS-13-TALENT-GLOBAL, DS-26-ECO]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_TALENT_GRAPH_111_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-111
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才实体关系抽取"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：关系抽取 Job 写合作、任职、项目、报告边到 TRSGraph，并投影 ADS。按 IP-04/IP-05，weekly 或增量。页面读投影。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/graph/relation?metric_id=M_TALENT_GRAPH_111_1（draft，只读投影；子图 Feign /internal/graph/*）"
+      python: "lumen-algo-py 离线 Job：SRS-111 并入后写 EDGE 与 ADS 投影（draft）"
+      downstream: "久新 Python-111 合作/任职/项目/报告边 → INT-C-TAL-061 / INT-C-TAL-350 / INT-C-TAL-351 / INT-C-TAL-352"
+    inputs:
+      - {c_card: INT-C-TAL-002, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "任职经历"}
+      - {c_card: INT-C-TAL-006, table: dwd_scholar_paper_relation, fields: "包内未给列名", role: "论文关系"}
+      - {c_card: INT-C-TAL-008, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "合作边来源"}
+      - {c_card: INT-C-TAL-014, table: dwd_rel_project_scholar, fields: "包内未给列名", role: "项目共参"}
+      - {c_card: INT-C-TAL-015, table: dwd_rel_report_scholar, fields: "包内未给列名", role: "报告学者关系"}
+    outputs:
+      c_card: INT-C-TAL-042
+      delivery: "久新 Python-111 人才关系抽取产出（合作/任职/项目/报告边）"
+      graph: "INT-C-TAL-350 talent_coop；INT-C-TAL-351 work_at；INT-C-TAL-352 educated_at。流动统计不另建边表，见 SE-B02-02。"
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造"
+      response_key_fields: [metric_id, period, algo_version, src_id, dst_id, rel_type]
+      payload_note: "边字段以久新交付物为准，文档未到"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, rel_type]
+      response_key_fields: [metric_id, period, src_id, dst_id, rel_type]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02:
+        - {seq: 261, name: "合作网络与关联专家", page: DS-13-TALENT-GLOBAL}
+        - {seq: 492, name: "人才与载体空间关系匹配", page: DS-26-ECO}
+      a_cards: []
+      pages: [DS-13-TALENT-GLOBAL, DS-26-ECO]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-111 确认为待确认"
+      - "a_cards 为空，页面只来自 srs_refs_02"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07，不改模式编号。"
+    decision_needed:
+      - "DN-B03-01：SRS-111 交付物形态与许可仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止回落 demo-algo-science。"
+      - "图边类型归属 C04。本叶不新造流动边表。"
+    test_points:
+      - "契约：投影边带 metric_id=M_TALENT_GRAPH_111_1"
+      - "降级：Job 失败保留上一版边与投影；无投影则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-203
+    layer: metric
+    metric_id: M_TALENT_ACADEMIC_SCORE
+    name: "人才学术力指数"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-006 / 母库叶 SRS-162"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TALENT_ACADEMIC_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-162
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才学术力评估模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_162_1
+      seq: 162
+      jiuxin_row_id: SRS-162
+      fields: ["成果数量", "学术影响力", "专业技能"]
+      field_note: "一条综合指数。H 指数、被引、期刊、合作广度是第三方内部特征，不展开公式、不单列 ID。物理列名包内未给。决策 Q095。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-162 快照的子字段。不单独向久新再要。排序若需要，随父 Job 写快照时产出。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_ACADEMIC_SCORE（draft，读父快照切片，不直连久新）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_162_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-049）"
+    inputs:
+      - {c_card: INT-C-TAL-049, table: ads_sci_result_snapshot, fields: "成果数量 / 学术影响力 / 专业技能", role: "母指标 seq 162 快照，不新要接口"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：综合指数与上述三分项"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, score, rank, parent_metric_id, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, domain_code, scholar_id]
+      response_key_fields: [metric_id, period, score, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B02）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-162 确认为待确认，确认归父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "久新行交付形态为 API，那是父库叶。本卡 delivery_form 按 IP-09 为 none，不单独再要。"
+      - "INT-C-TAL-049 提到展示 DS-08-VIZ-001/004，不在本指标的 srs_refs_02 或 a_cards 中。页面仍写未挂页。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q095：分项维与内部特征口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止为派生指数去调 demo-*。"
+      - "父快照缺失时本指标空态，不以 0 代替。"
+    test_points:
+      - "契约：返回值与父快照子字段一致，并带回 parent_seq=162"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-204
+    layer: metric
+    metric_id: M_TALENT_ATTRACT_SCORE
+    name: "引入人才推荐指数"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-008 / 母库叶 SRS-164"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TALENT_ATTRACT_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-164
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "招入人才推荐模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_164_1
+      seq: 164
+      jiuxin_row_id: SRS-164
+      fields: ["综合推荐分", "名单规模"]
+      field_note: "名单规模为同核统计面（共 N 人），不另造计数 ID。分项维与推荐理由不单列。决策 Q098。G3 Job 在父指标，不在本卡。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父快照。备注中的 G3 Job 属于父指标 M_TALENT_DEEP_164_1，本卡不另起 Job。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_ATTRACT_SCORE（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_164_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-051）"
+    inputs:
+      - {c_card: INT-C-TAL-051, table: ads_sci_result_snapshot, fields: "综合推荐分 / 名单规模", role: "母指标 seq 164 快照"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：综合推荐分与名单规模 N"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, score, list_size, parent_metric_id, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, domain_code]
+      response_key_fields: [metric_id, period, score, list_size, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父 Job 在 lumen-algo-py（B02）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "b01.备注写 G3 Job、专题跑 Job 展示读快照。integration_pattern 保持 IP-09。Job 不在本卡另起。"
+      - "定义写可与 DS-16 复用本核。包内无 srs_refs_02、无 a_cards，页面仍写未挂页，不补挂。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题；DS-16 复用待有页面卡再挂"
+      - "Q098：推荐分口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 现算推荐分。"
+      - "父快照缺失则空态，切换筛选不得在浏览器伪造分数。"
+    test_points:
+      - "契约：parent_seq=164，名单规模不另造 metric_id"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-205
+    layer: metric
+    metric_id: M_TALENT_CULTIVATE_SCORE
+    name: "培育人才推荐指数"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-009 / 母库叶 SRS-165"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TALENT_CULTIVATE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-165
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "培育人才布局模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_165_1
+      seq: 165
+      jiuxin_row_id: SRS-165
+      fields: ["综合培育推荐分", "建议名单规模", "培育方向文本"]
+      field_note: "培育方向为文本，无独立 ID。分项维不单列。决策 Q098。禁止挂到企业培育或服务推荐 ID。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-165 快照子字段，不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_CULTIVATE_SCORE（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_165_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-052）"
+    inputs:
+      - {c_card: INT-C-TAL-052, table: ads_sci_result_snapshot, fields: "综合培育推荐分 / 建议名单规模 / 培育方向文本", role: "母指标 seq 165 快照"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, score, list_size, direction_text, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, domain_code]
+      response_key_fields: [metric_id, period, score, list_size, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q098：与引入推荐分的分项边界，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=165，不返回企业培育 ID"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-206
+    layer: metric
+    metric_id: M_TALENT_INDUSTRY_SCORE
+    name: "人才产业力指数"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-007 / 母库叶 SRS-163"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TALENT_INDUSTRY_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-163
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才产业力评估模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_163_1
+      seq: 163
+      jiuxin_row_id: SRS-163
+      fields: ["专利转化", "项目", "商业化", "综合评分", "排名"]
+      field_note: "对象是人。企业侧人才综合实力（影响力、产业覆盖、媒体知名度）不作为本 ID 主口径。决策 Q096。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-163 快照子字段。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_INDUSTRY_SCORE（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_163_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-050）"
+    inputs:
+      - {c_card: INT-C-TAL-050, table: ads_sci_result_snapshot, fields: "专利转化 / 项目 / 商业化 / 综合评分 / 排名", role: "母指标 seq 163 快照"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：综合评分、排名与三项贡献"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, score, rank, parent_seq]
+      payload_note: "不另写结果表；不伪展开转化率公式"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, scholar_id]
+      response_key_fields: [metric_id, period, score, rank, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q096：人的产业转化与企业侧综合实力的边界，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=163，响应不含企业侧媒体知名度主口径"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-207
+    layer: metric
+    metric_id: M_TALENT_FLOW_TRACK
+    name: "人才流动追踪"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-013 / 母库叶 SRS-157"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data, graph]
+    metric_ids: [M_TALENT_FLOW_TRACK]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-157
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才流动追踪模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_157_1
+      seq: 157
+      jiuxin_row_id: SRS-157
+      fields: ["流入", "流出", "留存", "自然年"]
+      field_note: "三面共一条 ID，不拆。用关系边加时间属性，禁止 GIS 轨迹引擎。边表只引用 dwd_talent_flow（SE-B02-02）。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-157 快照的流入、流出、留存序列。边表刷新跟随 B02，本卡不另起 Job，也不另造边表。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_FLOW_TRACK（draft，读父快照）"
+      python: "无单独在线调用。图谱读面若需要，Feign /internal/graph/*，Java 不写 nGQL。"
+      downstream: "父快照 INT-C-TAL-044；流动边 dwd_talent_flow（SE-B02-02）；图读面 INT-C-TAL-351 work_at"
+    inputs:
+      - {c_card: INT-C-TAL-044, table: ads_sci_result_snapshot, fields: "流入 / 流出 / 留存 / 自然年", role: "母指标 seq 157 快照"}
+      - {c_card: INT-C-TAL-002, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "任职经历，父模型入站，本卡不重算"}
+      - {c_card: INT-C-TAL-071, table: dwd_talent_flow, fields: "包内未给列名", role: "引用 SE-B02-02，不另造第二张流动边表"}
+      - {c_card: INT-C-TAL-351, table: "work_at 时间序列投影", fields: "包内未给列名", role: "图读面，边类型归属 C04"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段：区域或行业的流入、流出、留存自然年序列"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, year, inflow, outflow, retain, parent_seq]
+      payload_note: "不另建流动边表，不写 GIS 轨迹"
+      granularity: {time: "自然年", geo: "区域或行业，本包未展开到列"}
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, industry_code, time_range]
+      response_key_fields: [metric_id, year, inflow, outflow, retain, parent_seq]
+      granularity: {time: year, geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照与 dwd_talent_flow。写边在 B02 / C04 的 lumen 链路。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "流动边列名包内未给"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "定义写可与展示 DS-14 迁徙同源，但不改挂、不消费展示侧未决项。包内无页面引用，页面写未挂页。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+      - "INT-C-TAL-071 表名在 C 包为建议名。本卡沿用 B02 已定的 dwd_talent_flow，不改回未定名，也不新造第二张表。"
+    decision_needed:
+      - "DN-B03-02：未挂页。是否与 DS-14 同源由后续页面卡决定，本叶不挂。"
+      - "DN-B03-03：dwd_talent_flow 是否单独立表已在 SE-B02-02 升 human:李伟，本叶不重复开表"
+    structure_escalation: true
+    structure_escalation_id: [SE-B02-02]
+    structure_escalation_owner: "human:李伟"
+    risks:
+      - "D12：读链在 lumen。禁止用 demo-* 算迁徙。"
+      - "禁止 GIS 轨迹引擎。Java 不写 nGQL。"
+    test_points:
+      - "契约：parent_seq=157，序列含流入、流出、留存；响应不出现第二张流动边表名"
+      - "降级：父快照或 dwd_talent_flow 缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-208
+    layer: metric
+    metric_id: M_TALENT_ORG_DIST
+    name: "重点人才机构分布"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-002 / 母库叶 SRS-98"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_ORG_DIST]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-98
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才基础指标模型构建"
+    parent_metric:
+      metric_id: M_TALENT_BASE_98_1
+      seq: 98
+      jiuxin_row_id: SRS-98
+      fields: ["机构类型", "所属机构", "人才数量", "占比"]
+      field_note: "在高校、院所、企业等类型下，按人才所属机构聚合，输出前 N 家的人数与占比。名录去重，当前快照。决策 Q093、Q102。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 98 的 ADS 子字段并做机构切片。备注写 IP-01 读链，模式编号仍保持 IP-09。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_ORG_DIST（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用。前 N 若需预计算，随母指标落 ADS 时一并产出。"
+      downstream: "母指标 M_TALENT_BASE_98_1 的 ADS（INT-C-TAL-040）"
+    inputs:
+      - {c_card: INT-C-TAL-040, table: "母指标 ADS（表名未定）", fields: "机构类型 / 所属机构 / 人才数量 / 占比", role: "母指标 seq 98"}
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据，母指标入站"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "机构维"}
+    outputs:
+      c_card: null
+      delivery: "前 N 家机构的人才数量与占比"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, org_id, org_type, talent_cnt, ratio, parent_seq]
+      payload_note: "05 的省或国家拥有人才机构数不作为本 ID 主口径"
+      granularity: "当前快照"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, org_type, top_n]
+      response_key_fields: [metric_id, org_id, talent_cnt, ratio, parent_seq]
+      granularity: {time: "当前快照", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "母指标 ADS 表名未定"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 SRS-98 的 algorithm_type=STAT，不改原值。"
+      - "b01.备注写父为 SQL 库叶、派生走 IP-01 读链。integration_pattern 保持包内 IP-09，不改。"
+      - "INT-C-TAL-043 同时挂了 M_TALENT_DEEP_156_1。母指标仍按备注取 seq 98，不改成 156。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q093 / Q102：机构类型与重点人才集合，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-* 做机构聚合。"
+    test_points:
+      - "契约：parent_seq=98，机构行含人数与占比"
+      - "降级：母 ADS 缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-209
+    layer: metric
+    metric_id: M_TALENT_REGIONAL_DIST
+    name: "重点人才区域分布"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-001 / 母库叶 SRS-98"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_REGIONAL_DIST]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-98
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才基础指标模型构建"
+    parent_metric:
+      metric_id: M_TALENT_BASE_98_1
+      seq: 98
+      jiuxin_row_id: SRS-98
+      fields: ["地理单元", "人才计数"]
+      field_note: "当前快照。地理粒度为国家与省级并列，全球库含境外。重点人才集合见 Q102。地图壳不进本 ID。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 98 的区域计数。备注中的 IP-01 不改模式编号。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_REGIONAL_DIST（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_TALENT_BASE_98_1 的 ADS；区划维 INT-C-TAL-026"
+    inputs:
+      - {c_card: INT-C-TAL-040, table: "母指标 ADS（表名未定）", fields: "地理单元 / 人才计数", role: "母指标 seq 98"}
+      - {c_card: INT-C-TAL-024, table: dwd_org_base_info, fields: "包内未给列名", role: "机构所在地"}
+      - {c_card: INT-C-TAL-026, table: "dim_code_region / dim_code_country / dim_region_scope(_g20)", fields: "包内未给列名", role: "国家与省级维"}
+    outputs:
+      c_card: null
+      delivery: "按国家与省级的重点人才计数，可多领域并列"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, geo_code, geo_level, talent_cnt, domain_code, parent_seq]
+      payload_note: "地图可视化不进本 ID"
+      granularity: {time: "当前快照", geo: "国家与省级并列"}
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, geo_level]
+      response_key_fields: [metric_id, geo_code, talent_cnt, parent_seq]
+      granularity: {time: "当前快照", geo: "国家与省"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS 与区划维。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 SRS-98 的 algorithm_type=STAT，不改原值。"
+      - "b01.备注写派生走 IP-01 读链。integration_pattern 保持 IP-09，不改。"
+      - "INT-C-TAL-043 同时挂 M_TALENT_DEEP_156_1。母指标仍取 seq 98。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q102：重点人才集合与地理粒度，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=98，同时给出国家与省级计数"
+      - "降级：母 ADS 或区划维缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-210
+    layer: metric
+    metric_id: M_TALENT_RELATION_NET
+    name: "重点人才关系链结构"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-004 / 母库叶 SRS-160"}
+    page_ref: "未挂页"
+    dep_kind: [metric, graph]
+    metric_ids: [M_TALENT_RELATION_NET]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-160
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才关系链模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_160_1
+      seq: 160
+      jiuxin_row_id: SRS-160
+      fields: ["节点规模", "边规模"]
+      field_note: "论文、专利、组织、项目多源融合后的合作与引用网络图统计。路径长度与节点画像不单列 ID。决策 Q100、Q102。G1 当前图为 Nebula。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-160 快照里的图统计。子图查询走已有 /internal/graph/*，本卡不另起抽取 Job。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_RELATION_NET（draft，读父快照；子图 Feign /internal/graph/*）"
+      python: "无单独在线调用。子图读 lumen-algo-py /internal/graph/talent-net（draft）"
+      downstream: "父快照 INT-C-TAL-047；图读面 INT-C-TAL-350 / INT-C-TAL-061 / INT-C-TAL-310"
+    inputs:
+      - {c_card: INT-C-TAL-047, table: ads_sci_result_snapshot, fields: "节点规模 / 边规模", role: "母指标 seq 160 快照"}
+      - {c_card: INT-C-TAL-008, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "合作边来源，父模型入站"}
+      - {c_card: INT-C-TAL-350, table: talent_coop, fields: "包内未给列名", role: "图读面，归属 C04"}
+    outputs:
+      c_card: null
+      delivery: "节点规模、边规模等图统计"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, node_cnt, edge_cnt, parent_seq]
+      payload_note: "最短路径与节点画像不单列 ID"
+      granularity: "当前图"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [domain_code, center_id]
+      response_key_fields: [metric_id, node_cnt, edge_cnt, parent_seq]
+      granularity: {time: "跟随父库叶", geo: "不适用"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照；子图只经 lumen-algo-py /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+      - "定义写可与展示人才画像同源。包内无页面引用，页面写未挂页。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q100 / Q102：关系类型与重点人才集合，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：子图只走 lumen-algo-py。禁止 demo-* 与 Neo4j。"
+      - "Java 不写 nGQL。"
+    test_points:
+      - "契约：parent_seq=160，返回节点规模与边规模"
+      - "降级：父快照缺失则空态；图不可达时读最近投影"
+    confidence: medium
+
+  - int_id: INT-B-TAL-211
+    layer: metric
+    metric_id: M_TALENT_SUPPLY_STRUCT
+    name: "人才供给情况"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-003 / 母库叶 SRS-98"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_SUPPLY_STRUCT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-98
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才基础指标模型构建"
+    parent_metric:
+      metric_id: M_TALENT_BASE_98_1
+      seq: 98
+      jiuxin_row_id: SRS-98
+      fields: ["学士毕业数量", "硕士毕业数量", "博士毕业数量", "存量学历"]
+      field_note: "历年序列用自然年。存量结构以学历为主。职称与年龄不单列 ID。对象为名录去重人才。决策 Q094。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 98 的供给子字段。备注中的 IP-01 不改模式编号。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_SUPPLY_STRUCT（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_TALENT_BASE_98_1 的 ADS"
+    inputs:
+      - {c_card: INT-C-TAL-040, table: "母指标 ADS（表名未定）", fields: "学士毕业数量 / 硕士毕业数量 / 博士毕业数量 / 存量学历", role: "母指标 seq 98"}
+      - {c_card: INT-C-TAL-001, table: dwd_scholar, fields: "包内未给列名", role: "人才主数据"}
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "学历"}
+    outputs:
+      c_card: null
+      delivery: "自然年毕业数量序列与当前学历存量"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, year, bachelor_cnt, master_cnt, doctor_cnt, edu_stock, parent_seq]
+      payload_note: "领域过滤不另造 ID"
+      granularity: {time: "自然年", geo: "本包未展开"}
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, year, bachelor_cnt, master_cnt, doctor_cnt, parent_seq]
+      granularity: {time: year, geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 SRS-98 的 algorithm_type=STAT，不改原值。"
+      - "b01.备注写派生走 IP-01 读链。integration_pattern 保持 IP-09，不改。"
+      - "INT-C-TAL-048 同时挂 M_TALENT_DEEP_161_1 与供需评价。母指标仍按备注取 seq 98，不并进 161。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q094：学历存量与毕业序列的窗口，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=98，序列含学士、硕士、博士"
+      - "降级：母 ADS 缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-212
+    layer: metric
+    metric_id: M_TALENT_SZ_STATUS
+    name: "深圳人才现状与优劣势"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-005 / 母库叶 SRS-159"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TALENT_SZ_STATUS]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-159
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳重点人才优势和短板分析模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_159_1
+      seq: 159
+      jiuxin_row_id: SRS-159
+      fields: ["计数", "优劣势", "短板"]
+      field_note: "深圳对全国或重点城市。计数面与优劣势、短板面同一条核，不拆。供需平衡归 M_TALENT_SZ_SUPPLY_DEMAND。决策 Q099。报告导出壳不进本 ID。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-159 快照的计数与优劣势子字段。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_SZ_STATUS（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_159_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-046）"
+    inputs:
+      - {c_card: INT-C-TAL-046, table: ads_sci_result_snapshot, fields: "计数 / 优劣势 / 短板", role: "母指标 seq 159 快照"}
+    outputs:
+      c_card: null
+      delivery: "对比计数与优劣势、短板"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, count_side, strength, weakness, parent_seq]
+      payload_note: "不拆成两个 metric_id；不含供需平衡"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, compare_region]
+      response_key_fields: [metric_id, count_side, strength, weakness, parent_seq]
+      granularity: {time: "T+1", geo: "深圳对全国或重点城市"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q099：对比城市集合与优劣势表述，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=159，同一响应含计数与短板，不含供需字段"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-213
+    layer: metric
+    metric_id: M_TALENT_SZ_SUPPLY_DEMAND
+    name: "深圳人才供需评价"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-011 / 母库叶 SRS-161"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_SZ_SUPPLY_DEMAND]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-161
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "人才供需分析评价模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_161_1
+      seq: 161
+      jiuxin_row_id: SRS-161
+      fields: ["供需评价指数", "缺口或盈余", "趋势"]
+      field_note: "第三方供需评价指数。禁止展开成供给减需求的算术。与现状优劣势分核。决策 Q101。结构化报告壳不进本 ID。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-161 快照子字段，不做供给减需求。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_SZ_SUPPLY_DEMAND（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_161_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-048）"
+    inputs:
+      - {c_card: INT-C-TAL-048, table: ads_sci_result_snapshot, fields: "供需评价指数 / 缺口或盈余 / 趋势", role: "母指标 seq 161 快照"}
+      - {c_card: INT-C-TAL-026, table: "dim_code_region / dim_code_country / dim_region_scope(_g20)", fields: "包内未给列名", role: "深圳范围维，父模型入站"}
+    outputs:
+      c_card: null
+      delivery: "供需评价指数、缺口或盈余、趋势"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, period, balance_index, gap_or_surplus, trend, parent_seq]
+      payload_note: "禁止用供给减需求填指数"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, balance_index, gap_or_surplus, trend, parent_seq]
+      granularity: {time: "T+1", geo: "深圳"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照，不算供给减需求。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+      - "INT-C-TAL-048 同时挂供给结构。供给结构母指标是 seq 98，本卡母指标保持 seq 161。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q101：缺口与盈余的展示口径，本叶不裁，也不改成算术差"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止在 demo-* 或 Java 里算供给减需求。"
+    test_points:
+      - "契约：parent_seq=161，指数来自父快照，响应无供给减需求算式"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TAL-214
+    layer: metric
+    metric_id: M_TALENT_UNIV_NEW
+    name: "高校新培育人才"
+    dimension: [TAL]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-TALENT-010 / 母库叶 SRS-158"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_TALENT_UNIV_NEW]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-158
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "高校学院新培育人才模型"
+    parent_metric:
+      metric_id: M_TALENT_DEEP_158_1
+      seq: 158
+      jiuxin_row_id: SRS-158
+      fields: ["新增培养识别", "培养趋势", "学科或技术方向", "校际对比"]
+      field_note: "自然年。毕业生 3 到 5 年预测、新专业或研究中心、校企合作三句不纳入本核、不另发明 ID。决策 Q097。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-158 快照子字段。"
+    call_chain:
+      fe_route: null
+      java: "GET /talent/v1/derived/result?metric_id=M_TALENT_UNIV_NEW（draft，读父快照）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_TALENT_DEEP_158_1 的 ads_sci_result_snapshot（B02 / INT-C-TAL-045）"
+    inputs:
+      - {c_card: INT-C-TAL-045, table: ads_sci_result_snapshot, fields: "新增培养识别 / 培养趋势 / 学科或技术方向 / 校际对比", role: "母指标 seq 158 快照"}
+      - {c_card: INT-C-TAL-003, table: dwd_scholar_education_background, fields: "包内未给列名", role: "教育背景，父模型入站"}
+    outputs:
+      c_card: null
+      delivery: "新增培养识别、自然年趋势、方向与校际对比"
+      snapshot_table: ads_sci_result_snapshot
+      response_key_fields: [metric_id, year, new_talent_flag, trend, direction, org_id, parent_seq]
+      payload_note: "不含 3 到 5 年预测、新专业、校企合作"
+      granularity: {time: "自然年", geo: "高校"}
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, org_id, time_range]
+      response_key_fields: [metric_id, year, trend, direction, parent_seq]
+      granularity: {time: year, geo: "高校"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，本卡 delivery_form 按 IP-09 为 none。"
+    decision_needed:
+      - "DN-B03-02：未挂页，是否只服务专题 SRS-TALENT"
+      - "Q097：预测三句不进本核，若甲方要单列须另开 ID"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+    test_points:
+      - "契约：parent_seq=158，响应不含 3 到 5 年预测字段"
+      - "降级：父快照缺失则空态"
+    confidence: medium

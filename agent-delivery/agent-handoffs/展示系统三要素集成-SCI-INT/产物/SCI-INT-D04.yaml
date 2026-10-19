@@ -1,0 +1,279 @@
+# SCI-INT-D04 端到端链路与非功能（spike）
+# 15 张 = A01–A15 各 1 条代表链路。号段 INT-D-X-600–614。
+# 代表卡取该叶第一张 call_chain.java 非空的卡；全空则取第一张并注明链路未实现。
+# 对端：久新。超时预算与性能均为草案，待确认。
+task_id: SCI-INT-D04
+scope_count: 15
+card_count: 15
+gap: []
+cards:
+- int_id: INT-D-X-600
+  layer: test
+  source_leaf: A01
+  source_int_id: INT-A-X-004
+  page_ref: DS-01-MAP
+  integration_pattern: IP-01
+  call_chain:
+    fe_route: /trend/tech-overall-situation
+    java: GET /innov/v1/factors/search?keyword&type&mode=fuzzy|exact (draft，gkxlumen-innov 门面)
+    python: POST /internal/v1/search/factors (draft，lumen-etl-es-py 查询 ES)
+    downstream: ES 三要素检索索引（候选 idx_sci_factor：科研机构/服务机构/重点企业/专家学者；源 dwd_research_institute_base_info / dwd_scholar 等 ← gkx_mysql_raw）
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-overall-situation
+  - Java 网关：检查点 GET /innov/v1/factors/search?keyword&type&mode=fuzzy|exact
+  - Python /internal：检查点 POST /internal/v1/search/factors
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-601
+  layer: test
+  source_leaf: A02
+  source_int_id: INT-A-TECH-102
+  page_ref: DS-02-TECHGRAPH
+  integration_pattern: IP-08
+  call_chain:
+    fe_route: /trend/tech-panorama
+    java: POST /situation/v1/panorama/graph（前端已调用；Java 未实现，draft）
+    python: POST /internal/v1/sci/tech-graph/chain-structure（draft；久新凭据只在 Python 侧，熔断+缓存+快照）
+    downstream: 久新 SRS-130 全景技术链模型 API（待确认）→ 快照落 ADS（表名 unknown，见 INT-C-TECH-153）
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-panorama
+  - Java 网关：检查点 POST /situation/v1/panorama/graph
+  - Python /internal：检查点 POST /internal/v1/sci/tech-graph/chain-structure
+  timeout_budget: 草案 2s 同步上限然后转异步（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-602
+  layer: test
+  source_leaf: A03
+  source_int_id: INT-A-TECH-200
+  page_ref: DS-02-MAINTAIN-GRAPH
+  integration_pattern: IP-05
+  call_chain:
+    fe_route: /trend/tech-panorama/maintain（draft；lumen 无此路由）
+    java: POST /topic/v1/tech/graph/changes（draft；op=add_node；门面模块未定 DN-07）
+    python: POST /internal/v1/sci/tech/graph/changes（draft；lumen-algo-py 无此路由）
+    downstream: graph_change_set（新）→ 发布时写技术点主表（C02 INT-C-TECH-180，新）+ Nebula gkx_chain TAG technology（VID=tech:{technology_id}）
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-panorama/maintain（draft；lumen 无此路由）
+  - Java 网关：检查点 POST /topic/v1/tech/graph/changes
+  - Python /internal：检查点 POST /internal/v1/sci/tech/graph/changes
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-603
+  layer: test
+  source_leaf: A04
+  source_int_id: INT-A-TECH-300
+  page_ref: DS-03-RESULT
+  integration_pattern: IP-08
+  call_chain:
+    fe_route: /trend/tech-development-tracking
+    java: GET /situation/v1/tracking/dataset → heatMatrix[]（前端已调；Java 未实现，draft，只读 ADS 快照）
+    python: POST /internal/v1/sci/tech/hotspot/refresh（draft；久新 API-134 适配层 + 写快照 IP-11，批量 T+1）
+    downstream: 久新 API-134 技术前沿热点领域识别（库叶 SRS-134，本展示行 DS-03-RESULT-001 与库叶同交）→ ADS 快照
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-development-tracking
+  - Java 网关：检查点 GET /situation/v1/tracking/dataset
+  - Python /internal：检查点 POST /internal/v1/sci/tech/hotspot/refresh
+  timeout_budget: 草案 2s 同步上限然后转异步（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-604
+  layer: test
+  source_leaf: A05
+  source_int_id: INT-A-X-401
+  page_ref: DS-04-ACHIEVE-OVERVIEW
+  integration_pattern: IP-01
+  call_chain:
+    fe_route: /trend/global-innovation-monitor
+    java: GET /innov/v1/achievements?types=patent,paper,news,org,enterprise&keyword=&page= (draft；现有 gkxlumen-innov GET /v1/events 读 ads_innovation_event，但 InnovSql 映射到 demo_gkxlumenx_ads)（正式用例禁止回落 demo_ 库与 demo- 服务）
+    python: 在线链路不经 Python；离线 lumen-etl-es-py 建成果统一 ES 索引 / GDF 建 ADS 成果宽表 (draft，索引名 unknown)
+    downstream: gkx_mysql_raw dwd_patent / dwd_zh_paper / dwd_en_paper / dwd_org_base_info（C02 INT-C-TECH-100、C01 INT-C-TAL-024）+ 资讯源（unknown）→ ADS 成果统一表（候选，未建）
+  trace_points:
+  - 前端 observability：检查点 /trend/global-innovation-monitor
+  - Java 网关：检查点 GET /innov/v1/achievements?types=patent,paper,news,org,enterprise&keyword=&page=
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-605
+  layer: test
+  source_leaf: A06
+  source_int_id: INT-A-ORG-500
+  page_ref: DS-04-CARRIER-RANK
+  integration_pattern: IP-04
+  call_chain:
+    fe_route: /trend/global-innovation-monitor
+    java: GET /innov/v1/carriers/rank · GET /innov/v1/carriers/index-method（已实现，只读 ads_carrier_index / cfg_index_weight）
+    python: POST /internal/v1/innov/carrier-index/run（draft；lumen-algo-py 周期 Job，三维 资源/产出/能力 加权 0–100，写 ads_carrier_index + weight_version）
+    downstream: gkx_mysql_raw DWD：dwd_org_base_info / dwd_research_institute_base_info / dwd_forg_base_info / dwd_patent / 论文+作者表（机构对齐依赖 C03 org_uid）→ ADS ads_carrier_index
+  trace_points:
+  - 前端 observability：检查点 /trend/global-innovation-monitor
+  - Java 网关：检查点 GET /innov/v1/carriers/rank
+  - Python /internal：检查点 POST /internal/v1/innov/carrier-index/run
+  timeout_budget: 异步不设页面同步超时，轮询间隔草案 5s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-606
+  layer: test
+  source_leaf: A07
+  source_int_id: INT-A-X-601
+  page_ref: DS-05-GBA-ACHIEVE
+  integration_pattern: IP-01
+  call_chain:
+    fe_route: /trend/bay-area-innovation-monitor
+    java: GET /innov/v1/gba/dict/cities (draft；新建，Java 侧湾区接口当前零命中)
+    python: 在线不经 Python；离线 lumen-etl-es-py 维表同步 dwd_dim_admin_area → dim_gba_city (draft)
+    downstream: gkx_mysql_raw dwd_dim_admin_area（INT-C-ORG-222）→ ADS dim_gba_city（候选，未建）：11 市 admin_code + 港澳编码 + 中心点/边界；当前只在前端 mock 与 Python 临时码表（仅 8 市，缺肇庆、香港、澳门）
+  trace_points:
+  - 前端 observability：检查点 /trend/bay-area-innovation-monitor
+  - Java 网关：检查点 GET /innov/v1/gba/dict/cities
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-607
+  layer: test
+  source_leaf: A08
+  source_int_id: INT-A-X-701
+  page_ref: DS-06-CARRIER
+  integration_pattern: IP-01
+  call_chain:
+    fe_route: /trend/shenzhen-innovation-monitor
+    java: GET /innov/v1/dict/regions?parentCode=440300&level=district|street|park (draft；复用候选 gkxlumen-innov DictController /v1/dict/regions，现读 demo_gkxlumenx_dim.admin_division) + GET /innov/v1/sz/carriers/geo-agg?level=&parentCode=&types= (draft，区划聚合计数)（正式用例禁止回落 demo_ 库与 demo- 服务）
+    python: 在线链路不经 Python；离线 lumen-etl-es-py region_code.py 扩 level 4（街道）+ 载体地址/经纬度 → street_code 地理编码 (draft)
+    downstream: gkx_mysql_raw dwd_dim_admin_area（C03 INT-C-ORG-222，街道级有 street_code）→ ADS dim_admin_division（lumen 正式库，未建）；园区维 dim_sz_park（候选，未建，无源）
+  trace_points:
+  - 前端 observability：检查点 /trend/shenzhen-innovation-monitor
+  - Java 网关：检查点 GET /innov/v1/dict/regions?parentCode=440300&level=district|street|park
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-608
+  layer: test
+  source_leaf: A09
+  source_int_id: INT-A-X-0800
+  page_ref: DS-07-*
+  integration_pattern: IP-06
+  call_chain:
+    fe_route: null
+    java: 未实现。innovationEvaluation.ts 仅声明网关 GET /situation/v1/innovation-evaluation/meta 与 GET /situation/v1/innovation-evaluation/snapshot（payload 为 filters+weights JSON）；注释写明后端冻结后启用，本文件无 Java 实现。
+    python: 未实现。本文件无 Python /internal/* 调用。
+    downstream: 未实现。本文件无 ADS、Nebula 或三方下游调用。
+  trace_points:
+  - 前端 observability：检查点 DS-07-*（路由未登记）
+  - Java 网关：检查点 GET /situation/v1/innovation-evaluation/meta
+  - Python 检查点=不适用（无在线 /internal，无 ADS 读）
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-609
+  layer: test
+  source_leaf: A10
+  source_int_id: INT-A-X-900
+  page_ref: DS-08-INDICATOR
+  integration_pattern: IP-01
+  call_chain:
+    fe_route: /trend/tech-index
+    java: GET /situation/v1/tech-index/indicators?version= (draft；现网无；模块归属 DN-07)
+    python: 在线链路不经 Python；离线 lumen-etl-es-py/GDF 导入评价体系配置 (draft)
+    downstream: ADS dim_sci_index_indicator（id, parent_id, level, name, weight, description, calculation, significance, version）+ dim_sci_index_indicator_version（候选，未建）
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-index
+  - Java 网关：检查点 GET /situation/v1/tech-index/indicators?version=
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-610
+  layer: test
+  source_leaf: A11
+  source_int_id: INT-A-X-1000
+  page_ref: DS-09-COMPREHENSIVE
+  integration_pattern: IP-08
+  call_chain:
+    fe_route: /trend/tech-development-plan
+    java: GET /situation/v1/planning/hotspot (draft；现网无此接口，B01 R5。Java 只调 Python，不直连久新)
+    python: POST /internal/v1/sci/planning/hotspot (draft；lumen-algo-py 适配层封装久新 API，鉴权限流超时熔断按 IP-08)
+    downstream: 久新 API DS-09-COMPREHENSIVE-001（热度）与 DS-09-COMPREHENSIVE-002（增速），均待确认。结果写 IP-11 快照后 Java 只读
+  trace_points:
+  - 前端 observability：检查点 /trend/tech-development-plan
+  - Java 网关：检查点 GET /situation/v1/planning/hotspot
+  - Python /internal：检查点 POST /internal/v1/sci/planning/hotspot
+  timeout_budget: 草案 2s 同步上限然后转异步（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-611
+  layer: test
+  source_leaf: A12
+  source_int_id: INT-A-TAL-1100
+  page_ref: DS-13-TALENT-GLOBAL
+  integration_pattern: IP-06
+  call_chain:
+    fe_route: /talent/global-talent-situation
+    java: GET /situation/v1/talent-global/distribution (draft；现网无 /situation/v1（B01 R5）；模块归属 DN-07)
+    python: 在线链路不经 Python；离线 lumen-etl-es-py/GDF 执行久新 SQL-98 落 ADS（draft）
+    downstream: 久新 SQL-98（INT-C-TAL-040）评审后纳入 GDF；原料 dwd_scholar（INT-C-TAL-001，主键未定 P0-1）；ADS ads_talent_geo_agg（候选，未建；维度 region_code × domain_code × period × talent_type）+ dim_code_region（INT-C-TAL-026）
+  trace_points:
+  - 前端 observability：检查点 /talent/global-talent-situation
+  - Java 网关：检查点 GET /situation/v1/talent-global/distribution
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-612
+  layer: test
+  source_leaf: A13
+  source_int_id: INT-A-X-1200
+  page_ref: DS-14-TALENT-REGION
+  integration_pattern: IP-06
+  call_chain:
+    fe_route: null
+    java: GET /situation/v1/talent-region/china-distribution (draft；材料包未给现网路由与 Java 门面，未核实)
+    python: 在线链路不经 Python；离线 ETL 执行久新 SQL-98 落 ADS（draft）
+    downstream: 久新 SQL-98（SRS-98，IP-06）。底图瓦片与行政区边界未核实。不新建主维，Java 不现场扫三方库
+  trace_points:
+  - 前端 observability：检查点 DS-14-TALENT-REGION（路由未登记）
+  - Java 网关：检查点 GET /situation/v1/talent-region/china-distribution
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-613
+  layer: test
+  source_leaf: A14
+  source_int_id: INT-A-X-1300
+  page_ref: DS-15-TALENT-PROFILE
+  integration_pattern: IP-10
+  call_chain:
+    fe_route: /talent/key-talent-profile
+    java: GET /talent/v1/profile/base（draft，只读 ADS，本叶不出统计数）
+    python: 在线链路不经 Python
+    downstream: 主档读链引用 INT-C-TAL-001。人才主键未定（C01）。不向久新新要行
+  trace_points:
+  - 前端 observability：检查点 /talent/key-talent-profile
+  - Java 网关：检查点 GET /talent/v1/profile/base
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。
+- int_id: INT-D-X-614
+  layer: test
+  source_leaf: A15
+  source_int_id: INT-A-X-1400
+  page_ref: DS-16-TALENT-RECRUIT
+  integration_pattern: IP-09
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: 本叶不新增接口。多级放大、关系网放大、自动聚焦只消费同页 1402 与 1407 已返回载荷（draft）
+    python: 在线链路不经 Python
+    downstream: 消费 INT-A-X-1402（API-164 贡献快照）与 INT-A-X-1407（API-160 关系网）；不另取数
+  trace_points:
+  - 前端 observability：检查点 /talent/talent-introduction-evaluation
+  - Java 网关：检查点 本叶不新增接口
+  - Python 检查点=不适用，Java 读 ADS
+  timeout_budget: 草案 3s（待确认）
+  degrade: 超时或上游失败 → 空态 + 角标，禁止伪造数值，禁止回落 demo-algo-science / demo-svc-* / demo_*。
+  performance: 待确认。超时预算待确认。

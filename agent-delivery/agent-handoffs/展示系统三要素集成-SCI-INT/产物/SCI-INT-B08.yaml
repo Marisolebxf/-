@@ -1,0 +1,615 @@
+# SCI-INT-B08 机构深度模型 7 条（metric 层）
+# 真源：产物/_prep/B08-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-ORG-700～799
+# A09 INT-A-X-0817 把 M_ORG_DEEP_153_1 / SRS-153 标成 IP-10。本叶以材料包为准，保持 IP-08。
+task_id: SCI-INT-B08
+scope_count: 7
+card_count: 7
+gap: []
+execution_count: {sync: 0, async: 7}
+execution_rule: "请求路径计：七条都是 IP-08 库叶，久新 API 的 SLA 未确认，按 IP-03 默认先走异步 Job 写 IP-11 快照。页面读快照不另记一条同步。"
+jiuxin_rows: [SRS-149, SRS-150, SRS-151, SRS-152, SRS-153, SRS-154, SRS-155]
+jiuxin_note: "本叶不新增久新行号。SRS-149…155 都是库叶 API，有久新行，不标 IP-10。确认状态都是待确认。"
+a09_correction:
+  a09_card: INT-A-X-0817
+  metric_id: M_ORG_DEEP_153_1
+  jiuxin_row_id: SRS-153
+  a09_pattern: IP-10
+  this_leaf_pattern: IP-08
+  note: "材料包 b01.pattern 为 IP-08，且有久新行 SRS-153。有久新行不标 IP-10。本叶不照抄 A09。"
+structure_escalations:
+  - id: SE-B08-01
+    owner: "human:李伟"
+    tables: ["ads_sci_org_deep_snapshot"]
+    cards: [INT-B-ORG-700, INT-B-ORG-701, INT-B-ORG-702, INT-B-ORG-703, INT-B-ORG-704, INT-B-ORG-705, INT-B-ORG-706]
+    reason: "IP-08 七条久新 API 的结果快照。包内表名未定，暂用 ads_sci_org_deep_snapshot。不替代 C03 机构主数据 INT-C-ORG-240，不另造第二张机构主表。"
+structure_escalation_refs:
+  - id: INT-C-ORG-240
+    owner: "human:李伟"
+    tables: ["C03 科研机构主数据（已有卡）"]
+    cards: [INT-B-ORG-700, INT-B-ORG-701, INT-B-ORG-702, INT-B-ORG-703, INT-B-ORG-704, INT-B-ORG-705, INT-B-ORG-706]
+    note: "机构没有 org_uid（C03，供应方 P0-1 未回）。只引用该卡，不另造。"
+open_items:
+  - {id: OI-B08-01, text: "SRS-149…155 的 API 文档、鉴权、QPS、SLA 仍为待确认"}
+  - {id: OI-B08-02, text: "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）。VID 前缀 inst: 与 org: 未统一，C05 建议 inst:，尚未拍板"}
+  - {id: OI-B08-03, text: "新快照表 SE-B08-01 升 human:李伟。机构主数据只引用 INT-C-ORG-240，不另造"}
+cards:
+  - int_id: INT-B-ORG-700
+    layer: metric
+    metric_id: M_ORG_DEEP_149_1
+    name: "科研机构重点技术领域布局模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 149, path: "算法库 ALGO-ORG-DEEP-149 / 科研机构重点技术领域布局模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_149_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-149
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构重点技术领域布局模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-149 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-149，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-149 科研机构重点技术领域布局模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-211, table: dwd_zh_author, fields: "包内未给列名", role: "中文作者"}
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-223, table: dwd_org_industry_tags, fields: "包内未给列名", role: "机构产业标签"}
+      - {c_card: INT-C-ORG-242, table: "rel_doc_org（文献-机构桥接，草案）", fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+    outputs:
+      c_card: INT-C-ORG-253
+      delivery: "久新 API-149 科研机构重点技术领域布局模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。稳定机构键待 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-149 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-149，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-149 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240, INT-C-ORG-242]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出布局结果。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_149_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假布局"
+    confidence: medium
+
+  - int_id: INT-B-ORG-701
+    layer: metric
+    metric_id: M_ORG_DEEP_150_1
+    name: "科研机构发展历程模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 150, path: "算法库 ALGO-ORG-DEEP-150 / 科研机构发展历程模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_150_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-150
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构发展历程模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-150 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-150，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-150 科研机构发展历程模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "国内科研院所名录"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校名录"}
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+    outputs:
+      c_card: INT-C-ORG-254
+      delivery: "久新 API-150 科研机构发展历程模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。稳定机构键待 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [time_range]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-150 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-150，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-150 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出历程。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_150_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假历程"
+    confidence: medium
+
+  - int_id: INT-B-ORG-702
+    layer: metric
+    metric_id: M_ORG_DEEP_151_1
+    name: "深圳科研机构优势分析模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 151, path: "算法库 ALGO-ORG-DEEP-151 / 深圳科研机构优势分析模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_151_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-151
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳科研机构优势分析模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-151 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-151，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-151 深圳科研机构优势分析模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "国内科研院所名录"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校名录"}
+      - {c_card: INT-C-ORG-207, table: dwd_scholar, fields: "包内未给列名", role: "学者"}
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-222, table: dwd_dim_admin_area, fields: "包内未给列名", role: "行政区划，深圳范围"}
+    outputs:
+      c_card: INT-C-ORG-255
+      delivery: "久新 API-151 深圳科研机构优势分析模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。深圳边界依赖行政区划，稳定机构键待 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "深圳，精度未拍板"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-151 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-151，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-151 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出优势结论。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_151_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假优势"
+    confidence: medium
+
+  - int_id: INT-B-ORG-703
+    layer: metric
+    metric_id: M_ORG_DEEP_152_1
+    name: "深圳科研机构痛难点识别模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 152, path: "算法库 ALGO-ORG-DEEP-152 / 深圳科研机构痛难点识别模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_152_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-152
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳科研机构痛难点识别模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-152 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-152，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-152 深圳科研机构痛难点识别模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-207, table: dwd_scholar, fields: "包内未给列名", role: "学者"}
+      - {c_card: INT-C-ORG-217, table: dwd_patent_transfer, fields: "包内未给列名", role: "专利转移"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-222, table: dwd_dim_admin_area, fields: "包内未给列名", role: "行政区划，深圳范围"}
+      - {c_card: INT-C-ORG-223, table: dwd_org_industry_tags, fields: "包内未给列名", role: "机构产业标签"}
+    outputs:
+      c_card: INT-C-ORG-256
+      delivery: "久新 API-152 深圳科研机构痛难点识别模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。深圳边界依赖行政区划，稳定机构键待 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "深圳，精度未拍板"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-152 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-152，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-152 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出痛难点。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_152_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假痛难点"
+    confidence: medium
+
+  - int_id: INT-B-ORG-704
+    layer: metric
+    metric_id: M_ORG_DEEP_153_1
+    name: "科研合作关系链条模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 153, path: "算法库 ALGO-ORG-DEEP-153 / 科研合作关系链条模型"}
+    page_ref: [DS-07-POLICY-GUARD]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_ORG_DEEP_153_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-153
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研合作关系链条模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-153 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。合作链若读图，只经 /internal/graph/*，不在请求里同步打久新。页面读快照不另计一条。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*；子图 Feign /internal/graph/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-153，结果写入 ads_sci_org_deep_snapshot。图只读 TRSGraph，space 不用 demo 名。"
+      downstream: "久新 API-153 科研合作关系链条模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-210, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "学者合著"}
+      - {c_card: INT-C-ORG-211, table: dwd_zh_author, fields: "包内未给列名", role: "中文作者"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-230, table: "TAG institution（及机构相关边）", fields: "包内未给列名", role: "机构图顶点，只读"}
+      - {c_card: INT-C-ORG-242, table: "rel_doc_org（文献-机构桥接，草案）", fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+      - {c_card: INT-C-ORG-320, table: "机构合作图（SRS-114）", fields: "包内未给列名", role: "图输入。C 卡页引用不计入本叶使用页面"}
+      - {c_card: INT-C-X-330, table: "跨要素实体图", fields: "包内未给列名", role: "图输入。C 卡页引用不计入本叶使用页面"}
+      - {c_card: INT-C-ORG-360, table: "机构合作图（SRS-115 / SRS-153）", fields: "包内未给列名", role: "图输入。C 卡页引用不计入本叶使用页面"}
+    outputs:
+      c_card: INT-C-ORG-257
+      delivery: "久新 API-153 科研合作关系链条模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "链条端点要稳定机构键。当前无 org_uid。VID 前缀未拍板，本叶不写 inst: 或 org: 作为已定值。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [time_range]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02:
+        - {seq: 153, name: "政策扶持力度分析", page: DS-07-POLICY-GUARD}
+      a_cards: []
+      pages: [DS-07-POLICY-GUARD]
+    status:
+      demo: "本包未指向 demo 实现。C05 草案 space 名 demo_gkx_chain 含 demo 前缀，正式 space 不用该名。"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-153 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+      - "包内 srs_refs_02 名称是政策扶持力度分析，与库叶名称科研合作关系链条模型不一致"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-153，模式保持 IP-08，不标 IP-10。"
+      - "A09 卡 INT-A-X-0817 把 M_ORG_DEEP_153_1 / SRS-153 标成 IP-10。本叶以材料包为准，模式是 IP-08，不照抄。"
+      - "srs_refs_02 把 SRS-153 挂到政策扶持力度分析 / DS-07-POLICY-GUARD。页面按包保留，不改挂，也不因此改模式。"
+      - "C 卡把入站写成离线 ETL 或图。本卡模式保持 IP-08，不改成 IP-05 或 IP-07。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。图 Tag 不新造。"
+    decision_needed:
+      - "DN-B08-01：SRS-153 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+      - "DN-B08-03：展示页 DS-07-POLICY-GUARD 与库叶名称不一致，是否改挂由后续页面叶处理，本叶不改 b01"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240, INT-C-ORG-242, INT-C-ORG-230]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。C05 草案 space 名 demo_gkx_chain 不得作为正式 space。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照、无 org_uid 或 VID 未拍板时链条空态，禁止 Mock 兜底。"
+      - "Java 不写 nGQL。不用 Neo4j。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_153_1，模式字段不是无源；不含久新私有字段名"
+      - "降级：无快照、无 org_uid 或图不可达则空态，不回填假链条"
+    confidence: medium
+
+  - int_id: INT-B-ORG-705
+    layer: metric
+    metric_id: M_ORG_DEEP_154_1
+    name: "科研机构引入推荐模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 154, path: "算法库 ALGO-ORG-DEEP-154 / 科研机构引入推荐模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_154_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-154
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构引入推荐模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-154 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-154，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-154 科研机构引入推荐模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "国内科研院所名录"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校名录"}
+      - {c_card: INT-C-ORG-205, table: dwd_forg_university_org_info, fields: "包内未给列名", role: "海外高校"}
+      - {c_card: INT-C-ORG-206, table: dwd_forg_research_org_info, fields: "包内未给列名", role: "海外科研机构"}
+      - {c_card: INT-C-ORG-207, table: dwd_scholar, fields: "包内未给列名", role: "学者"}
+      - {c_card: INT-C-ORG-208, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "学者工作经历"}
+      - {c_card: INT-C-ORG-209, table: dwd_scholar_education_background, fields: "包内未给列名", role: "学者教育背景"}
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-ORG-214, table: dwd_scholar_papers, fields: "包内未给列名", role: "学者论文"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+    outputs:
+      c_card: INT-C-ORG-258
+      delivery: "久新 API-154 科研机构引入推荐模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。推荐对象要稳定机构键，当前无 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, domain_code]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-154 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-154，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-154 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出推荐名单。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_154_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假推荐"
+    confidence: medium
+
+  - int_id: INT-B-ORG-706
+    layer: metric
+    metric_id: M_ORG_DEEP_155_1
+    name: "科研机构扶持推荐模型"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 155, path: "算法库 ALGO-ORG-DEEP-155 / 科研机构扶持推荐模型"}
+    page_ref: []
+    dep_kind: [data, algorithm]
+    metric_ids: [M_ORG_DEEP_155_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [python_internal, java_facade]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: SRS-155
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构扶持推荐模型"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：久新 API-155 经 lumen-algo-py 适配层拉取。SLA 未确认，先按异步 Job 写快照。页面若以后挂上，只读快照，不在请求里同步打久新。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 快照（draft）。gkxlumen-* 只调 Python /internal/org/*，不直连久新，不写 nGQL。"
+      python: "lumen-algo-py 适配层 /internal/org/*（draft）。异步 Job 调久新 API-155，结果写入 ads_sci_org_deep_snapshot。"
+      downstream: "久新 API-155 科研机构扶持推荐模型"
+    inputs:
+      - {c_card: INT-C-ORG-240, table: "C03 机构主数据（已有卡）", fields: "无 org_uid", role: "只引用，不另造"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "国内科研院所名录"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校名录"}
+      - {c_card: INT-C-ORG-207, table: dwd_scholar, fields: "包内未给列名", role: "学者"}
+      - {c_card: INT-C-ORG-208, table: dwd_scholar_work_experience, fields: "包内未给列名", role: "学者工作经历"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-222, table: dwd_dim_admin_area, fields: "包内未给列名", role: "行政区划"}
+    outputs:
+      c_card: INT-C-ORG-259
+      delivery: "久新 API-155 科研机构扶持推荐模型"
+      table: ads_sci_org_deep_snapshot
+      snapshot_escalation: SE-B08-01
+      master_ref: INT-C-ORG-240
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准。推荐对象要稳定机构键，当前无 org_uid。本包未展开列。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, domain_code]
+      response_key_fields: [metric_id, period, algo_version, snapshot_id, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配与快照只在 lumen-algo-py。Java 只读 ADS 快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-155 确认为待确认：接口文档、鉴权、SLA 未到"
+      - "机构没有 org_uid（C03 INT-C-ORG-240，供应方 P0-1）"
+      - "VID 前缀 inst: 与 org: 未统一。C05 建议 inst:，尚未拍板"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "有久新行 SRS-155，模式保持 IP-08，不标 IP-10。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-08，不改成在线直连三方库。"
+      - "机构主键只引用 C03 INT-C-ORG-240，不另造第二张主数据卡。"
+    decision_needed:
+      - "DN-B08-01：SRS-155 的 API 文档、鉴权与 SLA 仍为待确认"
+      - "DN-B08-02：org_uid 未落地；VID 前缀 inst: 与 org: 未拍板，本叶不代定"
+    structure_escalation: true
+    structure_escalation_id: [SE-B08-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内落点是 lumen-algo-py 与 lumen-etl-es-py，没有指向 demo-*。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。无快照即空态，禁止 Mock 兜底。无 org_uid 时不出扶持推荐。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_DEEP_155_1，不含久新私有字段名"
+      - "降级：无快照或无 org_uid 则空态，不回填假推荐"
+    confidence: medium

@@ -1,0 +1,899 @@
+# SCI-INT-A10 · 科技指数 · 页面级系统集成依赖卡片
+# 范围：SRS 科技发展态势/科技指数.md excel_row 162–180（seq 159–177，19 叶）
+# 页面：DS-08-INDICATOR(162–166) / DS-08-VIZ(167–173) / DS-08-RANK(174–180)
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 取自 MCP user-metric-registry metric-get（2026-10-19 查询）
+# 引用不重分析：C01（人才主键候选 dwd_scholar.scholar_id；H 指数来源 OI-C01-15；久新 API-162 含 DS-08-VIZ-001/004 = INT-C-TAL-049）/
+#               C02（无 technology_id、领域码 OI-C02-02）/ C03（无 org_uid，草案 INT-C-ORG-240；区划维 INT-C-ORG-222）/
+#               B01（IP-01…IP-13；DN-03 权重口径；DN-07 Java 门面与快照表；DN-09 久新结果落库合规；R3/R5/R6）/ A08（DN-A08-13 导出）
+# 约定：metric_missing:=统计数字无注册 metric_id；algo_owner_missing:=有 metric_id 但生产方未定
+# 久新：对端写「北京久新」（老路径「九新」原样保留）；本页久新行 DS-08-VIZ-001 / DS-08-VIZ-004
+# 前端现状（只读核查）：lumen-ui-science-pc views/situation/tech-index 四 Tab（指标展示 / 指数可视化展示 / 科技成果综合排名 / 专家评议），
+#   唯一接口 fetchTechIndexDataset → GET /situation/v1/tech-index/dataset（defineApi，real 用裸 fetch）；
+#   lumen-svc-platform 无 tech-index / situation/v1 端点；lumen-algo-py 无对应 /internal 路由，仅 vendor/innov-py（demo 拷贝）有 AHP+熵权 / AVG(h_index)
+
+task_id: SCI-INT-A10
+scope_count: 19
+card_count: 21
+gap: []
+
+expert_hindex_activity_verdict:
+  question: "专家 H 指数排行（seq 164 / row 167）与专家活跃度（seq 167 / row 170）属哪个要素、数据来源与计算归属"
+  evidence:
+    - "MCP M_INNOV_EXPERT_HINDEX：third_party / draft / mock；definition「对照 05 seq 162 人才学术力分项含 H，实现类 third_party，禁止伪展开 Hirsch 公式；数据源默认外采只读（Q-MO-DS08-02）」；source_tables=pending_ods"
+    - "MCP M_INNOV_EXPERT_ACTIVITY：third_party / draft / mock；definition「内部默认分子=论文数量；项目数/学术活动参与度 05 无专核 → VIZ-B02 叙事，不进本公式（Q-MO-DS08-03）」"
+    - "久新行 DS-08-VIZ-001 专家 H 指数排行、DS-08-VIZ-004 专家活跃度：系统=展示、维度=人才、algorithm_type=MODEL、交付=API、确认=待确认；C01 已并入 INT-C-TAL-049（久新 API-162 人才学术力评估结果集）"
+    - "C01 OI-C01-15：H 指数排行直接用 dwd_scholar.h_index（我方 STAT）还是久新 162 模型产出——未决；dwd_scholar 为人才主键候选表（INT-C-TAL-001）"
+    - "论文分子原料：dwd_scholar_papers（INT-C-TAL-007）/ dwd_scholar_paper_relation（INT-C-TAL-006，估数 08-19 vs 10-10 波动 OI-C01-12）；项目参与 dwd_rel_project_scholar（INT-C-TAL-014，行数 unknown OI-C01-11）；学术活动参与度：三方库查无源"
+    - "lumen 前端 techIndexModel.getExpertActivityScores 用 publications*0.38 / activity*0.88 / citations/210 等硬编码系数在前端合成六维活跃度——前端承担算法"
+  conclusion:
+    dimension: TAL
+    hindex: "计算归属=对端（久新 DS-08-VIZ-001，随 API-162 交付，IP-08），我方不实现 Hirsch 算法，只做排序/筛选读面；dwd_scholar.h_index（供应方已算列）作为降级/对照源，主次由 OI-C01-15 定（PM/郭万迎）。专家主键随 C01 scholar_id（P0-1 未定）。"
+    activity: "计算归属=对端（久新 DS-08-VIZ-004，IP-08）；过渡期我方可按注册口径 STAT 自建「月度论文数」分子（IP-01，INT-C-TAL-006/007），项目/学术活动不进公式（无源或无专核，置灰 + ⚠️）。前端加权系数必须删除，改为后端出数。"
+    no_source: "学术活动参与度（全链路无源）；专家所在机构类型需 org_uid（C03 未定）"
+
+rank_snapshot_verdict:
+  question: "排名历史快照存哪、粒度、版本（IP-11）"
+  evidence:
+    - "MCP M_INNOV_SCIINDEX_RANK_SCORE：STAT / draft / mock；「分类切面、历史名次曲线、多成果对比均消费同一套已落库分值/名次；展示侧只读 ADS / 智库已发布综合分排序；综合合成在智库后台（Q-TINDEX-01 待登）；窗口默认自然年；权重跟 Q-TINDEX-03」"
+    - "lumen 前端 RankingRecord 含 previousRank / trendValue / evaluationDate；rankingHistory[id] = [{date, rank, score}]；totalScore / weightContributions / rank 在 mock 模块 applyEvaluationModel 派生（前端算分）"
+    - "B01 IP-11 候选通用快照 ads_sci_result_snapshot（结构未定，已 structure_escalation）；Java/Python 现网均无排名快照表"
+  conclusion:
+    store: "lumen 正式库 ADS 层新建行级快照表（候选 ads_sci_index_rank_snapshot），不复用 IP-11 通用 JSON 快照（历史曲线 / 分类 / 搜索 / 对比要按 achievement_id、period 过滤）；不进 Nebula；不新建 ES 索引（179 搜索走 SQL，量级待 DN-A10-03）。唯一写者：外部发布值 → lumen-etl-es-py/GDF 导入；我方自建 → lumen-algo-py 批 Job；Java 只读。"
+    grain: "一行 = (period_id, board, achievement_id)；board ∈ comprehensive / 机构类型 / 领域 / 成果类型 / 地域；字段 rank, total_score, sub_scores(四个一级指标), prev_rank, rank_delta, weight_version, algo_version, snapshot_id, source(think_tank|jiuxin|self), data_as_of, published_at。period 默认自然年（注册口径），前端现按日期点画曲线 → 粒度待 DN-A10-04。"
+    version: "append-only：权重/算法变更另起 weight_version / algo_version，不回改历史行；幂等键 (period_id, board, achievement_id, weight_version)；weight_version 外键指向指标体系版本表（INT-A-X-900）；保留期数待甲方（DN-A10-04）。"
+    escalation: "新表 → structure_escalation（INT-A-X-924）→ human:李伟，并入 DN-07；若排名来自久新还涉 DN-09（落库合规）"
+
+cards:
+  # ═════════════ DS-08-INDICATOR（row 162–166）═════════════
+  - int_id: INT-A-X-900
+    layer: page
+    srs: {excel_row: 162, seq: 159, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指标展示/指标项展示"}
+    page_ref: DS-08-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: "other:科技指数评价体系发布方（未定，DN-A10-01）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/indicators?version= (draft；现网无；模块归属 DN-07)"
+      python: "在线链路不经 Python；离线 lumen-etl-es-py/GDF 导入评价体系配置 (draft)"
+      downstream: "ADS dim_sci_index_indicator（id, parent_id, level, name, weight, description, calculation, significance, version）+ dim_sci_index_indicator_version（候选，未建）"
+    contract_draft:
+      request: [version]
+      response_key_fields: [indicator_id, parent_id, level, name, weight, version, effective_date]
+      granularity: {time: version, geo: none}
+      freshness: offline
+    status:
+      demo: "demo-ui-science src/pages/tech-index mockData.js indicatorTreeData（mock）"
+      lumen: "lumen-ui-science-pc tech-index IndicatorTab + IndicatorTreePanel（有；数据为 mock 种子，IndicatorTab 直 import @/mock/modules/techIndex findIndicatorById）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "评价体系（一/二/三级指标树）无真源：registry、三方库、Java、Python 均查无"
+      - "指标树节点与 registry metric_id 无映射（节点不是注册指标）"
+    conflicts: []
+    decision_needed:
+      - "DN-A10-02：指标体系与权重真源、发布流程与版本规则（Q-TINDEX-02/03；同类 DN-03）"
+    structure_escalation: true
+    risks:
+      - "R-A10-1：USE_MOCK=false 时 IndicatorTab 仍直读 @/mock（违反 IP-13）"
+    test_points: ["三级树展开/折叠层级与 parent_id 一致", "同级权重和=1（版本内）", "USE_MOCK=false 无 mock import 执行"]
+    confidence: medium
+
+  - int_id: INT-A-X-901
+    layer: page
+    srs: {excel_row: 163, seq: 160, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指标展示/指标概述查看"}
+    page_ref: DS-08-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: "other:科技指数评价体系发布方（未定，DN-A10-01）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/indicators/{id} (draft)"
+      python: "在线链路不经 Python"
+      downstream: "ADS dim_sci_index_indicator.description / purpose / scope（INT-A-X-900）"
+    contract_draft:
+      request: [indicator_id, version]
+      response_key_fields: [indicator_id, name, definition, purpose, scope]
+      granularity: {time: version, geo: none}
+      freshness: offline
+    status:
+      demo: "mockData.js description（mock）"
+      lumen: "IndicatorDetailPanel（有；直 import @/mock/modules/techIndex indicatorWeightSetting）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["概述文本（定义/评价目的/适用范围）无来源；当前为 demo 文案"]
+    conflicts: []
+    decision_needed: ["DN-A10-02"]
+    structure_escalation: false
+    risks: ["R-A10-1"]
+    test_points: ["点击节点展示对应概述", "无文本时显示空态而非 demo 文案"]
+    confidence: medium
+
+  - int_id: INT-A-X-902
+    layer: page
+    srs: {excel_row: 164, seq: 161, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指标展示/指标计算方法说明"}
+    page_ref: DS-08-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_VALUE]
+    algorithm_type: STAT
+    integration_pattern: IP-12
+    ours: [frontend, java_facade]
+    counterpart: "other:科技指数评价体系发布方（未定，DN-A10-01）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/indicators/{id} (draft) + GET /metrics/v1/catalog?ids= (8 件套；现 catalog 仅 ENT、无 D1–D4，R3)"
+      python: "在线链路不经 Python"
+      downstream: "ADS dim_sci_index_indicator.calculation / data_source / caliber；registry 8 件套 formula（现 pending_cosign 唐绍祖）"
+    contract_draft:
+      request: [indicator_id, version]
+      response_key_fields: [indicator_id, formula, data_source, caliber, example]
+      granularity: {time: version, geo: none}
+      freshness: offline
+    status:
+      demo: "mockData.js calculation（mock）"
+      lumen: "IndicatorDetailPanel 计算方法区（mock 文案）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "计算公式未签：M_INNOV_SCIINDEX_VALUE formula = pending_cosign human:唐绍祖"
+      - "三级指标逐项公式无来源"
+    conflicts: []
+    decision_needed: ["DN-A10-01", "DN-A10-02"]
+    structure_escalation: false
+    risks: ["页面展示的公式若与 8 件套 formula 不一致会造成双口径"]
+    test_points: ["页面公式文本 = catalog formula（同一 version）", "formula pending 时显示 ⚠️ 待确认"]
+    confidence: medium
+
+  - int_id: INT-A-X-903
+    layer: page
+    srs: {excel_row: 165, seq: 162, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指标展示/指标意义解读"}
+    page_ref: DS-08-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: "other:科技指数评价体系发布方（未定，DN-A10-01）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/indicators/{id} (draft)"
+      python: "在线链路不经 Python"
+      downstream: "ADS dim_sci_index_indicator.significance / related_indicator_ids（INT-A-X-900）"
+    contract_draft:
+      request: [indicator_id, version]
+      response_key_fields: [indicator_id, significance, related_indicator_ids]
+      granularity: {time: version, geo: none}
+      freshness: offline
+    status:
+      demo: "mockData.js significance（mock）"
+      lumen: "IndicatorDetailPanel 意义解读 + findIndicatorSiblings（直读 @/mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["意义解读与「与其他指标的关联」无来源；关联现由前端按兄弟节点推断"]
+    conflicts: []
+    decision_needed: ["DN-A10-02"]
+    structure_escalation: false
+    risks: ["R-A10-1"]
+    test_points: ["关联指标来自后端字段，不由前端推断兄弟节点"]
+    confidence: medium
+
+  - int_id: INT-A-X-904
+    layer: page
+    srs: {excel_row: 166, seq: 163, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指标展示/指标权重展示"}
+    page_ref: DS-08-INDICATOR
+    dimension: [OTHER]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-10
+    ours: [frontend, java_facade]
+    counterpart: "other:科技指数评价体系发布方（未定，DN-A10-01）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/weights?version= (draft)"
+      python: "在线链路不经 Python（若权重由我方 AHP/熵权计算，则属 lumen-algo-py 批 Job，生产方未定）"
+      downstream: "ADS dim_sci_index_indicator.weight + dim_sci_index_indicator_version（权重方法 / 依据 / 版本变更）"
+    contract_draft:
+      request: [version]
+      response_key_fields: [indicator_id, weight, method, basis, version, prev_weight]
+      granularity: {time: version, geo: none}
+      freshness: offline
+    status:
+      demo: "mockData.js weight / indicatorWeightSetting / versionHistory（mock）"
+      lumen: "IndicatorDetailPanel 权重 + VersionComparePanel 版本对比（mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "metric_missing：权重数值与版本权重变化无注册 metric_id（是否豁免 ⓘ 同 DN-A03-09 类问题）"
+      - "权重方法（demo 文案写 AHP+熵权）与权重值均无甲方确认"
+    conflicts: []
+    decision_needed:
+      - "DN-A10-02：权重口径与方法（Q-TINDEX-03；参照 B01 DN-03）"
+    structure_escalation: false
+    risks:
+      - "R-A10-7：vendor/innov-py indices.py 的 AHP+熵权为 demo 拷贝，不得直接复用"
+    test_points: ["权重来自后端版本表", "未确认时整块 ⚠️ 待甲方确认", "版本对比 prev_weight 正确"]
+    confidence: medium
+
+  # ═════════════ DS-08-VIZ（row 167–173）═════════════
+  - int_id: INT-A-TAL-910
+    layer: page
+    srs: {excel_row: 167, seq: 164, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/专家H指数排行可视化"}
+    page_ref: DS-08-VIZ
+    dimension: [TAL]
+    dep_kind: [data, metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EXPERT_HINDEX]
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: DS-08-VIZ-001
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/experts/h-index-rank?domain=&orgType=&region=&topN= (draft；只读快照，不感知久新)"
+      python: "lumen-algo-py 适配层 POST /internal/v1/sci/talent/academic（draft，封装久新 API-162 / DS-08-VIZ-001，写 IP-11 快照）"
+      downstream: "北京久新 API-162 人才学术力评估结果集（C01 INT-C-TAL-049）；降级/对照：gkx_mysql_raw dwd_scholar.h_index（INT-C-TAL-001，OI-C01-15）"
+    contract_draft:
+      request: [domain_code, org_type, region_code, top_n]
+      response_key_fields: [scholar_id, name, org_uid, org_name, h_index, citations, publications, field, region_code, snapshot_id, data_as_of]
+      granularity: {time: snapshot, geo: province}
+      freshness: T+1
+    status:
+      demo: "demo-ui-science tech-index ExpertRankingChart（mock expertData）"
+      lumen: "ExpertRankingPanel 柱状 + ActivityRadarPanel 雷达（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "专家主键 scholar_id 稳定性未定（C01 OI-C01-01 / 供应方 TALENT-P0-1）"
+      - "久新 DS-08-VIZ-001 交付形态/字段/SLA 全部待确认（DN-01）"
+      - "M_INNOV_EXPERT_HINDEX source_tables=pending_ods，formula pending_cosign"
+    conflicts:
+      - "CF-A10-1：registry algorithm_type=third_party vs 久新行 algorithm_type=MODEL（同 B01 C2）"
+      - "CF-A10-4：B01 C7 记 DS-08-VIZ-001/004 无独立 metric_id，实际 INNOV 域已有 M_INNOV_EXPERT_HINDEX / M_INNOV_EXPERT_ACTIVITY（域=INNOV 非 TAL）"
+    decision_needed:
+      - "OI-C01-15：H 指数用 dwd_scholar.h_index 还是久新 162 产出（PM/郭万迎）"
+      - "DN-09：久新结果是否允许我方落库快照"
+    structure_escalation: true
+    risks:
+      - "R2：久新 SLA 未知，页面强依赖第三方"
+      - "R-A10-1：USE_MOCK=false 仍以 mock 种子渲染"
+    test_points: ["契约：TopN 按 h_index 降序且同分稳定排序", "降级：适配层熔断时读最近快照 + 「数据截至」", "前端/Java 无久新域名与凭据"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-911
+    layer: page
+    srs: {excel_row: 167, seq: 164, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/专家H指数排行可视化"}
+    page_ref: DS-08-VIZ
+    dimension: [TAL]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EXPERT_HINDEX]
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/experts/{scholarId} (draft；专家详情 + H 指数计算依据)"
+      python: "离线 lumen-etl-es-py：dwd_scholar + work_experience + research_direction → ADS 专家维（draft）"
+      downstream: "dwd_scholar（INT-C-TAL-001）/ dwd_scholar_work_experience（INT-C-TAL-002，机构→org_uid）/ dwd_scholar_research_direction（INT-C-TAL-005，学科）/ dim_code_region（INT-C-TAL-026）；H 依据 = 久新快照 evidence 字段（若提供）"
+    contract_draft:
+      request: [scholar_id]
+      response_key_fields: [scholar_id, name, org_name, org_type, field, region_code, h_index, citations, publications, h_basis]
+      granularity: {time: snapshot, geo: province}
+      freshness: T+1
+    status:
+      demo: "mock expertData 详情 Drawer"
+      lumen: "VisualizationTab 专家详情 Drawer（mock；institution/region 为字符串）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing：详情中的被引次数、论文数无注册 metric_id"
+      - "「H 指数计算依据」：注册口径禁止伪展开 Hirsch 公式，依据只能来自对端 evidence；久新是否给 unknown"
+      - "筛选维「机构类型」需 org_uid + org_category（C03 OI-C03-01/02 未定）；「学科领域」需领域码（OI-C02-02）"
+    conflicts: []
+    decision_needed: ["OI-C01-15", "DN-A10-05：「专家」范围（人才库全体 / 同行评议专家智库）"]
+    structure_escalation: false
+    risks: ["OI-C01-08：个人信息字段分级脱敏"]
+    test_points: ["点击柱条专家名打开详情，scholar_id 一致", "无 h_basis 时显示「由对端提供」说明，不展开公式"]
+    confidence: medium
+
+  - int_id: INT-A-X-912
+    layer: page
+    srs: {excel_row: 168, seq: 165, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/科技指数分布区域可视化"}
+    page_ref: DS-08-VIZ
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_VALUE]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/region-index?year=&level= (draft) + GET /situation/v1/tech-index/region-index/{regionCode}/history (draft)"
+      python: "离线 lumen-etl-es-py/GDF 导入已发布指数值（draft）；若改我方自建则 lumen-algo-py 批 Job（生产方未定）"
+      downstream: "ADS ads_sci_index_value（候选；period, region_code, level, index_value, rank, version）+ 区划维 dwd_dim_admin_area（INT-C-ORG-222）"
+    contract_draft:
+      request: [year, geo_level, region_code]
+      response_key_fields: [region_code, region_name, index_value, rank, year, version, data_as_of]
+      granularity: {time: year, geo: province}
+      freshness: offline
+    status:
+      demo: "demo tech-index RegionMap（mock regionIndexData / regionIndexHistory）"
+      lumen: "RegionMapPanel ECharts 地图（缩放/平移/全屏）+ 区域详情 Drawer（mock）；VisualizationTab setInterval + Math.random 扰动「模拟实时」"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "指数值生产方未定（registry「综合合成在智库后台」），source_tables=pending_ods"
+      - "algo_owner_missing：M_INNOV_SCIINDEX_VALUE 若非外部发布则无人计算"
+      - "全国单值 vs 区域切片口径未定（Q-MO-DS08-01）"
+    conflicts:
+      - "CF-A10-2：SCIINDEX_* algorithm_type=STAT，但 definition 写「差集 other_system」「综合合成在智库后台」——实为外部发布值导入"
+    decision_needed: ["DN-A10-01", "DN-A10-06：区域粒度（省/市/区）"]
+    structure_escalation: true
+    risks: ["R-A10-4：模拟实时随机扰动为伪功能"]
+    test_points: ["点击区域详情与列表 index_value 一致", "USE_MOCK=false 不启动扰动定时器", "无当期数据回落上一期 + 「数据截至」"]
+    confidence: medium
+
+  - int_id: INT-A-X-913
+    layer: page
+    srs: {excel_row: 169, seq: 166, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/科技影响力趋势可视化"}
+    page_ref: DS-08-VIZ
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_INFLUENCE]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/influence-trend?from=&to=&domain=&indicators= (draft)"
+      python: "离线 lumen-etl-es-py/GDF 导入时序（draft）"
+      downstream: "ADS ads_sci_index_trend（候选；period, domain_code, indicator_key, value, version）"
+    contract_draft:
+      request: [time_range, domain_code, indicator_keys]
+      response_key_fields: [period, domain_code, indicator_key, value]
+      granularity: {time: month, geo: none}
+      freshness: offline
+    status:
+      demo: "demo tech-index TrendChart（mock trendData）"
+      lumen: "TrendPanel（mock；领域调整值 getFieldAdjustedTrendValue 在前端按系数派生）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "影响力统称口径未定（Q069 / Q071）"
+      - "前端按领域系数派生趋势值（不是真实领域切片）"
+      - "领域码体系未定（OI-C02-02）"
+    conflicts: ["CF-A10-2"]
+    decision_needed: ["DN-A10-01", "Q069：影响力口径（甲方）"]
+    structure_escalation: true
+    risks: ["R-A10-2：前端承担数值派生"]
+    test_points: ["多指标并排同轴 period 对齐", "领域切换返回后端切片而非前端系数"]
+    confidence: medium
+
+  - int_id: INT-A-TAL-914
+    layer: page
+    srs: {excel_row: 170, seq: 167, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/专家活跃度可视化"}
+    page_ref: DS-08-VIZ
+    dimension: [TAL]
+    dep_kind: [data, metric, algorithm]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_EXPERT_ACTIVITY]
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [frontend, java_facade, python_internal, etl]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: DS-08-VIZ-004
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/experts/activity?scholarIds=&timeRange= (draft；只读快照)"
+      python: "lumen-algo-py 适配层 POST /internal/v1/sci/talent/activity（draft，封装久新 DS-08-VIZ-004，写 IP-11 快照）；过渡 STAT：lumen-etl-es-py 月度论文数聚合（IP-01）"
+      downstream: "北京久新 API-162 / DS-08-VIZ-004（INT-C-TAL-049）；过渡原料 dwd_scholar_papers（INT-C-TAL-007）/ dwd_scholar_paper_relation（INT-C-TAL-006）/ dwd_rel_project_scholar（INT-C-TAL-014）"
+    contract_draft:
+      request: [scholar_ids, time_range]
+      response_key_fields: [scholar_id, month, paper_count, project_count, activity_score, source, snapshot_id]
+      granularity: {time: month, geo: none}
+      freshness: T+1
+    status:
+      demo: "demo ActivityRadarChart / 热力（mock）"
+      lumen: "ActivityRadarPanel 热力+雷达（mock；getExpertActivityScores / getMonthlyActivityValue 前端系数合成六维）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing：项目参与数、学术活动参与度等分维度无注册 metric_id（注册口径不进公式，VIZ-B02 叙事）"
+      - "学术活动参与度：三方库无源"
+      - "dwd_rel_project_scholar 行数 unknown（OI-C01-11）；paper_relation 估数波动（OI-C01-12）"
+    conflicts: ["CF-A10-1"]
+    decision_needed:
+      - "DN-A10-05：活跃度口径（仅论文数 vs 含项目/学术活动，Q-MO-DS08-03）与「专家」范围"
+      - "OI-C01-03：久新人才行数据底座"
+    structure_escalation: true
+    risks:
+      - "R-A10-2：前端硬编码系数合成活跃度（算法在前端），正式态必须删除"
+    test_points: ["月度论文数与 dwd_scholar_papers 抽样 COUNT 一致", "无源维度置灰 + ⚠️，不以 0 代替", "前端不再含活跃度系数"]
+    confidence: medium
+
+  - int_id: INT-A-X-915
+    layer: page
+    srs: {excel_row: 171, seq: 168, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/大屏导航切换"}
+    page_ref: DS-08-VIZ
+    dimension: [NONE_3E]
+    dep_kind: [service]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend]
+    counterpart: none
+    delivery_form: none
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: null
+      python: null
+      downstream: "无（纯前端：视图切换、全屏、自动轮播）"
+    contract_draft:
+      request: []
+      response_key_fields: []
+      granularity: {time: none, geo: none}
+      freshness: realtime
+    status:
+      demo: "demo visualizationViews 五视图切换（map / expert-ranking / trend / activity / comparison）"
+      lumen: "VisualizationTab 视图切换 + RegionMapPanel 全屏（有）；自动轮播未见（部分）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["自动轮播未实现；「大屏详情页面」目标未定义"]
+    conflicts: []
+    decision_needed: ["DN-A10-07：大屏详情页目标与轮播间隔（产品）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["轮播可暂停且键盘可达（D10）", "全屏进入/退出 aria-pressed 正确"]
+    confidence: high
+
+  - int_id: INT-A-X-916
+    layer: page
+    srs: {excel_row: 172, seq: 169, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/可视化图表交互"}
+    page_ref: DS-08-VIZ
+    dimension: [TECH, ORG]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_VALUE, M_INNOV_SCIINDEX_INFLUENCE, M_INNOV_EXPERT_HINDEX, M_INNOV_EXPERT_ACTIVITY]
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "各 /situation/v1/tech-index/* 端点统一接收筛选参数 domain/orgType/region/timeRange/indicator (draft) + GET /situation/v1/dict/{domains,org-types,regions} (draft)"
+      python: "在线链路不经 Python"
+      downstream: "领域维 dim_tech_domain（INT-C-TECH-181，未建）/ 机构类型 dim_research_org.org_category（INT-C-ORG-240，草案）/ 区划 dwd_dim_admin_area（INT-C-ORG-222）"
+    contract_draft:
+      request: [domain_codes, org_type, region_code, time_range, indicator]
+      response_key_fields: [code, name, parent_code]
+      granularity: {time: month, geo: province}
+      freshness: T+1
+    status:
+      demo: "demo visualizationFilters（领域级联/机构类型/地域/时间/指标维度）"
+      lumen: "VisualizationTab 筛选条（有；过滤在前端内存对 mock dataset 执行）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps:
+      - "领域码体系未定（OI-C02-02），机构类型依赖 org_uid（OI-C03-01）"
+      - "过滤在前端执行；正式态应下推到后端查询"
+    conflicts: []
+    decision_needed: ["OI-C02-02", "OI-C03-02"]
+    structure_escalation: false
+    risks: ["dataset 一次取全 + 前端过滤在真实数据量下不可行"]
+    test_points: ["每次筛选变更触发后端请求且结果一致", "字典来自后端维表，不硬编码"]
+    confidence: medium
+
+  - int_id: INT-A-X-917
+    layer: page
+    srs: {excel_row: 173, seq: 170, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/指数可视化展示/可视化结果导出"}
+    page_ref: DS-08-VIZ
+    dimension: [NONE_3E]
+    dep_kind: [export]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "POST /situation/v1/tech-index/exports (draft；若服务端导出 PDF/报告) — 或纯前端 ECharts getDataURL 出图"
+      python: null
+      downstream: "无数据下游；报告「图表解读与关键发现」生成方未定"
+    contract_draft:
+      request: [view_keys, filters, format]
+      response_key_fields: [file_url, file_name, generated_at]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo 导出 Modal（mock 提示）"
+      lumen: "VisualizationTab 导出 Modal 仅 Message.success「导出任务已创建」，无文件产出（伪功能）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["图片/PDF/报告均未实现；报告文字由谁生成未定"]
+    conflicts: []
+    decision_needed: ["DN-A08-13：报告导出服务端 vs 前端（引用）"]
+    structure_escalation: false
+    risks: ["R-A10-6：导出为伪功能", "导出内容须剔除 metric_id / GAP-* 评审字样"]
+    test_points: ["导出文件可打开且与当前筛选一致", "关闭评审模式后导出无 metric_id"]
+    confidence: medium
+
+  # ═════════════ DS-08-RANK（row 174–180）═════════════
+  - int_id: INT-A-X-920
+    layer: page
+    srs: {excel_row: 174, seq: 171, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/科技成果综合排名"}
+    page_ref: DS-08-RANK
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings?board=comprehensive&period=&topN= (draft；只读 ADS)"
+      python: "离线 lumen-etl-es-py/GDF 导入已发布综合分与名次（draft）；若我方自建 → lumen-algo-py 批 Job（生产方未定）"
+      downstream: "ADS ads_sci_index_rank_snapshot（候选，见 rank_snapshot_verdict）"
+    contract_draft:
+      request: [board, period_id, top_n, page, size]
+      response_key_fields: [achievement_id, name, rank, total_score, prev_rank, rank_delta, period_id, weight_version, data_as_of]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "demo tech-index RankingTab（achievementRecordsBase + applyEvaluationModel 派生）"
+      lumen: "RankingTab + RankingTablePanel（mock；totalScore / rank / weightContributions 在 mock 模块按权重派生）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "综合分生产方未定（智库后台？），source_tables=pending_ods，formula pending_cosign"
+      - "algo_owner_missing：M_INNOV_SCIINDEX_RANK_SCORE 若需我方合成则无 owner"
+    conflicts: ["CF-A10-2"]
+    decision_needed: ["DN-A10-01", "DN-A10-02"]
+    structure_escalation: true
+    risks: ["R-A10-2：前端/mock 派生名次，正式态禁止前端算分"]
+    test_points: ["名次连续且与 total_score 降序一致", "rank_delta = prev_rank − rank", "无上一期时升降显示「新进」"]
+    confidence: medium
+
+  - int_id: INT-A-TECH-921
+    layer: page
+    srs: {excel_row: 174, seq: 171, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/科技成果综合排名"}
+    page_ref: DS-08-RANK
+    dimension: [TECH]
+    dep_kind: [data]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "排行响应内联成果属性（draft；不单开端点）"
+      python: "离线 lumen-etl-es-py：成果实体对齐（论文/专利/项目 → achievement_id）(draft)"
+      downstream: "dwd_patent（INT-C-TECH-100）/ dwd_zh_paper（INT-C-TECH-107）/ dwd_en_paper（INT-C-TECH-113）/ dwd_zh_project（INT-C-TECH-120）；技术领域 dim_tech_domain（INT-C-TECH-181）"
+    contract_draft:
+      request: [achievement_id]
+      response_key_fields: [achievement_id, achievement_type, title, field_code, completer_org_uid, location]
+      granularity: {time: none, geo: none}
+      freshness: T+1
+    status:
+      demo: "mock achievementRecordsBase（name/achievementType/field/institution 字符串）"
+      lumen: "同 demo（mock）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "「科技成果」无统一 achievement_id；论文/专利/项目三套主键，C02 无 technology_id"
+      - "成果→完成机构需 org_uid（C03 未定）"
+    conflicts: []
+    decision_needed: ["DN-A10-03：「科技成果」对象范围（论文/专利/项目/奖励）与统一成果 ID"]
+    structure_escalation: false
+    risks: ["若排名来自外部发布方而成果 ID 不可回连我方库，详情/对比无法下钻"]
+    test_points: ["排行榜每条 achievement_id 能回连到源表记录"]
+    confidence: low
+
+  - int_id: INT-A-ORG-922
+    layer: page
+    srs: {excel_row: 175, seq: 172, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/分类排名展示"}
+    page_ref: DS-08-RANK
+    dimension: [ORG]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [frontend, java_facade, etl]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings?board=&orgType=&domain=&achievementType=&region= (draft)"
+      python: "离线写快照时按 board 产出分类名次（draft）"
+      downstream: "ads_sci_index_rank_snapshot.board + dim_research_org.org_category（INT-C-ORG-240）/ 企业 dwd_org_base_info（INT-C-ORG-202）/ 区划 INT-C-ORG-222 / 领域 INT-C-TECH-181"
+    contract_draft:
+      request: [org_type, domain_code, achievement_type, region_code, period_id]
+      response_key_fields: [achievement_id, board, rank, total_score, org_uid, org_type]
+      granularity: {time: year, geo: province}
+      freshness: offline
+    status:
+      demo: "mock 四榜（comprehensive / university / enterprise / research）"
+      lumen: "RankingTab 六筛选 + 四榜 Radio（mock；前端过滤）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "机构类型拆榜依赖 org_uid / org_category（C03 OI-C03-01/02）；企业不在 ORG 主数据（C03 🟡 默认）"
+      - "分类名次是重排还是全榜过滤未定"
+    conflicts:
+      - "CF-A10-3：前端按 高校/企业/科研机构 拆榜，SRS 175 要求 科技领域/成果类型/机构类型/地域 多条件组合"
+    decision_needed: ["OI-C03-02", "DN-A10-03"]
+    structure_escalation: false
+    risks: []
+    test_points: ["组合筛选名次 = 子集内重排（或按决策为全榜名次）", "同一成果多完成单位不重复计入"]
+    confidence: medium
+
+  - int_id: INT-A-X-923
+    layer: page
+    srs: {excel_row: 176, seq: 173, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/排名详情查看"}
+    page_ref: DS-08-RANK
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-12
+    ours: [frontend, java_facade]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings/{achievementId}?period= (draft)"
+      python: "在线链路不经 Python"
+      downstream: "ads_sci_index_rank_snapshot.sub_scores + dim_sci_index_indicator（权重，INT-A-X-900）+ data_sources"
+    contract_draft:
+      request: [achievement_id, period_id]
+      response_key_fields: [achievement_id, sub_scores, weight_contributions, evaluation_method, data_sources, ranking_basis, weight_version]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "mock RankingDetailDrawer（雷达 + 权重贡献）"
+      lumen: "RankingDetailDrawer（mock；weightContributions 前端/mock 派生）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "metric_missing：四个一级指标得分（创新能力/影响力/发展潜力/保障能力）与权重贡献无注册 metric_id"
+      - "权重贡献由前端计算；正式态须后端随快照给出"
+    conflicts: []
+    decision_needed: ["DN-A10-02"]
+    structure_escalation: false
+    risks: ["R-A10-2"]
+    test_points: ["Σ 权重贡献 = total_score（同一 weight_version）", "数据来源列表非空或显示 ⚠️"]
+    confidence: medium
+
+  - int_id: INT-A-X-924
+    layer: page
+    srs: {excel_row: 177, seq: 174, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/排名历史变化"}
+    page_ref: DS-08-RANK
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-11
+    ours: [frontend, java_facade, etl, python_internal]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings/{achievementId}/history?board=&from=&to= (draft；只读快照)"
+      python: "唯一写者：外部发布 → lumen-etl-es-py/GDF 导入；我方自建 → lumen-algo-py 批 Job 写快照（draft）"
+      downstream: "ADS ads_sci_index_rank_snapshot（新表，append-only；幂等键 period_id+board+achievement_id+weight_version）"
+    contract_draft:
+      request: [achievement_id, board, from_period, to_period]
+      response_key_fields: [period_id, rank, total_score, weight_version, algo_version, snapshot_id]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "mock rankingHistory（按日期点）"
+      lumen: "RankingDetailDrawer 历史曲线 buildDetailTrendOption（mock rankingHistory）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "无快照表；期次粒度、保留期数未定"
+      - "权重变更后历史名次是否重算未定"
+    conflicts: []
+    decision_needed:
+      - "DN-A10-04：排名期次粒度（自然年默认 / 季 / 月）、保留期数、权重变更是否重算历史"
+      - "DN-07：快照表结构与写者（human:李伟）"
+    structure_escalation: true
+    risks: ["跨期 achievement_id 不稳定会导致历史曲线断线（依赖 DN-A10-03）"]
+    test_points: ["重复导入同期幂等", "权重换版后旧期行不变、新期带新 weight_version", "曲线点数 = 有快照的期数"]
+    confidence: medium
+
+  - int_id: INT-A-X-925
+    layer: page
+    srs: {excel_row: 178, seq: 175, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/排名对比分析"}
+    page_ref: DS-08-RANK
+    dimension: [OTHER]
+    dep_kind: [data, metric]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: STAT
+    integration_pattern: IP-09
+    ours: [frontend, java_facade]
+    counterpart: "other:智库后台（Q-TINDEX-01，未定）"
+    delivery_form: unknown
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings/compare?ids=&period= (draft；读同一快照)"
+      python: "在线链路不经 Python"
+      downstream: "ads_sci_index_rank_snapshot.sub_scores（INT-A-X-924）"
+    contract_draft:
+      request: [achievement_ids, period_id]
+      response_key_fields: [achievement_id, name, rank, total_score, sub_scores]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "mock CompareDrawer / ComparisonPanel"
+      lumen: "CompareDrawer + ComparisonPanel 雷达/柱（mock）；对比方案保存为本地 ref（不持久）"
+      d1_d4: {d1: draft, d4: mock}
+    gaps: ["对比方案持久化未定义（现会话本地态）"]
+    conflicts: []
+    decision_needed: ["DN-A10-09：对比方案是否用户级持久化（产品）"]
+    structure_escalation: false
+    risks: []
+    test_points: ["对比上限 MAX_RANKING_COMPARE_COUNT 生效", "各成果 sub_scores 取同一 weight_version"]
+    confidence: medium
+
+  - int_id: INT-A-X-926
+    layer: page
+    srs: {excel_row: 179, seq: 176, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/排名筛选与搜索"}
+    page_ref: DS-08-RANK
+    dimension: [OTHER]
+    dep_kind: [data, service]
+    metric_ids: []
+    metric_domain_other: [M_INNOV_SCIINDEX_RANK_SCORE]
+    algorithm_type: n/a_ops
+    integration_pattern: IP-01
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "GET /situation/v1/tech-index/rankings?keyword=&rankFrom=&rankTo=&scoreFrom=&scoreTo=&period= (draft)"
+      python: "在线链路不经 Python"
+      downstream: "ads_sci_index_rank_snapshot（SQL 过滤；默认不建 ES 索引）"
+    contract_draft:
+      request: [keyword, rank_range, score_range, period_range, page, size]
+      response_key_fields: [achievement_id, name, rank, total_score]
+      granularity: {time: year, geo: none}
+      freshness: offline
+    status:
+      demo: "mock 搜索/筛选"
+      lumen: "RankingTab a-input-search（前端 name.includes 过滤 mock）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["搜索/筛选在前端执行；成果总量 unknown，是否需 ES 全文待 DN-A10-03 后评估"]
+    conflicts: []
+    decision_needed: []
+    structure_escalation: false
+    risks: []
+    test_points: ["服务端分页 + 关键词模糊匹配", "得分区间边界含等号"]
+    confidence: medium
+
+  - int_id: INT-A-X-927
+    layer: page
+    srs: {excel_row: 180, seq: 177, path: "智能服务集群/科技信息展示系统/科技发展态势/科技指数/排行榜/排名结果导出"}
+    page_ref: DS-08-RANK
+    dimension: [NONE_3E]
+    dep_kind: [export]
+    metric_ids: []
+    metric_domain_other: []
+    algorithm_type: n/a_ops
+    integration_pattern: IP-13
+    ours: [frontend, java_facade]
+    counterpart: none
+    delivery_form: file
+    jiuxin_row_id: null
+    call_chain:
+      fe_route: /trend/tech-index
+      java: "POST /situation/v1/tech-index/rankings/exports (draft；Excel/PDF/排名报告)"
+      python: null
+      downstream: "ads_sci_index_rank_snapshot；报告「排名分析/趋势解读/关键发现」生成方未定"
+    contract_draft:
+      request: [filters, scope, contents, format]
+      response_key_fields: [file_url, file_name, row_count, generated_at]
+      granularity: {time: none, geo: none}
+      freshness: offline
+    status:
+      demo: "demo 导出 Modal（mock 提示）"
+      lumen: "RankingTab 导出 Modal 仅 Message.success「导出任务已创建」，无文件（伪功能）"
+      d1_d4: {d1: n/a, d4: n/a}
+    gaps: ["Excel/PDF/报告均未实现"]
+    conflicts: []
+    decision_needed: ["DN-A08-13（引用）"]
+    structure_escalation: false
+    risks: ["R-A10-6"]
+    test_points: ["导出行数 = 当前筛选结果数", "导出无评审字样"]
+    confidence: medium
+
+summary:
+  cards_by_type: {TAL: 3, TECH: 1, ORG: 1, X: 16}
+  srs_rows_covered: 19
+  jiuxin_rows_referenced: [DS-08-VIZ-001, DS-08-VIZ-004]
+  jiuxin_new_rows_needed: 0
+  page_metrics_assignment:
+    M_INNOV_EXPERT_HINDEX: [167]
+    M_INNOV_EXPERT_ACTIVITY: [170]
+    M_INNOV_SCIINDEX_VALUE: [168, 164]
+    M_INNOV_SCIINDEX_INFLUENCE: [169]
+    M_INNOV_SCIINDEX_RANK_SCORE: [174, 175, 176, 177, 178, 179]
+  metric_missing_cards: [INT-A-X-904, INT-A-TAL-911, INT-A-TAL-914, INT-A-X-923]
+  algo_owner_missing_metrics: [M_INNOV_SCIINDEX_VALUE, M_INNOV_SCIINDEX_RANK_SCORE]
+  structure_escalation_cards: [INT-A-X-900, INT-A-TAL-910, INT-A-X-912, INT-A-X-913, INT-A-TAL-914, INT-A-X-920, INT-A-X-924]
+  out_of_scope_ui: "专家评议 Tab（PeerReviewTab）无 SRS 叶对应（bid_desc 提及同行评议专家智库），记 DN-A10-08"
+
+decision_needed:
+  - {id: DN-A10-01, owner: "甲方 + human:唐绍祖", item: "科技指数值 / 影响力时序 / 成果综合排名的生产方（智库后台 / 久新 / 我方自建）与交付形态（Q-TINDEX-01）"}
+  - {id: DN-A10-02, owner: "甲方", item: "评价指标体系（三级树）、权重值与方法、版本发布流程（Q-TINDEX-02/03；同类 B01 DN-03）"}
+  - {id: DN-A10-03, owner: "甲方 + 产品", item: "「科技成果」对象范围（论文/专利/项目/奖励）、统一成果 ID、完成单位归属口径"}
+  - {id: DN-A10-04, owner: "甲方", item: "排名期次粒度（自然年默认）、历史保留期数、权重换版后是否重算历史名次"}
+  - {id: DN-A10-05, owner: "甲方 + 产品", item: "专家活跃度口径（Q-MO-DS08-03）与「专家」范围（人才库全体 / 同行评议专家智库）"}
+  - {id: DN-A10-06, owner: "甲方", item: "区域科技指数地理粒度与全国单值 vs 区域切片（Q-MO-DS08-01）"}
+  - {id: DN-A10-07, owner: "产品", item: "大屏导航目标页与自动轮播间隔"}
+  - {id: DN-A10-08, owner: "产品 + PM", item: "专家评议 Tab 无 SRS 叶对应：归属范围或下线"}
+  - {id: DN-A10-09, owner: "产品", item: "排名对比方案是否用户级持久化"}
+decision_referenced: [OI-C01-15, OI-C01-03, OI-C02-02, OI-C03-02, DN-01, DN-03, DN-07, DN-09, DN-A08-13, Q069]
+
+risks:
+  - {id: R-A10-1, level: high, desc: "index.vue 以 createTechIndexDataset() mock 种子初始化且请求失败保留；IndicatorTab / IndicatorDetailPanel 直 import @/mock/modules/techIndex——USE_MOCK=false 仍显示 fixture（违反 IP-13）", mitigation: "初值改空态；mock 只经 defineApi 注册"}
+  - {id: R-A10-2, level: high, desc: "前端承担算法：活跃度系数合成、领域趋势系数、applyEvaluationModel 派生总分/名次/权重贡献", mitigation: "后端随快照出数；前端只渲染"}
+  - {id: R-A10-3, level: high, desc: "/situation/v1/tech-index/dataset Java 无实现、lumen-algo-py 无路由（同 B01 R5）", mitigation: "DN-07 定门面模块后按本卡契约拆端点"}
+  - {id: R-A10-4, level: medium, desc: "VisualizationTab setInterval + Math.random 模拟实时扰动（伪实时，同 R-A08-6）", mitigation: "USE_MOCK=false 禁用"}
+  - {id: R-A10-5, level: medium, desc: "页面无 ⓘ / metric_id 绑定 / 角标，5 个注册指标未接入（B01 R3/R6）", mitigation: "IP-12 接入 + 集中评审层"}
+  - {id: R-A10-6, level: medium, desc: "两处导出仅提示「任务已创建」，无文件产出", mitigation: "DN-A08-13 定方案后实现"}
+  - {id: R-A10-7, level: medium, desc: "vendor/innov-py indices.py（AHP+熵权、city_index AVG(h_index)）为 demo 拷贝（R-A05-5 / D12），科技指数若复用即违规", mitigation: "只参考，正式实现在 lumen-algo-py 正式模块重写"}
+  - {id: R-A10-8, level: low, desc: "techIndex.ts real 用裸 fetch，未确认经统一 http 客户端（trace / 鉴权头）", mitigation: "前端核实后统一"}
+  - {id: R-A10-9, level: medium, desc: "久新 DS-08-VIZ-001/004 交付与 SLA 全部待确认（B01 R2 / DN-01）", mitigation: "IP-08 熔断 + 快照；dwd_scholar.h_index 作降级"}
+
+conflicts:
+  - {id: CF-A10-1, desc: "M_INNOV_EXPERT_HINDEX / ACTIVITY registry algorithm_type=third_party vs 久新行 MODEL（同 B01 C2）"}
+  - {id: CF-A10-2, desc: "M_INNOV_SCIINDEX_* algorithm_type=STAT，但 definition 写「差集 other_system」「综合合成在智库后台」——类型轴与生产方不一致"}
+  - {id: CF-A10-3, desc: "前端四榜按机构类型拆分 vs SRS 175 四维组合筛选"}
+  - {id: CF-A10-4, desc: "B01 C7 记 DS-08-VIZ-001/004 无独立 metric_id；INNOV 域已有 M_INNOV_EXPERT_HINDEX / M_INNOV_EXPERT_ACTIVITY（srs_refs 未回填）"}

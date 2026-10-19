@@ -1,0 +1,1244 @@
+# SCI-INT-B09 机构基础 / 图谱 / 派生 / 统计 15 条（metric 层）
+# 真源：产物/_prep/B09-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-ORG-800～899。有久新行的不标 IP-10。
+task_id: SCI-INT-B09
+scope_count: 15
+card_count: 15
+gap: []
+execution_count: {sync: 12, async: 3}
+execution_rule: "请求路径计：IP-06、IP-09、IP-01 为同步读 ADS 或父快照；IP-07 抽取 Job 与 IP-08 页面读快照为异步。生产侧 T+1 或 weekly 不把读请求再记成一条异步。"
+jiuxin_rows: [SRS-99, SRS-114, SRS-115, SRS-154, SRS-153, SRS-155, SRS-151, SRS-152, SRS-149, TOPIC-RORG-012]
+jiuxin_note: "本叶不新增久新行号。SRS-99/114/115 是库叶消费。SRS-149/151/152/153/154/155 由 IP-09 读 B08 父快照，不单独再要，也不重写深度模型卡。TOPIC-RORG-012 是无专叶项，只挂 M_ORG_TECH_SCORE。SRS-150 属 B08，本叶 15 条都不挂。M_ORG_PERF_QUERY 无久新行，模式保持 IP-01，不标 IP-10。"
+org_key:
+  org_uid: "无。C03 机构主数据没有 org_uid"
+  master_card: INT-C-ORG-240
+  master_table: dim_research_org
+  new_master_table: false
+  note: "机构主键只引用 INT-C-ORG-240。不另造主表，不新造 org_uid 列。别名引用 INT-C-ORG-241，文献桥引用 INT-C-ORG-242。"
+deep_models_149_155:
+  owner_leaf: SCI-INT-B08
+  metric_ids: [M_ORG_DEEP_149_1, M_ORG_DEEP_150_1, M_ORG_DEEP_151_1, M_ORG_DEEP_152_1, M_ORG_DEEP_153_1, M_ORG_DEEP_154_1, M_ORG_DEEP_155_1]
+  rewrite: false
+  note: "149–155 的 IP-08 卡归 B08。本叶只在 IP-09 上写母指标，不重写这些卡。"
+tech_score:
+  metric_id: M_ORG_TECH_SCORE
+  card: INT-B-ORG-813
+  jiuxin_row_id: TOPIC-RORG-012
+  row_kind: "无专叶项"
+  pattern: IP-08
+  substitute_forbidden: M_SVC_ORG_TECH_SCORE
+  note: "对上 TOPIC-RORG-012。没有专叶。不用 M_SVC_ORG_TECH_SCORE 顶替。"
+structure_escalations:
+  - id: SE-B09-01
+    owner: "human:李伟"
+    tables: [ads_org_perf_query]
+    cards: [INT-B-ORG-814]
+    reason: "IP-01 绩效查询聚合 ADS。包内表名未定，暂用 ads_org_perf_query。不替代 C03 主数据 dim_research_org（INT-C-ORG-240）。机构没有 org_uid，聚合键随主数据卡，本叶不造 org_uid 列。"
+structure_escalation_refs:
+  - id: INT-C-ORG-240
+    owner: "human:李伟"
+    tables: [dim_research_org]
+    cards: [INT-B-ORG-800, INT-B-ORG-801, INT-B-ORG-808, INT-B-ORG-813, INT-B-ORG-814]
+    note: "机构主数据只引用该卡，不另造第二张主表。没有 org_uid。"
+  - id: INT-C-ORG-241
+    owner: "human:李伟"
+    tables: [map_org_alias]
+    cards: [INT-B-ORG-801]
+    note: "机构名称归一只引用该卡，不另造第二张别名表。"
+  - id: INT-C-ORG-242
+    owner: "human:李伟"
+    tables: [rel_doc_org]
+    cards: [INT-B-ORG-802, INT-B-ORG-805, INT-B-ORG-812, INT-B-ORG-813, INT-B-ORG-814]
+    note: "文献-机构桥只引用该卡，不另造第二张桥。"
+  - id: SE-B02-01
+    owner: "human:李伟"
+    tables: [ads_sci_result_snapshot, ads_sci_jiuxin_adapter_cache]
+    cards: [INT-B-ORG-804, INT-B-ORG-805, INT-B-ORG-806, INT-B-ORG-809, INT-B-ORG-810, INT-B-ORG-812, INT-B-ORG-813]
+    note: "IP-08 技术力与读 B08 父模型的 IP-09 共用已升级快照与适配缓存，不另造。"
+open_items:
+  - {id: OI-B09-01, text: "SRS-99 SQL 与 SRS-114/115 Python 仍为待确认。IP-09 不另要 149/151/152/153/154/155 接口。深度模型卡归 B08。"}
+  - {id: OI-B09-02, text: "M_ORG_TECH_SCORE 对上 TOPIC-RORG-012（无专叶）。禁止用 M_SVC_ORG_TECH_SCORE 顶替。公式不展开。"}
+  - {id: OI-B09-03, text: "新表 SE-B09-01 ads_org_perf_query 升 human:李伟。机构主数据只引用 INT-C-ORG-240，没有 org_uid。"}
+cards:
+  - int_id: INT-B-ORG-800
+    layer: metric
+    metric_id: M_ORG_BASE_99_1
+    name: "科研机构基础指标模型构建"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 99, path: "算法库 ALGO-ORG-BASE-99 / 科研机构基础指标模型构建"}
+    page_ref: [DS-01-FACTORS]
+    dep_kind: [data, metric]
+    metric_ids: [M_ORG_BASE_99_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-06
+    ours: [etl, java_facade]
+    counterpart: jiuxin
+    delivery_form: SQL
+    jiuxin_row_id: SRS-99
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构基础指标模型构建"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-ORG
+    parent_metric: null
+    execution: "同步"
+    execution_note: "IP-06：久新 SQL 经评审后由 GDF 按 T+1 落 ADS，页面请求同步读 ADS。无在线 Python，不计异步 Job。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/overview（draft，只读 ADS，不直连久新）；同页另有 influence?type=org、compare、timeline、map"
+      python: "无在线调用。SQL 依赖 ES 时由 lumen-etl-es-py 承接，否则只走 GDF。"
+      downstream: "久新 SQL-99 科研机构基础指标模型 → ADS（落表名未定，不占用机构主数据）"
+    inputs:
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "科研机构基础信息"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校科研机构信息"}
+      - {c_card: INT-C-ORG-202, table: dwd_org_base_info, fields: "包内未给列名", role: "机构基础信息"}
+      - {c_card: INT-C-ORG-203, table: dwd_org_tech_tag, fields: "包内未给列名", role: "机构技术标签"}
+      - {c_card: INT-C-ORG-205, table: dwd_forg_university_org_info, fields: "包内未给列名", role: "高校机构"}
+      - {c_card: INT-C-ORG-206, table: dwd_forg_research_org_info, fields: "包内未给列名", role: "科研机构"}
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-ORG-222, table: dwd_dim_admin_area, fields: "包内未给列名", role: "行政区划"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构主数据，C03 已有卡，没有 org_uid，不另造"}
+    outputs:
+      c_card: INT-C-ORG-250
+      delivery: "久新 SQL-99 科研机构基础指标模型"
+      table: "ADS 表名未定"
+      response_key_fields: [metric_id, period, payload]
+      payload_note: "统计窗口与对象范围以需规文本为准，本包未展开列。机构键随 INT-C-ORG-240，不用 org_uid。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [region_code, time_range, domain_code]
+      response_key_fields: [metric_id, period, payload]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-ORG-017, page_ref: DS-01-FACTORS, java: "POST /situation/v1/overview (draft)"}
+        - {int_id: INT-A-ORG-022, page_ref: DS-01-FACTORS, java: "POST /situation/v1/influence?type=org (draft)"}
+        - {int_id: INT-A-X-028, page_ref: DS-01-FACTORS, java: "POST /situation/v1/compare（前端已调；Java 未实现，draft）"}
+        - {int_id: INT-A-X-029, page_ref: DS-01-FACTORS, java: "POST /situation/v1/timeline（前端已调；Java 未实现，draft）"}
+        - {int_id: INT-A-X-032, page_ref: DS-01-FACTORS, java: "POST /situation/v1/map (draft，热力=区域聚合计数)"}
+      pages: [DS-01-FACTORS]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "在线链 Java 只读 ADS。SQL 落 GDF；依赖 ES 时承接方为 lumen-etl-es-py。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-99 确认为待确认"
+      - "入站表列名本包未给；ADS 落表名未定"
+      - "C03：机构没有 org_uid"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。本卡模式保持 IP-06，不改成在线 Python。"
+      - "ADS 落表不另起名，不替代 dim_research_org。是否并入主数据由李伟在 INT-C-ORG-240 上定。"
+    decision_needed:
+      - "DN-B09-01：SRS-99 的 SQL 文本、源表是否在 gkx 三方库、调度 SLA 仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：包内实现位置是 GDF 与 lumen-etl-es-py，没有指向 demo 仓。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。USE_MOCK=false 时无 ADS 即空态，禁止 fixture 填数。"
+      - "机构主数据只引用 INT-C-ORG-240，不另造，不用 org_uid。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_ORG_BASE_99_1，不含久新私有字段名，不含 org_uid"
+      - "降级：当期 ADS 分区缺失则回上一期并带 period；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-801
+    layer: metric
+    metric_id: M_ORG_GRAPH_114_1
+    name: "科研机构实体识别构建"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 114, path: "算法库 ALGO-ORG-GRAPH-114 / 科研机构实体识别构建"}
+    page_ref: [DS-04-REALTIME]
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_ORG_GRAPH_114_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-114
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构实体识别构建"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-ORG
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：久新 Python 并入 lumen-algo-py 后跑抽取 Job，写 TRSGraph 与 ADS 投影。刷新 weekly 或增量，未确认。页面读投影，不在请求里同步推理。"
+    call_chain:
+      fe_route: null
+      java: "经 INT-A-TECH-417 读面（entity_types 含 org；draft，只读 ADS 投影；子图 Feign /internal/graph/*，不写 nGQL）"
+      python: "lumen-algo-py 离线 Job：SRS-114 并入后写机构实体集（draft）"
+      downstream: "久新 Python-114 机构实体集 → C03 INT-C-ORG-240；图顶点 INT-C-ORG-230 TAG institution；graphd 10.50.75.136:9669"
+    inputs:
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "科研机构基础信息"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校科研机构信息"}
+      - {c_card: INT-C-ORG-204, table: dwd_forg_base_info, fields: "包内未给列名", role: "国外机构基础"}
+      - {c_card: INT-C-ORG-205, table: dwd_forg_university_org_info, fields: "包内未给列名", role: "高校机构"}
+      - {c_card: INT-C-ORG-206, table: dwd_forg_research_org_info, fields: "包内未给列名", role: "科研机构"}
+      - {c_card: INT-C-ORG-211, table: dwd_zh_author, fields: "包内未给列名", role: "中文作者单位"}
+      - {c_card: INT-C-ORG-213, table: dwd_en_author, fields: "包内未给列名", role: "英文作者单位"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利申请人"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目承担单位"}
+      - {c_card: INT-C-ORG-219, table: dwd_en_project, fields: "包内未给列名", role: "英文项目承担单位"}
+      - {c_card: INT-C-ORG-220, table: dwd_zh_report_org, fields: "包内未给列名", role: "中文报告机构"}
+      - {c_card: INT-C-ORG-221, table: dwd_en_report_org, fields: "包内未给列名", role: "英文报告机构"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构主数据，没有 org_uid，不另造"}
+      - {c_card: INT-C-ORG-241, table: map_org_alias, fields: "包内未给列名", role: "名称归一，C03 已有卡，不另造"}
+    outputs:
+      c_card: INT-C-ORG-251
+      delivery: "久新 Python-114 科研机构实体识别产出"
+      graph: "顶点落入 INT-C-ORG-230 TAG institution"
+      master_ref: INT-C-ORG-240
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造主表"
+      response_key_fields: [metric_id, period, algo_version, entity_key, source_ids]
+      payload_note: "实体字段以久新交付物为准，文档未到。稳定主键随主数据卡，不用 org_uid。"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, source_id]
+      response_key_fields: [metric_id, period, algo_version, entity_key]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-ORG-420, page_ref: DS-04-REALTIME, java: "经 INT-A-TECH-417 读面（entity_types 含 org）"}
+      pages: [DS-04-REALTIME]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读 ADS 投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-114 确认为待确认：源码、wheel 或镜像未知"
+      - "C03：机构没有 org_uid（INT-C-ORG-240）"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07 并入 lumen-algo-py，不改模式编号。"
+      - "实体集不另造机构主表，只归入 INT-C-ORG-240。别名只归入 INT-C-ORG-241。"
+    decision_needed:
+      - "DN-B09-01：SRS-114 交付物形态与许可仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240, INT-C-ORG-241]
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止回落 demo-algo-* 或任何 demo-*。"
+      - "图顶点沿用 INT-C-ORG-230 TAG institution。本叶不新开 space，不新造 Tag。"
+    test_points:
+      - "契约：投影带 metric_id=M_ORG_GRAPH_114_1，实体键不使用 org_uid"
+      - "降级：抽取失败保留上一版图谱与投影"
+    confidence: medium
+
+  - int_id: INT-B-ORG-802
+    layer: metric
+    metric_id: M_ORG_GRAPH_115_1
+    name: "科研机构实体关系抽取"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: 115, path: "算法库 ALGO-ORG-GRAPH-115 / 科研机构实体关系抽取"}
+    page_ref: "未挂页"
+    dep_kind: [data, algorithm, graph]
+    metric_ids: [M_ORG_GRAPH_115_1]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-07
+    ours: [python_internal, graph_load, java_facade]
+    counterpart: jiuxin
+    delivery_form: Python
+    jiuxin_row_id: SRS-115
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构实体关系抽取"
+    jiuxin_system: "专题"
+    jiuxin_page_id: SRS-ORG
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-07：关系抽取 Job 写机构合作与共现边到 TRSGraph，并投影 ADS。按 IP-04/IP-05，weekly 或增量。页面读投影。"
+    call_chain:
+      fe_route: null
+      java: "只读 ADS 投影；子图 Feign /internal/graph/org-coop（draft，不写 nGQL）"
+      python: "lumen-algo-py 离线 Job：SRS-115 并入后写 EDGE 与 ADS 投影（draft）"
+      downstream: "久新 Python-115 机构关系边 → INT-C-ORG-360；graphd 10.50.75.136:9669"
+    inputs:
+      - {c_card: INT-C-ORG-210, table: dwd_scholar_coauthor, fields: "包内未给列名", role: "学者共著，机构共现来源"}
+      - {c_card: INT-C-ORG-211, table: dwd_zh_author, fields: "包内未给列名", role: "中文作者单位"}
+      - {c_card: INT-C-ORG-215, table: dwd_patent, fields: "包内未给列名", role: "专利合作"}
+      - {c_card: INT-C-ORG-216, table: dwd_org_base_info_patent_rel, fields: "包内未给列名", role: "机构-专利关系"}
+      - {c_card: INT-C-ORG-218, table: dwd_zh_project, fields: "包内未给列名", role: "项目合作"}
+      - {c_card: INT-C-ORG-242, table: rel_doc_org, fields: "包内未给列名", role: "文献-机构桥，C03 已有卡，不另造"}
+    outputs:
+      c_card: INT-C-ORG-252
+      delivery: "久新 Python-115 科研机构实体关系抽取产出"
+      graph: "INT-C-ORG-360 /internal/graph/org-coop；TAG 仍用 INT-C-ORG-230，不新造"
+      snapshot_table: "ADS 投影，表名随 IP-11，本叶不新造"
+      response_key_fields: [metric_id, period, algo_version, src_key, dst_key, rel_type]
+      payload_note: "边字段以久新交付物为准，文档未到。端点键随主数据卡，不用 org_uid。"
+      granularity: "本包未展开"
+      freshness: "weekly"
+    contract_draft:
+      request: [domain_code, rel_type]
+      response_key_fields: [metric_id, period, src_key, dst_key, rel_type]
+      granularity: {time: weekly, geo: "本包未展开"}
+      freshness: weekly
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "抽取与写图只在 lumen-algo-py。Java 只读投影或 Feign /internal/graph/*。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-115 确认为待确认"
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=GRAPH，与 b01/P00 的 third_party 不一致，不改原值。"
+      - "C 卡把入站写成离线 ETL。运行方式按 IP-07，不改模式编号。"
+      - "INT-C-ORG-360 的 page_ref 含 SRS-ORG 与 TOPIC-ORG-05，不在本指标 a_cards。页面仍写未挂页。"
+    decision_needed:
+      - "DN-B09-01：SRS-115 交付物形态与许可仍为待确认"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-242]
+    risks:
+      - "D12：并入位置是 lumen-algo-py。禁止回落 demo-*。"
+      - "合作边不另造第二张桥，文献桥只引用 INT-C-ORG-242。"
+    test_points:
+      - "契约：边投影带 metric_id=M_ORG_GRAPH_115_1"
+      - "降级：抽取失败保留上一版边与投影"
+    confidence: medium
+
+  - int_id: INT-B-ORG-803
+    layer: metric
+    metric_id: M_ORG_ATTENTION_TREND
+    name: "科研关注度"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-006 / 母库叶 SRS-99"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_ATTENTION_TREND]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-99
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构基础指标模型构建"
+    parent_metric:
+      metric_id: M_ORG_BASE_99_1
+      seq: 99
+      jiuxin_row_id: SRS-99
+      owner_leaf: SCI-INT-B09
+      fields: ["新增科研机构数量", "增长速率"]
+      field_note: "同一选定范围下的新增数量及其增长速率合成关注度趋势。非检索热度、非政策关注度。Q085。物理列名包内未给。包内定义后部截断，不补写。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 99 的 ADS 子字段。不单独向久新再要。05 无关注度专叶，与新增动态同叶消费。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_ATTENTION_TREND（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_ORG_BASE_99_1 的 ADS（INT-C-ORG-250）"
+    inputs:
+      - {c_card: INT-C-ORG-250, table: SQL-99, fields: "新增科研机构数量 / 增长速率", role: "母指标 seq 99，不新要接口"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构名录，没有 org_uid，不另造"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：关注度趋势"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, period, new_org_cnt, growth_rate, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随母库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, new_org_cnt, growth_rate, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-99 确认为待确认，确认归母库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，不改原值。OPEN Round 4 曾标 STAT，本卡不回改。"
+      - "久新行交付形态为 SQL，那是母库叶。本卡 delivery_form 按 IP-09 为 none，不单独再要。"
+    decision_needed:
+      - "Q085：关注度合成口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：读链在 lumen。禁止为派生指数去调 demo-*。"
+      - "父快照缺失时本指标空态，不以 0 代替。"
+    test_points:
+      - "契约：返回值与父快照子字段一致，并带回 parent_seq=99"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-804
+    layer: metric
+    metric_id: M_ORG_ATTRACT_SCORE
+    name: "科研机构招引推荐指数"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-013 / 母库叶 SRS-154"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_ATTRACT_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-154
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构引入推荐模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_154_1
+      seq: 154
+      jiuxin_row_id: SRS-154
+      owner_leaf: SCI-INT-B08
+      fields: ["学术影响力", "科技成果", "团队实力"]
+      field_note: "G3 Job。内部默认维取 05.4 seq 154。建议名单规模为同核计数展示面，不另造 CNT ID。深度模型卡归 B08，本叶不重写。Q090。物理列名包内未给。包内定义后部截断，不补写。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-154 快照的子字段。不单独向久新再要。排序若需要，随父 Job 写快照时产出。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_ATTRACT_SCORE（draft，读父快照切片，不直连久新）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_ORG_DEEP_154_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-258）"
+    inputs:
+      - {c_card: INT-C-ORG-258, table: API-154, fields: "学术影响力 / 科技成果 / 团队实力", role: "母指标 seq 154 快照，B08 交付，不重写"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：招引优先级得分"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, score, list_size, parent_metric_id, parent_seq]
+      payload_note: "不另写结果表。名单规模不另造 CNT ID。"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, region_code]
+      response_key_fields: [metric_id, period, score, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-154 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，那是父库叶。本卡 delivery_form 按 IP-09 为 none，不单独再要。"
+      - "禁止改挂企业招引或服务机构招引 ID。lumen-algo-py svcan /rec/attract-score 同名，口径关系未确认（C9），不写成已实现契约。"
+      - "深度模型 154 归 B08，本叶不重写 M_ORG_DEEP_154_1。"
+    decision_needed:
+      - "Q090：招引维与名单规模口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：读链在 lumen。禁止为派生指数去调 demo-*。"
+      - "父快照缺失时本指标空态，不以 0 代替。"
+    test_points:
+      - "契约：返回值与父快照子字段一致，并带回 parent_seq=154"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-805
+    layer: metric
+    metric_id: M_ORG_COLLAB_CHAIN
+    name: "科研合作关系链条"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-010 / 母库叶 SRS-153"}
+    page_ref: "未挂页"
+    dep_kind: [metric, graph]
+    metric_ids: [M_ORG_COLLAB_CHAIN]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-153
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研合作关系链条模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_153_1
+      seq: 153
+      jiuxin_row_id: SRS-153
+      owner_leaf: SCI-INT-B08
+      fields: ["合作强度", "合作类型", "核心节点"]
+      field_note: "以论文、专利等合作记录构建的机构合作网络。强度、类型、中心性默认作为本核展示面，不拆子 ID。不是产业服务图谱，不是区域创新协同指数。深度模型卡归 B08，本叶不重写。Q088。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-153 快照。图读面走已有 /internal/graph/org-coop，不在本卡再开抽取 Job。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_COLLAB_CHAIN（draft，读父快照；子图 Feign /internal/graph/org-coop，不写 nGQL）"
+      python: "无单独在线调用。子图读 lumen-algo-py 已有读面。"
+      downstream: "父指标 M_ORG_DEEP_153_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-257）"
+    inputs:
+      - {c_card: INT-C-ORG-257, table: API-153, fields: "合作强度 / 合作类型 / 核心节点", role: "母指标 seq 153 快照，B08 交付，不重写"}
+      - {c_card: INT-C-ORG-242, table: rel_doc_org, fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+      - {c_card: INT-C-ORG-360, table: "org-coop 图读面", fields: "包内未给列名", role: "合作子图读面，不新开 space"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：合作链条"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, strength, coop_type, core_flag, parent_seq]
+      payload_note: "不另写结果表，不拆强度/类型/中心性子 ID"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, org_key]
+      response_key_fields: [metric_id, period, strength, coop_type, parent_seq]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-153 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "久新行交付形态为 API，那是父库叶。本卡 delivery_form 按 IP-09 为 none。"
+      - "INT-C-ORG-320 / INT-C-X-330 的 page_ref 不在本指标 a_cards。页面仍写未挂页。"
+      - "深度模型 153 归 B08，本叶不重写 M_ORG_DEEP_153_1。"
+    decision_needed:
+      - "Q088：合作强度与类型口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, INT-C-ORG-242]
+    risks:
+      - "D12：读链在 lumen-algo-py。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=153，且不拆子 ID"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-806
+    layer: metric
+    metric_id: M_ORG_CULTIVATE_SCORE
+    name: "科研机构扶持推荐指数"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-014 / 母库叶 SRS-155"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_CULTIVATE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-155
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构扶持推荐模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_155_1
+      seq: 155
+      jiuxin_row_id: SRS-155
+      owner_leaf: SCI-INT-B08
+      fields: ["成果", "经费效率", "人才结构"]
+      field_note: "G3 Job。内部默认维取 05.4 seq 155。一院一策为文本，无独立 ID。深度模型卡归 B08，本叶不重写。Q090。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-155 快照的子字段。不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_CULTIVATE_SCORE（draft，读父快照切片，不直连久新）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_ORG_DEEP_155_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-259）"
+    inputs:
+      - {c_card: INT-C-ORG-259, table: API-155, fields: "成果 / 经费效率 / 人才结构", role: "母指标 seq 155 快照，B08 交付，不重写"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：扶持优先级得分"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, score, list_size, parent_seq]
+      payload_note: "不另写结果表。一院一策不另造 ID。"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, region_code]
+      response_key_fields: [metric_id, period, score, parent_seq]
+      granularity: {time: "T+1", geo: "深圳"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-155 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "禁止改挂企业培育或服务机构扶持 ID。svcan /rec/cultivate-score 同名，口径关系未确认（C9）。"
+      - "深度模型 155 归 B08，本叶不重写 M_ORG_DEEP_155_1。"
+    decision_needed:
+      - "Q090：扶持维口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=155"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-807
+    layer: metric
+    metric_id: M_ORG_INDUSTRY_COVER
+    name: "科研机构产业领域覆盖"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-002 / 母库叶 SRS-99"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_ORG_INDUSTRY_COVER]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-99
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构基础指标模型构建"
+    parent_metric:
+      metric_id: M_ORG_BASE_99_1
+      seq: 99
+      jiuxin_row_id: SRS-99
+      owner_leaf: SCI-INT-B09
+      fields: ["产业链领域去重个数", "同比", "环比"]
+      field_note: "选定专题科研机构名录去重后，统计窗口默认自然年内参与的产业链领域去重个数及同比环比。对象不含产业服务链服务机构。R-19 各领域参与度无独立核，不另造 DEPTH ID。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 99 的 ADS 并按产业领域切片。不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_INDUSTRY_COVER（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_ORG_BASE_99_1 的 ADS（INT-C-ORG-250）"
+    inputs:
+      - {c_card: INT-C-ORG-250, table: SQL-99, fields: "产业链领域去重个数 / 同比 / 环比", role: "母指标 seq 99"}
+      - {c_card: INT-C-ORG-223, table: dwd_org_industry_tags, fields: "包内未给列名", role: "机构产业标签"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构名录，没有 org_uid，不另造"}
+    outputs:
+      c_card: null
+      delivery: "领域覆盖数与同比环比"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, period, cover_cnt, yoy, mom, parent_seq]
+      payload_note: "筛选壳本身不是本核。不另造 DEPTH ID。"
+      granularity: "自然年"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, cover_cnt, yoy, parent_seq]
+      granularity: {time: "自然年", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，不改原值。"
+      - "对象不含服务机构。不另造领域参与度 DEPTH ID。"
+    decision_needed: []
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=99，且不含服务机构"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-808
+    layer: metric
+    metric_id: M_ORG_NEW_TREND
+    name: "新增科研机构趋势"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-005 / 母库叶 SRS-99"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_ORG_NEW_TREND]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-99
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构基础指标模型构建"
+    parent_metric:
+      metric_id: M_ORG_BASE_99_1
+      seq: 99
+      jiuxin_row_id: SRS-99
+      owner_leaf: SCI-INT-B09
+      fields: ["首次进入名录的机构去重计数", "时间序列"]
+      field_note: "选定产业或技术领域内，统计窗口默认自然年，首次进入该范围名录的机构去重计数随时间变化。对象仅专题科研机构。Q084。物理列名包内未给。包内定义后部截断，不补写。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 99 的 ADS 时间切片。不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_NEW_TREND（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_ORG_BASE_99_1 的 ADS（INT-C-ORG-250）"
+    inputs:
+      - {c_card: INT-C-ORG-250, table: SQL-99, fields: "首次进入名录的机构去重计数 / 时间序列", role: "母指标 seq 99"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "名录进入时间"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构名录，没有 org_uid，不另造"}
+    outputs:
+      c_card: null
+      delivery: "新增机构去重计数的时间序列"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, period, new_cnt, parent_seq]
+      payload_note: "不改挂服务机构新增计数"
+      granularity: "自然年"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, new_cnt, parent_seq]
+      granularity: {time: "自然年", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，不改原值。"
+      - "禁止因 seq 99 混写服务机构而改挂 M_SVC_NEW_CNT，以及包内截断名 M_SVC_ORG_NEW_C。"
+    decision_needed:
+      - "Q084：首次进入名录的判定，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=99，对象仅为专题科研机构"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-809
+    layer: metric
+    metric_id: M_ORG_SZ_ADVANTAGE
+    name: "深圳科研机构优势"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-015 / 母库叶 SRS-151"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_SZ_ADVANTAGE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-151
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳科研机构优势分析模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_151_1
+      seq: 151
+      jiuxin_row_id: SRS-151
+      owner_leaf: SCI-INT-B08
+      fields: ["成果", "经费", "人才"]
+      field_note: "G3 Job。选定产业下深圳科研机构相对全国或对照集合的优势。内部默认维取 05.4 seq 151。指标选择壳不是本核。不与现状解读核重复算覆盖。深度模型卡归 B08，本叶不重写。Q087、Q091。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-151 快照。不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_SZ_ADVANTAGE（draft，读父快照切片）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_ORG_DEEP_151_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-255）"
+    inputs:
+      - {c_card: INT-C-ORG-255, table: API-151, fields: "成果 / 经费 / 人才", role: "母指标 seq 151 快照，B08 交付，不重写"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：深圳优势分析"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, advantage_text, parent_seq]
+      payload_note: "不另写结果表。不与现状解读、痛难点重复覆盖。"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, region_code]
+      response_key_fields: [metric_id, period, parent_seq]
+      granularity: {time: "T+1", geo: "深圳"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-151 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "深度模型 151 归 B08，本叶不重写 M_ORG_DEEP_151_1。"
+    decision_needed:
+      - "Q087：深圳对照集合，本叶不裁"
+      - "Q091：优势维口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=151"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-810
+    layer: metric
+    metric_id: M_ORG_SZ_PAINPOINT
+    name: "深圳科研机构痛难点"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-016 / 母库叶 SRS-152"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_SZ_PAINPOINT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-152
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳科研机构痛难点识别模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_152_1
+      seq: 152
+      jiuxin_row_id: SRS-152
+      owner_leaf: SCI-INT-B08
+      fields: ["项目", "转化", "人才", "产业合作"]
+      field_note: "G3 Job。识别深圳科研机构在选定产业下的痛难点并给出改进建议。内部默认维取 05.4 seq 152。深度模型卡归 B08，本叶不重写。Q087、Q092。物理列名包内未给。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-152 快照。不单独向久新再要。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_SZ_PAINPOINT（draft，读父快照切片）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_ORG_DEEP_152_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-256）"
+    inputs:
+      - {c_card: INT-C-ORG-256, table: API-152, fields: "项目 / 转化 / 人才 / 产业合作", role: "母指标 seq 152 快照，B08 交付，不重写"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：痛难点与改进建议"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, pain_text, parent_seq]
+      payload_note: "不另写结果表"
+      granularity: "跟随父库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, region_code]
+      response_key_fields: [metric_id, period, parent_seq]
+      granularity: {time: "T+1", geo: "深圳"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-152 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "禁止用企业痛点 M_ENT_PAINPOINT 族或服务机构口径顶替。"
+      - "深度模型 152 归 B08，本叶不重写 M_ORG_DEEP_152_1。"
+    decision_needed:
+      - "Q087：深圳范围，本叶不裁"
+      - "Q092：痛难点维口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=152，且未改挂企业痛点"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-811
+    layer: metric
+    metric_id: M_ORG_SZ_STATUS
+    name: "深圳科研机构现状解读"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-008 / 母库叶 SRS-99"}
+    page_ref: "未挂页"
+    dep_kind: [metric, data]
+    metric_ids: [M_ORG_SZ_STATUS]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-99
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构基础指标模型构建"
+    parent_metric:
+      metric_id: M_ORG_BASE_99_1
+      seq: 99
+      jiuxin_row_id: SRS-99
+      owner_leaf: SCI-INT-B09
+      fields: ["优势", "不足", "关键指标表现"]
+      field_note: "范围=深圳×选定产业×专题科研机构名录。不重复计算优势专叶与痛难点专叶的覆盖。评价框架配置壳不是本核。Q087。物理列名包内未给。包内定义后部截断，不补写。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读母指标 seq 99 的 ADS 深圳切片。不单独向久新再要。不改挂优势或痛难点父模型。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_SZ_STATUS（draft，读母指标 ADS 切片）"
+      python: "无单独在线调用"
+      downstream: "母指标 M_ORG_BASE_99_1 的 ADS（INT-C-ORG-250）"
+    inputs:
+      - {c_card: INT-C-ORG-250, table: SQL-99, fields: "优势 / 不足 / 关键指标表现", role: "母指标 seq 99"}
+      - {c_card: INT-C-ORG-222, table: dwd_dim_admin_area, fields: "包内未给列名", role: "深圳范围"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构名录，没有 org_uid，不另造"}
+    outputs:
+      c_card: null
+      delivery: "深圳现状解读切片"
+      snapshot_table: "跟随母指标 ADS，不另造表"
+      response_key_fields: [metric_id, period, status_text, parent_seq]
+      payload_note: "不与 M_ORG_SZ_ADVANTAGE、M_ORG_SZ_PAINPOINT 重复覆盖"
+      granularity: "跟随母库叶"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, region_code]
+      response_key_fields: [metric_id, period, parent_seq]
+      granularity: {time: "T+1", geo: "深圳"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读母指标 ADS。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=STAT，不改原值。"
+      - "禁止用 M_CHAIN_SZ_INSTITUTION_COUNT 顶替。母指标保持 M_ORG_BASE_99_1，不改挂 SRS-151 或 SRS-152。"
+    decision_needed:
+      - "Q087：深圳×产业范围，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [INT-C-ORG-240]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=99"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-812
+    layer: metric
+    metric_id: M_ORG_TECH_LAYOUT
+    name: "科研机构技术领域布局"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "页面派生 TOPIC-RORG-003 / 母库叶 SRS-149"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_ORG_TECH_LAYOUT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-149
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构重点技术领域布局模型"
+    parent_metric:
+      metric_id: M_ORG_DEEP_149_1
+      seq: 149
+      jiuxin_row_id: SRS-149
+      owner_leaf: SCI-INT-B08
+      fields: ["核心学科", "前沿方向", "产业技术链", "机构领域计数或占比"]
+      field_note: "统计窗口默认自然年。对象=专题科研机构名录去重。seq 149 各领域科技综合实力默认并入本核展示面，不另造 ID。深度模型卡归 B08，本叶不重写。Q086。物理列名包内未给。包内定义后部截断，不补写。"
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-149 快照。不单独向久新再要，不把 B08 的 IP-08 卡挪到本叶。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/derived/result?metric_id=M_ORG_TECH_LAYOUT（draft，读父快照切片）"
+      python: "无单独在线调用"
+      downstream: "父指标 M_ORG_DEEP_149_1 的 ads_sci_result_snapshot（B08 / INT-C-ORG-253）"
+    inputs:
+      - {c_card: INT-C-ORG-253, table: API-149, fields: "核心学科 / 前沿方向 / 产业技术链 / 机构领域计数或占比", role: "母指标 seq 149 快照，B08 交付，不重写"}
+      - {c_card: INT-C-ORG-242, table: rel_doc_org, fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+    outputs:
+      c_card: null
+      delivery: "父快照子字段切片：技术领域布局"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, domain_code, org_cnt, ratio, parent_seq]
+      payload_note: "不另造 DEPTH ID，不重写深度模型 149"
+      granularity: "自然年"
+      freshness: "T+1"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, domain_code, org_cnt, parent_seq]
+      granularity: {time: "自然年", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。父模型适配在 lumen-algo-py（B08）。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 SRS-149 确认为待确认，确认归 B08 父库叶"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "深度模型 149 归 B08，本叶不重写 M_ORG_DEEP_149_1。各领域科技综合实力不另造 ID。"
+    decision_needed:
+      - "Q086：布局维度口径，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, INT-C-ORG-242]
+    risks:
+      - "D12：读链在 lumen。禁止调用 demo-*。"
+      - "父快照缺失时本指标空态。"
+    test_points:
+      - "契约：返回值带回 parent_seq=149，且本 yaml 无 M_ORG_DEEP_149_1 的独立卡"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-813
+    layer: metric
+    metric_id: M_ORG_TECH_SCORE
+    name: "科研机构技术力评价与对比"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "TOPIC-RORG-012 / 科研机构技术力评价与对比（05 无专叶）"}
+    page_ref: "未挂页"
+    dep_kind: [algorithm, service, data]
+    metric_ids: [M_ORG_TECH_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-08
+    ours: [java_facade, python_internal]
+    counterpart: jiuxin
+    delivery_form: API
+    jiuxin_row_id: TOPIC-RORG-012
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "科研机构技术力评价与对比（05 无专叶）"
+    jiuxin_system: "专题"
+    jiuxin_page_id: TOPIC-ORG-05
+    jiuxin_row_kind: "无专叶项"
+    parent_metric: null
+    execution: "异步"
+    execution_note: "IP-08：默认 T+1 快照，页面只读 ads_sci_result_snapshot。适配层可发连接 2s、读 10s 的同步外呼，超时转 IP-04。本卡按页面消费计为异步。05 无专叶，公式不展开，用户加权。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/tech-score/result?metric_id=M_ORG_TECH_SCORE（draft，只读 ADS 快照，不直连久新）"
+      python: "POST /internal/org/tech-score（draft，lumen-algo-py 适配层；凭据只在 Python）"
+      downstream: "久新 API-TOPIC-RORG-012 → ads_sci_result_snapshot（SE-B02-01）。机构键引用 INT-C-ORG-240，不用 org_uid。"
+    inputs:
+      - {c_card: INT-C-ORG-242, table: rel_doc_org, fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构主数据，C03 已有卡，没有 org_uid，不另造。240 的 metric_ids 未列本指标，仍不另造主表。"}
+      - {c_card: null, table: "用户多选指标与权重", fields: "公式不展开", role: "技术力指标库。不把 149–155 深度模型卡重写进本叶。"}
+    outputs:
+      c_card: INT-C-ORG-260
+      delivery: "久新 API-TOPIC-RORG-012 技术力得分"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, score, rank]
+      payload_note: "业务字段以久新接口文档为准，文档未到。用户加权公式不展开。"
+      granularity: "按用户所选指标与权重"
+      freshness: "T+1"
+    contract_draft:
+      request: [org_keys, indicator_ids, weights]
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, score, rank]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "适配层只在 lumen-algo-py。Java 只读快照，不直连久新。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "久新行 TOPIC-RORG-012 确认为待确认。05 无专叶，接口文档未到。"
+      - "C03：机构没有 org_uid"
+    conflicts:
+      - "对上 TOPIC-RORG-012（无专叶）。材料要求禁止用 M_SVC_ORG_TECH_SCORE 顶替。本卡未改挂该替身。"
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "svcan /org/tech-score 同名，口径关系未确认（C9）。不把该路径写成已实现契约。"
+      - "久新行 page_id=TOPIC-ORG-05，不在 a_cards。页面仍写未挂页。"
+      - "禁止改挂服务机构或企业技术力。禁止用综合科研实力或领域科技综合实力顶替。包内后部截断，不补写。"
+      - "深度模型 149–155 归 B08。本卡不是它们的重写，也不用其中任一条顶替 TOPIC-RORG-012。"
+    decision_needed:
+      - "Q089：技术力指标库与权重，公式不展开，本叶不裁"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, INT-C-ORG-240, INT-C-ORG-242]
+    risks:
+      - "D12：适配层是 lumen-algo-py /internal/org/*。正式实现禁止 lumen 调用 demo-*。"
+      - "无快照则空态，禁止 Mock 兜底。凭据只留 Python。"
+    test_points:
+      - "契约：响应 metric_id=M_ORG_TECH_SCORE，jiuxin_row_id 回读为 TOPIC-RORG-012，不含 M_SVC_ORG_TECH_SCORE"
+      - "降级：熔断或超时读最近快照；无快照空态"
+    confidence: medium
+
+  - int_id: INT-B-ORG-814
+    layer: metric
+    metric_id: M_ORG_PERF_QUERY
+    name: "查询结果·科研机构绩效"
+    dimension: [ORG]
+    srs: {excel_row: null, seq: null, path: "查询结果·科研机构绩效 / 自建 STAT"}
+    page_ref: "未挂页"
+    dep_kind: [data, metric]
+    metric_ids: [M_ORG_PERF_QUERY]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: none
+    delivery_form: table
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    execution: "同步"
+    execution_note: "IP-01：GDF 在我方库做去重计数，T+1 落 ADS，页面请求同步读 ADS。无久新行，不标 IP-10。L3 不参与，不计异步 Job。"
+    call_chain:
+      fe_route: null
+      java: "GET /org/v1/query/perf?metric_id=M_ORG_PERF_QUERY（draft，只读 ADS）"
+      python: "不参与"
+      downstream: "GDF 聚合进 ads_org_perf_query（SE-B09-01）。机构键引用 INT-C-ORG-240，不用 org_uid。"
+    inputs:
+      - {c_card: INT-C-ORG-212, table: dwd_zh_paper, fields: "包内未给列名", role: "默认核：结果集内关联论文数"}
+      - {c_card: INT-C-ORG-214, table: dwd_scholar_papers, fields: "包内未给列名", role: "学者论文"}
+      - {c_card: INT-C-ORG-211, table: dwd_zh_author, fields: "包内未给列名", role: "作者单位"}
+      - {c_card: INT-C-ORG-200, table: dwd_research_institute_base_info, fields: "包内未给列名", role: "机构属性，可按 org_type 分组"}
+      - {c_card: INT-C-ORG-201, table: dwd_org_heis_info, fields: "包内未给列名", role: "高校机构属性"}
+      - {c_card: INT-C-ORG-242, table: rel_doc_org, fields: "包内未给列名", role: "文献-机构桥，只引用不另造"}
+      - {c_card: INT-C-ORG-240, table: dim_research_org, fields: "包内未给列名", role: "机构主数据，没有 org_uid，不另造"}
+    outputs:
+      c_card: null
+      delivery: "查询命中结果集内科研机构绩效聚合"
+      table: ads_org_perf_query
+      structure_escalation: SE-B09-01
+      response_key_fields: [metric_id, period, org_key, org_type, paper_cnt]
+      payload_note: "默认核=结果集内关联论文数 COUNT，机构去重。可按 org_type 分组。键不是 org_uid。Q104、Q-MO-QUERY-02。包内定义后部截断，不补写。"
+      granularity: "当前查询结果集"
+      freshness: "T+1"
+    contract_draft:
+      request: [query_id, org_type]
+      response_key_fields: [metric_id, period, org_key, org_type, paper_cnt]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "GDF 落 ADS，Java 只读。Python 不参与。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "srs_refs_02 与 a_cards 均为空，未挂页"
+      - "无久新行。ADS 表名包内未给，暂用 ads_org_perf_query。"
+    conflicts:
+      - "algorithm_type 保持 STAT。模式保持 IP-01。无久新行，不标 IP-10。"
+      - "不是 05 科研机构十叶模型输出。不消入 M_ORG_TECH_SCORE，不改挂深度模型。"
+      - "定义里的 org_id 去重不是 org_uid。C03 没有 org_uid，键随 INT-C-ORG-240。"
+    decision_needed:
+      - "Q104：绩效核是否只保留论文计数，本叶不裁"
+      - "Q-MO-QUERY-02：是否按 org_type 分组，本叶不裁"
+    structure_escalation: true
+    structure_escalation_id: [SE-B09-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-ORG-240, INT-C-ORG-242]
+    risks:
+      - "D12：聚合在 GDF，读链在 lumen。正式实现禁止 lumen 调用 demo-*。"
+      - "D4=mock 只记现状。USE_MOCK=false 时无 ADS 即空态，禁止 fixture 填数。"
+    test_points:
+      - "契约：响应 metric_id=M_ORG_PERF_QUERY，algorithm_type 读回为 STAT，不含 org_uid"
+      - "降级：空表空态；当期分区缺失回上一期并带 period"
+    confidence: medium

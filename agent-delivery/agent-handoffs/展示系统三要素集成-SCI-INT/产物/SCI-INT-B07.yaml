@@ -1,0 +1,1313 @@
+# SCI-INT-B07 技术 MODEL 3 + STAT 4 + 评估热度 9（metric 层）
+# 真源：产物/_prep/B07-pack.yaml；模式取 b01.pattern；algorithm_type 不改
+# 号段 INT-B-TECH-600～699。有久新行或已有模式的不标 IP-10。
+task_id: SCI-INT-B07
+scope_count: 16
+card_count: 16
+gap: []
+execution_count: {sync: 13, async: 3}
+execution_rule: "请求路径计：IP-01、IP-09、IP-10 为同步读 ADS、父快照或空态；三条 MODEL 按包内 IP-04 计异步 Job。IP-03 同步判据未测，不把这三条改成同步，也不改注册 algorithm_type。"
+jiuxin_rows: [SRS-134, SRS-135, SRS-136, SRS-137, SRS-138]
+jiuxin_note: "本叶不新增久新行号。8 条 IP-09 消费已有库叶，不单独再要接口。MODEL 3 条、STAT 4 条、综合分无久新行。无久新行但模式已是 IP-04 或 IP-01 的不改标 IP-10。只有综合分的包内模式是 IP-10。"
+model_owner:
+  metric_ids: [M_TECH_DS_07_TECH_INNOV_002, M_TECH_DS_07_TECH_INNOV_004, M_TECH_DS_07_TECH_INNOV_006]
+  registry_algorithm_type: MODEL
+  a2_status: missing
+  algo_server_location: demo-algo-science
+  a09_cards: [INT-A-X-0805, INT-A-X-0807, INT-A-X-0809]
+  pattern: IP-04
+  note: "Owner 冲突写入各卡 conflicts 与 decision_needed。注册值保持 MODEL。正式实现在 lumen-algo-py 重写，禁止调用 demo-algo-science。"
+structure_escalations:
+  - id: SE-B07-01
+    owner: "human:李伟"
+    tables: [ads_sci_async_task]
+    cards: [INT-B-TECH-600, INT-B-TECH-601, INT-B-TECH-602]
+    reason: "IP-04 任务元数据表。包内未给表名，本叶暂用 ads_sci_async_task。结果快照不新造，引用 SE-B02-01 的 ads_sci_result_snapshot。"
+  - id: SE-B07-02
+    owner: "human:李伟"
+    tables: [ads_tech_query_term_tf, ads_tech_invest_amount, ads_tech_output_scale, ads_tech_paper_patent_cnt]
+    cards: [INT-B-TECH-603, INT-B-TECH-604, INT-B-TECH-605, INT-B-TECH-606]
+    reason: "IP-01 四条只读 ADS。包内只有 dwd 入站，没有预聚合表名。四张均为候选名。不替代 C02 技术点主数据，不另造桥接表。"
+structure_escalation_refs:
+  - id: SE-B02-01
+    owner: "human:李伟"
+    tables: [ads_sci_result_snapshot]
+    note: "MODEL 结果与 IP-09 父快照只引用 B02 已升级的快照表，不另造第二张。"
+  - id: SE-B05-01
+    owner: "human:李伟"
+    tables: [dim_tech_domain]
+    cards: [INT-B-TECH-615]
+    note: "话题热度的领域维只引用 INT-C-TECH-181 / SE-B05-01，不另造。"
+  - id: INT-C-TECH-182
+    owner: "human:李伟"
+    tables: ["C02 技术点与文献机构人才桥接（名未定）"]
+    cards: [INT-B-TECH-604, INT-B-TECH-605, INT-B-TECH-606]
+    note: "桥接只引用 C02，不另造第二张桥。"
+  - id: INT-C-TECH-180
+    owner: "human:李伟"
+    tables: ["C02 技术点主数据（名未定）"]
+    note: "技术点没有 technology_id。需要技术点主键的卡只引用该卡，不另造主表。"
+open_items:
+  - {id: OI-B07-01, text: "三条 MODEL：注册是 MODEL，A2 记 missing，算法位置指向 demo-algo-science（D12）。A09 卡 0805/0807/0809 已标 IP-04。Owner 未定（DN-05）。不改注册值。"}
+  - {id: OI-B07-02, text: "STAT 四条按 IP-01 只读 ADS。预聚合表名未定，升 SE-B07-02 / human:李伟。论文专利量自建还是复用 SRS-96 仍是 DN-06。"}
+  - {id: OI-B07-03, text: "综合分保持 IP-10，权重 DN-03 未冻，不跑评估 Job。8 条 IP-09 的久新行均为待确认，不单独再要接口。"}
+  - {id: OI-B07-04, text: "任务元数据表 SE-B07-01 升 human:李伟。结果快照只引用 SE-B02-01，领域维只引用 SE-B05-01。"}
+cards:
+  - int_id: INT-B-TECH-600
+    layer: metric
+    metric_id: M_TECH_DS_07_TECH_INNOV_002
+    name: "专利质量评估"
+    dimension: [TECH]
+    srs: {excel_row: 144, seq: 141, path: "科技创新评估 / 技术创新力指标展示 / 专利质量评估"}
+    page_ref: [DS-07-TECH-INNOV]
+    dep_kind: [data, algorithm]
+    metric_ids: [M_TECH_DS_07_TECH_INNOV_002]
+    metric_domain_other: []
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: null
+    execution: "异步"
+    execution_note: "包内模式已是 IP-04，按异步 Job 计。IP-03 的 P95 与单对象判据未测，测完前不改成同步，也不改标 IP-10。无久新行。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已声明只读）。提交与轮询 A09 未实现，按 IP-04 待补，路径本叶不定。"
+      python: "lumen-algo-py worker（draft）：读专利特征，写 ads_sci_result_snapshot。禁止调用 demo-algo-science。"
+      downstream: "dwd_patent / dwd_patent_cited / dwd_patent_legal / dwd_org_base_info → ads_sci_result_snapshot（SE-B02-01）；任务元数据 ads_sci_async_task（SE-B07-01）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-101, table: dwd_patent_cited, fields: "包内未给列名", role: "被引"}
+      - {c_card: INT-C-TECH-102, table: dwd_patent_legal, fields: "包内未给列名", role: "法律状态"}
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构"}
+    outputs:
+      c_card: null
+      delivery: "专利质量评分快照"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      task_table: ads_sci_async_task
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, score]
+      payload_note: "A2 口径未冻，不伪展开引文、权利要求、家族公式。D4=mock 时无快照即空态。"
+      granularity: "本包未展开"
+      freshness: "按任务"
+    contract_draft:
+      request: [domain_code, time_range, technology_id]
+      response_key_fields: [metric_id, period, algo_version, score]
+      granularity: {time: "按任务", geo: "本包未展开"}
+      freshness: "按任务"
+    used_by:
+      srs_refs_02:
+        - {seq: 141, name: "专利质量评估", page: DS-07-TECH-INNOV}
+      a_cards:
+        - {int_id: INT-A-X-0805, page_ref: DS-07-TECH-INNOV, java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已标 IP-04）"}
+      pages: [DS-07-TECH-INNOV]
+    status:
+      demo: "注册算法位置指向 demo-algo-science。本卡不把该仓当正式实现。"
+      lumen: "Job 只在 lumen-algo-py。Java 只读快照，不直连 demo-algo-science。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "A2 行 DS-07-TECH-INNOV-002 差集判定为 missing，05 无专利质量专叶"
+      - "模型 Owner 未定；特征列名包内未给"
+    conflicts:
+      - "注册 algorithm_type 是 MODEL。本卡保持 MODEL，不改注册值。"
+      - "A2 记 missing（DS-07-TECH-INNOV-002）。missing 不改写成已有来源，也不因此改标 IP-10。包内模式已是 IP-04。"
+      - "算法位置 extras.algo_server_location 指向 demo-algo-science（D12 风险 R1）。正式实现须在 lumen-algo-py 重写，禁止 lumen 调用 demo-algo-science。"
+      - "A09 卡 INT-A-X-0805 已标 IP-04。本卡模式保持 IP-04，与页面卡一致。"
+    decision_needed:
+      - "DN-05：模型 Owner 未定。注册是 MODEL，A2 记 missing，算法位置指向 demo-algo-science。实现须改到 lumen-algo-py。不改注册值。A09 卡 INT-A-X-0805 已标 IP-04。"
+      - "同步或异步按 IP-03 判据待测。未测前按包内 IP-04 记异步 Job。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：注册位置是 demo-algo-science。lumen 链路禁止调用 demo-*，须在 lumen-algo-py 重写。"
+      - "D4=mock。无快照即空态，禁止 fixture 填数。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_DS_07_TECH_INNOV_002，algorithm_type 仍为 MODEL"
+      - "降级：Job 失败保留上一成功快照；无快照则空态，不回落 demo-algo-science"
+    confidence: medium
+
+  - int_id: INT-B-TECH-601
+    layer: metric
+    metric_id: M_TECH_DS_07_TECH_INNOV_004
+    name: "技术创新力综合评估"
+    dimension: [TECH]
+    srs: {excel_row: 146, seq: 143, path: "科技创新评估 / 技术创新力指标展示 / 技术创新力综合评估"}
+    page_ref: [DS-07-TECH-INNOV]
+    dep_kind: [data, algorithm]
+    metric_ids: [M_TECH_DS_07_TECH_INNOV_004]
+    metric_domain_other: []
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: null
+    execution: "异步"
+    execution_note: "包内模式已是 IP-04，按异步 Job 计。兄弟行 DS-07-TECH-INNOV-003 属久新，不是本指标，不借它的行号，也不改标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已声明只读）。提交与轮询 A09 未实现，按 IP-04 待补，路径本叶不定。"
+      python: "lumen-algo-py worker（draft）：按用户权重读已落库分项，写 ads_sci_result_snapshot。禁止调用 demo-algo-science。"
+      downstream: "dwd_patent / cited / legal / transfer / dwd_org_base_info → ads_sci_result_snapshot（SE-B02-01）；任务元数据 ads_sci_async_task（SE-B07-01）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-101, table: dwd_patent_cited, fields: "包内未给列名", role: "被引"}
+      - {c_card: INT-C-TECH-102, table: dwd_patent_legal, fields: "包内未给列名", role: "法律状态"}
+      - {c_card: INT-C-TECH-103, table: dwd_patent_transfer, fields: "包内未给列名", role: "转让"}
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构"}
+    outputs:
+      c_card: null
+      delivery: "技术创新力综合分快照"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      task_table: ads_sci_async_task
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, score, weights]
+      payload_note: "自定义权重未冻。不伪挂 seq 182、186、190。不是 M_TECH_COMPOSITE_SCORE。"
+      granularity: "本包未展开"
+      freshness: "按任务"
+    contract_draft:
+      request: [domain_code, time_range, weights]
+      response_key_fields: [metric_id, period, algo_version, score]
+      granularity: {time: "按任务", geo: "本包未展开"}
+      freshness: "按任务"
+    used_by:
+      srs_refs_02:
+        - {seq: 143, name: "技术创新力综合评估", page: DS-07-TECH-INNOV}
+      a_cards:
+        - {int_id: INT-A-X-0807, page_ref: DS-07-TECH-INNOV, java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已标 IP-04）"}
+      pages: [DS-07-TECH-INNOV]
+    status:
+      demo: "注册算法位置指向 demo-algo-science。本卡不把该仓当正式实现。"
+      lumen: "Job 只在 lumen-algo-py。Java 只读快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "A2 行 DS-07-TECH-INNOV-004 差集判定为 missing，05 无综合专叶"
+      - "权重未冻；兄弟行 DS-07-TECH-INNOV-003 不是本指标"
+    conflicts:
+      - "注册 algorithm_type 是 MODEL。本卡保持 MODEL，不改注册值。"
+      - "A2 记 missing（DS-07-TECH-INNOV-004）。missing 不改写成已有来源，也不因此改标 IP-10。包内模式已是 IP-04。"
+      - "算法位置 extras.algo_server_location 指向 demo-algo-science（D12 风险 R1）。正式实现须在 lumen-algo-py 重写，禁止 lumen 调用 demo-algo-science。"
+      - "A09 卡 INT-A-X-0807 已标 IP-04。本卡模式保持 IP-04，与页面卡一致。"
+      - "兄弟行 DS-07-TECH-INNOV-003 属久新，非本指标。不借 SRS 行号。"
+    decision_needed:
+      - "DN-05：模型 Owner 未定。注册是 MODEL，A2 记 missing，算法位置指向 demo-algo-science。实现须改到 lumen-algo-py。不改注册值。A09 卡 INT-A-X-0807 已标 IP-04。"
+      - "同步或异步按 IP-03 判据待测。未测前按包内 IP-04 记异步 Job。用户权重未冻，不代甲方裁口径。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：注册位置是 demo-algo-science。lumen 链路禁止调用 demo-*，须在 lumen-algo-py 重写。"
+      - "与 M_TECH_COMPOSITE_SCORE 不是同一指标。本卡不并入 IP-10。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_DS_07_TECH_INNOV_004，且不含综合分 IP-10 的 null 理由字段"
+      - "降级：Job 失败保留上一成功快照；无快照则空态，不回落 demo-algo-science"
+    confidence: medium
+
+  - int_id: INT-B-TECH-602
+    layer: metric
+    metric_id: M_TECH_DS_07_TECH_INNOV_006
+    name: "技术创新趋势预测"
+    dimension: [TECH]
+    srs: {excel_row: 148, seq: 145, path: "科技创新评估 / 技术创新力指标展示 / 技术创新趋势预测"}
+    page_ref: [DS-07-TECH-INNOV]
+    dep_kind: [data, algorithm]
+    metric_ids: [M_TECH_DS_07_TECH_INNOV_006]
+    metric_domain_other: []
+    algorithm_type: MODEL
+    integration_pattern: IP-04
+    ours: [java_facade, python_internal]
+    counterpart: none
+    delivery_form: Python
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: null
+    execution: "异步"
+    execution_note: "包内模式已是 IP-04，按异步 Job 计。不改挂热点 seq 134 或历程 seq 132，也不改标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已声明只读）。提交与轮询 A09 未实现，按 IP-04 待补，路径本叶不定。"
+      python: "lumen-algo-py worker（draft）：读历史专利与转让，写预测快照。禁止调用 demo-algo-science。禁止联网检索散文冒充已注册模型。"
+      downstream: "dwd_patent / cited / transfer / dwd_org_base_info → ads_sci_result_snapshot（SE-B02-01）；任务元数据 ads_sci_async_task（SE-B07-01）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-101, table: dwd_patent_cited, fields: "包内未给列名", role: "被引"}
+      - {c_card: INT-C-TECH-103, table: dwd_patent_transfer, fields: "包内未给列名", role: "转让"}
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "机构"}
+    outputs:
+      c_card: null
+      delivery: "趋势预测值与曲线快照"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      task_table: ads_sci_async_task
+      response_key_fields: [snapshot_id, period, algo_version, source, metric_id, forecast, interval]
+      payload_note: "A2 记 501 只是实现通道，05 无专叶。不伪展开预测公式。"
+      granularity: "本包未展开"
+      freshness: "按任务"
+    contract_draft:
+      request: [domain_code, time_range]
+      response_key_fields: [metric_id, period, algo_version, forecast]
+      granularity: {time: "按任务", geo: "本包未展开"}
+      freshness: "按任务"
+    used_by:
+      srs_refs_02:
+        - {seq: 145, name: "技术创新趋势预测", page: DS-07-TECH-INNOV}
+      a_cards:
+        - {int_id: INT-A-X-0809, page_ref: DS-07-TECH-INNOV, java: "GET /situation/v1/innovation-evaluation/snapshot（draft，A09 已标 IP-04）"}
+      pages: [DS-07-TECH-INNOV]
+    status:
+      demo: "注册算法位置指向 demo-algo-science。本卡不把该仓当正式实现。"
+      lumen: "Job 只在 lumen-algo-py。Java 只读快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "A2 行 DS-07-TECH-INNOV-006 差集判定为 missing，05 无趋势专叶"
+      - "置信区间与预测窗未冻"
+    conflicts:
+      - "注册 algorithm_type 是 MODEL。本卡保持 MODEL，不改注册值。"
+      - "A2 记 missing（DS-07-TECH-INNOV-006）。missing 不改写成已有来源，也不因此改标 IP-10。包内模式已是 IP-04。"
+      - "算法位置 extras.algo_server_location 指向 demo-algo-science（D12 风险 R1）。正式实现须在 lumen-algo-py 重写，禁止 lumen 调用 demo-algo-science。"
+      - "A09 卡 INT-A-X-0809 已标 IP-04。本卡模式保持 IP-04，与页面卡一致。"
+    decision_needed:
+      - "DN-05：模型 Owner 未定。注册是 MODEL，A2 记 missing，算法位置指向 demo-algo-science。实现须改到 lumen-algo-py。不改注册值。A09 卡 INT-A-X-0809 已标 IP-04。"
+      - "同步或异步按 IP-03 判据待测。未测前按包内 IP-04 记异步 Job。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-01]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：注册位置是 demo-algo-science。lumen 链路禁止调用 demo-*，须在 lumen-algo-py 重写。"
+      - "禁止改挂热点 seq 134 或历程 seq 132 顶替本指标。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_DS_07_TECH_INNOV_006，algorithm_type 仍为 MODEL"
+      - "降级：Job 失败保留上一成功快照；无快照则空态，不回落 demo-algo-science"
+    confidence: medium
+
+  - int_id: INT-B-TECH-603
+    layer: metric
+    metric_id: M_TECH_HEAT_QUERY
+    name: "查询结果·技术热度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "TOPIC-QUERY / 查询结果集词频"}
+    page_ref: "未挂页"
+    dep_kind: [data]
+    metric_ids: [M_TECH_HEAT_QUERY]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: [Q105]
+    execution: "同步"
+    execution_note: "IP-01：GDF 预聚合落 ADS，页面请求同步只读 ADS。不经 Python，不计异步 Job。无久新行，模式已是 IP-01，不标 IP-10。明确不是 seq 134。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/query/tech-heat（draft，只读 ADS）。包内无页面卡，路径未冻结。"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "dwd 论文分类 / 项目 / 报告 / 专利 → ads_tech_query_term_tf（SE-B07-02）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利词"}
+      - {c_card: INT-C-TECH-108, table: dwd_zh_paper_classification, fields: "包内未给列名", role: "中文论文分类"}
+      - {c_card: INT-C-TECH-114, table: dwd_en_paper_classification, fields: "包内未给列名", role: "英文论文分类"}
+      - {c_card: INT-C-TECH-120, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-TECH-126, table: dwd_zh_report, fields: "包内未给列名", role: "中文报告"}
+    outputs:
+      c_card: null
+      delivery: "结果集内 term 的 TF"
+      snapshot_table: ads_tech_query_term_tf
+      response_key_fields: [metric_id, period, term, tf]
+      payload_note: "默认分母是结果集内 term 频次 TF，不做全域 DF（Q105）。词云或热力图是可视化，不另造 ID。"
+      granularity: "当前查询结果集"
+      freshness: "T+1"
+    contract_draft:
+      request: [query_id, time_range]
+      response_key_fields: [metric_id, period, term, tf]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 ADS。聚合在 GDF SQL，不经 Python。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "包内无页面卡，挂页未定"
+      - "结果集随查询变化，ADS 预聚合粒度未定"
+    conflicts:
+      - "algorithm_type 保持 STAT。模式保持 IP-01，Java 只读 ADS，不在请求里现算。"
+      - "查询结果集 TF 与全域 DF 不是同一口径（Q105）。不因此改模式，也不标 IP-10。"
+      - "不是 05 技术链热点 seq 134，不挂 M_TECH_HEAT_INDEX。"
+    decision_needed:
+      - "Q105：分母是否始终为结果集内 TF、不做全域 DF。本叶不代甲方裁。"
+      - "DN-B07-01：查询结果集的 ADS 粒度未定，表名候选 ads_tech_query_term_tf，升 human:李伟。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-02]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: []
+    risks:
+      - "D12：聚合在 GDF，读链在 Java。禁止 lumen 调用 demo-* 填词频。"
+      - "D4=mock。ADS 空表即空态，禁止 fixture 填数。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TECH_HEAT_QUERY，字段为 term 与 tf，无全域 df"
+      - "降级：当期 ADS 分区缺失则回上一期并带 period；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-604
+    layer: metric
+    metric_id: M_TECH_INVEST_AMOUNT
+    name: "技术投资额"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "DS-03 / 技术投资额"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [data]
+    metric_ids: [M_TECH_INVEST_AMOUNT]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-01：GDF 对政府专项与社会资本合计后落 ADS，页面同步只读。不含技术交易额，不含产业链企业营收。不经 Python。无久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → mapRegions[].investment 与 bubbles[].investment（draft，只读 ADS）"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "dwd 项目与机构投融资 → ads_tech_invest_amount（SE-B07-02）"
+    inputs:
+      - {c_card: INT-C-TECH-120, table: dwd_zh_project, fields: "包内未给列名", role: "中文项目"}
+      - {c_card: INT-C-TECH-122, table: dwd_en_project, fields: "包内未给列名", role: "英文项目"}
+      - {c_card: INT-C-TECH-131, table: dwd_org_financing_info, fields: "包内未给列名", role: "机构融资"}
+      - {c_card: INT-C-TECH-132, table: dwd_org_invest_info, fields: "包内未给列名", role: "机构投资"}
+      - {c_card: INT-C-TECH-133, table: dwd_industrial_fund_investment_project_info, fields: "包内未给列名", role: "产业基金"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "技术点与项目桥，只引用不另造"}
+    outputs:
+      c_card: null
+      delivery: "时间窗内资金投入合计"
+      snapshot_table: ads_tech_invest_amount
+      response_key_fields: [metric_id, period, technology_id, amount]
+      payload_note: "政府专项与社会资本合计。不含技术交易额，不含产业链企业营收合计。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [technology_id, time_range, region_code]
+      response_key_fields: [metric_id, period, amount]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-306, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → mapRegions[].investment（draft，只读 ADS）"}
+        - {int_id: INT-A-TECH-313, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → bubbles[].investment（draft，只读 ADS，与 INT-A-TECH-306 同表不同粒度）"}
+        - {int_id: INT-A-TECH-314, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset?currentYear= / GET /situation/v1/tracking/detail/{technologyId}（draft；时间轴播放只读快照）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 ADS。聚合在 GDF SQL，不经 Python。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "ADS 预聚合表名未定，候选 ads_tech_invest_amount"
+      - "技术点主键引用 INT-C-TECH-180，当前没有 technology_id"
+    conflicts:
+      - "algorithm_type 保持 STAT。模式保持 IP-01，Java 只读 ADS。"
+      - "地图投资与气泡投资是同表不同粒度（306 与 313），不另造 ID。"
+      - "无久新行。已有模式 IP-01，不标 IP-10。"
+    decision_needed:
+      - "DN-B07-02：投资额 ADS 表名与政府专项、社会资本的列映射未定，升 human:李伟。不代甲方改口径。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-02]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-182, INT-C-TECH-180]
+    risks:
+      - "D12：聚合在 GDF，读链在 Java。禁止 lumen 调用 demo-*。"
+      - "不得用技术交易额或企业营收冒充投资额。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TECH_INVEST_AMOUNT，地图与气泡读同一 ADS 表"
+      - "降级：当期分区缺失回上一期；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-605
+    layer: metric
+    metric_id: M_TECH_OUTPUT_SCALE
+    name: "技术规模"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "DS-03 / 技术规模"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [data]
+    metric_ids: [M_TECH_OUTPUT_SCALE]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: [Q121]
+    execution: "同步"
+    execution_note: "IP-01：成果与应用体量在 GDF 计数或加总后落 ADS，页面同步只读。不含资金投入。不经 Python。无久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → bubbles[].scale（draft，只读 ADS）"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "论文、专利、项目产出、报告 → ads_tech_output_scale（SE-B07-02）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-107, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-TECH-113, table: dwd_en_paper, fields: "包内未给列名", role: "英文论文"}
+      - {c_card: INT-C-TECH-121, table: dwd_zh_project_output, fields: "包内未给列名", role: "中文项目产出"}
+      - {c_card: INT-C-TECH-123, table: dwd_en_project_output, fields: "包内未给列名", role: "英文项目产出"}
+      - {c_card: INT-C-TECH-126, table: dwd_zh_report, fields: "包内未给列名", role: "中文报告"}
+      - {c_card: INT-C-TECH-127, table: dwd_en_report, fields: "包内未给列名", role: "英文报告"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "技术点与文献桥，只引用不另造"}
+    outputs:
+      c_card: null
+      delivery: "技术成果与应用体量"
+      snapshot_table: ads_tech_output_scale
+      response_key_fields: [metric_id, period, technology_id, scale]
+      payload_note: "内部默认不含资金投入，投入走 M_TECH_INVEST_AMOUNT。禁止用论文量、专利量或技术交易额冒充本专名。"
+      granularity: "本包未展开"
+      freshness: "T+1"
+    contract_draft:
+      request: [technology_id, time_range]
+      response_key_fields: [metric_id, period, scale]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-312, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → bubbles[].scale（draft，只读 ADS）"}
+        - {int_id: INT-A-TECH-314, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset?currentYear= / GET /situation/v1/tracking/detail/{technologyId}（draft；时间轴播放只读快照）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 ADS。聚合在 GDF SQL，不经 Python。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "体量用哪些计数字段未冻（Q121）"
+      - "ADS 表名候选 ads_tech_output_scale，未定稿"
+    conflicts:
+      - "algorithm_type 保持 STAT。模式保持 IP-01，Java 只读 ADS。"
+      - "论文量与专利量是 M_TECH_PAPER_PATENT_CNT，不顶替技术规模。"
+      - "无久新行。已有模式 IP-01，不标 IP-10。"
+    decision_needed:
+      - "Q121：技术规模的成果与应用体量包含哪些对象。本叶不代甲方裁。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-02]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-182, INT-C-TECH-180]
+    risks:
+      - "D12：聚合在 GDF，读链在 Java。禁止 lumen 调用 demo-*。"
+      - "禁止用论文量、专利量或交易额冒充技术规模。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TECH_OUTPUT_SCALE，且不返回投资额字段"
+      - "降级：当期分区缺失回上一期；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-606
+    layer: metric
+    metric_id: M_TECH_PAPER_PATENT_CNT
+    name: "技术点论文量 / 专利量"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "TOPIC-TECH / 技术点论文量与专利量"}
+    page_ref: [DS-02-ENTITY]
+    dep_kind: [data]
+    metric_ids: [M_TECH_PAPER_PATENT_CNT]
+    metric_domain_other: []
+    algorithm_type: STAT
+    integration_pattern: IP-01
+    ours: [etl, java_facade]
+    counterpart: gkx_mysql_raw
+    delivery_form: table
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-01：按 technology_id 对论文、专利 COUNT DISTINCT 后落 ADS，页面同步只读。不经 Python。与 SRS-96 有同口径嫌疑，本卡不改挂 96，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "POST /situation/v1/panorama/entities（draft，计数字段并入实体面板，只读 ADS）"
+      python: "N/A（STAT 走 GDF SQL 预聚合，不经 Python）"
+      downstream: "dwd 论文与专利，经 C02 桥接 → ads_tech_paper_patent_cnt（SE-B07-02）"
+    inputs:
+      - {c_card: INT-C-TECH-100, table: dwd_patent, fields: "包内未给列名", role: "专利"}
+      - {c_card: INT-C-TECH-107, table: dwd_zh_paper, fields: "包内未给列名", role: "中文论文"}
+      - {c_card: INT-C-TECH-113, table: dwd_en_paper, fields: "包内未给列名", role: "英文论文"}
+      - {c_card: INT-C-TECH-118, table: dwd_scholar_papers, fields: "包内未给列名", role: "学者论文"}
+      - {c_card: INT-C-TECH-182, table: "C02 桥接表（名未定）", fields: "包内未给列名", role: "技术点与文献桥，只引用不另造"}
+    outputs:
+      c_card: null
+      delivery: "技术点关联论文去重数与专利去重数"
+      snapshot_table: ads_tech_paper_patent_cnt
+      response_key_fields: [metric_id, period, technology_id, paper_cnt, patent_cnt]
+      payload_note: "对象 entity_type=technology。窗口默认累计全量，页上年份筛选是交互壳，不另开 ID。不铺 SRS-96 的交易额与资讯。"
+      granularity: "累计全量，年份筛选为壳"
+      freshness: "T+1"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, paper_cnt, patent_cnt]
+      granularity: {time: "T+1", geo: "本包未展开"}
+      freshness: "T+1"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-110, page_ref: DS-02-ENTITY, java: "POST /situation/v1/panorama/entities（draft，计数字段并入实体面板）"}
+      pages: [DS-02-ENTITY]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 ADS。COUNT DISTINCT 在 GDF SQL，不经 Python。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "自建 STAT 还是复用久新 SRS-96 SQL 未定（DN-06）"
+      - "技术点没有 technology_id（INT-C-TECH-180）"
+    conflicts:
+      - "algorithm_type 保持 STAT。模式保持 IP-01，不改挂 SRS-96，不把 type 改成 third_party。"
+      - "与 SRS-96 SQL 的论文量、专利量子集有同口径嫌疑（TOPIC-TECH-003 指向 96）。不铺 96 的交易额与资讯。"
+      - "无久新行。已有模式 IP-01，不标 IP-10。"
+    decision_needed:
+      - "DN-06：自建 STAT 还是复用久新 SRS-96 SQL，负责人唐绍祖与数据 Lead。本叶保持 IP-01，不改注册值。"
+    structure_escalation: true
+    structure_escalation_id: [SE-B07-02]
+    structure_escalation_owner: "human:李伟"
+    structure_escalation_ref: [INT-C-TECH-182, INT-C-TECH-180]
+    risks:
+      - "D12：聚合在 GDF，读链在 Java。禁止 lumen 调用 demo-*。"
+      - "若日后改复用 SRS-96，须另开会签，本卡不提前改模式。"
+    test_points:
+      - "契约：Java 响应带 metric_id=M_TECH_PAPER_PATENT_CNT，含 paper_cnt 与 patent_cnt，不含交易额"
+      - "降级：当期分区缺失回上一期；空表空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-607
+    layer: metric
+    metric_id: M_TECH_COMPOSITE_SCORE
+    name: "评估综合得分"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: null, path: "DS-03 / 评估综合得分"}
+    page_ref: [DS-03-RESULT, DS-03-WORKFLOW]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_COMPOSITE_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-10
+    ours: [java_facade]
+    counterpart: none
+    delivery_form: unknown
+    jiuxin_row_id: null
+    jiuxin_confirm: null
+    jiuxin_name: null
+    parent_metric: null
+    decision_ids: [Q124]
+    execution: "同步"
+    execution_note: "IP-10：无来源。页面同步返回 null 与 reason，不跑综合评价 Job，不向久新要行。这是本叶唯一按包内模式标 IP-10 的卡。权重未冻（DN-03）。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/detail/{technologyId} → compositeScore（draft；口径未冻结前返回 null + reason）"
+      python: "N/A（IP-10 不实现，不经 Python）"
+      downstream: "无。不读久新，不写快照。"
+    inputs: []
+    outputs:
+      c_card: null
+      delivery: "空态。不出数值。"
+      snapshot_table: null
+      response_key_fields: [metric_id, score, reason]
+      payload_note: "score 为 null，reason 说明权重未冻。不把 seq 182 至 191 抄成我方公式。不是深圳潜力与阶段综合评估。"
+      granularity: "N/A"
+      freshness: "N/A"
+    contract_draft:
+      request: [technologyId]
+      response_key_fields: [metric_id, score, reason]
+      granularity: {time: "N/A", geo: "N/A"}
+      freshness: "N/A"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-315, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/detail/{technologyId} → compositeScore（draft；口径未冻结前返回 null + reason）"}
+        - {int_id: INT-A-TECH-320, page_ref: DS-03-WORKFLOW, java: "POST /situation/v1/tracking/runs（draft；页面卡写成 IP-04，本指标模式仍是 IP-10）"}
+        - {int_id: INT-A-TECH-328, page_ref: DS-03-WORKFLOW, java: "GET /situation/v1/tracking/runs（draft；页面卡写成 IP-11）"}
+        - {int_id: INT-A-TECH-329, page_ref: DS-03-WORKFLOW, java: "GET /situation/v1/tracking/runs/compare（draft；页面卡写成 IP-11）"}
+      pages: [DS-03-RESULT, DS-03-WORKFLOW]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 返回 null 与 reason。不启动评估 Job。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "分项与权重未冻（DN-03，Q124）"
+      - "无久新行，无 ADS 字段"
+    conflicts:
+      - "algorithm_type 保持 third_party。包头写成 THIRD_PARTY，b01 与 P00 为 third_party，卡上保持 b01，不改注册。"
+      - "包内模式就是 IP-10。页面卡 INT-A-TECH-320 写成 IP-04，328 与 329 写成 IP-11。本卡不跟随页面卡改模式，权重未冻前不跑 Job。"
+      - "不是 M_TECH_DS_07_TECH_INNOV_004，也不把 seq 182 至 191 抄成公式。"
+    decision_needed:
+      - "DN-03：综合评分权重与口径未冻，负责人甲方。未冻前保持 IP-10 空态。"
+      - "Q124：本页综合评价是否日后改为我方 Job。采纳前不新造快照表。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: []
+    risks:
+      - "D12：本卡无 Python。禁止用 demo 评估接口填综合分。"
+      - "D3 未闭合时不得用伪数参与排行或计分。"
+    test_points:
+      - "契约：compositeScore 为 null，并带 reason，不返回伪造分数"
+      - "降级：本指标本身即空态；不得向久新虚构 API 行"
+    confidence: medium
+
+  - int_id: INT-B-TECH-608
+    layer: metric
+    metric_id: M_TECH_CONVERT_BOTTLENECK
+    name: "技术转化瓶颈识别"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 136, path: "算法库 ALGO-TECH-DEEP-136 / 技术转化瓶颈堵点原因识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TECH_CONVERT_BOTTLENECK]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-136
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术转化瓶颈堵点原因识别模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_136_1
+      seq: 136
+      jiuxin_row_id: SRS-136
+      fields: ["堵点", "原因", "改进建议"]
+      field_note: "TOPIC-TECH-013/014 消费 seq 136。流程图与时间轴是同叶流程面，无独立统计核。不伪展开归因公式。"
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-136 快照。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "只读父快照（draft）。包内无页面卡，路径未冻结。"
+      python: "无单独在线调用。父 Job 在 B05，本卡不另跑。"
+      downstream: "父指标 M_TECH_DEEP_136_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-158, table: "久新 API-136 转化瓶颈识别结果集", fields: "堵点、原因、改进建议", role: "母指标 seq 136"}
+    outputs:
+      c_card: null
+      delivery: "父快照切片：堵点、原因、改进建议"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, bottleneck, reason, suggestion]
+      payload_note: "专家知识库步骤未签，不伪展开公式。不是历程 CMS。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, bottleneck, reason]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。不另写适配层。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-136 确认为待确认"
+      - "包内无页面卡"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01 的 third_party 不一致，不改原值。"
+      - "包头写成 THIRD_PARTY，卡上保持 b01 的 third_party。"
+      - "有久新行 SRS-136，模式已是 IP-09，不标 IP-10。"
+    decision_needed:
+      - "DN-B07-03：SRS-136 接口文档、鉴权与 SLA 仍为待确认。IP-09 不另要一行。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 识别瓶颈。"
+      - "父快照缺失则本指标空态，不以 0 或散文填堵点。"
+    test_points:
+      - "契约：派生字段与父快照 SRS-136 一致，带 metric_id=M_TECH_CONVERT_BOTTLENECK"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-609
+    layer: metric
+    metric_id: M_TECH_HEAT_INDEX
+    name: "技术热点热度指数"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 134, path: "算法库 ALGO-TECH-DEEP-134 / 技术前沿热点领域识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TECH_HEAT_INDEX]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-134
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术前沿热点领域识别模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_134_1
+      seq: 134
+      jiuxin_row_id: SRS-134
+      fields: ["热度指数", "增长曲线", "热点报告", "短期热点与长期趋势"]
+      field_note: "对象是已对齐技术点。页上不做 NER。短期与长期是同核切片，不另造 ID。与 M_TECH_TOPIC_HEAT 不是同一对象。"
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-134 快照。不单独向久新再要。有久新行，不标 IP-10。不伪展开热度公式。"
+    call_chain:
+      fe_route: null
+      java: "只读父快照（draft）。包内无页面卡，路径未冻结。"
+      python: "无单独在线调用。父 Job 在 B05。"
+      downstream: "父指标 M_TECH_DEEP_134_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-156, table: "久新 API-134 前沿热点识别结果集", fields: "热度指数、增长曲线", role: "母指标 seq 134，技术点切片"}
+    outputs:
+      c_card: null
+      delivery: "技术点热度指数、增长曲线、热点报告"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, heat_index, curve]
+      payload_note: "区分短期热点与长期趋势，不另造 ID。不是查询结果词频 M_TECH_HEAT_QUERY。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id, horizon]
+      response_key_fields: [metric_id, period, heat_index]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-134 确认为待确认"
+      - "包内无本指标的页面卡。展示热力图挂的是 M_TECH_TOPIC_HEAT"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，与 b01 不一致，不改原值。"
+      - "与 M_TECH_TOPIC_HEAT 共用 seq 134，对象不同：本卡是技术点，话题热度是话题。不合并 ID。"
+      - "有久新行，模式已是 IP-09，不标 IP-10。也不是 STAT 的查询词频。"
+    decision_needed:
+      - "DN-B07-04：技术点热度与话题热度的切片字段未在包内列名。不代甲方合并成一个 ID。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, INT-C-TECH-180]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 算热度。"
+      - "父快照缺失则空态，不回退到查询词频。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_HEAT_INDEX，对象键是技术点，不是话题"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-610
+    layer: metric
+    metric_id: M_TECH_LIFE_STAGE
+    name: "技术发展阶段"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 137, path: "DS-03-RESULT-006 / 技术阶段分析模型"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_LIFE_STAGE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-137
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术阶段分析模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_137_1
+      seq: 137
+      jiuxin_row_id: SRS-137
+      fields: ["生命周期阶段"]
+      field_note: "内部默认分档萌芽、成长、成熟。是否含衰退未定（Q123）。展示行 DS-03-RESULT-006。本页读 ADS，专题跑 Job 写同一结果。"
+    decision_ids: [Q123]
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-137 的阶段切片。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → bubbles[].stage（draft，只读 137 快照切片）"
+      python: "随父 Job 写快照时产出 stage。本卡请求不另调 Python。"
+      downstream: "父指标 M_TECH_DEEP_137_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-159, table: "久新 API-137 技术阶段 / 成熟度结果集", fields: "生命周期阶段", role: "母指标 seq 137，展示行 DS-03-RESULT-006"}
+    outputs:
+      c_card: null
+      delivery: "气泡图阶段维"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, stage]
+      payload_note: "与专题 TEMP_TOPIC_TECH_STAGE 默认同口径同号。不是成熟度，也不是阶段判定说明文。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id, period]
+      response_key_fields: [metric_id, period, stage]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-311, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → bubbles[].stage（draft，只读 137 快照切片）"}
+        - {int_id: INT-A-TECH-314, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset?currentYear= / GET /situation/v1/tracking/detail/{technologyId}（draft；时间轴播放只读快照）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 137 快照的 stage 字段。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-137 确认为待确认"
+      - "衰退档是否纳入未定（Q123）"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "与成熟度、阶段判定共用 SRS-137，字段不同，不合并 ID。"
+      - "有久新行，模式已是 IP-09，不标 IP-10。"
+    decision_needed:
+      - "Q123：生命周期是否含衰退档。本叶不代甲方裁。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 判阶段。"
+      - "展示与专题写同一快照，写者归属未在本叶改判。"
+    test_points:
+      - "契约：bubbles[].stage 与父快照一致，metric_id=M_TECH_LIFE_STAGE"
+      - "降级：父快照缺失则阶段空态，不用成熟度数值顶替"
+    confidence: medium
+
+  - int_id: INT-B-TECH-611
+    layer: metric
+    metric_id: M_TECH_MATURITY_LEVEL
+    name: "技术成熟度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 137, path: "DS-03-RESULT-005 / 技术阶段分析模型"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_MATURITY_LEVEL]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-137
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术阶段分析模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_137_1
+      seq: 137
+      jiuxin_row_id: SRS-137
+      fields: ["成熟度"]
+      field_note: "对象是技术点，不是产业链环节。展示行 DS-03-RESULT-005。对照 seq 137 的成熟度输入，不伪展开。"
+    decision_ids: [Q125]
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-137 的成熟度切片。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → bubbles[].maturity（draft，只读 137 快照切片）"
+      python: "随父 Job 写快照时产出 maturity。本卡请求不另调 Python。"
+      downstream: "父指标 M_TECH_DEEP_137_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-159, table: "久新 API-137 技术阶段 / 成熟度结果集", fields: "成熟度", role: "母指标 seq 137，展示行 DS-03-RESULT-005"}
+    outputs:
+      c_card: null
+      delivery: "气泡图成熟度维"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, maturity]
+      payload_note: "连续或分档未冻（Q125）。不顶替发展阶段。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id, period]
+      response_key_fields: [metric_id, period, maturity]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-303, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → metrics[]（draft；KPI 含平均成熟度）"}
+        - {int_id: INT-A-TECH-310, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → bubbles[].maturity（draft，只读 137 快照切片）"}
+        - {int_id: INT-A-TECH-314, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset?currentYear= / GET /situation/v1/tracking/detail/{technologyId}（draft；时间轴播放只读快照）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读 137 快照的 maturity 字段。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-137 确认为待确认"
+      - "连续值还是分档未冻（Q125）"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "与发展阶段、阶段判定共用 SRS-137，不合并 ID。"
+      - "有久新行，模式已是 IP-09，不标 IP-10。"
+    decision_needed:
+      - "Q125：成熟度是连续值还是分档。本叶不代甲方裁，不伪展开公式。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 算成熟度。"
+      - "对象不是产业链环节，不得改挂环节成熟度。"
+    test_points:
+      - "契约：bubbles[].maturity 与父快照一致，metric_id=M_TECH_MATURITY_LEVEL"
+      - "降级：父快照缺失则空态，不用阶段枚举顶替"
+    confidence: medium
+
+  - int_id: INT-B-TECH-612
+    layer: metric
+    metric_id: M_TECH_POTENTIAL_SCORE
+    name: "技术产业化潜力评分"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 135, path: "算法库 ALGO-TECH-DEEP-135 / 技术产业化潜力识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TECH_POTENTIAL_SCORE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-135
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术产业化潜力识别模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_135_1
+      seq: 135
+      jiuxin_row_id: SRS-135
+      fields: ["产业化潜力综合分"]
+      field_note: "TOPIC-TECH-006/007 消费 seq 135。论文量与专利量只作输入材料，本分不改挂为 STAT。雷达、排名、对比是同核对比面，不另造 ID。"
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-135 快照。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "只读父快照（draft）。包内无本指标页面卡，路径未冻结。"
+      python: "无单独在线调用。父 Job 在 B05。"
+      downstream: "父指标 M_TECH_DEEP_135_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-157, table: "久新 API-135 产业化潜力结果集", fields: "产业化潜力综合分", role: "母指标 seq 135"}
+    outputs:
+      c_card: null
+      delivery: "按 technology_id 的产业化潜力分"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, potential_score]
+      payload_note: "M_TECH_PAPER_PATENT_CNT 只作输入材料。不把本分改成 STAT。深圳综合评估复用本核，不在本卡改行号。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, potential_score]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-135 确认为待确认"
+      - "包内 a_cards 未单挂本 metric_id"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。也不改挂 STAT。"
+      - "有久新行 SRS-135，模式已是 IP-09，不标 IP-10。"
+      - "C 卡 INT-C-TECH-157 同时列出 DS-07-TECH-INNOV-003。那是兄弟展示行，不改本卡久新行号。"
+    decision_needed:
+      - "DN-B07-05：潜力分特征里论文量、专利量只作材料。权重未在包内展开，不伪写公式。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, INT-C-TECH-180]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 算潜力。"
+      - "不得把论文量、专利量计数面直接当作潜力分。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_POTENTIAL_SCORE，分值来自父快照"
+      - "降级：父快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-613
+    layer: metric
+    metric_id: M_TECH_STAGE_JUDGE
+    name: "技术阶段判定"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 137, path: "TOPIC-TECH-008/009 / 技术阶段分析模型"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TECH_STAGE_JUDGE]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-137
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术阶段分析模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_137_1
+      seq: 137
+      jiuxin_row_id: SRS-137
+      fields: ["阶段", "关键瓶颈", "发展潜力"]
+      field_note: "TOPIC-TECH-008/009 消费 seq 137。用户参数重跑是同核定制面，不另造 ID。G3 Job 与未注册 LLM 501 不在本卡展开。禁止联网检索散文冒充已注册模型。"
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-137 的判定说明切片。不单独向久新再要。有久新行，不标 IP-10。"
+    call_chain:
+      fe_route: null
+      java: "只读父快照（draft）。包内无页面卡，路径未冻结。"
+      python: "无单独在线调用。父 Job 在 B05。本卡不新注册 501。"
+      downstream: "父指标 M_TECH_DEEP_137_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-159, table: "久新 API-137 技术阶段 / 成熟度结果集", fields: "阶段、关键瓶颈、发展潜力", role: "母指标 seq 137"}
+    outputs:
+      c_card: null
+      delivery: "阶段、关键瓶颈、发展潜力说明"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, stage, bottleneck, potential]
+      payload_note: "不伪展开阶段公式。与气泡图阶段枚举 M_TECH_LIFE_STAGE 同父不同字段。"
+      granularity: "跟随父库叶"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id]
+      response_key_fields: [metric_id, period, stage, bottleneck, potential]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。不在请求里调未注册 LLM。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-137 确认为待确认"
+      - "包内无页面卡。LLM 501 未注册，不在本卡补注册"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "有久新行，模式已是 IP-09，不标 IP-10。"
+      - "与发展阶段、成熟度共用 SRS-137，不合并 ID。"
+    decision_needed:
+      - "DN-B07-06：阶段说明是否允许未注册 LLM 501 参与，本叶不补注册，也不用联网散文顶替。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 或未登记模型写判定。"
+      - "父快照缺失则空态。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_STAGE_JUDGE，含阶段与瓶颈字段"
+      - "降级：父快照缺失则空态，不生成散文"
+    confidence: medium
+
+  - int_id: INT-B-TECH-614
+    layer: metric
+    metric_id: M_TECH_SZ_ASSESS
+    name: "深圳技术潜力与阶段综合评估"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 138, path: "TOPIC-TECH-012 / 深圳技术发展问题识别模型"}
+    page_ref: "未挂页"
+    dep_kind: [metric]
+    metric_ids: [M_TECH_SZ_ASSESS]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-138
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "深圳技术发展问题识别模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_138_1
+      seq: 138
+      jiuxin_row_id: SRS-138
+      fields: ["潜力评分", "发展阶段", "优劣势", "建议"]
+      field_note: "TOPIC-TECH-012 消费 seq 138。潜力与阶段复用 M_TECH_POTENTIAL_SCORE 与 M_TECH_STAGE_JUDGE 的核，不发明第二套公式。问题、机遇、布局、细分是同层 Job，不另造 ID。"
+    decision_ids: null
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-138 快照。不单独向久新再要。有久新行，不标 IP-10。不改挂 133 或 140。"
+    call_chain:
+      fe_route: null
+      java: "只读父快照（draft）。包内无页面卡，路径未冻结。"
+      python: "无单独在线调用。父 Job 在 B05。复用 135 与 137 的已落库结果，不另跑一套公式。"
+      downstream: "父指标 M_TECH_DEEP_138_1 → ads_sci_result_snapshot（SE-B02-01）"
+    inputs:
+      - {c_card: INT-C-TECH-160, table: "久新 API-138/139 深圳技术发展问题 / 机遇识别结果集", fields: "问题、机遇、建议", role: "母指标 seq 138，139 为同层"}
+      - {c_card: INT-C-TECH-157, table: "久新 API-135 产业化潜力结果集", fields: "潜力分", role: "复用核，不改本卡行号"}
+      - {c_card: INT-C-TECH-159, table: "久新 API-137 技术阶段 / 成熟度结果集", fields: "阶段", role: "复用核，不改本卡行号"}
+      - {c_card: INT-C-TECH-155, table: "久新 API-133/140 深圳细分领域分布 / 重点布局推荐结果集", fields: "细分与布局", role: "同层材料。本卡久新行仍是 SRS-138"}
+      - {c_card: INT-C-TECH-128, table: dwd_org_base_info, fields: "包内未给列名", role: "深圳机构切片"}
+    outputs:
+      c_card: null
+      delivery: "深圳切片的潜力、阶段、优劣势与建议"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, technology_id, potential, stage, advice]
+      payload_note: "不是 M_TECH_COMPOSITE_SCORE。不把 133、140 改成主久新行。"
+      granularity: "深圳切片"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [technology_id, region_code]
+      response_key_fields: [metric_id, period, potential, stage, advice]
+      granularity: {time: "跟随父库叶", geo: "深圳"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards: []
+      pages: "未挂页"
+    status:
+      demo: "本包未指向 demo 实现"
+      lumen: "Java 只读父快照。不另写第二套潜力或阶段公式。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-138 确认为待确认。139 为同层，不单独再要"
+      - "包内无页面卡"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "有久新行 SRS-138，模式已是 IP-09，不标 IP-10。"
+      - "C 卡还列出 SRS-133 与 SRS-140。包内 jiuxin_row_id 保持 SRS-138，不改挂。"
+      - "不是评估综合得分。综合分仍是 IP-10。"
+    decision_needed:
+      - "DN-B07-07：深圳综合评估的写者是专题 Job 还是展示只读，本叶按 IP-09 只读父快照，不改归属。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。禁止 lumen 调用 demo-* 做深圳评估。"
+      - "复用 135 与 137 时，任一父快照缺失则对应字段空态，不以 0 填。"
+    test_points:
+      - "契约：响应带 metric_id=M_TECH_SZ_ASSESS，潜力与阶段字段来自已有核，不出现第二套分"
+      - "降级：SRS-138 快照缺失则空态"
+    confidence: medium
+
+  - int_id: INT-B-TECH-615
+    layer: metric
+    metric_id: M_TECH_TOPIC_HEAT
+    name: "技术话题热度"
+    dimension: [TECH]
+    srs: {excel_row: null, seq: 134, path: "DS-03-RESULT-002 / 技术前沿热点领域识别模型"}
+    page_ref: [DS-03-RESULT]
+    dep_kind: [metric]
+    metric_ids: [M_TECH_TOPIC_HEAT]
+    metric_domain_other: []
+    algorithm_type: third_party
+    integration_pattern: IP-09
+    ours: [java_facade]
+    counterpart: jiuxin
+    delivery_form: none
+    jiuxin_row_id: SRS-134
+    jiuxin_confirm: "待确认"
+    jiuxin_name: "技术前沿热点领域识别模型"
+    parent_metric:
+      metric_id: M_TECH_DEEP_134_1
+      seq: 134
+      jiuxin_row_id: SRS-134
+      fields: ["话题热度"]
+      field_note: "对象是技术话题，不是单一技术点，也不是产业链热点领域。展示行 DS-03-RESULT-002。本页热力图只读 ADS，不在本页跑专题 Job，不伪展开热度公式。"
+    decision_ids: [Q122]
+    execution: "同步"
+    execution_note: "IP-09：页面同步读父库叶 SRS-134 的话题热度切片。不单独向久新再要。有久新行，不标 IP-10。时间窗是用户选定窗（Q122）。"
+    call_chain:
+      fe_route: null
+      java: "GET /situation/v1/tracking/dataset → hotTopics[].heat（draft，只读父库叶 134 快照切片）"
+      python: "随父 Job 写快照时产出 topic_heat。详情与 KPI 只读 ADS，本卡请求不另调 Python。"
+      downstream: "父指标 M_TECH_DEEP_134_1 → ads_sci_result_snapshot（SE-B02-01）；领域维引用 dim_tech_domain（SE-B05-01）"
+    inputs:
+      - {c_card: INT-C-TECH-156, table: "久新 API-134 前沿热点识别结果集", fields: "话题热度", role: "母指标 seq 134，展示行 DS-03-RESULT-002"}
+      - {c_card: INT-C-TECH-181, table: dim_tech_domain, fields: "包内未给列名", role: "技术领域分类维。只引用 SE-B05-01，不另造"}
+    outputs:
+      c_card: null
+      delivery: "时间窗内技术话题热度"
+      snapshot_table: ads_sci_result_snapshot
+      snapshot_escalation: SE-B02-01
+      response_key_fields: [metric_id, period, algo_version, topic_key, heat]
+      payload_note: "与 M_TECH_HEAT_INDEX 同父不同对象。与 M_TECH_HEAT_QUERY 的结果集 TF 不是同一口径。"
+      granularity: "用户选定时间窗"
+      freshness: "跟随父库叶"
+    contract_draft:
+      request: [time_range, domain_code]
+      response_key_fields: [metric_id, period, topic_key, heat]
+      granularity: {time: "跟随父库叶", geo: "本包未展开"}
+      freshness: "跟随父库叶"
+    used_by:
+      srs_refs_02: []
+      a_cards:
+        - {int_id: INT-A-TECH-301, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → hotTopics[].heat（draft，只读父库叶 134 快照切片）"}
+        - {int_id: INT-A-TECH-302, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/detail/{topicKey}?period=（draft；详情只读 ADS。页面卡写成 IP-11，本指标模式仍是 IP-09）"}
+        - {int_id: INT-A-TECH-303, page_ref: DS-03-RESULT, java: "GET /situation/v1/tracking/dataset → metrics[]（draft；KPI 含话题热度）"}
+      pages: [DS-03-RESULT]
+    status:
+      demo: "页面卡 302 提到未冻结的详情路径。本卡不把 lumen 接到 demo 服务。"
+      lumen: "Java 只读 134 快照的话题热度。领域维只引用 dim_tech_domain。"
+      d1_d4: {d1: draft, d4: mock}
+    gaps:
+      - "久新行 SRS-134 确认为待确认"
+      - "时间窗聚合口径未冻（Q122）"
+    conflicts:
+      - "algorithm_type 保持 third_party。久新行 algorithm_type=MODEL，不改原值。"
+      - "有久新行 SRS-134，模式已是 IP-09，不标 IP-10。"
+      - "页面卡 INT-A-TECH-302 写成 IP-11。本卡保持包内 IP-09，详情只读，不另造快照表。"
+      - "与技术点热度指数不是同一对象，不合并 ID。"
+    decision_needed:
+      - "Q122：话题热度的时间窗与关键词聚合口径。本叶不代甲方裁，不伪展开公式。"
+    structure_escalation: false
+    structure_escalation_id: []
+    structure_escalation_owner: null
+    structure_escalation_ref: [SE-B02-01, SE-B05-01, INT-C-TECH-181]
+    risks:
+      - "D12：父 Job 在 lumen-algo-py。页面卡里的未冻结详情路径不得落到 demo-*。禁止 lumen 调用 demo-*。"
+      - "领域维表名未定稿，缺维时话题键空态，不另造第二张维表。"
+    test_points:
+      - "契约：hotTopics[].heat 与父快照一致，metric_id=M_TECH_TOPIC_HEAT，对象是话题"
+      - "降级：父快照缺失则空态；不用查询词频顶替"
+    confidence: medium

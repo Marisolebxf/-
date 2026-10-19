@@ -1,0 +1,1151 @@
+# SCI-INT-A15 · 人才引进推荐评估 · 页面级系统集成依赖卡片
+# 范围：SRS 科技人才态势/人才引进推荐评估.md excel_row 308–332（seq 305–329，25 叶）
+# 页面：DS-16-TALENT-RECRUIT；号段沿用骨架 INT-A-X-1400–1424
+# 模板：产物/_card-template.yaml；algorithm_type / d1_d4 取自 _prep/A15-pack.yaml（MCP 口径）
+# 引用不重分析：C01 人才主键 P0-1 未定；DS-16 六条无源不向久新要假 API
+# 前端点查：fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，菜单落到 DevelopingView，无独立页面
+
+task_id: SCI-INT-A15
+scope_count: 25
+card_count: 25
+gap: []
+ds16_nosource_verdict:
+  question: DS-16 六条没有数据源的指标是否向久新要 API
+  source_class: 无源
+  pattern: IP-10
+  owner: 待定
+  metrics:
+  - M_TALENT_DS_16_TALENT_RECRUIT_005
+  - M_TALENT_DS_16_TALENT_RECRUIT_006
+  - M_TALENT_DS_16_TALENT_RECRUIT_007
+  - M_TALENT_DS_16_TALENT_RECRUIT_010
+  - M_TALENT_DS_16_TALENT_RECRUIT_013
+  - M_TALENT_DS_16_TALENT_RECRUIT_025
+  conclusion: C01 已核实这六条没有数据源。材料包 b01_mapping 全部 jiuxin_row_id 为空、模式 IP-10，并写明禁止伪造 API 行。本叶不向久新追加假 API，不改挂 164/160/110，owner 待定。页面空态加警告，不出分。
+cost_collection_verdict:
+  question: 引进成本模型的数据采集来源（excel_row 319，模型为 320 的 013）
+  source_class: 无源
+  pattern: IP-10
+  owner: 待定
+  conclusion: 材料包 row 319 没有 metric、没有久新行。需规要的过往薪酬、奖项、国内外引才案例、薪酬趋势、激励政策，在 b01_mapping 与 jiuxin_rows_page 中都没有对端。成本模型 M_TALENT_DS_16_TALENT_RECRUIT_013 属于上述六条无源，同样 IP-10。不向久新要采集用假 API，当前也不新建 ADS 成本表（新表须 human:李伟，现在没有口径无可建）。开放项 DN-A15-COST：来源未拍板前，319–325 空态加警告，不出费用数字。
+talent_key_verdict:
+  question: 人才主键
+  ref: C01 P0-1
+  conclusion: 人才主键仍未定（C01 P0-1）。本页契约只用 talent_key 占位，不把 dwd_scholar.scholar_id 写成已定主键。主键落地前，画像、推荐、关系链、尽调都不按已定键开查。
+cards:
+- int_id: INT-A-X-1400
+  layer: page
+  srs:
+    excel_row: 308
+    seq: 305
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学科贡献度分析/可视化层级分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "本叶不新增接口。多级放大、关系网放大、自动聚焦只消费同页 1402 与 1407 已返回载荷（draft）"
+    python: 在线链路不经 Python
+    downstream: 消费 INT-A-X-1402（API-164 贡献快照）与 INT-A-X-1407（API-160 关系网）；不另取数
+  contract_draft:
+    request: [talent_key, domain_code, zoom_level]
+    response_key_fields: [talent_key, focus_node_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - 自动聚焦所用的贡献高阈值未定，确认前不自动改镜头
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-1]
+  test_points:
+  - 1402 或 1407 为空时放大区空态，前端不本地造贡献分
+  - 主键未定时不按 scholar_id 发请求
+  confidence: medium
+- int_id: INT-A-X-1401
+  layer: page
+  srs:
+    excel_row: 309
+    seq: 306
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学科贡献度分析/多维数据联动
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/contribution/facets (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数）
+    downstream: 无。论文质量、影响因子、项目数、专利量、贡献热力没有注册指标，也不在 164/160/110 三行里
+  contract_draft:
+    request: [talent_key, domain_code]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:论文质量、影响因子、项目数、专利量、贡献热力无注册 metric_id；不另开久新行
+  conflicts: []
+  decision_needed: [DN-A15-02, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无论文数、影响因子、专利量字段
+  - 热力图空态加警告，不用姓名或机构地址补点
+  confidence: high
+- int_id: INT-A-X-1402
+  layer: page
+  srs:
+    excel_row: 310
+    seq: 307
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学科贡献度分析/智能分析与推荐
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_164_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-164
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/contribution (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/recruit-recommend (draft；适配久新 API-164；凭据只在 Python)"
+    downstream: 久新 API-164（材料包 b01_mapping，B02）。Java 不直连久新
+  contract_draft:
+    request: [talent_key, domain_code, org_id]
+    response_key_fields: [talent_key, score, trend, snapshot_id, metric_id]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 需规里的预测视图缩放若 164 结果集没有预测字段，该视图空态，不另造模型
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-1, R-A15-4]
+  test_points:
+  - 前端只读 Java 门面，不直连久新
+  - D4 为 mock 时数字旁保留追溯，不把快照当 live
+  confidence: medium
+- int_id: INT-A-X-1403
+  layer: page
+  srs:
+    excel_row: 311
+    seq: 308
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/学者适应性评估
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_164_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-164
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/adaptation (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/recruit-recommend (draft；与 1402 同一 API-164，不新开行)"
+    downstream: 久新 API-164。适应性若不是 164 结果字段则该字段空，不向久新加字段
+  contract_draft:
+    request: [talent_key, domain_code]
+    response_key_fields: [talent_key, score, reason, snapshot_id, metric_id]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 需规要国籍、语言、教育、文化背景的适应性量化；材料包只挂了招入推荐模型 164
+  conflicts: [CF-A15-2]
+  decision_needed: [DN-A15-02, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-4]
+  test_points:
+  - 164 无适应性字段时响应 reason 说明缺口，不返回自造适应分
+  - 不改挂到 005/006
+  confidence: medium
+- int_id: INT-A-X-1404
+  layer: page
+  srs:
+    excel_row: 312
+    seq: 309
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/沟通障碍智能检测
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_005]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/communication-barrier (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。C01 已核实无数据源；久新无行；owner 待定
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:沟通障碍智能检测无数据源，owner 待定，IP-10 空态加警告，禁止改挂 164
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无障碍评分
+  - 不出现新增久新行号
+  confidence: high
+- int_id: INT-A-X-1405
+  layer: page
+  srs:
+    excel_row: 313
+    seq: 310
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/文化融合风险评估
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_006]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/culture-fit (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。C01 已核实无数据源；久新无行；owner 待定。不从宗教信仰或姓名推断冲突
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:文化融合风险评估无数据源，owner 待定，IP-10 空态加警告，禁止改挂 164
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无融合难度分
+  - 不采集或回传宗教信仰
+  confidence: high
+- int_id: INT-A-X-1406
+  layer: page
+  srs:
+    excel_row: 314
+    seq: 311
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/国际流动壁垒分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_007]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/mobility-barrier (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。C01 已核实无数据源；久新无行；owner 待定。不用任职履历差分代替壁垒
+  contract_draft:
+    request: [talent_key, from_region, to_region]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: country}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:国际流动壁垒分析无数据源，owner 待定，IP-10 空态加警告
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无壁垒分
+  - 不把工作经历国家变化渲染成壁垒
+  confidence: high
+- int_id: INT-A-X-1407
+  layer: page
+  srs:
+    excel_row: 315
+    seq: 312
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/过往合作情况回溯
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cooperation (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/relation-chain (draft；适配久新 API-160；凭据只在 Python)"
+    downstream: 久新 API-160（材料包 b01_mapping，B02，人才关系链）。Java 不直连久新，不写 nGQL
+  contract_draft:
+    request: [talent_key, org_id, time_range]
+    response_key_fields: [talent_key, peer_key, relation_type, period, snapshot_id, metric_id]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 合作边的类型（论文合著、项目、同机构）以 160 结果为准，本叶不自行连边
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-4]
+  test_points:
+  - 主键未定时列表不可开
+  - 前端不根据共同作者字符串拼关系
+  confidence: medium
+- int_id: INT-A-X-1408
+  layer: page
+  srs:
+    excel_row: 316
+    seq: 313
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/个人科研活跃度与合作网络分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_160_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-160
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/activity-network (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/relation-chain (draft；与 1407 同一 API-160，不新开行)"
+    downstream: 久新 API-160 只覆盖合作网络。活跃度不在 160 定义内，该切面无源
+  contract_draft:
+    request: [talent_key, domain_code, time_range]
+    response_key_fields: [talent_key, peer_key, relation_type, snapshot_id, metric_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - metric_missing:科研活跃度（发文或项目节奏）无注册 metric_id，不另开久新行，该切面空态
+  conflicts: [CF-A15-3]
+  decision_needed: [DN-A15-02, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 网络块只来自 160 快照
+  - 活跃度块无数值
+  confidence: medium
+- int_id: INT-A-X-1409
+  layer: page
+  srs:
+    excel_row: 317
+    seq: 314
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/引进阻力量化评分
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_010]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/resistance-score (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。C01 已核实无数据源；久新无行；owner 待定。禁止改挂 164
+  contract_draft:
+    request: [talent_key, domain_code]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:引进阻力量化评分无数据源，owner 待定，IP-10 空态加警告
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无阻力分
+  - 不用 164 推荐分顶替阻力分
+  confidence: high
+- int_id: INT-A-X-1410
+  layer: page
+  srs:
+    excel_row: 318
+    seq: 315
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/学者引进难度预测/策略建议与预警提示
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/difficulty-advice (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止用模型补写建议）
+    downstream: 无。上游 005/006/007/010 均为无源空态，建议与预警没有独立指标和久新行
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:引进策略建议与高风险预警无注册 metric_id，owner 待定，不向久新要生成式 API
+  conflicts: []
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无建议正文
+  - 不根据空的阻力分生成文案
+  confidence: high
+- int_id: INT-A-X-1411
+  layer: page
+  srs:
+    excel_row: 319
+    seq: 316
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/多维成本数据采集
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-inputs (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要采集 API）
+    downstream: 无。见 cost_collection_verdict。薪酬、奖项、引才案例、薪酬趋势、激励政策均无源；不新建 ADS 成本表
+  contract_draft:
+    request: [talent_key, domain_code, region_code]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: country}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:过往薪酬、奖项、引才案例、薪酬趋势、激励政策无注册 metric_id、无源表、无久新行
+  conflicts: []
+  decision_needed: [DN-A15-COST, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 响应无金额字段
+  - 不抓取外部薪酬网站填数
+  confidence: high
+- int_id: INT-A-X-1412
+  layer: page
+  srs:
+    excel_row: 320
+    seq: 317
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/高精度成本模型构建
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_013]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-model (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。013 属于 C01 核实的六条无源；owner 待定。采集来源见 DN-A15-COST，模型不能先于采集存在
+  contract_draft:
+    request: [talent_key, domain_code, region_code]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: country}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:高精度成本模型无数据源，owner 待定，IP-10 空态加警告，禁止改挂 164
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, DN-A15-COST, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2, R-A15-3]
+  test_points:
+  - 响应无费用预测值
+  - 不把推荐分换算成金额
+  confidence: high
+- int_id: INT-A-X-1413
+  layer: page
+  srs:
+    excel_row: 321
+    seq: 318
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/个性化成本分布分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-breakdown (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数）
+    downstream: 无。薪酬、津贴、科研启动经费、生活保障依赖 319/013，两者都无源
+  contract_draft:
+    request: [talent_key, scenario_id]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:成本结构分解（薪酬、津贴、启动经费、生活保障）无注册 metric_id
+  conflicts: []
+  decision_needed: [DN-A15-COST, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 报表无金额列
+  - 不展示样例工资
+  confidence: high
+- int_id: INT-A-X-1414
+  layer: page
+  srs:
+    excel_row: 322
+    seq: 319
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/方案模拟与资金测算
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-scenario (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现；用户参数不能在前端算出金额）
+    downstream: 无。测算依赖 013，模型无源则方案模拟空态
+  contract_draft:
+    request: [scenario_id, talent_key]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:资金投入、投资回报、人员配置差额无注册 metric_id
+  conflicts: []
+  decision_needed: [DN-A15-COST, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 调整参数不返回金额
+  - 按钮说明口径未定
+  confidence: high
+- int_id: INT-A-X-1415
+  layer: page
+  srs:
+    excel_row: 323
+    seq: 320
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/历史成本趋势追踪
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-history (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数）
+    downstream: 无。没有历年引进台账来源，与 DN-A15-COST 同一开放项
+  contract_draft:
+    request: [org_id, time_range]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: year, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:历年引进投入与效果无注册 metric_id、无台账表
+  conflicts: []
+  decision_needed: [DN-A15-COST]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 趋势图无点
+  - 不用当年预测值回填历史
+  confidence: high
+- int_id: INT-A-X-1416
+  layer: page
+  srs:
+    excel_row: 324
+    seq: 321
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/智能预警与决策建议
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-alert (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止用模型补写预算建议）
+    downstream: 无。预警依赖 013，模型无源则没有异常区间
+  contract_draft:
+    request: [org_id, domain_code]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:成本异常预警与预算优化建议无注册 metric_id
+  conflicts: []
+  decision_needed: [DN-A15-COST, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 响应无预警文案和阈值
+  - 不根据空金额触发告警
+  confidence: high
+- int_id: INT-A-X-1417
+  layer: page
+  srs:
+    excel_row: 325
+    seq: 322
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/引进成本预测/支持导出和对比分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/cost-export (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，不生成对比文件）
+    downstream: 无。行业平均与典型案例无源；成本正文本身为空，导出不可用
+  contract_draft:
+    request: [org_id, time_range]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:行业平均成本与典型案例对比无注册 metric_id、无源
+  conflicts: []
+  decision_needed: [DN-A15-COST]
+  structure_escalation: false
+  risks: [R-A15-3]
+  test_points:
+  - 导出按钮不可用，不返回空文件假装成功
+  - 对比区无行业均值
+  confidence: high
+- int_id: INT-A-X-1418
+  layer: page
+  srs:
+    excel_row: 326
+    seq: 323
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/专家画像智能生成
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_GRAPH_110_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-07
+  ours: [frontend, java_facade, python_internal, etl]
+  counterpart: jiuxin
+  delivery_form: Python
+  jiuxin_row_id: SRS-110
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/portrait (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 主档投影)"
+    python: "POST /internal/v1/sci/talent/ner (draft；久新 Python-110 离线并入 lumen-algo-py；本页不新开行)"
+    downstream: 久新 Python-110（材料包 b01_mapping，B03）。在线不直连 graphd。主键沿用 C01 P0-1，未定
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [talent_key, name, org_name, field_tags, snapshot_id, metric_id]
+    granularity: {time: offline, geo: none}
+    freshness: weekly
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 人才主键未定（C01 P0-1），画像入口在主键落地前不可按已定键打开
+  - 学术社交平台抓取不在 110 的已确认范围内，缺的字段空着，不另开采集
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-4]
+  test_points:
+  - 请求体键名为 talent_key，不出现已定 scholar_id
+  - Java 响应来自 ADS 投影，不直连 Nebula
+  confidence: medium
+- int_id: INT-A-X-1419
+  layer: page
+  srs:
+    excel_row: 327
+    seq: 324
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/多维综合评价与评分
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_164_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-164
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/score (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/recruit-recommend (draft；与 1402 同一 API-164，不新开行)"
+    downstream: 久新 API-164。权威度、创新性、社会影响若不是 164 字段则空，不拆新指标
+  contract_draft:
+    request: [talent_key, domain_code]
+    response_key_fields: [talent_key, score, snapshot_id, metric_id, reason]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 需规的多维评分宽于招入推荐模型，材料包未另给 metric_id
+  conflicts: [CF-A15-2]
+  decision_needed: [DN-A15-02, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-4]
+  test_points:
+  - 只展示 164 快照里真实有的分项
+  - 缺项不补 0 分
+  confidence: medium
+- int_id: INT-A-X-1420
+  layer: page
+  srs:
+    excel_row: 328
+    seq: 325
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/定制化尽调报告生成
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [export]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: n/a_ops
+  integration_pattern: IP-09
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/diligence-report (draft；现网无 /situation/v1（B01 R5）；只拼装已有快照)"
+    python: 在线链路不经 Python（不在 Java 里生成长文）
+    downstream: 拼装 1418（110 画像）与 1419（164 评分）与 1407（160 合作）。IP-10 章节（成本、风险、文化、沟通）保持空态，不补写
+  contract_draft:
+    request: [talent_key, sections]
+    response_key_fields: [talent_key, sections, reason]
+    granularity: {time: offline, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - 报告模板与导出格式未定；无源章节必须显式空态，禁止模型补写薪酬或风险结论
+  conflicts: []
+  decision_needed: [DN-A15-04, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-3, R-A15-4]
+  test_points:
+  - 报告中成本、文化、合规章节无数字无评语
+  - 主键未定时不生成文件
+  confidence: medium
+- int_id: INT-A-X-1421
+  layer: page
+  srs:
+    excel_row: 329
+    seq: 326
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/专家智能推荐
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DEEP_164_1]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-08
+  ours: [frontend, java_facade, python_internal]
+  counterpart: jiuxin
+  delivery_form: API
+  jiuxin_row_id: SRS-164
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/recommend (draft；现网无 /situation/v1（B01 R5）；Java 只读 ADS 快照)"
+    python: "POST /internal/v1/sci/talent/recruit-recommend (draft；适配久新 API-164；凭据只在 Python)"
+    downstream: 久新 API-164（B02）。需求侧岗位若 164 不含，则该筛选条件不可用，不另开行
+  contract_draft:
+    request: [domain_code, org_id, page, size]
+    response_key_fields: [talent_key, name, score, snapshot_id, metric_id]
+    granularity: {time: year, geo: none}
+    freshness: T+1
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - 推荐列表的人键仍是 talent_key 占位（C01 P0-1）
+  conflicts: []
+  decision_needed: [C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-4]
+  test_points:
+  - 列表项不使用自造排序分
+  - 前端不直连久新
+  confidence: medium
+- int_id: INT-A-X-1422
+  layer: page
+  srs:
+    excel_row: 330
+    seq: 327
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/动态跟踪与更新
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/changelog (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现；110 只是离线 Job，不是增量流）
+    downstream: 无。新成果与履历增量没有注册指标，也没有久新行。需规写实时，当前不能承诺
+  contract_draft:
+    request: [talent_key, since]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:新成果与最新履历增量无注册 metric_id、无事件源
+  conflicts: [CF-A15-4]
+  decision_needed: [DN-A15-03, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-5]
+  test_points:
+  - 页面不出现秒级刷新
+  - 不扫论文表现算「最新成果」
+  confidence: high
+- int_id: INT-A-X-1423
+  layer: page
+  srs:
+    excel_row: 331
+    seq: 328
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/风险与合规性评估
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data]
+  metric_ids: []
+  metric_domain_other: []
+  algorithm_type: UNKNOWN
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/compliance (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止用模型臆造诚信结论）
+    downstream: 无。合作风险、学术诚信、成果有效性没有注册指标、没有久新行、没有源表
+  contract_draft:
+    request: [talent_key]
+    response_key_fields: [reason, gap_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: missing, d4: n/a}
+  gaps:
+  - metric_missing:合作风险、学术诚信、成果有效性无注册 metric_id，不能由模型给结论
+  conflicts: []
+  decision_needed: [DN-A15-05, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无风险等级
+  - 不根据论文数量推断诚信
+  confidence: high
+- int_id: INT-A-X-1424
+  layer: page
+  srs:
+    excel_row: 332
+    seq: 329
+    path: 智能服务集群/科技信息展示系统/科技人才态势/人才引进推荐评估/人才尽调报告与推荐/团队组合与协同分析
+  page_ref: DS-16-TALENT-RECRUIT
+  dimension: [TAL]
+  dep_kind: [data, metric, algorithm]
+  metric_ids: [M_TALENT_DS_16_TALENT_RECRUIT_025]
+  metric_domain_other: []
+  algorithm_type: third_party
+  integration_pattern: IP-10
+  ours: [frontend, java_facade]
+  counterpart: none
+  delivery_form: none
+  jiuxin_row_id: null
+  call_chain:
+    fe_route: /talent/talent-introduction-evaluation
+    java: "GET /situation/v1/talent-recruit/team-fit (draft；现网无 /situation/v1（B01 R5）)"
+    python: 在线链路不经 Python（IP-10 不实现，禁止伪数，禁止向久新要假 API）
+    downstream: 无。C01 已核实无数据源；久新无行；owner 待定。禁止用 160 或 164 顶替，禁止按号挂 165
+  contract_draft:
+    request: [talent_keys, domain_code]
+    response_key_fields: [reason, gap_id, metric_id]
+    granularity: {time: unknown, geo: none}
+    freshness: unknown
+  status:
+    demo: 未点查。fe_files_hit 仅 lumen-ui-science-pc/src/router/menu.ts，无 demo 路径
+    lumen: 无。lumen-ui-science-pc src/router/menu.ts 菜单 talent/talent-introduction-evaluation，resolveNavComponent 落到 DevelopingView.vue，无独立页面
+    d1_d4: {d1: draft, d4: mock}
+  gaps:
+  - owner_pending:团队组合与协同分析无数据源，owner 待定，IP-10 空态加警告
+  conflicts: [CF-A15-1]
+  decision_needed: [DN-A15-01, C01-P0-1]
+  structure_escalation: false
+  risks: [R-A15-2]
+  test_points:
+  - 响应无协同分
+  - 不把 160 关系边密度当成组合建议
+  confidence: high
+summary:
+  cards_by_type:
+    X: 25
+  srs_rows_covered: 25
+  jiuxin_rows_referenced:
+  - SRS-110
+  - SRS-160
+  - SRS-164
+  jiuxin_new_rows_needed: 0
+  page_metrics_assignment:
+    M_TALENT_DEEP_160_1: [315, 316]
+    M_TALENT_DEEP_164_1: [310, 311, 327, 329]
+    M_TALENT_DS_16_TALENT_RECRUIT_005: [312]
+    M_TALENT_DS_16_TALENT_RECRUIT_006: [313]
+    M_TALENT_DS_16_TALENT_RECRUIT_007: [314]
+    M_TALENT_DS_16_TALENT_RECRUIT_010: [317]
+    M_TALENT_DS_16_TALENT_RECRUIT_013: [320]
+    M_TALENT_DS_16_TALENT_RECRUIT_025: [332]
+    M_TALENT_GRAPH_110_1: [326]
+  metric_missing_cards:
+  - INT-A-X-1401
+  - INT-A-X-1408
+  - INT-A-X-1410
+  - INT-A-X-1411
+  - INT-A-X-1413
+  - INT-A-X-1414
+  - INT-A-X-1415
+  - INT-A-X-1416
+  - INT-A-X-1417
+  - INT-A-X-1422
+  - INT-A-X-1423
+  structure_escalation_cards: []
+  lumen_page: 无
+  demo_page: 未点查
+decision_needed:
+- id: DN-A15-01
+  owner: 待定
+  item: 六条无源指标（005 沟通障碍、006 文化融合、007 流动壁垒、010 引进阻力、013 成本模型、025 团队协同）的交付 owner。C01 已核实无数据源。确认前 IP-10，不向久新追加 API 行
+- id: DN-A15-COST
+  owner: 待定
+  item: 引进成本数据采集来源（单位台账、供应方或甲方政策库均未定）。未拍板前 319–325 不出费用数字，不新建成本表
+- id: DN-A15-02
+  owner: 产品
+  item: 材料包把 164 挂到适应性与综合评分、把 160 挂到活跃度叶。164/160 结果集覆盖不到的切面保持空态，不改挂、不发明 M_*
+- id: DN-A15-03
+  owner: 甲方
+  item: 动态跟踪是否必须实时。当前无增量源，110 只是离线识别，不能承诺实时
+- id: DN-A15-04
+  owner: 产品
+  item: 尽调报告模板、导出格式与空态章节怎么呈现。无源章节禁止补写
+- id: DN-A15-05
+  owner: 待定
+  item: 合作风险、学术诚信、成果有效性由谁供数。未定前不给风险等级
+- id: C01-P0-1
+  owner: 甲方
+  item: 人才主键仍未定。本页只占位 talent_key
+decision_referenced:
+- C01-P0-1
+- DN-A15-01
+- DN-A15-COST
+risks:
+- id: R-A15-1
+  level: high
+  desc: lumen 无本页。菜单落到 DevelopingView，/situation/v1 无 Java 实现（B01 R5）
+  mitigation: 有页面实现叶后再按本卡拆端点
+- id: R-A15-2
+  level: high
+  desc: 六条指标注册为 third_party，但无源无久新行。若实现叶向久新要 API，会变成假依赖
+  mitigation: 保持 IP-10 与 jiuxin_row_id 空，owner 待定
+- id: R-A15-3
+  level: high
+  desc: 成本采集无源。用样例工资或 mock 金额会冒充费用
+  mitigation: DN-A15-COST 关闭前 319–325 空态，不出数
+- id: R-A15-4
+  level: high
+  desc: 人才主键未定。若契约写死 scholar_id，后续主档迁移会断键
+  mitigation: 请求与响应只用 talent_key，沿用 C01 P0-1
+- id: R-A15-5
+  level: medium
+  desc: 需规写动态跟踪实时更新。现有 110 是离线实体识别，没有增量流
+  mitigation: DN-A15-03。确认前 changelog 空态，页面不写秒级刷新
+conflicts:
+- id: CF-A15-1
+  desc: 005/006/007/010/013/025 的 algorithm_type 为 third_party，但对端行不存在，按 IP-10 而不是按 third_party 去要 API
+- id: CF-A15-2
+  desc: 需规适应性评估与多维评分宽于 M_TALENT_DEEP_164_1。材料包如此挂接，本叶不改挂
+- id: CF-A15-3
+  desc: 316 的合作网络可走 160，科研活跃度没有指标
+- id: CF-A15-4
+  desc: 330 需规写实时，材料包没有增量指标，110 不是事件流
