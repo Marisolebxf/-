@@ -31197,7 +31197,7 @@ tasks:
     lock_until: "2026-11-18T03:01:53.426Z"
     claimed_by: "human:孔东"
     title: "维护管理（M10）— 整页复刻：图层与数据源配置/维护技术图谱/关键实体与关系维护/已有能力入口"
-    status: "claimed"
+    status: "in_progress"
     agent: "frontend-agent"
     epic: "E-FE-TECH-SITUATION"
     priority: "P2"
@@ -31229,4 +31229,182 @@ tasks:
       - "Mock 种子冻结自 demo 4 个 state 文件初始数据（layerSourceState / graphMaintainEditorState / entityRelationState / factorDisplayState，头注释标真源路径）；状态机移植为纯函数/composable 并保留最小自检（对齐 demo 3 个 *.test.mjs 断言语义）；写操作为演示态（demo「Mock 可点」不落库同语义，正式写接口待 BE 契约扩展，偏离记 handoff）；USE_MOCK=false 零 fixture 渲染"
       - "吸收 01A~09A 复刻经验清单（见 note 10 条）：按钮/控件 token（圆角 4px、高 32px）、demo 原生 select 不换 Arco 下拉、label 不包 a-select、页内复用类名样式自含、sr-only 补齐、SVG 画布显式高度、弹层 Teleport body、类型门用 pnpm type-check、首屏同步初值"
       - "与 demo 逐区块截图对照（四分区全交互）进 handoff；pnpm type-check 0 错 + pnpm build 绿；handoff 落 agent-handoffs/科技发展态势-TS/FE-TS-10A.md"
-    update_time: "2026-10-19T11:10:03+08:00"
+    update_time: "2026-10-19T11:15:13+08:00"
+  - id: BE-DR-CONTRACT-01
+    title: "科技数据资源 — Java 接口契约定义与数据需求评审（四视窗，出 API-DR 文档）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 120000
+    note: "接口侧大单：执行 human:李伟，自行拆分内部任务。FE 对接以冻结的 API-DR 文档为准，不自行猜路径；FE mock 先行不被本单阻塞。强度：ponytail full。"
+    depends_on: []
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/API-DR-*.md"
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/BE-DR-CONTRACT-01.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技信息展示系统-完整详细设计/07-功能-科技数据资源.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技数据资源-总体视窗-原型核对报告.md"
+    definition_of_done:
+      - "以 DR 规划 §4「接口用途与数据需求」（四视窗 24 类用途清单）为输入，由 Java 侧主导定义路径/DTO/枚举，出具接口文档冻结为 agent-handoffs/科技数据资源-DR/API-DR-*.md（可按视窗分册）"
+      - "权限点独立于态势页（严于业务展示）+ 导出行数/频控策略（详细设计 §6）写入契约章节"
+      - "运营库/日志读面数据需求评审完成：ADS/平台运营库落库方案与 Mock 先行策略确认（不扫七要素图、运营日志不写 Nebula）"
+      - "指标输出带 metric_id 映射要求（D9，可占位）写入文档约定章节"
+      - "契约定义→实现→数据对接的内部任务拆分、排期由 human:李伟 自行决策建单并回填本单 note（参照 TS 模式：BE-TS-CONTRACT-02 / BE-TS-IMPL-01 / BE-TS-DATA-01）"
+    update_time: "2026-10-19T11:37:23+08:00"
+  - id: FE-DR-S01
+    title: "科技数据资源 — 前端模块基座（路由挂接/四窗页壳/mock 种子冻结/api 双轨/公共件盘点/D9 挂点）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 180000
+    note: "批 1 基座单。执行 human:孔东。先查 TS 复刻经验清单 §2.3 已沉淀公共件，不新造；第二处出现才封装。强度：ponytail full。"
+    depends_on: []
+    touched_files:
+      - "src/views/data-resources/"
+      - "src/api/dataResources.ts"
+      - "src/mock/modules/"
+      - "src/styles/"
+      - "src/router/menu.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "四视窗路由挂接：menu.ts data 组已有占位项替换 DevelopingView 为真实页壳（views/data-resources/），fullBleed/页壳机制对齐 demo data-resources 页真源，路由 name/path 不变"
+      - "Mock 种子冻结：src/mock/modules/dataResources*.ts 冻结自 demo mockData.js（1680 行；头注释标真源路径+同步任务 ID，确定性生成、派生链禁手写、禁 Math.random）；USE_MOCK=false 零 fixture 渲染（D12）"
+      - "src/api/dataResources.ts defineApi 双轨（mock/网关）+ request.ts 复用；api 不感知 mock"
+      - "公共件盘点接入：PageTabFrame/StatCard/KpiDeck/chartOptions/MetricSpecHint/MockBadge/ExportFlowPanel 逐件核对可用性并记录（DR 不引 TiandituMap/L6 抽屉，理由入 handoff）；模块私有件目录 views/data-resources/components/ 立 :"
+      - "demo style.css（1533 行）按选择器命中规则整块抽取进 styles/demo-data-resources.css，token 对齐 Design.md"
+      - "观测：pageview 沿用仓内 observability 机制"
+      - "pnpm type-check 0 错 + pnpm build 绿；handoff 落 agent-handoffs/科技数据资源-DR/"
+    update_time: "2026-10-19T11:37:23+08:00"
+  - id: FE-DR-01A
+    title: "总体视窗 — 整页复刻：KPI 概览/来源分析/资源详情查询/多源整合/大数据中心详情/资源关联图谱/应用状态"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 250000
+    note: |
+      批 1 页面单。执行 human:孔东。demo 真源 OverviewWindow.jsx(716)+BigDataCenterDetail(532)+ResourceSourceAnalysisDetail(624)+SemanticThemeAggregation(221)+ResourceAppSubjectList(166)+CumulativeCallTrendAnalysis(181)；避坑见规划 §5。强度：ponytail full。
+    depends_on:
+      - "FE-DR-S01"
+    touched_files:
+      - "src/views/data-resources/overview/"
+      - "src/api/dataResources.ts"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技数据资源-总体视窗-原型核对报告.md"
+    definition_of_done:
+      - "KPI 概览（seq 330，7 指标卡，含 ⚠️ KPI 归属与超范围项照 demo 不改口）+ 资源来源分析与详情（331，5 类来源/结构组成/变化趋势/质量可靠性）"
+      - "接入数据资源详情查询（332，元数据表：学科领域/采集时间/更新频率/关联项目）+ 多源数据整合分析（334，主题分布+归类统计）+ 可视化统计报表区块（333）按 demo 现状复刻（ExportButton 挂载情况照 demo，核对报告 B1 项进补齐 backlog 不顺手改）"
+      - "大数据资源中心详情（335–338：主题库分类/深度浏览/关联检索/实时更新监控）+ 资源关联关系（339–342：知识图谱 canvas/节点边分析/关联导航/语义聚合——ECharts graph，非 Nebula）"
+      - "资源应用状态（343–346：系统监控/接口状态跟踪/主体列表/累计调用趋势）照 demo 含质量五维雷达"
+      - "mock 种子冻结自 demo；D9 每统计数字 ⓘ/🧪；与 demo 逐区块截图对照表 + 需求 §1.1.1.1.4.4 seq 330–346 对照进 handoff"
+      - "pnpm type-check 0 错 + 自检 + pnpm build 三绿"
+    update_time: "2026-10-19T11:37:40+08:00"
+  - id: FE-DR-02A
+    title: "接入视窗 — 整页复刻：接入总览/来源分析详情/资源详情/历史接入情况/问题资源"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 250000
+    note: |
+      批 2 页面单。执行 human:孔东。demo 真源 AccessWindow.jsx(665)+AccessSourceAnalysisDetail(582)+AccessDataResourceDetail(523)+AccessHistorySituation(430)+AccessResourceDetailQuery(278)；Arco a-select 替换原生 select（避坑 §5.1）。强度：ponytail full。
+    depends_on:
+      - "FE-DR-S01"
+    touched_files:
+      - "src/views/data-resources/access/"
+      - "src/api/dataResources.ts"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技数据资源-接入视窗-原型核对报告.md"
+    definition_of_done:
+      - "资源接入总览（347–350：完成度 KPI/渠道占比/归集量统计/多维交互筛选，accessMultiFilter 状态机移植保最小自检 test.mjs）"
+      - "来源分析和详情（351–355：渠道归集量/属性展示/结构可视化对比/多维筛选分组/明细导出 ExportButton）+ 接入数据资源详情（356–359：主题归类/分区明细/多维检索/可视化面板）"
+      - "历史资源接入情况（360–363：渠道表名记录/更新周期统计/动态趋势/多维检索）+ 问题资源情况（364–367：识别列表/复现与批量检索/分级优先级/统计报表）"
+      - "mock 种子冻结；D9 ⓘ/🧪 全覆盖；与 demo 逐区块截图对照表 + seq 347–367 对照进 handoff；pnpm type-check 0 错 + 自检 + build 三绿"
+    update_time: "2026-10-19T11:37:40+08:00"
+  - id: FE-DR-03A
+    title: "主题视窗 — 整页复刻：主题库分类浏览/多维筛选/资源分布/库详情（元属性/表结构/关联图谱/智能搜索）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 180000
+    note: "批 2 页面单。执行 human:孔东。demo 真源 ThemeWindow.jsx(685)；8 个 L6 全覆盖（核对报告零遗漏，四窗中最轻）。强度：ponytail full。"
+    depends_on:
+      - "FE-DR-S01"
+    touched_files:
+      - "src/views/data-resources/theme/"
+      - "src/api/dataResources.ts"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技数据资源-主题视窗-原型核对报告.md"
+    definition_of_done:
+      - "数据资源展示（368–371：主题库分类浏览（学科树+标签）/多维检索筛选/资源分布可视化/资源详情与元数据）"
+      - "数据库详情展示（372–375：元属性详尽呈现/数据表结构与字段详情（themeTableSchema 状态机移植）/数据集关联关系图谱（引用/衔接/主题交叉，ECharts graph）/智能搜索与多维筛选（themeResourceMeta 状态机））"
+      - "mock 种子冻结；D9 ⓘ/🧪 全覆盖；与 demo 逐区块截图对照表 + seq 368–375 对照进 handoff；pnpm type-check 0 错 + 自检 + build 三绿"
+    update_time: "2026-10-19T11:37:55+08:00"
+  - id: FE-DR-04A
+    title: "应用视窗 — 整页复刻：资产应用总览（实时监控轮询）/资源使用详情/主题·供应方·需求方·业务应用调用统计"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-DATA-RESOURCES"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 250000
+    note: "批 3 页面单（体量最大 24 L6）。执行 human:孔东。demo 真源 ApplicationWindow.jsx(1273)+AssetApplicationBasicSummary(178)。强度：ponytail full。"
+    depends_on:
+      - "FE-DR-S01"
+    touched_files:
+      - "src/views/data-resources/application/"
+      - "src/api/dataResources.ts"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技数据资源-DR/DR-模块开发规划与任务拆分.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/科技数据资源-应用视窗-原型核对报告.md"
+    definition_of_done:
+      - "资产应用总览（376–379：排行榜/详情视图/基本情况汇总/多维筛选 + 实时应用监控轮询（D3：间隔常量化 30s 可配/页面不可见暂停/卸载清理））"
+      - "数据资源使用情况和详情（380–383：字段属性/来源部门统计/多维筛选/可视化报表）+ 主题数据被调用（384–387：基本信息统计/用户与系统追踪（核对 B2 归属错位照 demo 不改）/趋势周期/排行对比）"
+      - "供应方被调用（388–391）+ 需求方调用详情（392–395）+ 业务应用调用详情（396–399 含明细导出与报告生成，businessAppFilter 状态机移植保自检）"
+      - "mock 种子冻结；D9 ⓘ/🧪 全覆盖；与 demo 逐区块截图对照表 + seq 376–399 对照进 handoff；pnpm type-check 0 错 + 自检 + build 三绿"
+    update_time: "2026-10-19T11:37:55+08:00"
