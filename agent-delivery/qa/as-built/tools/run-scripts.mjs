@@ -344,12 +344,16 @@ function loadCasesV1(dir) {
     return 0;
   });
   const order = listed.length ? listed : [...gold, ...rest];
-  return order.map((id) => byId.get(id)).filter(Boolean);
+  return { byId, order: order.map((id) => byId.get(id)).filter(Boolean) };
 }
-const allScripts = loadCasesV1(featDir);
-const selected = only ? allScripts.filter((s) => only.includes(s.id)) : allScripts;
+const loaded = loadCasesV1(featDir);
+const allScripts = loaded.order;
+// --only 按 cases/*.yaml 的 id 取，不要求已写入 index.all（重写波并行写稿时不抢索引）
+const selected = only
+  ? only.map((id) => loaded.byId.get(id)).filter(Boolean)
+  : allScripts;
 const fixtures = fs.existsSync(path.join(featDir, 'fixtures/testdata.yaml')) ? yamlLoad(path.join(featDir, 'fixtures/testdata.yaml')) : {};
-const baseUrl = String(fixtures.base_url || 'http://111.198.38.90:50892/').replace(/\/$/, '');
+const baseUrl = String(fixtures.base_url || 'http://10.50.69.111:30888/').replace(/\/$/, '');
 const loginCfg = fixtures.login || { username: 'admin', password: '123456' };
 
 // ---------------------------------------------------------------------------

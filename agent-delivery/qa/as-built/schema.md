@@ -102,7 +102,7 @@ runs/{YYYYMMDD}-{env-tag}-{wave-id}/          # 波次父目录（人建或首�
 示例：
 
 ```bash
-WAVE=agent-delivery/qa/as-built/runs/20261015-50892-full-r1
+WAVE=agent-delivery/qa/as-built/runs/20261019-30888-full-r1
 mkdir -p "$WAVE"
 node tools/run-scripts.mjs ../scripts/KJZTFWXT/enterprise/search \
   --run-dir "$WAVE/enterprise-search"

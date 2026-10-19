@@ -1,5 +1,5 @@
 async (page) => {
-  const BASE = 'http://111.198.38.90:50892';
+  const BASE = 'http://10.50.69.111:30888';
   const SEARCH = `${BASE}/enterprise/enterprise-search`;
   const results = [];
   const t0 = Date.now();

@@ -4,7 +4,7 @@
 
 全量 P0/P1 不要用本文件，改用 `prompts/KJZTFWXT/enterprise/key-type/full.md`。
 
-环境：http://111.198.38.90:50892/  
+环境：http://10.50.69.111:30888/  
 账号：`fixtures/testdata.yaml`  
 顺序：**P0-01 → P0-02 → P0-03 → P0-04 → P0-05**。
 

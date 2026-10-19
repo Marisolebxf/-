@@ -1,35 +1,106 @@
-# As-built 脚本补齐编排手册（FUNC ↔ scripts 1:1）
+# As-built 脚本编排手册（FUNC ↔ scripts 1:1）
 
-> **定位**：B 线第 2 步「用例已齐、脚本缺口」时的**三角色编排真源**（父只编排；写稿子 ≠ 验收子；禁止谁写谁验）。  
-> **不替代**：单条写法仍读 [`prompts/_script.md`](prompts/_script.md)；双档/闸门/探针仍读 [`retro/20261014-batch32-method-patch.md`](retro/20261014-batch32-method-patch.md) + [`schema.md`](schema.md)。  
-> **适用**：专题 `KJZTFWXT` 当前波（补齐相对 774 的缺口）；以后用例册增删后**同一流程**再跑 gap 工具即可续派。展示/算法库环境锁定后可复用本手册（改系统码与 catalog）。
+> **当前波（2026-10-19）**：专题用例册已对照重写。脚本按**现行用例号**重写，不沿用旧 `P0-*.yaml`。  
+> **环境**：`http://10.50.69.111:30888/`。禁止再写 `http://111.198.38.90:50892/`。  
+> **单条写法**：[`prompts/_script.md`](prompts/_script.md)。双档 / expect 双层仍读 [`retro/20261014-batch32-method-patch.md`](retro/20261014-batch32-method-patch.md) + [`schema.md`](schema.md)。  
+> **下文 §2～§8** 是上一波「补齐缺口 + 写验分离」的记录。和文首冲突时，以文首为准。
 
 ---
 
-## 0. 新对话 Kickoff（整段复制到父 agent）
+## 重写波（现行）
+
+父控只派单和改编排表。不读用例步骤判断对错，不写 yaml，不跑 `run-scripts`。一条现行用例一个子 agent，在同一次任务里做完：按用例实现 → 关评审复勘 → 无头试跑 → 对照预期列核查。
+
+旧脚本放弃。`func_id` 即使还能对上旧号或保留号，也不要改旧文件，不要把它的 assert 抄进新文件。新文件：
 
 ```text
-【身份】qa-agent 父控（只编排与记账；不写 cases、不跑验收机跑，省上下文）。
+as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
+```
+
+`id` 与文件名相同（`FUNC-xxxxx`）。`func_id` 写完整用例号 `ZNFWJQ-KJZTFWXT-v1.0-FUNC-xxxxx`。试跑用 `--only FUNC-xxxxx`（runner 按文件 id 查找，不要求先写进 `index.all`）。子 agent **不要改** `index.yaml`、`coverage.md`、别的 case、catalog。
+
+### 编排表
+
+`as-built/script-rewrite-ledger-KJZTFWXT.csv`
+
+| 列 | 谁改 | 含义 |
+|----|------|------|
+| `func_id` | 生成时固定 | 现行主表用例号 |
+| `entry_id` / `script_rel` / `case_md` | 生成时固定 | 入口、脚本目录、用例册 |
+| `status` | 父 | `pending` / `running` / `pass` / `fail` / `blocked` |
+| `run_dir` | 父按子交卷抄入 | 试跑目录 |
+| `note` | 父按子交卷抄一行 | 失败原因或写不出的原因，不展开步骤 |
+
+中断后续跑：只读这张表。`pending` 和 `fail` 可以再派；`running` 若对话已死，改回 `pending` 再派。`pass` 不重派。不要用 `script-backfill-queue-*.md` 当本波派单表（那份会把旧脚本当成已覆盖）。
+
+### 并发
+
+同时 **6** 个子 agent。每条会起一个无头 Chromium，6 路大约占 2～3GB 内存，本机还能留给父对话。不要开到 20：浏览器和登录会话会互相拖慢，失败会变成环境红。某一路连续因超时失败，先降到 4，不要加并发。
+
+同一 `script_rel` 可以并行，因为子 agent 只新增自己的 `FUNC-xxxxx.yaml`。
+
+### 回炉
+
+子交卷 `fail`：父把 `status` 写成 `fail`，`note` 抄子 agent 的一行原因，再派**一个新的**子 agent 做同一条。提示词里带上这条 `note`。父不自己改脚本。
+
+写不出稳定断言：`status=blocked`，`note` 写缺什么。不算 pass。
+
+### 0. 新对话 Kickoff（整段复制到父 agent）
+
+```text
+【身份】qa-agent 父控。只编排和改编排表。不写脚本，不跑 run-scripts，不判断步骤对不对。
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【必读（按序）】
-1) agent-delivery/qa/as-built/script-backfill-playbook.md（全文 · 尤其 §2 三角色 + §5.2/§5.3）
-2) agent-delivery/qa/as-built/prompts/_script.md
-3) agent-delivery/qa/as-built/retro/20261014-batch32-method-patch.md
-4) agent-delivery/qa/as-built/schema.md
-【目标】FUNC 册 ↔ as-built 脚本 1:1（缺补齐 + 半成品回炉）；以扫描工具最新输出为准。
-【第一步 · 必跑】
-  python3 agent-delivery/qa/as-built/tools/gap-func-vs-scripts.py --system KJZTFWXT --write
-  读 script-backfill-queue-KJZTFWXT.md（派单主表）及 health/gap 附件。
-【三角色】
-- 写稿子 agent（§5.2）：一次 1 条；可自跑 --only 作交卷前自检，**自检 verdict 不算验收**。
-- 验收子 agent（§5.3）：**独立新会话**；与写稿者不得为同一 Task；一次 1 条；串行（同时只 1 个验收在飞）。
-- 父：派写 → 收写稿交卷 → 另派验收 → 收验收交卷；红则派 §5.2 回炉（换写手或同模板重开均可，仍禁止写手自验）。
-【续跑铁律】有文件 ≠ 完成；queue 刷新后再派；REWORK 优先于 GAP。
-【粒度】写/验收各 1 Task=1 CASE_ID；禁止整入口大包；闸门例外见 §5.1。
-【并发】写稿 ≤4（同目录写手 ≤1）；**验收串行 =1**。
-【强度】ponytail full。【禁止】父写 cases / 父跑 run-scripts 验收；有头浏览器；子改 catalog；全量刷分；git push（除非人类要求）。
-【进度】每批写+验后 --write；收口 §6。
-开干：queue 前 ≤4 行派写稿 Task；每条写稿交卷后立刻派独立验收 Task（验收队列串行，不要等写满 4 条再验）。
+【必读】agent-delivery/qa/as-built/script-backfill-playbook.md 文首「重写波」
+【环境】http://10.50.69.111:30888/
+【派单表】agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv
+【做法】
+1. 取 status=pending 或 fail 的行，一次最多 6 条，每条一个子 agent。派发前把这几行改成 running。
+2. 子 agent 提示词用本文件「重写波 · 子 agent」原文，只替换【】。一条提示词里只能有一个 FUNC 号。
+3. 子交卷后只改这张表：pass / fail / blocked，抄 run_dir 和一行 note。不要打开 yaml 重判。
+4. fail 换一个新子 agent 重做同一条，提示词带上 note。
+【禁止】按 gap 队列派单；把旧 P0 脚本当底稿；有头浏览器；子 agent 改 index.yaml；一次派一个入口的全部用例；git push（除非人类要求）。
+【强度】ponytail full
+开干：从表里取最多 6 条 pending，改成 running，按「重写波 · 子 agent」派发。
+```
+
+### 重写波 · 子 agent（原文下发，只换【】）
+
+```text
+【身份】qa-agent。专题脚本重写。本任务只做一条用例，做完即停。
+【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
+【环境】http://10.50.69.111:30888/  账号 admin / 123456
+【本条】FUNC_ID=【FUNC_ID】
+【用例册】agent-delivery/qa/test-cases/KJZTFWXT/【CASE_MD】 里这一行
+【脚本目录】agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】/
+【上次失败】【NOTE 或 无】
+必读：qa/as-built/prompts/_script.md · schema.md · retro/20261014-batch32-method-patch.md（只要 expect 双层和禁止空断言）
+
+【要做完的四步】
+1. 按这一行用例写 scripts。步骤和预期以用例册为准。
+2. 关内部评审后复勘。按钮名、列名以页面原文为准。评审挂件不写进断言。
+3. 无头试跑这一条。
+4. 对照用例预期列核查：试跑绿，且 assert 覆盖预期里的每一个可判定点。对不上就改脚本再跑，不要把红写成通过。
+
+【落盘】只允许新建或覆盖：
+  【SCRIPT_REL】/cases/【FUNC_ID 的 FUNC-五位】.yaml
+  id 与文件名相同。func_id 写完整用例号。
+  目录还没有 index.yaml 时，只在文件不存在时写入：
+    layout: cases-v1
+    gold: []
+    all: []
+  fixtures/testdata.yaml 的 base_url 必须是 http://10.50.69.111:30888/ 。没有这个文件就只写 base_url 和 login。
+
+【试跑】
+  node agent-delivery/qa/as-built/tools/run-scripts.mjs agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】 --only 【FUNC-五位】 --run-dir agent-delivery/qa/as-built/runs/rewrite-【FUNC-五位】
+
+【禁止】
+- 打开或改写旧的 cases/P0-*.yaml、P1-*.yaml，禁止把旧 assert 抄过来
+- 改 index.yaml、coverage.md、别的用例、catalog、业务仓
+- 再领下一条
+- 有头浏览器
+- 用旧地址 111.198.38.90:50892
+
+【交卷】三行即可：verdict=pass|fail|blocked；run 目录；一行原因。写不出稳定断言用 blocked，不要空断言充绿。
 ```
 
 ---
@@ -52,7 +123,9 @@
 
 ---
 
-## 2. 角色、粒度与并发
+## 2. 角色、粒度与并发（上一波，重写波不沿用）
+
+> 重写波的角色和并发见文首。本节留下只为对照旧补齐波。
 
 ### 2.0 粒度铁律（与 BATCH32 R2/R3 相同）
 
@@ -229,17 +302,14 @@ python3 agent-delivery/qa/as-built/tools/health-cases.py --system KJZTFWXT --wri
 
 ## 6. 收口 DoD
 
-入口级：
+重写波以编排表为准：
 
-- [ ] queue 该入口无待办；本波每条均有**独立验收子** pass（非写稿自检）
-- [ ] `gap=0` 或豁免+ticket；`health` 该入口 0
-- [ ] `index.all` ↔ disk 一致；B skip≤25%+ticket；A 零 skip
-- [ ] catalog 已挂（父）；用例册自动化列已回填
+- [ ] `script-rewrite-ledger-KJZTFWXT.csv` 中无 `pending` / `running` / `fail`
+- [ ] 每条 `pass` 的 `run_dir` 非空；`blocked` 有一行原因
+- [ ] 抽查：`cases/FUNC-xxxxx.yaml` 的 `func_id` 等于表里的用例号
+- [ ] 某入口全部 pass 之后，再把该目录 `index.all` 收成这些 `FUNC-xxxxx`（此时再删或移走旧 `P0`/`P1` 文件）。收口前不要改 `index.all`，避免全量跑混进旧脚本
 
-系统级：
-
-- [ ] queue 长度 0（或仅豁免说明）
-- [ ] handoff：FUNC/脚本总数、独立验收 pass 数、豁免条数；注明「验收均独立子 agent、写手未自验定案」
+上一波补齐 DoD（queue / 独立验收子）不用于本波。
 
 ---
 
@@ -272,6 +342,7 @@ python3 agent-delivery/qa/as-built/tools/health-cases.py --system KJZTFWXT --wri
 
 ## 9. 当前波提示（KJZTFWXT）
 
-- 金样铺开已收口（BATCH32 R3）。补齐波以 **`--write` 刷新后的 queue** 为准。  
-- 中断续跑：先 `--write`，先清 `REWORK`，再补 `GAP`。  
-- 顺手：catalog 未挂的入口由父批量挂；薄包补 `coverage.md` / `testdata.yaml`。
+- 现行用例主表约 1579 行。编排表与之对齐，状态全是 `pending` 表示还没写新脚本。
+- 旧 `cases/P0-*.yaml` 留在目录里，重写波不读、不改、不回炉。
+- 中断后续跑：打开 `script-rewrite-ledger-KJZTFWXT.csv`，把死掉的 `running` 改回 `pending`，再按文首 Kickoff 派。
+- 环境只认 `http://10.50.69.111:30888/`。

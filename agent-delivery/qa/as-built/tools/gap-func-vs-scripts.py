@@ -54,6 +54,13 @@ KJZTFWXT_MAP: list[tuple[str, str, str]] = [
     ("svc-rec-cultivate", "service-产业服务链分析/SVCCULT-培育服务机构推荐分析", "service/rec-cultivate"),
     ("svc-sz", "service-产业服务链分析/SVCSZ-深圳服务链现状分析", "service/sz"),
     ("svc-maintenance", "service-产业服务链分析/SVCMAINT-维护管理", "service/maintenance"),
+    ("ent-detail", "enterprise-企业分析/DETAIL-企业详情", "enterprise/detail"),
+    ("chain-result-deep", "industry-center-产业链分析/RESULTDEEP-产业链分析结果深链", "industry-center/result-deep"),
+    ("chain-report-deep", "industry-center-产业链分析/REPORTDEEP-产业链分析报告深链", "industry-center/report-deep"),
+    ("svc-portal-industry", "service-产业服务链分析/SVCINDDIST-服务机构产业分布", "service/portal-industry"),
+    ("svc-portal-region", "service-产业服务链分析/SVCREGION-服务机构区域分布", "service/portal-region"),
+    ("svc-portal-capability", "service-产业服务链分析/SVCCAPRANK-服务机构技术能力", "service/portal-capability"),
+    ("svc-portal-shenzhen", "service-产业服务链分析/SVCSZINTRO-深圳产业服务介绍", "service/portal-shenzhen"),
 ]
 
 MAPS = {"KJZTFWXT": KJZTFWXT_MAP}
@@ -263,13 +270,10 @@ def build_queue(system: str, gap_rows: list[dict], health: list[dict]) -> str:
             "",
             f"**队列长度**：{n}（REWORK={len(health)} 原始命中；GAP 行见 gap 快照）",
             "",
-            "## 父派单用法（三角色）",
+            "## 父派单用法",
             "",
-            "1. 从上到下取未完成行；写稿并发 ≤4，同 `entry_id` 写手 ≤1。",
-            "2. 每行先派 **§5.2 写稿**（REWORK/GAP 同模板）；写手自检不算验收。",
-            "3. 写稿交卷后派 **§5.3 独立验收**（新会话、一次 1 条、全局串行）；禁止谁写谁验。",
-            "4. 验收 fail → 再派 §5.2 回炉 → 再 §5.3。",
-            "5. 每批后 `--write` 刷新队列，勿死记旧行号。",
+            "2026-10-19 起专题脚本重写**不按本队列派单**。派单真源是 `script-rewrite-ledger-KJZTFWXT.csv`，见 `script-backfill-playbook.md` 文首「重写波」。",
+            "本文件只作缺口快照。旧 `cases/P0-*.yaml` 即使 `func_id` 对上，也不算重写完成。",
             "",
         ]
     )

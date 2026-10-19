@@ -31,12 +31,12 @@
 【必读】agent-delivery/qa/as-built/script-batch-run-playbook.md（全文）
          → prompts/_result.md → schema.md §4.2
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【系统】【SYSTEM=KJZTFWXT】 环境：http://111.198.38.90:50892/（禁止 localhost）
+【系统】【SYSTEM=KJZTFWXT】 环境：http://10.50.69.111:30888/（禁止 localhost）
 【模式】【smoke | full | regress】
   - smoke：每个 live 入口只跑 index.yaml 的 gold:
   - full：每个 live 入口跑 index.all（或全部 cases）
   - regress：仅跑清单【LIST_FILE 或 下方 IDS】
-【波次目录】agent-delivery/qa/as-built/runs/【YYYYMMDD】-50892-【WAVE_ID】/
+【波次目录】agent-delivery/qa/as-built/runs/【YYYYMMDD】-30888-【WAVE_ID】/
 【第一步】mkdir 波次目录；写 WAVE.md（模式/范围/缺口快照一行）；跑 gap 工具备忘
 【执行】父按入口串行调用 run-scripts.mjs，一律 --run-dir $WAVE/<功能短名>
 【结束后强制两个子 Task（缺一不算收口）】
