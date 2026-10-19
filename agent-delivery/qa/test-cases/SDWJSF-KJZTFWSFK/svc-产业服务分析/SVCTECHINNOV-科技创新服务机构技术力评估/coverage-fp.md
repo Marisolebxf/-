@@ -1,59 +1,53 @@
 # 科技创新服务机构技术力评估 · 功能点覆盖（svc.tech-innov / L48）
 
-> catalog `svc.tech-innov` · 50897 · path `/industry-service/tech-innov`  
-> 用例 `API-科技创新服务机构技术力评估-用例.md`  
-> A 线范围：**L48**（`fp-split-by-api-run/work/L48.md`）  
-> 功能点键：`L48 | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
+> catalog `svc.tech-innov` · path `#/industry-service/tech-innov`  
+> A 线真源：`fp-split-by-api-run/work/L48.md`（只读，未改）  
+> B 线用例：`API-科技创新服务机构技术力评估-用例.md`（第二轮 **API-01698**～**01703**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| svc.tech-innov.models | GET | /entan/v1/svc/models | API-00624～API-00628 | catalog `status=unavailable`；本页验收取 `kind=tech`；展示过滤 `service_type=INNOV` |
-
----
-
-## 2. 功能点 → 用例（主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L48 \| svc.tech-innov.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-00624、API-00626、API-00627 | 已覆盖 | SVCTECHINNOV-01 tech 主路径；非法 kind 见 02/00626；非本页 gap 见 03/00627 |
-| L48 \| svc.tech-innov.models \| tech \| 算法输出-tech技术力结果体 | catalog tech | API-00628 | 契约占位 | unavailable，禁止 sample 指数/排名/维度分作通过条件 |
-| L48 \| svc.tech-innov.models \| _empty \| 技术力评估无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「kind=tech 必空」试调证据 |
-| L48 \| svc.tech-innov.models \| _fail \| 技术力评估查询失败 | 契约错误态 | API-00624、API-00625、API-00626、API-00627 | 已覆盖 | 含 catalog 不可用、鉴权失败与 kind/页语义失败 |
-| L48 \| \| etl_clean_standardize \| 多源机构数据清洗标准化 | 需规（1）采集标准化 | — | 未覆盖 | req_only |
-| L48 \| \| innov_four_dim_threshold_weight \| 四维指标与阈值权重体系 | 需规指标体系阈值 | — | 未覆盖 | req_only |
-| L48 \| \| dimension_standard_score_calc \| 各维度标准化指标得分 | 需规指标计算 | — | 未覆盖 | req_only |
-| L48 \| \| weighted_index_rank_synthesis \| 加权综合技术力指数与排名 | 需规加权指数排名 | — | 未覆盖 | req_only |
-| L48 \| \| subscore_weight_ratio_outputs \| 维度得分与权重占比输出 | 需规（2）分项权重 | — | 未覆盖 | req_only |
-| L48 \| \| trend_analysis_advice \| 趋势分析与改进建议语义 | 需规（2）趋势建议 | — | 未覆盖 | req_only |
-| L48 \| \| dynamic_monitor_param_refresh \| 动态监测与参数更新 | 需规（4）动态监测 | — | 未覆盖 | req_only |
-| L48 \| \| eval_period_source_dimension \| 评估周期与来源维度调用语义 | 需规（3）调用范围 | — | 未覆盖 | req_only |
-| L48 \| \| org_tag_online_search \| 机构标签在线检索语义 | 需规（3）标签检索 | — | 未覆盖 | req_only |
-| L48 \| \| auto_eval_system_integration \| 自动化评估与管理系统对接 | 需规（3）系统对接 | — | 未覆盖 | req_only |
-| L48 \| \| api_sdk_standard_call \| API SDK 标准化调用 | 需规（3）API/SDK | — | 未覆盖 | req_only |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| svc.tech-innov.models | GET | /entan/v1/svc/models | API-01698～01700 | unavailable |
+| svc.tech-innov.m_svc_deep_179_1 | POST | /entan/v1/svc-metric/metric/M_SVC_DEEP_179_1/compute | API-01701～01703 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵（挂 L48.md）
+
+| 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
+|----------|----------|--------------|------|------|
+| L48 \| svc.tech-innov.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-01698、01699、01700 | 已覆盖 | 主路径 kind=tech + 省略可选 kind + 非法 kind=__invalid__ |
+| L48 \| svc.tech-innov.models \| tech \| 算法输出-tech技术力结果体 | catalog tech | API-01698 | 已覆盖 | 主流程逐字段断言 tech 及 sampleResponse 元素字段；备选 01699 同结构 |
+| L48 \| svc.tech-innov.models \| _empty \| 技术力评估无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定空结果构造条件，不单开空态用例 |
+| L48 \| svc.tech-innov.models \| _fail \| 技术力评估查询失败 | 契约错误态 | API-01700 | 部分覆盖 | 仅非法 kind 反向，预期 message 或 msg；省略 kind 按可选参数记备选 |
+
+---
+
+## req_only 行（无 endpoint 挂接）
+
+L48.md 中 `etl_clean_standardize`、`innov_four_dim_threshold_weight`、`dimension_standard_score_calc`、`weighted_index_rank_synthesis`、`subscore_weight_ratio_outputs`、`trend_analysis_advice`、`dynamic_monitor_param_refresh`、`eval_period_source_dimension`、`org_tag_online_search`、`auto_eval_system_integration`、`api_sdk_standard_call` 共 11 行 **req_only**，无 catalog endpoint，B 线记 **无对应功能点**，不单独开 API 用例。
+
+sampleResponse 的 tech 元素另有 `org_id`、`service_type`、`score`、`ext.name`、`ext.rank_no`、`dimension_scores.patents`、`rdInvestment`、`experts`、`cases`、`standards`，已写入 01698 正向预期；A 线未单列这些 field_key。
+
+---
+
+## B 线独有（A 线未列 field_key）
+
+| endpoint_id | 对应用例编号 | 状态 | 说明 |
+|-------------|--------------|------|------|
+| svc.tech-innov.m_svc_deep_179_1 | API-01701～01703 | 无对应功能点 | L48 未列该 endpoint 的 field_key；用例仍按 catalog 编写 |
+
+---
+
+## 统计
 
 | 状态 | 条数 |
 |------|------|
-| 已覆盖 | 2（`kind`、`_fail`） |
-| 契约占位 | 1（`tech`） |
-| 未覆盖 | 12（含 `_empty` 1 + req_only 11） |
-
----
-
-## 4. B 线交卷摘要
-
-| 项 | 值 |
-|----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-00624～API-00628 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+| 已覆盖 | 2（`kind`、`tech`） |
+| 部分覆盖 | 1（`_fail`） |
+| 未覆盖 | 1（`_empty`） |
+| req_only 无对应功能点 | 11 |
+| B 线独有 endpoint | 1（`svc.tech-innov.m_svc_deep_179_1`，3 条用例） |

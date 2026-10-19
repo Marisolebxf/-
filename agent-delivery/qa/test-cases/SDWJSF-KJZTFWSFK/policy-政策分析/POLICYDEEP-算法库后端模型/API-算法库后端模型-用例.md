@@ -7,43 +7,35 @@
 > **版本**：v1.0  
 > **模块**：政策分析 / 算法库后端模型  
 > **catalog**：`entry_id=policy.deep` · `catalog_page_id=policy.deep` · path `/policy/deep`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.deep` · endpoint `policy.deep.models`  
-> **A 线对照**：catalog 单 endpoint（`fp-split-by-api-run` 不扩六级，无独立 `Lxx.md`；覆盖矩阵见本目录 `coverage-fp.md`）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.deep`  
+> **A 线对照**：无对应 Lxx。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.deep`（不扩六级）。不改 `work/`  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批12）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 业务 path | Java REST：`GET /policy/v1/policy/analysis/deep`（查询参数 `scope_code`、`limit`，均为可选） |
-| 鉴权头 | `Authorization: Bearer <access_token>`（50897 OAuth 密码模式，账号口径见 `lumen-ui-algo-apiview` LoginView）；`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-000524（金样）** 断言 **完整信封**（HTTP + `code` + 可解析体）；同册其余用例在前置引用金样后，可只断言失败态、鉴权态或字段形态 |
-| catalog 状态 | 本页仅 **1** 个 endpoint：`policy.deep.models`，catalog `status=unavailable`；**禁止**将 `sampleResponse` 中六大模型 `index`（如 82.6、78.4、3、9、6）、`model_name`、`metric_id` 等示例作为通过条件 |
-| 样例与契约差 | `sampleResponse` 为对象，含 `rows` 数组；元素含 `model`、`model_name`、`metric_id`、`index`。契约 `responseFields` **仅**声明 `rows`（array）。断言 **只强制 responseFields**；`model` / `model_name` / `metric_id` / `index` 等样例字段不设失败条件（形态探测见 API-000528 对 `rows` 本身） |
-| 试调 | **本会话未试调**（子任务约束禁止 curl）；执行期按 §0 鉴权与 catalog 复核，observed 仅记入执行记录 |
-| 本页 endpoint 数 | **1** |
+| # | title（功能点列原文） | endpoint_id | METHOD | status |
+|---|------------------------|-------------|--------|--------|
+| 1 | 后端模型 | policy.deep.models | GET | unavailable |
+
+本页 1 个接口。`scope_code`、`limit` 均可选。`sampleRequest` 同时传 `scope_code=440300`、`limit=50`。备选与 sample 相反：不传 `scope_code`（保留 `limit=50`）、不传 `limit`（保留 `scope_code=440300`）。反向各 1 条非法，不把省略写成反向。path 以 catalog JSON 为准：`GET /policy/v1/policy/analysis/focus`。`status=unavailable`，仍按该接口 `sampleResponse` 写正向返回字段。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000524`～`000528`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01513**～**API-01517**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=policy.deep`、组合 id。旧号 API-000524～000528 作废，不复用。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000524 | 政策分析 | 算法库后端模型 | 契约-不可用 | 六大模型综合索引 | 算法库后端模型 | 后端模型 | catalog 不可用态下后端模型索引接口可识别非 live 成功 | 1、已确认 catalog `policy.deep.models` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/analysis/deep，查询参数取组合 DEEP-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含可解析 code；3、不得将 sample 中六大模型 index 或 model_name 作为通过条件；4、若 code 属成功集合则 data 不得被当作已接通生产六大模型索引判定 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A（catalog 聚合页；不扩六级） | N/A-技术项 | N/A | /policy/v1/policy/analysis/deep | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=DEEP-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000525 | 政策分析 | 算法库后端模型 | 异常-鉴权 | 六大模型综合索引 | 算法库后端模型 | 后端模型 | 后端模型索引接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /policy/v1/policy/analysis/deep，查询参数取组合 DEEP-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信 rows 业务载荷的成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/deep | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=DEEP-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000526 | 政策分析 | 算法库后端模型 | 异常-非法scope_code | 六大模型综合索引 | 算法库后端模型 | 后端模型 | 不存在或非法 scope_code 时返回可识别失败而非空索引成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/analysis/deep，查询参数取组合 DEEP-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作无模型空结果或伪 rows 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/deep | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=DEEP-02；矩阵挂 scope_code、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000527 | 政策分析 | 算法库后端模型 | 异常-非法limit | 六大模型综合索引 | 算法库后端模型 | 后端模型 | 非正整数 limit 时返回可识别入参失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /policy/v1/policy/analysis/deep，查询参数取组合 DEEP-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将非法 limit 静默截断为默认条数并成功返回 sample 形态 rows | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/deep | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=DEEP-03；矩阵挂 limit、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000528 | 政策分析 | 算法库后端模型 | 契约-字段形态 | 六大模型综合索引 | 算法库后端模型 | 后端模型 | 成功信封下契约出参 rows 若存在是否符合 array 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-000524 | 1.GET /policy/v1/policy/analysis/deep，查询参数取组合 DEEP-01 | 1、若 code 属成功集合且载荷含 rows（含 data 内或顶层），则 rows 为 array；2、不得以 sample 中六大模型 index 或条数作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/deep | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=DEEP-01；矩阵挂 rows；样例另含 M_POLICY_DEEP_167_1～171_1 不设失败条件 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01513 | 政策分析 | 算法库后端模型 | 主流程 | — | 算法库后端模型 | 后端模型 | 后端模型按文档 sampleRequest 传 scope_code=440300、limit=50 | 1、scope_code 使用文档示例 440300；limit=50 | 1.GET /policy/v1/policy/analysis/focus，查询参数取组合 MOD-01 | 1、返回 body 含 rows（array，responseFields 后端模型索引）；2、元素含 model（string）、model_name（string）、metric_id（string）、index（number）；3、与 sampleResponse 逐字段一致：model=focus、model_name=政策焦点识别模型、metric_id=M_POLICY_DEEP_166_1、index=82.6；model=intensity、model_name=政策力度评估模型、metric_id=M_POLICY_DEEP_167_1、index=78.4；model=effect、model_name=政策效果评估模型、metric_id=M_POLICY_DEEP_168_1、index=75.1；model=gap、model_name=政策短板识别模型、metric_id=M_POLICY_DEEP_169_1、index=3；model=opportunity、model_name=政策机遇识别模型、metric_id=M_POLICY_DEEP_170_1、index=9；model=layout、model_name=政策布局推荐模型、metric_id=M_POLICY_DEEP_171_1、index=6 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=MOD-01 catalog_status=unavailable 文档标记未交付 金样 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01514 | 政策分析 | 算法库后端模型 | 备选-参数组合 | 省略 scope_code | 算法库后端模型 | 后端模型 | 后端模型不传可选 scope_code，limit 保持 sample 的 50 | 1、不传 scope_code；limit=50 | 1.GET /policy/v1/policy/analysis/focus，查询参数取组合 MOD-02 | 1、返回 body 含 rows（array，responseFields 后端模型索引）；2、元素仍含 model（string）、model_name（string）、metric_id（string）、index（number）；3、字段与 sampleResponse 逐字段同类，示例值（focus/政策焦点识别模型/M_POLICY_DEEP_166_1/82.6，intensity/政策力度评估模型/M_POLICY_DEEP_167_1/78.4，effect/政策效果评估模型/M_POLICY_DEEP_168_1/75.1，gap/政策短板识别模型/M_POLICY_DEEP_169_1/3，opportunity/政策机遇识别模型/M_POLICY_DEEP_170_1/9，layout/政策布局推荐模型/M_POLICY_DEEP_171_1/6）说明形态 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=MOD-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01515 | 政策分析 | 算法库后端模型 | 备选-参数组合 | 省略 limit | 算法库后端模型 | 后端模型 | 后端模型不传可选 limit，scope_code 保持 sample 的 440300 | 1、scope_code=440300；不传 limit | 1.GET /policy/v1/policy/analysis/focus，查询参数取组合 MOD-03 | 1、返回 body 含 rows（array，responseFields 后端模型索引）；2、元素仍含 model（string）、model_name（string）、metric_id（string）、index（number）；3、字段与 sampleResponse 逐字段同类，示例值（focus/政策焦点识别模型/M_POLICY_DEEP_166_1/82.6，intensity/政策力度评估模型/M_POLICY_DEEP_167_1/78.4，effect/政策效果评估模型/M_POLICY_DEEP_168_1/75.1，gap/政策短板识别模型/M_POLICY_DEEP_169_1/3，opportunity/政策机遇识别模型/M_POLICY_DEEP_170_1/9，layout/政策布局推荐模型/M_POLICY_DEEP_171_1/6）说明形态 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=MOD-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01516 | 政策分析 | 算法库后端模型 | 异常-入参-非法scope_code | — | 算法库后端模型 | 后端模型 | 后端模型 scope_code 非法，limit 保持 sample 的 50 | 1、limit=50 | 1.GET /policy/v1/policy/analysis/focus，查询参数取组合 MOD-04 | 1、返回 body 的 message 或 msg 指出 scope_code 非法；2、不返回含 model、model_name、metric_id、index 的成功业务 rows | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=MOD-04 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01517 | 政策分析 | 算法库后端模型 | 异常-入参-非法limit | — | 算法库后端模型 | 后端模型 | 后端模型 limit 非法，scope_code 保持 sample 的 440300 | 1、scope_code=440300 | 1.GET /policy/v1/policy/analysis/focus，查询参数取组合 MOD-05 | 1、返回 body 的 message 或 msg 指出 limit 非法；2、不返回含 model、model_name、metric_id、index 的成功业务 rows | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus | | INTEG | | | endpoint_id=policy.deep.models catalog_page_id=policy.deep 组合=MOD-05 catalog_status=unavailable 文档标记未交付 |
 
 ---
 
@@ -51,18 +43,19 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| DEEP-01 | policy.deep.models | `scope_code=440300`；`limit=50`（对齐 catalog `sampleRequest`） | 契约主路径（unavailable） |
-| DEEP-02 | policy.deep.models | `scope_code=__invalid__`；`limit=50` | 非法/不存在省市区编码 |
-| DEEP-03 | policy.deep.models | `limit=0`（`scope_code` 不传或空） | 非正整数条数上限 |
-| DEEP-04 | policy.deep.models | `scope_code=999999`；`limit=50` | 合法形态但可能不存在的编码；**本轮无独立用例**，语义待 endpoint available 后补 |
+| MOD-01 | policy.deep.models | scope_code=440300；limit=50 | 主路径（sampleRequest） |
+| MOD-02 | policy.deep.models | 不传 scope_code；limit=50 | 与 sample 相反：省略可选 scope_code |
+| MOD-03 | policy.deep.models | scope_code=440300；不传 limit | 与 sample 相反：省略可选 limit |
+| MOD-04 | policy.deep.models | scope_code=__invalid__；limit=50 | 只破坏 scope_code |
+| MOD-05 | policy.deep.models | scope_code=440300；limit=-1 | 只破坏 limit |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 查询参数 |
-|-------------|--------|------|--------|----------|
-| policy.deep.models | GET | /policy/v1/policy/analysis/deep | unavailable | scope_code、limit（均可选） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 后端模型 | policy.deep.models | GET | /policy/v1/policy/analysis/focus | scope_code?；limit? | unavailable |
 
 ---
 
@@ -70,30 +63,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| policy.deep.models | API-000524、API-000525、API-000526、API-000527、API-000528 |
+| policy.deep.models | API-01513、01514、01515、01516、01517 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] unavailable endpoint 已写契约占位（API-000524），未写 sample 数值通过条件
-- [x] 异常-鉴权 1 条（API-000525）
-- [x] 入参单缺陷 2 条（API-000526 scope_code、API-000527 limit）
-- [x] responseFields 契约占位 1 条（API-000528 rows）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 1 条且断言信封（API-000524）
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务编号闭区间 API-000524～000528；**未改 registry**）
+- [x] 1 个 title「后端模型」在功能点列出现，且有 1 条主流程（API-01513）
+- [x] 与 sample 相反的传/不传各 1 条备选：省略 scope_code（01514）、省略 limit（01515）
+- [x] 每个参数恰好 1 条非法反向（01516 scope_code、01517 limit）；省略未写成反向
+- [x] unavailable 仍按 sampleResponse 写主流程与备选返回字段，备注注明文档标记未交付
+- [x] 反向预期写 message 或 msg 指出该参数非法
+- [x] 无登录 / Token / 401 / 424
+- [x] `coverage-fp.md` 已同步 API-01513～01517；A 线写无对应 Lxx
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-000524**～**API-000528** |
-| `_empty` 未覆盖 | **1** |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：接口 **1**；用例 **5** 条（主流程 1、备选 2、反向 2）；编号闭区间 **API-01513**～**API-01517**（父控 R2-批12 分配，连续用满）。

@@ -1,113 +1,201 @@
 # 智能服务集群-科技专题服务系统测试用例
 
 > **文档类型**：测试用例（工作区 Markdown）  
-> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md` 红线 1~6）  
+> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.3**（红线见 `qa/as-built/prompts/_case.md`）  
 > **测试类型**：FUNC  
 > **系统码**：KJZTFWXT  
-> **版本**：v2.0 · 2026-10-13（全库粒度重写，自 00732 起编；同组前序册已用 00531~00625）  
-> **模块**：深圳产业情况分析对比（SZCMP / catalog `chain-sz-compare` / A 线 **T06 深圳产业情况分析对比**，41 条功能点：深圳数据专项提取与多维对标 22 条 + 深圳产业化潜力与发展阶段综合判断 19 条）  
-> **金样**：**00732 / 00734 / 00737 / 00738 / 00742**（烟测子集 = 跑全部金样：入口路由、产业下拉构成、主体深圳锁定、标杆诚实空态、开始分析显式触发）  
-> **旧号段**：00222~00232 · **2026-10-13 全库粒度重写废弃，归档不删**（历史行存 git 版本；旧→新映射见同目录 `coverage-fp.md` 附录C）  
-> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`（已在业务页且 URL 不含 `/login` 则不要登出）  
-> **入口**：产业链中心 →「深圳产业情况分析对比」（深圳包入口，非 T07「深圳产业发展分析」）  
+> **版本**：v3.0 · 2026-10-18（对照重写；新号 03288–03326；旧号处置见文末）  
+> **模块**：深圳产业情况分析对比（catalog `chain-sz-compare`）  
+> **金样**：**03288**（筛选条件 → 开始分析 → 成功结果页）。本页只有这一种发起方式。  
+> **环境**：http://10.50.69.111:30888/ · 账号 `admin` / `123456`  
+> **入口**：产业链分析 →「深圳产业情况分析对比」  
 > **路由**：`/industry-center/shenzhen?workspace=comparison&tab=comparison`  
-> **禁止**：把同包 development 工作区（T07 深圳产业发展分析）与共享分析记录内容写成对比用例，二者只做隔离/边界 observed；对比篮浮层为系统级入口（现场共 8 项），专项归 COMPARE 用例集，本页只顺带 observed  
-> **USM**：`agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-SHENZHEN-深圳产业决策/USM-CHAIN-TOPIC-SHENZHEN.md`（US-CHAIN-SZ-01/02/05；验收 AC-US-CHAIN-SZ-01-01～03 / AC-US-CHAIN-SZ-02-01～04 / AC-US-CHAIN-SZ-05-01/02）  
-> **TRACE**：`TRACE-CHAIN-TOPIC-SHENZHEN.yaml`（`acceptance_leaf`：REQ-CHAIN-SZ-01 深圳产业情况分析对比；`route_contract.comparison`）  
-> **原始需求**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.2.6`（`.6.1` 深圳数据专项提取与多维对标 / `.6.2` 深圳产业化潜力与发展阶段综合判断）；算法侧 `bid-reference/科技专题服务算法库.md` → `§1.1.1.1.1.1.1.3.2` / `§1.1.1.1.1.1.1.3.5`  
-> **交付口径**：INTEG（前端 → Java → Python `/internal/*`）  
-> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`（v8 T06 全 41 条映射）  
+> **异步**：选满产业和标杆后点「开始分析」；当天同条件再次点开会已有结果且不新增任务；「重新分析」另起新任务。  
+> **交付口径**：INTEG  
+> **功能点 / 功能点ID**：本步不改同目录 `coverage-fp.md`  
 > **关联任务**：`QA-KJZTFWXT-BLINE-CASE-IND-L01`  
 > **维护**：agent:qa-agent · 监管 human:黄敬洲  
-> **自动化用例ID**：已回填 as-built 脚本 id（P0-01~P0-12 / P1-01~P1-10；金样 P0-01~P0-05 ↔ 00732/00734/00737/00738/00742；2026-10-14 BATCH32）
 
-**as_built 摘要（写期望用，不升 Fail）**：入口为深圳包工作空间，路由 `/industry-center/shenzhen?workspace=comparison&tab=comparison`，页标题「深圳产业情况分析对比」；顶部 Tab 两枚：「深圳产业情况分析对比」（默认选中）与「分析记录」。勘察时评审模式为开启态：需求追溯按钮「深圳产业情况分析对比」×2、「系统分析任务交接」、「深圳对比/发展需求追溯」、「标杆区域须就绪」可见，角标「指标未登记：GAP-CHAIN-SZ-METRICS」呈现，关闭评审模式后须零泄漏。分析配置区：分析对象为产业下拉（placeholder「请选择产业」，勘察已选态示例「新一代信息技术」）；主体区域「深圳」只读锁定不可改；标杆区域（1–5 个）输入框为诚实空态：placeholder「Q016 未定，标杆清单为空；勿冒充沪/京/苏州」——标杆城市清单待甲方 Q016 决策，前端不得预置冒充沪/京/苏州（USM 目标态为共享四级地域 Cascader，as-built 空态以现场为准）；对比维度 4 行只读启用（spinbutton 25×4，disabled，对应企业/专利/政策/人才四维）。操作区：「重置参数」可用；「开始分析」在未选产业时 disabled。对比篮浮层系统级存在（共 8 项，专项归 COMPARE 不展开）。本页为异步分析工作区（I2-12：切条件不自动起任务、同用户同条件单飞、当天已成功直接打开结果）；勘察现场无已完成结果，结果态用例按需 observed 记开放项。兄弟工作区 development（T07）与本页互不互串，归隔离用例核验。
+---
+
+## 关评审控件清单
+
+入口拓扑：
+
+| 区域 | 现场 | 用例 |
+|------|------|------|
+| 入口 A · 筛选条件发起 | 集群、产业、标杆区域，按钮「开始分析」 | 03288（金样） |
+| 入口 B · 已选对象发起 | 无。本页没有对象名单，也不能从名单发起分析 | 无 |
+| 任务列表 | 「分析记录」 | 03308、03309、03310 |
+| 结果页 | 「深圳产业情况分析对比结果」 | 03299 起 |
+
+结果页（入口 A；入口 B 无，不复制）：
+
+| 组 | 格 | 用例或未覆盖 |
+|----|----|--------------|
+| 摘要 | 对象 / 主体 / 标杆 / 任务 | 03299 |
+| 摘要 | 深圳产业链企业数 | 03300 |
+| 摘要 | 投融资总额 | 03301 |
+| 筛选下拉 | 无 | 无 |
+| 开始分析·当天 | 同条件再次开始分析 | 03306 |
+| 工具 | 重新分析 | 03311（点到新结果页） |
+| 工具 | 调整条件（复制配置回配置且条件仍在） | 03313 |
+| 工具 | 按此配置新建分析 | 03312 |
+| 工具 | 报告查看 | 03307 |
+| 工具 | 报告目录 | 03314 |
+| 工具 | 导出 | 03323 |
+| 工具 | 结果搜索 | 无 |
+| 表 | 列与四行 | 03302 |
+| 表 | 翻页 | 无（矩阵不分页） |
+| 表 | 勾选 | 无 |
+| 表 | 行按钮 | 无 |
+| 详情 | 行抽屉 | 无 |
+| 二级 | 无 | 无 |
+| 报告 | 生成中 | 未覆盖：打开报告时正文已在，没有单独的生成中页 |
+| 报告 | 下载报告 | 03324 |
+| 入池 | 无 | 无 |
+| 过程页 | 生成中与两个按钮 | 03315、03316 |
+
+入口 B 各格：无。
+
+任务列表：
+
+| 格 | 用例或未覆盖 |
+|----|--------------|
+| 列：任务、类型、状态、创建时间、操作 | 03308 |
+| 任务状态下拉（4 项） | 03309 |
+| 失败 → 暂无数据 | 03325 |
+| 分析中 → 暂无数据 | 03326 |
+| 重置筛选 | 03317 |
+| 翻页 | 未覆盖：每页 10 条，现有记录不足一页，没有第二页 |
+| 查看结果 × 条件发起 | 03310 |
+| 复制配置 × 条件发起 | 03313 |
+| 查看报告 × 条件发起 | 03307 |
+| 下载报告 × 条件发起 | 03324 |
+| 删除取消 × 条件发起 | 03318 |
+| 删除确定 × 条件发起 | 03319 |
+| 上述操作 × 对象名单起源 | 无（没有第二种发起） |
+| 同条件单飞 | 未覆盖：生成过程约 1 秒即结束，构造不出第二条进行中任务 |
+| 分析失败的任务 | 未覆盖：现场没有失败任务，造不出失败终态 |
+| 第二种账号 | 未覆盖：只有当前登录账号 |
+
+配置区（入口 A 的条件，不代替金样）：
+
+| 格 | 用例 |
+|----|------|
+| 页标题与路由 | 00732 |
+| 双 Tab | 00733 |
+| 集群下拉 15 项 | 03289 |
+| 产业下拉 7 项 | 03290 |
+| 切换集群后产业选项变化 | 03291 |
+| 标杆下拉 8 个城市 | 03292 |
+| 主体区域深圳只读 | 00737 |
+| 切换后深圳与四维模型仍在 | 00736 |
+| 四维模型列 | 03293 |
+| 权重不可改 | 00739 |
+| 只读且行数固定 | 00740 |
+| 选择列不可勾选 | 03294 |
+| 查看 × 企业 / 专利 / 政策 / 人才 | 03295–03298 |
+| 未选标杆不可开始 | 03322 |
+| 重置参数 | 00743、00744 |
+| Tab 往返条件仍在 | 00748 |
+| 只改条件不点开始分析 | 03321 |
+| 带入发展分析 | 03320 |
 
 ---
 
 ## 1. 用例总表（总集列 + 右侧 GKX 扩展）
 
-> 排列顺序：**主流程（P0）→ 备选（P1）→ 异常（P0）**；场景类见「功能项」列前缀。  
-> 预期断言常态 1~3 点；本册无 4~5 点结构性例外条目。  
-> 结果态条目为勘察未见场景，预期按目标态写、备注标 observed，不升 Fail。  
-> observed 项一律入「备注」，不进预期。
+> 排列：**主流程 → 备选 → 异常**。金样只有 03288。  
+> 预期常态 1～3 点。长名单见附录 A。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00732 | 产业链分析 | 深圳产业情况分析对比 | 主流程-入口与路由 | 页头与路由 | 深圳产业情况分析对比 | 进入对比工作区 | 进入「深圳产业情况分析对比」页，路由与页标题正确 | 1、系统正常；2、已登录 admin | 1.经产业链中心菜单进入「深圳产业情况分析对比」入口 | 1、路由为 /industry-center/shenzhen 且工作区与页签参数均为 comparison；2、页标题为「深圳产业情况分析对比」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-01 | 金样；接旧 00222 部分；勘察事实（路由/标题）全对齐；双 Tab 构成归 00733；与发展分析入口区分归 00750；勘察时评审模式为开启态，评审增量显隐归 00751/00752；对比篮专项深验归 COMPARE 用例集（现场共 8 项），本页只顺带 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00733 | 产业链分析 | 深圳产业情况分析对比 | 主流程-入口与路由 | 双 Tab 构成 | 深圳产业情况分析对比 | 双 Tab 结构 | 顶部双 Tab 构成与默认选中态正确 | 1、已进入深圳产业情况分析对比页 | 1.读取顶部 Tab 构成；2.读取默认选中态 | 1、顶部含「深圳产业情况分析对比」与「分析记录」两枚 Tab，顺序一致；2、默认选中「深圳产业情况分析对比」，「分析记录」未选中 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-06 | 接旧 00222 部分（双 Tab 拆出）；Tab 互切与条件保持归 00748；「分析记录」区构成归 00749 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00734 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 产业下拉占位与选项 | 深圳产业情况分析对比 | 选择目标产业 | 分析对象产业下拉未选态占位提示与选项加载正确 | 1、已进入页面；2、分析对象为初始未选态（已选时先重置） | 1.展开分析对象产业下拉；2.浏览下拉选项 | 1、未选产业时下拉呈引导占位提示「请选择产业」；2、下拉选项正常加载，含全部产业集群 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-02 | 金样；接旧 00223 部分；占位与选项全量清单见附录A；全量选项集合与 15 集群同源性执行时核（开放项 1）；切换回显归 00735 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00735 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 产业切换与回显 | 深圳产业情况分析对比 | 选择目标产业 | 切换分析对象产业后已选值回显正确 | 1、已进入页面；2、产业已选「新一代信息技术」 | 1.展开产业下拉并切换为另一产业；2.回读已选值；3.切回「新一代信息技术」；4.回读已选值 | 1、切换后已选值回显为新选产业；2、切回后已选值回显为「新一代信息技术」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-07 | 接旧 00223 部分（切换回显拆出）；切换后其余要素保持归 00736；切换不自动创建任务归 00742 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00736 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 切换后要素保持 | 深圳产业情况分析对比 | 配置要素保持 | 切换产业后主体区域与对比维度保持初始锁定态 | 1、已进入页面；2、产业已选任一值 | 1.切换产业为另一产业；2.回读主体区域；3.回读对比维度区 | 1、切换后主体区域「深圳」锁定保持；2、切换后对比维度 4 行只读保持 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-08 | 接旧 00223/00225/00227 部分（跨区块保持拆出单列）；「开始分析」门控随选中态联动归 00741；标杆空态不因切换改变（与 00738 交叉） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00737 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 主体深圳锁定 | 深圳产业情况分析对比 | 主体区域深圳固定只读 | 主体区域「深圳」只读锁定不可更改 | 1、已进入页面 | 1.点击主体区域「深圳」；2.尝试输入其他区域名；3.尝试清空「深圳」值；4.回读主体区域 | 1、主体区域固定显示「深圳」，呈只读锁定态；2、输入与清空均无法更改该值；3、主体区域与分析对象、标杆区域构成配置三要素 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜展示深圳企业、专利、政策、人才数据 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-03 | 金样；接旧 00225 部分（三要素构成并入本条）；对象契约 subject_region=fixed_shenzhen；结果页四维数据表勘察无结果态（开放项 3）；产业变更后保持归 00736 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00738 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 标杆诚实空态 | 深圳产业情况分析对比 | 标杆区域诚实空态 | 标杆区域为诚实空态且不预置任何默认标杆城市 | 1、已进入页面 | 1.点击标杆区域输入框；2.在标杆输入框内尝试输入；3.页面内检索「上海」「北京」「苏州」 | 1、标杆区域控件为诚实空态，占位提示标杆清单未定（原文见附录A）；2、页面不预置任何默认标杆城市，不冒充沪/京/苏州 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜将深圳数据与北京对比 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-04 | 金样；接旧 00226 部分；标杆清单为甲方决策未定态（Q016 客户决策清单 🟡）；目标态为共享四级地域级联（全球/全国/区域/深圳，就绪标注、未就绪不可选、可选国际节点），现空态为决策前诚实呈现不判 Fail；北/上对比与区域对比空态在决策闭合前无法构造（开放项 2）；输入交互形态执行时记录；评审态「标杆区域须就绪」按钮归 00751 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00739 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 四维构成与数值只读 | 深圳产业情况分析对比 | 对比维度只读 | 对比维度四行构成正确且数值不可修改 | 1、已进入页面 | 1.逐行读取对比维度名称与行数；2.逐行点击数值增减箭头；3.在任一数值框内输入新值 | 1、对比维度共 4 行，对应企业、专利、政策、人才四维；2、各行数值不可被修改 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜展示深圳企业、专利、政策、人才数据 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-09 | 接旧 00227 部分；spinbutton 25×4 的数值语义执行时 observed（开放项 4）；契约 dimensions_readonly；只读启用形态归 00740；产业变更后保持归 00736；四维行构成见附录A |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00740 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 只读启用形态 | 深圳产业情况分析对比 | 对比维度只读形态 | 对比维度呈只读启用形态且维度构成固定 | 1、已进入页面 | 1.读取对比维度各行样式形态；2.浏览维度区操作入口 | 1、各行呈只读启用形态，非整体置灰禁用样式；2、维度构成固定为四行，无增删行或更改维名入口 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜展示深圳企业、专利、政策、人才数据 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-10 | 接旧 00227 部分（启用形态拆出）；「只读启用非置灰」为勘察口径（spinbutton disabled 但行非整体禁用灰）；数值只读归 00739 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00741 | 产业链分析 | 深圳产业情况分析对比 | 主流程-操作区 | 门控状态机 | 深圳产业情况分析对比 | 开始分析按钮门控 | 「开始分析」按钮随配置有效性门控联动 | 1、已进入页面；2、产业为未选态 | 1.读取未选产业时「开始分析」按钮状态；2.选中产业「新一代信息技术」；3.回读按钮状态 | 1、未选产业时「开始分析」置灰禁用；2、选中产业后按钮恢复可用 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜未选择目标产业时不可提取数据 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-11 | 接旧 00224/00228 部分（门控状态机拆出）；选了产业但标杆为空时的可点性执行时 observed（开放项 2）；禁用态触发攻击归 00753；显式发起链路归 00742 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00742 | 产业链分析 | 深圳产业情况分析对比 | 主流程-操作区 | 显式触发与异步创建 | 深圳产业情况分析对比 | 显式开始分析创建任务 | 「开始分析」显式触发创建任务且切条件不自动起任务 | 1、已进入页面；2、已选中产业「新一代信息技术」 | 1.点击「开始分析」；2.浏览任务过程呈现；3.切换为另一产业且不点击按钮；4.浏览任务与分析记录列表 | 1、显式点击后创建分析任务；2、仅变更条件不点按钮时不创建任务、不新增记录条目；3、任务过程为异步任务态呈现 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜未完成数据提取时不可进行区域对比 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-05 | 金样；接旧 00228 部分；勘察无结果态，提交反馈过程态与结果打开方式执行时记录（observed，开放项 3）；异步口径=切条件不自动起任务、同用户同条件单飞、当天已成功直接打开结果、重新分析可强制重跑（单飞/复用/重跑深验归 00745/00746/00747；口径见客户决策清单 Q-ANALYSIS-01）；无独立「数据截至/快照」时间控件（observed-执行时记录）；结果态全链路归开放项 3 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00743 | 产业链分析 | 深圳产业情况分析对比 | 备选-操作区 | 重置回默认 | 深圳产业情况分析对比 | 重置参数 | 「重置参数」后产业下拉恢复未选占位态 | 1、已进入页面；2、已选中产业形成脏配置 | 1.点击「重置参数」；2.回读产业下拉 | 1、「重置参数」按钮可用；2、重置后产业下拉回到引导占位提示态 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-01 | 接旧 00229 部分（重置回默认拆出）；重置后其余要素保持与门控回归归 00744 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00744 | 产业链分析 | 深圳产业情况分析对比 | 备选-操作区 | 重置后保持与门控 | 深圳产业情况分析对比 | 重置后要素保持 | 「重置参数」后主体、标杆、维度保持初始态且门控回禁用 | 1、已执行「重置参数」 | 1.回读主体区域；2.回读标杆区域与对比维度；3.回读「开始分析」按钮状态 | 1、重置后主体区域「深圳」锁定保持；2、重置后标杆区域保持诚实空态、对比维度保持只读；3、重置后「开始分析」恢复置灰禁用 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-02 | 接旧 00229 部分（重置范围拆出）；重置范围是否含标杆输入残留执行时补核（开放项 4）；重置不创建任务（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00745 | 产业链分析 | 深圳产业情况分析对比 | 备选-异步工作区 | 同条件单飞 | 深圳产业情况分析对比 | 异步任务单飞 | 同用户同条件同时仅允许一条分析任务在跑 | 1、已进入页面；2、已选中同一产业 | 1.点击「开始分析」；2.任务在跑期间再次点击「开始分析」；3.浏览任务列表 | 1、同条件同时仅一条任务在跑，重复发起被拦截或复用 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜未完成数据提取时不可进行区域对比 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-03 | 接旧 00230 部分（单飞拆出）；勘察无在跑任务，执行时构造核验，无法构造时记「未执行」不判 Fail（开放项 3）；单飞口径见客户决策清单 Q-ANALYSIS-01 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00746 | 产业链分析 | 深圳产业情况分析对比 | 备选-异步工作区 | 当天结果复用 | 深圳产业情况分析对比 | 当天成功结果复用 | 当天已有同条件成功任务时再次进入直接打开结果 | 1、当天已对同一产业条件成功完成至少一次分析任务 | 1.当天再次进入页面；2.读取页面呈现 | 1、再次进入时直接打开该条件结果，不重复起跑 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜展示深圳独特优势 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-04 | 接旧 00230 部分（当天复用拆出）；勘察无结果态，执行时构造核验，无法构造时记「未执行」（开放项 3）；结果页构成（对比表/对标研判三栏/综合判断区块）勘察未见，按目标态执行时记录（承载功能点见覆盖矩阵 #15/#16/#32–#36 部分覆盖锚点）；当天复用口径见 Q-ANALYSIS-01 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00747 | 产业链分析 | 深圳产业情况分析对比 | 备选-异步工作区 | 重新分析 | 深圳产业情况分析对比 | 重新分析强制重跑 | 「重新分析」可对已有结果强制发起新一轮任务 | 1、当天已有同条件成功结果 | 1.在结果态点击「重新分析」；2.浏览任务状态 | 1、「重新分析」发起新一轮分析任务 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜未完成数据提取时不可进行区域对比 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-05 | 接旧 00230 部分（重新分析拆出）；入口位置与呈现执行时记录（observed，开放项 3）；强制重跑口径与同组册一致（Q-ANALYSIS-01） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00748 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | Tab 互切与条件保持 | 深圳产业情况分析对比 | 分析记录 Tab 切换 | 「分析记录」Tab 与对比 Tab 互斥切换且切回后条件保持 | 1、已进入页面；2、已选中产业 | 1.切到「分析记录」Tab；2.切回「深圳产业情况分析对比」Tab；3.回读已选产业 | 1、记录区与对比配置区互斥呈现，不叠加；2、切回后已选产业等条件保持 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳产业化潜力与发展阶段综合判断 \｜基于区域对比结果进行综合判断 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-06 | 接旧 00231 部分（Tab 切换拆出）；记录区为深圳包共享 Tab，本页只核切换与恢复边界；记录区构成归 00749；Tab 往返不创建任务（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00749 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 记录构成与过滤 | 深圳产业情况分析对比 | 分析记录构成与过滤 | 「分析记录」区支持按类型与状态过滤且条目字段完整 | 1、已切到「分析记录」Tab；2、存在至少一条历史任务（无则执行时记录空态） | 1.浏览记录过滤条件；2.浏览记录条目字段；3.浏览记录条目操作 | 1、记录区可按类型与状态过滤；2、条目含提交与完成时间、关联报告份数；3、操作含查看结果、复制配置、关联报告 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳产业化潜力与发展阶段综合判断 \｜基于区域对比结果进行综合判断 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-07 | 接旧 00231 部分（构成与过滤拆出）；勘察未深勘记录区，构成按 USM AC-05-01/02 目标口径执行时核对（开放项 8）；操作集不含「查看任务进度」（USM AC-05-02 口径）执行时顺带核；空态文案执行时记录 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00750 | 产业链分析 | 深圳产业情况分析对比 | 备选-工作区壳 | development 隔离 | 深圳产业情况分析对比 | 工作区隔离 | 兄弟工作区与本对比工作区互不串扰 | 1、已进入对比工作区；2、已选中产业 | 1.切换到发展分析工作区；2.回读工作区配置构成；3.切回对比工作区；4.回读对比配置与已选条件 | 1、发展分析工作区呈现发展分析配置，非对比配置；2、切回后对比配置与已选条件恢复 | P1 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳产业化潜力与发展阶段综合判断 \｜展示深圳产业优势｜TRACE-CHAIN-TOPIC-SHENZHEN.yaml｜/industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-08 | 接旧 00232 部分（隔离拆出）；发展分析内容归其自身用例集（T07），本条只核不互串；路由契约目标态为 tab=comparison\ | development\ | records，现场为 workspace+tab 双参数，以现场为准（TRACE route_contract.comparison）；优先级随拆单对齐同组隔离用例口径调整为 P1（旧 00232 整条为 P0） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00751 | 产业链分析 | 深圳产业情况分析对比 | 备选-评审模式 | 评审增量可见 | 深圳产业情况分析对比 | 评审增量可见 | 评审模式开启后评审增量控件与角标可见 | 1、顶部人设面板「内部评审模式」开关可用；2、已进入页面 | 1.开启评审模式；2.浏览需求追溯控件；3.逐一点击追溯控件；4.浏览角标呈现 | 1、开启后五枚追溯控件可见（清单见附录A）；2、各控件可点击且追溯内容可读；3、「指标未登记」角标呈现（原文见附录A） | P1 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳产业化潜力与发展阶段综合判断 \｜展示深圳产业优势 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-09 | 接旧 00232/00226 部分（评审增量拆出）；勘察时评审模式为开启态，以上为勘察事实；关闭零泄漏归 00752；指标就绪度真源未建立（GAP-CHAIN-SZ-METRICS：stage_block 不阻塞、gap_visible），本页无 metric_id 可挂，统计数字身份证按缺口引用呈现；优先级随拆单对齐同组评审用例口径调整为 P1 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00752 | 产业链分析 | 深圳产业情况分析对比 | 备选-评审模式 | 关闭零泄漏 | 深圳产业情况分析对比 | 评审零泄漏 | 评审模式关闭后全页零泄漏且业务态不变 | 1、评审模式为开启态；2、已进入页面 | 1.记录当前业务配置；2.关闭评审模式；3.刷新页面；4.两 Tab 全页检索评审字样；5.回读业务配置 | 1、关闭并刷新后两 Tab 无追溯控件、角标与评审字样泄漏；2、开关评审模式不改变产业、标杆、维度与 Tab 业务态 | P1 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳产业化潜力与发展阶段综合判断 \｜展示深圳产业优势 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-10 | 接旧 00232/00226 部分（零泄漏拆出）；零泄漏铁律：关闭后 DOM 无「需求追溯 / 指标未登记 / 标杆区域须就绪 / 指标说明 / metric_id / Q0xx / GAP-」字样泄漏；控件与角标原文见附录A；「检索」为页面内查找动作（同组册口径）；标杆空态呈现不因开关改变（与 00738 交叉）；优先级随拆单对齐同组评审用例口径调整为 P1 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00753 | 产业链分析 | 深圳产业情况分析对比 | 异常-分析配置区 | 禁用态触发无效 | 深圳产业情况分析对比 | 未选产业禁用触发 | 未选产业时「开始分析」任何触发方式均不发起任务 | 1、已进入页面；2、产业为未选态（初始态或重置后） | 1.点击「开始分析」；2.聚焦按钮后按回车；3.浏览页面与任务列表状态 | 1、禁用态下点击与回车均不创建任务、不跳转结果态；2、页面不静默选定默认产业发起任务 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | T06 \｜深圳数据专项提取与多维对标 \｜未选择目标产业时不可提取数据 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-12 | 接旧 00224 部分（禁用态触发攻击单列）；门控状态机归 00741；选了产业但标杆为空的可点性执行时 observed（开放项 2）；无独立「数据截至/快照」时间控件（observed-执行时记录） |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00732 | 产业链分析 | 深圳产业情况分析对比 | 主流程-入口与路由 | 页头与路由 | 深圳产业情况分析对比 | 进入对比工作区 | 进入「深圳产业情况分析对比」页，路由与页标题正确 | 1、系统正常；2、已登录 | 1.经产业链分析菜单进入「深圳产业情况分析对比」 | 1、路由含 /industry-center/shenzhen；2、工作区与页签均为 comparison；3、页标题为「深圳产业情况分析对比」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-01 | 保留编号。金样改挂 03288 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00733 | 产业链分析 | 深圳产业情况分析对比 | 主流程-入口与路由 | 双 Tab 构成 | 深圳产业情况分析对比 | 双 Tab | 顶部两个页签的名称与默认选中正确 | 1、已进入深圳产业情况分析对比页 | 1.读取顶部页签名称；2.读取默认选中项 | 1、页签为「深圳产业情况分析对比」和「分析记录」；2、默认选中「深圳产业情况分析对比」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-06 | 保留编号 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00736 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 切换后要素保持 | 深圳产业情况分析对比 | 配置保持 | 切换产业后，主体仍为深圳，四维模型行数不变 | 1、已进入页面；2、已选集群 | 1.把产业切换为另一项；2.读取主体区域；3.读取四维模型行数 | 1、主体区域仍为「深圳」；2、四维模型仍为 4 行 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-08 | 保留编号。区块名改为页面原文「四维模型」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00737 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 主体深圳锁定 | 深圳产业情况分析对比 | 主体区域只读 | 主体区域「深圳」不能改成别的地区 | 1、已进入页面 | 1.点击主体区域「深圳」；2.尝试输入其他地区名；3.尝试清空该值 | 1、主体区域保持「深圳」；2、输入和清空都不能改掉该值 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 主体区域固定 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-03 | 保留编号。金样改挂 03288 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00739 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 权重只读 | 深圳产业情况分析对比 | 四维权重只读 | 四维模型四行的权重数值不能修改 | 1、已进入页面 | 1.读取四行指标名称；2.点击权重旁的增减箭头；3.在权重框内输入新值 | 1、四行指标名称为企业、专利、政策、人才；2、权重仍为 25，不能改掉 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 四维模型只读 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-09 | 保留编号。区块名改为「四维模型」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00740 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 行数固定 | 深圳产业情况分析对比 | 四维行数固定 | 四维模型固定四行，没有增删行入口 | 1、已进入页面 | 1.读取四维模型行数；2.在四维模型区域寻找增行或删行按钮 | 1、数据状态四行都显示「可用」；2、没有增行、删行或改指标名的按钮 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 四维模型只读 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-10 | 保留编号 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03288 | 产业链分析 | 深圳产业情况分析对比 | 主流程-开始分析 | 条件发起至结果 | 深圳产业情况分析对比 | 开始分析得到结果 | 选好产业和标杆后，开始分析能打开成功结果页 | 1、已进入分析配置 | 1.在集群下拉选择「新一代信息技术」；2.在产业下拉选择「人工智能与应用」；3.在标杆区域选择「上海市」；4.在标杆区域再选择「北京市」；5.点击「开始分析」；6.若出现「查看分析结果」，点击该按钮 | 1、页面出现标题「深圳产业情况分析对比结果」；2、摘要中主体为深圳，标杆含上海市与北京市 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 开始分析 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样。当天已成功时会直接打开已有结果，仍须见到结果页 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03289 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 集群下拉 | 深圳产业情况分析对比 | 集群选项 | 集群下拉的选项个数正确 | 1、已进入分析配置 | 1.展开集群下拉 | 1、选项共 15 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03290 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 产业下拉 | 深圳产业情况分析对比 | 产业选项 | 集群为新一代信息技术时，产业下拉选项个数正确 | 1、集群已是「新一代信息技术」 | 1.展开产业下拉 | 1、选项共 7 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 未选时占位为「请选择产业」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03291 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 产业随集群变化 | 深圳产业情况分析对比 | 产业联动 | 换成生物产业后，产业选项随之变化 | 1、已进入分析配置 | 1.把集群切换为「生物产业」；2.展开产业下拉 | 1、产业选项变为 3 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择目标产业 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03292 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 标杆城市 | 深圳产业情况分析对比 | 标杆选项 | 标杆区域下拉给出可选城市个数 | 1、已进入分析配置；2、标杆尚未选择 | 1.展开标杆区域下拉 | 1、可选城市共 8 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 选择标杆区域 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 未选占位原文见附录 A，不写入预期 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03293 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 四维表列 | 深圳产业情况分析对比 | 四维列名 | 四维模型表的列名齐全 | 1、已进入分析配置 | 1.读取四维模型表头 | 1、列共 7 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 四维模型 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03294 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 选择列 | 深圳产业情况分析对比 | 选择列不可勾 | 四维模型的选择列不能勾上 | 1、已进入分析配置 | 1.点击四维模型「选择」列的勾选框 | 1、勾选框保持未选 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 四维模型只读 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03295 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 查看企业 | 深圳产业情况分析对比 | 企业指标说明 | 「企业」行的查看打开对应说明 | 1、已进入分析配置 | 1.在四维模型点击「企业」行的「查看」 | 1、抽屉标题为「企业 · 指标说明」；2、抽屉内有「说明」和「支撑指标」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 指标说明 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03296 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 查看专利 | 深圳产业情况分析对比 | 专利指标说明 | 「专利」行的查看打开对应说明 | 1、已进入分析配置 | 1.在四维模型点击「专利」行的「查看」 | 1、抽屉标题为「专利 · 指标说明」；2、抽屉内有「说明」和「支撑指标」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 指标说明 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03297 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 查看政策 | 深圳产业情况分析对比 | 政策指标说明 | 「政策」行的查看打开对应说明 | 1、已进入分析配置 | 1.在四维模型点击「政策」行的「查看」 | 1、抽屉标题为「政策 · 指标说明」；2、抽屉内有「说明」和「支撑指标」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 指标说明 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03298 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析配置区 | 查看人才 | 深圳产业情况分析对比 | 人才指标说明 | 「人才」行的查看打开对应说明 | 1、已进入分析配置 | 1.在四维模型点击「人才」行的「查看」 | 1、抽屉标题为「人才 · 指标说明」；2、抽屉内有「说明」和「支撑指标」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 指标说明 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03299 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 条件摘要 | 深圳产业情况分析对比 | 结果摘要 | 从开始分析进入的结果页，摘要与所选条件一致 | 1、已用「人工智能与应用」以及上海市、北京市点过「开始分析」 | 1.停留在刚打开的结果页；2.读取标题下的对象、主体、标杆 | 1、摘要中的对象为「人工智能与应用」；2、主体为深圳；3、标杆含上海市与北京市 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 结果摘要 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 从分析记录「查看结果」进入时，摘要曾显示未选，执行时分开记录 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03300 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 企业数 | 深圳产业情况分析对比 | 深圳产业链企业数 | 结果页「深圳产业链企业数」有明确空值文案 | 1、已打开成功结果页 | 1.读取「深圳产业链企业数」 | 1、该格显示「暂无」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 结果摘要 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03301 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 投融资 | 深圳产业情况分析对比 | 投融资总额 | 结果页「投融资总额」有明确空值文案 | 1、已打开成功结果页 | 1.读取「投融资总额」 | 1、该格显示「数据筹备中」 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 结果摘要 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03302 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 对比表 | 深圳产业情况分析对比 | 对比结果表 | 对比结果表带出深圳列和标杆列 | 1、已打开含上海市、北京市的成功结果页 | 1.读取「对比结果」表头；2.读取表的行名 | 1、表头含「维度」「深圳」「上海市」「北京市」；2、行名含产业、专利、政策、人才 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 对比结果 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 不钉死单元格分数 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03303 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 对标研判 | 深圳产业情况分析对比 | 对标研判 | 对标研判三块都有正文 | 1、已打开成功结果页 | 1.读取「对标研判」下的三块标题和正文 | 1、三块标题为「独特优势」「差距」「劣势」；2、每块都有一句说明 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 对标研判 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03304 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 综合判断 | 深圳产业情况分析对比 | 潜力与阶段 | 综合判断列出市场、技术、链条三项 | 1、已打开成功结果页 | 1.读取「产业化潜力与发展阶段综合判断」 | 1、能看到「市场前景」「技术成熟度」「链条完整性」三项 | P0 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 综合判断 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03305 | 产业链分析 | 深圳产业情况分析对比 | 主流程-结果页 | 所处阶段 | 深圳产业情况分析对比 | 所处阶段 | 综合判断下方给出所处阶段和阶段特征 | 1、已打开成功结果页 | 1.读取「所处阶段」；2.读取「阶段特征」 | 1、「所处阶段」有一句结论；2、「阶段特征」有一句结论 | P0 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 所处阶段 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 结论可以是暂无，但不能缺这两块 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03306 | 产业链分析 | 深圳产业情况分析对比 | 主流程-开始分析 | 当天再次开始 | 深圳产业情况分析对比 | 当天不新增任务 | 当天同条件再次开始分析时，任务条数不增加 | 1、当天已对「人工智能与应用」及上海市、北京市成功分析过 | 1.打开分析记录并记住任务条数；2.回到分析配置；3.再次选择同一产业和同一组标杆；4.点击「开始分析」 | 1、进入标题为「深圳产业情况分析对比结果」的页面；2、分析记录的任务条数与点击前相同 | P0 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 当天复用 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同条件再次点击会打开已有结果 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03307 | 产业链分析 | 深圳产业情况分析对比 | 主流程-报告 | 查看报告 | 深圳产业情况分析对比 | 查看报告 | 已完成任务可以打开对比报告 | 1、分析记录里有已完成任务 | 1.打开「分析记录」；2.点击一条已完成任务的「查看报告」 | 1、页面标题为「深圳产业情况分析对比报告」；2、报告目录共 7 项，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 查看报告 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 结果页的「查看报告」到达同一报告页 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03308 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析记录 | 列名 | 深圳产业情况分析对比 | 记录列 | 分析记录表的列名齐全 | 1、已打开「分析记录」 | 1.读取记录表表头 | 1、列名为任务、类型、状态、创建时间、操作 | P0 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 分析记录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 类型列为「深圳产业情况分析对比」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03309 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析记录 | 任务状态 | 深圳产业情况分析对比 | 状态选项 | 任务状态下拉的选项个数正确 | 1、已打开「分析记录」 | 1.展开「任务状态」下拉 | 1、选项共 4 个，名称见附录 A | P0 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 分析记录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03310 | 产业链分析 | 深圳产业情况分析对比 | 主流程-分析记录 | 查看结果 | 深圳产业情况分析对比 | 查看结果 | 「查看结果」打开该任务的结果页 | 1、分析记录里有已完成任务 | 1.点击一条已完成任务的「查看结果」 | 1、页面标题为「深圳产业情况分析对比结果」；2、地址中的任务号与所点行一致 | P0 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 查看结果 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00743 | 产业链分析 | 深圳产业情况分析对比 | 备选-操作区 | 重置产业 | 深圳产业情况分析对比 | 重置参数 | 「重置参数」后产业回到未选占位 | 1、产业已选择一项 | 1.点击「重置参数」；2.读取产业下拉 | 1、产业下拉回到「请选择产业」 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 重置参数 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-01 | 保留编号 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00744 | 产业链分析 | 深圳产业情况分析对比 | 备选-操作区 | 重置后其余项 | 深圳产业情况分析对比 | 重置后保持 | 重置后深圳仍在，开始分析回到不可点 | 1、已点击「重置参数」 | 1.读取主体区域；2.读取标杆区域；3.读取「开始分析」 | 1、主体区域仍为「深圳」；2、标杆区域回到未选；3、「开始分析」为禁用 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 重置参数 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-02 | 保留编号 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00748 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 页签往返 | 深圳产业情况分析对比 | 条件保持 | 切到分析记录再切回，已选产业还在 | 1、产业已选「人工智能与应用」 | 1.切到「分析记录」；2.切回「深圳产业情况分析对比」；3.读取已选产业 | 1、两页签内容不叠在一起；2、切回后产业仍为「人工智能与应用」 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 页签切换 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-06 | 保留编号 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03311 | 产业链分析 | 深圳产业情况分析对比 | 备选-重新分析 | 新一轮结果 | 深圳产业情况分析对比 | 重新分析 | 「重新分析」会进入新任务的结果页 | 1、复制配置后产业和标杆已回显；2、「重新分析」可点 | 1.点击「重新分析」；2.点击「查看分析结果」 | 1、生成过程中出现一个新的任务号；2、结果页标题为「深圳产业情况分析对比结果」 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 重新分析 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 点击后没有确认框，直接进入生成过程页 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03312 | 产业链分析 | 深圳产业情况分析对比 | 备选-结果页 | 按此配置新建 | 深圳产业情况分析对比 | 按此配置新建分析 | 「按此配置新建分析」回到配置并露出重新分析 | 1、已打开成功结果页 | 1.点击「按此配置新建分析」 | 1、回到分析配置；2、页面出现「重新分析」；3、「重新分析」为禁用 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 按此配置新建分析 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 此按钮不会把标杆回显出来。要重跑用 03311 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03313 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 复制配置 | 深圳产业情况分析对比 | 复制配置 | 「复制配置」后，产业和标杆仍显示在配置页 | 1、分析记录里有已完成的对比任务 | 1.打开「分析记录」；2.点击一条已完成任务的「复制配置」 | 1、回到分析配置；2、产业名称和标杆城市都回显；3、「开始分析」可点击 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 复制配置 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 调整条件走这一条，不走 03312 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03314 | 产业链分析 | 深圳产业情况分析对比 | 备选-报告 | 报告目录 | 深圳产业情况分析对比 | 目录定位 | 点击报告目录能对上正文标题 | 1、已打开「深圳产业情况分析对比报告」 | 1.点击目录中的「执行摘要」 | 1、正文出现标题「执行摘要」 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 报告目录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03315 | 产业链分析 | 深圳产业情况分析对比 | 备选-生成过程 | 过程页 | 深圳产业情况分析对比 | 生成过程 | 重新分析后先看到生成过程，而不是立刻跳走 | 1、复制配置后「重新分析」可点 | 1.点击「重新分析」 | 1、页面出现「生成中」；2、可见「查看分析结果」；3、过程末项为「分析结果已生成」 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 生成过程 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 过程步骤全文见附录 A。点进结果页归 03311 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03316 | 产业链分析 | 深圳产业情况分析对比 | 备选-生成过程 | 查看分析记录 | 深圳产业情况分析对比 | 从过程页回记录 | 生成过程页可以回到分析记录并看到新任务 | 1、已停在生成过程页 | 1.点击「查看分析记录」 | 1、进入分析记录列表；2、列表中有这次新产生的任务 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 查看分析记录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03317 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 重置筛选 | 深圳产业情况分析对比 | 重置筛选 | 「重置筛选」把状态拉回全部并重新列出任务 | 1、已打开分析记录 | 1.把任务状态选为「失败」；2.点击「重置筛选」 | 1、任务状态回到「全部状态」；2、已完成任务重新出现在列表中 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 重置筛选 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03318 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 删除取消 | 深圳产业情况分析对比 | 删除取消 | 删除时点取消，任务还在 | 1、分析记录里至少有一条已完成任务 | 1.点击该任务的「删除」；2.在弹出框点击「取消」 | 1、该任务仍显示在分析记录中 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 删除记录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 弹出框按钮为「取消」和「确定」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03319 | 产业链分析 | 深圳产业情况分析对比 | 备选-分析记录 | 删除确定 | 深圳产业情况分析对比 | 删除确定 | 删除时点确定，该任务从列表消失 | 1、分析记录里有一条可删除的已完成任务 | 1.点击该任务的「删除」；2.在弹出框点击「确定」 | 1、该任务不再出现在分析记录中；2、其他任务仍在 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 删除记录 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 用本轮新产生的任务做，不要删历史样例任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03320 | 产业链分析 | 深圳产业情况分析对比 | 备选-结果页 | 带入发展分析 | 深圳产业情况分析对比 | 带入发展分析 | 「带入发展分析」离开对比页，进入发展分析 | 1、已打开成功结果页 | 1.点击「带入发展分析」 | 1、页标题变为「深圳产业发展分析」 | P1 |  |  |  |  |  | US-CHAIN-SZ-02 | AC-US-CHAIN-SZ-02-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 带入发展分析 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 只核离开对比页。发展分析自己的配置不在本册 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03321 | 产业链分析 | 深圳产业情况分析对比 | 备选-开始分析 | 不自动发起 | 深圳产业情况分析对比 | 改条件不发起 | 只改产业、不点开始分析时，不新增任务 | 1、已进入分析配置 | 1.打开分析记录并记住任务条数；2.回到分析配置只切换产业；3.再打开分析记录 | 1、任务条数与切换前相同 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 不自动发起 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03322 | 产业链分析 | 深圳产业情况分析对比 | 异常-开始分析 | 未选标杆 | 深圳产业情况分析对比 | 未选标杆不可开始 | 没选标杆时，开始分析不能发出任务 | 1、标杆区域尚未选择 | 1.记住分析记录的任务条数；2.在分析配置点击「开始分析」；3.再打开分析记录 | 1、「开始分析」为禁用；2、页面提示须选择 1～5 个标杆区域；3、任务条数不变 | P1 |  |  |  |  |  | US-CHAIN-SZ-01 | AC-US-CHAIN-SZ-01-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 未选标杆 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 只选产业、不选标杆时按钮仍禁用 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03323 | 产业链分析 | 深圳产业情况分析对比 | 异常-报告 | 导出不可用 | 深圳产业情况分析对比 | 导出 | 报告页的「导出」当前点不了 | 1、已打开对比报告 | 1.点击「导出」 | 1、「导出」为禁用；2、点击后仍停留在报告页 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 导出报告 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 已完成任务的报告上该按钮为禁用 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03324 | 产业链分析 | 深圳产业情况分析对比 | 异常-报告 | 下载报告 | 深圳产业情况分析对比 | 下载报告 | 下载报告失败时给出提示，任务保持已完成 | 1、分析记录里有已完成任务 | 1.点击该任务的「下载报告」 | 1、页面给出失败提示；2、该任务状态仍为「已完成」 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 下载报告 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 勘察时点击后没有文件，也没有页面提示。无提示则本条不通过 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03325 | 产业链分析 | 深圳产业情况分析对比 | 异常-分析记录 | 失败筛选 | 深圳产业情况分析对比 | 状态为失败 | 筛成失败时，列表为空态 | 1、已打开分析记录 | 1.把任务状态选为「失败」 | 1、列表显示「暂无数据」 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 状态筛选 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 这是筛选空态，不是造出一条失败任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03326 | 产业链分析 | 深圳产业情况分析对比 | 异常-分析记录 | 分析中筛选 | 深圳产业情况分析对比 | 状态为分析中 | 筛成分析中时，列表为空态 | 1、已打开分析记录 | 1.把任务状态选为「分析中」 | 1、列表显示「暂无数据」 | P1 |  |  |  |  |  | US-CHAIN-SZ-05 | AC-US-CHAIN-SZ-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.6 | 状态筛选 | TRACE-CHAIN-TOPIC-SHENZHEN.yaml | /industry-center/shenzhen?workspace=comparison&tab=comparison |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
 
 ---
 
-## 2. 覆盖自检（2026-10-13 全库粒度重写）
+## 2. 旧号处置（对照重写）
 
-**覆盖声明**：
+| 旧号 | 处置 | 说明 |
+|------|------|------|
+| 00732、00733、00737、00743、00744、00748 | 保留 | 终态与页面原文一致。00732、00737 去掉金样 |
+| 00736、00739、00740 | 保留 | 编号不变。区块名改为页面上的「四维模型」 |
+| 00734、00735、00738、00741、00742、00745、00746、00747、00749、00750、00753 | 作废 | 停在配置、按钮名或预期与现场不符。新号见上表，旧号不复用 |
+| 00751、00752 | 删除 | 只测开关与追溯，不进入本册。旧号不复用 |
 
-- T06 范围（41 条功能点）覆盖结论见同目录 `coverage-fp.md`：已覆盖 4 / 部分覆盖 19 / 未覆盖 18（行为集与旧册一致，本次仅按新粒度拆分重排取号，未新增 / 删除现场能力判断）。
-- US-CHAIN-SZ-01/02/05 的可见路径均有 P0/P1 用例承载。
-- **金样清单**：00732（入口路由）、00734（产业下拉构成）、00737（主体深圳锁定）、00738（标杆诚实空态）、00742（开始分析显式触发）——烟测 = 跑全部金样。
-- 正向密度：每个可见区块默认态 / 典型值 / 边界值至少各 1 条正向用例——页头与入口（00732 默认 / 00733 Tab 构成）、分析对象（00734 占位默认 / 00735 切换典型 / 00736 切换后保持边界）、主体区域（00737 锁定与更改尝试）、标杆区域（00738 空态默认即边界）、对比维度（00739 构成默认 / 00740 启用形态典型）、操作区（00741 门控默认 / 00742 显式触发典型 / 00743+00744 重置边界）、异步工作区（00745 单飞 / 00746 当天复用 / 00747 重新分析，observed）、分析记录（00748 切换 / 00749 构成）、工作区壳与评审层（00750 / 00751 / 00752）、异常（00753 未选空态）。
-
-**断言分布统计**（spec §5.4.1）：
-
-| 指标 | 数值 |
-|------|------|
-| 用例总数 | 22（00732~00753 连续无跳号） |
-| 预期 1~3 点 | 22 条（100%，目标 ≥85% ✅） |
-| 预期 4~5 点（结构性例外） | 0 条 ✅ |
-| 预期 ≥6 点 | 0 条 ✅ |
-| 场景分布 | 主流程 11（00732~00742）≥ 备选 10（00743~00752）+ 异常 1（00753）= 11 ✅ |
-| 优先级分布 | P0 ×10、P1 ×12 |
-
-**红线自检结果**（内容红线 1~6 逐条，2026-10-13 执行）：
-
-- [x] 红线 1 正文零内部引用：四列（测试内容/前置条件/测试步骤/预期结果）扫描 `US-|AC-|Q0\d|GAP-|开放项|归 \d{5}|coverage #|TRACE-|metric_id|\.yaml|\.md` = **0 命中**（Q016/Q-ANALYSIS-01/GAP-CHAIN-SZ-METRICS/USM AC 等仅出现于元信息区与备注列；「（原文见附录A）」「（清单见附录A）」为长枚举指引，同组册口径）
-- [x] 红线 2 observed 不进预期 / 废弃态不验不可见：勘察观测项（过程态呈现、结果打开方式、记录区构成、单飞/复用/重跑行为、标杆输入形态、无数据截至控件等）全部入备注；结果态未深勘项预期按目标态可判定终态写；无废弃能力「不可见」反向校验
-- [x] 红线 3 步骤只写操作：步骤列扫描 `核对|确认|检查|校验|观察|比对|验证` = **0 命中**；「读取 / 回读 / 浏览 / 定位 / 展开 / 切换 / 点击 / 尝试输入 / 尝试清空 / 聚焦按回车 / 刷新」均为动作动词；「检索」为页面内查找动作（00738 / 00752），同组册口径不属校验动词
-- [x] 红线 4 一句一事与长度：单条步骤/预期均 ≤60 字；步骤 ≤7 步（本册最大 5 步）；无贴上限写作
-- [x] 红线 5 场景分层：主流程 → 备选 → 异常 顺序排列，「功能项」列前缀可辨（主流程-/备选-/异常-）
-- [x] 红线 6 用例级粒度：每条「测试内容」一句话可概括（一测一问一答）；断言分布见上表（全册 1~3 点占 100%）；顺带点均满足三条件（零额外操作 / 同域 / 不跨状态）
-- [x] 金样标记：5 条金样在元信息区与备注列双声明，均为正向、可独立执行、覆盖核心功能点
+新号从 03288 用到 **03326**。03327–03387 未使用。
 
 ---
 
-## 3. 序号台账（本文件）
+## 3. 红线自检
 
-| 测试类型 | 已用序号 | 下一号（系统 FUNC） |
-|----------|----------|---------------------|
-| FUNC | 00732–00753（旧 00222–00232 于 2026-10-13 全库粒度重写废弃归档） | 见 `qa/code-registry.yaml` |
-| API / COMP / INT / PERF | 未用 | 见 `qa/code-registry.yaml` |
+- 主流程 29 条（00732、00733、00736、00737、00739、00740、03288–03310）不少于备选 14 条加异常 5 条。
+- 金样只有 03288，步骤到成功结果页。
+- 入口 B、结果搜索、结果行按钮、入池：无。
+- 单飞、失败任务、第二页、第二种账号：未覆盖，原因写在清单里。
 
-**code-registry 回写说明**：由主对话统一管理回写，本册不触碰。
+### 附录 A 长枚举
 
----
+**集群（03289，15）**：新一代信息技术、生物产业、新能源、新材料、高端装备、智能网联新能源汽车、绿色环保、低空经济与空天、传统与创意产业、海洋产业、未来制造（智能机器人）、未来信息（光载信息、AI 底层生态）、未来能源、未来空间、未来健康（合成生物、细胞基因、脑机工程）。
 
-### 附录A 长枚举清单
+**产业 · 新一代信息技术（03290，7）**：新一代信息技术、半导体与集成电路、人工智能与应用、智能终端、软件与信息服务、新型网络与通信、超高清视频与显示。
 
-**产业下拉（用例 00734 / 00735）**：placeholder「请选择产业」；勘察已选态示例「新一代信息技术」；全量选项集合与 15 集群同源性执行时核（开放项 1，全量清单不硬塞正文）。
+**产业 · 生物产业（03291，3）**：生物、生物医药与生命健康、高端医疗器械。
 
-**标杆区域占位文案原文（用例 00738）**：「Q016 未定，标杆清单为空；勿冒充沪/京/苏州」——为甲方决策未定态呈现（客户决策清单 🟡）；目标态为共享四级地域级联（全球/全国/区域/深圳；就绪标注、未就绪不可选、可选国际节点），决策闭合后补验（开放项 2）。
+**标杆城市（03292，8）**：北京市、上海市、杭州市、成都市、武汉市、重庆市、天津市、宁波市。未选时输入框占位原文：「Q016 未定，标杆清单为空；勿冒充沪/京/苏州」。
 
-**对比维度四行（用例 00739 / 00740）**：企业 / 专利 / 政策 / 人才；spinbutton 25×4（disabled），数值 25 的具体语义执行时 observed（开放项 4）；契约 dimensions_readonly。
+**四维模型列（03293，7）**：选择、指标名称、分组 / 维度、数据状态、权重、数据来源、指标说明。
 
-**评审增量清单（用例 00751 / 00752，评审态）**：追溯按钮五枚——「深圳产业情况分析对比」×2、「系统分析任务交接」、「深圳对比/发展需求追溯」、「标杆区域须就绪」；角标原文「指标未登记：GAP-CHAIN-SZ-METRICS」（指标就绪度真源未建立：stage_block 不阻塞、gap_visible）。关闭评审模式后零泄漏铁律：DOM 不含「需求追溯 / 指标未登记 / 标杆区域须就绪 / 指标说明 / metric_id / Q0xx / GAP-」等字样。
+**任务状态（03309，4）**：全部状态、分析中、已完成、失败。
+
+**报告目录（03307，7）**：报告身份、执行摘要、对象与范围、关键发现、证据与分析、数据来源与生成说明、局限性与使用边界。
+
+**生成过程（03315）**：任务提交与深圳主体/产业/标杆冻结；校验标杆就绪与四维模型版本；计算企业/专利/政策/人才多维对比；归纳优势差距、产业化潜力与发展阶段；结果可信性校验与结构化快照组装；末项「分析结果已生成」。

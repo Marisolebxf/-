@@ -7,42 +7,42 @@
 > **版本**：v1.0  
 > **模块**：创新监测 / 服务机构管理  
 > **catalog**：`entry_id=innov.service-org` · `catalog_page_id=innov.service-org` · path `/innov/service-org`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` · 页 `innov.service-org`  
-> **A 线对照**：`fp-split-by-api-run/work/` 内 **无** `innov.service-org` 行（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.service-org`  
+> **A 线对照**：无对应 Lxx（`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`，原因：创新监测不在本轮 60 六级；不改 work）  
+> **环境**：联调台 50897（本册不试调）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批23）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00854（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00854」后，可只断言失败/不可用态 |
-| catalog 状态 | 本页 **1** 个 endpoint（`innov.service-org.metrics`）catalog `status=unavailable`、`runtime=java_api`；指标清单接口未发布；**禁止**将 `sampleResponse` 中 `metrics[].metric_id`/`name`、`formula_status`、`total=1` 或 `M_INNOV_DS_29_INCUBATOR_006` 等示例作为通过条件 |
-| 试调 | **未试调**（本子任务禁止 curl；执行期按金样步骤与 §0 鉴权复核） |
-| 查询参数 | GET；`module` 为可选 string（slug，example `service-org`）；组合定义见附录 A |
-| 样例与契约差 | `sampleResponse.metrics` 元素含 `algorithm_type`、`pending_ref` 等扩展字段；契约 `responseFields` **仅**声明 `metrics`（array）、`total`（number）。断言以 `responseFields` 为准；样例扩展字段不设失败条件 |
+每个接口只有可选 `module`（string，example `service-org`）。各恰好 3 条：主流程跟 `sampleRequest`（`module=service-org`）；1 条与 sample 相反的不传 `module`；1 条非法 `module=__invalid__`。本页 2 个 title 互不重复，步骤仍写 `endpoint_id`。
+
+| # | title（功能点列原文） | endpoint_id | METHOD | path | 参数 | status | 条数 |
+|---|------------------------|-------------|--------|------|------|--------|------|
+| 1 | 服务机构管理指标清单 | innov.service-org.metrics | GET | /innov/v1/innov/metrics | module? | unavailable | 3 |
+| 2 | 影响力评价 | innov.service-org.m_innov_ds_29_incubator_006 | POST | /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute | module? | available | 3 |
+
+GET `innov.service-org.metrics` 与其它创新监测指标页共用 path `/innov/v1/innov/metrics`，本页以 `module=service-org` 与 `endpoint_id` 区分。该接口 catalog `status=unavailable`，备注注明文档标记未交付；正向预期仍按该接口 sampleResponse 逐字段写。
+
+POST 的 `sampleResponse` 为 `metric_id`、`hint`；同接口 `responseFields` 另声明 `metrics`（array）、`total`（number）。正向预期两处都写。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00854`～`00858`。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.service-org`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02205`～`02210`（闭区间用满，不复用 00001～00888）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.service-org`、组合 id。步骤含 `endpoint_id`。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00854 | 创新监测 | 服务机构管理 | 契约-不可用 | 服务机构管理指标清单 | 服务机构管理 | 服务机构管理指标清单 | catalog 不可用态下指标清单接口返回可识别非成功契约信封 | 1、已确认 catalog `innov.service-org.metrics` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/innov/metrics，查询参数取组合 SORG-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含 `code` 字段；3、`code` 不属于成功集合，或 `data` 不构成含 array 型 `metrics` 与 number 型 `total` 的成功业务载荷；4、不得将 sampleResponse 中 1 条指标或具体 metric_id 作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·服务机构管理 | N/A-技术项 | N/A | /innov/v1/innov/metrics | M_INNOV_DS_29_INCUBATOR_006 | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=SORG-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00855 | 创新监测 | 服务机构管理 | 异常-鉴权 | 服务机构管理指标清单 | 服务机构管理 | 服务机构管理指标清单 | 指标清单接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/innov/metrics，查询参数取组合 SORG-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功 metrics/total 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·服务机构管理 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=SORG-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00856 | 创新监测 | 服务机构管理 | 异常-非法module | 服务机构管理指标清单 | 服务机构管理 | 服务机构管理指标清单 | module 为不可识别 slug 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封规则见 §0，金样见 API-00854 | 1.GET /innov/v1/innov/metrics，查询参数取组合 SORG-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含 sample 形态 metrics 清单的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·服务机构管理 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=SORG-02；矩阵挂 module、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00857 | 创新监测 | 服务机构管理 | 异常-空module | 服务机构管理指标清单 | 服务机构管理 | 服务机构管理指标清单 | module 为空字符串时返回可识别失败或与省略 module 可区分 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/innov/metrics，查询参数取组合 SORG-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx），或可与 SORG-04 省略 module 的语义明确区分；2、不得将空 module 静默当作 service-org 并成功返回 sample 形态 1 条指标 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·服务机构管理 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=SORG-03；矩阵挂 module、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00858 | 创新监测 | 服务机构管理 | 契约-字段形态 | 服务机构管理指标清单 | 服务机构管理 | 服务机构管理指标清单 | 成功信封下契约出参 metrics、total 若存在是否符合 array/number 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00854 | 1.GET /innov/v1/innov/metrics，查询参数取组合 SORG-01 | 1、若 code 属成功集合且载荷含 metrics，则 metrics 为 array；2、若含 total，则 total 为 number；3、不得以 sample 中 total=1 或具体 metric_id 作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·服务机构管理 | N/A-技术项 | N/A | /innov/v1/innov/metrics | M_INNOV_DS_29_INCUBATOR_006 | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=SORG-01；矩阵挂 metrics、total |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02205 | 创新监测 | 服务机构管理 | 主流程 | — | 服务机构管理 | 服务机构管理指标清单 | 服务机构管理指标清单按文档 sampleRequest 传 module=service-org | 1、module 使用文档示例 service-org | 1.GET /innov/v1/innov/metrics，查询参数取组合 MET-01（endpoint_id=innov.service-org.metrics） | 1、返回 body 与 sampleResponse 同层逐字段：metrics 为数组（responseFields 指标元数据清单），共 1 条，元素含 metric_id（string，示例 M_INNOV_DS_29_INCUBATOR_006）、name（string，示例 影响力评价）、algorithm_type（string，示例 MODEL）、formula_status（string，示例 mock）、pending_ref（string，示例 GAP-ALGO-TYPE-UNSIGNED）；2、total 为 number（responseFields 指标数，示例 1） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=MET-01 金样 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02206 | 创新监测 | 服务机构管理 | 备选-参数组合 | 省略 module | 服务机构管理 | 服务机构管理指标清单 | 服务机构管理指标清单不传可选 module（与 sample 相反） | 1、不传 module | 1.GET /innov/v1/innov/metrics，查询参数取组合 MET-02（endpoint_id=innov.service-org.metrics） | 1、返回 body 与 sampleResponse 逐字段同类：metrics 为数组（responseFields 指标元数据清单），元素含 metric_id（string）、name（string）、algorithm_type（string）、formula_status（string）、pending_ref（string）；2、total 为 number（responseFields 指标数，示例 1）；3、字段结构与主流程及 sampleResponse 一致 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=MET-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02207 | 创新监测 | 服务机构管理 | 异常-入参-非法module | — | 服务机构管理 | 服务机构管理指标清单 | 服务机构管理指标清单传非法 module | 1、module=__invalid__ | 1.GET /innov/v1/innov/metrics，查询参数取组合 MET-03（endpoint_id=innov.service-org.metrics） | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metrics 与 total 的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.service-org.metrics catalog_page_id=innov.service-org 组合=MET-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02208 | 创新监测 | 服务机构管理 | 主流程 | — | 服务机构管理 | 影响力评价 | 影响力评价按文档 sampleRequest 传 module=service-org | 1、module 使用文档示例 service-org | 1.POST /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute，请求体取组合 INC-01（endpoint_id=innov.service-org.m_innov_ds_29_incubator_006） | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_DS_29_INCUBATOR_006）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute | M_INNOV_DS_29_INCUBATOR_006 | INTEG | | | endpoint_id=innov.service-org.m_innov_ds_29_incubator_006 catalog_page_id=innov.service-org 组合=INC-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02209 | 创新监测 | 服务机构管理 | 备选-参数组合 | 省略 module | 服务机构管理 | 影响力评价 | 影响力评价不传可选 module（与 sample 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute，请求体取组合 INC-02（endpoint_id=innov.service-org.m_innov_ds_29_incubator_006） | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_DS_29_INCUBATOR_006）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute | M_INNOV_DS_29_INCUBATOR_006 | INTEG | | | endpoint_id=innov.service-org.m_innov_ds_29_incubator_006 catalog_page_id=innov.service-org 组合=INC-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02210 | 创新监测 | 服务机构管理 | 异常-入参-非法module | — | 服务机构管理 | 影响力评价 | 影响力评价传非法 module | 1、module=__invalid__ | 1.POST /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute，请求体取组合 INC-03（endpoint_id=innov.service-org.m_innov_ds_29_incubator_006） | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id 为 M_INNOV_DS_29_INCUBATOR_006 且含 hint 的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute | | INTEG | | | endpoint_id=innov.service-org.m_innov_ds_29_incubator_006 catalog_page_id=innov.service-org 组合=INC-03 |
 
 ---
 
@@ -50,18 +50,21 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| SORG-01 | innov.service-org.metrics | `module=service-org`（对齐 catalog `sampleRequest`） | unavailable 契约占位主路径 |
-| SORG-02 | innov.service-org.metrics | `module=__invalid_module__` | 不可识别模块 slug（单缺陷） |
-| SORG-03 | innov.service-org.metrics | `module`=`""`（空字符串） | 空 module 与省略参数边界 |
-| SORG-04 | innov.service-org.metrics | 不传 `module` | 可选 module 省略；**本轮无独立用例**，与 SORG-01/00857 待试调后区分 |
+| MET-01 | innov.service-org.metrics | module=service-org | 主路径（sampleRequest） |
+| MET-02 | innov.service-org.metrics | 不传 module | 与 sample 相反：省略可选 module |
+| MET-03 | innov.service-org.metrics | module=__invalid__ | 只破坏 module |
+| INC-01 | innov.service-org.m_innov_ds_29_incubator_006 | module=service-org | 主路径（sampleRequest） |
+| INC-02 | innov.service-org.m_innov_ds_29_incubator_006 | 不传 module | 与 sample 相反：省略可选 module |
+| INC-03 | innov.service-org.m_innov_ds_29_incubator_006 | module=__invalid__ | 只破坏 module |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | runtime | 必填参数 |
-|-------------|--------|------|--------|---------|----------|
-| innov.service-org.metrics | GET | /innov/v1/innov/metrics | unavailable | java_api | （无；`module` 可选） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 服务机构管理指标清单 | innov.service-org.metrics | GET | /innov/v1/innov/metrics | module? | unavailable |
+| 影响力评价 | innov.service-org.m_innov_ds_29_incubator_006 | POST | /innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute | module? | available |
 
 ---
 
@@ -69,32 +72,17 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| innov.service-org.metrics | API-00854、00855、00856、00857、00858 |
+| innov.service-org.metrics | API-02205、02206、02207 |
+| innov.service-org.m_innov_ds_29_incubator_006 | API-02208、02209、02210 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 唯一 unavailable endpoint 已写契约占位（API-00854）
-- [x] 可选入参 `module` 非法值与空字符串已覆盖（API-00856、00857）
-- [x] 异常-鉴权 1 条（API-00855）
-- [x] 契约出参 `metrics`、`total` 形态占位 1 条（API-00858）
-- [x] `_empty` 在 `coverage-fp.md` 标 **未覆盖**（endpoint unavailable，无稳定「合法 module 下必空 metrics」试调证据）
-- [x] 金样 1 条且断言完整信封（API-00854）
-- [x] §0 标明 **未试调**、禁止 curl
-- [x] `coverage-fp.md` 已更新
-- [x] 本子任务 **不** 改 `code-registry.yaml` / `run-log.md`（父控回写）
+- [x] 2 个 title 均在功能点列出现且各有 1 条主流程（步骤含 endpoint_id）
+- [x] 每个接口：sampleRequest 主流程 + 与 sample 相反的不传 module + 恰好 1 条非法 module
+- [x] GET metrics 为 unavailable，仍按 sampleResponse 写主流程，备注注明未交付
+- [x] 反向预期写 message 或 msg 指出参数非法，不单写状态码
+- [x] `coverage-fp.md` 已同步 API-02205～02210；A 线无对应 Lxx，未改 work
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-00854**～**API-00858** |
-| endpoint 数 | **1** |
-| 金样（完整信封） | **1**（API-00854） |
-| `_empty` 未覆盖 | **1**（见 coverage） |
-| FUNC | **0** |
-| code-registry / run-log | **未改**（父控回写） |
+**统计**：用例 **6** 条（主流程 2、备选-参数组合 2、异常-入参-非法module 2）；编号闭区间 **API-02205**～**API-02210**（父控 R2-批23 分配）。

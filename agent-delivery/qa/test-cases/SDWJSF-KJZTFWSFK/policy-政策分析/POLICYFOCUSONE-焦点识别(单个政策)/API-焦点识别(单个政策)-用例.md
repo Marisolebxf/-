@@ -7,44 +7,39 @@
 > **版本**：v1.0  
 > **模块**：政策分析 / 焦点识别(单个政策)  
 > **catalog**：`entry_id=policy.focus-one` · `catalog_page_id=policy.focus-one` · path `/policy/focus-one`  
-> **契约真源**：`lumen-ui-algo-apiview/src/catalog/policy.json` · 页 `policy.focus-one`  
-> **A 线对照**：`fp-split-by-api-run-v0-202609/work/L35.md`（POST 段）；`policy.focus-one` 为 **L35 单政策变体**（`_l6-to-catalog-map.yaml` catalog_skip「挂 L35 时按 path 去重」）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **A 线对照**：`fp-split-by-api-run/work/L35.md`（挂接表 `catalog_skip`：本页为 L35 单政策变体，按 path 去重；不把 `policy.focus` 的 field 灌成新用例）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批9）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 业务 path | `POST /policy/v1/policy/analysis/focus-one`（JSON body） |
-| 鉴权 | `POST /auth/oauth2/token`（密码模式，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-000454（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 可解析形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-000454」后，可只断言失败/不可用态 |
-| catalog 状态 | 本页 **1** 个 endpoint：`policy.focus-one.main`，catalog **`status=unavailable`**；**禁止**将 `sampleResponse` 中 `focus_list`/`bottleneck_list`/`suggestions` 内 term、score、item 等示例作为通过条件 |
-| 样例与契约差 | `sampleResponse` 含 `mode`、`persisted` 等扩展字段；契约 `responseFields` **仅**声明顶层 `focus_list`、`bottleneck_list`、`suggestions`（array）。断言以 `responseFields` 为准 |
-| 试调 | **未试调**（本子任务禁止 curl/浏览器；执行期按金样步骤与 §0 鉴权复核） |
-| 请求体 | POST JSON；必填 `text`（string）；可选 `mode`（`rule` \| `llm`）、`title`、`execution`、`aux`；组合见附录 A |
-| 本页 endpoint 数 | **1**（`policy.focus-one.main`） |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 单条焦点识别 | policy.focus-one.main |
+
+参数：`mode?` `title?` `text!` `execution?` `aux?`。`sampleRequest` 五字段都传。正向只写 1 条全参主流程，再对 4 个可选参数各写 1 条「不传」（与 sample 相反），不做全组合。反向 5 条：`text` 缺省，`mode` / `title` / `execution` / `aux` 各 1 条非法。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=policy.focus-one`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01409**～**API-01418**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=policy.focus-one`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000454 | 政策分析 | 焦点识别(单个政策) | 契约-不可用 | 政策焦点识别模型 | 焦点识别(单个政策) | 单条焦点识别 | catalog 不可用态下单条焦点识别接口返回可识别非 live 成功 | 1、已确认 catalog `policy.focus-one.main` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FOC-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含可解析 `code`；3、不得将 sample 中焦点词/堵点/建议示例条目作为通过条件；4、若 code 属成功集合则 data 不得构成含可信 `focus_list`/`bottleneck_list`/`suggestions` 业务清单的成功载荷（契约未交付态） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | FULL | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FOC-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000455 | 政策分析 | 焦点识别(单个政策) | 异常-鉴权 | 政策焦点识别模型 | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FOC-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信焦点/堵点业务 data 的成功载荷 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | FULL | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FOC-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000456 | 政策分析 | 焦点识别(单个政策) | 异常-缺必填text | 政策焦点识别模型 | 焦点识别(单个政策) | 单条焦点识别 | 缺少必填政策文本 text 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封规则见 API-000454 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FOC-02 | 1、响应为失败态（HTTP 4xx/5xx 或 code 非成功集合）；2、不得将失败当作空 `focus_list`/`bottleneck_list`/`suggestions` 成功空态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | FULL | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FOC-02；矩阵挂 text、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000457 | 政策分析 | 焦点识别(单个政策) | 异常-非法mode | 政策焦点识别模型 | 焦点识别(单个政策) | 单条焦点识别 | mode 非 catalog 点名 rule/llm 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FOC-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、message 或 msg 可非空；3、不得将失败当作含 sample 形态焦点清单的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | FULL | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FOC-03；矩阵挂 mode、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000458 | 政策分析 | 焦点识别(单个政策) | 异常-空text | 政策焦点识别模型 | 焦点识别(单个政策) | 单条焦点识别 | 政策文本 text 为空字符串时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FOC-04 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、不得与合法非空 text 主路径成功态混淆；3、不得将失败当作「无法识别焦点」的空清单成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 1.1.1.1.1.1.1.3.5 | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | FULL | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FOC-04；矩阵挂 text、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01409 | 政策分析 | 焦点识别(单个政策) | 主流程 | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别按文档 sampleRequest 提交 mode、title、text、execution、aux 并返回焦点、堵点与建议字段 | 1、请求体使用文档 sampleRequest（mode=rule，title、text、execution、aux 取示例原文） | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-01 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：mode（string，sampleResponse 多出字段，示例 rule）；focus_list（array，responseFields 焦点词 Tag；第1条 term=集成电路（string）、score=1（number）、evidence=rule（string））；bottleneck_list（array，responseFields 堵点清单；第1条 item=流片补贴兑付率低（string）、evidence=文本/执行措辞（string））；suggestions（array，responseFields 优化建议；第1条 item=补充实施进度（string）、reason=缺执行数据（string））；persisted（boolean，sampleResponse 多出字段，示例 false） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01410 | 政策分析 | 焦点识别(单个政策) | 备选-参数组合 | 省略 mode | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别省略可选 mode，其余保持 sampleRequest | 1、不传 mode，title、text、execution、aux 保持文档示例 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-02 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：mode（string，sampleResponse 多出字段，示例 rule）；focus_list（array，responseFields 焦点词 Tag；第1条 term=集成电路（string）、score=1（number）、evidence=rule（string））；bottleneck_list（array，responseFields 堵点清单；第1条 item=流片补贴兑付率低（string）、evidence=文本/执行措辞（string））；suggestions（array，responseFields 优化建议；第1条 item=补充实施进度（string）、reason=缺执行数据（string））；persisted（boolean，sampleResponse 多出字段，示例 false） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01411 | 政策分析 | 焦点识别(单个政策) | 备选-参数组合 | 省略 title | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别省略可选 title，其余保持 sampleRequest | 1、不传 title，mode、text、execution、aux 保持文档示例 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-03 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：mode（string，sampleResponse 多出字段，示例 rule）；focus_list（array，responseFields 焦点词 Tag；第1条 term=集成电路（string）、score=1（number）、evidence=rule（string））；bottleneck_list（array，responseFields 堵点清单；第1条 item=流片补贴兑付率低（string）、evidence=文本/执行措辞（string））；suggestions（array，responseFields 优化建议；第1条 item=补充实施进度（string）、reason=缺执行数据（string））；persisted（boolean，sampleResponse 多出字段，示例 false） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01412 | 政策分析 | 焦点识别(单个政策) | 备选-参数组合 | 省略 execution | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别省略可选 execution，其余保持 sampleRequest | 1、不传 execution，mode、title、text、aux 保持文档示例 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-04 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：mode（string，sampleResponse 多出字段，示例 rule）；focus_list（array，responseFields 焦点词 Tag；第1条 term=集成电路（string）、score=1（number）、evidence=rule（string））；bottleneck_list（array，responseFields 堵点清单；第1条 item=流片补贴兑付率低（string）、evidence=文本/执行措辞（string））；suggestions（array，responseFields 优化建议；第1条 item=补充实施进度（string）、reason=缺执行数据（string））；persisted（boolean，sampleResponse 多出字段，示例 false） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-04 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01413 | 政策分析 | 焦点识别(单个政策) | 备选-参数组合 | 省略 aux | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别省略可选 aux，其余保持 sampleRequest | 1、不传 aux，mode、title、text、execution 保持文档示例 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-05 | 1、返回 body 为对象，与 sampleResponse 同层逐字段一致：mode（string，sampleResponse 多出字段，示例 rule）；focus_list（array，responseFields 焦点词 Tag；第1条 term=集成电路（string）、score=1（number）、evidence=rule（string））；bottleneck_list（array，responseFields 堵点清单；第1条 item=流片补贴兑付率低（string）、evidence=文本/执行措辞（string））；suggestions（array，responseFields 优化建议；第1条 item=补充实施进度（string）、reason=缺执行数据（string））；persisted（boolean，sampleResponse 多出字段，示例 false） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | M_POLICY_DEEP_166_1 | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-05 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01414 | 政策分析 | 焦点识别(单个政策) | 异常-入参-缺text | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别不传必填 text | 1、不传 text，mode、title、execution、aux 保持文档示例 | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-06 | 1、返回 body 的 message 或 msg 指出缺少 text；2、不返回含 focus_list 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-06 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01415 | 政策分析 | 焦点识别(单个政策) | 异常-入参-非法mode | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别 mode 取非法值 | 1、仅 mode 取非法值，其余保持 sampleRequest | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-07 | 1、返回 body 的 message 或 msg 指出 mode 非法；2、不返回含 focus_list 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-07 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01416 | 政策分析 | 焦点识别(单个政策) | 异常-入参-非法title | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别 title 取非法类型 | 1、仅 title 取非 string，其余保持 sampleRequest | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-08 | 1、返回 body 的 message 或 msg 指出 title 非法；2、不返回含 focus_list 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-08 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01417 | 政策分析 | 焦点识别(单个政策) | 异常-入参-非法execution | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别 execution 取非法类型 | 1、仅 execution 取非 string，其余保持 sampleRequest | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-09 | 1、返回 body 的 message 或 msg 指出 execution 非法；2、不返回含 focus_list 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-09 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01418 | 政策分析 | 焦点识别(单个政策) | 异常-入参-非法aux | — | 焦点识别(单个政策) | 单条焦点识别 | 单条焦点识别 aux 取非法类型 | 1、仅 aux 取非 string，其余保持 sampleRequest | 1.POST /policy/v1/policy/analysis/focus-one，请求体取组合 FO1-10 | 1、返回 body 的 message 或 msg 指出 aux 非法；2、不返回含 focus_list 的成功业务 body | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /policy/v1/policy/analysis/focus-one | | INTEG | | | endpoint_id=policy.focus-one.main catalog_page_id=policy.focus-one 组合=FO1-10 catalog_status=unavailable 文档标记未交付 |
 
 ---
 
@@ -52,18 +47,24 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| FOC-01 | policy.focus-one.main | `mode`: `rule`，`title`/`text`/`execution`/`aux` 取 catalog `sampleRequest` 同值（text 非空） | unavailable 契约占位主路径 |
-| FOC-02 | policy.focus-one.main | 请求体 `{"mode":"rule","title":"占位标题"}`（不含 `text` 键） | 缺必填 text |
-| FOC-03 | policy.focus-one.main | `mode`: `__invalid__`，`text`: `推进先进封装产业化。` | 非法 mode |
-| FOC-04 | policy.focus-one.main | `mode`: `rule`，`text`: `""` | 空字符串 text |
+| FO1-01 | policy.focus-one.main | mode=rule；title=深圳市加快集成电路产业发展若干措施；text=推进先进封装产业化，支持科技型中小企业流片补贴。；execution=流片补贴兑付率低，仅完成计划40%。；aux=行业解读认为先进封装是下一阶段焦点。 | 主路径全参（sampleRequest） |
+| FO1-02 | policy.focus-one.main | 不传 mode；title、text、execution、aux 同 FO1-01 | 省略可选 mode（sample 含 mode） |
+| FO1-03 | policy.focus-one.main | 不传 title；mode、text、execution、aux 同 FO1-01 | 省略可选 title（sample 含 title） |
+| FO1-04 | policy.focus-one.main | 不传 execution；mode、title、text、aux 同 FO1-01 | 省略可选 execution（sample 含 execution） |
+| FO1-05 | policy.focus-one.main | 不传 aux；mode、title、text、execution 同 FO1-01 | 省略可选 aux（sample 含 aux） |
+| FO1-06 | policy.focus-one.main | 不传 text；mode、title、execution、aux 同 FO1-01 | 缺必填 text |
+| FO1-07 | policy.focus-one.main | mode=__invalid__（不在 rule、llm）；title、text、execution、aux 同 FO1-01 | 只破坏 mode |
+| FO1-08 | policy.focus-one.main | title=0（number，非 string）；mode、text、execution、aux 同 FO1-01 | 只破坏 title |
+| FO1-09 | policy.focus-one.main | execution=0（number，非 string）；mode、title、text、aux 同 FO1-01 | 只破坏 execution |
+| FO1-10 | policy.focus-one.main | aux=0（number，非 string）；mode、title、text、execution 同 FO1-01 | 只破坏 aux |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 必填参数 |
-|-------------|--------|------|--------|----------|
-| policy.focus-one.main | POST | /policy/v1/policy/analysis/focus-one | unavailable | text（body） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 单条焦点识别 | policy.focus-one.main | POST | /policy/v1/policy/analysis/focus-one | mode?；title?；text*；execution?；aux? | unavailable |
 
 ---
 
@@ -71,29 +72,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| policy.focus-one.main | API-000454～API-000458 |
+| policy.focus-one.main | API-01409、01410、01411、01412、01413、01414、01415、01416、01417、01418 |
 
 ---
 
-## 3. 覆盖自检（§I）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 本页 **0** 条 FUNC
-- [x] unavailable endpoint 契约占位 + 金样信封（API-000454）
-- [x] 异常-鉴权 1 条（API-000455）
-- [x] 必填 `text` 缺省与空字符串（API-000456、API-000458）
-- [x] 非法 `mode`（API-000457）
-- [x] `_empty` 在 `coverage-fp.md` 标 **未覆盖**（endpoint unavailable，无稳定「合法 text 必空清单」构造）
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务禁改 registry；闭区间 **API-000454～000458**）
+- [x] 1 个 title「单条焦点识别」在功能点列出现，且有 1 条主流程（API-01409）
+- [x] 可选 mode / title / execution / aux 各 1 条与 sample 相反的不传（API-01410～01413）；未做全组合，未另写 mode=llm
+- [x] 反向恰好 5 条：缺 text（01414），非法 mode / title / execution / aux（01415～01418）；预期写 message 或 msg 指出该参数
+- [x] unavailable 仍按 sampleResponse 写主流程与备选返回字段，备注注明文档标记未交付
+- [x] 功能项只用主流程、备选-参数组合、异常-入参-*；预期主体是返回字段或该参数的 message/msg
+- [x] 未把 L35 中 GET `/policy/v1/policy/analysis/focus` 的 field 写成用例
+- [x] `coverage-fp.md` 已同步 API-01409～01418
 
----
-
-## 4. 交卷计数（§I）
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-000454**～**API-000458** |
-| 金样 | **API-000454**（备注含 `金样`） |
-| §0 试调 | **未试调** |
-| FUNC 条数 | **0** |
+**统计**：接口 **1**；用例 **10** 条（主流程 1、备选 4、反向 5）；编号闭区间 **API-01409**～**API-01418**（父控 R2-批9 分配）。

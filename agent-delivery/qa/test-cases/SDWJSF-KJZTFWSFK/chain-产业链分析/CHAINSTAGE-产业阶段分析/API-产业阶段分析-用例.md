@@ -7,45 +7,37 @@
 > **版本**：v1.0  
 > **模块**：产业链分析 / 产业阶段分析  
 > **catalog**：`entry_id=chain.stage` · `catalog_page_id=chain.stage` · path `/chain/stage`  
-> **A 线对照**：`fp-split-by-api-run/work/L20.md`（覆盖矩阵见 `coverage-fp.md`；矩阵键仅 grep L20，未读本六级 work 全文）  
-> **环境**：`http://111.198.38.90:50897/`（联调台 hash `#/chain/stage`）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I  
-> **维护人**：qa-agent  
-> **更新日期**：2026-10-17  
+> **契约真源**：`lumen-ui-algo-apiview/src/catalog/chain.json` · 页 `chain.stage`  
+> **A 线对照**：`fp-split-by-api-run/work/L20.md`（覆盖矩阵用，禁止 field 一行一用例）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批6）  
+> **维护人**：agent:qa-agent  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定（未试调）
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 业务 path | Java REST：`GET /innov/v1/industry/{chainId}/cycle`（path 变量 `chainId`；与 `chain.cycle` 页 **同 path**，以 `endpoint_id=chain.stage.main` 区分验收语义） |
-| 鉴权头 | `Authorization: Bearer <token>`（50897 登录页换取）；`TENANT-ID: 1`（与联调台默认租户一致，执行期以现场为准） |
-| 信封成功码 | `code` ∈ {`0`, `"0"`, `200`, `"200"`} |
-| 断言分工 | **API-00340（金样）** 断言 **完整信封**（HTTP + `code` + `data` 类型）；同册其余用例在前置引用金样后，可只断言失败态或 HTTP |
-| catalog 口径 | `chain.stage.main` 的 catalog `status=unavailable`；**禁止**将 `sampleResponse` 中「成长期」「加速扩张」、营收等数值作为通过条件 |
-| 试调记录 | **未试调**（父控宣布；本会话禁止 curl / 50897 无头 HTTP；有效鉴权主路径待 S3 执行期复核） |
-| 本页 endpoint 数 | **1**（`chain.stage.main`） |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 产业阶段分析 | chain.stage.main |
+| 2 | 产业阶段分析模型 | chain.stage.m_chain_deep_123_1 |
+
+两个 title 均只有必填 `chainId`。各 1 条主流程 + 1 条缺 `chainId`，不写备选，不按 field 拆条。
+
+**chainId 取值**：`产业阶段分析` 的 params.example 与 sampleRequest 均为 `INB1701`。`产业阶段分析模型` 的 sampleRequest 为 `chain_id=INB1701`，params.example 为 `INB170101`，键名与取值不一致，主路径以 sampleRequest 为准（见附录 A）。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00340`～`00349`（父控闭区间）。`路由route` = path 模板；`备注` 含 `endpoint_id`、`catalog_page_id`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01262**～**API-01265**，连续用满）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=chain.stage`、组合 id。作废旧号 API-00340～00349，不复用 API-00001～00888。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00340 | 产业链分析 | 产业阶段分析 | 契约-不可用 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | catalog 不可用态下带鉴权请求是否可识别非 live 成功 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、HTTP 状态为 200 或 4xx/5xx 之一；2、响应体含可解析的 code 与 message 或 msg；3、不得仅凭 sample 形态将 unavailable 接口判为 live 成功（不得以固定「成长期」等样例数值为通过条件）；4、若 code 属成功集合则 data 不得被当作已接通生产阶段判定（须与 §0 unavailable 一致，执行期记录形态） | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01 金样 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00341 | 产业链分析 | 产业阶段分析 | 异常-鉴权 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 产业阶段分析接口缺 Bearer 时是否返回鉴权失败 | 1、请求故意不携带 Authorization；2、可携带 TENANT-ID | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、message 或 msg 非空 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00342 | 产业链分析 | 产业阶段分析 | 异常-鉴权 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 产业阶段分析接口缺 TENANT-ID 时是否拒绝或返回可识别失败 | 1、已携带 Authorization Bearer；2、故意不携带 TENANT-ID | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、HTTP 状态为 4xx 或响应 code 不属于成功集合；2、不得将缺租户当作含可信 cycle_stage 的成功业务 data | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00343 | 产业链分析 | 产业阶段分析 | 异常-鉴权 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 无效 Bearer 时产业阶段接口是否返回鉴权失败 | 1、Authorization 为明显无效 token；2、可携带 TENANT-ID: 1 | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信 stage.sub_stage 的成功业务载荷 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00344 | 产业链分析 | 产业阶段分析 | 异常-非法chainId | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 非法 chainId 时是否返回可识别失败而非伪阶段 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/__invalid__/cycle，path 变量取组合 STG-02 | 1、响应为失败态（HTTP 4xx 或 code 非成功集合）；2、不得返回含可信 cycle.cycle_stage 或 stage.sub_stage 枚举的成功业务体冒充合法判定 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-02；矩阵挂 chainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00345 | 产业链分析 | 产业阶段分析 | 异常-path占位非法 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | path 中 chainId 为空占位时是否可识别入参错误 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry//cycle（chainId 段为空），取组合 STG-03 | 1、响应为失败态（HTTP 4xx 或 code 非成功集合）；2、不得将路由错误当作空阶段成功 data | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-03；矩阵挂 chainId、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00346 | 产业链分析 | 产业阶段分析 | 异常-非法chainId | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | chainId 仅空白字符时是否可识别入参错误 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/industry/%20/cycle（path 变量为单空格，取组合 STG-04） | 1、响应为失败态（HTTP 4xx 或 code 非成功集合）；2、不得返回含 stage 判定语义的成功业务体 | P2 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-04 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00347 | 产业链分析 | 产业阶段分析 | 契约-字段形态 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 成功信封下 cycle.cycle_stage 若存在是否仅为 string 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00340 | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、若 code 属成功集合且 data 为对象并含 cycle 体，则 cycle.cycle_stage 存在时为 string；2、不得以 sample 中具体中文阶段名为通过条件 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01；矩阵挂 cycle.cycle_stage；catalog responseFields |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00348 | 产业链分析 | 产业阶段分析 | 契约-字段形态 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 成功信封下 stage.sub_stage 若存在是否仅为 string 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00340 | 1.GET /innov/v1/industry/INB1701/cycle，path 变量取组合 STG-01 | 1、若 code 属成功集合且 data 为对象并含 stage 体，则 stage.sub_stage 存在时为 string；2、不得以 sample 中「加速扩张」等具体子阶段名为通过条件 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01；矩阵挂 stage.sub_stage |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00349 | 产业链分析 | 产业阶段分析 | 异常-错误方法 | 产业阶段分析模型 | 产业阶段分析 | 产业阶段分析 | 对阶段查询 path 使用 POST 时是否返回可识别错误 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST /innov/v1/industry/INB1701/cycle（无 body 或空 JSON），取组合 STG-01 | 1、HTTP 状态为 4xx 或 405；2、不得将错误方法当作 GET 成功阶段判定 data | P2 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库 | 1.1.1.1.1.1.1.3.7 | N/A | N/A | /innov/v1/industry/{chainId}/cycle |  | INTEG |  |  | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01；矩阵挂 _fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01262 | 产业链分析 | 产业阶段分析 | 主流程 | — | 产业阶段分析 | 产业阶段分析 | 产业阶段分析在 chainId=INB1701 时返回文档中的周期与阶段字段 | 1、chainId 使用文档示例 INB1701 | 1.GET /innov/v1/industry/{chainId}/cycle，path 取组合 STG-01 | 1、返回 body 为对象，与 sampleResponse 同层含 cycle（object）、stage（object）；2、cycle.cycle_stage（string，responseFields 周期阶段，示例 成长期）、cycle.growth_rate（number，示例 14.9）、cycle.investment_trend（string，示例 up）、cycle.enterprise_trend（string，示例 up）、cycle.trend（array）；3、trend 元素含 year（number）、revenue（number）、growth_rate（number），示例三条为 2023/12800/8.2、2024/14640/14.4、2025/16820/14.9；4、stage.cycle_stage（string，示例 成长期）、stage.sub_stage（string，responseFields 细分阶段，示例 加速扩张）、stage.high_tech_ratio（number，示例 46.2）、stage.investment_intensity（number，示例 7.8）、stage.growth_rate（number，示例 14.9） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/cycle | M_CHAIN_CYCLE_STAGE | INTEG | | | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-01 金样 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01263 | 产业链分析 | 产业阶段分析 | 异常-入参-缺chainId | — | 产业阶段分析 | 产业阶段分析 | 产业阶段分析不传 chainId | 1、path 不传 chainId | 1.GET /innov/v1/industry/{chainId}/cycle，path 取组合 STG-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 cycle.cycle_stage 或 stage.sub_stage 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/{chainId}/cycle | | INTEG | | | endpoint_id=chain.stage.main catalog_page_id=chain.stage 组合=STG-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01264 | 产业链分析 | 产业阶段分析 | 主流程 | — | 产业阶段分析 | 产业阶段分析模型 | 产业阶段分析模型按文档 sampleRequest 的 chain_id 计算并返回 metric_id 与 hint | 1、请求体使用文档 sampleRequest 的 chain_id=INB1701 | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute，请求体取组合 STM-01 | 1、返回 body 为对象，含 metric_id（string，responseFields 指标 ID，sampleResponse 示例 M_CHAIN_DEEP_123_1）、hint（string，sampleResponse 示例 真实 compute 响应,以实际调用为准） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute | M_CHAIN_DEEP_123_1 | INTEG | | | endpoint_id=chain.stage.m_chain_deep_123_1 catalog_page_id=chain.stage 组合=STM-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01265 | 产业链分析 | 产业阶段分析 | 异常-入参-缺chainId | — | 产业阶段分析 | 产业阶段分析模型 | 产业阶段分析模型不传 chainId | 1、请求体不传 chainId | 1.POST /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute，请求体取组合 STM-02 | 1、返回 body 的 message 或 msg 指出缺少 chainId；2、不返回含 metric_id 为 M_CHAIN_DEEP_123_1 的成功结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute | | INTEG | | | endpoint_id=chain.stage.m_chain_deep_123_1 catalog_page_id=chain.stage 组合=STM-02 |
 
 ---
 
@@ -53,18 +45,19 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| STG-01 | chain.stage.main | path `chainId=INB1701`（catalog example，执行期可替换为试调有效 id） | 契约主路径（unavailable） |
-| STG-02 | chain.stage.main | path `chainId=__invalid__` | 非法产业标识 |
-| STG-03 | chain.stage.main | path 段为空：`/innov/v1/industry//cycle` | 缺失 path 变量语义 |
-| STG-04 | chain.stage.main | path `chainId=` 单空格（URL 编码 `%20`） | 空白 chainId 单缺陷 |
+| STG-01 | chain.stage.main | path chainId=INB1701 | 主路径（sampleRequest / params.example） |
+| STG-02 | chain.stage.main | 不传 path chainId（请求 `/innov/v1/industry//cycle`，path 段为空） | 缺必填 chainId |
+| STM-01 | chain.stage.m_chain_deep_123_1 | 请求体按 sampleRequest：chain_id=INB1701（params.name=chainId，example=INB170101，键名与取值均与 sampleRequest 不一致，本组合以 sampleRequest 为准） | 主路径（sampleRequest） |
+| STM-02 | chain.stage.m_chain_deep_123_1 | 不传 chainId，请求体也不含 chain_id | 缺必填 chainId |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | catalog status | 必填参数 |
-|-------------|--------|------|----------------|----------|
-| chain.stage.main | GET | /innov/v1/industry/{chainId}/cycle | unavailable | chainId（path） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 产业阶段分析 | chain.stage.main | GET | /innov/v1/industry/{chainId}/cycle | chainId* | unavailable |
+| 产业阶段分析模型 | chain.stage.m_chain_deep_123_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute | chainId* | available |
 
 ---
 
@@ -72,18 +65,18 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| chain.stage.main | API-00340、API-00341、API-00342、API-00343、API-00344、API-00345、API-00346、API-00347、API-00348、API-00349 |
+| chain.stage.main | API-01262、01263 |
+| chain.stage.m_chain_deep_123_1 | API-01264、01265 |
 
 ---
 
-## 3. 覆盖自检
+## 3. 覆盖自检（第二轮口径）
 
-- [x] unavailable endpoint 已写契约占位（API-00340），未写 sample 数值通过条件
-- [x] 鉴权异常 3 条（API-00341～00343）
-- [x] 入参单缺陷 3 条（API-00344～00346）
-- [x] responseFields 形态 2 条（API-00347、00348）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] `coverage-fp.md` 已更新
-- [x] 金样 1 条且断言信封（API-00340）
-- [x] 本页 0 条 FUNC
-- [x] §0 标注 **未试调**；未 curl / 未改 code-registry（父控约束）
+- [x] 2 个 title（产业阶段分析、产业阶段分析模型）均在功能点列出现，且各有 1 条主流程（功能项=主流程）
+- [x] 有参接口：文档示例正向各 1 条；必填 chainId 各 1 条缺省反向；无其它参数，不写备选
+- [x] unavailable（产业阶段分析）仍按 catalog sampleResponse 写主流程，备注注明未交付
+- [x] 无鉴权 / Token / 401 / 424 / 契约占位 / 纯 HTTP 4xx 预期
+- [x] 不按 L20 field_key 拆用例；`coverage-fp.md` 已同步 API-01262～01265
+- [x] 编号使用父控闭区间 API-01262～01265；本子任务不改 code-registry
+
+**统计**：接口 **2**；用例 **4** 条（主流程 **2**、反向 **2**）；编号闭区间 **API-01262**～**API-01265**（父控 R2-批6 分配，连续用满）。

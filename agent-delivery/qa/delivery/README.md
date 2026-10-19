@@ -7,9 +7,9 @@
 
 | 子目录 | 系统 | 用例簿（模板 6） | 记录簿（模板 7） | 报告（模板 8 ×5） | 评估表 ×3 |
 |---|---|---|---|---|---|
-| `KJZTFWXT/` | 科技专题服务系统 | ✅ **B∪A 切点投影**（2026-10-15）：功能 sheet **886** 行；对账 `KJZTFWXT/ab-merge-manifest.md`；生成 `scripts/_gen_zt_delivery_func_ab_merge.py`；编排骨架 [`../case-delivery-playbook.md`](../case-delivery-playbook.md)（S4） | 🟡 编排骨架 [`../record-delivery-playbook.md`](../record-delivery-playbook.md)（S5）；xlsx 待出 | 逐步补充 | 逐步补充 |
+| `KJZTFWXT/` | 科技专题服务系统 | ✅ **三目录场景册合一**（2026-10-19）：企业 / 产业链 / 产业服务的 FUNC 主表，功能点列暂空；生成 `scripts/_gen_zt_delivery_func_v2.py`。旧 B∪A 切点投影（886 行，`_gen_zt_delivery_func_ab_merge.py`）已被本版覆盖 | 🟡 编排骨架 [`../record-delivery-playbook.md`](../record-delivery-playbook.md)（S5）；xlsx 待出 | 逐步补充 | 逐步补充 |
 | `KJXXZSXT/` | 科技信息展示系统 | 待编写 | 待编写 | 待编写 | 待编写 |
-| `SDWJSF-KJZTFWSFK/` | 科技专题服务算法库 | 待编写 | 待编写 | 待编写 | 待编写 |
+| `SDWJSF-KJZTFWSFK/` | 科技专题服务算法库 | ✅ **仅 B 线 API**（2026-10-19）：`6.国际科技信息中心项目_科技专题服务算法库_测试用例.xlsx`，功能测试用例 1322 条（`API-00889`～`02210`），字段按模板 17 列从工作区用例簿搬入；**未合 A 线**。兼容/集成/性能已清样例、无数据 | 待编写 | 待编写 | 待编写 |
 
 - 系统码真源：总集「规则 -0529」；目录名用 `-` 连接（`SDWJSF-KJZTFWSFK`），**编号内用 `/`**（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-#####`）——两者不是一回事，目录系统码不能出现在用例编号里。
 - 评估表（原型符合度 / 用例覆盖度 / 系统功能符合度）与报告（总 / 功能与兼容 / 集成 / 性能 / **安全**）随执行逐步补充。

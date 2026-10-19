@@ -7,44 +7,37 @@
 > **版本**：v1.0  
 > **模块**：产业服务分析 / 服务机构培育推荐  
 > **catalog**：`entry_id=svc.cultivate` · `catalog_page_id=svc.cultivate` · path `/industry-service/cultivate`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/svc.json` 页 `svc.cultivate` · endpoint `svc.cultivate.models`  
 > **A 线对照**：`fp-split-by-api-run/work/L50.md`（覆盖矩阵用，禁止 field 一行一用例）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I  
+> **环境**：联调台 `http://111.198.38.90:50897/`（接口文档真源 `svc.json` 页 `svc.cultivate`）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批15）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 业务 path | Java REST：`GET /entan/v1/svc/models`（查询参数 `kind`，本页验收取值为 **cultivate**） |
-| 鉴权头 | `Authorization: Bearer <access_token>`（50897 OAuth 密码模式，账号口径见 `lumen-ui-algo-apiview` LoginView）；`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-000634（金样）** 断言 **完整信封**（HTTP + `code` + 可解析体）；同册其余用例在前置引用金样后，可只断言失败态、鉴权态或字段形态 |
-| catalog 状态 | 本页仅 **1** 个 endpoint：`svc.cultivate.models`，catalog `status=unavailable`；**禁止**将 `sampleResponse` 中 `cultivation_index`、`priority_level`、`growth_stage`、`advice`、`dimension_scores` 或机构名称作为通过条件 |
-| 合 path 区分 | `GET /entan/v1/svc/models` 为多服务机构模型页共用；本页验收须 **`kind=cultivate`** + 页 title「服务机构培育推荐」，不得串其它 kind 模型结果 |
-| 样例与契约差 | `sampleResponse` 含 `org_id`、`ext.name`、`dimension_scores` 等；契约 `responseFields` 仅声明顶层 `cultivate`（array）。断言 **只强制 responseFields**；样例扩展字段不设失败条件 |
-| 试调 | **本会话未试调**（子任务约束禁止 curl）；执行期按 §0 鉴权与 catalog 复核，observed 仅记入执行记录 |
-| 本页 endpoint 数 | **1** |
+| # | title（功能点列原文） | endpoint_id |
+|---|------------------------|-------------|
+| 1 | 培育推荐 | svc.cultivate.models |
+| 2 | 服务机构培育推荐模型 | svc.cultivate.m_svc_deep_181_1 |
+
+**kind 试调取值**：两个接口都只有可选 `kind`。主流程对齐各自 `sampleRequest`：`kind=cultivate`。省略 `kind` 为备选。非法值 `kind=__invalid__` 单独作反向。`培育推荐` 的 catalog `status=unavailable`，仍按该接口文档返回体编写。`服务机构培育推荐模型` 的 `params.example` / `options` 为 `tech`，`sampleRequest` 为 `kind=cultivate`，主流程取 `sampleRequest`。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000634`～`000638`。`路由route` = path 模板；`备注` 含 `endpoint_id=`、`catalog_page_id=`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-#####`（本轮 **API-01710**～**API-01715**）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=svc.cultivate`、组合 id。旧号 API-000634～000638 作废，不复用。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000634 | 产业服务分析 | 服务机构培育推荐 | 契约-不可用 | 服务机构培育推荐模型 | 服务机构培育推荐 | 培育推荐 | catalog 不可用态下培育推荐模型接口可识别非 live 成功 | 1、已确认 catalog `svc.cultivate.models` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /entan/v1/svc/models，查询参数取组合 SVCCULTIVATE-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含可解析 code；3、不得将 sample 中培育指数、优先级或建议文案作为通过条件；4、若 code 属成功集合则 data 不得被当作已接通生产培育推荐判定 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 产业服务深度分析模型构建·服务机构培育推荐模型 | N/A-技术项 | N/A | /entan/v1/svc/models | M_SVC_REC_CULTIVATE_SCORE | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=SVCCULTIVATE-01 金样 §0未试调 catalog_status=unavailable kind=cultivate |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000635 | 产业服务分析 | 服务机构培育推荐 | 异常-鉴权 | 服务机构培育推荐模型 | 服务机构培育推荐 | 培育推荐 | 培育推荐模型接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /entan/v1/svc/models，查询参数取组合 SVCCULTIVATE-01 | 1、HTTP 状态为 401 或 424；2、响应 code 不属于成功集合；3、不得返回含可信 cultivate 业务载荷的成功 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 产业服务深度分析模型构建·服务机构培育推荐模型 | N/A-技术项 | N/A | /entan/v1/svc/models | | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=SVCCULTIVATE-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000636 | 产业服务分析 | 服务机构培育推荐 | 异常-非法kind | 服务机构培育推荐模型 | 服务机构培育推荐 | 培育推荐 | 非法 kind 时返回可识别失败而非空 cultivate 成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /entan/v1/svc/models，查询参数取组合 SVCCULTIVATE-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作无机构可培育空结果或伪 cultivate 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 产业服务深度分析模型构建·服务机构培育推荐模型 | N/A-技术项 | N/A | /entan/v1/svc/models | | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=SVCCULTIVATE-02；矩阵挂 kind、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000637 | 产业服务分析 | 服务机构培育推荐 | 异常-非本页kind | 服务机构培育推荐模型 | 服务机构培育推荐 | 培育推荐 | 同 path 其它模型 kind 时不得当作本页 cultivate 培育成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /entan/v1/svc/models，查询参数取组合 SVCCULTIVATE-03 | 1、响应为失败态或可识别非 cultivate 契约态；2、不得将 gap 等其它 kind 的 sample 形态当作本页培育推荐通过 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 产业服务深度分析模型构建·服务机构培育推荐模型 | N/A-技术项 | N/A | /entan/v1/svc/models | | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=SVCCULTIVATE-03；矩阵挂 kind、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000638 | 产业服务分析 | 服务机构培育推荐 | 契约-字段形态 | 服务机构培育推荐模型 | 服务机构培育推荐 | 培育推荐 | 成功信封下契约出参 cultivate 若存在是否符合 array 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-000634 | 1.GET /entan/v1/svc/models，查询参数取组合 SVCCULTIVATE-01 | 1、若 code 属成功集合且载荷含 cultivate（含 data 内或顶层），则 cultivate 为 array；2、不得以 sample 中 cultivation_index 或 priority_level 数值作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 产业服务深度分析模型构建·服务机构培育推荐模型 | N/A-技术项 | N/A | /entan/v1/svc/models | M_SVC_REC_CULTIVATE_SCORE | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=SVCCULTIVATE-01；矩阵挂 cultivate；样例另含 M_SVC_DEEP_181_1 不设失败条件 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01710 | 产业服务分析 | 服务机构培育推荐 | 主流程 | — | 服务机构培育推荐 | 培育推荐 | 培育推荐按文档 sampleRequest kind=cultivate 查询返回培育名单字段 | 1、kind 使用文档示例 cultivate | 1.GET /entan/v1/svc/models，查询参数取组合 CULM-01 | 1、返回 body 顶层含 cultivate（array，responseFields 培育名单）；2、元素含 org_id（string，示例 svc:ns_fin、svc:ip_sz）、cultivation_index（number，示例 84.0、71.5）、priority_level（string，示例 high、mid）、growth_stage（string，示例 扩张、成长）、advice（string，示例 补强跨境服务、扩大海外布局）；3、ext 含 name（string，示例 南山科技金融站、知产服务中心）；4、dimension_scores 含 scale（number，示例 78、66）、innovation（number，示例 82、75）、effect（number，示例 80、70）、marketGap（number，示例 74、68）；5、结构与 sampleResponse 一致 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc/models | M_SVC_REC_CULTIVATE_SCORE | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=CULM-01 catalog_status=unavailable 文档标记未交付 金样 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01711 | 产业服务分析 | 服务机构培育推荐 | 备选-参数组合 | 省略 kind | 服务机构培育推荐 | 培育推荐 | 培育推荐不传可选 kind（与 sampleRequest 相反） | 1、不传 kind | 1.GET /entan/v1/svc/models，查询参数取组合 CULM-02 | 1、返回 body 顶层仍含 cultivate（array，responseFields 培育名单）；2、元素仍含 org_id（string）、cultivation_index（number）、priority_level（string）、growth_stage（string）、advice（string）；3、ext 仍含 name（string）；4、dimension_scores 仍含 scale、innovation、effect、marketGap（number）；5、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc/models | M_SVC_REC_CULTIVATE_SCORE | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=CULM-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01712 | 产业服务分析 | 服务机构培育推荐 | 异常-入参-非法kind | — | 服务机构培育推荐 | 培育推荐 | 培育推荐 kind 非法 | 1、kind 取文档枚举外的值 | 1.GET /entan/v1/svc/models，查询参数取组合 CULM-03 | 1、返回 body 的 message 或 msg 指出 kind 非法；2、不返回含 cultivate 培育名单数组的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc/models | | INTEG | | | endpoint_id=svc.cultivate.models catalog_page_id=svc.cultivate 组合=CULM-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01713 | 产业服务分析 | 服务机构培育推荐 | 主流程 | — | 服务机构培育推荐 | 服务机构培育推荐模型 | 服务机构培育推荐模型按文档 sampleRequest kind=cultivate 计算 | 1、kind 使用文档示例 cultivate | 1.POST /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute，请求体取组合 CULC-01 | 1、返回 body 与 sampleResponse 同层含 metric_id（string，示例 M_SVC_DEEP_181_1）、hint（string，示例 真实 compute 响应,以实际调用为准）；2、responseFields 声明 metric_id 为 string（指标 ID） | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute | M_SVC_DEEP_181_1 | INTEG | | | endpoint_id=svc.cultivate.m_svc_deep_181_1 catalog_page_id=svc.cultivate 组合=CULC-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01714 | 产业服务分析 | 服务机构培育推荐 | 备选-参数组合 | 省略 kind | 服务机构培育推荐 | 服务机构培育推荐模型 | 服务机构培育推荐模型不传可选 kind（与 sampleRequest 相反） | 1、不传 kind | 1.POST /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute，请求体取组合 CULC-02 | 1、返回 body 仍含 metric_id（string，示例 M_SVC_DEEP_181_1）、hint（string，示例 真实 compute 响应,以实际调用为准）；2、responseFields 所列 metric_id（string，指标 ID）仍应出现；3、结构与 sampleResponse 同类 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute | M_SVC_DEEP_181_1 | INTEG | | | endpoint_id=svc.cultivate.m_svc_deep_181_1 catalog_page_id=svc.cultivate 组合=CULC-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01715 | 产业服务分析 | 服务机构培育推荐 | 异常-入参-非法kind | — | 服务机构培育推荐 | 服务机构培育推荐模型 | 服务机构培育推荐模型 kind 非法 | 1、kind 取文档枚举外的值 | 1.POST /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute，请求体取组合 CULC-03 | 1、返回 body 的 message 或 msg 指出 kind 非法；2、不返回含 metric_id 为 M_SVC_DEEP_181_1 的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute | | INTEG | | | endpoint_id=svc.cultivate.m_svc_deep_181_1 catalog_page_id=svc.cultivate 组合=CULC-03 |
 
 ---
 
@@ -52,18 +45,21 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| SVCCULTIVATE-01 | svc.cultivate.models | `kind=cultivate`（对齐 catalog `sampleRequest`） | 契约主路径（unavailable） |
-| SVCCULTIVATE-02 | svc.cultivate.models | `kind=__invalid__` | 非法枚举/未知 kind |
-| SVCCULTIVATE-03 | svc.cultivate.models | `kind=gap`（同 path 其它服务机构模型页典型 kind） | 非本页 kind，与「kind=cultivate 合法但无机构可培育」空态区分 |
-| SVCCULTIVATE-04 | svc.cultivate.models | 不传 `kind` | catalog 标可选；**本轮无独立用例**，语义待 endpoint available 后补 |
+| CULM-01 | svc.cultivate.models | kind=cultivate | 主路径（sampleRequest） |
+| CULM-02 | svc.cultivate.models | 不传 kind | 省略可选 kind |
+| CULM-03 | svc.cultivate.models | kind=__invalid__ | 只破坏 kind |
+| CULC-01 | svc.cultivate.m_svc_deep_181_1 | kind=cultivate | 主路径（sampleRequest） |
+| CULC-02 | svc.cultivate.m_svc_deep_181_1 | 不传 kind | 省略可选 kind |
+| CULC-03 | svc.cultivate.m_svc_deep_181_1 | kind=__invalid__ | 只破坏 kind |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 查询参数 |
-|-------------|--------|------|--------|----------|
-| svc.cultivate.models | GET | /entan/v1/svc/models | unavailable | kind（可选；本页验收取值 cultivate） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 培育推荐 | svc.cultivate.models | GET | /entan/v1/svc/models | kind? | unavailable |
+| 服务机构培育推荐模型 | svc.cultivate.m_svc_deep_181_1 | POST | /entan/v1/svc-metric/metric/M_SVC_DEEP_181_1/compute | kind? | available |
 
 ---
 
@@ -71,30 +67,17 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| svc.cultivate.models | API-000634、API-000635、API-000636、API-000637、API-000638 |
+| svc.cultivate.models | API-01710、01711、01712 |
+| svc.cultivate.m_svc_deep_181_1 | API-01713、01714、01715 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] unavailable endpoint 已写契约占位（API-000634），未写 sample 数值通过条件
-- [x] 异常-鉴权 1 条（API-000635）
-- [x] 入参单缺陷 2 条（API-000636 非法 kind、API-000637 非本页 kind）
-- [x] responseFields 契约占位 1 条（API-000638 cultivate）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 1 条且断言信封（API-000634）
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务禁改 registry；闭区间 API-000634～000638）
+- [x] 2 个 title 均在功能点列出现，且各有 1 条主流程（01710、01713）
+- [x] 各接口仅可选 kind：sampleRequest 主流程 1 条 + 省略 kind 备选 1 条 + 非法 kind 反向 1 条
+- [x] unavailable（培育推荐）仍按 catalog 返回体写主流程，备注注明未交付
+- [x] 正向预期逐字段写 sampleResponse；反向预期写 message 或 msg 指出 kind 非法
+- [x] `coverage-fp.md` 已同步 API-01710～01715
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-000634**～**API-000638** |
-| `_empty` 未覆盖 | **1** |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：接口 **2**；用例 **6** 条（主流程 2、备选 2、反向 2）；编号闭区间 **API-01710**～**API-01715**（父控 R2-批15 分配，连续用满）。

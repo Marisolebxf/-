@@ -1,58 +1,43 @@
 # 服务链短板分析 · 功能点覆盖（svc.gap / L41）
 
-> catalog `svc.gap` · 50897 · path `/industry-service/gap`  
-> 用例 `API-服务链短板分析-用例.md`  
-> A 线范围：**L41**（`fp-split-by-api-run/work/L41.md`）  
-> 功能点键：`L41 | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
+> catalog `svc.gap` · path `#/industry-service/gap`  
+> A 线真源：`fp-split-by-api-run/work/L41.md`  
+> B 线用例：`API-服务链短板分析-用例.md`（第二轮 **API-01647**～**01655**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| svc.gap.models | GET | /entan/v1/svc/models | API-000584～API-000588 | catalog `status=unavailable`；本页验收取 `kind=gap` |
-
----
-
-## 2. 功能点 → 用例（主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L41 \| svc.gap.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-000584、API-000586、API-000587 | 已覆盖 | SVCGAP-01 gap 主路径；非法 kind 见 02/586；非本页 relation 见 03/587 |
-| L41 \| svc.gap.models \| gap \| 算法输出-gap短板分析结果体 | catalog gap | API-000588 | 契约占位 | unavailable，禁止 sample 环节/计数作通过条件 |
-| L41 \| svc.gap.models \| _empty \| 短板分析无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「kind=gap 必空」试调证据 |
-| L41 \| svc.gap.models \| _fail \| 短板分析查询失败 | 契约错误态 | API-000584、API-000585、API-000586、API-000587 | 已覆盖 | 含 catalog 不可用、鉴权失败与 kind 失败语义 |
-| L41 \| \| etl_clean_standardize \| 服务机构多维度数据预处理 | 需规（1）采集预处理 | — | 未覆盖 | req_only |
-| L41 \| \| quality_efficiency_type_indicators \| 服务质量效益类型指标体系 | 需规指标体系阈值 | — | 未覆盖 | req_only |
-| L41 \| \| indicator_weak_link_locate \| 指标计算与短板环节定位 | 需规定位计算 | — | 未覆盖 | req_only |
-| L41 \| \| cause_resource_process_match \| 资源流程匹配度成因识别 | 需规成因因素 | — | 未覆盖 | req_only |
-| L41 \| \| gap_optimization_advice \| 针对性短板优化建议生成 | 需规（2）优化建议 | — | 未覆盖 | req_only |
-| L41 \| \| dynamic_monitor_threshold_refresh \| 动态监测与指标阈值更新 | 需规动态监测 | — | 未覆盖 | req_only |
-| L41 \| \| org_tag_dimension_time_scope \| 服务机构标签维度时间区间语义 | 需规（3）调用范围 | — | 未覆盖 | req_only |
-| L41 \| \| auto_monitor_trend_alert \| 短板自动监测与趋势预警 | 需规（3）监测预警 | — | 未覆盖 | req_only |
-| L41 \| \| locate_cause_advice_outputs \| 短板定位成因三类输出语义 | 需规（2）三类输出 | — | 未覆盖 | req_only |
-| L41 \| \| api_sdk_ops_platform \| API SDK 与运营系统集成 | 需规（3）系统对接 | — | 未覆盖 | req_only |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| svc.gap.models | GET | /entan/v1/svc/models | API-01647～01649 | unavailable |
+| svc.gap.m_svc_org_coverage_depth | POST | /entan/v1/svc-metric/metric/M_SVC_ORG_COVERAGE_DEPTH/compute | API-01650～01652 | available |
+| svc.gap.m_svc_deep_172_1 | POST | /entan/v1/svc-metric/metric/M_SVC_DEEP_172_1/compute | API-01653～01655 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵（挂 L41.md）
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 2（`kind`、`_fail`） |
-| 契约占位 | 1（`gap`） |
-| 未覆盖 | 11（含 `_empty` 1 + req_only 10） |
+| 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
+|----------|----------|--------------|------|------|
+| L41 \| svc.gap.models \| kind \| 算法输入-kind模型类型 | catalog kind | API-01647、01648、01649 | 已覆盖 | 主路径 kind=gap + 省略可选 kind + 非法 kind=__invalid__ |
+| L41 \| svc.gap.models \| gap \| 算法输出-gap短板分析结果体 | catalog gap | API-01647 | 已覆盖 | 主流程逐字段断言 gap 及 sampleResponse 元素字段；备选 01648 同结构 |
+| L41 \| svc.gap.models \| _empty \| 短板分析无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定空结果构造条件，不单开空态用例 |
+| L41 \| svc.gap.models \| _fail \| 短板分析查询失败 | 契约错误态 | API-01649 | 部分覆盖 | 仅非法 kind 反向，预期 message 或 msg；省略 kind 按可选参数记备选 |
 
 ---
 
-## 4. B 线交卷摘要
+## req_only 行（无 endpoint 挂接）
 
-| 项 | 值 |
-|----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000584～API-000588 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+L41.md 中 `etl_clean_standardize`、`quality_efficiency_type_indicators`、`indicator_weak_link_locate`、`cause_resource_process_match`、`gap_optimization_advice`、`dynamic_monitor_threshold_refresh`、`org_tag_dimension_time_scope`、`auto_monitor_trend_alert`、`locate_cause_advice_outputs`、`api_sdk_ops_platform` 共 10 行 **req_only**，无 catalog endpoint，B 线记 **无对应功能点**，不单独开 API 用例。
+
+sampleResponse 的 gap 元素另有 `stage_name`、`stage_code`、`org_count_in_stage`、`avg_depth`、`runtime_flag`、`q061_score`，已写入 01647 正向预期；A 线未单列这些 field_key。
+
+---
+
+## B 线独有（A 线未列 field_key）
+
+| endpoint_id | 对应用例编号 | 状态 | 说明 |
+|-------------|--------------|------|------|
+| svc.gap.m_svc_org_coverage_depth | API-01650～01652 | 无对应功能点 | L41 未列该 endpoint 的 field_key；用例仍按 catalog 编写 |
+| svc.gap.m_svc_deep_172_1 | API-01653～01655 | 无对应功能点 | L41 未列该 endpoint 的 field_key；用例仍按 catalog 编写 |

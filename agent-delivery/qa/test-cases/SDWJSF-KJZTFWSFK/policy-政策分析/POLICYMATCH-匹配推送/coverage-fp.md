@@ -1,54 +1,41 @@
-# 匹配推送 · 功能点覆盖（policy.match）
+# 匹配推送 · A 线功能点覆盖（policy.match）
 
-> catalog `policy.match` · 50897 · path `/policy/match`  
-> 用例 `API-政策匹配推送-用例.md`  
-> A 线范围：**不扩六级**（`fp-split-by-api-run/_l6-to-catalog-map.yaml`）；矩阵键以 catalog `policy.match.main` 入参/出参及契约哨兵为准  
-> 功能点键：`policy.match | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| policy.match.main | GET | /policy/v1/policy/match | API-000504～API-000508 | catalog `status=unavailable`；§0 **未试调** |
+> **catalog_page_id**：`policy.match` · path `/policy/match`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.match`（原因：不扩六级）。不改 `work/`。  
+> **用例册**：`API-政策匹配推送-用例.md`（第二轮 **API-01475**～**01488**，共 14 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.match`  
 
 ---
 
-## 2. 功能点 → 用例（主矩阵）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| policy.match \| policy.match.main \| subject_id \| 算法输入-subject_id主体标识 | catalog subject_id | — | 部分覆盖 | MATCH-01 不传 subject_id；MATCH-04 无独立用例 |
-| policy.match \| policy.match.main \| subject_type \| 算法输入-subject_type主体类型 | catalog subject_type | API-000504、API-000506 | 已覆盖 | 主路径 enterprise + 枚举外失败 |
-| policy.match \| policy.match.main \| limit \| 算法输入-limit结果条数上限 | catalog limit | API-000504、API-000507 | 已覆盖 | 主路径 limit=20 + 非正整数失败 |
-| policy.match \| policy.match.main \| match_score \| 算法输出-match_score匹配分 | catalog match_score | API-000504、API-000508 | 契约占位 | unavailable，禁止 sample 分值作通过条件 |
-| policy.match \| policy.match.main \| _empty \| 匹配推送无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「合法入参必空」试调证据 |
-| policy.match \| policy.match.main \| _fail \| 匹配推送查询失败 | 契约错误态 | API-000504、API-000505、API-000506、API-000507 | 已覆盖 | 含 catalog 不可用、鉴权失败与入参失败语义 |
-| policy.match \| \| subject_profile_topn \| 主体画像Top-N政策匹配推送 | 需规（bid §1.1.1.1.1.1.1.2.6） | — | 未覆盖 | req_only；四维加权与 QPOL-03 待甲方确认 |
-| policy.match \| \| match_reasons_explain \| 可解释匹配理由输出 | 需规可解释推送 | — | 未覆盖 | req_only；catalog 8a 未声明 match_reasons 字段 |
-| policy.match \| \| multi_channel_push \| 多通道推送与订阅 | 需规推送通道 | — | 未覆盖 | req_only；本 endpoint 为查询 API，不含推送通道契约 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| policy.match.main | GET | /policy/v1/policy/match | API-01475、API-01476、API-01477、API-01478、API-01479、API-01480、API-01481 | unavailable |
+| policy.match.m_policy_match | POST | /policy/v1/polan/metric/M_POLICY_MATCH/compute | API-01482、API-01483、API-01484、API-01485、API-01486、API-01487、API-01488 | available |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 3（`subject_type`、`limit`、`_fail`） |
-| 部分覆盖 | 1（`subject_id`） |
-| 契约占位 | 1（`match_score`） |
-| 未覆盖 | 4（含 `_empty` 1 + req_only 3） |
+本页不在六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。每个 title 的 sampleResponse 与 responseFields 都挂在该接口主流程上；可选参数与 sample 相反的传/不传挂备选；每个参数恰好 1 条非法反向。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| policy.match.main \| 政策匹配 | API-01475、API-01476、API-01477、API-01478、API-01479、API-01480、API-01481 | 无对应功能点 | 01475 主流程 sampleRequest（subject_type=enterprise、limit=20、不传 subject_id），断言 data 元素 rank_no、subject_name、policy_title、match_score、metric_id；01476 传入 subject_id；01477 省略 subject_type；01478 省略 limit；01479～01481 分别非法 subject_id、subject_type、limit。文档标记未交付 |
+| （无 Lxx） \| policy.match.m_policy_match \| 政策匹配推送 | API-01482、API-01483、API-01484、API-01485、API-01486、API-01487、API-01488 | 无对应功能点 | 01482 主流程 sampleRequest，断言 metric_id、hint 与 responseFields 的 match_score；01483 传入 subject_id；01484 省略 subject_type；01485 省略 limit；01486～01488 分别非法 subject_id、subject_type、limit |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000504～API-000508 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+| catalog endpoint 数 | 2 |
+| title 数 | 2 |
+| API 用例数 | 14 |
+| 主流程 | 2 |
+| 备选-参数组合 | 6 |
+| 反向 | 6 |
+| 编号 | API-01475～01488 连续 |
+| A 线 Lxx | 无 |

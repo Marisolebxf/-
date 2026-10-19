@@ -1,59 +1,46 @@
 # 政策效果评估 · 功能点覆盖（policy.effect / L37）
 
-> catalog `policy.effect` · 50897 · path `/policy/effect`  
-> 用例 `API-政策效果评估-用例.md`  
-> A 线范围：**L37**（`fp-split-by-api-run/work/L37.md`）  
-> 功能点键：`L37 | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
+> catalog `policy.effect` · path `#/policy/effect`  
+> A 线真源：`fp-split-by-api-run/work/L37.md`  
+> B 线用例：`API-政策效果评估-用例.md`（第二轮 **API-01426**～**01430**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| policy.effect.main | GET | /policy/v1/policy/analysis/effect | API-000464～API-000468 | catalog `status=unavailable` |
-
----
-
-## 2. 功能点 → 用例（主矩阵）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| L37 \| policy.effect.main \| scope_code \| 算法输入-scope_code范围编码 | catalog scope_code | API-000464、API-000466 | 部分覆盖 | EFF-01 合法 scope_code=440300；非法 scope（EFF-02）见 API-000466；仅 limit 无 scope（EFF-04）本轮无独立用例 |
-| L37 \| policy.effect.main \| limit \| 算法输入-limit结果条数上限 | catalog limit | API-000464、API-000467 | 已覆盖 | 主路径 limit=20 + 非正整数失败 |
-| L37 \| policy.effect.main \| effect_score \| 算法输出-effect_score政策效果评估指数 | catalog effect_score | API-000468 | 契约占位 | unavailable，禁止 sample 指数作通过条件 |
-| L37 \| policy.effect.main \| _empty \| 效果评估无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「合法入参必空」试调证据 |
-| L37 \| policy.effect.main \| _fail \| 效果评估查询失败 | 契约错误态 | API-000464、API-000465、API-000466、API-000467 | 已覆盖 | 含 catalog 不可用、鉴权失败与入参失败语义 |
-| L37 \| \| etl_clean_standardize \| 多源政策与经济社会环境数据标准化 | 需规（1）多源处理 | — | 未覆盖 | req_only |
-| L37 \| \| exec_socio_env_dimensions \| 执行社会经济环境三维指标体系 | 需规三维指标 | — | 未覆盖 | req_only |
-| L37 \| \| indicator_weight_compose \| 指标数值计算与权重分配 | 需规指标权重 | — | 未覆盖 | req_only |
-| L37 \| \| weighted_effect_compute \| 加权综合生成效果评估指数 | 需规加权综合 | — | 未覆盖 | req_only |
-| L37 \| \| dimension_evaluation_results \| 分维度评估结果输出 | 需规（2）分维度 | — | 未覆盖 | req_only |
-| L37 \| \| improvement_performance_report \| 改进建议与绩效优化报告 | 需规（2）报告建议 | — | 未覆盖 | req_only |
-| L37 \| \| policy_tag_time_stage_scope \| 政策标签时间区间与执行阶段查询 | 需规（3）调用范围 | — | 未覆盖 | req_only |
-| L37 \| \| realtime_history_tracking \| 实时历史指数与持续效果追踪 | 需规持续追踪 | — | 未覆盖 | req_only |
-| L37 \| \| api_sdk_platform_auto_eval \| API SDK 与平台自动化评估 | 需规（3）平台对接 | — | 未覆盖 | req_only |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| policy.effect.main | GET | /policy/v1/policy/analysis/effect | API-01426～01430 | unavailable |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵（挂 L37.md）
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| L37 \| policy.effect.main \| scope_code \| 算法输入-scope_code范围编码 | API-01426、01427、01429 | 已覆盖 | 主流程不传；EFF-02 补传 440000；EFF-04 非法 |
+| L37 \| policy.effect.main \| limit \| 算法输入-limit结果条数上限 | API-01426、01428、01430 | 已覆盖 | sampleRequest limit=20；EFF-03 省略；EFF-05 非法 -1 |
+| L37 \| policy.effect.main \| effect_score \| 算法输出-effect_score政策效果评估指数 | API-01426 | 已覆盖 | 主流程逐字段断言 effect_score（number）；同条含 sampleResponse 的 scope_name、scope_code、impl_effect |
+| L37 \| policy.effect.main \| _empty \| 效果评估无数据空态 | — | 未覆盖 | 无稳定「合法入参必空」条件，不单开空态用例 |
+| L37 \| policy.effect.main \| _fail \| 效果评估查询失败 | API-01429、01430 | 已覆盖 | 两参数各 1 条非法反向，预期为 message 或 msg |
+| L37 \| \| etl_clean_standardize \| 多源政策与经济社会环境数据标准化 | — | 未覆盖 | req_only，无 catalog endpoint |
+| L37 \| \| exec_socio_env_dimensions \| 执行社会经济环境三维指标体系 | — | 未覆盖 | req_only |
+| L37 \| \| indicator_weight_compose \| 指标数值计算与权重分配 | — | 未覆盖 | req_only |
+| L37 \| \| weighted_effect_compute \| 加权综合生成效果评估指数 | — | 未覆盖 | req_only |
+| L37 \| \| dimension_evaluation_results \| 分维度评估结果输出 | — | 未覆盖 | req_only |
+| L37 \| \| improvement_performance_report \| 改进建议与绩效优化报告 | — | 未覆盖 | req_only |
+| L37 \| \| policy_tag_time_stage_scope \| 政策标签时间区间与执行阶段查询 | — | 未覆盖 | req_only |
+| L37 \| \| realtime_history_tracking \| 实时历史指数与持续效果追踪 | — | 未覆盖 | req_only |
+| L37 \| \| api_sdk_platform_auto_eval \| API SDK 与平台自动化评估 | — | 未覆盖 | req_only |
+
+---
+
+## 统计
 
 | 状态 | 条数 |
 |------|------|
-| 已覆盖 | 2（`limit`、`_fail`） |
-| 部分覆盖 | 1（`scope_code`） |
-| 契约占位 | 1（`effect_score`） |
-| 未覆盖 | 10（含 `_empty` 1 + req_only 9） |
+| 已覆盖 | 4（scope_code、limit、effect_score、_fail） |
+| 部分覆盖 | 0 |
+| 未覆盖 | 10（_empty 1 + req_only 9） |
 
----
-
-## 4. B 线交卷摘要
-
-| 项 | 值 |
-|----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000464～API-000468 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+L37 共 14 行。B 线用例 5 条，不按 field 拆行。`code-registry` 由父控回写。

@@ -8,49 +8,37 @@
 > **模块**：创新监测 / 引育推荐（异步）  
 > **catalog**：`entry_id=innov.recommend` · `catalog_page_id=innov.recommend` · path `/innov/recommend`  
 > **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.recommend`  
-> **A 线对照**：`fp-split-by-api-run/work/` 内 **无** `innov.recommend` 行（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **A 线对照**：无对应 Lxx（`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`，原因：创新监测不在本轮 60 六级；不改 work）  
+> **环境**：联调台 50897（本册不写登录、不试调）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批21）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`，常见前缀 `/api`） |
-| 业务 path | catalog 两 endpoint 登记 **`path` 为空**（`runtime=local_mock`，Java REST 未发布）；验收以联调台选中 endpoint 发送 **POST** 体，等价于对 `innov.recommend.attraction` / `innov.recommend.cultivation` 契约调用，**不得**臆造未登记 REST path |
-| 鉴权头 | `Authorization: Bearer <access_token>`（50897 OAuth 密码模式，账号口径见 `lumen-ui-algo-apiview` LoginView）；`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00744（金样·招引）** 与 **API-00749（金样·培育）** 各断言 **完整可路由失败或不可用信封**（HTTP + 可解析体）；同 endpoint 其余用例在前置引用对应金样后，可只断言失败态、鉴权态或字段形态 |
-| catalog 状态 | 本页 **2** 个 endpoint 均为 `status=unavailable`、`runtime=local_mock`；**禁止**将 `sampleResponse` 中 `task_id`、`candidate_count`、`weights`、`recommendation_score`、企业名称或 `rankings` 条数作为通过条件 |
-| 页内区分 | 同页两契约仅 **`sub_type`** 与 endpoint 标题不同：招引 endpoint 验收取 `sub_type=attraction`；培育 endpoint 验收取 `sub_type=cultivation`；不得串用另一子类型 sample 形态当作本 endpoint 通过 |
-| 样例与契约差 | 招引 sample 含 `weights`（待甲方确认 **Q015** 🟡）；培育 sample 含 `industry_category`、`enterprise_scale`、`development_bottleneck` 等；契约 `responseFields` 两 endpoint 均仅声明 **`rankings`（array）**。断言 **只强制 responseFields**；样例扩展字段不设失败条件 |
-| 异步语义 | 页级 `autoRun=false`；本册只验 **契约 HTTP/入参/出参**，不验联调台任务池单飞、当天复用或重新分析（归专题异步工作区 FUNC/附录 E） |
-| 试调 | **本会话未试调**（子任务约束禁止 curl）；执行期按 §0 鉴权与 catalog 复核，observed 仅记入执行记录 |
-| 本页 endpoint 数 | **2** |
+| # | title（功能点列原文） | endpoint_id | METHOD | path | 参数 | 条数 |
+|---|------------------------|-------------|--------|------|------|------|
+| 1 | 招引推荐契约 | innov.recommend.attraction | POST | （空） | sub_type* | 2 |
+| 2 | 培育推荐契约 | innov.recommend.cultivation | POST | （空） | sub_type* | 2 |
+
+两个 title 的 catalog `status=unavailable`，`path` 均为空字符串。步骤只写「path 为空」，不臆造 URL。`路由route` 记 `—`。
+
+每个接口只有必填 `sub_type`（string），无其它参数。主流程跟 `sampleRequest`：招引 `sub_type=attraction`，培育 `sub_type=cultivation`。反向恰好 1 条：省略 `sub_type`（请求体 `{}`）。不另写非法值，不写备选。备注注明文档标记未交付，正向预期仍按该接口 sampleResponse 逐字段写。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00744`～`00753`。`路由route` = catalog `path`（本页为空则填 `—`）；`备注` 含 `endpoint_id=`、`catalog_page_id=`、组合 id。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01898`～`01901`（闭区间用满，不复用 00001～00888）。`路由route` = path（本页为空，记 `—`）；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.recommend`、组合 id。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00744 | 创新监测 | 引育推荐（异步） | 契约-不可用 | 招引推荐契约 | 引育推荐（异步） | 招引推荐 | catalog 不可用态下招引推荐契约返回可识别非成功契约 | 1、已确认 catalog `innov.recommend.attraction` 为 unavailable 且 path 为空；2、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-ATTR-01 | 1、HTTP 状态为 404/405/4xx/5xx 或响应体为 JSON；2、若体为 JSON 则含可解析 `code`；3、`code` 不属于成功集合，或 `data` 不构成含 array 型 `rankings` 的成功业务载荷；4、不得将 sample 招引榜示例分值或企业名作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=REC-ATTR-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00745 | 创新监测 | 引育推荐（异步） | 异常-鉴权 | 招引推荐契约 | 引育推荐（异步） | 招引推荐 | 招引推荐契约缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization（可不携带 TENANT-ID） | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-ATTR-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务 rankings 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=REC-ATTR-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00746 | 创新监测 | 引育推荐（异步） | 异常-缺必填sub_type | 招引推荐契约 | 引育推荐（异步） | 招引推荐 | 招引推荐契约缺少 sub_type 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封规则见 API-00744 | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-ATTR-02 | 1、响应为失败态（HTTP 4xx/5xx 或 code 非成功集合）；2、不得将失败当作含可信 `rankings` 的成功招引结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=REC-ATTR-02；矩阵挂 sub_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00747 | 创新监测 | 引育推荐（异步） | 异常-非法sub_type | 招引推荐契约 | 引育推荐（异步） | 招引推荐 | 招引推荐契约 sub_type 枚举外取值时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-ATTR-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、message 或 msg 可非空；3、不得将失败当作含可信招引 rankings 的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=REC-ATTR-03；矩阵挂 sub_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00748 | 创新监测 | 引育推荐（异步） | 异常-非本页sub_type | 招引推荐契约 | 引育推荐（异步） | 招引推荐 | 招引 endpoint 使用培育 sub_type 时不得当作本页招引成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-ATTR-05 | 1、响应为失败态或可识别非本页 attraction 契约态；2、不得将 `sub_type=cultivation` 的 sample 形态当作本页招引 rankings 通过 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=REC-ATTR-05；矩阵挂 sub_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00749 | 创新监测 | 引育推荐（异步） | 契约-不可用 | 培育推荐契约 | 引育推荐（异步） | 培育推荐 | catalog 不可用态下培育推荐契约返回可识别非成功契约 | 1、已确认 catalog `innov.recommend.cultivation` 为 unavailable 且 path 为空；2、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-CULT-01 | 1、HTTP 状态为 404/405/4xx/5xx 或响应体为 JSON；2、若体为 JSON 则含可解析 `code`；3、`code` 不属于成功集合，或 `data` 不构成含 array 型 `rankings` 的成功业务载荷；4、不得将 sample 培育榜示例分值或瓶颈文案作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=REC-CULT-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00750 | 创新监测 | 引育推荐（异步） | 异常-鉴权 | 培育推荐契约 | 引育推荐（异步） | 培育推荐 | 培育推荐契约缺有效 token 时网关拒绝访问 | 1、请求不携带 Authorization（可不携带 TENANT-ID） | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-CULT-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功业务 rankings 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=REC-CULT-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00751 | 创新监测 | 引育推荐（异步） | 异常-缺必填sub_type | 培育推荐契约 | 引育推荐（异步） | 培育推荐 | 培育推荐契约缺少 sub_type 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封规则见 API-00749 | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-CULT-02 | 1、响应为失败态（HTTP 4xx/5xx 或 code 非成功集合）；2、不得将失败当作含可信 `rankings` 的成功培育结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=REC-CULT-02；矩阵挂 sub_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00752 | 创新监测 | 引育推荐（异步） | 异常-非法sub_type | 培育推荐契约 | 引育推荐（异步） | 培育推荐 | 培育推荐契约 sub_type 枚举外取值时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-CULT-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx/5xx）；2、不得将失败当作含可信培育 rankings 的成功业务数据 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=REC-CULT-03；矩阵挂 sub_type、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00753 | 创新监测 | 引育推荐（异步） | 异常-非本页sub_type | 培育推荐契约 | 引育推荐（异步） | 培育推荐 | 培育 endpoint 使用招引 sub_type 时不得当作本页培育成功态 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.POST（catalog path 为空·local_mock）请求体取组合 REC-CULT-04 | 1、响应为失败态或可识别非本页 cultivation 契约态；2、不得将 `sub_type=attraction` 的 sample 形态当作本页培育 rankings 通过 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·引育推荐（异步） | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=REC-CULT-04；矩阵挂 sub_type、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01898 | 创新监测 | 引育推荐（异步） | 主流程 | — | 引育推荐（异步） | 招引推荐契约 | 招引推荐契约按文档 sampleRequest 传 sub_type=attraction | 1、sub_type 使用文档示例 attraction | 1.POST（path 为空），请求体取组合 ATTR-01 | 1、返回 body 与 sampleResponse 同层逐字段：task_id（string，示例 REC-20260730-001）、candidate_count（number，示例 3）；2、weights.technology_match（number，示例 34）、weights.growth（number，示例 33）、weights.regional_fit（number，示例 33）；3、rankings 为数组（responseFields 推荐榜），元素含 rank（number）、enterprise_name（string）、recommendation_score（number）、industry_domain（string）、geographic_source（string），示例 1/智芯科技（深圳）有限公司/87.52/新一代信息技术/华南、2/蓝海生物制药有限公司/82.1/生物医药/华东、3/瀚海高端装备股份公司/78.45/高端装备/华北 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=ATTR-01 金样 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01899 | 创新监测 | 引育推荐（异步） | 异常-入参-缺sub_type | — | 引育推荐（异步） | 招引推荐契约 | 招引推荐契约不传必填 sub_type | 1、请求体不传 sub_type | 1.POST（path 为空），请求体取组合 ATTR-02 | 1、返回 body 的 message 或 msg 指出 sub_type 缺失或非法；2、不返回含 rankings 或 weights 的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.attraction catalog_page_id=innov.recommend 组合=ATTR-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01900 | 创新监测 | 引育推荐（异步） | 主流程 | — | 引育推荐（异步） | 培育推荐契约 | 培育推荐契约按文档 sampleRequest 传 sub_type=cultivation | 1、sub_type 使用文档示例 cultivation | 1.POST（path 为空），请求体取组合 CULT-01 | 1、返回 body 与 sampleResponse 同层逐字段：task_id（string，示例 REC-20260730-002）、candidate_count（number，示例 2）；2、rankings 为数组（responseFields 培育榜），元素含 rank（number）、enterprise_name（string）、recommendation_score（number）、industry_category（string）、enterprise_scale（string）、development_bottleneck（string），示例 1/湾区智能产业有限公司/84.3/人工智能/中型/高端人才不足、2/南山精密器件有限公司/76.8/先进制造/小型/融资渠道单一 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=CULT-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-01901 | 创新监测 | 引育推荐（异步） | 异常-入参-缺sub_type | — | 引育推荐（异步） | 培育推荐契约 | 培育推荐契约不传必填 sub_type | 1、请求体不传 sub_type | 1.POST（path 为空），请求体取组合 CULT-02 | 1、返回 body 的 message 或 msg 指出 sub_type 缺失或非法；2、不返回含 rankings 的成功业务结果 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | — | | INTEG | | | endpoint_id=innov.recommend.cultivation catalog_page_id=innov.recommend 组合=CULT-02 catalog_status=unavailable 文档标记未交付 |
 
 ---
 
@@ -58,24 +46,19 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| REC-ATTR-01 | innov.recommend.attraction | `sub_type`: `attraction`（对齐 catalog `sampleRequest`） | 招引 unavailable 主路径 |
-| REC-ATTR-02 | innov.recommend.attraction | 请求体 `{}`（不含 `sub_type` 键） | 缺必填 |
-| REC-ATTR-03 | innov.recommend.attraction | `sub_type`: `__invalid__` | 枚举外取值 |
-| REC-ATTR-04 | innov.recommend.attraction | `sub_type`: `""` | 空字符串；**本轮无独立用例**，语义待 path 发布且 available 后补 |
-| REC-ATTR-05 | innov.recommend.attraction | `sub_type`: `cultivation` | 非本页子类型（培育值误挂招引 endpoint） |
-| REC-CULT-01 | innov.recommend.cultivation | `sub_type`: `cultivation`（对齐 catalog `sampleRequest`） | 培育 unavailable 主路径 |
-| REC-CULT-02 | innov.recommend.cultivation | 请求体 `{}`（不含 `sub_type` 键） | 缺必填 |
-| REC-CULT-03 | innov.recommend.cultivation | `sub_type`: `__invalid__` | 枚举外取值 |
-| REC-CULT-04 | innov.recommend.cultivation | `sub_type`: `attraction` | 非本页子类型（招引值误挂培育 endpoint） |
+| ATTR-01 | innov.recommend.attraction | sub_type=attraction | 主路径（sampleRequest） |
+| ATTR-02 | innov.recommend.attraction | 不传 sub_type（请求体 {}） | 缺必填 sub_type |
+| CULT-01 | innov.recommend.cultivation | sub_type=cultivation | 主路径（sampleRequest） |
+| CULT-02 | innov.recommend.cultivation | 不传 sub_type（请求体 {}） | 缺必填 sub_type |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | runtime | 请求体 |
-|-------------|--------|------|--------|---------|--------|
-| innov.recommend.attraction | POST | （空） | unavailable | local_mock | sub_type（必填；本页验收取值 attraction） |
-| innov.recommend.cultivation | POST | （空） | unavailable | local_mock | sub_type（必填；本页验收取值 cultivation） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 招引推荐契约 | innov.recommend.attraction | POST | （空） | sub_type* | unavailable |
+| 培育推荐契约 | innov.recommend.cultivation | POST | （空） | sub_type* | unavailable |
 
 ---
 
@@ -83,31 +66,21 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| innov.recommend.attraction | API-00744、00745、00746、00747、00748 |
-| innov.recommend.cultivation | API-00749、00750、00751、00752、00753 |
+| innov.recommend.attraction | API-01898、01899 |
+| innov.recommend.cultivation | API-01900、01901 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 2 个 unavailable endpoint 各 1 条契约占位（API-00744、00749），未写 sample 数值通过条件
-- [x] 异常-鉴权 2 条（00745、00750）
-- [x] 各 endpoint 入参单缺陷 3 条（缺省 / 非法 / 跨子类型）
-- [x] `_empty` 无稳定构造 → 矩阵标 **未覆盖**（见 `coverage-fp.md`）
-- [x] 金样 2 条（招引 00744、培育 00749）
-- [x] 本页 **0** 条 FUNC
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务编号闭区间 API-00744～00753；**未改 registry**）
+- [x] 2 个 title（招引推荐契约、培育推荐契约）均在功能点列出现，且各有 1 条主流程
+- [x] 主流程跟 sampleRequest：attraction、cultivation
+- [x] 无其它参数，无备选；每个接口反向恰好 1 条，只省略 sub_type，不另写非法值
+- [x] 正向预期逐字段写出 sampleResponse（含 responseFields 未单列、但示例里出现的 task_id、candidate_count、weights 及榜内扩展字段）；反向预期为 message 或 msg 指出 sub_type 缺失或非法
+- [x] path 为空，步骤未臆造 URL；unavailable 备注注明文档标记未交付
+- [x] 无登录 / Token / 401 / 424 / 只写 HTTP 4xx 的预期
+- [x] A 线无对应 Lxx；未改 work
+- [x] `coverage-fp.md` 已同步 API-01898～01901
+- [ ] `code-registry.yaml` 由父控回写（本子任务不改注册表）
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **10** |
-| 编号闭区间 | **API-00744**～**API-00753** |
-| endpoint 数 | **2**（各 5 条） |
-| `_empty` 未覆盖 | **2** |
-| FUNC 条数 | **0** |
-| 试调 | **未试调**（§0） |
+**统计**：用例 **4** 条；主流程 **2**、备选 **0**、反向 **2**；编号闭区间 **API-01898**～**API-01901**（父控 R2-批21 分配）。

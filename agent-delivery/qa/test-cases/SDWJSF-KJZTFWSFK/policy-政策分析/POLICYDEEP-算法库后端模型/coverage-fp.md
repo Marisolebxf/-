@@ -1,52 +1,39 @@
-# 算法库后端模型 · 功能点覆盖（policy.deep）
+# 算法库后端模型 · A 线功能点覆盖（policy.deep）
 
-> catalog `policy.deep` · 50897 · path `/policy/deep`  
-> 用例 `API-算法库后端模型-用例.md`  
-> A 线范围：**不扩六级**（`fp-split-by-api-run/_l6-to-catalog-map.yaml`）；矩阵键以 catalog `policy.deep.models` 入参/出参及契约哨兵为准  
-> 功能点键：`policy.deep | endpoint_id | field_key | 功能点中文`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| policy.deep.models | GET | /policy/v1/policy/analysis/deep | API-000524～API-000528 | catalog `status=unavailable`；§0 **未试调** |
+> **catalog_page_id**：`policy.deep` · path `/policy/deep`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.deep`（原因：不扩六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-算法库后端模型-用例.md`（第二轮 **API-01513**～**01517**，共 5 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.deep`  
 
 ---
 
-## 2. 功能点 → 用例（主矩阵）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| policy.deep \| policy.deep.models \| scope_code \| 算法输入-scope_code省市区编码 | catalog scope_code | API-000524、API-000526 | 部分覆盖 | DEEP-01 合法 scope_code=440300；非法 scope 见 DEEP-02 / API-000526 |
-| policy.deep \| policy.deep.models \| limit \| 算法输入-limit结果条数上限 | catalog limit | API-000524、API-000527 | 已覆盖 | 主路径 limit=50 + 非正整数失败 |
-| policy.deep \| policy.deep.models \| rows \| 算法输出-rows后端模型索引列表 | catalog rows | API-000528 | 契约占位 | unavailable，禁止 sample 六大模型 index 作通过条件 |
-| policy.deep \| policy.deep.models \| _empty \| 后端模型索引无数据空态 | 契约空结果 | — | 未覆盖 | endpoint unavailable 且无稳定「合法入参必空」试调证据 |
-| policy.deep \| policy.deep.models \| _fail \| 后端模型索引查询失败 | 契约错误态 | API-000524、API-000525、API-000526、API-000527 | 已覆盖 | 含 catalog 不可用、鉴权失败与入参失败语义 |
-| policy.deep \| \| six_model_aggregate_index \| 焦点力度效果短板机遇布局六大模型聚合索引 | catalog 页摘要 / metricIds | API-000524、API-000528 | 部分覆盖 | 仅 HTTP 契约；单模型算法语义见各子页 endpoint，本页 req_only 细项不展开 |
-| policy.deep \| \| model_metric_id_cross_ref \| 模型行 metric_id 与指标注册表交叉引用 | 样例 metric_id 字段 | — | 未覆盖 | req_only；catalog responseFields 未声明 metric_id |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| policy.deep.models | GET | /policy/v1/policy/analysis/focus | API-01513、API-01514、API-01515、API-01516、API-01517 | unavailable |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵
 
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 2（`limit`、`_fail`） |
-| 部分覆盖 | 2（`scope_code`、six_model_aggregate_index） |
-| 契约占位 | 1（`rows`） |
-| 未覆盖 | 2（含 `_empty` 1 + req_only 1） |
+本页不在六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。title「后端模型」的 sampleResponse（`rows` 及行内 `model`、`model_name`、`metric_id`、`index`）与 responseFields 的 `rows` 都挂在主流程上；与 sample 相反的传/不传挂备选；每个参数恰好 1 条非法反向。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| policy.deep.models \| 后端模型 | API-01513、API-01514、API-01515、API-01516、API-01517 | 无对应功能点 | 01513 主流程 sampleRequest（scope_code=440300、limit=50），断言 rows 及六行 model/model_name/metric_id/index；01514 省略 scope_code；01515 省略 limit；01516 非法 scope_code；01517 非法 limit。文档标记未交付 |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 5 |
-| 编号 | API-000524～API-000528 |
-| `_empty` 未覆盖 | 1 |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | 0 |
+| catalog endpoint 数 | 1 |
+| title 数 | 1 |
+| API 用例数 | 5 |
+| 主流程 | 1 |
+| 备选-参数组合 | 2 |
+| 反向 | 2 |
+| 编号 | API-01513～01517 连续 |
+| A 线 Lxx | 无 |

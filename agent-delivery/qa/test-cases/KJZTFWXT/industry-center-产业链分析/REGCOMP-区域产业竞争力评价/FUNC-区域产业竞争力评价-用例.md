@@ -1,116 +1,192 @@
 # 智能服务集群-科技专题服务系统测试用例
 
-> **文档类型**：测试用例（工作区 Markdown）  
-> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md` 红线 1~6）  
-> **测试类型**：FUNC  
-> **系统码**：KJZTFWXT  
-> **版本**：v2.0 · 2026-10-13（全库粒度重写，自 01100 起编；本路号段 **01100~01259 专属**，不得越界）  
-> **模块**：区域产业竞争力评价（REGCOMP / catalog `chain-regional-compete` / A 线 **T08 区域产业竞争力评价**，39 条功能点：多维竞争力指标体系构建 17 条 + 综合竞争力计算与横向排名 22 条）  
-> **金样**：**01100 / 01101 / 01105 / 01106 / 01110 / 01111**（烟测子集 = 跑全部金样：入口路由、评价模式互斥、产业下拉构成、三维度选择器构成、门控状态机、开始分析显式触发）  
-> **旧号段**：00244~00255 · **2026-10-13 全库粒度重写废弃，归档不删**（历史行存 git 版本；旧→新映射见同目录 `coverage-fp.md` 附录C）  
-> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`（已在业务页且 URL 不含 `/login` 则不要登出）  
-> **入口**：产业链中心 →「区域产业评价」→ 顶部「区域产业竞争力评价」Tab（竞争力工作区）  
-> **路由**：`/industry-center/regional?workspace=competitiveness&tab=competitiveness`（勘察事实；TRACE `route_contract` 契约为 `?tab=competitiveness`，`workspace` 参数为 as-built 增量，语义一致不判 Fail，记 observed）  
-> **禁止**：把区域产业指数评价（T03 REGIDX，兄弟册 00562~00577，`/regional?workspace=index`，四维指标树模板）写成用例——指数专项归 REGIDX 用例集，本页只做隔离对照（01121）；对比篮浮层为系统级入口（现场共 8 项），专项归 COMPARE 用例集，本页只顺带 observed  
-> **USM**：`agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-REGIONAL-区域产业评价/USM-CHAIN-TOPIC-REGIONAL.md`（区域包覆盖 index/competitiveness 两工作区；本用例集仅覆盖 competitiveness，故事 US-CHAIN-REG-03~05）  
-> **TRACE**：`TRACE-CHAIN-TOPIC-REGIONAL.yaml`（`acceptance_leaf`：REQ-CHAIN-REG-02 区域产业竞争力评价，route `/industry-center/regional?tab=competitiveness`；`regional_competitiveness` 固定三维 `企业能力/学术生态/配套生态力`、`primary_weight_only`、`weight_sum: 100`、禁止降两维）  
-> **DEC**：同目录 `DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806.md`（柱状+矩阵热力必达、GIS 条件展示、导出走共享报告、Demo-A 表不排序）  
-> **原始需求**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.2.8`（区域产业竞争力评价；`.8.2` 结果可视化）；算法侧 `bid-reference/科技专题服务算法库.md` → `§1.1.1.1.1.1.1.3.10`；需规 IC-29 / IC-37  
-> **交付口径**：INTEG（前端 → Java → Python `/internal/*`）  
-> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`（v8 T08 全 39 条映射）  
-> **关联任务**：`QA-KJZTFWXT-BLINE-CASE-IND-L01`  
-> **维护**：agent:qa-agent · 监管 human:黄敬洲  
+> **文档类型**：测试用例（工作区 Markdown）
+> **规范**：`agent-delivery/qa-test-case-spec.md`
+> **测试类型**：FUNC
+> **系统码**：KJZTFWXT
+> **版本**：v3.1 · 2026-10-18（补金样对象与同条件单飞；新号用到 03535）
+> **模块**：区域产业竞争力评价（catalog `chain-regional-compete`）
+> **金样**：03488（筛选条件发起直到成功结果页）。01101 为保留行，备注里的金样标记未改。
+> **保留旧号**：01101、01108、01109、01124
+> **环境**：http://10.50.69.111:30888/ · 账号 `admin` / `123456`
+> **入口**：产业链分析 → 区域产业竞争力评价
+> **路由**：`/industry-center/regional?workspace=competitiveness&tab=competitiveness`
+> **发起方式**：只有分析配置里的「开始分析」。没有从已选对象名单发起的第二入口。
+> **交付口径**：INTEG
+> **维护**：agent:qa-agent · 监管 human:黄敬洲
 
-**as_built 摘要（写期望用，不升 Fail）**：入口为产业链中心 →「区域产业评价」→ 顶部「区域产业竞争力评价」Tab，路由 `/industry-center/regional?workspace=competitiveness&tab=competitiveness`，页标题「区域产业竞争力评价」；顶部 Tab 为「区域产业竞争力评价（选中）/ 分析记录」两项；勘察时评审模式为开启态：需求追溯按钮「REQ-CHAIN-REG-03」「系统分析任务交接」+ 角标「指标未登记：GAP-CHAIN-REG-METRICS」（对应 GAP-CHAIN-REG-METRICS：区域评价专题指标与 D1-D4 readiness 真源未建立，gap_visible，不发明口径），关闭后须零泄漏；分析配置区：评价模式「单产业 × 多区域」「多产业 × 单区域」互斥单选；分析对象产业 placeholder「请选择产业」、区域 placeholder「请选择区域」；评价区域范围 1–5；提示「单产业模式请选择 1 个产业」；三大维度选择器空态待选：「选择企业能力」「选择学术生态」「选择配套生态力」，各带 spinbutton 权重（空值）与「查看」按钮，另有「一键均分」按钮；模板态汇总空态为「模板名称 / 已计入 0 项 · 权重合计 0%」；操作区含「重置参数」，「开始分析」空态 disabled；本页为异步分析工作区（切条件不自动起任务，显式「开始分析」）；对比篮浮层系统级存在（共 8 项，专项归 COMPARE 不展开）；勘察现场未见已成功结果态，综合竞争力排名/雷达/柱状/矩阵热力等结果呈现按 observed 记开放项；与 T03 REGIDX 指数入口（`workspace=index`，四维指标树模板 QC11）为同路由兄弟工作区，两工作区维度体系分离（竞争力三维 vs 指数四力），须显式对照防混淆。
+## 关评审控件清单
 
----
+| 格 | 用例或原因 |
+| --- | --- |
+| 入口 A · 筛选条件发起至成功结果 | 03488（金样） |
+| 入口 B · 已选对象发起 | 无。页上没有对象名单，对比篮不在本页发起分析 |
+| 任务列表 | 03505、03506、03514～03518、03523、03526～03528、03531、03532 |
+| 结果页 | 03489～03498 |
+| 摘要 · 当次对象 | 03489 |
+| 摘要 · 综合分 | 03490 |
+| 摘要 · 时间 | 无。结果页对象行没有单独的分析时间 |
+| 摘要 · 权重 | 无。结果页不单列权重；权重在配置页，见 01108、01109、03503 |
+| 筛选下拉 · 集群 | 03500 |
+| 筛选下拉 · 产业 | 03501 |
+| 单产业未选提示 | 03534 |
+| 筛选下拉 · 评价区域 | 03502 |
+| 筛选下拉 · 结果页 | 无 |
+| 开始分析 · 当天 | 03499 |
+| 工具 · 重新分析 | 无。页上没有这个按钮。复制配置的提示句里有这四个字，按钮本身不存在 |
+| 工具 · 调整条件 | 无。现场按钮是「按此配置新建分析」，见 03498 |
+| 工具 · 查看报告 | 03496、03497 |
+| 工具 · 结果搜索 | 无 |
+| 表 · 列 | 03493 |
+| 表 · 翻页 | 无。成功结果明细不足一页 |
+| 表 · 勾选与计数 | 无。排名明细没有勾选列 |
+| 表 · 行点击高亮 | 03494 |
+| 表 · 行内按钮 | 无 |
+| 详情抽屉 | 无 |
+| 二级入口 | 无 |
+| 报告 · 查看 | 03496 |
+| 报告 · 返回 | 03497 |
+| 报告 · 导出成功 | 未覆盖：报告页「导出」为禁用，造不出可下载文件 |
+| 报告 · 导出禁用 | 03530 |
+| 报告 · 下载失败 | 03529 |
+| 报告 · 生成失败 | 03525 |
+| 入池 | 无 |
+| 维度表默认 | 03503 |
+| 维度说明 | 03504、03513 |
+| 维度选择框 | 03512 |
+| 一键均分 | 01109 |
+| 权重合计 | 01108、03522 |
+| 重置参数 | 03511 |
+| 负数权重 | 03510 |
+| 评价模式互斥 | 01101 |
+| 多产业模式文案 | 03509 |
+| 改条件不发起 | 03508 |
+| 过程五段 | 03507 |
+| 过程中看记录 | 03524 |
+| 取消任务 | 03519 |
+| 返回配置重试 | 03520 |
+| 未选产业不可开始 | 01124 |
+| 同条件单飞 | 03535 |
+| 分析记录 · 查看结果 × 已完成 | 03488 |
+| 分析记录 · 查看结果 × 失败 | 03526 |
+| 分析记录 · 复制配置 × 已完成 | 03506 |
+| 分析记录 · 复制配置 × 失败 | 03523 |
+| 分析记录 · 查看报告 × 已完成 | 03496 |
+| 分析记录 · 查看报告 × 失败 | 03527 |
+| 分析记录 · 下载报告 × 已完成 | 03529 |
+| 分析记录 · 下载报告 × 失败 | 03528 |
+| 分析记录 · 删除 × 取消 | 03531 |
+| 分析记录 · 删除 × 确定 | 03532 |
+| 分析记录 · 入口 B 起源 | 无 |
+| 第二种账号 | 未覆盖：现场只有当前登录账号 |
+| 指数页隔离 | 03521 |
 
-## 1. 用例总表（总集列 + 右侧 GKX 扩展）
+## 1. 用例总表
 
-> 排列顺序：**主流程（P0）→ 备选（P1）→ 异常（P0/P1）**；场景类见「功能项」列前缀。  
-> 预期断言常态 1~3 点；本册无 4~5 点结构性例外条目。  
-> 结果态条目为勘察未见场景，预期按目标态写、备注标 observed，不升 Fail。  
-> observed 项一律入「备注」，不进预期。
+> 排列：主流程 → 备选 → 异常。保留号不改写。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01100 | 产业链分析 | 区域产业竞争力评价 | 主流程-入口与路由 | 页头与双 Tab 构成 | 区域产业竞争力评价 | 进入竞争力工作区 | 进入竞争力工作区，路由、页标题与顶部双 Tab 构成正确 | 1、系统正常；2、已登录 admin | 1.经产业链中心菜单进入「区域产业评价」的「区域产业竞争力评价」页签；2.读取地址栏路由；3.读取页标题；4.读取顶部 Tab 构成与选中态 | 1、路由为 /industry-center/regional 且工作区与页签参数均为 competitiveness；2、页标题为「区域产业竞争力评价」；3、顶部含「区域产业竞争力评价」与「分析记录」两枚 Tab，默认选中前者 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜展示多维竞争力指标体系 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00244 部分（页头路由与双 Tab 合并单条）；勘察事实（路由/标题/双 Tab）全对齐；路由契约差异（勘察带 workspace 参数，契约为单 tab 参数）执行时复验（开放项 7）；页面主文案不出现「区域产业指数评价」归 01121 隔离对照；分析配置区构成归 01101 起逐区块用例 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03533 | 产业链分析 | 区域产业竞争力评价 | 主流程-入口 | 菜单进入本页 | 区域产业竞争力评价 | 进入竞争力工作区 | 从产业链分析菜单进入本页后，标题与两个页签正确 | 1、已登录 | 1.在左侧打开「产业链分析」；2.点击「区域产业竞争力评价」 | 1、页标题为「区域产业竞争力评价」；2、页签为「区域产业竞争力评价」和「分析记录」，前者选中 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01100；菜单原文无「区域产业评价」中间层 |
 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-01101 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 评价模式互斥单选 | 区域产业竞争力评价 | 两种评价模式互斥切换 | 两种评价模式单选互斥且切换后不静默保留非法对象组合 | 1、已进入区域产业竞争力评价工作区 | 1.读取评价模式控件构成；2.点选「单产业 × 多区域」；3.选定 1 个产业与 2 个评价区域；4.点选「多产业 × 单区域」；5.回读模式选中态与已选对象 | 1、评价模式含「单产业 × 多区域」「多产业 × 单区域」两选项，同一时刻仅一态；2、切换后已选对象收窄或清空至新模式合法范围，不静默保留多产业 × 多区域组合 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜指定评价区域 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00245 部分（互斥与切换合并单条）；对象组合合同 allowed 单产业×区域 1-5 / 多产业 2-5×单区域、forbidden 多产业×多区域笛卡尔积（TRACE object_combination_contract）；默认选中态与切换后收窄/清空细节执行时 observed；各模式对象约束归 01102/01103/01104 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01102 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 单产业模式产业限选 | 区域产业竞争力评价 | 单产业模式产业约束 | 单产业模式下产业仅可选中 1 个且呈现补选提示 | 1、已进入工作区；2、评价模式为「单产业 × 多区域」 | 1.选定 1 个产业；2.尝试再加选第 2 个产业；3.回读产业已选值与提示区 | 1、产业仅可选中 1 个，尝试加选第 2 个不生效；2、呈现提示「单产业模式请选择 1 个产业」（原文见附录A） | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜指定评价区域 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00245/00246 部分（单产业产业约束拆出）；提示原文=勘察；区域多选边界归 01103；多产业对称约束归 01104 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01103 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 单产业模式区域多选 | 区域产业竞争力评价 | 评价区域多选上限 | 单产业模式评价区域可多选 1–5 个且同一区域不可重复 | 1、已进入工作区；2、评价模式为「单产业 × 多区域」；3、已选定 1 个产业 | 1.逐一加选评价区域至 5 个；2.尝试加选第 6 个区域；3.尝试重复加选已选区域 | 1、评价区域可多选至 5 个，加选第 6 个不生效；2、同一区域在已选集合内不可重复选中 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜指定评价区域 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00246 部分（区域边界拆出）；as-built 将评价/对比区域合并为单一「评价区域」多选集合、集合内天然去重（开放项 6，「对比区域不可与评价区域相同」由去重等价保证）；区域选项内容正确性归数据侧 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01104 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 多产业模式对象约束 | 区域产业竞争力评价 | 多产业模式产业与区域约束 | 多产业模式下产业可选 2–5 个、区域仅可选中 1 个 | 1、已进入工作区；2、评价模式为「多产业 × 单区域」 | 1.逐一加选产业至 5 个；2.尝试加选第 6 个产业；3.选定 1 个区域；4.尝试再加选第 2 个区域 | 1、产业可多选 2–5 个，加选第 6 个不生效；2、区域仅可选中 1 个，尝试加选第 2 个不生效 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜指定待适配产业 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00245/00246 部分（多产业约束拆出）；产业仅选 1 个（低于下限 2）时的提交门控归 01110 执行时核；多产业 × 多区域不可提交由 01101 互斥与 01110 门控共同承载 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01105 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 产业下拉占位与选项 | 区域产业竞争力评价 | 产业与区域选择器空态 | 产业下拉未选态占位提示与选项加载正确 | 1、已进入工作区；2、产业为初始未选态（已选时先重置） | 1.展开产业下拉；2.浏览下拉选项；3.展开区域下拉 | 1、未选产业时下拉呈占位提示「请选择产业」；2、下拉选项正常加载，含可选产业集群；3、区域下拉呈占位提示「请选择区域」 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜指定待适配产业 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00246 部分；placeholder 原文见附录A，全量选项集合执行时核（observed-执行时记录）；选择与上限行为归 01102~01104 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01106 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 三维度选择器构成与空态 | 区域产业竞争力评价 | 三大维度选择器呈现 | 三大维度选择器构成、空态与权重控件形态正确 | 1、已进入工作区（配置为初始空态） | 1.读取三大维度选择器文案；2.浏览各选择器空态与权重值；3.定位各维度「查看」按钮与「一键均分」按钮 | 1、三大维度选择器为「选择企业能力」「选择学术生态」「选择配套生态力」（原文见附录A）；2、空态各维度待选、权重为空值；3、各维度带「查看」按钮，「一键均分」按钮可见 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜展示多维竞争力指标体系 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00247 部分（构成收敛单条）；「配套生态力」与算法侧「配套生态竞争力」语义对齐（TRACE dimension_alias_note）；三维度固定不可降两维（degrade_to_two_dimensions: prohibited，维度不可用时禁止提交而非静默改两维），门控归 01110；「查看」内容与维度内待选项执行时记录（observed）；与指数工作区四维模板对照归 01121；GAP 角标归 01122 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01107 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 权重编辑与汇总联动 | 区域产业竞争力评价 | 维度权重编辑与汇总 | 维度权重编辑后汇总即时联动且仅接受非负数值 | 1、已进入工作区；2、维度为初始空态（已选时先重置） | 1.读取空态汇总；2.为三大维度各选择至少 1 项；3.在权重输入框键入数值并步进调整；4.读取汇总「已计入 N 项」与「权重合计 X%」；5.在权重输入框分别键入负数与非数值 | 1、空态汇总为「模板名称 / 已计入 0 项 · 权重合计 0%」（原文见附录A）；2、权重编辑后「已计入 N 项」与「权重合计 X%」即时联动刷新；3、权重仅接受非负数值，负数与非数值不可生效 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜调整各维度权重 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00248 部分（编辑联动与非负约束合并单条，顺带点零额外操作/同域）；仅一级权重（primary_weight_only）；非法字符拦截边界执行时核（开放项 3）；切换产业后权重回显（按产业特性适配）执行时核（开放项 3）；合计 100% 门控归 01108 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03488 | 产业链分析 | 区域产业竞争力评价 | 主流程-开始分析 | 单产业发起至结果 | 区域产业竞争力评价 | 筛选条件发起分析 | 单产业多区域配齐后开始分析，结束后能打开成功结果页 | 1、评价模式为「单产业 × 多区域」；2、权重保持默认且合计为 100%；3、当天该条件尚未成功过 | 1.集群选「生物产业」；2.产业选「生物」；3.评价区域选深圳市、上海市、杭州市；4.点击「开始分析」；5.生成结束后点击「查看分析结果」 | 1、过程页标题为「区域产业竞争力评价生成中」；2、生成结束不自动打开结果页；3、结果页标题为「区域产业竞争力评价结果」；4、对象行包含「生物」 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 金样；入口 A 唯一发起方式；任务号执行时记录 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03489 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 对象摘要 | 区域产业竞争力评价结果 | 结果对象与发起条件一致 | 再次按相同条件打开结果时，对象行写出产业和参评区域 | 1、当天已有集群「生物产业」、产业「生物」对深圳市、上海市、杭州市的成功结果 | 1.集群选「生物产业」；2.产业选「生物」；3.评价区域选深圳市、上海市、杭州市；4.点击「开始分析」 | 1、对象行包含「生物」；2、对象行包含深圳市、上海市、杭州市；3、对象行带出本次任务号 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 再次开始分析打开已有结果；对象行含「生物 · 深圳市、上海市、杭州市」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03490 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 综合分与排名柱 | 区域产业竞争力评价结果 | 综合分与柱状排名 | 成功结果给出综合分，并用柱状图按指数排名 | 1、已打开一条成功结果 | 1.打开该结果页 | 1、可见「区域竞争力综合分」；2、可见「综合竞争力指数排名」柱状图；3、排名明细按竞争力指数从高到低 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 具体分值执行时记录，不钉死 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03491 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 三维得分热力图 | 区域产业竞争力评价结果 | 热力图区块 | 结果页展示三维得分热力图及其色阶说明 | 1、已打开一条成功结果 | 1.打开该结果页 | 1、区块标题为「三维得分热力图」；2、说明含「色阶表示相对强弱，非地理分布」 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03492 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | GIS 区域热力说明 | 区域产业竞争力评价结果 | 地理热力说明 | 结果页展示 GIS 区域热力的交付说明 | 1、已打开一条多区域成功结果 | 1.打开该结果页 | 1、可见「GIS 区域热力」；2、文案写明当前先交付柱状与矩阵热力；3、文案写明地理热力分期 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01114；现场是说明区块，不是已渲染地图 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03493 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 排名明细列 | 区域产业竞争力评价结果 | 排名明细表头 | 排名明细表列出排名、区域、指数和三个维度列 | 1、已打开一条成功结果 | 1.打开排名明细 | 1、表头为排名、区域、竞争力指数、企业能力、学术生态、配套生态力；2、至少有一行区域与指数 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 勘察时三个维度列无分值，执行时记录 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03494 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 行高亮 | 区域产业竞争力评价结果 | 点击行联动高亮 | 点击排名行后柱状图突出该区域，并可清除高亮 | 1、已打开含上海市的成功结果 | 1.在排名明细点击上海市所在行；2.点击「清除高亮」 | 1、出现「清除高亮（上海市）」，柱状图突出上海市；2、清除后不再显示清除高亮 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01115 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03495 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 优势短板与版本边界 | 区域产业竞争力评价结果 | 结论三块 | 结果页给出优势、短板和版本边界 | 1、已打开一条成功结果 | 1.打开该结果页 | 1、可见「优势」，并写明第 1 名区域；2、可见「短板」；3、可见「版本边界」，并写明仅同任务快照可横向比较 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 版本边界长句执行时核对原文，不把治理编号写进预期 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03496 | 产业链分析 | 区域产业竞争力评价 | 主流程-报告 | 查看报告 | 区域产业竞争力评价结果 | 打开分析报告 | 从结果页打开报告，能看到报告标题和七节目录 | 1、已打开一条成功结果 | 1.点击「查看报告」 | 1、标题为「区域产业竞争力评价报告」；2、目录共 7 节，节名见附录A；3、页上有「付费」标记 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01116；付费为标记不是按钮 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03497 | 产业链分析 | 区域产业竞争力评价 | 主流程-报告 | 返回分析结果 | 区域产业竞争力评价报告 | 从报告回到结果 | 报告页可以回到刚才那条结果 | 1、已从某条成功结果进入报告 | 1.点击「返回分析结果」 | 1、回到该任务的结果页；2、标题为「区域产业竞争力评价结果」 | P0 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03498 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果页 | 按此配置新建分析 | 区域产业竞争力评价结果 | 按结果配置回到配置 | 按此配置新建分析回到配置页，且不立刻创建新任务 | 1、已打开一条成功结果 | 1.点击「按此配置新建分析」 | 1、回到「分析配置」；2、不进入「区域产业竞争力评价生成中」；3、产业、区域和权重与该结果一致 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 勘察该按钮曾回到未选产业且区域只剩深圳市，与按钮文案不一致，执行时复看 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03499 | 产业链分析 | 区域产业竞争力评价 | 主流程-开始分析 | 当天相同条件 | 区域产业竞争力评价 | 当天打开已有结果 | 当天相同条件再次开始分析时，打开已有结果且不新增任务 | 1、当天该产业和区域组合已有成功结果 | 1.保持同一产业、区域和权重；2.点击「开始分析」 | 1、提示「今日已分析过相同条件，已打开结果」；2、打开的是已有结果页；3、分析记录不新增任务 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01119 的复用半段；页上没有名为重新分析的按钮 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03500 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 集群下拉 | 区域产业竞争力评价 | 集群选项 | 集群下拉给出全部产业集群且默认停在新一代信息技术 | 1、处于分析配置 | 1.展开集群下拉 | 1、选项共 15 个，名称见附录A；2、默认值为「新一代信息技术」 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01105 的集群半段 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03501 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 产业联动与单选 | 区域产业竞争力评价 | 产业随集群变化 | 产业随集群联动，单产业模式下改选后只留最后一项 | 1、评价模式为「单产业 × 多区域」 | 1.展开产业下拉；2.选择「半导体与集成电路」；3.改选「人工智能与应用」；4.将集群改为「生物产业」 | 1、新一代信息技术下产业共 7 项，名称见附录A；2、改选后只保留「人工智能与应用」；3、改集群后产业被清空，生物产业下共 3 项 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01102、01105；未选提示见 03534 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03534 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 单产业未选提示 | 区域产业竞争力评价 | 未选产业时的提示 | 单产业模式尚未选择产业时，页面提示只能选 1 个产业 | 1、评价模式为「单产业 × 多区域」；2、产业未选 | 1.打开本页且不选择产业 | 1、产业占位为「请选择产业」；2、提示为「单产业模式请选择 1 个产业」；3、「开始分析」不可点 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01102 的提示原文 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03502 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 评价区域 | 区域产业竞争力评价 | 评价区域多选 | 单产业模式下评价区域可从 5 个选项中选满 | 1、评价模式为「单产业 × 多区域」 | 1.展开评价区域；2.依次选中深圳市、北京市、上海市、杭州市、广东省 | 1、选项共 5 个，名称见附录A；2、标签为「评价区域（1–5）」；3、五个区域都可进入已选 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01103；现场只有这 5 个区域，造不出第 6 个 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03503 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 三大一级维度权重 | 区域产业竞争力评价 | 维度表默认态 | 维度表展示三行可用指标，默认权重合计通过 | 1、已选好一个产业 | 1.查看「三大一级维度权重」表 | 1、三行依次为企业能力、学术生态、配套生态力，数据状态均为「可用」；2、默认权重为 40、35、25；3、文案为「权重合计：100% · 校验通过」 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01106、01107；数据来源列均为「竞争力模型」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03504 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置 | 指标说明 | 区域产业竞争力评价 | 查看企业能力说明 | 查看企业能力说明时，弹层标题和栏目与该指标对应 | 1、维度表已展示 | 1.在企业能力行点击「查看」 | 1、标题为「企业能力 · 指标说明」；2、可见指标来源、指标状态、权重状态、范围说明；3、说明写明链主与骨干企业能力 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 另两行标题见 03513 |
 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-01108 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 权重合计 100% 提交校验 | 区域产业竞争力评价 | 权重合计校验 | 权重合计为 100% 方可提交且不静默归一化 | 1、已进入工作区；2、三大维度已各选至少 1 项 | 1.调整权重使合计偏离 100%；2.回读「开始分析」按钮状态与各维度权重值；3.将合计调回 100% 后回读按钮状态 | 1、合计偏离 100% 时「开始分析」不可提交；2、偏离期间各维度权重保持所填值，不静默归一化；3、合计回到 100% 后恢复可提交 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜校验三大维度权重之和为 100% | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00248 部分（合计校验拆出）；weight_sum: 100、silent_normalization: prohibited（USM AC-03-01）；「一键均分」为恢复 100% 的合法路径归 01109；任一维度未赋权不可提交归 01110 |
 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-01109 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析配置区 | 一键均分 | 区域产业竞争力评价 | 一键均分权重 | 「一键均分」将已计入维度权重平均分配且合计回到 100% | 1、已进入工作区；2、三大维度已各选至少 1 项 | 1.手动设置不均权重；2.点击「一键均分」；3.读取各维度权重与汇总合计；4.再次改乱权重后重复点击 | 1、点按后已计入维度权重平均分配；2、汇总「权重合计」回到 100%；3、重复点按仍回到均分态 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜默认按三大维度均分权重 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00249（均分收敛单条）；均分只作用于维度一级权重（primary_weight_only）；空态（已计入 0 项）点击行为执行时记录（均分对象为空不产生伪权重，observed）；勘察初始态未自动均分，「选定维度后是否默认均分」执行时核（开放项 3，功能点 #16 未覆盖） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01110 | 产业链分析 | 区域产业竞争力评价 | 主流程-操作区 | 门控状态机 | 区域产业竞争力评价 | 开始分析按钮门控 | 「开始分析」按钮随必填条件满足状态联动门控 | 1、已进入工作区；2、配置为初始空态 | 1.读取初始态「开始分析」按钮状态；2.仅选定产业与评价区域；3.回读按钮状态；4.补齐三大维度选择与权重合计 100%；5.回读按钮状态 | 1、初始空态「开始分析」置灰禁用；2、对象齐备但维度未配齐时按钮仍为禁用态；3、模式、对象、区域、三维与权重全部齐备后按钮恢复可用 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜未指定产业时不可按产业特性适配维度权重 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00250 部分（门控状态机拆出）；级联门控逐项（未指定产业不可适配权重/未指定评价区域不可计算/维度未赋权不可提交）执行时逐项核（observed）；三维不可降两维：维度不可用时禁止提交而非静默改两维（AC-03-02）；仅选 1 个区域的排名对比边界执行时核（开放项 3）；禁用态触发攻击归 01124；显式发起链路归 01111 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01111 | 产业链分析 | 区域产业竞争力评价 | 主流程-操作区 | 显式触发与异步创建 | 区域产业竞争力评价 | 显式开始分析创建任务 | 「开始分析」显式触发创建任务且切条件不自动起任务 | 1、已进入工作区；2、已配置齐备合法条件（模式+对象+区域+三维+权重 100%） | 1.点击「开始分析」；2.浏览任务过程呈现；3.切换为另一产业且不点击按钮；4.浏览「分析记录」列表 | 1、显式点击后创建分析任务并进入异步执行；2、仅变更条件不点按钮时不创建任务、不新增记录条目 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜基于指标数据计算区域产业综合竞争力指数 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样；接旧 00250 部分（显式触发拆出）；勘察未见任务过程呈现，执行时记录（observed，开放项 2）；异步口径=切条件不自动起任务、同用户同条件单飞、当天已成功直接打开结果、重新分析可强制重跑（单飞/复用/重跑归 01118/01119；口径见客户决策清单 Q-ANALYSIS-01） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01112 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果态 | 快照绑定与 KPI 主体 | 区域产业竞争力评价 | 竞争力结果快照与 KPI | 成功结果绑定评价对象与权重快照且 KPI 写清第 1 名主体 | 1、已有一条成功的竞争力分析结果（现场暂无成功结果时，待有结果后执行本条） | 1.经「分析记录」打开一条成功结果；2.浏览结果顶部 KPI 区；3.回读结果关联的评价对象与权重 | 1、结果绑定评价对象与权重快照，排名、热力与明细表同源；2、KPI 写清综合第 1 名主体（区域或产业），无裸「领先/关注」表述 | P0 |  |  |  |  |  | US-CHAIN-REG-04 | AC-US-CHAIN-REG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 | T08 \｜综合竞争力计算与横向排名 \｜展示区域产业综合竞争力指数 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00255 部分（快照与 KPI 拆出）；勘察无成功结果，本条按目标态编写、待有结果后执行（开放项 1，不升 Fail）；构造路径=单产业 × 2–5 区域 + 三维 + 权重 100% → 开始分析；数据不足区域不参与排名或标注低置信、不补造（USM 异常口径）执行时构造核（开放项 5）；版本不一致结果不混排并提示版本边界执行时核（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01113 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果态 | 排名柱状与矩阵热力 | 区域产业竞争力评价 | 结果图表构成 | 综合排名柱状图降序呈现且三维矩阵热力图齐备 | 1、已有一条成功的竞争力分析结果 | 1.经「分析记录」打开一条成功结果；2.浏览综合排名柱状图；3.浏览三维矩阵热力图 | 1、综合排名以柱状图呈现且按竞争力指数降序排列；2、矩阵热力图以主体 × 三维 + 综合形态呈现 | P0 |  |  |  |  |  | US-CHAIN-REG-04 | AC-US-CHAIN-REG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 | T08 \｜综合竞争力计算与横向排名 \｜默认按综合竞争力指数降序展示排名对比 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00255 部分（柱状与热力合并单条，同结果页零额外操作/同域）；DEC 形态：柱状 + 矩阵热力必达、柱状降序、不用饼图/堆叠柱冒充（DEC-CHAIN-REG-COMP-RESULT-VIZ-20260806）；勘察无成功结果，执行时补验（开放项 1）；Demo-A 排名明细表不排序，表内升/降序独立操作执行时核（功能点 #29/#30） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01114 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果态 | GIS 条件展示 | 区域产业竞争力评价 | GIS 热力条件呈现 | 多区域模式展示 GIS 热力、多产业模式不渲染 GIS | 1、已有单产业 × 多区域与多产业 × 单区域两条成功结果（现场暂无成功结果时，待有结果后执行本条） | 1.打开单产业 × 多区域成功结果并浏览 GIS 呈现；2.打开多产业 × 单区域成功结果并浏览 GIS 呈现 | 1、多区域（≥2）时展示 GIS 热力或标明待补；2、多产业模式不渲染 GIS | P0 |  |  |  |  |  | US-CHAIN-REG-04 | AC-US-CHAIN-REG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 | T08 \｜综合竞争力计算与横向排名 \｜以热力图展示区域产业综合竞争力结果 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00255 部分（GIS 条件展示拆出）；DEC：GIS 条件展示（多区域 ≥2）；勘察无成功结果，执行时补验（开放项 1） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01115 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果态 | 同源联动 | 区域产业竞争力评价 | 图表与明细表联动 | 点选柱图、矩阵行与明细表行后同一主体高亮联动 | 1、已有一条成功的竞争力分析结果 | 1.打开成功结果；2.点击柱图中一个柱体；3.点击矩阵热力一行；4.点击明细表一行；5.浏览三处高亮状态 | 1、点选柱体、矩阵行或表行后，同一主体在柱图、矩阵与明细表高亮联动 | P0 |  |  |  |  |  | US-CHAIN-REG-04 | AC-US-CHAIN-REG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 | T08 \｜综合竞争力计算与横向排名 \｜生成与其他区域的排名对比 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00255 部分（联动拆出）；同源=AC-US-CHAIN-REG-04-01（对齐 AC-02-03）；勘察无成功结果，执行时补验（开放项 1）；图表失败时保留明细表并提示以表为准执行时核（observed，开放项 4） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01116 | 产业链分析 | 区域产业竞争力评价 | 主流程-结果态 | 生成报告 | 区域产业竞争力评价 | 共享报告导出 | 「生成报告」走共享报告链路且本页不内嵌 PDF 引擎 | 1、已有一条成功的竞争力分析结果 | 1.打开成功结果；2.点击「生成报告」；3.浏览报告链路呈现 | 1、「生成报告」进入共享报告链路；2、本页不内嵌 PDF 引擎 | P0 |  |  |  |  |  | US-CHAIN-REG-04 | AC-US-CHAIN-REG-04-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 | T08 \｜综合竞争力计算与横向排名 \｜导出分析报告 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00255 部分（报告拆出）；DEC 决议 4：导出走共享报告（ENT-EXPORT handoff），报告内容含综合竞争力指数与排名对比（共享报告侧跨模块）执行时核（observed，功能点 #32/#33 部分覆盖）；未完成排名对比时无报告入口（主路径=成功结果阅读态）执行时核（observed，#39 部分覆盖） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01117 | 产业链分析 | 区域产业竞争力评价 | 备选-操作区 | 重置恢复与门控回归 | 区域产业竞争力评价 | 重置参数 | 「重置参数」恢复配置初始空态且门控回禁用 | 1、已进入工作区 | 1.配置评价模式、对象、区域、三维与权重形成脏配置；2.点击「重置参数」；3.回读各控件状态；4.回读「开始分析」按钮 | 1、重置后评价模式、对象、区域、维度与权重恢复初始空态；2、重置后「开始分析」恢复置灰禁用 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜校验三大核心维度均已赋权 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00250 部分（重置与门控回归合并单条）；重置不创建任务（observed-执行时记录）；重置具体保留项执行时 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01118 | 产业链分析 | 区域产业竞争力评价 | 备选-异步工作区 | 同条件单飞 | 区域产业竞争力评价 | 异步任务单飞 | 同用户同条件同时仅允许一条分析任务在跑 | 1、已进入工作区；2、已配置齐备同一条件 | 1.点击「开始分析」；2.任务在跑期间再次点击「开始分析」；3.浏览任务列表 | 1、同条件同时仅一条任务在跑，重复发起被拦截或复用 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜基于指标数据计算区域产业综合竞争力指数 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 新增（异步工作区口径，对齐兄弟册）；无旧号对应；勘察无在跑任务，执行时构造核验，无法构造时记「未执行」不判 Fail（开放项 2/3）；单飞口径见客户决策清单 Q-ANALYSIS-01 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01119 | 产业链分析 | 区域产业竞争力评价 | 备选-异步工作区 | 当天结果复用与重新分析 | 区域产业竞争力评价 | 结果复用与强制重跑 | 当天同条件成功结果直接复用且「重新分析」可强制重跑 | 1、当天已对同一条件成功完成至少一次竞争力分析 | 1.当天再次进入工作区；2.读取页面呈现；3.在结果态点击「重新分析」；4.浏览任务状态 | 1、再次进入时直接打开该条件结果，不重复起跑；2、「重新分析」发起新一轮分析任务 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜综合竞争力计算与横向排名 \｜基于指标数据计算区域产业综合竞争力指数 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 新增（异步工作区口径，对齐兄弟册）；无旧号对应；勘察无成功结果，执行时构造核验，无法构造时记「未执行」（开放项 1/3）；复用与重跑口径见 Q-ANALYSIS-01 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01120 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | Tab 切换与记录构成 | 区域产业竞争力评价 | 分析记录呈现与恢复 | 「分析记录」页签可进入、记录构成完整且切回后配置保持 | 1、已进入工作区；2、已形成部分配置 | 1.切换到「分析记录」页签；2.浏览记录过滤条件与列构成；3.浏览行操作；4.切回「区域产业竞争力评价」页签；5.回读已选配置 | 1、记录区可按评价类型与状态过滤，条目含提交与完成时间、关联报告份数；2、行操作为「查看结果 / 复制配置 / 关联报告」；3、切回后配置区状态不因查看记录而损坏 | P1 |  |  |  |  |  | US-CHAIN-REG-05 | AC-US-CHAIN-REG-05-01 | 科技信息展示系统和科技专题服务系统.md | 暂缺（product_interpretation，US-CHAIN-REG-05） | T08 \｜综合竞争力计算与横向排名 \｜基于指标数据计算区域产业综合竞争力指数 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00251（切换与构成收敛单条）；勘察未见记录明细，构成按目标口径执行时核对（开放项 1）；空列表空态文案执行时记录；过程态与状态流转（计算中）执行时 observed（开放项 2，#35 部分覆盖）；异步任务链路承载挂 #23 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01121 | 产业链分析 | 区域产业竞争力评价 | 备选-工作区壳 | 指数工作区隔离 | 区域产业竞争力评价 | 兄弟 workspace 防互串 | 指数工作区与竞争力工作区内容与配置互不串扰 | 1、已进入竞争力工作区；2、已配置部分条件（评价模式/产业/区域/三维度与权重） | 1.切换到指数工作区（workspace=index）；2.浏览指数工作区页标题与维度形态；3.检索竞争力三维选择器与权重残留；4.切回竞争力工作区；5.回读配置状态 | 1、指数工作区呈现「区域产业指数评价」四维指标树模板形态；2、指数工作区不显示竞争力三维选择器、「一键均分」与权重值；3、切回后竞争力工作区保持三维度配置形态，无指数模板残留 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜展示多维竞争力指标体系｜TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=index\ | competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00254（隔离收敛单条）；指数=T03 REGIDX（兄弟册 00562~00577），四力为该工作区临时默认（QC11）；三维与四力分组分离=USM 口径；T03 指数业务细节不在本条展开（专项归 REGIDX 用例集）；竞争力页主文案不出现「区域产业指数评价」（旧 00244 断言）由本条对照承载；切回后配置保留或重置以现场为准（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01122 | 产业链分析 | 区域产业竞争力评价 | 备选-评审模式 | 评审增量可见 | 区域产业竞争力评价 | 需求追溯与治理角标 | 评审模式开启后评审增量控件与角标可见可读 | 1、顶部人设面板「内部评审模式」开关可用；2、已进入工作区 | 1.开启评审模式；2.点击需求追溯按钮并浏览内容；3.点击「系统分析任务交接」入口并浏览内容；4.浏览角标呈现 | 1、需求追溯按钮与「系统分析任务交接」入口可见可点，内容可读；2、「指标未登记」角标可见，文案与现场一致（原文见附录A）；3、评审增量不遮挡分析配置区与操作按钮 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜展示多维竞争力指标体系 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00252（评审增量收敛单条）；追溯按钮原文「REQ-CHAIN-REG-03」、角标原文「指标未登记：GAP-CHAIN-REG-METRICS」（勘察事实；区域评价专题指标与 D1-D4 readiness 真源未建立，gap_visible 不发明口径，故 metric_id 列留空）；勘察时评审模式为开启态；显隐与零泄漏归 01123；追溯与交接内容执行时记录（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-01123 | 产业链分析 | 区域产业竞争力评价 | 备选-评审模式 | 关闭零泄漏 | 区域产业竞争力评价 | 评审关闭零泄漏 | 评审模式关闭后全页零泄漏且业务配置态不变 | 1、评审模式为开启态；2、已进入工作区并完成部分配置 | 1.记录当前业务配置；2.关闭评审模式；3.刷新页面；4.全页检索评审字样；5.回读业务配置与门禁状态 | 1、关闭并刷新后页面无追溯按钮、任务交接入口、「指标未登记」角标与评审标记字样；2、开关评审模式不改变已选模式、对象、区域、维度与权重 | P1 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜展示多维竞争力指标体系 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00253（零泄漏收敛单条）；零泄漏铁律：DOM 不含「REQ-CHAIN-REG / 系统分析任务交接 / 指标未登记 / GAP- / metric_id / Q0xx」字样（清单见附录A）；「检索」为页面内查找动作（同组册口径）；business_mode_contract: must_not_change；与 01122 成对执行 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03505 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析记录 | 列表列 | 分析记录 | 记录表头 | 分析记录列出任务、类型、状态、创建时间和操作 | 1、已有至少一条竞争力分析记录 | 1.点击「分析记录」 | 1、表头为任务、类型、状态、创建时间、操作；2、已完成行操作含查看结果、复制配置、查看报告、下载报告、删除 | P0 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01120；状态筛选项见备选条 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03506 | 产业链分析 | 区域产业竞争力评价 | 主流程-分析记录 | 复制配置 | 分析记录 | 从已完成记录复制 | 复制已完成任务的配置后回到配置页并带出原条件 | 1、分析记录中有已完成任务 | 1.在已完成行点击「复制配置」 | 1、提示「已复制分析配置，可调整后重新分析」；2、回到分析配置；3、产业和评价区域与该任务一致 | P0 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 提示句含「重新分析」字样，页上没有同名按钮 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03507 | 产业链分析 | 区域产业竞争力评价 | 主流程-生成过程 | 过程阶段 | 区域产业竞争力评价生成中 | 生成过程五段 | 开始分析后过程页按五段展示进度，并允许离开后恢复 | 1、条件已配齐且当天尚未成功过 | 1.点击「开始分析」 | 1、过程清单共 5 段，名称见附录A；2、提示可离开页面，稍后从分析记录恢复；3、可见「取消任务」和「查看分析记录」 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01111 的过程半段；失败时的按钮不同，见 03525 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03508 | 产业链分析 | 区域产业竞争力评价 | 主流程-开始分析 | 改条件不发起 | 区域产业竞争力评价 | 不自动创建任务 | 只改产业或区域时不创建分析任务 | 1、已在分析配置 | 1.改选另一个产业；2.不点击「开始分析」；3.打开「分析记录」 | 1、页面仍停留在分析配置，不进入生成中；2、分析记录不因这次改选新增任务 | P0 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01111 的显式触发半段 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03524 | 产业链分析 | 区域产业竞争力评价 | 主流程-生成过程 | 查看分析记录 | 区域产业竞争力评价生成中 | 过程中打开记录 | 生成过程中可以打开分析记录看到该任务 | 1、已进入生成中页面 | 1.点击「查看分析记录」 | 1、进入分析记录；2、列表中能看到刚才那条任务 | P0 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 任务可能已很快变为已完成 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03509 | 产业链分析 | 区域产业竞争力评价 | 备选-评价模式 | 多产业模式文案 | 区域产业竞争力评价 | 多产业模式提示 | 切到多产业模式后，对象上限和未选提示按 1 到 5 个产业展示 | 1、当前为单产业模式且产业未选 | 1.点选「多产业 × 单区域」 | 1、分析对象标签为「分析对象（1–5）」；2、提示「多产业模式请选择 1–5 个产业」；3、评价区域呈单值 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01104；现场上限是 1–5 不是 2–5。互斥与收窄仍由 01101 验收 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03510 | 产业链分析 | 区域产业竞争力评价 | 备选-权重 | 负数权重 | 区域产业竞争力评价 | 权重不接受负数 | 权重输入负数后变为 0 | 1、维度表已展示 | 1.在企业能力权重输入 -5；2.离开该输入框 | 1、企业能力权重变为 0 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01107 的负数半段 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03511 | 产业链分析 | 区域产业竞争力评价 | 备选-权重 | 重置参数 | 区域产业竞争力评价 | 重置恢复默认权重 | 重置参数把权重恢复为默认，并保留已选产业和区域 | 1、已选定产业和至少一个区域 | 1.把企业能力权重改为 50；2.点击「重置参数」 | 1、三个权重回到 40、35、25；2、已选产业仍在；3、已选区域仍在 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01117；重置不清空对象 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03512 | 产业链分析 | 区域产业竞争力评价 | 备选-维度表 | 选择列 | 区域产业竞争力评价 | 维度不可取消 | 三个维度的选择框保持禁用，点击后仍未勾选 | 1、维度表已展示 | 1.点击企业能力行的选择框 | 1、选择框仍为禁用；2、选择框仍未勾选 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 三行同为禁用 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03513 | 产业链分析 | 区域产业竞争力评价 | 备选-维度表 | 另两行说明 | 区域产业竞争力评价 | 查看标题与指标名一致 | 学术生态和配套生态力的说明标题与所在行一致 | 1、维度表已展示 | 1.在学术生态行点击「查看」；2.关闭弹层；3.在配套生态力行点击「查看」 | 1、学术生态弹层标题为「学术生态 · 指标说明」；2、配套生态力弹层标题为「配套生态力 · 指标说明」 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 栏目结构同 03504 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03514 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 筛选已完成 | 分析记录 | 按状态筛选 | 任务状态选已完成后，列表只保留已完成任务 | 1、记录中既有已完成也有失败 | 1.任务状态下拉选「已完成」 | 1、每一行状态都是「已完成」；2、条数少于选「全部状态」时 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 状态下拉共 4 项：全部状态、分析中、已完成、失败 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03515 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 筛选分析中 | 分析记录 | 没有进行中任务 | 没有进行中任务时，筛选分析中得到空列表 | 1、当前没有分析中的任务 | 1.任务状态下拉选「分析中」 | 1、列表为空；2、文案为「暂无数据」 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 若当时有进行中任务，本条改为能看到该任务，空文案不作为失败 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03516 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 重置筛选 | 分析记录 | 清空状态筛选 | 重置把任务状态恢复为全部状态 | 1、任务状态当前为「已完成」 | 1.点击「重置」 | 1、任务状态回到「全部状态」；2、列表重新包含失败任务 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03517 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 翻页 | 分析记录 | 记录翻到第二页 | 记录超过一页时可以翻到第二页 | 1、任务状态为全部状态；2、每页 10 条且总条数大于 10 | 1.点击页码 2 | 1、页码 2 为当前页；2、首行任务与第一页首行不同 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03518 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 每页条数 | 分析记录 | 每页条数选项 | 每页条数下拉给出三档 | 1、已打开分析记录 | 1.展开每页条数下拉 | 1、选项为「10 条/页」「20 条/页」「50 条/页」 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03519 | 产业链分析 | 区域产业竞争力评价 | 备选-生成过程 | 取消任务 | 区域产业竞争力评价生成中 | 取消进行中的任务 | 生成过程中点击取消任务会提示已取消 | 1、过程页处于分析中 | 1.点击「取消任务」 | 1、提示「已取消任务，可重新配置后发起」 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 没有二次弹出框；取消后列表状态执行时核对，勘察时该任务随后仍显示已完成 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03520 | 产业链分析 | 区域产业竞争力评价 | 备选-生成过程 | 返回配置重试 | 区域产业竞争力评价生成中 | 失败后回到配置 | 生成失败后可以返回配置重试 | 1、过程页已出现「本次分析生成失败」 | 1.点击「返回配置重试」 | 1、回到分析配置；2、不再停留在生成中页面 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03521 | 产业链分析 | 区域产业竞争力评价 | 备选-工作区 | 指数页隔离 | 区域产业竞争力评价 | 不串到指数评价 | 打开指数评价再回来，本页仍是竞争力维度而不是指数模板 | 1、已在区域产业竞争力评价 | 1.打开菜单「区域产业指数评价」；2.再打开「区域产业竞争力评价」 | 1、指数页标题为「区域产业指数评价」，分组含商业力、技术力、学术力、支撑力；2、回到本页后仍见「三大一级维度权重」 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 重写 01121；指数页另有「一键均分」，不在本条要求它消失 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03522 | 产业链分析 | 区域产业竞争力评价 | 备选-权重 | 合计偏离文案 | 区域产业竞争力评价 | 合计不为 100 的提示 | 权重合计偏离 100% 时，页面写出当前合计并停用开始分析 | 1、已选产业，默认权重合计为 100% | 1.把企业能力权重改为 50 | 1、文案为「权重合计须为 100%，当前 110%」；2、「开始分析」不可点 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 可否提交仍由 01108 验收；本条只验收提示原文 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03523 | 产业链分析 | 区域产业竞争力评价 | 备选-分析记录 | 失败行复制配置 | 分析记录 | 从失败记录复制 | 失败任务也可以复制配置回到配置页 | 1、分析记录中有失败任务 | 1.在失败行点击「复制配置」 | 1、提示「已复制分析配置，可调整后重新分析」；2、回到分析配置 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03535 | 产业链分析 | 区域产业竞争力评价 | 备选-开始分析 | 进行中再次开始 | 区域产业竞争力评价 | 同条件单飞 | 同一条件正在分析时再次开始分析，不另建任务 | 1、集群为「生物产业」、产业为「生物」，区域为深圳市、上海市、杭州市；2、该条件已有任务处于分析中 | 1.回到分析配置；2.保持集群「生物产业」、产业「生物」和深圳市、上海市、杭州市；3.再次点击「开始分析」 | 1、提示「该条件已有任务正在执行，已打开当前任务」；2、打开的仍是正在执行的那条任务；3、不另建新任务 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 过程页没有第二个「开始分析」；本条在分析配置再次点击 |
 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-01124 | 产业链分析 | 区域产业竞争力评价 | 异常-操作区 | 禁用态触发无效 | 区域产业竞争力评价 | 门禁未满足禁用触发 | 门禁未满足时「开始分析」任何触发方式均不发起任务 | 1、已进入工作区；2、门禁未满足（如仅选产业未配维度） | 1.点击「开始分析」；2.聚焦按钮后按回车；3.回读页面与「分析记录」列表 | 1、禁用态下点击与回车均不创建任务、不跳转结果态；2、页面不静默代选对象或维度发起任务 | P0 |  |  |  |  |  | US-CHAIN-REG-03 | AC-US-CHAIN-REG-03-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 | T08 \｜多维竞争力指标体系构建 \｜未指定产业时不可按产业特性适配维度权重 | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 接旧 00250 部分（禁用态触发攻击单列）；门控状态机归 01110；仅绑定未选区域的对称态同口径不单列 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03525 | 产业链分析 | 区域产业竞争力评价 | 异常-生成失败 | 缺少可评分基础分 | 区域产业竞争力评价生成中 | 条件无基础分时失败 | 产业和区域没有可评分基础分时，生成失败且不打开结果页 | 1、评价模式为单产业；2、产业为「人工智能与应用」 | 1.评价区域选择深圳市和杭州市；2.点击「开始分析」 | 1、过程页出现「本次分析生成失败」；2、可见「查看分析记录」和「返回配置重试」；3、不自动打开结果页 | P1 |  |  |  |  |  | US-CHAIN-REG-03 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 错误详情执行时记录；本条件在勘察中失败 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03526 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 失败行查看结果 | 分析记录 | 失败记录不能看结果 | 失败任务的查看结果不可用，停在分析记录 | 1、分析记录中有失败任务 | 1.在失败行点击「查看结果」 | 1、「查看结果」为禁用；2、页面仍为分析记录 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03527 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 失败行查看报告 | 分析记录 | 失败记录不能看报告 | 失败任务的查看报告不可用 | 1、分析记录中有失败任务 | 1.在失败行点击「查看报告」 | 1、「查看报告」为禁用；2、不进入报告页 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03528 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 失败行下载报告 | 分析记录 | 失败记录不能下载 | 失败任务的下载报告不可用 | 1、分析记录中有失败任务 | 1.在失败行点击「下载报告」 | 1、「下载报告」为禁用；2、不出现下载失败提示 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 已完成行的下载见 03529 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03529 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 下载报告失败 | 分析记录 | 已完成记录下载失败 | 已完成任务点击下载报告时，出现失败提示且没有文件 | 1、分析记录中有已完成任务 | 1.在已完成行点击「下载报告」 | 1、提示「资产下载失败（HTTP 404）」；2、不打开报告文件 | P1 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 成功下载造不出，本条验收失败终态 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03530 | 产业链分析 | 区域产业竞争力评价 | 异常-报告 | 导出不可用 | 区域产业竞争力评价报告 | 报告页导出禁用 | 当前报告的导出按钮不可用 | 1、已从成功结果进入报告 | 1.点击「导出」 | 1、「导出」为禁用；2、不产生报告文件 | P1 |  |  |  |  |  | US-CHAIN-REG-04 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8.2 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03531 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 删除后取消 | 分析记录 | 取消删除仍保留任务 | 删除时点取消，任务仍留在列表 | 1、分析记录中有失败任务 | 1.在失败行点击「删除」；2.在弹出框点击「取消」 | 1、弹出框说明删除后列表不再显示；2、该任务仍在列表中 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03532 | 产业链分析 | 区域产业竞争力评价 | 异常-分析记录 | 删除后确定 | 分析记录 | 确定删除后任务消失 | 删除时点确定，任务从列表消失 | 1、分析记录中有可删除的失败任务 | 1.在失败行点击「删除」；2.在弹出框点击「确定」 | 1、提示「已删除」；2、该任务不再出现在列表 | P1 |  |  |  |  |  | US-CHAIN-REG-05 |  | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.8 |  | TRACE-CHAIN-TOPIC-REGIONAL.yaml | /industry-center/regional?workspace=competitiveness&tab=competitiveness |  | INTEG |  |  | 只删失败记录，保留已完成样例 |
 
----
 
-## 2. 覆盖自检（2026-10-13 全库粒度重写）
+## 2. 旧号处置
 
-**覆盖声明**：
+| 旧号 | 处置 | 新号 |
+| --- | --- | --- |
+| 01100 | 作废。步骤写成不存在的「区域产业评价」菜单 | 03533 |
+| 01101 | 保留。两种模式互斥，多区域切到多产业后区域收成一个 | — |
+| 01102 | 作废。现场产业是单选替换，不是加选第二个不生效 | 03501、03534 |
+| 01103 | 作废。区域只有 5 个，写了不存在的第 6 个 | 03502 |
+| 01104 | 作废。多产业提示是 1–5 个，不是 2–5 个 | 03509 |
+| 01105 | 作废。区域默认已是深圳市，不是「请选择区域」；选项未写个数 | 03500、03501、03502 |
+| 01106 | 作废。现场是维度表，不是三个空选择器 | 03503 |
+| 01107 | 作废。没有「模板名称 / 已计入 0 项」 | 03503、03510 |
+| 01108 | 保留。合计偏离时不能开始，改回 100% 后可以 | — |
+| 01109 | 保留。一键均分后合计回到 100% | — |
+| 01110 | 作废。未选产业才禁用；维度权重默认已是 40/35/25 | 01124、03503、03522 |
+| 01111 | 作废。停在创建任务，没有成功结果页 | 03488、03507、03508 |
+| 01112 | 作废。结果区块名称与现场不符 | 03489、03490、03495 |
+| 01113 | 作废。热力区块原文是「三维得分热力图」 | 03490、03491 |
+| 01114 | 作废。现场是「GIS 区域热力」说明，不是已渲染地图 | 03492 |
+| 01115 | 作废。终态是柱状图高亮和「清除高亮」 | 03494 |
+| 01116 | 作废。按钮是「查看报告」，不是「生成报告」 | 03496、03497、03530 |
+| 01117 | 作废。重置只恢复权重，产业和区域还在 | 03511 |
+| 01118 | 作废。没有点到单飞拦截终态 | 03535 |
+| 01119 | 作废。把当天复用和并不存在的重新分析写在一条 | 03499 |
+| 01120 | 作废。列名和行按钮与现场不符 | 03505 及记录各条 |
+| 01121 | 作废。指数页同样有「一键均分」，旧预期要求它消失 | 03521 |
+| 01122 | 删除。只测开关打开后的追溯 | 不复用 |
+| 01123 | 删除。只测关闭后的泄漏 | 不复用 |
+| 01124 | 保留。未满足条件时开始分析点不起来 | — |
 
-- T08 范围（39 条功能点）覆盖结论见同目录 `coverage-fp.md`：已覆盖 22 / 部分覆盖 11 / 未覆盖 6（行为集与旧册一致，本次仅按新粒度拆分重排取号，未新增 / 删除现场能力判断；新增 01118/01119 为异步工作区口径用例，对齐兄弟册，无旧号对应）。
-- US-CHAIN-REG-03/04/05 的可见路径均有 P0/P1 用例承载。
-- **金样清单**：01100（入口路由）、01101（评价模式互斥）、01105（产业下拉构成）、01106（三维度选择器构成）、01110（门控状态机）、01111（开始分析显式触发）——烟测 = 跑全部金样。
-- 正向密度：每个可见区块默认态 / 典型值 / 边界值至少各 1 条正向用例——页头与入口（01100 默认）、评价模式（01101 互斥默认 / 01102 单产业典型 / 01103 区域上限边界 / 01104 多产业典型）、分析对象（01105 占位默认）、三维度（01106 空态默认 / 01107 编辑典型 + 非负边界）、权重（01108 合计门控边界 / 01109 均分典型）、操作区（01110 门控默认→齐备 / 01111 显式触发典型 / 01117 重置边界）、异步工作区（01118 单飞 / 01119 复用与重跑，observed）、分析记录（01120 切换与构成）、结果态（01112 KPI / 01113 柱状热力 / 01114 GIS 条件 / 01115 联动 / 01116 报告，observed）、工作区壳与评审层（01121 / 01122 / 01123）、异常（01124 禁用触发）。
+新号用到的最大号：**03535**。03536～03587 本册未使用。
 
-**断言分布统计**（spec §5.4.1）：
+## 3. 红线自检
 
-| 指标 | 数值 |
-|------|------|
-| 用例总数 | 25（01100~01124 连续无跳号；限定 01100~01259 段内，未越界） |
-| 预期 1~3 点 | 25 条（100%，目标 ≥85% ✅） |
-| 预期 4~5 点（结构性例外） | 0 条 ✅ |
-| 预期 ≥6 点 | 0 条 ✅ |
-| 场景分布 | 主流程 17（01100~01116）≥ 备选 7（01117~01123）+ 异常 1（01124）= 8 ✅ |
-| 优先级分布 | P0 ×18、P1 ×7 |
+- 主流程 27 条（01101、01108、01109、03488～03508、03524、03533、03534）不少于备选 16 条加异常 9 条。
+- 金样：01101、03488。03488 从选条件走到成功结果页。
+- 新号预期为 1～3 点。金样 03488 为 4 点：过程页、不自动打开、结果页标题、对象行含产业。
 
-**红线自检结果**（内容红线 1~6 逐条，2026-10-13 执行）：
+### 附录A 长枚举
 
-- [x] 红线 1 正文零内部引用：四列（测试内容/前置条件/测试步骤/预期结果）扫描 `US-|AC-|Q0\d|GAP-|开放项|归 \d{5}|coverage #|TRACE-|metric_id|\.yaml|\.md` = **0 命中**（TRACE / GAP-CHAIN-REG-METRICS / Q-ANALYSIS-01 / USM AC / 功能点 #N 等仅出现于元信息区、扩展列与备注列；「（原文见附录A）」为长枚举指引，同组册口径）
-- [x] 红线 2 observed 不进预期 / 废弃态不验不可见：勘察观测项（任务过程呈现、模式切换收窄/清空细节、重置保留项、单飞/复用/重跑行为、记录明细构成、切回配置保留口径、版本边界、图表失败兜底、查看内容等）全部入备注；结果态未深勘项预期按目标态可判定终态写；无废弃能力「不可见」反向校验（工作区隔离断言为两现存工作区互斥对照，不属废弃态）
-- [x] 红线 3 步骤只写操作：步骤列扫描 `核对|确认|检查|校验|观察|比对|验证` = **0 命中**；「读取 / 回读 / 浏览 / 定位 / 展开 / 切换 / 切回 / 点击 / 点选 / 选定 / 加选 / 尝试 / 键入 / 调整 / 补齐 / 配置 / 检索 / 记录 / 聚焦按回车 / 刷新 / 打开」均为动作动词；「检索」为页面内查找动作（01123），同组册口径不属校验动词
-- [x] 红线 4 一句一事与长度：单条步骤/预期均 ≤60 字；步骤 ≤7 步（本册最大 5 步）；无贴上限写作
-- [x] 红线 5 场景分层：主流程 → 备选 → 异常 顺序排列，「功能项」列前缀可辨（主流程-/备选-/异常-）；评审模式两条归备选-评审模式（同组册口径）
-- [x] 红线 6 用例级粒度：每条「测试内容」一句话可概括（一测一问一答）；断言分布见上表（全册 1~3 点占 100%）；顺带点均满足三条件（零额外操作 / 同域 / 不跨状态）
-- [x] 金样标记：6 条金样在元信息区与备注列双声明，均为正向、可独立执行、覆盖核心功能点
+**集群（03500，15 个）**：新一代信息技术、生物产业、新能源、新材料、高端装备、智能网联新能源汽车、绿色环保、低空经济与空天、传统与创意产业、海洋产业、未来制造（智能机器人）、未来信息（光载信息、AI 底层生态）、未来能源、未来空间、未来健康（合成生物、细胞基因、脑机工程）。
 
----
+**产业（03501）**：新一代信息技术下 7 项为新一代信息技术、半导体与集成电路、人工智能与应用、智能终端、软件与信息服务、新型网络与通信、超高清视频与显示。生物产业下 3 项为生物、生物医药与生命健康、高端医疗器械。
 
-## 3. 序号台账（本文件）
+**评价区域（03502，5 个）**：广东省、深圳市、北京市、上海市、杭州市。
 
-| 测试类型 | 已用序号 | 下一号（系统 FUNC） |
-|----------|----------|---------------------|
-| FUNC | 01100–01124（旧 00244–00255 于 2026-10-13 全库粒度重写废弃归档） | 见 `qa/code-registry.yaml` |
-| API / COMP / INT / PERF | 未用 | 见 `qa/code-registry.yaml` |
+**过程五段（03507）**：任务提交与对象组合冻结；校验三维一级权重合计；计算企业能力/学术生态/配套生态力综合竞争力；生成横向排名与短板识别；结果可信性校验与版本边界标注。
 
-**code-registry 回写说明**：由主对话统一管理回写，本册不触碰。
-
----
-
-### 附录A 长枚举清单
-
-**分析对象与提示（用例 01102 / 01105）**：产业 placeholder「请选择产业」；区域 placeholder「请选择区域」；补选提示「单产业模式请选择 1 个产业」；全量选项集合执行时核（observed-执行时记录，不硬塞正文）。
-
-**三大维度与权重（用例 01106 / 01107）**：选择器文案「选择企业能力」「选择学术生态」「选择配套生态力」；各带权重 spinbutton（空值）与「查看」按钮；另有「一键均分」按钮；模板态汇总空态「模板名称 / 已计入 0 项 · 权重合计 0%」。
-
-**评审增量清单（用例 01122 / 01123，评审态）**：追溯按钮「REQ-CHAIN-REG-03」；「系统分析任务交接」入口；角标「指标未登记：GAP-CHAIN-REG-METRICS」。关闭评审模式后零泄漏铁律：DOM 不含「REQ-CHAIN-REG / 系统分析任务交接 / 指标未登记 / GAP- / metric_id / Q0xx」等字样。
-
-**结果态目标态构成（用例 01112~01116，USM/DEC 目标态、勘察未见）**：快照绑定（评价对象 + 权重）；KPI 写清综合第 1 名主体（区域或产业）；综合排名柱状降序；矩阵热力（主体 × 三维 + 综合）；GIS 条件展示（多区域 ≥2 / 多产业不渲染）；柱图-矩阵-明细表同源联动；「生成报告」走共享报告、本页不内嵌 PDF 引擎；数据不足区域不参与排名或标注低置信；版本不一致结果不混排并提示版本边界。
+**报告目录（03496，7 节）**：报告身份、执行摘要、对象与范围、关键发现、证据与分析、数据来源与生成说明、局限性与使用边界。

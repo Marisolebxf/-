@@ -1,65 +1,43 @@
 # 企业成长与产业匹配 · 功能点覆盖（entan.growth-match）
 
-> catalog `entan.growth-match` · 50897 · path `/entan/growth-match`  
-> **用例册**：`API-企业成长与产业匹配-用例.md`（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00249`～`00262`，共 **14** 条）  
-> A 线真源：无独立 `work/Lxx.md`（`_l6-to-catalog-map.yaml`：`entan.growth-match` 不扩六级）；契约四行键由 `entan.json` + `fp-split-by-api-run/_catalog-snapshot.md` 对齐  
-> 编排：`algo-lib-api-case-playbook.md` §编写细则 H  
+> catalog `entan.growth-match` · path `/entan/growth-match`  
+> A 线：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `entan.growth-match`（原因：不扩六级）。不改 `work/`。  
+> B 线用例：`API-企业成长与产业匹配-用例.md`（第二轮 **API-01149**～**01156**）
 
 ---
 
-## 1. endpoint → 用例
+## endpoint → 用例
 
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| entan.growth-match.potential | POST | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | API-00249～00253、00259、00260 | catalog `status=unavailable` |
-| entan.growth-match.match | POST | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | API-00254～00258、00261、00262 | catalog `status=unavailable` |
-
----
-
-## 2. 功能点 → 用例（catalog 契约行）
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| catalog \| entan.growth-match.potential \| enterprise_codes \| 算法输入-enterprise_codes企业标识集合 | catalog enterprise_codes | API-00250、00251、00252、00253 | 部分覆盖 | 缺省/空集合/非法/类型；live 合法集合成功校验待 endpoint available 后补 |
-| catalog \| entan.growth-match.potential \| value \| 算法输出-value成长潜力得分 | catalog value | API-00249、00260 | 契约占位 | unavailable；禁止 sample 嵌套 `value.value` 数值作通过条件 |
-| catalog \| entan.growth-match.potential \| _empty \| 成长潜力无数据空态 | 契约空结果 | — | 未覆盖 | 未试调，无稳定「合法 codes 下 value 必空」构造证据 |
-| catalog \| entan.growth-match.potential \| _fail \| 成长潜力计算失败 | 契约错误态 | API-00249、00250、00251、00252、00253 | 已覆盖 | 含 catalog 不可用与入参失败哨兵 |
-| catalog \| entan.growth-match.match \| enterprise_codes \| 算法输入-enterprise_codes企业标识集合 | catalog enterprise_codes | API-00255、00256、00257、00258、00262 | 部分覆盖 | 含 null 单缺陷；live 合法集合待 available 后补 |
-| catalog \| entan.growth-match.match \| value \| 算法输出-value产业匹配度 | catalog value | API-00254、00261 | 契约占位 | 禁止 sample 匹配度示例作通过条件 |
-| catalog \| entan.growth-match.match \| _empty \| 产业匹配度无数据空态 | 契约空结果 | — | 未覆盖 | 同上 |
-| catalog \| entan.growth-match.match \| _fail \| 产业匹配度计算失败 | 契约错误态 | API-00254、00255、00256、00257、00258、00262 | 已覆盖 | |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| entan.growth-match.potential | POST | /entan/v1/entan/metric/M_ENT_GROWTH_POTENTIAL/compute | API-01149、01150 | unavailable |
+| entan.growth-match.match | POST | /entan/v1/entan/metric/M_ENT_INDUSTRY_MATCH_SCORE/compute | API-01151、01152 | unavailable |
+| entan.growth-match.potential.m_ent_agglomeration_index | POST | /entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute | API-01153、01154 | available |
+| entan.growth-match.potential.m_ent_ds_07_industry_potential_006 | POST | /entan/v1/entan/metric/M_ENT_DS_07_INDUSTRY_POTENTIAL_006/compute | API-01155、01156 | available |
 
 ---
 
-## 3. A 线 req_only / 未扩六级说明
+## 功能点 → 用例矩阵
 
-| 项 | 状态 | 说明 |
-|----|------|------|
-| 独立 Lxx by-api 表 | 无 | `_l6-to-catalog-map` 未为 `entan.growth-match` 生成 work 行 |
-| 成长潜力三维（市场扩张/利润增长/资产积累） | 无对应 HTTP 顶层字段 | catalog 样例在 `value.dimensions`；契约仅列 number 型 `value`，不发明拆分 endpoint |
-| 产业匹配上游度/质心度/产业链相关性 | 无对应 HTTP 顶层字段 | 样例在 `value` 对象内；viz 字段不进 API 断言 |
-| 投入产出表映射 / Q015 业务口径 | 无 catalog endpoint | catalog hint「Q015 待补」；待甲方决策与 A 线扩表后登记 req_only 反表 |
-| 可视化 KPI / 报告导出 | 无 catalog endpoint | 同未扩六级策略 |
+本页不在 60 六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。每个 title 的 sampleResponse（含嵌套）与 responseFields 都挂在该接口的主流程上；缺 `enterprise_codes` 挂在同接口的反向用例上。
 
----
-
-## 4. 统计
-
-| 状态 | 条数 |
-|------|------|
-| 已覆盖 | 2（双 endpoint `_fail` 契约行） |
-| 部分覆盖 | 2（双 endpoint `enterprise_codes`） |
-| 契约占位 | 2（双 endpoint `value`） |
-| 未覆盖 | 6（含 `_empty` 2 + req_only 口径 4 类合并登记） |
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| entan.growth-match.potential \| 成长潜力（企业集合） | API-01149、01150 | 无对应功能点 | 01149 主流程按 sampleResponse 与 responseFields 写返回体；01150 缺 enterprise_codes。备注注明文档未交付 |
+| （无 Lxx） \| entan.growth-match.match \| 产业匹配度（企业集合） | API-01151、01152 | 无对应功能点 | 01151 主流程；01152 缺 enterprise_codes。备注注明文档未交付 |
+| （无 Lxx） \| entan.growth-match.potential.m_ent_agglomeration_index \| M_ENT_AGGLOMERATION_INDEX | API-01153、01154 | 无对应功能点 | 01153 主流程；01154 缺 enterprise_codes。catalog status=available |
+| （无 Lxx） \| entan.growth-match.potential.m_ent_ds_07_industry_potential_006 \| M_ENT_DS_07_INDUSTRY_POTENTIAL_006 | API-01155、01156 | 无对应功能点 | 01155 主流程；01156 缺 enterprise_codes。catalog status=available |
 
 ---
 
-## 5. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 14 |
-| 编号 | API-00249～API-00262 |
-| `_empty` 未覆盖 | 2 |
-| 试调 | **未试调**（§0；金样执行期复核信封） |
-| FUNC 条数 | 0 |
+| catalog endpoint 数 | 4（JSON；yaml `endpoint_count: 2` 为旧计数） |
+| title 数 | 4 |
+| API 用例数 | 8 |
+| 主流程 | 4（API-01149、01151、01153、01155） |
+| 反向 | 4（API-01150、01152、01154、01156） |
+| 编号 | API-01149～01156 |
+| A 线 Lxx | 无 |

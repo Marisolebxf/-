@@ -1,117 +1,183 @@
 # 智能服务集群-科技专题服务系统测试用例
 
 > **文档类型**：测试用例（工作区 Markdown）  
-> **规范**：`agent-delivery/qa-test-case-spec.md` **v1.2**（含 §5.4.1 用例级粒度铁律；编写红线见 `qa/as-built/prompts/_case.md` 红线 1~6）  
+> **规范**：`agent-delivery/qa-test-case-spec.md`  
 > **测试类型**：FUNC  
 > **系统码**：KJZTFWXT  
-> **版本**：v2.0 · 2026-10-13（全库粒度重写，自 00601 起编）  
-> **模块**：产业瓶颈堵点识别（BOTTLENECK / catalog `chain-bottleneck` / A 线 **T05 产业瓶颈堵点识别**，39 条功能点：多维度瓶颈综合分析 20 条 + 瓶颈智能识别与归因建议 19 条）  
-> **金样**：**00601 / 00603 / 00606 / 00609 / 00614**（烟测子集 = 跑全部金样：入口路由、对象构成与默认值、五维权重只读态、开始分析显式触发、结果健康图谱主工区）  
-> **旧号段**：00211~00221 · **2026-10-13 全库粒度重写废弃，归档不删**（历史行存 git 版本；旧→新映射见同目录 `coverage-fp.md` 附录C）  
-> **环境**：http://111.198.38.90:50892/ · 账号 `admin` / `123456`（已在业务页且 URL 不含 `/login` 则不要登出）  
-> **入口**：产业中心 →「产业运行诊断」工作区 → 顶部 Tab「产业瓶颈堵点识别」  
-> **路由**：`/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck`（TRACE 目标态 `/industry-center/diagnosis?tab=bottleneck`；现场带 workspace 参数为增量形态，以现场 as-built 为准）  
-> **禁止**：把同工作空间周期（cycle）/ 关键环节（key_link）workspace 写成用例主体（00623 仅核隔离，细目另案）；对比篮浮层为系统级入口（现场共 8 项），专项归 COMPARE 用例集，本页只顺带 observed；结果态勘察未见，期望一律按目标态 observed 口径写，不升 Fail  
-> **USM**：`agent-handoffs/产品整体定义/E2-产业链分析/CHAIN-TOPIC-DIAGNOSIS-产业运行诊断/USM-CHAIN-TOPIC-DIAGNOSIS.md`（US-CHAIN-DIAG-05～07；验收 `AC-US-CHAIN-DIAG-nn-nn`）  
-> **TRACE**：`TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml`（REQ-CHAIN-DIAG-03 / 03A / 03B 产业瓶颈堵点识别；bottleneck 配置/过程/结果合同）  
-> **词汇分层决策**：`DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS-20260806`（薄弱=健康分档 ≠ 瓶颈；卡脖子 ⊂ 瓶颈；禁「断链」借词）  
-> **原始需求**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.2.5`（`.5.1` 多维度瓶颈综合分析 / `.5.2` 瓶颈智能识别与归因建议）；算法侧 `bid-reference/科技专题服务算法库.md` → `§1.1.1.1.1.1.1.3.9`  
-> **交付口径**：INTEG（前端 → Java → Python `/internal/*`）  
-> **功能点 / 功能点ID**：见同目录 `coverage-fp.md`（v8 T05 全 39 条映射）  
-> **关联任务**：`QA-KJZTFWXT-BLINE-CASE-IND-L01`  
-> **维护**：agent:qa-agent · 监管 human:黄敬洲
-> **自动化用例ID**：已回填 as-built 脚本 id（P0-01~P0-16 / P1-01~P1-09；金样 P0-01~P0-05 ↔ 00601/00603/00606/00609/00614；2026-10-14 BATCH32）  
+> **版本**：v3.0 · 2026-10-18（对照重写）  
+> **模块**：产业瓶颈堵点识别（catalog `chain-bottleneck`）  
+> **金样**：仅 `ZNFWJQ-KJZTFWXT-v1.0-FUNC-03188`（复制已完成配置 → 开始分析 → 查看分析结果 → 结果页）  
+> **入口**：产业链分析 → 产业瓶颈堵点识别  
+> **路由**：`/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck`  
+> **环境**：http://10.50.69.111:30888/ · 账号 `admin` / `123456`  
+> **保留旧号**：00605。00607、00608、00622、00624 删除且不复用。其余 00601–00625 作废，由 03188–03227 重写。  
+> **本段用到的最大号**：03228（号段 03228–03287，03229–03287 未使用）  
+> **交付口径**：INTEG  
+> **关联任务**：`QA-KJZTFWXT-BLINE-CASE-IND-L01`
 
-**as_built 摘要（写期望用，不升 Fail，2026-10-12 实勘）**：路由 `/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck`，页标题「产业瓶颈堵点识别」，顶部 Tab「产业瓶颈堵点识别（选中）/ 诊断记录」；评审增量 3 个需求追溯按钮（「产业瓶颈堵点识别」「恢复诊断任务与结果」「分析对象上下文」）、角标「指标未登记：GAP-CHAIN-DIAG-SEMANTICS」、五维度行各带「指标说明：瓶颈类型分布」按钮与「口径待甲方确认（开放项 Q054）」角标共 5 组，关闭评审模式后须零泄漏；分析配置区：分析对象三级（产业「新一代信息技术」/ 产业链「INB1701」/ 细分产业「半导体与集成电路」）；五个权重维度行全 20、spinbutton 只读 disabled、标「注册项只读启用」、各带「查看」按钮；只读版本信息：维度版本「五维诊断配置 · 演示版」、权重阈值版本「固定演示版 · 正式口径待闭合」、模型版本「bottleneck-model-v1」、数据截至「由任务快照冻结」；操作「重置参数」「开始分析」；本页为**异步分析工作区**（选条件不自动起任务、「开始分析」显式触发）；对比篮浮层系统级存在（共 8 项）只 observed；勘察时评审模式为开启态；**结果态（瓶颈热力/归因建议等）现场无结果，按 USM 目标态 observed 记开放项**；五维名称现场未展开（快照只见五个 20 权重行），按 TRACE `registered_dimensions` [技术, 人才, 市场需求, 资本, 政策] 预期并标注「以现场实测为准」（USM AC-05-01：维名必须用「资本」）。
+## 关评审控件清单
+
+| 格 | 结论 |
+|----|------|
+| 入口 A · 筛选条件到成功结果 | 03188 金样。默认条件下直接点「开始分析」到不了结果，见 03223 |
+| 入口 B · 已选对象 | 无。本页没有对象名单，对比篮不在本页发起 |
+| 任务列表 | 诊断记录。列与行操作见 03199、03208、03209、03213–03219、03225–03227 |
+| 结果页 | 03188 到达后的检查见 03200–03207 |
+| 摘要 · 标题 / 任务 / 对象 | 03200 |
+| 摘要 · 瓶颈堵点数 | 03201 |
+| 摘要 · 瓶颈严重度 | 03201 |
+| 摘要 · 时间 / 权重 | 无。结果页没有这两项 |
+| 筛选下拉 | 无。结果页没有筛选下拉 |
+| 开始分析 · 当天 | 03220。现场未打开已有结果，预期仍按打开已有结果写，差异在备注 |
+| 工具 · 重新分析 | 03228。复制已完成配置后点「重新分析」，进入生成过程并打开新结果 |
+| 工具 · 回到配置 | 03207「按此配置新建分析」。没有名为「调整条件」的按钮 |
+| 工具 · 结果搜索 | 无 |
+| 表 · 列 / 翻页 / 勾选 / 行按钮 | 无。结果是环节图谱，不是表 |
+| 详情 · 环节详情 | 03203、03204。区块标题为「环节详情」 |
+| 二级 | 无 |
+| 报告 · 查看 | 03205、03206、03221 |
+| 报告 · 下载 | 03225。点已完成行的「下载报告」得到失败提示 |
+| 报告 · 生成中 | 无。没有单独的生成中页面 |
+| 入池 | 无 |
+| 入口 B 各格 | 无 |
+| 过程页阶段 | 03198 |
+| 过程页 · 查看分析记录 | 03199 |
+| 过程页 · 取消任务 | 未覆盖：任务完成后过程页只有「查看分析记录」「查看分析结果」，没有「取消任务」。本次任务在打开过程页时已经结束，造不出进行中的取消 |
+| 配置 · 集群 / 产业 / 所属产业链 | 03191、03192、03193、03210 |
+| 配置 · 维度名称 | 00605 |
+| 配置 · 权重与合计 | 03194 |
+| 配置 · 表头 / 来源 / 查看 | 03195、03196、03197 |
+| 配置 · 选择列 | 03222 |
+| 配置 · 重置参数 | 03211 |
+| 配置 · 空产业链不能开始 | 03224 |
+| 诊断记录 · 删除取消 / 确定 | 03218、03219 |
+| 诊断记录 · 失败行 | 03226 |
+| 诊断记录 · 分析中空列表 | 03227 |
 
 ---
 
-## 1. 用例总表（总集列 + 右侧 GKX 扩展）
+## 1. 用例总表
 
-> 排列顺序：**主流程（P0）→ 备选（P0/P1）→ 异常（P1）**；场景类见「功能项」列前缀。  
-> 预期断言常态 1~3 点；4~5 点仅限结构性检查（本册 1 条：00624）。  
-> 结果态条目为勘察未见场景，预期按目标态写、备注标 observed，不升 Fail。  
-> observed 项一律入「备注」，不进预期。
+> 排列：主流程 → 备选 → 异常。00605 保留原编号，插在主流程配置段。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00601 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-入口与路由 | 页头与双 Tab | 产业瓶颈堵点识别 | 进入产业瓶颈堵点识别页 | 进入产业运行诊断「产业瓶颈堵点识别」页，路由、页标题与双 Tab 正确 | 1、系统正常；2、已登录 admin | 1.进入产业运行诊断工作区；2.切到顶部「产业瓶颈堵点识别」Tab | 1、路由路径为 /industry-center/diagnosis，query 含 workspace=bottleneck 与 tab=bottleneck；2、页标题为「产业瓶颈堵点识别」；3、顶部双 Tab 为「产业瓶颈堵点识别」（选中）与「诊断记录」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-01 | 金样；接旧 00211 部分；路由契约目标态为 `/industry-center/diagnosis?tab=bottleneck`，现场带 workspace 参数为增量形态，差异不判 Fail（开放项 5）；勘察时评审模式为开启态，评审增量显隐归 00624；对比篮专项深验归 COMPARE 用例集（现场共 8 项），本页只顺带 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00602 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 配置区整体构成 | 产业瓶颈堵点识别 | 分析配置区构成 | 分析配置区包含分析对象三级、五维权重行、只读版本信息与操作按钮 | 1、已进入产业瓶颈堵点识别页 | 1.浏览分析配置区整体；2.读取各区块构成 | 1、配置区含三级分析对象选择；2、含五个权重维度行、只读版本信息区；3、含「重置参数」「开始分析」操作按钮 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-06 | 接旧 00211 部分（结构性检查拆出）；区块细目归 00603/00606/00608/00609；勘察时评审模式为开启态，业务态构成以 00624 关闭评审后为准（开放项 7） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00603 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 三级分析对象与默认值 | 产业瓶颈堵点识别 | 分析对象三级选择 | 分析对象三级下拉构成齐备且默认已选值正确 | 1、已进入产业瓶颈堵点识别页；2、配置为默认条件（脏会话先还原） | 1.展开分析对象区三级下拉；2.读取三级默认已选值 | 1、分析对象区为三级：产业「新一代信息技术」→ 产业链「INB1701」→ 细分产业「半导体与集成电路」；2、三级已选值回显正确 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜无产业环节时不可计算健康度评分 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-02 | 金样；接旧 00213 部分；勘察默认已选态为三级链（脏会话执行时还原后补核）；对象合同=单个产业链（TRACE object_contract.bottleneck）；industry_id 三 Tab 兼容共享、chain_id 仅 key_link 与 bottleneck 共享 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00604 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 三级联动与切换不触发任务 | 产业瓶颈堵点识别 | 分析对象三级选择 | 切换分析对象后下级联动刷新且不自动创建分析任务 | 1、已进入产业瓶颈堵点识别页 | 1.切换产业为「生物产业」；2.展开产业链与细分产业下拉；3.切回「新一代信息技术 / INB1701 / 半导体与集成电路」；4.浏览诊断记录列表条目数 | 1、产业链选项随产业联动、细分产业随产业链联动，已选值回显正确；2、对象变更后不自动创建分析任务；3、对象变更不产生诊断记录条目 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜无产业环节时不可计算健康度评分 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-07 | 接旧 00213 部分；异步工作区铁律=切条件不自动起任务（产品实现规程 I2-12 / 附录 E / Q-ANALYSIS-01）；联动切换后的刷新过程态（observed-执行时记录）；选项集合与联动形态以现场为准（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00605 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 五维名称与资本口径 | 产业瓶颈堵点识别 | 五维度名称核对 | 五个维度名称与注册口径一致，第四维用「资本」且不拆第六维 | 1、已进入产业瓶颈堵点识别页 | 1.逐行读取维度名称 | 1、五个维度名称为技术、人才、市场需求、资本、政策；2、「资本」为独立维名，不出现「资金」拆出的第六维 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜提供技术成熟度指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-08 | 接旧 00214 部分；五维名称现场未展开（勘察快照只见五个 20 权重行），按 TRACE registered_dimensions [技术/人才/市场需求/资本/政策] 预期并标注「以现场实测为准」（开放项 2）；维名必须用「资本」=AC-05-01；承载 #2~#5 四核心指标维度承载（黑盒 observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00606 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 五维权重只读态 | 产业瓶颈堵点识别 | 五维权重注册项只读 | 五个权重维度行构成与只读态正确：值、「注册项只读启用」标记、「查看」按钮与 disabled 调节钮 | 1、已进入产业瓶颈堵点识别页 | 1.定位五个权重维度行；2.读取各行权重值；3.读取各行「注册项只读启用」标记与「查看」按钮；4.点某行 spinbutton 尝试键入；5.点某行上下调节钮尝试调整 | 1、五个权重维度行值均为 20；2、各行 spinbutton 只读 disabled，键入与上下调节钮均无效；3、各行标「注册项只读启用」且带可见「查看」按钮 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-03 | 金样；接旧 00214 部分；值全 20 为演示态口径（Q054 / GAP-CHAIN-DIAG-SEMANTICS 未闭合，开放项 6，不判 Fail）；只读禁改=AC-05-02（editable_formal_weight/threshold: prohibited）；维度名细目归 00605；「查看」内容深验归 00617 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00607 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 禁用「断链」借词 | 产业瓶颈堵点识别 | 词汇分层口径 | 配置区不出现「断链」借词 | 1、已进入产业瓶颈堵点识别页 | 1.在配置区检索「断链」字样 | 1、配置区无「断链」字样 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-09 | 接旧 00214 部分；禁「断链」借词=DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS 词汇分层（薄弱=健康分档 ≠ 瓶颈；卡脖子 ⊂ 瓶颈）；结果区同口径核验归 00616（图例与并格）；「检索」为页面内查找动作（同 KEYLINK 册口径） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00608 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 版本信息只读 | 产业瓶颈堵点识别 | 版本与数据截至只读 | 只读版本信息四项呈现正确且不可编辑 | 1、已进入产业瓶颈堵点识别页 | 1.定位版本信息区；2.读取维度版本与权重阈值版本；3.读取模型版本与数据截至；4.尝试编辑版本信息各项 | 1、维度版本为「五维诊断配置 · 演示版」、权重阈值版本为「固定演示版 · 正式口径待闭合」；2、模型版本为「bottleneck-model-v1」、数据截至为「由任务快照冻结」；3、四项均只读不可编辑 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-10 | 接旧 00216 部分；版本快照合同=dimension_version / threshold_version / model_version / data_snapshot（editable_formal_weight/threshold: prohibited）；权重阈值口径未闭合（Q054）的诚实呈现（开放项 6）；勘察于评审模式开启态，版本信息评审态归属与业务态可见性执行时确认（TRACE 口径：版本四项仅评审态展示，开放项 7，以 00624 关闭评审后为准）；快照绑定深验归 00622 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00609 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-操作区 | 开始分析显式触发 | 产业瓶颈堵点识别 | 显式开始分析创建任务 | 「开始分析」显式创建分析任务且切条件不自动起任务 | 1、已进入产业瓶颈堵点识别页；2、分析对象已选定（勘察默认态） | 1.按默认配置点击「开始分析」；2.浏览任务过程阶段呈现；3.切换分析对象后不点按钮，浏览诊断记录列表条目数 | 1、显式触发后才创建任务，不自动起任务；2、任务过程为只读进度说明，不出现伪造百分比；3、仅变更对象不点按钮时不创建任务、不产生记录条目 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜无产业环节时不可执行瓶颈标记 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-04 | 金样；接旧 00217 部分；勘察未跑任务，过程态呈现执行时记录（observed，开放项 3）；同用户同条件只允许一条在跑、当天已成功直接打开结果、可「重新分析」强制重跑（附录 E / Q-ANALYSIS-01 口径，执行时补核，开放项 4；深验归 00621）；提交后快照冻结=TRACE bottleneck service_contract input（绑定呈现归 00622）；失败不建任务、保留可修正草稿（USM 异常口径，执行时构造核，开放项 3）；无对象不可执行瓶颈标记=USM 异常路径（与 00625 交叉） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00610 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-过程态 | 过程阶段能力词 | 产业瓶颈堵点识别 | 过程阶段文案 | 任务过程阶段文案含各阶段的能力词与产物词 | 1、已点击「开始分析」且任务在跑或已产生过程记录 | 1.浏览任务过程阶段文案；2.读取各阶段能力词与产物词 | 1、阶段文案含「多维时序数据整合」能力词；2、阶段文案含「技术成熟度、人才供给量、融资事件、政策覆盖率计算环节健康度」能力词；3、阶段文案含「瓶颈智能识别与卡脖子环节归因、成因与改进建议、靶向方案」能力词 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示健康度评分计算中状态 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-11 | 接旧 00218 部分；勘察未跑任务，本条全部为执行时记录口径（observed，开放项 3）；阶段文案=USM AC-05-03 / TRACE process_stage_contract 能力词汇合同（承载 #2~#5 指标名、#17 计算中、#36/#38 标记与建议生成中）；五阶段能力词全量清单见附录A |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00611 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 结果顶栏与卡脖子 KPI | 产业瓶颈堵点识别 | 结果顶栏与卡脖子 KPI | 结果顶栏回显分析对象且「卡脖子环节数」KPI 与图谱标记点位同词、数值不超过瓶颈数 | 1、已通过「开始分析」成功完成至少一条瓶颈分析任务（或从诊断记录恢复成功结果） | 1.从成功任务打开结果；2.读取结果顶栏；3.读取「卡脖子环节数」KPI；4.对照图谱卡脖子标记点位计数 | 1、结果顶栏为「{分析对象} · 产业瓶颈堵点识别结果」；2、卡脖子 KPI 与图谱同词；3、卡脖子环节数不超过瓶颈环节总数 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜展示已标记的瓶颈环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-12 | 接旧 00218 部分；勘察时未见结果态，本条为执行时记录口径（observed，开放项 1，现场无结果不判 Fail、记开放项）；顶栏与 KPI=AC-06-03；卡脖子 ⊆ 瓶颈=DEC 词汇分层（severity 高子集）；瓶颈环节数 KPI 是否并存（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00612 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 全链健康图谱与节点分档 | 产业瓶颈堵点识别 | 健康图谱与分档 | 主工区为全链环节健康图谱且节点呈三档分级 | 1、已打开瓶颈识别成功结果 | 1.浏览主工区健康图谱；2.浏览节点健康度呈现与三档分级 | 1、主工区为全链环节健康图谱，不截断为仅瓶颈列表；2、各环节节点可见健康度；3、节点呈稳健、关注、薄弱三档分级 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示各产业环节健康度评分 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-13 | 接旧 00218 部分；勘察时未见结果态（observed，开放项 1）；健康图谱主工区+不截断=AC-06-05 目标态；L1 分档（稳健/关注/薄弱）承载 #8/#10（薄弱=健康分档 ≠ 瓶颈，DEC 词汇分层）；健康度计算归算法库（黑盒，算法 Bid 1.1.1.1.1.1.1.3.9）；右详情等高与节点点选交互（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00613 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 瓶颈与卡脖子角标分层 | 产业瓶颈堵点识别 | 瓶颈与卡脖子标注 | 节点角标分瓶颈与卡脖子两层且详情分列两项判定 | 1、已打开瓶颈识别成功结果；2、结果含至少一个已标注瓶颈环节 | 1.浏览节点角标呈现；2.点选一个带角标节点；3.读取详情中「是否瓶颈」「是否卡脖子」分列 | 1、节点角标分瓶颈、卡脖子两层；2、点选节点后详情分列「是否瓶颈」「是否卡脖子」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜按预设算法自动标记瓶颈环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-14 | 接旧 00218 部分；勘察时未见结果态（observed，开放项 1）；角标分层与详情分列=AC-06-04（承载 #21/#22 标记呈现、#30/#31 归因绑定点选节点）；卡脖子=瓶颈∧severity 高（DEC 词汇分层）；标记算法归算法库（黑盒） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00614 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 节点成因与改进建议 | 产业瓶颈堵点识别 | 瓶颈归因与改进建议 | 点选瓶颈节点后呈现成因、影响、改进建议与趋势预警，无证据不补造建议 | 1、已打开瓶颈识别成功结果；2、结果含至少一个已标注瓶颈环节 | 1.点选一个已标注节点；2.读取成因与影响呈现；3.读取改进建议与趋势预警呈现 | 1、点选节点后呈现该环节成因与影响；2、呈现改进建议与趋势预警；3、无证据支撑时不展示无依据解决路径 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜输出改进建议 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-05 | 金样；接旧 00218 部分；勘察时未见结果态（observed，开放项 1）；成因/影响/建议/趋势预警=AC-06 系（承载 #23/#25/#26 归因与建议呈现）；Mock 边界=AC-06-02（数据不足时演示数据仅评审可见，业务模式不冒充正式诊断）；归因生成归算法库（黑盒）；正式报告经 ENT-EXPORT 报告下载交接（USM-06），不在本页直验 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00615 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 健康度排序与切换 | 产业瓶颈堵点识别 | 健康度排序 | 环节默认按健康度排序且支持升降序切换 | 1、已打开瓶颈识别成功结果 | 1.读取结果中环节排列的默认方向；2.切换排序方向为降序；3.切回升序 | 1、默认按健康度升序排列薄弱优先的环节顺序；2、切换后各环节按降序排列；3、切回后恢复升序排列 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜默认按健康度评分升序展示产业环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-15 | 接旧 00218 部分；勘察时未见结果态（observed，开放项 1）；承载 #13/#14/#15 排序三态；健康图谱形态下的排序载体（图谱侧序列视图 / 清单）以现场 observed，若现场无排序控件按未覆盖回填矩阵（开放项 1）；默认「升序=薄弱优先」与默认仅瓶颈视角（#32）的呈现形态以现场 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00616 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果区 | 图例两行与禁词禁并格 | 产业瓶颈堵点识别 | 图例与词汇分层 | 图例分「健康分档」「判定角标」两行，无「断链」借词、无「薄弱/瓶颈」并格图例 | 1、已打开瓶颈识别成功结果 | 1.浏览图例呈现；2.检索「断链」字样与「薄弱/瓶颈」并格图例 | 1、图例分「健康分档」与「判定角标」两行；2、无「断链」字样；3、无「薄弱/瓶颈」并格图例 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示已识别的薄弱环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-16 | 接旧 00218 部分；勘察时未见结果态（observed，开放项 1）；词汇分层=DEC-CHAIN-DIAG-BOTTLENECK-VOCAB-LAYERS（薄弱=健康分档 ≠ 瓶颈不并格、禁「断链」）；图例承载 #10 分档呈现；「检索」为页面内查找动作；配置区禁词同口径归 00607 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00617 | 产业链分析 | 产业瓶颈堵点识别 | 备选-五维权重区 | 维度「查看」说明 | 产业瓶颈堵点识别 | 维度查看说明 | 每维度行「查看」按钮可打开并关闭注册说明 | 1、已进入产业瓶颈堵点识别页 | 1.点击某维度行「查看」按钮；2.浏览打开的说明内容；3.关闭说明 | 1、每维度「查看」可打开注册说明；2、说明可正常关闭 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-01 | 接旧 00215 部分；「查看」内容勘察未深勘，执行时记录（observed）；评审态「指标说明：瓶颈类型分布」按钮与 Q054 角标显隐归 00624；说明内容与注册维度口径的对应关系以现场为准（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00618 | 产业链分析 | 产业瓶颈堵点识别 | 备选-操作区 | 重置参数 | 产业瓶颈堵点识别 | 重置参数 | 「重置参数」恢复对象默认与五维注册态，不创建任务 | 1、已进入产业瓶颈堵点识别页；2、已变更过分析对象（形成脏配置） | 1.点击「重置参数」；2.回读分析对象；3.回读五个权重维度行形态 | 1、重置后分析对象恢复默认态（「新一代信息技术 / INB1701 / 半导体与集成电路」）；2、重置后五维权重行保持注册态（全 20，只读，启用标注）；3、重置不自动创建分析任务 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-02 | 接旧 00215 部分；重置是否清任务历史勘察未深勘，执行时记录（observed）；五维权重只读，重置主验对象回归（与 CYCLE 册口径对照，边界以现场为准）；重复点按无副作用（observed-执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00619 | 产业链分析 | 产业瓶颈堵点识别 | 备选-页面导航 | 双 Tab 切换与草稿保留 | 产业瓶颈堵点识别 | 双 Tab 切换 | 双 Tab 可互切且切回后配置草稿保留、不创建任务 | 1、已进入产业瓶颈堵点识别页；2、已形成配置草稿（对象已选，权重只读） | 1.读取当前分析对象；2.切到「诊断记录」Tab；3.切回「产业瓶颈堵点识别」；4.回读分析对象；5.浏览诊断记录列表条目数 | 1、双 Tab 均可见可互切；2、切回后分析对象已选值保留不重置；3、Tab 往返不创建分析任务、不新增记录条目 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-03 | 接旧 00212 部分；双 Tab 为 as-built 工作台导航（F-DIAG-04/F-DIAG-05）；草稿可修正语义与 AC-US-CHAIN-DIAG-01-03 同源；诊断记录列表与深验归 00620；任务只在「开始分析」显式触发后创建（与 00609 交叉） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00620 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 历史任务列表与过滤 | 产业瓶颈堵点识别 | 诊断记录列表与过滤 | 「诊断记录」Tab 列出本工作空间历史任务，可按条件过滤且不混入兄弟类型 | 1、已进入产业瓶颈堵点识别页；2、存在至少一条历史诊断任务（无则执行时记录空态） | 1.切到「诊断记录」Tab；2.浏览任务列表字段构成；3.按诊断类型过滤「产业瓶颈堵点识别」；4.清空过滤条件 | 1、列表列出本工作空间历史任务且瓶颈类型可辨识；2、过滤条件含对象、诊断类型、状态、时间；3、无匹配记录时列表空态占位不报错 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜输出改进建议 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-04 | 接旧 00219 部分；过滤=AC-US-CHAIN-DIAG-07-01（过滤项以现场为准）；勘察仅确认 Tab 存在，列表字段与过滤细目执行时 observed（开放项 4）；不复制共享任务中心内部实现（US-07 product_interpretation）；诊断记录覆盖三个诊断工作区，本用例只验瓶颈相关，跨工作区混排/筛选形态 observed |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00621 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 历史任务恢复复用 | 产业瓶颈堵点识别 | 恢复诊断任务与结果 | 恢复历史任务复用同一任务且结果回显快照对象 | 1、「诊断记录」列表含至少一条已完成瓶颈任务 | 1.过滤出一条已完成瓶颈任务；2.恢复其结果；3.浏览恢复后页面状态 | 1、恢复进入对应 Tab 或不可变结果，不重建配置；2、复用同一任务、不新建不覆盖快照；3、结果顶栏回显快照中的分析对象、不显示「未选分析对象」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜瓶颈智能识别与归因建议 \｜输出改进建议 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-05 | 接旧 00219 部分；恢复复用=AC-US-CHAIN-DIAG-07-02（US-07；TRACE US-07：不因对比篮为空显示「未选分析对象」）；勘察仅确认 Tab 存在，恢复行为执行时 observed（开放项 4）；恢复后配置区草稿是否受影响（observed-执行时记录）；「重新分析」强制重跑口径同 KEYLINK 册 00598（附录 E / Q-ANALYSIS-01，本页入口执行时记录） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00622 | 产业链分析 | 产业瓶颈堵点识别 | 备选-版本信息 | 版本信息与任务快照绑定 | 产业瓶颈堵点识别 | 版本信息只读 | 提交任务后版本信息与任务快照绑定且再次进入保持只读 | 1、已成功提交至少一次分析任务 | 1.提交一次「开始分析」后回读版本信息区；2.切到「诊断记录」Tab 再切回；3.回读版本信息区 | 1、提交任务后版本信息与该任务快照绑定呈现；2、Tab 往返后版本信息保持只读且内容不变 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-06 | 接旧 00216/00217 部分；勘察未跑任务，绑定呈现执行时记录（observed，开放项 3）；数据截至=由任务快照冻结（TRACE service_contract input）；快照绑定后版本不随后台升级漂移的深验归服务侧（黑盒）；评审态归属以 00624 关闭评审后为准（开放项 7） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00623 | 产业链分析 | 产业瓶颈堵点识别 | 备选-工作区壳 | 兄弟 workspace 隔离 | 产业瓶颈堵点识别 | cycle/key_link workspace 隔离 | 同路由下周期 / 关键环节工作区配置与结果焦点互不串扰 | 1、已进入产业瓶颈堵点识别页 | 1.切到「产业周期分析」工作区；2.切到「产业关键环节识别」工作区；3.切回「产业瓶颈堵点识别」Tab；4.在本页检索周期参数类控件 | 1、周期/关键环节配置不串入本页、本页五维权重行不串入兄弟页；2、切回本页后五维权重行与配置保持，不被兄弟工作区重置；3、本页不出现周期参数类控件 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-07 | 接旧 00221 部分；工作区壳合同=config_result_focus: isolated_per_tab；对象上下文合同=industry_id 三 Tab 兼容共享、chain_id 仅 key_link 与 bottleneck 共享（同链一致为合理共享非串扰）；兄弟页细目归各自用例集（cycle / key_link 另案，本条只核隔离）；诊断记录类型不混入归 00620；关键环节 Tab 菜单名执行时记录（observed） |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00624 | 产业链分析 | 产业瓶颈堵点识别 | 备选-评审模式 | 评审增量显隐 | 产业瓶颈堵点识别 | 评审模式零泄漏 | 评审模式开启显示追溯按钮与治理角标，关闭后两 Tab 零泄漏且不改变业务态 | 1、顶部人设面板「内部评审模式」开关可用；2、已进入产业瓶颈堵点识别页 | 1.开启评审模式，浏览三个需求追溯按钮；2.浏览「指标未登记」角标与五维度行指标说明按钮及治理角标（共 5 组）；3.关闭评审模式并刷新页面；4.两 Tab 全页检索评审字样；5.回读分析对象与五维权重行 | 1、开启后「产业瓶颈堵点识别」「恢复诊断任务与结果」「分析对象上下文」三个追溯按钮可见可点；2、「指标未登记」角标与五维度行 5 组指标说明按钮及治理角标评审态可见；3、关闭后两 Tab 均无追溯按钮、治理角标与「指标说明」字样泄漏；4、开关不改变分析对象、五维权重只读态、版本信息与任务数据 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜展示瓶颈综合分析指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-08 | 接旧 00220；review 零泄漏铁律：关闭后 DOM 无「需求追溯 / 指标未登记 / GAP-CHAIN-DIAG-SEMANTICS / 口径待甲方确认 / Q054 / 指标说明 / metric_id / Q0xx」字样泄漏；business_mode_contract: must_not_change；角标原文「指标未登记：GAP-CHAIN-DIAG-SEMANTICS」「口径待甲方确认（开放项 Q054）」、说明按钮「指标说明：瓶颈类型分布」（勘察事实；Q054 权重阈值口径待甲方确认，演示值全 20 为临时默认）；三按钮对应 F-DIAG-03 / F-DIAG-05 / F-DIAG-01 评审挂点；版本信息评审态归属与 00608 交叉（开放项 7，以现场为准）；「检索」为页面内查找动作 |
-| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00625 | 产业链分析 | 产业瓶颈堵点识别 | 异常-分析配置区 | 清空分析对象空态 | 产业瓶颈堵点识别 | 空态保持 | 清空分析对象后页面保持空态且不静默写回默认、不可发起分析 | 1、已进入产业瓶颈堵点识别页；2、分析对象已选任一值 | 1.清空细分产业选择；2.回读分析对象区与页面状态；3.读取「开始分析」按钮状态 | 1、对象置空后页面保持空态，不静默写回默认推荐；2、对象为空时不可发起分析：按钮置灰或提交被拦截，且不创建任务 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05 \｜多维度瓶颈综合分析 \｜无产业环节时不可计算健康度评分 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P1-09 | 接旧 00213/00217 部分；勘察为已选态未触发空态（observed-执行时记录，开放项 3/4）；空态提示文案与按钮具体形态执行时记录（observed）；无产业环节不可计算健康度评分 / 不可执行瓶颈标记=T05 校验类承载（与 00609 门控交叉）；指标缺失类门禁（#11）需服务侧构造，无法构造时 observed 归 coverage 开放项 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03188 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-完成一次分析 | 复制配置后看到结果 | 产业瓶颈堵点识别 | 开始分析直到结果页 | 复制已完成任务的配置后开始分析，并打开成功结果页 | 1、已登录；2、诊断记录里至少有一条已完成任务 | 1.切到「诊断记录」；2.对一条已完成任务点「复制配置」；3.点「开始分析」；4.点「查看分析结果」 | 1、进入「产业瓶颈堵点识别生成中」过程页；2、过程页出现「分析结果已生成」；3、结果页标题为「产业瓶颈堵点识别结果」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈堵点识别｜完成分析看到结果 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样。默认条件下直接点「开始分析」到不了这一步，见 03223 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03189 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-入口 | 页标题与页签 | 产业瓶颈堵点识别 | 进入本页 | 进入产业瓶颈堵点识别后标题和两个页签正确 | 1、已登录 | 1.在左侧「产业链分析」中点「产业瓶颈堵点识别」 | 1、页标题为「产业瓶颈堵点识别」；2、页签为「产业瓶颈堵点识别」（选中）与「诊断记录」；3、地址含 workspace=bottleneck 与 tab=bottleneck | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜进入分析页 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03190 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 配置区构成 | 产业瓶颈堵点识别 | 分析配置区 | 分析配置区展示对象、维度表和两个操作按钮 | 1、已打开产业瓶颈堵点识别页 | 1.停留在「产业瓶颈堵点识别」页签 | 1、可见「分析配置」「分析对象」「所属产业链」「注册诊断维度」；2、可见「重置参数」与「开始分析」；3、维度表上方有「以下指标只读，确认后即可生成分析。」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示分析配置 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03191 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 集群下拉 | 产业瓶颈堵点识别 | 分析对象集群 | 分析对象左侧下拉给出 15 个产业集群 | 1、已打开默认分析配置 | 1.展开「分析对象」下左侧下拉 | 1、选项共 15 个，名称见附录A | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜选择集群 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 默认展示「新一代信息技术」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03192 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 产业下拉 | 产业瓶颈堵点识别 | 分析对象产业 | 当前集群下的产业下拉给出 7 个选项 | 1、已打开默认分析配置；2、左侧仍为「新一代信息技术」 | 1.展开「分析对象」下右侧下拉 | 1、选项共 7 个，名称见附录A | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜选择产业 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 默认展示「新一代信息技术」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03193 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 所属产业链下拉 | 产业瓶颈堵点识别 | 所属产业链 | 所属产业链下拉给出 6 个选项 | 1、已打开默认分析配置 | 1.展开「所属产业链」 | 1、选项共 6 个，名称见附录A | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜选择产业链 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 默认展示「半导体与集成电路」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-00605 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置区 | 五维名称与资本口径 | 产业瓶颈堵点识别 | 五维度名称核对 | 五个维度名称与注册口径一致，第四维用「资本」且不拆第六维 | 1、已进入产业瓶颈堵点识别页 | 1.逐行读取维度名称 | 1、五个维度名称为技术、人才、市场需求、资本、政策；2、「资本」为独立维名，不出现「资金」拆出的第六维 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜提供技术成熟度指标 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 | P0-08 | 保留原号。现场五行名称与本预期一致 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03194 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 权重只读 | 产业瓶颈堵点识别 | 五维权重 | 五个维度权重只读且合计通过校验 | 1、已打开分析配置 | 1.看权重列；2.点某一权重的增减按钮 | 1、五行权重均为 20%；2、增减无效，数值仍为 20%；3、页脚为「权重合计：100% · 校验通过」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示权重 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03195 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 维度表表头 | 产业瓶颈堵点识别 | 注册诊断维度表 | 注册诊断维度表的列名完整 | 1、已打开分析配置 | 1.打开「注册诊断维度」表 | 1、表头为选择、指标名称、分组 / 维度、数据状态、权重、数据来源、指标说明 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示维度表 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03196 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 状态与数据来源 | 产业瓶颈堵点识别 | 维度行来源 | 五个维度的分组、状态和数据来源与表内原文一致 | 1、已打开分析配置 | 1.逐行看分组、数据状态和数据来源 | 1、分组 / 维度均为「五维诊断维度」；2、数据状态均为「可用」；3、数据来源依次为技术供给快照、人才供给快照、需求景气快照、融资与投入快照、政策覆盖快照 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示数据来源 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03197 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-分析配置 | 指标说明 | 产业瓶颈堵点识别 | 查看说明 | 「查看」打开该行指标说明并可关闭 | 1、已打开分析配置 | 1.点「技术」行的「查看」；2.关闭说明 | 1、抽屉标题为「技术 · 指标说明」；2、当前输入为 20%；3、关闭后不再显示该抽屉 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜查看维度说明 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 同屏还有指标来源「平台注册因子/维度（只读冻结）」、指标状态「固定演示配置」、阈值状态「正式口径待闭合」、版本「五维诊断配置 · 演示版」、支撑指标「技术成熟度、关键设备可得性、材料替代能力」。说明正文写识别核心技术、设备和材料约束 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03198 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-过程页 | 五个阶段 | 产业瓶颈堵点识别 | 分析过程 | 分析过程展示五个阶段且不自动进入结果页 | 1、已对一条已完成任务点过「复制配置」 | 1.点「开始分析」 | 1、五个阶段名称见附录B，结束时均为已完成；2、出现「分析结果已生成」；3、页面不自动改为结果页 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示计算过程 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 完成后按钮为「查看分析记录」「查看分析结果」。提示写明不会自动跳转 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03199 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-过程页 | 查看分析记录 | 产业瓶颈堵点识别 | 从过程页看记录 | 过程页「查看分析记录」进入诊断记录 | 1、过程页已出现「分析结果已生成」 | 1.点「查看分析记录」 | 1、页签切到「诊断记录」；2、列表含任务、类型、状态、创建时间、操作 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜从过程页进入 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03200 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 结果抬头 | 产业瓶颈堵点识别 | 结果摘要 | 结果页展示标题、任务、对象和降级说明 | 1、过程页已出现「查看分析结果」 | 1.点「查看分析结果」 | 1、区块标题为「产业瓶颈堵点识别结果」；2、可见「任务」与「任务 ID」；3、可见「分析对象」；4、可见「叙述能力不可用，已按规则结果诚实降级。」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜展示结果抬头 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 结构性检查 4 点。分析对象以「/」连接展示 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03201 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 两项摘要 | 产业瓶颈堵点识别 | 瓶颈摘要 | 结果页展示瓶颈堵点数和瓶颈严重度 | 1、已打开一条结果页 | 1.看结果页上的两张摘要卡 | 1、可见「瓶颈堵点数」；2、可见「瓶颈严重度」；3、两项均有文字，为数字或「暂无」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜展示堵点摘要 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 不同任务一个可为数字、一个可为「暂无」，两种都算有文字 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03202 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 健康图谱 | 产业瓶颈堵点识别 | 环节图谱 | 结果图谱给出健康分档图例和五个环节 | 1、已打开一条结果页 | 1.看「多维度瓶颈综合分析」 | 1、图例为「健康分档」，含稳健、关注、薄弱；2、环节为研发、设计、制造、销售、服务 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜展示环节健康度 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 各环节旁有「健康度」。没有排序开关 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03203 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 环节详情 | 产业瓶颈堵点识别 | 点选环节 | 点选环节后详情标题改为该环节 | 1、已打开一条结果页 | 1.在图谱上点「设计」 | 1、「环节详情」中的名称变为「设计」；2、详情含「健康度」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜查看环节详情 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 区块标题为「环节详情」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03204 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 瓶颈标记 | 产业瓶颈堵点识别 | 已入选瓶颈 | 带瓶颈标记的环节在详情中标明已入选 | 1、有一条已完成任务，其图谱某环节带「瓶颈」 | 1.对该任务点「查看结果」；2.点带「瓶颈」的环节 | 1、「环节详情」出现「已入选瓶颈清单」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-04 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜展示已标记环节 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 现场曾在已完成任务的「研发」环节看到「瓶颈」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03205 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-报告 | 查看报告 | 产业瓶颈堵点识别 | 分析报告 | 「查看报告」打开本页报告并列出目录 | 1、已打开一条结果页 | 1.点「查看报告」 | 1、可见「产业瓶颈堵点识别报告」；2、目录 7 项名称见附录C | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜查看报告 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 页眉还有「产业链分析报告」和报告版本 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03206 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-报告 | 返回结果 | 产业瓶颈堵点识别 | 从报告返回 | 「返回分析结果」回到结果页 | 1、已打开报告页 | 1.点「返回分析结果」 | 1、回到标题为「产业瓶颈堵点识别结果」的页面 | P0 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜从报告返回 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03207 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-结果页 | 按此配置新建 | 产业瓶颈堵点识别 | 回到配置 | 「按此配置新建分析」回到分析配置 | 1、已打开一条结果页 | 1.点「按此配置新建分析」 | 1、回到「分析配置」；2、可见「开始分析」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜按结果回到配置 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 当天已有成功任务时，旁边还会出现「重新分析」。重新分析的终态见清单未覆盖 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03208 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-诊断记录 | 查看结果 | 产业瓶颈堵点识别 | 打开历史结果 | 诊断记录「查看结果」打开该条结果 | 1、诊断记录中有已完成任务 | 1.对一条已完成任务点「查看结果」 | 1、进入「产业瓶颈堵点识别结果」；2、任务 ID 与所点行一致 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜查看结果 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03209 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-诊断记录 | 复制配置 | 产业瓶颈堵点识别 | 复制历史配置 | 「复制配置」回到分析配置并提示已复制 | 1、诊断记录中有已完成任务 | 1.对一条已完成任务点「复制配置」 | 1、提示「已复制分析配置，可调整后重新分析」；2、页面回到「分析配置」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜复制配置 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 金样 03188 用这一步作为能发起分析的前置 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03228 | 产业链分析 | 产业瓶颈堵点识别 | 主流程-重新分析 | 到达新结果 | 产业瓶颈堵点识别 | 重新分析 | 点「重新分析」后进入新一轮分析并打开新结果页 | 1、已登录；2、已对一条已完成任务点「复制配置」；3、配置页可见「重新分析」 | 1.点「重新分析」；2.点「查看分析结果」 | 1、进入「产业瓶颈堵点识别生成中」；2、过程页出现「分析结果已生成」；3、结果页标题为「产业瓶颈堵点识别结果」 | P0 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈堵点识别｜重新分析看到新结果 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 现场没有确认框。点击后提示「任务已创建，正在可视化展示分析过程」，诊断记录新增一条已完成任务。结果页任务与点击前不是同一条 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03210 | 产业链分析 | 产业瓶颈堵点识别 | 备选-分析配置 | 集群联动 | 产业瓶颈堵点识别 | 更换集群 | 更换集群后产业选项随之变化 | 1、已打开默认分析配置 | 1.把分析对象左侧下拉改为「生物产业」；2.展开右侧产业下拉 | 1、产业选项变为 3 个，名称见附录A；2、所属产业链已选文字被清空 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜集群联动产业 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 此时不点「开始分析」也不会新增任务 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03211 | 产业链分析 | 产业瓶颈堵点识别 | 备选-分析配置 | 重置参数 | 产业瓶颈堵点识别 | 重置 | 「重置参数」给出恢复提示且不发起分析 | 1、已把集群改为「生物产业」 | 1.点「重置参数」 | 1、提示「已恢复该分析类型的推荐配置」；2、仍停留在分析配置，不出现生成中页面 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜重置参数 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03212 | 产业链分析 | 产业瓶颈堵点识别 | 备选-页签 | 往返不发起 | 产业瓶颈堵点识别 | 页签往返 | 改过集群后往返页签不会发起分析 | 1、已打开分析配置 | 1.把左侧下拉改为「生物产业」；2.切到「诊断记录」；3.切回「产业瓶颈堵点识别」 | 1、切回后仍可见「分析配置」；2、不出现「产业瓶颈堵点识别生成中」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜页签往返 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03213 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 任务状态选项 | 产业瓶颈堵点识别 | 状态筛选 | 任务状态筛选列出四种状态 | 1、已打开「诊断记录」 | 1.展开「任务状态」 | 1、选项为全部状态、分析中、已完成、失败，共 4 个 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜状态选项 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 筛选项只有任务状态，没有对象或时间筛选 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03214 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 筛已完成 | 产业瓶颈堵点识别 | 已完成筛选 | 按已完成筛选后列表只剩已完成任务 | 1、已打开「诊断记录」 | 1.在任务状态中选「已完成」 | 1、列表中状态列均为「已完成」；2、类型列均为「产业瓶颈堵点识别」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜筛选已完成 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03215 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 重置筛选 | 产业瓶颈堵点识别 | 重置状态 | 「重置」把任务状态恢复为全部状态 | 1、已打开「诊断记录」 | 1.先选「失败」；2.点「重置」 | 1、任务状态显示「全部状态」；2、列表同时能看到已完成和失败 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜重置筛选 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03216 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 翻页 | 产业瓶颈堵点识别 | 第二页 | 诊断记录可以翻到第二页 | 1、每页为 10 条且总数大于 10 | 1.把每页条数设为「10 条/页」；2.点页码「2」 | 1、当前页为第 2 页；2、本页任务与第 1 页不是同一批 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜翻页 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 现场曾见共 15 条 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03217 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 每页条数 | 产业瓶颈堵点识别 | 页大小 | 每页条数可以改为 20 | 1、已打开「诊断记录」 | 1.展开每页条数；2.选「20 条/页」 | 1、选项含 10 条/页、20 条/页、50 条/页；2、选中后分页条显示「20 条/页」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜每页条数 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03218 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 删除取消 | 产业瓶颈堵点识别 | 取消删除 | 删除时点取消，该任务仍在列表 | 1、诊断记录中有任务 | 1.对一条任务点「删除」；2.在弹框点「取消」 | 1、弹框标题为「删除分析记录」；2、正文写明删除后列表不再显示；3、该任务行仍在 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜取消删除 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03219 | 产业链分析 | 产业瓶颈堵点识别 | 备选-诊断记录 | 删除确定 | 产业瓶颈堵点识别 | 确定删除 | 删除时点确定，该任务从列表消失 | 1、诊断记录中有一条失败任务 | 1.对一条失败任务点「删除」；2.在弹框点「确定」 | 1、提示「已删除」；2、该任务不再出现在当前列表 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜确定删除 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 用失败任务执行，避免删掉仅有的已完成样例 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03220 | 产业链分析 | 产业瓶颈堵点识别 | 备选-开始分析 | 当天再次开始 | 产业瓶颈堵点识别 | 当天复用结果 | 当天已成功后再点开始分析应打开已有结果 | 1、同一账号当天已有一条本页成功分析 | 1.回到分析配置；2.再点「开始分析」 | 1、打开已有结果页；2、诊断记录不新增任务 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜当天打开已有结果 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 现场点后提示「尚未选择分析对象」，未打开结果，也未新增任务。缺陷候选。预期仍按打开已有结果写 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03221 | 产业链分析 | 产业瓶颈堵点识别 | 备选-报告 | 导出不可用 | 产业瓶颈堵点识别 | 导出 | 报告页「导出」不可用 | 1、已打开报告页 | 1.看报告页右上角「导出」 | 1、「导出」为禁用，不能点出文件 | P1 |  |  |  |  |  | US-CHAIN-DIAG-06 | AC-US-CHAIN-DIAG-06-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜瓶颈智能识别｜导出报告 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 已完成任务的报告同样为禁用。按钮旁有「付费」 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03222 | 产业链分析 | 产业瓶颈堵点识别 | 备选-分析配置 | 选择列禁用 | 产业瓶颈堵点识别 | 维度选择 | 维度表选择列不可改 | 1、已打开分析配置 | 1.点某一行的选择框 | 1、选择框保持禁用；2、五行选中状态不变 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜维度不可勾选 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03223 | 产业链分析 | 产业瓶颈堵点识别 | 异常-开始分析 | 未选对象 | 产业瓶颈堵点识别 | 默认不能发起 | 默认条件下点开始分析会提示未选对象 | 1、刚进入本页，未点「复制配置」 | 1.点「开始分析」 | 1、提示「尚未选择分析对象」；2、仍停在分析配置；3、诊断记录不新增任务 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜未选对象不可分析 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 下拉虽显示新一代信息技术 / 半导体与集成电路，仍出现该提示。改到「生物产业 / 生物医药与生命健康」后同样出现该提示 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03224 | 产业链分析 | 产业瓶颈堵点识别 | 异常-开始分析 | 产业链为空 | 产业瓶颈堵点识别 | 空产业链 | 所属产业链为空时不能开始分析 | 1、已打开分析配置 | 1.把集群改为「生物产业」 | 1、「开始分析」变为不可用 | P1 |  |  |  |  |  | US-CHAIN-DIAG-05 | AC-US-CHAIN-DIAG-05-03 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜多维度瓶颈综合分析｜无产业链不可分析 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 更换集群后所属产业链被清空 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03225 | 产业链分析 | 产业瓶颈堵点识别 | 异常-诊断记录 | 下载失败 | 产业瓶颈堵点识别 | 下载报告 | 下载报告在没有资产时给出失败提示 | 1、诊断记录中有已完成任务 | 1.对一条已完成任务点「下载报告」 | 1、提示「资产下载失败（HTTP 404）」；2、不打开新的报告页 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜下载报告 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  |  |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03226 | 产业链分析 | 产业瓶颈堵点识别 | 异常-诊断记录 | 失败行不可看 | 产业瓶颈堵点识别 | 失败任务操作 | 失败任务不能查看结果、报告或下载 | 1、已打开「诊断记录」 | 1.把任务状态选为「失败」 | 1、「查看结果」为禁用；2、「查看报告」为禁用；3、「下载报告」为禁用 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-02 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜失败任务不可打开 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 「删除」仍可点，终态见 03218、03219 |
+| ZNFWJQ-KJZTFWXT-v1.0-FUNC-03227 | 产业链分析 | 产业瓶颈堵点识别 | 异常-诊断记录 | 分析中空列表 | 产业瓶颈堵点识别 | 无进行中任务 | 筛选分析中且当前没有进行中任务时列表为空 | 1、当前没有进行中的本页任务 | 1.在任务状态中选「分析中」 | 1、列表显示「暂无数据」 | P1 |  |  |  |  |  | US-CHAIN-DIAG-07 | AC-US-CHAIN-DIAG-07-01 | 科技信息展示系统和科技专题服务系统.md | 1.1.1.2.4.2.2.5 | T05｜诊断记录｜分析中空态 | TRACE-CHAIN-TOPIC-DIAGNOSIS.yaml | /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck |  | INTEG | QA-KJZTFWXT-BLINE-CASE-IND-L01 |  | 造不出长时间停留在分析中的任务，空列表即当前终态 |
 
 ---
 
-## 2. 覆盖自检（2026-10-13 全库粒度重写）
+## 2. 旧号处置
 
-**覆盖声明**：
+| 旧号 | 处置 | 新号 |
+|------|------|------|
+| 00601 | 作废。入口写成「产业运行诊断」，且不到结果页 | 03189 |
+| 00602 | 作废。预期含现场没有的版本信息区 | 03190 |
+| 00603 | 作废。对象写成产业 / INB1701 / 细分产业 | 03191、03192、03193 |
+| 00604 | 作废。联动层级与现场下拉不符 | 03210、03212 |
+| 00605 | 保留 | — |
+| 00606 | 作废。把不可见标注写成了行上原文 | 03194、03222 |
+| 00607 | 删除。用「没有某词」当验收 | — |
+| 00608 | 删除。版本信息只在开关打开时出现 | — |
+| 00609 | 作废。停在触发，没有成功结果 | 03188、03223 |
+| 00610 | 作废。阶段原文与现场过程页不一致 | 03198 |
+| 00611 | 作废。结果页没有「卡脖子环节数」 | 03200、03201 |
+| 00612 | 作废。图谱结构按旧目标态写 | 03202 |
+| 00613 | 作废。详情没有「是否瓶颈 / 是否卡脖子」两列 | 03204 |
+| 00614 | 作废。结果页没有成因与改进建议 | 03203 |
+| 00615 | 作废。结果页没有健康度排序 | 清单「表」为无 |
+| 00616 | 作废。图例不是两行，且用禁词当验收 | 03202 |
+| 00617 | 作废。只写打开说明，没有抽屉标题 | 03197 |
+| 00618 | 作废。重置后的对象写回了 INB1701 | 03211 |
+| 00619 | 作废。未按现场页签原文收口 | 03212 |
+| 00620 | 作废。筛选项写成了对象、类型、时间 | 03213、03214、03215 |
+| 00621 | 作废。恢复停在「不重建配置」 | 03208 |
+| 00622 | 删除。版本快照只在开关打开时出现 | — |
+| 00623 | 作废。本页没有周期 / 关键环节页签 | 清单不单列 |
+| 00624 | 删除。整条都是开关与追溯 | — |
+| 00625 | 作废。空对象终态与现场按钮禁用不符 | 03224 |
 
-- T05 范围（39 条功能点）覆盖结论见同目录 `coverage-fp.md`：已覆盖 25 / 部分覆盖 14 / 未覆盖 0（行为集与旧册一致，本次仅按新粒度拆分重排取号，未新增 / 删除现场能力判断）。
-- US-CHAIN-DIAG-05/06/07 的可见路径均有 P0/P1 用例承载。
-- **金样清单**：00601（入口路由）、00603（对象构成与默认值）、00606（五维权重只读态）、00609（开始分析显式触发）、00614（结果归因与改进建议）——烟测 = 跑全部金样。
-- 正向密度：每个可见区块默认态 / 典型值 / 边界值至少各 1 条正向用例——分析配置区（00602 构成 / 00603 默认 / 00604 联动典型 / 00625 清空边界）、五维权重与词汇（00605 默认维名 / 00606 只读典型 / 00607 禁词边界）、版本信息（00608 默认 / 00622 快照绑定）、操作区（00609 显式触发 / 00618 重置）、过程与结果（00610 过程词 / 00611 顶栏 KPI / 00612 图谱默认 / 00613 角标典型 / 00615 排序切换边界 / 00616 图例）、诊断记录（00620 列表 / 00621 恢复）、导航与隔离（00619 / 00623）、评审层（00624）、异常（00625 空态）。
+---
 
-**断言分布统计**（spec §5.4.1）：
+## 3. 覆盖自检
 
 | 指标 | 数值 |
 |------|------|
-| 用例总数 | 25（00601~00625 连续无跳号） |
-| 预期 1~3 点 | 24 条（96.0%，目标 ≥85% ✅） |
-| 预期 4~5 点（结构性例外） | 1 条：00624 评审增量显隐（4 点，结构性检查）；全册 ≤5 条 ✅ |
-| 预期 ≥6 点 | 0 条 ✅ |
-| 场景分布 | 主流程 16（00601~00616）≥ 备选 8（00617~00624）+ 异常 1（00625）= 9 ✅ |
-| 优先级分布 | P0 ×16、P1 ×9 |
+| 保留 | 1（00605） |
+| 新号 | 03188–03228，共 41 |
+| 删除不复用 | 00607、00608、00622、00624 |
+| 作废 | 00601–00604、00606、00609–00621、00623、00625 |
+| 主流程 | 24（03188–03209、03228 与 00605） |
+| 备选 | 13（03210–03222） |
+| 异常 | 5（03223–03227） |
+| 主流程 ≥ 备选+异常 | 24 ≥ 18 |
+| 金样 | 03188 |
+| 预期 ≥6 点 | 0 |
+| 预期 4 点 | 1（03200，结果抬头） |
 
-**红线自检结果**（内容红线 1~6 逐条，2026-10-13 执行）：
-
-- [x] 红线 1 正文零内部引用：四列（测试内容/前置条件/测试步骤/预期结果）扫描 `US-|AC-|Q0\d|GAP-|开放项|归 \d{5}|coverage #|TRACE-|metric_id|\.yaml|\.md` = **0 命中**（「（observed-执行时记录）」仅出现于备注列；正文四列无同册互指）
-- [x] 红线 2 observed 不进预期 / 废弃态不验不可见：结果态未深勘项全部按目标态写预期并备注 observed 出处（00610~00616 / 00621 / 00622）；刷新过程态、恢复行为、绑定呈现、空态文案等勘察观测全部入备注；无废弃能力「不可见」反向校验
-- [x] 红线 3 步骤只写操作：步骤列扫描 `核对|确认|检查|校验|观察|比对|验证` = **0 命中**；「浏览」「读取」「回读」「定位」「展开」「切换」「清空」「恢复」「等待完成」均为动作动词；「检索」为页面内查找动作（00607 / 00616 / 00623 / 00624），同 KEYLINK 册口径不属校验动词
-- [x] 红线 4 一句一事与长度：单条步骤/预期均 ≤60 字；步骤 ≤7 步（本册最大 5 步）；无贴上限写作
-- [x] 红线 5 场景分层：主流程 → 备选 → 异常 顺序排列，「功能项」列前缀可辨（主流程-/备选-/异常-）
-- [x] 红线 6 用例级粒度：每条「测试内容」一句话可概括（一测一问一答）；断言分布见上表（全册 1~3 点占 96%）；顺带点均满足三条件（零额外操作 / 同域 / 不跨状态）
-- [x] 金样标记：5 条金样在元信息区与备注列双声明，均为正向、可独立执行、覆盖核心功能点
+红线 7：前置、步骤、预期、功能项中，开关名、人设入口、追溯挂件与泄漏字样命中 0。  
+红线 2：未覆盖原因都是造不出终态或页面没有该控件。
 
 ---
 
-## 3. 序号台账（本文件）
+### 附录A 下拉选项
 
-| 测试类型 | 已用序号 | 下一号（系统 FUNC） |
-|----------|----------|---------------------|
-| FUNC | 00601–00625（旧 00211–00221 于 2026-10-13 全库粒度重写废弃归档） | 见 `qa/code-registry.yaml` |
-| API / COMP / INT / PERF | 未用 | 见 `qa/code-registry.yaml` |
+**分析对象左侧（03191，15 个）**：新一代信息技术、生物产业、新能源、新材料、高端装备、智能网联新能源汽车、绿色环保、低空经济与空天、传统与创意产业、海洋产业、未来制造（智能机器人）、未来信息（光载信息、AI 底层生态）、未来能源、未来空间、未来健康（合成生物、细胞基因、脑机工程）。
 
-**code-registry 回写说明**：本组（industry-center B 组）11 册完成后统一回写一次。
+**分析对象右侧，左侧为新一代信息技术时（03192，7 个）**：新一代信息技术、半导体与集成电路、人工智能与应用、智能终端、软件与信息服务、新型网络与通信、超高清视频与显示。
 
----
+**所属产业链，默认条件下（03193，6 个）**：半导体与集成电路、人工智能与应用、新型网络与通信、超高清视频与显示、智能终端、软件与信息服务。
 
-### 附录A 长枚举清单
+**左侧改为生物产业后的右侧（03210，3 个）**：生物、生物医药与生命健康、高端医疗器械。
 
-**只读版本信息四项（用例 00608 / 00622）**：维度版本「五维诊断配置 · 演示版」；权重阈值版本「固定演示版 · 正式口径待闭合」；模型版本「bottleneck-model-v1」；数据截至「由任务快照冻结」。
+### 附录B 过程阶段（03198）
 
-**过程阶段能力词（用例 00610，五阶段 Bid 词汇合同）**：① 多维时序数据整合；② 基于技术成熟度、人才供给量、融资事件、政策覆盖率计算环节健康度；③ 瓶颈智能识别与卡脖子环节归因；④ 成因与改进建议、靶向方案生成；⑤ 结果可信性校验与分析报告组装。勘察未跑任务，执行时 observed（开放项 3）。
+1. 任务提交与产业链对象冻结  
+2. 整合各环节技术/人才/资本/政策等时序数据  
+3. 基于技术成熟度、人才供给量、融资事件、政策覆盖率计算环节健康度  
+4. 瓶颈智能识别与卡脖子环节归因/改进建议生成  
+5. 结果可信性校验与分析报告组装  
 
-**五个权重维度行（用例 00605 / 00606）**：技术 / 人才 / 市场需求 / 资本 / 政策，各行值 20、spinbutton 只读 disabled +「注册项只读启用」标注 +「查看」按钮 + 上下调节钮（disabled）；五维名称现场未展开，按 TRACE registered_dimensions 预期并标注「以现场实测为准」（USM AC-05-01：维名必须用「资本」，算法「资金」仅同维别名不得拆第六维；开放项 2）。
+### 附录C 报告目录（03205）
 
-**三个需求追溯按钮（用例 00624，评审态）**：「产业瓶颈堵点识别」（F-DIAG-03 挂点）/「恢复诊断任务与结果」（F-DIAG-05 挂点）/「分析对象上下文」（F-DIAG-01 挂点）；角标原文「指标未登记：GAP-CHAIN-DIAG-SEMANTICS」「口径待甲方确认（开放项 Q054）」、说明按钮「指标说明：瓶颈类型分布」。
+01 报告身份、02 执行摘要、03 对象与范围、04 关键发现、05 证据与分析、06 数据来源与生成说明、07 局限性与使用边界。

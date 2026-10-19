@@ -21,7 +21,7 @@
 |-----------------|------|------|------|
 | `chain.basic` | `basic-基础指标/CHAINBASIC-产业链基础指标/` | L01 | 第一轮 `API-00001`～`00023` **作废**，第二轮覆盖重写 |
 
-第一轮全库 `API-00001`～`00888` 与 `科技专题服务算法库-API测试用例.xlsx` 作废。返工规则见 [`algo-lib-api-case-playbook.md`](../../algo-lib-api-case-playbook.md) **§长任务返工**。`run-log.md` 批 1～22 只记录第一轮。
+第一轮全库 `API-00001`～`00888` 作废。`科技专题服务算法库-API测试用例.xlsx` 的「功能测试用例」已按第二轮册重写为 `API-00889`～`02210`（1322 条）。测试步骤已写入各册附录 A 的参数赋值，打开表即可看到具体入参。返工规则见 [`algo-lib-api-case-playbook.md`](../../algo-lib-api-case-playbook.md) **§长任务返工**。`run-log.md` 批 1～22 只记录第一轮。
 
 ## 取号
 

@@ -7,26 +7,29 @@
 > **版本**：v1.0  
 > **模块**：企业分析 / 企业发展历程  
 > **catalog**：`entry_id=entan.history` · `catalog_page_id=entan.history` · path `/entan/history`  
+> **契约真源**：`lumen-ui-algo-apiview/src/catalog/entan.json` · 页 `entan.history`  
 > **A 线对照**：`fp-split-by-api-run/work/L28.md`（覆盖矩阵用，禁止 field 一行一用例）  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **环境**：50897 联调台或等价 HTTP（**本册不写鉴权步骤、不含 Token/401/424 用例**）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §编写细则 A～I · §S1  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
+> **作废编号**：第一轮 `API-00085`～`00094` 整批作废，不复用  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单与约定
 
 | 项 | 内容 |
 |----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 成功 code 集合 | `0`、`"0"`、`200`、`"200"` |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 鉴权头 | `Authorization: Bearer <access_token>`（OAuth 密码模式，账号口径同 `lumen-ui-algo-apiview` LoginView）；`TENANT-ID: 1` |
-| 试调 | 本轮 **未试调**（父控宣布；本子任务禁止 curl）；执行期按金样步骤复核 |
-| 断言分工 | **API-00085（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 可解析形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00085」后可只断言失败/不可用/入参错误态 |
-| catalog 状态 | 本页 **2** 个 endpoint 均为 `status=unavailable`；**禁止**将 `sampleResponse` 中 `enterprise_name`、`org_id`、`timeline` 内 revenue/patent 等数值或文案作为通过条件 |
-| 样例 org_id | `demo-org-sz-active-listed`（catalog `entan.history.timeline` example，执行期可替换） |
+| 网关 base | `http://111.198.38.90:50897/api`（执行期等价 HTTP；鉴权由执行人自行持有，**不作为本册验收项**） |
+| catalog 状态 | **企业搜索**、**发展历程** 两 endpoint 均为 `status=unavailable`；正向仍按各接口 `sampleResponse`/`responseFields` 写返回 body 预期，备注注明未交付 |
+| org_id 样例 | `0218337e44ca794fee9850cf1627b03b`（`entan.history.timeline` params example，执行期可替换） |
+| 试调 | **未试调**（S1 禁止 curl/浏览器） |
+
+### 下拉框 title（与 catalog 一致）
+
+1. **企业搜索**（`entan.history.enterprises` · GET `/entan/v1/enterprises`）  
+2. **发展历程**（`entan.history.timeline` · GET `/entan/v1/history`）  
 
 ---
 
@@ -36,16 +39,13 @@
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00085 | 企业分析 | 企业发展历程 | 契约-不可用 | 金样信封 | 企业发展历程 | 企业搜索 | catalog 不可用态下企业搜索接口信封可解析且非 live 样例验收 | 1、已确认 catalog `entan.history.enterprises` 为 unavailable；2、已按 §0 携带有效 token 与租户头；3、断言对象为完整原始响应信封 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体含可解析的 code 与 message 或 msg；3、不得将 sampleResponse 中 org_id、enterprise_name 作为通过条件；4、若 code 属成功集合则 data 须为数组或约定载荷形态，且不得以固定样例企业名称判为已接通生产搜索 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-01 金样 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00086 | 企业分析 | 企业发展历程 | 异常-鉴权 | 缺Token | 企业发展历程 | 企业搜索 | 企业搜索接口无 token 时网关拒绝访问 | 1、请求不携带 Authorization | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-01，无 Authorization 头 | 1、HTTP 状态为 401 或 424；2、响应体可辨认为鉴权失败（非成功业务企业列表载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-01；全页 timeline 鉴权同本用例 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00087 | 企业分析 | 企业发展历程 | 备选-关键词检索 | 全可选参 | 企业发展历程 | 企业搜索 | 企业搜索在 keyword 与 limit 组合下返回可识别契约态 | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 API-00085 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-02 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应 code 可解析；3、不得将样例配对 org_id/enterprise_name 数值化验收；4、失败态不得冒充空搜索成功列表 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-02；矩阵挂 keyword、limit |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00088 | 企业分析 | 企业发展历程 | 异常-非法limit | 企业搜索 | 企业发展历程 | 企业搜索 | 企业搜索 limit 非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、message 或 msg 非空或 HTTP 明示客户端错误；3、不得将失败当作含 org_id 的成功命中列表 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-03；矩阵挂 limit、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00089 | 企业分析 | 企业发展历程 | 异常-空关键词 | 企业搜索 | 企业发展历程 | 企业搜索 | 企业搜索不传 keyword 时契约可识别（拒绝或空结果其一） | 1、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-04 | 1、响应可识别为拒绝、空结果集或不可用契约态之一；2、不得与网关鉴权失败混淆；3、若 code 成功且 data 为空数组，须与含 org_id 命中列表区分 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-04；矩阵挂 keyword、_empty |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00090 | 企业分析 | 企业发展历程 | 契约-不可用 | 发展历程 | 企业发展历程 | 发展历程 | catalog 不可用态下发展历程接口不得按 live 时间线数值验收 | 1、已确认 catalog `entan.history.timeline` 为 unavailable；2、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/history，查询参数取组合 HIS-01 | 1、不得将 sampleResponse 中 timeline 事件标题、revenue、patent 计数等作为通过条件；2、响应须为可识别未交付、占位或失败语义，或执行期记录 as-built；3、不得将失败当作空 timeline 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-01 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00091 | 企业分析 | 企业发展历程 | 异常-缺必填org_id | 发展历程 | 企业发展历程 | 发展历程 | 发展历程接口缺少 org_id 时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/history，查询参数取组合 HIS-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作合法 org_id 下空 timeline 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-02；矩阵挂 org_id、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00092 | 企业分析 | 企业发展历程 | 异常-非法org_id | 发展历程 | 企业发展历程 | 发展历程 | 发展历程接口 org_id 非法时返回可识别失败 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/history，查询参数取组合 HIS-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、message 或 msg 非空或 HTTP 明示错误；3、不得将失败当作空 timeline 冒充无事件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-03；矩阵挂 org_id、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00093 | 企业分析 | 企业发展历程 | 备选-全参占位 | 发展历程 | 企业发展历程 | 发展历程 | 发展历程在 catalog example org_id 下契约态可识别 | 1、已按 §0 携带有效 token 与租户头；2、信封规则见 API-00085 | 1.GET /entan/v1/history，查询参数取组合 HIS-01 | 1、HTTP 与 code 可解析；2、若断言 data 为对象则须含 timeline 字段或约定空结构，类型与 catalog responseFields 一致（array）；3、禁止以样例事件条数或年份作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-01；矩阵挂 timeline |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00094 | 企业分析 | 企业发展历程 | 异常-越界limit | 企业搜索 | 企业发展历程 | 企业搜索 | 企业搜索 limit 越界时返回可识别失败或截断契约 | 1、已按 §0 携带有效 token 与租户头 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-05 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）或按契约可识别的截断语义；2、不得静默返回超上限条数且冒充全量成功 | P2 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-05 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00949 | 企业分析 | 企业发展历程 | 主流程 | 文档示例参 | 企业发展历程 | 企业搜索 | 企业搜索按 catalog sampleRequest（keyword 空、limit=1）返回文档企业列表字段 | 1、无额外业务前置 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-01 | 1、成功时返回 body 的业务载荷为数组（常见为 `data` 数组，与网关 envelope 一致）；2、元素含 org_id（string）、enterprise_name（string）；3、sampleResponse 示例 org_id=0218337e44ca794fee9850cf1627b03b、enterprise_name=云启智元科技股份有限公司，说明命中元素形态；4、允许空数组表示无匹配企业 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-01 金样 catalog_status=unavailable |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00950 | 企业分析 | 企业发展历程 | 备选-参数组合 | keyword与limit | 企业发展历程 | 企业搜索 | 企业搜索在 keyword=云启、limit=5 时返回文档列表字段 | 1、无额外业务前置 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-02 | 1、成功时业务载荷为数组；2、非空元素含 org_id（string）、enterprise_name（string）；3、sampleResponse 字段形态同 API-00949；4、空数组仍表示无匹配，不得与入参错误失败态混淆 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00951 | 企业分析 | 企业发展历程 | 异常-入参-非法limit | 企业搜索 | 企业发展历程 | 企业搜索 | 企业搜索 limit 非法时返回该参数错误说明 | 1、无额外业务前置 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-03 | 1、返回 body 的 message 或 msg 说明 limit 非法、越界或不可解析；2、不返回含可信 org_id/enterprise_name 命中列表的成功业务载荷 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-03；矩阵挂 limit、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00952 | 企业分析 | 企业发展历程 | 异常-入参-非法keyword | 企业搜索 | 企业发展历程 | 企业搜索 | 企业搜索 keyword 明显非法时返回该参数错误说明 | 1、无额外业务前置 | 1.GET /entan/v1/enterprises，查询参数取组合 ENT-04 | 1、返回 body 的 message 或 msg 说明 keyword 非法或不可接受；2、不返回将失败冒充为含 org_id 的成功命中列表 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/enterprises | | INTEG | | | endpoint_id=entan.history.enterprises catalog_page_id=entan.history 组合=ENT-04；矩阵挂 keyword、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00953 | 企业分析 | 企业发展历程 | 主流程 | 文档示例org_id | 企业发展历程 | 发展历程 | 发展历程按 catalog sampleRequest org_id 返回文档时间线字段 | 1、org_id 使用 §0 样例或环境有效值 | 1.GET /entan/v1/history，查询参数取组合 HIS-01 | 1、成功时业务载荷为对象（常见为 `data` 对象）；2、含 enterprise_name（string），sampleResponse 示例「云启智元科技股份有限公司」说明形态；3、含 timeline（array）；4、timeline 元素含 year（number）、type（string）、title（string）、detail（object），sampleResponse 示例含 type=finance/patent/news 及 detail 内 revenue、patent_apply_count、finance_round 等键说明节点结构；5、timeline 可为空数组（无重大事件空态），与 API-00954 失败态区分 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-01 catalog_status=unavailable |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00954 | 企业分析 | 企业发展历程 | 异常-入参-缺org_id | 发展历程 | 企业发展历程 | 发展历程 | 发展历程不传 org_id 时返回缺少该参数的错误说明 | 1、无额外业务前置 | 1.GET /entan/v1/history，查询参数取组合 HIS-02 | 1、返回 body 的 message 或 msg 指出 org_id 缺失或必填；2、不返回含 timeline 数组的成功业务载荷 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-02；矩阵挂 org_id、_fail |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00955 | 企业分析 | 企业发展历程 | 异常-入参-非法org_id | 发展历程 | 企业发展历程 | 发展历程 | 发展历程 org_id 非法时返回该参数错误说明 | 1、无额外业务前置 | 1.GET /entan/v1/history，查询参数取组合 HIS-03 | 1、返回 body 的 message 或 msg 说明 org_id 非法或企业不存在；2、不返回将失败冒充为合法 org_id 下空 timeline 成功态 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /entan/v1/history | | INTEG | | | endpoint_id=entan.history.timeline catalog_page_id=entan.history 组合=HIS-03；矩阵挂 org_id、_fail |
 
 ---
 
@@ -53,23 +53,22 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| ENT-01 | entan.history.enterprises | keyword=（空）；limit=1（catalog sampleRequest） | 契约占位主路径 |
-| ENT-02 | entan.history.enterprises | keyword=云启；limit=5 | keyword+limit 联动 |
-| ENT-03 | entan.history.enterprises | keyword=测试；limit=-1 | 非法 limit |
-| ENT-04 | entan.history.enterprises | 不传 keyword；limit=10 | 空/缺 keyword 策略 |
-| ENT-05 | entan.history.enterprises | keyword=科技；limit=100000 | limit 越界 |
-| HIS-01 | entan.history.timeline | org_id=demo-org-sz-active-listed（§0 样例，可替换） | 契约占位全参 |
-| HIS-02 | entan.history.timeline | 不传 org_id | 缺必填 org_id |
+| ENT-01 | entan.history.enterprises | keyword=（空字符串）；limit=1（catalog sampleRequest） | 主路径全参 |
+| ENT-02 | entan.history.enterprises | keyword=云启；limit=5 | keyword+limit 合法组合 |
+| ENT-03 | entan.history.enterprises | keyword=测试；limit=-1 | 只破坏 limit |
+| ENT-04 | entan.history.enterprises | keyword=__invalid__；limit=10 | 只破坏 keyword |
+| HIS-01 | entan.history.timeline | org_id=0218337e44ca794fee9850cf1627b03b（catalog params example，可替换） | 主路径全参 |
+| HIS-02 | entan.history.timeline | 不传 org_id 查询参数 | 缺必填 org_id |
 | HIS-03 | entan.history.timeline | org_id=__invalid__ | 非法 org_id |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | 必填参数 |
-|-------------|--------|------|--------|----------|
-| entan.history.enterprises | GET | /entan/v1/enterprises | unavailable | —（keyword、limit 均为可选） |
-| entan.history.timeline | GET | /entan/v1/history | unavailable | org_id |
+| endpoint_id | METHOD | path | status | 参数 |
+|-------------|--------|------|--------|------|
+| entan.history.enterprises | GET | /entan/v1/enterprises | unavailable | keyword、limit（均可选） |
+| entan.history.timeline | GET | /entan/v1/history | unavailable | org_id（必填） |
 
 ---
 
@@ -77,20 +76,20 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| entan.history.enterprises | API-00085、API-00086、API-00087、API-00088、API-00089、API-00094 |
-| entan.history.timeline | API-00090、API-00091、API-00092、API-00093 |
+| entan.history.enterprises | API-00949、API-00950、API-00951、API-00952 |
+| entan.history.timeline | API-00953、API-00954、API-00955 |
 
 ---
 
-## 3. 覆盖自检
+## 3. 覆盖自检（§I）
 
-- [x] 本页 0 条 FUNC
-- [x] 两个 unavailable endpoint 均已写契约占位（API-00085、API-00090）
-- [x] 异常-鉴权 1 条（API-00086）
-- [x] timeline 缺必填与非法 org_id（API-00091、API-00092）
-- [x] ≥1 条备注含 `金样` 且断言完整信封（API-00085）
-- [x] `coverage-fp.md` 已更新
-- [ ] `code-registry.yaml` 由父控回写（本子任务编号闭区间 API-00085～API-00094）
+- [x] 本页两个 title（企业搜索、发展历程）均在功能点列出现，且各至少 1 条主流程（API-00949、API-00953）
+- [x] 鉴权用例 **0** 条；前置条件无 Token/登录验收
+- [x] 正向预期按 sampleResponse/responseFields 写字段与类型（含 timeline 嵌套 detail）
+- [x] 有参接口每参数 1 条反向：limit→00951、keyword→00952、org_id 缺/非法→00954/00955
+- [x] unavailable 两接口均有按文档返回体写的主流程，非「契约占位不测」
+- [x] `coverage-fp.md` 已更新至 API-00949～00955
+- [ ] `code-registry.yaml` 由父控回写（本子任务不写 registry）
 
 ---
 
@@ -98,7 +97,7 @@
 
 | 项 | 值 |
 |----|-----|
-| 用例条数 | **10** |
-| 编号闭区间 | **API-00085**～**API-00094** |
+| 用例条数 | **7** |
+| 编号闭区间 | **API-00949**～**API-00955** |
 | FUNC 条数 | **0** |
 | 试调 | **未试调**（§0） |

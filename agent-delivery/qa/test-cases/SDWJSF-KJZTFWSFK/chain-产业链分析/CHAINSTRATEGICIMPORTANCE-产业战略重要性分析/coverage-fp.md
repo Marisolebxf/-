@@ -1,50 +1,38 @@
-# 产业战略重要性分析 · A 线功能点覆盖（chain.strategic-importance）
+# 产业战略重要性分析 · 功能点覆盖（chain.strategic-importance）
 
-> **catalog_page_id**：`chain.strategic-importance` · path `/chain/strategic-importance`  
-> **A 线真源**：`fp-split-by-api-run/_catalog-snapshot.md`（1 endpoint、unavailable×1）；`_l6-to-catalog-map.yaml` **无六级 work/Lxx**（60 条无对应六级）  
-> **用例册**：`API-产业战略重要性分析-用例.md`（`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-000404`～`000408`，共 5 条）  
-> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/chain.json` 页 `chain.strategic-importance` · `chain.strategic-importance.main`  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | catalog status | 用例编号 |
-|-------------|--------|------|----------------|----------|
-| chain.strategic-importance.main | GET | /innov/v1/industry/{chainId}/strategic-importance | unavailable | 000404、000405、000406、000407、000408 |
+> catalog `chain.strategic-importance` · path `/chain/strategic-importance`  
+> A 线：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `chain.strategic-importance`（60 条无对应六级）。不改 `work/`。  
+> B 线用例：`API-产业战略重要性分析-用例.md`（第二轮 **API-01312**～**01313**）
 
 ---
 
-## 2. 功能点 → 用例矩阵（catalog 可测行 · 待 A 线合表）
+## endpoint → 用例
 
-键：`Lxx | endpoint_id | field_key | 功能点（A 线）` — **Lxx 待六级合表后替换**；当前以 catalog + snapshot 对齐。
-
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| 待合表 \| chain.strategic-importance.main \| chainId \| 算法输入-chainId产业标识 | catalog chainId | 000404、000406、000407 | 已覆盖 | 合法 example 契约请求 + 非法 id + 空 path 段 |
-| 待合表 \| chain.strategic-importance.main \| rows \| 算法输出-rows环节战略重要性 | catalog rows | 000404、000408 | 契约占位 / 形态 | endpoint unavailable；000404 禁止 sample 评分作通过条件；000408 仅断言 array 形态 |
-| 待合表 \| chain.strategic-importance.main \| _empty \| 战略重要性无数据空态 | 契约空结果 | — | **未覆盖** | 无稳定可构造「合法 chainId 且无环节评分」条件；§0 未试调，禁止编造必空参数 |
-| 待合表 \| chain.strategic-importance.main \| _fail \| 战略重要性查询失败 | 契约错误态 | 000406、000407 | 已覆盖 | 非法 chainId 与空 path 占位触发可识别失败态 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| chain.strategic-importance.main | GET | /innov/v1/industry/{chainId}/strategic-importance | API-01312、01313 | unavailable |
 
 ---
 
-## 3. B 线独有 / 不投影
+## 功能点 → 用例矩阵
 
-| 项 | 说明 |
-|----|------|
-| `viz` bar/table | 联调台图表配置，不进 API 断言 |
-| `metricIds` M_CHAIN_STRATEGIC_IMPORTANCE | 指标追溯列扩展用，不进用例正文 |
+本页不在 60 六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。`chainId` 与 sampleResponse 的 `rows` 及行内 `node_name`、`position`、`importance_score`（responseFields 仅 `rows`）都挂在同一接口的 2 条用例上。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| chain.strategic-importance.main \| 战略重要性 | API-01312、01313 | 无对应功能点 | 01312 主流程 path chainId=INB170101，按 sampleResponse 断言 rows 及行内字段；01313 缺 chainId。备注注明文档未交付 |
 
 ---
 
-## 4. 计数
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | 5 |
-| 用例编号起止 | API-000404～API-000408 |
-| FUNC 条数 | 0 |
-| `_empty` 未覆盖 | 1 行（见矩阵） |
-| A 线六级 | **待 A 线合表核对** |
-| 试调 | **未试调**（子任务 §0 约束） |
-| 产物路径 | `agent-delivery/qa/test-cases/SDWJSF-KJZTFWSFK/chain-产业链分析/CHAINSTRATEGICIMPORTANCE-产业战略重要性分析/` |
+| catalog endpoint 数 | 1 |
+| title 数 | 1（战略重要性） |
+| API 用例数 | 2 |
+| 主流程 | 1（API-01312） |
+| 反向 | 1（API-01313） |
+| 编号 | API-01312～01313（连续用满） |
+| A 线 Lxx | 无 |
+| 作废旧号 | API-000404～000408 |

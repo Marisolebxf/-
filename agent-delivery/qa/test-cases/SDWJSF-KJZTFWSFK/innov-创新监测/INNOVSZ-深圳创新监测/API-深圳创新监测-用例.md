@@ -7,42 +7,64 @@
 > **版本**：v1.0  
 > **模块**：创新监测 / 深圳创新监测  
 > **catalog**：`entry_id=innov.sz-monitoring` · `catalog_page_id=innov.sz-monitoring` · path `/innov/sz-monitoring`  
-> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` · 页 `innov.sz-monitoring`  
-> **A 线对照**：`fp-split-by-api-run/work/` 内 **无** `innov.sz-monitoring` 行（`_l6-to-catalog-map.yaml`：创新监测不在本轮 60 六级）；矩阵按 catalog + `_catalog-snapshot.md`  
-> **环境**：50897 联调台或等价 HTTP；鉴权见本册 §0（不另建 FUNC 册）  
-> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1  
+> **契约真源**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.sz-monitoring`  
+> **A 线对照**：无对应 Lxx。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（创新监测不在本轮 60 六级）。不改 `work/`  
+> **环境**：联调台 50897（本册不试调）  
+> **编排**：`agent-delivery/qa/algo-lib-api-case-playbook.md` §S1（第二轮 R2-批22）  
 > **维护人**：agent:qa-agent  
-> **更新日期**：2026-10-17  
+> **更新日期**：2026-10-18  
 
 ---
 
-## 0. 执行约定
+## 0. 本页接口清单（与调试台下拉框 title 一致）
 
-| 项 | 内容 |
-|----|------|
-| 网关 base | `http://111.198.38.90:50897/api`（联调台 `VITE_APP_BASE_API`） |
-| 鉴权 | `POST /auth/oauth2/token`（`grant_type=password`，账号口径同 `lumen-ui-algo-apiview` LoginView）；请求头 `Authorization: Bearer <access_token>`、`TENANT-ID: 1` |
-| 信封成功码 | `code` ∈ {0, "0", 200, "200"} |
-| 鉴权失败 | HTTP **401** 或 **424**；体含可识别 `msg`/`message` |
-| 断言分工 | **API-00839（金样）** 断言 **完整原始信封**（HTTP + `code` + `data` 形态）；同册其余用例在前置写「信封规则见 §0，金样见 API-00839」后，可只断言失败/不可用态 |
-| catalog 状态 | 本页 **1** 个 endpoint（`innov.sz-monitoring.metrics`）catalog `status=unavailable`、`runtime=java_api`；指标清单接口未发布；**禁止**将 `sampleResponse` 中 `metrics[].metric_id`/`name`、`formula_status`、`total=7` 等示例作为通过条件 |
-| 试调 | **未试调**（本子任务禁止 curl；执行期按金样步骤与 §0 鉴权复核） |
-| 查询参数 | GET；`module` 为可选 string（slug，example `sz-monitoring`）；组合定义见附录 A |
-| 样例与契约差 | `sampleResponse.metrics` 元素含 `algorithm_type`、`pending_ref` 等扩展字段；契约 `responseFields` **仅**声明 `metrics`（array）、`total`（number）。断言以 `responseFields` 为准；样例扩展字段不设失败条件 |
+| # | title（功能点列原文） | endpoint_id | METHOD | path | 参数 | 条数 |
+|---|------------------------|-------------|--------|------|------|------|
+| 1 | 深圳创新监测指标清单 | innov.sz-monitoring.metrics | GET | /innov/v1/innov/metrics | module? | 3 |
+| 2 | 深圳创新载体创新价值排名 | innov.sz-monitoring.m_innov_carrier_value_rank_sz | POST | /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute | module? | 3 |
+| 3 | 创新价值排名 | innov.sz-monitoring.m_innov_ds_06_carrier_003 | POST | /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute | module? | 3 |
+| 4 | 深圳科技发展指标对比 | innov.sz-monitoring.m_innov_city_compare_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute | module? | 3 |
+| 5 | 深圳科技竞争力 | innov.sz-monitoring.m_innov_city_compete_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute | module? | 3 |
+| 6 | 深圳创新能力指数 | innov.sz-monitoring.m_innov_city_index_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute | module? | 3 |
+| 7 | 深圳城市科技发展排名 | innov.sz-monitoring.m_innov_city_rank_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute | module? | 3 |
+| 8 | 深圳与对标城市趋势 | innov.sz-monitoring.m_innov_city_trend_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute | module? | 3 |
+
+8 个 title 按 catalog `endpoints` 顺序各 3 条，合计 **24** 条。每个接口只有可选 `module`：1 条主流程（跟 `sampleRequest`，`module=sz-monitoring`）+ 1 条与 sample 相反的不传 `module` + 1 条非法 `module=__invalid__`。GET 的 `module` 为查询参数；POST 的 `module` 为请求体。
+
+第 1 个 `GET /innov/v1/innov/metrics` 为 catalog `status=unavailable`，三条备注注明文档标记未交付，主流程仍按 sampleResponse 写返回字段。其余 7 个 POST compute 为 `available`。本页 title 互不重复，每条步骤仍写 `endpoint_id`。
 
 ---
 
 ## 1. 用例总表
 
-> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00839`～`00843`。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.sz-monitoring`。
+> 取号：`ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02118`～`02141`（闭区间用满，不复用 00001～00888）。`路由route` = path；`备注` 含 `endpoint_id=`、`catalog_page_id=innov.sz-monitoring`、组合 id。步骤含 `endpoint_id`。
 
 | 用例编号 | 功能模块 | 子功能模块 | 功能项 | 子功能项 | 页面 | 功能点 | 测试内容 | 前置条件 | 测试步骤 | 预期结果 | 优先级 | 是否通过 | 测试工程师 | 测试时间 | 审核员 | 测试截图 | 用户故事编号 | USM验收场景编号 | 原始需求文件 | 原始需求章节号 | 功能点ID | TRACE引用 | 路由route | metric_id | 交付口径tier | 关联任务ID | 自动化用例ID | 备注 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00839 | 创新监测 | 深圳创新监测 | 契约-不可用 | 深圳创新监测指标清单 | 深圳创新监测 | 深圳创新监测指标清单 | catalog 不可用态下指标清单接口返回可识别非成功契约信封 | 1、已确认 catalog `innov.sz-monitoring.metrics` 为 unavailable；2、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/innov/metrics，查询参数取组合 SMON-01 | 1、HTTP 状态为 200 或 4xx/5xx；2、响应体为对象且含 `code` 字段；3、`code` 不属于成功集合，或 `data` 不构成含 array 型 `metrics` 与 number 型 `total` 的成功业务载荷；4、不得将 sampleResponse 中 7 条指标或具体 metric_id 作为通过条件 | P0 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·深圳创新监测 | N/A-技术项 | N/A | /innov/v1/innov/metrics | M_INNOV_CARRIER_VALUE_RANK_SZ | INTEG | | | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=SMON-01 金样 §0未试调 catalog_status=unavailable |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00840 | 创新监测 | 深圳创新监测 | 异常-鉴权 | 深圳创新监测指标清单 | 深圳创新监测 | 深圳创新监测指标清单 | 指标清单接口缺 Bearer 时网关拒绝访问 | 1、请求不携带 Authorization（可带 TENANT-ID） | 1.GET /innov/v1/innov/metrics，查询参数取组合 SMON-01，skipAuth | 1、HTTP 状态为 401 或 424；2、响应体可识别鉴权失败（非成功 metrics/total 载荷） | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·深圳创新监测 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=SMON-01 |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00841 | 创新监测 | 深圳创新监测 | 异常-非法module | 深圳创新监测指标清单 | 深圳创新监测 | 深圳创新监测指标清单 | module 为不可识别 slug 时返回可识别失败 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封规则见 §0，金样见 API-00839 | 1.GET /innov/v1/innov/metrics，查询参数取组合 SMON-02 | 1、响应为失败态（code 非成功集合或 HTTP 4xx）；2、不得将失败当作含 sample 形态 metrics 清单的成功业务 data | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·深圳创新监测 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=SMON-02；矩阵挂 module、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00842 | 创新监测 | 深圳创新监测 | 异常-空module | 深圳创新监测指标清单 | 深圳创新监测 | 深圳创新监测指标清单 | module 为空字符串时返回可识别失败或与省略 module 可区分 | 1、已按 §0 携带有效 token 与 TENANT-ID | 1.GET /innov/v1/innov/metrics，查询参数取组合 SMON-03 | 1、响应为失败态（code 非成功集合或 HTTP 4xx），或可与 SMON-04 省略 module 的语义明确区分；2、不得将空 module 静默当作 sz-monitoring 并成功返回 sample 形态 7 条指标 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·深圳创新监测 | N/A-技术项 | N/A | /innov/v1/innov/metrics | | INTEG | | | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=SMON-03；矩阵挂 module、_fail |
-| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-00843 | 创新监测 | 深圳创新监测 | 契约-字段形态 | 深圳创新监测指标清单 | 深圳创新监测 | 深圳创新监测指标清单 | 成功信封下契约出参 metrics、total 若存在是否符合 array/number 形态 | 1、已按 §0 携带有效 token 与 TENANT-ID；2、信封成功规则见 §0，金样见 API-00839 | 1.GET /innov/v1/innov/metrics，查询参数取组合 SMON-01 | 1、若 code 属成功集合且载荷含 metrics，则 metrics 为 array；2、若含 total，则 total 为 number；3、不得以 sample 中 total=7 或具体 metric_id 作为通过条件 | P1 | | | | | | N/A-技术项 | N/A | 科技专题服务算法库.md | 创新监测·深圳创新监测 | N/A-技术项 | N/A | /innov/v1/innov/metrics | M_INNOV_CITY_INDEX_SZ | INTEG | | | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=SMON-01；矩阵挂 metrics、total |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02118 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳创新监测指标清单 | 深圳创新监测指标清单按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.GET /innov/v1/innov/metrics，endpoint_id=innov.sz-monitoring.metrics，查询参数取组合 MET-01 | 1、返回 body 的 data 含 metrics（array，responseFields 指标元数据清单）、total（number，responseFields 指标数，sampleResponse 示例 7）；2、metrics 元素含 metric_id（string）、name（string）、algorithm_type（string）、formula_status（string）、pending_ref（string）；3、sampleResponse 七行：metric_id=M_INNOV_CARRIER_VALUE_RANK_SZ、name=深圳创新载体创新价值排名、algorithm_type=MODEL、formula_status=mock、pending_ref=GAP-ALGO-TYPE-UNSIGNED；metric_id=M_INNOV_DS_06_CARRIER_003、name=创新价值排名、algorithm_type=MODEL、formula_status=mock、pending_ref=GAP-ALGO-TYPE-UNSIGNED；metric_id=M_INNOV_CITY_COMPARE_SZ、name=深圳科技发展指标对比、algorithm_type=MIXED、formula_status=mock、pending_ref=Q-MO-DS06-01；metric_id=M_INNOV_CITY_COMPETE_SZ、name=深圳科技竞争力、algorithm_type=MIXED、formula_status=mock、pending_ref=Q-MO-DS06-03；metric_id=M_INNOV_CITY_INDEX_SZ、name=深圳创新能力指数、algorithm_type=MIXED、formula_status=mock、pending_ref=GAP-ALGO-TYPE-UNSIGNED；metric_id=M_INNOV_CITY_RANK_SZ、name=深圳城市科技发展排名、algorithm_type=MIXED、formula_status=mock、pending_ref=GAP-ALGO-TYPE-UNSIGNED；metric_id=M_INNOV_CITY_TREND_SZ、name=深圳与对标城市趋势、algorithm_type=MIXED、formula_status=mock、pending_ref=GAP-ALGO-TYPE-UNSIGNED | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=MET-01 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02119 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳创新监测指标清单 | 深圳创新监测指标清单不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.GET /innov/v1/innov/metrics，endpoint_id=innov.sz-monitoring.metrics，查询参数取组合 MET-02 | 1、返回 body 的 data 仍含 metrics（array）、total（number）；2、metrics 元素仍含 metric_id（string）、name（string）、algorithm_type（string）、formula_status（string）、pending_ref（string）；3、结构与 sampleResponse 同类 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=MET-02 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02120 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳创新监测指标清单 | 深圳创新监测指标清单 module 非法 | 1、module 取不可识别 slug | 1.GET /innov/v1/innov/metrics，endpoint_id=innov.sz-monitoring.metrics，查询参数取组合 MET-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metrics、total 的成功业务 data | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metrics |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.metrics catalog_page_id=innov.sz-monitoring 组合=MET-03 catalog_status=unavailable 文档标记未交付 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02121 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳创新载体创新价值排名 | 深圳创新载体创新价值排名按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz，请求体取组合 CVR-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CARRIER_VALUE_RANK_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute | M_INNOV_CARRIER_VALUE_RANK_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz catalog_page_id=innov.sz-monitoring 组合=CVR-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02122 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳创新载体创新价值排名 | 深圳创新载体创新价值排名不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz，请求体取组合 CVR-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CARRIER_VALUE_RANK_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute | M_INNOV_CARRIER_VALUE_RANK_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz catalog_page_id=innov.sz-monitoring 组合=CVR-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02123 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳创新载体创新价值排名 | 深圳创新载体创新价值排名 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz，请求体取组合 CVR-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_carrier_value_rank_sz catalog_page_id=innov.sz-monitoring 组合=CVR-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02124 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 创新价值排名 | 创新价值排名按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute，endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003，请求体取组合 C03-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_DS_06_CARRIER_003）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute | M_INNOV_DS_06_CARRIER_003 | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003 catalog_page_id=innov.sz-monitoring 组合=C03-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02125 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 创新价值排名 | 创新价值排名不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute，endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003，请求体取组合 C03-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_DS_06_CARRIER_003）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute | M_INNOV_DS_06_CARRIER_003 | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003 catalog_page_id=innov.sz-monitoring 组合=C03-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02126 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 创新价值排名 | 创新价值排名 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute，endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003，请求体取组合 C03-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_ds_06_carrier_003 catalog_page_id=innov.sz-monitoring 组合=C03-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02127 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳科技发展指标对比 | 深圳科技发展指标对比按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz，请求体取组合 CMP-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CITY_COMPARE_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute | M_INNOV_CITY_COMPARE_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz catalog_page_id=innov.sz-monitoring 组合=CMP-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02128 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳科技发展指标对比 | 深圳科技发展指标对比不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz，请求体取组合 CMP-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CITY_COMPARE_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute | M_INNOV_CITY_COMPARE_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz catalog_page_id=innov.sz-monitoring 组合=CMP-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02129 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳科技发展指标对比 | 深圳科技发展指标对比 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz，请求体取组合 CMP-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compare_sz catalog_page_id=innov.sz-monitoring 组合=CMP-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02130 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳科技竞争力 | 深圳科技竞争力按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz，请求体取组合 CPT-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CITY_COMPETE_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute | M_INNOV_CITY_COMPETE_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz catalog_page_id=innov.sz-monitoring 组合=CPT-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02131 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳科技竞争力 | 深圳科技竞争力不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz，请求体取组合 CPT-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CITY_COMPETE_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute | M_INNOV_CITY_COMPETE_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz catalog_page_id=innov.sz-monitoring 组合=CPT-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02132 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳科技竞争力 | 深圳科技竞争力 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz，请求体取组合 CPT-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_compete_sz catalog_page_id=innov.sz-monitoring 组合=CPT-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02133 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳创新能力指数 | 深圳创新能力指数按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_index_sz，请求体取组合 IDX-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CITY_INDEX_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute | M_INNOV_CITY_INDEX_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_index_sz catalog_page_id=innov.sz-monitoring 组合=IDX-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02134 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳创新能力指数 | 深圳创新能力指数不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_index_sz，请求体取组合 IDX-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CITY_INDEX_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute | M_INNOV_CITY_INDEX_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_index_sz catalog_page_id=innov.sz-monitoring 组合=IDX-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02135 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳创新能力指数 | 深圳创新能力指数 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_index_sz，请求体取组合 IDX-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_index_sz catalog_page_id=innov.sz-monitoring 组合=IDX-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02136 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳城市科技发展排名 | 深圳城市科技发展排名按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz，请求体取组合 RNK-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CITY_RANK_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute | M_INNOV_CITY_RANK_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz catalog_page_id=innov.sz-monitoring 组合=RNK-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02137 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳城市科技发展排名 | 深圳城市科技发展排名不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz，请求体取组合 RNK-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CITY_RANK_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute | M_INNOV_CITY_RANK_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz catalog_page_id=innov.sz-monitoring 组合=RNK-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02138 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳城市科技发展排名 | 深圳城市科技发展排名 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz，请求体取组合 RNK-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_rank_sz catalog_page_id=innov.sz-monitoring 组合=RNK-03 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02139 | 创新监测 | 深圳创新监测 | 主流程 | — | 深圳创新监测 | 深圳与对标城市趋势 | 深圳与对标城市趋势按文档 sampleRequest 传 module=sz-monitoring | 1、module 使用文档示例 sz-monitoring | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz，请求体取组合 TRD-01 | 1、返回 body 与 sampleResponse 同层逐字段：metric_id（string，示例 M_INNOV_CITY_TREND_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 另声明 metrics（array，指标元数据清单）、total（number，指标数），sampleResponse 未给出这两字段的示例值，返回中应含 metrics、total 且类型与声明一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute | M_INNOV_CITY_TREND_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz catalog_page_id=innov.sz-monitoring 组合=TRD-01 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02140 | 创新监测 | 深圳创新监测 | 备选-参数组合 | 省略 module | 深圳创新监测 | 深圳与对标城市趋势 | 深圳与对标城市趋势不传可选 module（与 sampleRequest 相反） | 1、不传 module | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz，请求体取组合 TRD-02 | 1、返回 body 与 sampleResponse 逐字段同类：metric_id（string，示例 M_INNOV_CITY_TREND_SZ）、hint（string，示例「真实 compute 响应,以实际调用为准」）；2、responseFields 声明的 metrics（array，指标元数据清单）、total（number，指标数）仍应出现，类型与主流程一致 | P0 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute | M_INNOV_CITY_TREND_SZ | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz catalog_page_id=innov.sz-monitoring 组合=TRD-02 |
+| ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-API-02141 | 创新监测 | 深圳创新监测 | 异常-入参-非法module | — | 深圳创新监测 | 深圳与对标城市趋势 | 深圳与对标城市趋势 module 非法 | 1、module 取不可识别 slug | 1.POST /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute，endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz，请求体取组合 TRD-03 | 1、返回 body 的 message 或 msg 指出 module 非法；2、不返回含 metric_id、hint 的成功业务结果 | P1 |  |  |  |  |  | N/A-技术项 | N/A | 科技专题服务算法库.md | N/A | N/A-技术项 | N/A | /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute |  | INTEG |  |  | endpoint_id=innov.sz-monitoring.m_innov_city_trend_sz catalog_page_id=innov.sz-monitoring 组合=TRD-03 |
 
 ---
 
@@ -50,18 +72,45 @@
 
 | 组合 id | endpoint_id | 参数赋值 | 意图 |
 |---------|-------------|----------|------|
-| SMON-01 | innov.sz-monitoring.metrics | `module=sz-monitoring`（对齐 catalog `sampleRequest`） | unavailable 契约占位主路径 |
-| SMON-02 | innov.sz-monitoring.metrics | `module=__invalid_module__` | 不可识别模块 slug（单缺陷） |
-| SMON-03 | innov.sz-monitoring.metrics | `module`=`""`（空字符串） | 空 module 与省略参数边界 |
-| SMON-04 | innov.sz-monitoring.metrics | 不传 `module` | 可选 module 省略；**本轮无独立用例**，与 SMON-01/00842 待试调后区分 |
+| MET-01 | innov.sz-monitoring.metrics | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| MET-02 | innov.sz-monitoring.metrics | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| MET-03 | innov.sz-monitoring.metrics | module=__invalid__ | 只破坏 module 这一个参数 |
+| CVR-01 | innov.sz-monitoring.m_innov_carrier_value_rank_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| CVR-02 | innov.sz-monitoring.m_innov_carrier_value_rank_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| CVR-03 | innov.sz-monitoring.m_innov_carrier_value_rank_sz | module=__invalid__ | 只破坏 module 这一个参数 |
+| C03-01 | innov.sz-monitoring.m_innov_ds_06_carrier_003 | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| C03-02 | innov.sz-monitoring.m_innov_ds_06_carrier_003 | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| C03-03 | innov.sz-monitoring.m_innov_ds_06_carrier_003 | module=__invalid__ | 只破坏 module 这一个参数 |
+| CMP-01 | innov.sz-monitoring.m_innov_city_compare_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| CMP-02 | innov.sz-monitoring.m_innov_city_compare_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| CMP-03 | innov.sz-monitoring.m_innov_city_compare_sz | module=__invalid__ | 只破坏 module 这一个参数 |
+| CPT-01 | innov.sz-monitoring.m_innov_city_compete_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| CPT-02 | innov.sz-monitoring.m_innov_city_compete_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| CPT-03 | innov.sz-monitoring.m_innov_city_compete_sz | module=__invalid__ | 只破坏 module 这一个参数 |
+| IDX-01 | innov.sz-monitoring.m_innov_city_index_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| IDX-02 | innov.sz-monitoring.m_innov_city_index_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| IDX-03 | innov.sz-monitoring.m_innov_city_index_sz | module=__invalid__ | 只破坏 module 这一个参数 |
+| RNK-01 | innov.sz-monitoring.m_innov_city_rank_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| RNK-02 | innov.sz-monitoring.m_innov_city_rank_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| RNK-03 | innov.sz-monitoring.m_innov_city_rank_sz | module=__invalid__ | 只破坏 module 这一个参数 |
+| TRD-01 | innov.sz-monitoring.m_innov_city_trend_sz | module=sz-monitoring（sampleRequest） | 主路径（sampleRequest 传 module） |
+| TRD-02 | innov.sz-monitoring.m_innov_city_trend_sz | 不传 module | 与 sampleRequest 相反：省略可选 module |
+| TRD-03 | innov.sz-monitoring.m_innov_city_trend_sz | module=__invalid__ | 只破坏 module 这一个参数 |
 
 ---
 
 ## 附录 B · 本页 endpoint 清单
 
-| endpoint_id | METHOD | path | status | runtime | 必填参数 |
-|-------------|--------|------|--------|---------|----------|
-| innov.sz-monitoring.metrics | GET | /innov/v1/innov/metrics | unavailable | java_api | （无；`module` 可选） |
+| title | endpoint_id | METHOD | path | 参数 | status |
+|-------|-------------|--------|------|------|--------|
+| 深圳创新监测指标清单 | innov.sz-monitoring.metrics | GET | /innov/v1/innov/metrics | module? | unavailable |
+| 深圳创新载体创新价值排名 | innov.sz-monitoring.m_innov_carrier_value_rank_sz | POST | /innov/v1/innov/metric/M_INNOV_CARRIER_VALUE_RANK_SZ/compute | module? | available |
+| 创新价值排名 | innov.sz-monitoring.m_innov_ds_06_carrier_003 | POST | /innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute | module? | available |
+| 深圳科技发展指标对比 | innov.sz-monitoring.m_innov_city_compare_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_COMPARE_SZ/compute | module? | available |
+| 深圳科技竞争力 | innov.sz-monitoring.m_innov_city_compete_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_COMPETE_SZ/compute | module? | available |
+| 深圳创新能力指数 | innov.sz-monitoring.m_innov_city_index_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_INDEX_SZ/compute | module? | available |
+| 深圳城市科技发展排名 | innov.sz-monitoring.m_innov_city_rank_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_RANK_SZ/compute | module? | available |
+| 深圳与对标城市趋势 | innov.sz-monitoring.m_innov_city_trend_sz | POST | /innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute | module? | available |
 
 ---
 
@@ -69,32 +118,25 @@
 
 | endpoint_id | 用例编号 |
 |-------------|----------|
-| innov.sz-monitoring.metrics | API-00839、00840、00841、00842、00843 |
+| innov.sz-monitoring.metrics | API-02118、API-02119、API-02120 |
+| innov.sz-monitoring.m_innov_carrier_value_rank_sz | API-02121、API-02122、API-02123 |
+| innov.sz-monitoring.m_innov_ds_06_carrier_003 | API-02124、API-02125、API-02126 |
+| innov.sz-monitoring.m_innov_city_compare_sz | API-02127、API-02128、API-02129 |
+| innov.sz-monitoring.m_innov_city_compete_sz | API-02130、API-02131、API-02132 |
+| innov.sz-monitoring.m_innov_city_index_sz | API-02133、API-02134、API-02135 |
+| innov.sz-monitoring.m_innov_city_rank_sz | API-02136、API-02137、API-02138 |
+| innov.sz-monitoring.m_innov_city_trend_sz | API-02139、API-02140、API-02141 |
 
 ---
 
-## 3. 覆盖自检（§S1）
+## 3. 覆盖自检（第二轮口径）
 
-- [x] 唯一 unavailable endpoint 已写契约占位（API-00839）
-- [x] 可选入参 `module` 非法值与空字符串已覆盖（API-00841、00842）
-- [x] 异常-鉴权 1 条（API-00840）
-- [x] 契约出参 `metrics`、`total` 形态占位 1 条（API-00843）
-- [x] `_empty` 在 `coverage-fp.md` 标 **未覆盖**（endpoint unavailable，无稳定「合法 module 下必空 metrics」试调证据）
-- [x] 金样 1 条且断言完整信封（API-00839）
-- [x] §0 标明 **未试调**、禁止 curl
-- [x] `coverage-fp.md` 已更新
-- [x] 本子任务 **不** 改 `code-registry.yaml` / `run-log.md`（父控回写）
+- [x] 8 个 title 均在功能点列出现且各有 1 条主流程（功能项=主流程）
+- [x] 每个接口恰好 3 条：sampleRequest 主流程 + 与 sample 相反的不传 module + 非法 module
+- [x] 每条步骤含 endpoint_id
+- [x] unavailable（深圳创新监测指标清单）仍按 sampleResponse 写主流程，备注注明未交付
+- [x] 正向预期逐字段写 sampleResponse；反向预期为 message 或 msg 指出 module 非法
+- [x] 反向预期写 message 或 msg，不写状态码
+- [x] `coverage-fp.md` 已同步 API-02118～02141；A 线无对应 Lxx，未改 work
 
----
-
-## 4. 交卷计数
-
-| 项 | 值 |
-|----|-----|
-| 用例条数 | **5** |
-| 编号闭区间 | **API-00839**～**API-00843** |
-| endpoint 数 | **1** |
-| 金样（完整信封） | **1**（API-00839） |
-| `_empty` 未覆盖 | **1**（见 coverage） |
-| FUNC | **0** |
-| code-registry / run-log | **未改**（父控回写） |
+**统计**：用例 **24** 条；编号闭区间 **API-02118**～**API-02141**（父控 R2-批22 分配）。主流程 **8**（02118、02121、02124、02127、02130、02133、02136、02139）；备选 **8**（02119、02122、02125、02128、02131、02134、02137、02140）；反向 **8**（02120、02123、02126、02129、02132、02135、02138、02141）。

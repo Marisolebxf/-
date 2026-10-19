@@ -1,46 +1,43 @@
-# coverage-fp · innov.risk（风险洞察（异步））
+# 风险洞察（异步） · A 线功能点覆盖（innov.risk）
 
-> **catalog_page_id**：`innov.risk`  
-> **契约**：`lumen-ui-algo-apiview/src/catalog/innov.json`  
-> **A 线真源**：`fp-split-by-api-run/_l6-to-catalog-map.yaml`（`innov.*` 非 60 六级）；`fp-split-by-api-run/_catalog-snapshot.md` 登记 2 endpoint、`unavailable`×2、`local_mock`×2  
-> **用例册**：`API-风险洞察（异步）-用例.md`（API-00734～00743）  
-> **§0**：**未试调**
+> **catalog_page_id**：`innov.risk` · path `/innov/risk`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-风险洞察（异步）-用例.md`（第二轮 **API-01894**～**01897**，共 4 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.risk`  
 
-## 1. endpoint 覆盖
+---
 
-| endpoint_id | METHOD | path | 用例编号 | 说明 |
-|-------------|--------|------|----------|------|
-| innov.risk.supply | POST | （空） | API-00734～00738 | catalog `unavailable`；`sub_type=supply_chain`；出参契约 `key_nodes`、`break_risks` |
-| innov.risk.pain | POST | （空） | API-00739～00743 | catalog `unavailable`；`sub_type=pain_points`；出参契约 `issues` |
+## endpoint → 用例
 
-## 2. 矩阵键（catalog 字段 / 哨兵）
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| innov.risk.supply | POST | （空） | API-01894、API-01895 | unavailable |
+| innov.risk.pain | POST | （空） | API-01896、API-01897 | unavailable |
 
-| 矩阵键 | 语义 | 对应用例 | 覆盖 | 备注 |
-|--------|------|----------|------|------|
-| innov.risk.supply \| sub_type \| 算法输入-子类型 | catalog sub_type | API-00734、00736、00737、00738 | 已覆盖 | 主路径占位 + 缺省 + 跨 endpoint 枚举 + 空串 |
-| innov.risk.supply \| key_nodes \| 算法输出-关键节点 | catalog key_nodes | — | 未覆盖 | unavailable 金样批不写 live 数值语义；待 endpoint available 后补字段形态条 |
-| innov.risk.supply \| break_risks \| 算法输出-断链风险 | catalog break_risks | — | 未覆盖 | 同上 |
-| innov.risk.supply \| _empty \| 供应链风险无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定「sub_type=supply_chain 必空」试调证据 |
-| innov.risk.supply \| _fail \| 供应链风险契约失败 | 契约错误态 | API-00734、00735、00736、00737、00738 | 已覆盖 | 含 unavailable、鉴权与 sub_type 单缺陷 |
-| innov.risk.pain \| sub_type \| 算法输入-子类型 | catalog sub_type | API-00739、00741、00742、00743 | 已覆盖 | 主路径占位 + 缺省 + 跨 endpoint 枚举 + 空串 |
-| innov.risk.pain \| issues \| 算法输出-共性问题 | catalog issues | — | 未覆盖 | unavailable 金样批不写 live 数值语义 |
-| innov.risk.pain \| _empty \| 痛难点无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定「sub_type=pain_points 必空」试调证据 |
-| innov.risk.pain \| _fail \| 痛难点契约失败 | 契约错误态 | API-00739、00740、00741、00742、00743 | 已覆盖 | 含 unavailable、鉴权与 sub_type 单缺陷 |
+两个接口 path 以 catalog 为准，当前为空，步骤未填 URL。
 
-## 3. 金样与烟测
+---
 
-| 项 | 编号 |
-|----|------|
-| 金样（供应链） | API-00734 |
-| 金样（痛难点） | API-00739 |
-| 烟测建议 | 跑全部金样（00734、00739） |
+## 功能点 → 用例矩阵
 
-## 4. 统计摘要
+本页不在 60 六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。每个 title 的 sampleResponse 与 responseFields 都挂在该接口主流程上；无其它参数，无备选；必填 `sub_type` 反向为省略该参数。catalog `status=unavailable`，备注注明未交付。
 
-| 指标 | 值 |
-|------|-----|
-| endpoint 数 | 2 |
-| API 用例数 | 10 |
-| `_fail` 行 | 2 / 2 已覆盖 |
-| `_empty` 行 | 2 / 2 未覆盖 |
-| responseFields 形态条 | 0（待 live 升档） |
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| innov.risk.supply \| 供应链风险图谱契约 | API-01894、API-01895 | 无对应功能点 | 01894 主流程 sampleRequest（sub_type=supply_chain），断言 summary（display_mode、data_time、enterprises）、nodes（id、name、relation_type、influence_score、is_key）、edges（src、dst、relation_type）、key_nodes（name、relation_type、influence_score、is_key、suggestion）、break_risks（name、risk_level、impact、suggestion）；01895 省略必填 sub_type |
+| （无 Lxx） \| innov.risk.pain \| 发展痛难点契约 | API-01896、API-01897 | 无对应功能点 | 01896 主流程 sampleRequest（sub_type=pain_points），断言 summary（diagnosis_method、data_time）、dimension_cards（dimension、priority、issue_count、affected_enterprise_count）、issues（title、priority、dimension、affected_enterprise_count、evidence）；01897 省略必填 sub_type |
+
+---
+
+## 计数
+
+| 项 | 值 |
+|----|-----|
+| catalog endpoint 数 | 2 |
+| title 数 | 2 |
+| API 用例数 | 4 |
+| 主流程 | 2（01894 供应链风险图谱契约、01896 发展痛难点契约） |
+| 备选-参数组合 | 0 |
+| 反向 | 2（01895、01897，均省略 sub_type） |
+| 编号 | API-01894～01897 连续 |
+| A 线 Lxx | 无 |

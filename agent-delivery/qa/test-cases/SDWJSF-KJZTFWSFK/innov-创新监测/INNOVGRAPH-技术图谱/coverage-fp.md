@@ -1,66 +1,43 @@
-# 技术图谱 · 功能点覆盖（innov.graph）
+# 技术图谱 · A 线功能点覆盖（innov.graph）
 
-> catalog `innov.graph` · 50897 · path `/innov/graph`  
-> 用例册：`API-技术图谱-用例.md`（API-00754～00768）  
-> A 线真源：`fp-split-by-api-run/work/` **未收录** `innov.*`（`_l6-to-catalog-map.yaml`）；矩阵键按 catalog `params` / `responseFields` + 契约 `_empty` / `_fail`  
-> 编排：`algo-lib-api-case-playbook.md` §S1  
-
----
-
-## 1. endpoint → 用例
-
-| endpoint_id | METHOD | path | 对应用例 | 备注 |
-|-------------|--------|------|----------|------|
-| innov.graph.domains | GET | /innov/v1/graph/domains | API-00754～00758 | catalog `status=running` · `runtime=java_api`；§0 **未试调** |
-| innov.graph.subgraph | GET | /innov/v1/graph/subgraph | API-00759～00763 | 必填 `domainId`；§0 **未试调** |
-| innov.graph.rank | GET | /innov/v1/graph/influence/rank | API-00764～00768 | 可选 `domainId`/`nodeType`/`pageNum`/`pageSize`；§0 **未试调** |
+> **catalog_page_id**：`innov.graph` · path `/innov/graph`  
+> **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
+> **用例册**：`API-技术图谱-用例.md`（第二轮 **API-01853**～**01866**，共 14 条）  
+> **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.graph`  
 
 ---
 
-## 2. 功能点 → 用例（主矩阵）
+## endpoint → 用例
 
-| 功能点键 | 规则来源 | 对应用例 | 状态 | 说明 |
-|----------|----------|----------|------|------|
-| innov.graph \| innov.graph.domains \| domainId \| 算法输出-domainId领域标识 | catalog domainId | API-00754、00756 | 已覆盖 | 主路径 + 字段形态；样例 parentId/level 不设失败条件 |
-| innov.graph \| innov.graph.domains \| name \| 算法输出-name领域名称 | catalog name | API-00754、00756 | 已覆盖 | 同上 |
-| innov.graph \| innov.graph.domains \| _empty \| 领域树无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定「合法请求必空数组」试调证据 |
-| innov.graph \| innov.graph.domains \| _fail \| 领域树调用失败 | 契约错误态 | API-00755、00757、00758 | 已覆盖 | 鉴权、错误 HTTP 方法、错误 path |
-| innov.graph \| innov.graph.subgraph \| domainId \| 算法输入-domainId领域 | catalog domainId required | API-00759、00761、00762 | 已覆盖 | 主路径 + 缺省 + 非法 id |
-| innov.graph \| innov.graph.subgraph \| limit \| 算法输入-limit节点上限 | catalog limit | API-00759、00763 | 部分覆盖 | 主路径含 limit；越界 00763 |
-| innov.graph \| innov.graph.subgraph \| nodes \| 算法输出-nodes子图节点 | catalog nodes | API-00759 | 已覆盖 | 禁止 sample 影响力作通过条件 |
-| innov.graph \| innov.graph.subgraph \| edges \| 算法输出-edges子图边 | catalog edges | API-00759 | 已覆盖 | 禁止 sample weight 作通过条件 |
-| innov.graph \| innov.graph.subgraph \| _empty \| 子图无节点空态 | 契约空结果 | — | 未覆盖 | 无试调证明合法 domainId 必空 nodes/edges |
-| innov.graph \| innov.graph.subgraph \| _fail \| 子图调用失败 | 契约错误态 | API-00760、00761、00762、00763 | 已覆盖 | 鉴权 + 入参单缺陷 |
-| innov.graph \| innov.graph.rank \| domainId \| 算法输入-domainId领域 | catalog domainId optional | API-00764、00766 | 部分覆盖 | 主路径带 D-AI；非法 id；省略默认 ALL（GRA-RNK-05）待试调后补 |
-| innov.graph \| innov.graph.rank \| nodeType \| 算法输入-nodeType实体类型 | catalog nodeType | API-00764、00767 | 部分覆盖 | 主路径省略 nodeType；非法枚举 00767 |
-| innov.graph \| innov.graph.rank \| pageNum \| 算法输入-pageNum页码 | catalog pageNum | API-00764 | 已覆盖 | 主路径 pageNum=1 |
-| innov.graph \| innov.graph.rank \| pageSize \| 算法输入-pageSize页大小 | catalog pageSize | API-00764、00768 | 已覆盖 | 主路径 + 负值越界 |
-| innov.graph \| innov.graph.rank \| list \| 算法输出-list排行列表 | catalog list | API-00764 | 已覆盖 | 禁止 sample rankInDomain/分值作通过条件 |
-| innov.graph \| innov.graph.rank \| _empty \| 排行无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定空 list 构造 |
-| innov.graph \| innov.graph.rank \| _fail \| 排行调用失败 | 契约错误态 | API-00765、00766、00767、00768 | 已覆盖 | 鉴权 + 入参单缺陷 |
-| innov.graph \| \| g6_viz \| 联调台 G6 图可视化 | catalog viz graph | — | 未覆盖 | UI 可视化，非 HTTP 契约字段 |
-| innov.graph \| \| auto_run \| 页级自动执行 | catalog autoRun=false | — | 未覆盖 | 产品交互，非本 API 册 |
+| endpoint_id | METHOD | path | 用例编号 | catalog status |
+|-------------|--------|------|----------|----------------|
+| innov.graph.domains | GET | /innov/v1/graph/domains | API-01853 | running |
+| innov.graph.subgraph | GET | /innov/v1/graph/subgraph | API-01854、API-01855、API-01856、API-01857 | running |
+| innov.graph.rank | GET | /innov/v1/graph/influence/rank | API-01858、API-01859、API-01860、API-01861、API-01862、API-01863、API-01864、API-01865、API-01866 | running |
 
 ---
 
-## 3. 统计
+## 功能点 → 用例矩阵
 
-| 状态 | 条数（契约 field + 哨兵，去重约） |
-|------|----------------------------------|
-| 已覆盖 | 12 |
-| 部分覆盖 | 3（limit、domainId 省略 ALL、nodeType 主路径省略） |
-| 未覆盖 | 5（`_empty`×3 + req_only×2） |
+本页不在六级挂接表，**无对应 Lxx**，B 线记 **无对应功能点**。不按 `field_key` 拆行，也不按字段各写一条用例。title「领域树」的 sampleResponse（数组元素 `domainId`、`name`、`parentId`、`level`、`domainSource`）与 responseFields 的 `domainId`、`name` 都挂在主流程上。title「领域子图」的 sampleResponse（`period`、`nodes` 及元素 `nodeId`、`nodeType`、`name`、`influenceScore`、`rank`，`edges` 及元素 `src`、`dst`、`edgeType`、`weight`）与 responseFields 的 `nodes`、`edges` 都挂在该接口主流程上；与 sample 相反的不传 `limit` 挂备选；必填 `domainId` 反向为省略，`limit` 恰好 1 条非法反向。title「影响分排行」的 sampleResponse（`total`、`period`、`list` 及元素 `nodeId`、`nodeType`、`name`、`influenceScore`、`rankInDomain`）与 responseFields 的 `list` 都挂在该接口主流程上；可选参数与 sample 相反的传/不传挂备选；每个参数恰好 1 条非法反向。
+
+| 功能点键 | 对应用例编号 | 状态 | 说明 |
+|----------|--------------|------|------|
+| （无 Lxx） \| innov.graph.domains \| 领域树 | API-01853 | 无对应功能点 | 01853 主流程无参，断言 data 为数组，元素 domainId、name，以及 sampleResponse 的 parentId、level、domainSource（示例 D-AI/人工智能/空串/1/seed，D-BIO/生物医药/空串/1/seed） |
+| （无 Lxx） \| innov.graph.subgraph \| 领域子图 | API-01854、API-01855、API-01856、API-01857 | 无对应功能点 | 01854 主流程 sampleRequest domainId=D-AI、limit=60，断言 period、nodes（nodeId、nodeType、name、influenceScore、rank）、edges（src、dst、edgeType、weight）；01855 不传 limit；01856 省略必填 domainId；01857 非法 limit=not-a-limit |
+| （无 Lxx） \| innov.graph.rank \| 影响分排行 | API-01858、API-01859、API-01860、API-01861、API-01862、API-01863、API-01864、API-01865、API-01866 | 无对应功能点 | 01858 主流程 sampleRequest domainId=D-AI、pageNum=1、pageSize=20、不传 nodeType，断言 total、period、list（nodeId、nodeType、name、influenceScore、rankInDomain）；01859 不传 domainId；01860 传 nodeType=org；01861 不传 pageNum；01862 不传 pageSize；01863～01866 分别非法 domainId、nodeType、pageNum、pageSize |
 
 ---
 
-## 4. B 线交卷摘要
+## 计数
 
 | 项 | 值 |
 |----|-----|
-| API 用例条数 | **15**（3 endpoint × 5） |
-| 编号 | **API-00754**～**API-00768** |
-| `_empty` 未覆盖 | **3** |
-| 试调 | **未试调**（§0 未 curl） |
-| FUNC | **0** |
-| code-registry | **未改**（父控回写） |
-| snapshot | `fp-split-by-api-run/_catalog-snapshot.md` 登记 3 endpoint、`running`×3 |
+| catalog endpoint 数 | 3 |
+| title 数 | 3 |
+| API 用例数 | 14 |
+| 主流程 | 3（01853 领域树、01854 领域子图、01858 影响分排行） |
+| 备选-参数组合 | 5（01855、01859、01860、01861、01862） |
+| 反向 | 6（01856、01857、01863、01864、01865、01866） |
+| 编号 | API-01853～01866 连续 |
+| A 线 Lxx | 无 |
