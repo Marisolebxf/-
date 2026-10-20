@@ -28,11 +28,13 @@
 
 1. **同一交互/结构/样式在第 2 处出现时必须封装**：升公共组件（跨模块复用 → `src/components/`）或页内子组件（单模块私有 → 模块目录），禁止复制粘贴类名体系或整段模板。
 2. **页内复用他页类名必须样式自含**：组件用了他页 css 类名但该样式只存在于另一页的 css 文件时，离开那页即「样式裸奔」（M8 清空按钮 56b2624 复发教训）——封装组件时 scoped/页内 css 必须自带全部所需规则。
-3. **已沉淀公共件（复刻新页先查此清单，不新造）**：
+3. **移植公共组件先核对其样式导入**：demo 组件常自带 `import './xxxComponents.css'`（如 `SectionPanel.jsx` 第 3 行）；移植成 `.vue` 时漏掉这行 → 样式仍留在原页面 css，跨模块复用即裸奔（FE-TA-01A 顶尖机构洞察走查教训）。修法按 `PageTabFrame` 先例：组件目录自含 css + 组件内 import；只抽该组件所需块，不整文件复制。
+4. **已沉淀公共件（复刻新页先查此清单，不新造）**：
    - `PageTabFrame`（Tab 页框）、`IndustrySelect`（产业级联）、`SearchableCascadeFilter`（可搜索级联筛选）、`MetricSpecHint`（D9 ⓘ）、`MockBadge`（🧪）、`StatCard`/`KpiDeck`
    - `TiandituMap`（天地图底座：divIcon marker/tooltipHtml/图层组/热力/视口聚焦）、`InsightDetailDrawer`（L6 五段）、`ExportFlowPanel`
    - `chartOptions`（CHART_BASE/baseTooltip token 主题）、`models/*.ts` 纯函数派生层、`defineApi` 双轨（mock/网关）
-4. **封装件接口契约写 JSDoc**；不预设用不到的抽象（ponytail：单模块私有不升公共）。
+   - `SectionPanel`（FE-TA-01A 起自含 section-panel.css，跨模块可复用）
+5. **封装件接口契约写 JSDoc**；不预设用不到的抽象（ponytail：单模块私有不升公共）。
 
 ## 3. demo 样式移植
 
@@ -71,6 +73,8 @@
 | 任务 | 关键教训 |
 |---|---|
 | FE-TS-S01 | 底座组件清单、Mock 开关机制 |
+| FE-TA-S01 | 人才模块基座（种子冻结/Pinia 导航/4 页壳） |
+| FE-TA-01A | SectionPanel 移植漏自含样式 → 跨模块 tt-* 裸奔（走查修正）；PowerShell 字符级替换损坏 .vue（改用 Write 重写） |
 | FE-TS-01A | Arco #option 插槽签名、层叠/isolation、Teleport、sr-only、dev slot props 失效、数据签名 key |
 | FE-TS-02A | pnpm type-check 真门（89 错教训）、G6/xlsx 新增依赖记录 |
 | FE-TS-03A | 三阶段状态机、InsightDetailDrawer 下钻扩展 |
