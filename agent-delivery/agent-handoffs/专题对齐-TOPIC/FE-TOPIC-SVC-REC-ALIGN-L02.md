@@ -34,9 +34,9 @@ demo 原型 2026-08-10 评审定点（`demo-ui-topic` commit `afd6583`，《符�
 
 ## 4. 验证证据
 
-- commit：`4f5807f`（`fix(svc): 招引/培育配置区对齐 demo 定点 ALIGN-L01（内置固定权重）`，9 files，+321/−987），已推 `origin/dev`（rebase 于 `9ade25e` ORG-BASKET-ENTRY-L01 之上）
+- commit：`4f5807f`（`fix(svc): 招引/培育配置区对齐 demo 定点 ALIGN-L01（内置固定权重）`，9 files，+321/−987）+ 修复 `5f29b6b`（剥离 `4f5807f` 误带的另一单 reportSurface WIP——当时两个 Workspace 工作区副本已被那单写入，提交时按路径筛选未能排除；以 `9ade25e` 为基重写为纯对齐版），均已推 `origin/dev`（rebase 于 `9ade25e` ORG-BASKET-ENTRY-L01 之上）
 - `node src/views/service/serviceRecAttractWeight.selfcheck.mjs` / `serviceRecommendAttract.selfcheck.mjs` / `serviceRecCultivate.selfcheck.mjs` → 全绿
-- `npx eslint`（4 个改动文件）→ 0 error；`pnpm type-check` → 本任务文件零报错（仓内其他在途文件既有错误与基线一致）
+- `npx eslint`（4 个改动文件）→ 0 error；`pnpm type-check` → 修复后全仓 0 错（`5f29b6b` 复验）
 - 浏览器实测（dev :5199，mock auth）：招引页 DOM 断言 `fixedWeights=1, tags=[35/30/20/15], inputNumber=0, weightBar=0`；培育页 `tags=[25/30/25/20], filterRow=1`；点「开始分析」→ processing 视图（`task_id=SVC-20261020-004`），无报错
 
 ## 5. 架构合规自检
