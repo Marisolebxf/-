@@ -8,7 +8,7 @@
 |---|---|
 | 对象前缀（建议） | `chain/{task_id}/` |
 | Demo 桶（目标） | 与平台 demo 分析结果桶一致 |
-| 典型对象 | 产业链分析导出、图谱快照、报告附件 |
+| 典型对象 | 用户生成的产业链报告 HTML/PDF → `gkx-user-reports` 的 `topic/`；分析 JSON 仍在 `gkx-analysis-results` |
 
 ## 指针
 

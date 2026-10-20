@@ -2,7 +2,7 @@
 
 > **级别**：平台级唯一正文  
 > **企业维**：只引用本文，在 `storage/ENT/etl/pipeline-to-minio.md` 写本域前缀/生命周期，**禁止复制**本文全文  
-> **状态**：draft · 待架构师/平台补全现网 bucket 约定
+> **桶名与对象键的规约真源**：`agent-delivery/architecture-baseline.md` **§2.1（D14）**。本文与之保持一致；冲突时以基线为准。
 
 ```yaml
 ---
@@ -28,16 +28,31 @@ engine: minio
 | Java 下载门面 | 读（经鉴权）；不扫 DWD |
 | 前端 | 禁止直连 MinIO |
 
-## 3. 待填（现网）
+## 3. 现网
 
 | 项 | 值 |
 |---|---|
-| Endpoint | （待填） |
-| 默认 bucket | （待填） |
-| Demo bucket | `demo_**`（与正式结构/前缀约定一致，仅桶名隔离；见 ENT `pipeline-demo-mock.md`） |
-| 路径约定 | `{element}/{task_id}/...`（建议） |
-| TTL / 生命周期 | （待填） |
-| 凭证落点 | 配置中心 / K8s Secret（禁止进本仓明文） |
+| Endpoint | `http://10.50.69.111:19000`（路径风格；控制台 `:19001`） |
+| 凭证 | K8s Secret `gkxlumen-platform-rustfs`；主机 `/data/middleware/.env`。不进本仓明文 |
+| Demo bucket | `demo-gkx-analysis-results`（仅 demo 隔离，不进下面正式桶） |
+| TTL | 未设生命周期。用户报告与采购原文按长期保留；头像和 CMS 图随记录删除 |
+
+旧集群 `rustfs-svc`（`:30900`）上的 `tempo-blocks`、`loki-chunks`、`gpustack`、`plane` 不在本桶清单，仍留在旧实例。
+
+## 5. 正式桶
+
+一类一桶。元数据（谁能下、对应哪条业务记录）留在 MySQL，桶里只放字节。
+
+| 桶 | 放什么 | 对象键 |
+|---|---|---|
+| `gkx-analysis-results` | 分析任务结果 JSON。已在用 | `analysis/{type}/{parentTaskId}/{taskId}/{file}` |
+| `gkx-user-reports` | 展示系统、专题系统里**用户触发生成**的 HTML 和 PDF | `science/html/`、`science/pdf/`、`topic/html/`、`topic/pdf/`，后面接 `{userId}/{yyyyMMdd}/{file}` |
+| `gkx-source-reports` | 总集采购的三方报告 PDF。中文 `dwd_zh_report.file_path`（约 1.4 万，样例 `\E8A04BD6-….pdf`），外文 `dwd_en_report.file_path`（约 1.0 万，样例 `\AD\2018\AD1177190.pdf`） | 去掉开头的 `\`，反斜杠改成 `/`：`zh/E8A04BD6-….pdf`、`en/AD/2018/AD1177190.pdf` |
+| `gkx-cms-images` | CMS 写进 HTML 的图片 | `cms/{contentId}/{file}` |
+| `gkx-user-assets` | 用户头像和其他零碎上传 | `avatar/{userId}/{file}`、`misc/{yyyyMMdd}/{file}` |
+| `milvus` | Milvus 自己的对象，业务不要写 | — |
+
+分析 JSON 继续进 `gkx-analysis-results`。用户导出的 HTML/PDF 不进这个桶。UPMS 的 `SysFile` 仍是单桶上传，头像和 CMS 图要按上表分桶后再改上传入口。
 
 ## 4. 企业维引用
 

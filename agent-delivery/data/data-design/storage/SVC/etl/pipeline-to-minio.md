@@ -10,7 +10,7 @@
 |---|---|
 | 对象前缀（建议） | `svc/{task_id}/` |
 | Demo 桶（目标） | 与平台 demo 分析结果桶一致（见平台文；ENT 常见 `demo-gkx-analysis-results`） |
-| 典型对象 | 产业服务分析导出、报告附件、图谱快照（F-ALGO / 50100 真写时） |
+| 典型对象 | 用户生成的服务机构报告 HTML/PDF → `gkx-user-reports` 的 `topic/`；分析 JSON 仍在 `gkx-analysis-results` |
 | 关联元数据 | 分析/导出任务表（MySQL）；路径与可下载态必须与对象存在一致 |
 
 ## 指针
