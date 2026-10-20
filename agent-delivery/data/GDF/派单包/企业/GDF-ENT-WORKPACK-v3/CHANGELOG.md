@@ -1,5 +1,17 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1.6 — 2026-10-20
+
+- **ODS 56 张贴源表结构建成并终验**（`gkxlumenx_ods`，`information_schema` 56/56；首批 51 + 自查补遗 5）：同名同构镜像 `gkx`；`dwd_forg_college_org_info` / `dwd_forg_subsidiary_info` 源库不存在未建（P2 / A1 已知阻塞，不阻塞 Wave A）。建表脚本为一次性施工物，归档包外 `GDF/ODS建表DDL-已执行-20261020/`，不占包内编号。GDF Wave A 贴源前置已清。补遗 5 张为 02 清单原有但首批漏列（招投标采购代理/标的物出库、国外高管/经营/股东），自查发现后补建。
+- **专利四分表补登记入 `02`**（title/abstract/legal/cited；v3.1.5 已允许贴、ODS 已建，本版补清单条目）。
+- **扩入 5 张贴源**（16 号文 A7 拍板③）：`dwd_opt_judicial_case_detail`（43,911，wash→回补 `risk_judicial_case`）、`dwd_org_annual_report_base`（49,007，mirror_only）、`dwd_org_annual_report_asset`（517,476，wash→§3.20）、`dwd_org_income_statement`（194,054，mirror_only）、`dwd_patent_inventors`（57,588，mirror_only）。
+- `09` 新增 **§1.6 产业/企业拆分对称声明**（16 号文拍板⑨，与 CHAIN 09 §1.3 同口径：按目标表拆责任，`industry_chain*` 归 CHAIN、`enterprise_industry_chain` 归 ENT、product_tags 仅 ENT、news 两包不洗）。
+- `09` 新增 **§3.13.5-补**（司法明细按案号回补 `court`/`event_date`/`case_title`，只填 NULL 禁覆盖）、**§3.20**（年报资产洗入财务历史/extra，varchar 金额走财务门禁、仅补 NULL 不覆盖）。
+- 勘误：E3（§5 问题 4 标签表名残留）、E1'（§3.19 product_tags 行数 8000→73,313）。
+- Q3 专利匹配拍板：**维持严格精确匹配**（16 号文拍板⑤），实测命中率数据落库后再议放宽。Q6：ES 标签按中文名 keyword 检索（拍板⑥）。
+- 16 号文《缺口分析回复工作包》v1 定稿随本版发布（三/四/五章逐项回复 + 排期 + 拍板记录）。
+- E5 逐字段复验 49 张启动（拍板④），发现项将随后续小版本回写。
+
 ## v3.1.5 — 2026-10-19
 
 - 补加工逻辑：财务混合单位按单元格置 NULL；招投标金额按单位白名单；固定资产只取 `fixed_assets`；风险三表无 `status`；税收/失信无 `is_history` 时默认 0；破产 `case_id` 用案号+法院哈希；当事人角色空行丢弃；标签先落中文；专利引用写入 `citation_count`；行业码取 L4 四位；国外主表列名改为 `table_data_source` / `created_time`。

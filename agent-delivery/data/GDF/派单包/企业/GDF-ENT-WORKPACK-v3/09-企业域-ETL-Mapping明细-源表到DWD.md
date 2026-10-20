@@ -1,7 +1,7 @@
-> **【GDF-ENT-WORKPACK-v3.1.5 · Mapping 施工真源】** 日期 2026-10-19。加工逻辑补遗见 CHANGELOG v3.1.5 与本文件对应小节。列契约以 `00` §8 / §9 为准。  
+> **【GDF-ENT-WORKPACK-v3.1.6 · Mapping 施工真源】** 日期 2026-10-20。本版变更：① 扩入 5 张贴源（专利发明人/司法明细/年报 base+asset/利润表，16 号文 A7 拍板③）并补 mapping（§3.13.5-补、§3.20）；② 勘误 E3（§5 问题 4）/E1'（§3.19 行数）；③ 增加产业/企业拆分对称声明（§1.6）。列契约以 `00` §8 / §9 为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
-> **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装 49 张表已对完。
+> **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装 49 张表已对完。**v3.1.6 起对 49 张施工表启动逐字段复验（16 号文拍板④），发现项回写本文件。**
 
 ---
 # 企业域 ETL Mapping 明细 — 源表到 DWD
@@ -67,6 +67,19 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 |---|---|---|
 | cn（国内） | 中文名（IK + 拼音 + suggest） | 英文名或 NULL（来自 `enterprise_extra.enterprise_name_en`） |
 | global（国外） | 本地名称/别名（standard，可能含中文/日文/韩文） | 英文名（standard，主名称） |
+
+### 1.6 产业/企业拆分对称声明（v3.1.6 · 16 号文拍板⑨）
+
+> 本节与 CHAIN 包 `09-产业链域-ETL-Mapping明细` §1.3 同口径，为 ENT 侧对称声明。GDF 施工以"目标表"定责任包，同一源表 ODS 只贴一次。
+
+| 源表 | Wave B 洗数责任 | ENT 侧边界 |
+|---|---|---|
+| `dwd_industry_chain_info` | **CHAIN 包**洗链树三表（`industry_chain` / `_node` / `_node_rel`） | ENT **禁止**洗进 `enterprise_*` |
+| `dwd_org_industry_tags` | **双写（设计如此）**：CHAIN 洗 `industry_chain_entity_rel`；ENT 洗 `enterprise_industry_chain`（§3.17） | 两表同键（`org_id` + INB `node_id`）；未命中 drop + 治理清单，禁造 ID |
+| `dwd_org_industry_product_tags` | **仅 ENT**洗 `enterprise_industry_product`（§3.19）；CHAIN mirror_only | CHAIN 不洗产品行 |
+| `dwd_industry_chain_news_info` | 两包均不洗 | 合规表禁灌 `industry_chain_news_event` |
+
+依赖顺序：CHAIN `B3-ENTITY-REL` 等 ENT `enterprise_base`；ENT `enterprise_industry_summary` 等 `enterprise_industry_chain`。**Wave B 顺序：先 ENT base → 链树 B1 可并行 → 挂接 B3 最后。**
 
 搜索时 `name_cn` 和 `name_en` 是 OR 关系——keyword 搜索同时匹配两个字段，任一命中即可。
 
@@ -513,11 +526,28 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `procedure_date` | `procedure_date` | 当前审理程序日期 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
-| 源无 | `amount` / `court` / `event_date` / `status` | 默认 NULL |
+| 源无 | `amount` / `court` / `event_date` / `status` | 默认 NULL（**v3.1.6 起可由 `dwd_opt_judicial_case_detail` 回补，见 §3.13.5-补**） |
 | 源无 | `is_history` | 源表无字段且无可推导业务字段，默认 0 |
 | 源无 | `id` | 自增主键 |
 | `pk_id` / `reg_no` / `external_id` / `data_use_flag` | — | 不映射 |
 | `creater` / `updater` / `table_data_source` / `is_deleted` | — | 不映射；`is_deleted` 仅作为过滤条件 |
+
+#### 3.13.5-补 `dwd_opt_judicial_case_detail` → `risk_judicial_case` 回补（v3.1.6）
+
+> v3.1.6 扩入（16 号文 A7 拍板③）。live 43,911 行。**本表不单独成目标表**，仅作为 `risk_judicial_case` 三个空列的回补源，在主表洗数**之后**执行 UPDATE 关联。
+
+**关联键**：`dwd_opt_judicial_case_detail.ah`（案号）= `dwd_org_opt_judicial_case.case_no` → 沿主表 `case_id` 回写。案号匹配不上的明细行不回写、进治理清单（禁止按企业名/标题模糊猜）。
+
+| 明细源字段 | 回补目标字段（`risk_judicial_case`） | 转换逻辑 |
+|---|---|---|
+| `slfymc` | `court` | 直接（审理法院名称；空则不覆盖） |
+| `wddyqdsj` | `event_date` | 直接（文档对应启动时间） |
+| `ajbt` | `case_title`（主表已有则跳过） | 仅主表为 NULL 时回补 |
+| `ajlxbq` / `sjwdbq` | — | 不映射（主表 `case_type_tag` 已有） |
+| `ygf` / `bgfs` / `ajjcgy` / `jyfw` | — | 不映射（长文本详情，目标表无对应列） |
+| `sfajwybs` / `zzzjid` | — | 不映射（明细侧内部 ID） |
+
+规则：回补只填 NULL 列，**禁止覆盖主表已有值**；`sybj`（使用标记）≠ 有效值时跳过该行；回补统计（命中/未命中行数）写入治理清单证据。
 
 #### 3.13.6 `dwd_org_risk_shixin` → `risk_dishonest`
 
@@ -832,7 +862,7 @@ ES / 图谱：**本期不上**（Q-WP3-15）。业务无按招聘检索；只洗
 
 ### 3.19 `dwd_org_industry_product_tags` → `enterprise_industry_product`（本期洗）
 
-2026-09-02 确认（Q-WP3-12）。live `gkx` 约 8000 行。`industry_*` / `product_*` 存的是 Python 列表字面量（如 `['INB1333','INB1306']`），不是标准 JSON。
+2026-09-02 确认（Q-WP3-12）。~~live `gkx` 约 8000 行~~ **E1' 勘误（v3.1.6，2026-10-20 live 实测）：73,313 行。**`industry_*` / `product_*` 存的是 Python 列表字面量（如 `['INB1333','INB1306']`），不是标准 JSON。
 
 | 源字段 | 目标字段 | 转换逻辑/说明 |
 |---|---|---|
@@ -849,6 +879,26 @@ ES / 图谱：**本期不上**（Q-WP3-15）。业务无按招聘检索；只洗
 | 源无 | `data_source` | 写源表名 `dwd_org_industry_product_tags` |
 
 ES / 图谱本波无下游；只洗 MySQL DWD。
+
+### 3.20 `dwd_org_annual_report_asset` → `enterprise_finance_history` 补充 / `enterprise_extra` 补充（v3.1.6 扩入）
+
+> v3.1.6（16 号文 A7 拍板③）。live 517,476 行。关联键 `jgid` = `dwd_org_base_info.org_id` → `enterprise_base.org_id`；对不上进治理清单、禁造 ID。**金额列源态为 varchar**（可能含"万元"/区间/"不公示"等文本），一律按 §3.3 财务单位门禁处理：能确证数值+单位才换算落库，否则 NULL + 治理清单。
+
+| 源字段 | 目标字段 | 转换逻辑/说明 |
+|---|---|---|
+| `jgid` | `org_id`（关联） | JOIN `enterprise_base.org_id`；未命中行整行不洗、进治理清单 |
+| `nbnf` | `data_year` | 直接（年报年份） |
+| `xsze` | `enterprise_finance_history.revenue` | 财务门禁换算（元→万元）；同 org+year 已有年报/上市财务值时**不覆盖**，仅填 NULL 缺口 |
+| `zyywsr` | `enterprise_finance_history.main_business_revenue` | 同上门禁；仅补 NULL |
+| `lrze` | `enterprise_finance_history.total_profit` | 同上 |
+| `jlr` | `enterprise_finance_history.net_profit` | 同上 |
+| `zcze` | `enterprise_finance_history.total_assets` | 源为 double(元)；÷10000；仅补 NULL |
+| `fzze` | `enterprise_finance_history.total_liabilities` | 门禁换算；仅补 NULL |
+| `yftrje` | 研发投入宽列（`enterprise_extra` / 财务宽列 as-built 为准） | 门禁换算；目标列以正式库 `13` §3 as-built 为准，缺列不 ADD 前置 NULL |
+| `yfrysl` / `nsze` / `hdzffczjbz` / `jrdk` / `syzqyhj` / `gdzcze` | — | 本期不映射（目标无对应列；如后续拍板补列另开） |
+| `zzzjid` / `sybj` / `rksj` / `gxsj` 等技术列 | — | 不映射 |
+
+> 同表其余两张（`dwd_org_annual_report_base` / `dwd_org_income_statement`）**本期 mirror_only 只贴不洗**（见 `02` v3.1.6）；如后续需要补 `main_activities`（年报 base `qyzyywhd`）或上市财务缺口，另开 mapping 增补。
 
 ---
 
@@ -902,7 +952,7 @@ GROUP BY chain_code, chain_name, stat_year
 | 1 | 招聘信息目标侧无对应表 | 招聘数据无法入库 | ✅ 已确认新建 `enterprise_recruit`，映射见 §3.16 |
 | 2 | 注册资本单位：源表"元" vs 目标表"万元" | 金额错误 | ✅ 已确认目标统一万元，源 `registered_capital_value` ÷10000 |
 | 3 | `dwd_org_annual_financial_info` 字段名未带单位；`dwd_org_stock_finance_info` 明确带(元) | 单位误判会造成 10000 倍错误 | ✅ 目标统一万元；GDF 实查字段注释/原始值/样本后换算，无法判定则阻塞 |
-| 4 | 标签源表 | 源是 `gkx.dwd_org_tech_tag`，不是 `dwd_org_tag_info` | ✅ `tag_code`/`tag_name` 落 `org_tag` 中文原文；`tag_dict` 空则 `tag_category` 为 NULL。禁止编造码 |
+| 4 | 标签源表 | 源是 `gkx.dwd_org_tech_tag`，不是 `dwd_org_tag_info` | ✅ `tag_code`/`tag_name` 落 `org_tag` 中文原文；`tag_dict` 空则 `tag_category` 为 NULL。禁止编造码。**E3 勘误（v3.1.6）**：本行旧文"live 表为 `gkxlumenx_ods.dwd_org_tag_info`"为残留笔误，现行口径以 `dwd_org_tech_tag` 为准（`02` 2026-09-02 已改口）；ES 标签检索按中文名 keyword（16 号文拍板⑥） |
 | 5 | 专利无企业 `org_id` / 信用代码，且一件专利可有多个申请人/权利人 | 单一 detail.org_id 无法表达完整关系 | ✅ 新增 `enterprise_patent_org_rel`；主表首位名称 + applicants/assignees 分表全量精确匹配企业主档，未命中进治理清单、不造 ID |
 | 6 | `enterprise_industry_chain.enterprise_code` 当前全为空 | 无法通过信用代码关联 org_id | ⏳ 已知数据阻塞，本期不解决 |
 | 7 | 风险表字段级映射未逐字段对照 | 可能有字段名/类型不一致 | ✅ 已完成，见 §3.13 |
