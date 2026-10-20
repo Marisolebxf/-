@@ -26615,7 +26615,7 @@ tasks:
     actual_cost: 0
     model_used: "cursor-auto"
     actual_tokens: 80000
-    evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V3-L01.md"
+    evidence: "agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v3/16-缺口分析回复工作包.md（回复工作包）；GDF/ODS建表DDL-已执行-20261020/（56 张 DDL 存档）；git a097bc30"
     feishu_bitable_record_id: recvtYeySxK3Lk
     supervised_by: "human:徐滕强"
     claimed_at: "2026-09-02T03:09:39.917Z"
@@ -26637,7 +26637,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "2026-09-02 包升 v3.0 可对外投递。已落地两库 region_id / enterprise_code 可空 / patent_org_rel / 财务存量两列。13 差集已出。源表阻塞：tag_info、forg_subsidiary、chain_dtl。未 commit。"
+    note: |
+      2026-10-20 基线已切 v4：三方承诺清单 10-19 版（stock_base 移出/国外母子换源 agg_subsidiary/专利侧表+5）。本单交付物以 v3.1.6 为终态（缺口分析回复 16 号文/ODS 56 张建表/v3.1.5 加工逻辑补遗已全部 commit a097bc30）；后续企业包施工认 GDF-ENT-WORKPACK-V4-L01。签收时请按此口径归档。
     collaborators:
       - "human:辛少彬"
       - "human:胡森泉"
@@ -26654,7 +26655,7 @@ tasks:
       - "ES 写库方写死 lumen-etl-es-py；禁止 Java/前端直写；门禁/SLA 未关则点名 OPEN"
       - "本叶不要求 GDF 已导入绿、不要求改检索 Java"
       - "handoff：agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V3-L01.md"
-    update_time: "2026-09-02T15:01:25+08:00"
+    update_time: "2026-10-20T20:22:51+08:00"
   - id: ALGO-LIB-SEED-RELOAD-ENT-L01
     cost_warn: "green"
     actual_cost: 1.72
@@ -32796,3 +32797,124 @@ tasks:
       - "验证记录：三 tab 示例词在 ES 引擎下命中数对照表 + P95 延迟"
       - "handoff 文档 + cost 回填"
     update_time: "2026-10-20T22:51:31+08:00"
+# 本地 SVC 条目保留（下方）——冲突时本地 update_time 版本被 upstream 覆盖，条目本体保留
+  - id: LUMEN-SVC-FE-ORG-BASKET-ENTRY-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/服务机构-SVC/LUMEN-SVC-FE-ORG-BASKET-ENTRY-L01.md"
+    cost_warn: "green"
+    actual_tokens: 130000
+    actual_cost: 0.6
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-20T06:35:21.103Z"
+    last_seen_at: "2026-10-20T06:35:21.103Z"
+    lock_until: "2026-10-20T10:35:21.103Z"
+    claimed_by: "agent:frontend-agent"
+    title: "服务机构产业领域分析对象集入口对齐 demo：分析页经对比篮 picker 组装（1~50），直选 Modal 降为篮内新增第二层"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    effort_points: "2"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      依赖备注：检索数据源 ES 化由 LUMEN-SVC-SEARCH-ES-L01（api-agent，in_progress）承担，双引擎开关 SVC_SEARCH_ENGINE=es|mysql，出口契约逐字段一致，本单前端零改动；ES 定稿切流后仅需回归弹窗检索三绿 + P95 抽查。两单互不阻塞。另：真实量级百万级，建议 ES 单 DoD 补 500w 文档级灌入/P95 实测与 total 语义（track_total_hits）约定。
+    depends_on: []
+    touched_files:
+      - "src/views/service/ServiceOrgAnalysisWorkspace.vue"
+      - "src/views/service/serviceOrgAnalysis.selfcheck.mjs"
+    design_refs:
+      - "demo-ui-topic/src/app/pages/service-center/ServiceOrgAnalysisPage.tsx openCompareBasket/emptyGate"
+      - "lumen-ui-topic/src/config/compareBasketPicker.ts"
+      - "USM-SVCCHAIN-ORG-ANALYSIS R2B 用户口径"
+    definition_of_done:
+      - "分析页 field 工作区主入口改为「打开对比篮」picker（min1/max50，open_compare_basket 协议），空态文案对齐 demo「请先在对比篮中组装分析对象」"
+      - "确认回传经 writeCompareBasketSelectionToParams → seedObjectSet 篮分支回填，已选机构/来源角标与现状兼容"
+      - "capability 工作区行为不变（原走篮 2~5）；回归 serviceOrgAnalysis.selfcheck.mjs 通过；pnpm type-check 通过"
+      - "handoff 落盘 agent-handoffs/服务机构-SVC/，记录 USM US-01 直选→篮口径矛盾与 demo 复刻依据（R2B 用户口径 2026-08-05）"
+    update_time: "2026-10-20T15:29:00+08:00"
+  - id: SVCCHAIN-USM-ORG-ENTRY-DEF-L01
+    model_used: "glm-5.3-Flash"
+    evidence: "agent-handoffs/产品整体定义/E7-产业服务链分析/SVCCHAIN-USM-ORG-ENTRY-DEF-L01.md"
+    cost_warn: "green"
+    actual_tokens: 45000
+    actual_cost: 0.25
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-20T09:01:30.233Z"
+    last_seen_at: "2026-10-20T09:01:30.233Z"
+    lock_until: "2026-10-20T13:01:30.233Z"
+    claimed_by: "agent:frontend-agent"
+    title: "USM 服务机构分析 US-01 对象集入口定义修订：直选→对比篮两层组装（补 R2B 遗漏）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "1"
+    difficulty: "S"
+    estimated_tokens: 60000
+    note: "会签通过：产品侧 2026-10-20 确认口径已落 USM v1.2-r2b-c；五件套同步；commit 926d9b1b 已推 origin/dev；handoff/evidence/cost 已回填"
+    definition_of_done:
+      - "USM US-01 修订：主路径与 AC-01-01 从直选机构选择器改为对比篮 picker 组装（1~50），尾注『分析集合与对比篮是两个对象』表述理顺（集合驱动覆盖/趋势，组装入口统一为篮）"
+      - "版本头追加 v1.2-r2b-c 修订记录，依据=产品侧 2026-10-20 确认『先弹对比篮，篮内新增弹对应企业/机构搜索框』+ R2B 2026-08-05 口径 + demo commit 98941fd"
+      - "Wireframe/UX-SPEC/TRACE 中直选『机构选择器』描述同步修订（如有）"
+      - "handoff 落盘 + registry 收口"
+    update_time: "2026-10-20T17:05:20+08:00"
+  - id: GDF-ENT-WORKPACK-V4-L01
+    title: "企业维 GDF 派单包 v4 — 10-19 基线切换（stock_base 移出/国外母子换源/专利侧表+5）"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 60000
+    note: |
+      2026-10-20 晚已生成 v4 包主体（六文件+总 README 重排+终检通过）；待办：git 提交/投递 zip/ODS 差集/handoff。拍板 2026-10-20 human:徐滕强（stock_base 移出、agg_subsidiary 纳入 wash+精确匹配、专利 5 张 mirror_only）。上游材料：架构师入仓 GKX数据源表差异分析摘要-20261019.md + 行数报告-20261019-2046。
+    design_refs:
+      - "agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v4/"
+      - "agent-delivery/data/third-party-source/gkx-mysql-raw/加工/GKX数据源表差异分析摘要-20261019.md"
+      - "agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v3/16-缺口分析回复工作包.md"
+    definition_of_done:
+      - "新建 派单包/企业/GDF-ENT-WORKPACK-v4 全套（v3 整包继承 + 基线切换 10-19 三方承诺清单）"
+      - "三项拍板落地：① stock_base 移出（is_listed 回归 base_info、listed_code/listed_market 改源 stock_finance_info）② 国外母子换源 dwd_agg_subsidiary_info（09 §3.21，eid 命中率 6.3% 实测写入，A1 阻塞解除）③ 专利 5 新侧表 mirror_only（无承接列不 ADD）"
+      - "00/02/09/11/CHANGELOG/README 六文件更新；t_id 等 153 表 Excel 虚列澄清（以 live 为准）"
+      - "派单包总 README 重排（v4 现行、v3 降历史）"
+      - "git commit 推 origin/dev（含 CHAIN v2）"
+      - "投递 zip 重打（v4/v2 基线）并通知 GDF"
+      - "ODS 结构按 02 v4.0 重跑差集（-stock_base +6 张），DDL 交人工执行"
+      - "handoff：agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V4-L01.md（含拍板记录与 live 实证证据）"
+    update_time: "2026-10-20T20:18:55+08:00"
+  - id: GDF-CHAIN-WORKPACK-V2-L01
+    title: "产业链维 GDF 派单包 v2 — 10-19 基线对齐（四表不变/parent_name 注记）"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: "2026-10-20 晚已生成 v2 包主体（五文件+终检通过）；待办：git 提交/handoff。变更小：基线对齐+parent_name 注记+虚列澄清。"
+    design_refs:
+      - "agent-delivery/data/GDF/派单包/产业链/GDF-CHAIN-WORKPACK-v2/"
+      - "agent-delivery/data/third-party-source/gkx-mysql-raw/加工/GKX数据源表差异分析摘要-20261019.md"
+    definition_of_done:
+      - "新建 派单包/产业链/GDF-CHAIN-WORKPACK-v2 全套（v1 整包继承 + 10-19 基线对齐）"
+      - "四表行数核实不变（链树 1,296 / tags 2,197,216 / 产品 73,313 / 资讯 94,997）；链树 parent_name 列 live 实证注记（不映射、JOIN 派生）"
+      - "t_id/id/code_company_count 虚列澄清（以 live 为准）"
+      - "00/02/09/CHANGELOG/README 五文件更新；总 README 重排（v2 现行）"
+      - "git commit 推 origin/dev（随 V4 单同批）"
+      - "与 ENT v4.0 拆分对称声明对齐确认（CHAIN 09 §1.3 ↔ ENT 02/09 §1.6）"
+      - "handoff：agent-handoffs/科技发展态势-TS 或对应域/GDF-CHAIN-WORKPACK-V2-L01.md"
+    update_time: "2026-10-20T20:18:55+08:00"

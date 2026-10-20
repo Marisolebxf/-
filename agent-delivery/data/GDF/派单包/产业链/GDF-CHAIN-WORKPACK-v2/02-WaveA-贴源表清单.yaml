@@ -1,0 +1,48 @@
+# GDF-CHAIN Wave A 贴源表清单
+# 承诺表真源：third-party-source/doc/ + md-extract/ 产业链要素库
+# Mapping 施工真源：本包 09-产业链域-ETL-Mapping明细-源表到DWD.md
+# 源：gkx.<表名> 只读 → 目标：gkxlumenx_ods.<同名>
+# mapping: wash=按 09 洗 DWD | mirror_only=本期只贴源不洗
+
+version: GDF-CHAIN-WORKPACK-v2.0
+updated: "2026-10-20"
+source_authority: third-party-source/doc
+source_authority_extract: third-party-source/doc/md-extract
+mapping_authority: 09-产业链域-ETL-Mapping明细-源表到DWD.md
+source_db: gkx
+target_db: gkxlumenx_ods
+mirror_mode: isomorphic
+default_filter: "is_deleted = 0"
+priority_status: team_default
+
+exclude:
+  - pattern: "ods_*"
+    reason: 供应方不暴露
+
+groups:
+  - id: chain_core
+    title: 产业链要素库-结构与挂接
+    source_sheet: 产业链要素库
+    tables:
+      - { name: dwd_industry_chain_info, priority: P0, cn: 产业链图谱, mapping: wash, note: "→ industry_chain / node / node_rel；v2.0：live 实证含 parent_name 列（10-19 纪要列的 t_id/id/code_company_count 库中无，不作源）；行数 1,296 不变" }
+      - { name: dwd_org_industry_tags, priority: P0, cn: 产业链关联企业, mapping: wash, note: "JSON 拆行；entity_id=org_id；v2.0：10-19 行数 2,197,216（估）不变" }
+      - { name: dwd_org_industry_product_tags, priority: P1, cn: 产业链关联产品, mapping: mirror_only, note: 产品指标走 ENT 产品表 }
+      - { name: dwd_industry_chain_news_info, priority: P2, cn: 产业动态资讯, mapping: mirror_only, note: 合规表不洗 news_event }
+
+  - id: chain_indana
+    title: 行业分析要素库（本期不洗项目 DWD）
+    source_sheet: 行业分析要素库
+    tables:
+      - { name: dwd_industry_analysis_documents, priority: P2, cn: 文档信息, mapping: mirror_only, note: 李伟：B2 不写入项目 DWD }
+      - { name: dwd_industry_analysis_companies, priority: P2, cn: 文档关联公司, mapping: mirror_only, note: 同上 }
+      - { name: dwd_industry_analysis_industries, priority: P2, cn: 文档关联行业, mapping: mirror_only, note: 同上 }
+      - { name: dwd_industry_analysis_topics, priority: P2, cn: 文档关联主题, mapping: mirror_only, note: 同上 }
+      - { name: dwd_industry_analysis_content_types, priority: P2, cn: 文档内容类型, mapping: mirror_only, note: 同上 }
+      - { name: dwd_industry_analysis_countries, priority: P2, cn: 文档关联国家, mapping: mirror_only, note: 同上 }
+
+summary:
+  note: |
+    P0 wash：链树 + 企业挂接。禁止 B2 洗 industry_analysis_*；禁止洗 industry_chain_news_event。
+    企业包同名链四表：CHAIN 洗数以本包 09 为准。
+    v2.0（2026-10-20）：基线对齐 10-19 三方承诺清单（四表全在册、行数不变）；与 ENT v4.0 的拆分对称声明继续有效（ENT 02/09 §1.6）。
+
