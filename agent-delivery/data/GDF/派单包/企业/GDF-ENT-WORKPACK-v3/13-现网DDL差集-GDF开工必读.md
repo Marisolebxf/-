@@ -2,7 +2,7 @@
 
 > **工作包**：GDF-ENT-WORKPACK-v3.1.2  
 > **核验日期**：2026-09-03（ADD as-built）；GDF 边界 2026-09-04 收口  
-> **GDF 作业库**：只认 `gkxlumenx_ods`（贴源）+ `gkxlumenx_dwd`（洗数）。外网 `111.198.38.90:34306` = 内网 `192.168.88.43:3306`。  
+> **GDF 作业库**：只认 `gkxlumenx_ods`（贴源）+ `gkxlumenx_dwd`（洗数）。2026-10-19 起业务 MySQL 为 `10.50.11.76:3306`（见 `03`）。旧外网 `111.198.38.90:34306` 停用。  
 > **demo**：`demo_gkxlumenx_*` 本侧对照。GDF **不连、不改、不验收**。  
 > **对照真源**：本包 `10-DWD-MySQL-DDL/` + 四类分类表 `agent-handoffs/企业战略分析-ENT/DATA-ENT-DWD-ALIGN-四类分类表.md`  
 > **铁律**：缺列只 `ADD`（对正式库）；现网多出来的列 **禁止 DROP**；**已有列禁止改类型**；`*__pre_v3` / `__pre_fix_*` 备份表禁止改、禁止当目标。

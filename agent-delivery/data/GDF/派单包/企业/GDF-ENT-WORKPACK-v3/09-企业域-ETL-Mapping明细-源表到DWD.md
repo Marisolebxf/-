@@ -1,4 +1,4 @@
-> **【GDF-ENT-WORKPACK-v3.1.3 · Mapping 施工真源】** 日期 2026-09-04。列契约以 `00` §8 / §9 为准。  
+> **【GDF-ENT-WORKPACK-v3.1.5 · Mapping 施工真源】** 日期 2026-10-19。加工逻辑补遗见 CHANGELOG v3.1.5 与本文件对应小节。列契约以 `00` §8 / §9 为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
 > **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装 49 张表已对完。
@@ -10,7 +10,7 @@
 > **日期**：2026-09-03
 > **范围**：GDF 三方源表（`dwd_org_*` / `dwd_patent*`）→ 项目 DWD（`gkxlumenx_dwd.enterprise_*` / `risk_*`）的字段级映射
 > **配套文档**：`企业域-数据ETL流转架构.md`（架构总纲）、`DWD表结构设计-企业工商表-MySQL-v3.1.md`（目标表 DDL）
-> **目标库**：`gkxlumenx_dwd`（MySQL 8.0，192.168.88.43:3306）。**禁止**写 `demo_gkxlumenx_*`。  
+> **目标库**：`gkxlumenx_dwd`（MySQL `10.50.11.76:3306`，见 `03`）。**禁止**写 `demo_gkxlumenx_*`。  
 > **交付对象**：GDF 三方 ETL 团队
 
 ---
@@ -167,7 +167,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `reg_status` | `business_status` | 直接 | 经营状态 |
 | `org_type` | `enterprise_type` | 直接 | 企业类型 |
 | `industry_l4_name` | `industry_category` | 直接 | 取最深级行业名称 |
-| `industry_l4_code` | `industry_code` | 直接 | 取最深级行业编码 |
+| `industry_l4_code` | `industry_code` | 直接 | 取 4 位 L4。禁止 `LEFT(industry_l4_code,2)`。L4 为空则 `industry_code` 为 NULL |
 | `province` | `province` | 直接 | 省份 |
 | `city` | `city` | 直接 | 地市 |
 | `area` | `district` | 直接 | 区县 |
@@ -231,12 +231,12 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `main_business_revenue` | `main_business_revenue` | 条件转换 | 主营业务收入；目标统一万元。正式库缺列则 ADD，禁止写进 `revenue` |
 | `total_profit` | `total_profit` | 条件转换 | 利润总额；目标统一万元。正式库缺列则 ADD |
 | `pure_profit` | `net_profit` | 条件转换 | 净利润；目标统一万元。正式库已有 `net_profit`，升为设计列，禁止另 ADD `pure_profit` |
-| `total_fixed_assets` / `fixed_assets` | `total_fixed_assets` | 条件转换 | 固定资产总额；目标统一万元，按下方门禁换算 |
+| `fixed_assets` | `total_fixed_assets` | 条件转换 | 固定资产总额。源表无 `total_fixed_assets`，只取 `fixed_assets`。目标统一万元，按下方门禁换算 |
 | `total_assets` | `total_assets` | 条件转换 | 年末资产总额；目标统一万元，按下方门禁换算 |
 | `total_liabilities` | `total_liabilities` | 条件转换 | 年末负债总额；目标统一万元，按下方门禁换算 |
 | `data_source` | `data_source` | 直接 | |
 
-> **财务单位门禁（2026-09-02 `human:徐滕强` 确认）**：目标统一为**万元**。GDF 在配置转换前必须核对 live 字段注释、原始值文本和代表性样本并在验收表留证；源明确为元时 ÷10000，源明确为万元时原值写入。仅凭数值大小无法判定单位时立即报阻塞，禁止猜单位或直接写入。
+> **财务单位门禁（2026-09-02 `human:徐滕强` 确认；2026-10-19 补成可执行规则）**：目标统一为**万元**。源注释或单位列明确为元时该列 ÷10000；明确为万元时原值写入。`dwd_org_annual_financial_info` 同一金额列里元和万元并存，且 `data_source` 不能把行分开时：**该金额单元格写 NULL，行进治理清单**（带 org_id、year、列名、原值）。禁止整表 ÷10000，禁止用数值大小猜单位。其他列照常洗，不因此停整包。
 
 ### 3.4 `dwd_org_stock_finance_info` → `enterprise_finance_history`（补充）
 
@@ -315,14 +315,14 @@ ES：`former_names` **本期要灌**（Q-WP3-14），整组替换；`DATA-ENT-ES
 
 ### 3.9 `dwd_org_tech_tag` → `enterprise_tag`（旧名 `dwd_org_tag_info` 现网不存在）
 
-2026-09-02 监管人确认：供应方工作簿与 live `gkx` 均为 `dwd_org_tech_tag`（约 20 万行）。**与下文 v1.2 设想的 tag_info 列不完全同构**：live 有 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；**无** `name_cn`/`external_id`/`tag_level`/`tag_value`。`org_tag` 现网是中文名称（如「高新技术企业」），不是 `high_tech` 码；码对照仍走 `ENT-P0-7`，未到码前 `tag_code` 可先落中文名或进治理清单，禁止编造码。过滤 `is_deleted = 0`。
+2026-09-02 监管人确认：供应方工作簿与 live `gkx` 均为 `dwd_org_tech_tag`（约 20 万行）。**与下文 v1.2 设想的 tag_info 列不完全同构**：live 有 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；**无** `name_cn`/`external_id`/`tag_level`/`tag_value`。`org_tag` 现网是中文名称（如「高新技术企业」），不是 `high_tech` 码。码对照仍走 `ENT-P0-7`。`tag_dict` 未就绪时：`tag_code` 与 `tag_name` 都落 `org_tag` 原文，`tag_category` 写 NULL。禁止编造码，禁止因字典为空整表不洗。过滤 `is_deleted = 0`。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | |
 | `org_tag` | `tag_code` | 直接 | 标签编码 |
-| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_name` | 字典反查 | 按 `tag_dict.tag_code = org_tag` 取 `tag_name` |
-| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_category` | 字典反查 | 按 `tag_dict.tag_code = org_tag` 取 `tag_category` |
+| `org_tag` | `tag_name` | 直接 | 与 `tag_code` 同为中文原值。`tag_dict` 有命中行时再改用字典名，未命中保持原文 |
+| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_category` | 字典反查 | 字典无行或未命中则 NULL |
 | `tag_level` | — | 不映射 | 目标 `enterprise_tag` 无 `tag_level` 字段；`tag_dict.tag_level` 已按 `tag_code` 维护 |
 | `tag_value` | — | 待细化 | 普通标签默认 NULL；荣誉/级别类标签的展示值后续按规则生成 |
 | `created_time` | `create_time` | 直接 | 创建时间 |
@@ -392,14 +392,22 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 |---|---|---|
 | `win.org_id` | `org_id` | 直接 |
 | `base.title`，关联不上再用 `win.project_name` | `bid_title` | **不拼接** `bid_item_name` |
-| `win.amount` | `bid_amount` | 中标报价；单位见源 `amount_unit`，未知单位报阻塞（与财务万元门禁同原则） |
+| `win.amount` | `bid_amount` | 见下表。未知单位不停整包：金额写 NULL，行进治理清单 |
 | `base.publish_time` | `event_date` | 公告发布日 |
 | `base.project_number`，空则 `win.project_number` | `project_no` | **必洗**；只 ADD 此列 |
 | `win.name_cn` | — | 现网无 `enterprise_name`，有 `org_id` 本期不 ADD、不落 |
 | `base.announcement_type` / `relate_type` / `role` | — | **不映射**；`bid_type` 保持空 |
 | `tender_org_*` | `tender_org_id` / `tender_org_name` | 源有才写；没有空着 |
 
-禁止 ADD `announcement_title` / `announcement_date` / `winning_amount` / `project_name` / `role` 与现网列双写。`lumen-etl-es-py` `bid.py` 已改读 `bid_title`/`event_date`/`bid_amount`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES 仍写 `announcement_title`/`announcement_date`。`project_no` **正式库已 ADD**，必洗。
+`amount_unit` 换算（目标万元）：
+
+| 源 `amount_unit` | `bid_amount` |
+|---|---|
+| `元` / `人民币` / `CNY` / `RMB`（大小写不敏感） | `amount ÷ 10000` |
+| `万元` | 原值 |
+| 空、含 `/` 的单价（元/人/天、元/kg、元/平方米等）、外币（美元、USD、欧元等） | NULL，该行其他列照洗，金额进治理清单 |
+
+禁止按汇率把外币折成人民币。禁止 ADD `announcement_title` / `announcement_date` / `winning_amount` / `project_name` / `role` 与现网列双写。`lumen-etl-es-py` `bid.py` 已改读 `bid_title`/`event_date`/`bid_amount`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES 仍写 `announcement_title`/`announcement_date`。`project_no` **正式库已 ADD**，必洗。
 
 ### 3.13 风险类表字段级映射（9 张）
 
@@ -421,7 +429,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `abn_org` | `decision_org` | 列入机关 |
 | `abn_date` | `abn_date` | 列入时间 |
 | `remove_date` | `remove_date` | 移出时间 |
-| `status` | `status` | 状态 |
+| 源无 | `status` | 源表无 `status`，写 NULL |
 | `remove_date` | `is_history` | 推导：`remove_date IS NOT NULL` → 1，否则 0 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
@@ -443,7 +451,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `decision_org` | `decision_org` | 决定机关 |
 | `penalty_date` | `penalty_date` | 处罚决定日期 |
 | `public_date` | `public_date` | 公示日期 |
-| `status` | `status` | 状态 |
+| 源无 | `status` | 源表无 `status`，写 NULL |
 | 源无 | `is_history` | 源表无字段且无可推导业务字段，默认 0 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
@@ -462,7 +470,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `abn_org` | `decision_org` | 列入机关 |
 | `abn_date` | `abn_date` | 列入时间 |
 | `remove_date` | `remove_date` | 移出时间 |
-| `status` | `status` | 状态 |
+| 源无 | `status` | 源表无 `status`，写 NULL |
 | `remove_date` | `is_history` | 推导：`remove_date IS NOT NULL` → 1，否则 0 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
@@ -479,7 +487,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `illegal_fact` | `reason` | 主要违法事实 |
 | `case_type` | `tax_vio_type` | 案件性质 → 税收违法类型，语义待字典确认 |
 | `publish_date` | `publish_date` | 发布日期 |
-| `is_history` | `is_history` | 源 varchar `0/1` → tinyint |
+| 源无 | `is_history` | 源表无 `is_history` 列，默认 0 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
 | 源无 | `case_no` | 默认 NULL |
@@ -525,7 +533,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `fulfillment_status` | `fulfillment_status` | 履行情况 |
 | `legal_obligation` | `legal_obligation` | 法定义务 |
 | `publish_date` | `publish_date` | 发布时间 |
-| `is_history` | `is_history` | 源 varchar `0/1` → tinyint |
+| 源无 | `is_history` | 源表无 `is_history` 列，默认 0 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
 | 源无 | `case_title` / `amount` / `court` / `event_date` / `status` | 默认 NULL |
@@ -563,7 +571,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 | `public_date` | `public_date` | 公开时间 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
-| 源无 | `case_id` | 目标 NOT NULL；源表无 `case_id`，建议按源唯一键 `case_no + handling_court` 生成稳定业务 ID，需与三方确认 |
+| 源无 | `case_id` | `LEFT(SHA2(CONCAT(IFNULL(case_no,''),'|',IFNULL(handling_court,'')),256),64)`。`case_no` 与 `handling_court` 都空则丢行进治理清单。不使用 `bankruptcy_party_id` |
 | 源无 | `id` | 自增主键 |
 | `pk_id` / `applicant_info` / `respondent_info` / `admin_org` / `admin_org_id` / `admin_principal` / `link` / `history_status` | — | 不映射 |
 | `creater` / `updater` / `table_data_source` / `is_deleted` | — | 不映射；`is_deleted` 仅作为过滤条件 |
@@ -574,7 +582,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 |---|---|---|
 | `org_id` | `org_id` | 直接复用 |
 | `related_person_name` | `party_name` | 当事人名称 |
-| `party_role_type` | `party_role` | 当事人角色类型；语义待字典确认；源字段可空，目标 NOT NULL，空值处理待确认 |
+| `party_role_type` | `party_role` | 原值写入。空或 NULL 则该当事人行不入库，进治理清单；案件主表照洗 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
 | 源无 | `case_id` | 目标 NOT NULL；源表无 `case_id`，需按 `case_no` 关联主表复用/生成 `risk_bankruptcy.case_id`，不得使用 `bankruptcy_party_id` |
@@ -606,7 +614,7 @@ Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽
 | `dwd_patent.main_classification_ipcr` | `ipc_code` | 直接 | IPC 主分类号。**禁止**写不存在的 `dwd_patent.ipc` |
 | `enterprise_patent_org_rel` | `org_id` | 关联 | 对该专利每个已命中企业各写一条 detail；按 `(org_id, patent_id)` 幂等 |
 
-`dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列已 ADD：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，引用数←`reference_cited_count`。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
+`dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列已 ADD：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，`citation_count`←`reference_cited_count`。禁止把源列名 `reference_cited_count` 写成目标列。`cited_by_count` 源表无对应列，写 NULL。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
 
 #### 3.14.1.1 申请人 / 权利人 → `enterprise_patent_org_rel`
 
@@ -618,8 +626,8 @@ Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽
 | `dwd_patent.first_current_assignee_name` | `ASSIGNEE` | 仅在 assignees 分表无对应行时作为 `sequence=1` 回退 |
 
 - 目标字段：`patent_id`、匹配所得 `org_id`、固定 `party_role`、源 `sequence`、源 `name → source_name`、`match_type='EXACT_NAME'`。
-- 未命中名称写 GDF 拒绝 / 待治理清单，至少包含 `patent_id`、role、sequence、source_name、batch_ts；禁止模糊匹配自动入库。
-- 2026-09-02 live 基线：联合主表两个首位名称及 applicants/assignees 全量名称，精确匹配覆盖 3161 件专利、1533 家企业。
+- 未命中名称写 GDF 拒绝 / 待治理清单，至少包含 `patent_id`、role、sequence、source_name、batch_ts；禁止模糊匹配、禁止去「有限公司」后缀、禁止用 `dim_org_alias` 自动入库。
+- 2026-09-02「精确匹配覆盖 3161 件 / 1533 家」只作当时样本，**不作验收线**。未命中比例不设上限，未命中进清单。
 
 #### 3.14.2 `dwd_patent` → `enterprise_patent_history`（指标表）
 
@@ -674,8 +682,8 @@ GROUP BY org_id, YEAR(filing_date)
 | `industry_code` | `industry_code` | 行业代码 |
 | `industry_type` | `industry_type` | 行业分类标准 |
 | `registration_org` | `registration_org` | 注册机构/登记机关 |
-| `source_table` | `data_source` | 数据来源表名 |
-| `create_time` | `create_time` | 创建时间 |
+| `table_data_source` | `data_source` | 源列名是 `table_data_source`，不是 `source_table` |
+| `created_time` | `create_time` | 源列名是 `created_time`，不是 `create_time` |
 | `updated_time` | `update_time` | 更新时间 |
 | 源无 | `id` | 自增主键 |
 
@@ -783,7 +791,7 @@ GROUP BY org_id, YEAR(filing_date)
 | `job_description` | `job_description` | 工作描述 |
 | `work_place` | `work_place` | 工作地点 |
 | `release_date` | `release_date` | 发布日期 |
-| `hiring_number` | `hiring_number` | 源 DDL 为 bigint，但样例可能为“若干”，目标用 varchar(64) 更稳妥 |
+| `hiring_number` | `hiring_number` | `CAST(hiring_number AS CHAR)` 写入 `varchar(64)`。源列是 bigint，转失败则 NULL |
 | `table_data_source` | `data_source` | 源 DDL 字段名 `table_data_source`，按业务 `data_source` 落库 |
 | `created_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 更新时间 |
@@ -894,7 +902,7 @@ GROUP BY chain_code, chain_name, stat_year
 | 1 | 招聘信息目标侧无对应表 | 招聘数据无法入库 | ✅ 已确认新建 `enterprise_recruit`，映射见 §3.16 |
 | 2 | 注册资本单位：源表"元" vs 目标表"万元" | 金额错误 | ✅ 已确认目标统一万元，源 `registered_capital_value` ÷10000 |
 | 3 | `dwd_org_annual_financial_info` 字段名未带单位；`dwd_org_stock_finance_info` 明确带(元) | 单位误判会造成 10000 倍错误 | ✅ 目标统一万元；GDF 实查字段注释/原始值/样本后换算，无法判定则阻塞 |
-| 4 | 实际 live 表为 `gkxlumenx_ods.dwd_org_tag_info`，原文档误写 `dwd_org_tech_tag` | 源表名不一致 | ✅ 已修正；现成口径为 `org_tag → tag_code`，`tag_name/tag_category` 按 `gkxlumenx_dwd.tag_dict` 反查；`tag_level` 保留在 `tag_dict`，不直接映射到 `enterprise_tag` |
+| 4 | 标签源表 | 源是 `gkx.dwd_org_tech_tag`，不是 `dwd_org_tag_info` | ✅ `tag_code`/`tag_name` 落 `org_tag` 中文原文；`tag_dict` 空则 `tag_category` 为 NULL。禁止编造码 |
 | 5 | 专利无企业 `org_id` / 信用代码，且一件专利可有多个申请人/权利人 | 单一 detail.org_id 无法表达完整关系 | ✅ 新增 `enterprise_patent_org_rel`；主表首位名称 + applicants/assignees 分表全量精确匹配企业主档，未命中进治理清单、不造 ID |
 | 6 | `enterprise_industry_chain.enterprise_code` 当前全为空 | 无法通过信用代码关联 org_id | ⏳ 已知数据阻塞，本期不解决 |
 | 7 | 风险表字段级映射未逐字段对照 | 可能有字段名/类型不一致 | ✅ 已完成，见 §3.13 |

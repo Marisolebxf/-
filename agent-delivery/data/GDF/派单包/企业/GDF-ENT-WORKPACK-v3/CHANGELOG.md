@@ -1,5 +1,10 @@
 # CHANGELOG — GDF-ENT-WORKPACK
 
+## v3.1.5 — 2026-10-19
+
+- 补加工逻辑：财务混合单位按单元格置 NULL；招投标金额按单位白名单；固定资产只取 `fixed_assets`；风险三表无 `status`；税收/失信无 `is_history` 时默认 0；破产 `case_id` 用案号+法院哈希；当事人角色空行丢弃；标签先落中文；专利引用写入 `citation_count`；行业码取 L4 四位；国外主表列名改为 `table_data_source` / `created_time`。
+- 专利四张分表允许贴源。`05` 预填行数不再当验收线。供应链、链明细、国外子公司仍按原阻塞，不在本版新开口径。
+
 ## v3.1.4 — 2026-09-04
 
 - 对照正式库 `information_schema`：列名已齐。`10` 工商 CREATE 跟现网类型对齐（bid `decimal`/`date`，finance `data_year` int，news `varchar(500)`/`longtext`/`decimal(38,10)`，extra 经纬度 `decimal(10,6)`）。  

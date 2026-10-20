@@ -291,7 +291,8 @@ def main() -> int:
     for d in (OUT_DIR, DUMP_DIR, CSV_DIR, TEXT_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
-    xlsx_files = sorted(DOC_DIR.glob("*.xlsx"))
+    # 带日期落盘原件（如「 (10-19)」）与无日期现行文件内容相同，只抽现行文件
+    xlsx_files = sorted(p for p in DOC_DIR.glob("*.xlsx") if " (10-" not in p.name)
     ver = run_officecli_text(["--version"]).strip()
     index = [
         "# 三方承诺数据源表 — doc 目录 Markdown 要素库提取\n\n",

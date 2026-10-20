@@ -1,7 +1,7 @@
 # GDF-ENT-WORKPACK-v3
 
 > **读者**：GDF 数据中台产线团队（不使用 Cursor）  
-> **版本**：v3.1.4（2026-09-04）· **可对外投递** · 四块收口见 `00` §9  
+> **版本**：v3.1.5（2026-10-19）· **可对外投递** · 四块收口见 `00` §9 · 加工逻辑补遗见 CHANGELOG v3.1.5  
 > **GDF 作业面**：贴源只 `gkx`→`gkxlumenx_ods`；洗数只 `gkxlumenx_dwd`。不管 `demo_gkxlumenx_*`。  
 > **task**：`GDF-ENT-WORKPACK-V3-L01` · Owner `human:徐滕强`  
 > **承诺表真源**：`third-party-source/doc/` + `md-extract/`  

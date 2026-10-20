@@ -62,7 +62,7 @@ def connect(env: dict[str, str]):
         database=env["GKX_ODS_MYSQL_DB"],
         charset="utf8mb4",
         connect_timeout=30,
-        read_timeout=600,
+        read_timeout=3600,  # 工商变更/招聘等大表 COUNT(*) 超过 600s
         write_timeout=60,
         autocommit=True,
     )
