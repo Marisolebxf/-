@@ -3,7 +3,7 @@
 - **任务**：FE-TA-01A（Epic：E-FE-TALENT）
 - **执行**：agent:frontend-agent（监管 human:孔东）
 - **日期**：2026-10-21
-- **状态**：联调中（integration，AV-0 已过；改动停本地工作区待人工验收闸门，AGENTS.md：验收通过前不 commit/push）
+- **状态**：联调中（integration，AV-0 已过）；双仓已 commit + push dev（2026-10-21 01:15 用户放行：pc `d5e23cd` / 编排 `170e6721`）
 - **ponytail**：full
 
 ## 任务认领（必填）
@@ -213,10 +213,11 @@
 
 ## CI/CD（必填）
 
-- 分支：dev（改动停本地工作区，未 commit/push —— AGENTS.md 人工验收闸门）
-- commit：无（待验收后 `[agent:frontend-agent]` 提交）
-- pipeline：未触发
-- dev 测试 URL：待推送部署后补充
+- 分支：dev
+- commit：lumen-ui-science-pc `d5e23cd`（43 文件 +11368）；gkx-orchestration `170e6721`（handoff + registry + 经验清单；经 rebase 合并远端 coordinator 并行 registry 写入）
+- pipeline：待 CI 触发（push → Pipeline）
+- dev 测试 URL：本地 dev 5199 `http://localhost:5199/talent/global-talent-situation` 已走查通过；K8s dev 待 CI 部署后复核
+- 用户放行记录：2026-10-21 01:15 用户指令「双仓代码commit、push dev」（人工验收闸门解除）
 
 ## 可观测性（建议）
 
