@@ -8,7 +8,7 @@
 |---|---|
 | 对象前缀（建议） | `chain/{task_id}/` |
 | Demo 桶（目标） | 与平台 demo 分析结果桶一致 |
-| 典型对象 | 用户生成的产业链报告 HTML/PDF → `gkx-user-reports` 的 `topic/`；分析 JSON 仍在 `gkx-analysis-results` |
+| 典型对象 | 用户生成的产业链报告 HTML/PDF → 桶 `gkx-lumen` 目录 `gkx-user-reports` 的 `topic/`；分析中间结果 JSON → 同桶目录 `gkx-analysis-results` |
 
 ## 指针
 

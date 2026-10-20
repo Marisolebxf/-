@@ -138,34 +138,32 @@ flowchart LR
 | **D11** | **demo-ui-system-test Arco 一致性豁免** | demo-ui-system-test（算法效果展示/内测台，Vue + Element Plus）**不纳入 Arco 一致性收敛范围**。理由：(1) 定位为内部算法工程师自测与演示工具，不面向甲方展示；(2) 当前 Element Plus 栈（el-tabs/el-button/ElMessage/ElMessageBox）稳定可用；(3) 迁移至 Arco（无论 Vue 版还是 React 重写）对内部用户零收益、高成本。若未来甲方明确要求该仓纳入展示前端，再启动迁移评估。决策来源：QA 交互规范回归走查报告 G-09（§4 栈级偏离待裁决），由算法负责人唐绍祖与架构基线 §2 对照后裁定。登记日期：2026-07-31。关联 task：DECIDE-SYSTEMTEST-STACK。 |
 | **D12** | **demo 原型 / lumen 正式隔离** | **`demo-*` 仓只做原型**（POC / UX 沙箱 / 算法内测 / Demo 库闭环）。**正式开发与交付只在 `lumen-*`。** **lumen 前端调用链禁止调用任何 `demo-*` 项目服务**：`lumen-ui-*` 只经 `gkxlumen-platform-gateway`（`lumen-svc-platform`）调 `gkxlumen-*` Java；Java 下游只调 `lumen-algo-py` / `lumen-etl-es-py` 等 lumen 算法（`/internal/*`）。禁止直连、nginx 反代、`VITE_*` 或 Feign/helm **回落**到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`。对照 demo 实现允许读代码后在 lumen 重写；**禁止 git merge demo→lumen**（延续铁律 6）。demo 前端可以打 demo 服务，与 lumen 隔离并存。决策来源：项目负责人 2026-08-14 确认。关联 task：`DECIDE-D12-LUMEN-CALLCHAIN`。历史债见 §3.1。 |
 | **D13** | **消息总线 = Kafka，运行时不用 RabbitMQ** | bootstrap **`10.50.11.76:9092`**。只承载 `task_completed` 大 JSON。正式 topic `gkx.analysis.result`、死信 `gkx.analysis.result.dlq`、组 `gkxlumen-ai-worker`；原型 topic `gkx.demo.analysis.result`、死信 `gkx.demo.analysis.result.dlq`、组 `demo-ai-worker`。两边禁止共用 topic 或组。发布者 `gkxlumen-platform-ai-py` / `demo-platform-ai-py`；消费者 `gkxlumen-platform-ai-worker` / `demo-platform-worker-py`。算法与 Java 不连总线。正文契约不变，单条上限 64MiB。口令不进 git，不改 MySQL root。图 `ARCH-MSG-KAFKA`（§1.1）。关联 task：`E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
-| **D14** | **对象存储桶只许用 §2.1 这张表** | 正式业务桶在 RustFS `http://10.50.69.111:19000`（路径风格，控制台 `:19001`）。桶名和对象键前缀以 **§2.1** 为唯一规约；存储设计说明见 [minio.md](data/data-design/storage/platform/minio.md)，与本节冲突时以本节为准。禁止自造桶名，禁止前端直连对象存储，禁止业务读写 `milvus` 桶。凭证放 K8s Secret `gkxlumen-platform-rustfs` 或主机 `/data/middleware/.env`，不进 git。决策 2026-10-20。 |
+| **D14** | **对象存储按 §2.1：业务一个桶、用途是目录** | 正式业务只写 RustFS `http://10.50.69.111:19000` 上的桶 `gkx-lumen`（路径风格，控制台 `:19001`）。六个用途是这个桶里的目录，不是各自独立的桶。可观测仍用旧实例 `:30900` 上的 `tempo-blocks`、`loki-chunks`。存储设计说明见 [minio.md](data/data-design/storage/platform/minio.md)，与本节冲突时以本节为准。禁止自造桶或顶层目录，禁止前端直连对象存储，禁止业务读写 `milvus` 桶。凭证放 K8s Secret `gkxlumen-platform-rustfs` 或主机 `/data/middleware/.env`，不进 git。决策 2026-10-20，同日收敛为目录。 |
 
 ### 2.1 对象存储桶（D14）
 
-一类一桶。MySQL 只存指针（桶名、对象键、谁能下载）。桶里只放字节。
+正式业务只有桶 `gkx-lumen`。MySQL 只存指针（桶名、对象键、谁能下载）。桶里只放字节。
 
-| 桶 | 所在实例 | 用途 | 对象键 |
+| 位置 | 所在实例 | 用途 | 对象键 |
 |---|---|---|---|
-| `gkx-analysis-results` | 新 RustFS `10.50.69.111:19000` | 分析任务结果 JSON | `analysis/{类型}/{父任务}/{任务}/{文件}` |
-| `gkx-user-reports` | 同上 | 展示系统、专题系统用户生成的 HTML 和 PDF | `science/html/`、`science/pdf/`、`topic/html/`、`topic/pdf/`，后接 `{用户}/{日期}/{文件}` |
-| `gkx-source-reports` | 同上 | 总集采购的三方报告 PDF（中文 `dwd_zh_report` 约 1.4 万，外文 `dwd_en_report` 约 1.0 万） | `zh/E8A04BD6-….pdf`、`en/AD/2018/AD1177190.pdf` |
-| `gkx-cms-images` | 同上 | CMS 写进 HTML 的图片 | `cms/{内容ID}/{文件}` |
-| `gkx-user-assets` | 同上 | 用户头像和其他零碎上传 | `avatar/{用户}/{文件}`、`misc/{日期}/{文件}` |
-| `milvus` | 同上 | Milvus 进程自己的向量数据文件和索引文件。业务代码禁止写入、读取或删除 | — |
-| `demo-gkx-analysis-results` | Demo 隔离 | Demo 分析结果，不进正式桶 | 与正式分析结果同结构 |
-| `tempo-blocks` | 旧 RustFS `10.50.69.111:30900` | Tempo 链路。新业务代码不要用 | — |
-| `loki-chunks` | 同上 | Loki 日志。新业务代码不要用 | — |
-| `gpustack` | 同上 | GPUStack。本项目不管理 | — |
-| `plane` | 同上 | 非本项目代码使用。本项目不管理 | — |
+| `gkx-lumen` / `gkx-analysis-results` | 新 RustFS `10.50.69.111:19000` | 展示系统、专题系统分析中间结果 JSON | `gkx-analysis-results/analysis/{类型}/{父任务}/{任务}/{文件}` |
+| `gkx-lumen` / `gkx-user-reports` | 同上 | 展示系统、专题系统用户生成的 HTML 和 PDF | `gkx-user-reports/science/html/`、`science/pdf/`、`topic/html/`、`topic/pdf/`，后接 `{用户}/{日期}/{文件}` |
+| `gkx-lumen` / `gkx-source-reports` | 同上 | 政策原始文件，以及采购的三方报告 PDF | 政策 `gkx-source-reports/policy/{文件}`；采购原文 `gkx-source-reports/zh/…pdf`、`gkx-source-reports/en/AD/2018/….pdf` |
+| `gkx-lumen` / `gkx-cms-images` | 同上 | CMS 写进 HTML 的图片 | `gkx-cms-images/{内容ID}/{文件}` |
+| `gkx-lumen` / `gkx-user-assets` | 同上 | 用户头像和其他零碎上传 | `gkx-user-assets/avatar/{用户}/{文件}`、`gkx-user-assets/misc/{日期}/{文件}` |
+| `gkx-lumen` / `gkx-others` | 同上 | 放不进上面五个目录的其他杂项 | `gkx-others/{用途}/{日期}/{文件}` |
+| `tempo-blocks` | 旧 RustFS `10.50.69.111:30900` | 可观测：Tempo 链路 | — |
+| `loki-chunks` | 同上 | 可观测：Loki 日志 | — |
 
 开发时遵守：
 
-1. 新功能只能选用上表已有桶。要新桶，先改本节，再写代码。
-2. 对象键必须落在该桶的前缀下。分析 JSON 进 `gkx-analysis-results`；用户导出的 HTML/PDF 进 `gkx-user-reports`，两处不混。
-3. 前端不连 RustFS。上传和下载经 Java。Python 只写分析或报告约定的桶。
-4. `milvus` 桶只给 Milvus 进程。业务不要把报告、图片、头像放进去，也不要清理里面的对象。
-5. Demo 只用 `demo-gkx-analysis-results`，不写正式桶。
-6. `tempo-blocks`、`loki-chunks`、`gpustack`、`plane` 留在旧实例。新业务不要改它们的连接。
+1. 正式业务只写桶 `gkx-lumen`，并且对象键必须落在上表六个目录之一。要新目录或新桶，先改本节，再写代码。
+2. 分析中间结果 JSON 进 `gkx-analysis-results`；用户生成的 HTML/PDF 进 `gkx-user-reports`。两处不混。
+3. `gkx-others` 只收临时对不上号的对象。一项用途会长期存在时，先在本节加目录，再从这里迁出去。
+4. 前端不连 RustFS。上传和下载经 Java。
+5. `milvus` 桶只给 Milvus 进程，不是业务目录。业务不要读写或清理里面的对象。
+6. Demo 不写 `gkx-lumen`，仍用 `demo-gkx-analysis-results`。
+7. `tempo-blocks`、`loki-chunks` 留在旧实例。业务代码不要用，也不要改它们的连接。旧实例上的 `gpustack`、`plane` 本项目不使用。
 
 ---
 
@@ -263,6 +261,15 @@ dependency_rules:
       group: demo-ai-worker
     max_message_bytes: 67108864
     secrets_in_git: false
+  object_storage:                         # D14
+    business_bucket: gkx-lumen
+    endpoint: "http://10.50.69.111:19000"
+    directories: [gkx-analysis-results, gkx-user-reports, gkx-source-reports, gkx-cms-images, gkx-user-assets, gkx-others]
+    observability_buckets: [tempo-blocks, loki-chunks]
+    observability_endpoint: "10.50.69.111:30900"
+    demo_bucket: demo-gkx-analysis-results
+    must_not: [frontend_direct_rustfs, business_write_milvus, demo_write_gkx_lumen, invent_bucket_or_top_directory]
+    secrets_in_git: false
   data_contract:                          # D7 数据契约先行 + Mock 先行
     standard_tables: [mysql_ads, gkx_dim, gkx_cfg]    # 冻结，Java 只读依赖
     mock_writer: python_to_ads            # 仅 Python 写 Mock 到 ADS
@@ -279,7 +286,7 @@ shared_core:
 
 ## 5. 架构合规检查清单（architect 评审 / qa 验收用）
 
-### 5.1 后端 / 数据 / 横切（D1–D7、D13）
+### 5.1 后端 / 数据 / 横切（D1–D7、D13、D14）
 
 - [ ] 前端无直连 Python/DB/Nebula 的调用（仅经网关调 Java）
 - [ ] Java 模块无 NLP/图谱/模型计算代码，无写 ADS，无直连 nGQL
@@ -290,7 +297,7 @@ shared_core:
 - [ ] 数据契约：Java 只读冻结的 ADS 标准表；Mock 由 Python 写 ADS（无 Java/前端造假数据）；三方源字段未泄漏进 ADS（见 [storage/README.md](data/data-design/storage/README.md)）
 - [ ] **图即契约**：本 Epic 该有的 L0–L4 图已落点且节点名=仓/服务名；图文冲突以图为准（见 [diagram-as-contract.md](diagram-as-contract.md)）
 - [ ] **消息总线（D13）**：运行时只连 Kafka `10.50.11.76:9092`；无 RabbitMQ / AMQP / `aio-pika`；正式与原型 topic、消费组分开；口令不进 git
-- [ ] **对象存储桶（D14）**：桶名和对象键只来自 §2.1；无自造桶；前端不直连 RustFS；业务不读写 `milvus` 桶；Demo 不写正式桶；凭证不进 git
+- [ ] **对象存储桶（D14）**：正式业务只写 `gkx-lumen` 下 §2.1 的六个目录；可观测只用 `tempo-blocks`、`loki-chunks`；无自造桶或顶层目录；前端不直连 RustFS；业务不读写 `milvus`；Demo 不写 `gkx-lumen`；凭证不进 git
 
 ### 5.3 仓隔离合规（D12）
 
@@ -327,7 +334,7 @@ shared_core:
 | 图即契约 | [diagram-as-contract.md](diagram-as-contract.md) | 五层 Mermaid 落点 + 会签只投图；L2 金牌样板 = [SVC/01-data-flow.md](data/data-design/storage/SVC/01-data-flow.md) |
 | 图谱引擎 | [graph-engine.md](graph-engine.md) | D6 NebulaGraph 协议；一张 `G_科创`（storage 决策 #7）。下一 graphd 为 TRSGraph，运行时地址待 `E-PLATFORM-P0-TRSGRAPH-L01` 闸门 |
 | 调用链铁律 | [本文 §1](#1-目标拓扑方案-a) · [§4](#4-机器可读依赖规则agent-校验用) | `前端 → Java → Python /internal/*`；D12 见 [§2](#2-锁定决策14-项) / [§3.1](#31-仓边界d12-与历史债)。工程过程索引：[04-产品集成.md](工程过程/04-产品集成.md) |
-| 对象存储桶（D14） | [本文 §2.1](#21-对象存储桶d14) | 正式桶在 `10.50.69.111:19000`。桶名与对象键只许用该表。设计说明 [minio.md](data/data-design/storage/platform/minio.md) 与本节冲突时以本节为准 |
+| 对象存储桶（D14） | [本文 §2.1](#21-对象存储桶d14) | 正式业务桶 `gkx-lumen`（`10.50.69.111:19000`），六个用途是目录。可观测桶 `tempo-blocks`、`loki-chunks` 在 `:30900`。设计说明 [minio.md](data/data-design/storage/platform/minio.md) 与本节冲突时以本节为准 |
 | 消息总线（D13） | [本文 §1.1](#11-消息总线kafka) | Kafka `10.50.11.76:9092`；运行时不用 RabbitMQ。图 `ARCH-MSG-KAFKA` |
 | 仓与环境映射 | [repo-registry.yaml](repo-registry.yaml) | demo↔lumen 仓、服务名、环境、`branch_policy` |
 | CI/CD | [cicd-pipeline.md](cicd-pipeline.md) | push → Pipeline 绿 → K8s dev；设计类 `cicd: skip` |
@@ -380,3 +387,4 @@ shared_core:
 | v2.2.17 | 2026-10-15 | **配置已切**：各仓图客户端 settings / k8s / CI / 代码默认 host 改为 `10.50.75.136:9669`。口令仍只走环境变量。`demo_gkx_chain` 重灌与旧库停写验收尚未完成。 |
 | v2.2.18 | 2026-10-17 | **新增 D13 消息总线 = Kafka**：bootstrap `10.50.11.76:9092`；运行时禁止 RabbitMQ。正式 / 原型 topic 与消费组隔离。图 `ARCH-MSG-KAFKA`（draft）。业务仓仍有 AMQP 客户端，记 `D13-DEBT-RMQ`。不改 MySQL root，口令不进 git。任务 `E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
 | v2.2.19 | 2026-10-20 | **新增 D14 对象存储桶**：§2.1 为各项目用桶的唯一规约。正式业务桶在 RustFS `10.50.69.111:19000`。禁止自造桶名，禁止前端直连，禁止业务读写 `milvus` 桶。凭证不进 git。 |
+| v2.2.20 | 2026-10-20 | **D14 收敛为目录**：正式业务只保留桶 `gkx-lumen`。`gkx-analysis-results`、`gkx-user-reports`、`gkx-source-reports`（含政策原始文件）、`gkx-cms-images`、`gkx-user-assets`、`gkx-others` 改为该桶内目录。可观测仍是独立桶 `tempo-blocks`、`loki-chunks`。 |

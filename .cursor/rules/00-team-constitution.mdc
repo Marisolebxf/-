@@ -45,7 +45,7 @@ alwaysApply: true
 10. **数据血缘铁律（D9）**：界面上每个统计指标最终须有"8 件套"身份证（metric_id / 中文名 / 口径定义 / 公式 / **algorithm_type** / 源表 / 源系统 / 更新频率 / 版本；v1.5 共 9 项）——这是 **`D1=aligned` 齐备态**，分阶段填齐见 `data-lineage-policy.md` **§2.1**。PACK / WF 第 6 列必有 `metric_id`（可占位）；METRIC-OPEN / 门 1 **禁止**用终态 8 件套卡定义叶（类型允许 `UNKNOWN`）。UI 每个统计数字旁必有 ⓘ 触发 MetricSpecCard；Wave 0 阶段 Mock 数据必有 🧪 MockBadge
 11. **交互规范唯一来源（D10）**：交互行为 / 状态覆盖 / 键盘可达 / 无障碍 / Arco 组件选型边界以 `UX-UE 通用交互组件规范.md` 为准；视觉 token / 配色 / 字号 / 圆角 / 阴影仍以 `Design.md` + Arco 主题为准（分层互补，不互相覆盖语义）；ux/ui/frontend handoff 必带 **§19 设计走查清单 + §3.4 验收用例** 对照；导航/页签按 Figma 定制但须保留 Arco 同类组件状态、键盘与无障碍语义。注：D10 于 demo 阶段经用户放行免 PM+架构师双签，上线前需补签确认
 12. **demo 原型 / lumen 正式隔离（D12）**：`demo-*` 仓只做原型；正式开发只在 `lumen-*`。**lumen 前端调用链禁止调用任何 `demo-*` 项目服务**（含 nginx / `VITE_*` 直连，以及 Java Feign、helm 回落到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`）。lumen 前端只经 `gkxlumen-platform-gateway` 调 `gkxlumen-*`，算法下游只允许 `lumen-algo-py` / `lumen-etl-es-py`。对照 demo 可读代码后重写，禁止 merge。详见 `architecture-baseline.md` §2 D12 / §3.1
-13. **对象存储桶（D14）**：桶名和对象键只许用 `architecture-baseline.md` **§2.1** 那张表。禁止自造桶名，禁止前端直连 RustFS，禁止业务读写 `milvus` 桶，禁止 Demo 写正式桶。凭证放 Secret 或主机环境文件，不进 git
+13. **对象存储桶（D14）**：正式业务只写桶 `gkx-lumen` 下 `architecture-baseline.md` **§2.1** 的六个目录。可观测只用 `tempo-blocks`、`loki-chunks`。禁止自造桶或顶层目录，禁止前端直连 RustFS，禁止业务读写 `milvus` 桶，禁止 Demo 写 `gkx-lumen`。凭证放 Secret 或主机环境文件，不进 git
 
 ## 3. 人机协作铁律（违反必拒）
 

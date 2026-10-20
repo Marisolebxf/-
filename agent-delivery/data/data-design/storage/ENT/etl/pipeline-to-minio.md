@@ -9,9 +9,9 @@
 |---|---|
 | 对象前缀（建议） | `ent/{task_id}/` 或 `topic/ent/{task_id}/` |
 | Demo 桶（目标） | `demo-gkx-analysis-results` |
-| 过渡桶（现网常见） | `gkx-analysis-results`（demo-svc-topic-py）；正式侧另有 `gkxlumen-topic-analysis-results` |
+| 正式位置 | 桶 `gkx-lumen` 内的目录，见平台正文。不再单开 `gkx-analysis-results` 桶或 `gkxlumen-topic-analysis-results` |
 | 关联元数据 | 分析/导出任务表（MySQL）；路径与可下载态必须与对象存在一致 |
-| 典型对象 | 用户生成的企业报告 HTML/PDF → `gkx-user-reports`（`topic/html/`、`topic/pdf/`）；分析 JSON 仍在 `gkx-analysis-results` |
+| 典型对象 | 用户生成的企业报告 HTML/PDF → 桶 `gkx-lumen` 目录 `gkx-user-reports`（`topic/html/`、`topic/pdf/`）；分析中间结果 JSON → 同桶目录 `gkx-analysis-results` |
 
 ## 指针
 
