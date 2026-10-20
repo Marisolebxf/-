@@ -30016,10 +30016,14 @@ tasks:
       - "OpenAPI 与示例写入 handoff"
     update_time: "2026-10-15T14:49:58+08:00"
   - id: CMS-JX-POL-EXPIRED-L01
+    claimed_at: "2026-10-19T05:34:23.206Z"
+    last_seen_at: "2026-10-19T05:34:23.206Z"
+    lock_until: "2026-10-19T09:34:23.206Z"
+    claimed_by: "agent:api-agent"
     feishu_bitable_record_id: reczz28N2ZSiHwXV
-    supervised_by: "human:淮政玮"
+    supervised_by: "human:徐滕强"
     title: "已失效政策列表（只读，集群内）"
-    status: backlog
+    status: "integration"
     agent: "api-agent"
     epic: "CMS-JX-INT"
     priority: "P1"
@@ -30029,7 +30033,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 45000
-    note: "第二批接口 15。政策组。作为失效对账的拉取口，webhook 单依赖本单。访问约束见 CMS-JX-INT-DESIGN-L01：同 K8s 仅 Pod 间后台访问，禁止内容运营中心直接访问。"
+    note: |
+      【重建备注 2026-10-19】实货已完成：commit c18060c（实现）+ 57c826d（总审修复 CAST 双口径），已部署 Pod Running，bugbot 总审过，handoff=平台基建-PLATFORM/CMS-JX-POL-EXPIRED-L01.md。当日傍晚 registry 冲突处理时状态被回退，本条为恢复登记。待验收签收。
     depends_on:
       - "CMS-JX-POL-LIST-L01"
     design_refs:
@@ -30039,7 +30044,7 @@ tasks:
       - "不提供失效/删除写入；失效仍由智树数据治理产生"
       - "仅集群内 Service 暴露，按 CMS-JX-INT-DESIGN-L01 校验调用方；不注册 Ingress"
       - "OpenAPI 与示例写入 handoff"
-    update_time: "2026-10-14T05:18:26+08:00"
+    update_time: "2026-10-19T17:49:50+08:00"
   - id: CMS-JX-SVC-TOPN-L01
     feishu_bitable_record_id: reczz28N2ZX2fuu3
     supervised_by: "human:徐滕强"
@@ -30107,7 +30112,8 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 60000
-    note: "第二批接口 14。政策组。智树 Pod 通知 CMS Pod，仍是后台对后台；禁止把回调暴露成内容运营中心可直连的入口。访问约束见 CMS-JX-INT-DESIGN-L01。"
+    note: |
+      【2026-10-19 范围裁决 Q-CMS-POL-01】存量失效不同步 + 增量时效 T+1（监管人 human:徐滕强 会话裁定，待久新书面确认）→ webhook 无增量价值，本单不实施（YAGNI）。T+1 由已上线的 CMS-JX-POL-EXPIRED-L01 expired 接口 updated_after 增量拉取覆盖（每日 02:00 后拉取）。本单保持 backlog 不派发，久新若改要小时级时效再重评。决策登记：客户决策清单跟踪表 Q-CMS-POL-01 🟡
     depends_on:
       - "CMS-JX-POL-EXPIRED-L01"
     design_refs:
@@ -30117,7 +30123,7 @@ tasks:
       - "回调地址只允许集群内 CMS Service，不向公网投递；调用方向与鉴权以 CMS-JX-INT-DESIGN-L01 为准"
       - "CMS 可用 CMS-JX-POL-EXPIRED-L01 做全量校对，webhook 失败不阻断失效列表"
       - "OpenAPI 或回调契约与示例写入 handoff"
-    update_time: "2026-10-14T05:18:38+08:00"
+    update_time: "2026-10-19T17:49:59+08:00"
   - id: QA-SPEC-SCRIPT-AUTHORING-L01
     feishu_bitable_record_id: reczz28NAGGpToPs
     cost_warn: "green"
@@ -32714,3 +32720,24 @@ tasks:
       - "结构升级项给 human:李伟 清单；打回项开修单"
       - "handoff SCI-INT-Z02.md 含会签记录（ponytail N/A、cost）"
     update_time: "2026-10-19T16:59:18+08:00"
+  - id: CMS-JX-CI-RESTORE-L01
+    title: "修复 CMS CI/部署三件套（环境迁移 merge 丢失；已完结，补登）"
+    status: "done"
+    agent: "devops-agent"
+    epic: "CMS-JX-INT"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "chore"
+    effort_points: 3
+    difficulty: "M"
+    estimated_tokens: 30000
+    note: |
+      2026-10-19 发现：0843d02 merge(legacy) 解冲突丢失 aebbf77 的 CMS CI 三件套（image/deploy job、Dockerfile、helm 条目）。已从 aebbf77 找回并适配新环境（commit cb2d4e1），pipeline 2591 全绿，cms Pod Running。原单当日以 chore 收口 done；2026-10-19 傍晚 registry 冲突回退后重建本条目
+    definition_of_done:
+      - "backend:image:cms 与 deploy:cms job 恢复且 pipeline 绿"
+      - "gkxlumen-cms/Dockerfile 恢复，基础镜像切 harbor.test.com"
+      - "helm values cms 条目恢复，cms Pod 可部署到 zhipu-tts"
+      - "验证：新 pipeline 产出 cms 镜像并部署，Pod Running"
+      - "handoff 写入 agent-handoffs/平台基建-PLATFORM/"
+    update_time: "2026-10-19T17:49:50+08:00"
