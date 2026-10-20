@@ -19,6 +19,8 @@ demo 原型 2026-08-10 评审定点（`demo-ui-topic` commit `afd6583`，《符�
 
 ### 文件
 
+- `4ffb5f4` 走查追加：删配置区两处冗余口径文案（`svc-rec-model-note`、`svc-rec-demo-caliber`/`svc-rec-cultivate-caliber`；demo 定点无此说明，口径声明由结果区 `svc-rec-issued-warn` 承担），footer CTA 改右对齐
+
 - `ServiceRecommendAttractWorkspace.vue` / `ServiceRecommendCultivateWorkspace.vue`：配置区重构 + 权重状态/持久化删除；修复在途 `reportSurface` 模板的孤立 `</template>`（lint 解析错误）；清死 import
 - `svcRecommendAttractModel.ts` / `svcRecommendCultivateModel.ts`：删权重编辑/归一/序列化/存储 API（约 -170 行）；`DEFAULT_*_WEIGHTS` 保留仅供 Tag 展示
 - `svcRecWeightGate.ts`：**删除**（唯一消费者已清空）
