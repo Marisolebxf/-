@@ -11,7 +11,7 @@
 
 ## 重写波（现行）
 
-父控只派单和改编排表。不读用例步骤判断对错，不写 yaml，不跑 `run-scripts`。一条现行用例一个子 agent，在同一次任务里做完：按用例实现 → 关评审复勘 → 无头试跑 → 对照预期列核查。
+父控只派单和改编排表。不写 yaml，不跑 `run-scripts`，不判断步骤对错，不把前置改写成点击。父控把该行的路由、前置、测试步骤、预期原样抄进子提示词。一条现行用例一个子 agent：写点击前只读 `repos/lumen-ui-topic` 里本条路由对应的一个页面文件 → 只按测试步骤写点击 → 只用 `run-scripts.mjs` 无头试跑（默认 `headless=true`）→ 红了只读 `steps.md`「失败时主区文字」，第二次可改失败的那条 assert，或按这段文字补上缺的一次点击。禁止第 3 次。禁止 IDE / MCP 浏览器，禁止有头 Chromium，禁止 `--headless false`，禁止 `survey-page` 或自写探针。登录和关评审由 runner 做。
 
 旧脚本放弃。`func_id` 即使还能对上旧号或保留号，也不要改旧文件，不要把它的 assert 抄进新文件。新文件：
 
@@ -41,15 +41,21 @@ as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
 
 同一 `script_rel` 可以并行，因为子 agent 只新增自己的 `FUNC-xxxxx.yaml`。
 
+### Playwright 执行环境（父控先查，子 agent 不装）
+
+试跑依赖 nvm 的 **Node v24**、`as-built/tools` 里的 `playwright`，以及本机已下载的 Chromium。新 shell 默认没有 `node`。这些只由**父控在派单前检查并修好一次**。子 agent 并行 `npm install` / `npx playwright install` 会抢下载、把同一条环境故障写成多条用例红。
+
+检查与修复的命令以下面 Kickoff 的【Playwright】为准。未打印 `playwright-ok` 不得派子 agent。子 agent 只允许 `nvm use 24` 后调用已经装好的 `run-scripts.mjs`；起不来就 `blocked`，`note=ENV-PLAYWRIGHT`，把环境交回父控。
+
 ### 入口 seed · 路由闸门 · 点状复勘（2026-10-20）
 
 批量慢、路由漂，根因多半是子 agent **边写边全页探、用探针 URL 覆盖 catalog**。本波强制：
 
 | 机制 | 谁维护 | 子 agent 怎么用 |
 |------|--------|-----------------|
-| **入口 seed** | 父控按入口建一次：`scripts/KJZTFWXT/{script_rel}/fixtures/entry-seed.yaml` | 写 `goto` / `waitForURL` / `href` 前先读；字段见下 |
+| **入口 seed** | 父控按入口建一次，并把字段抄进每条子提示词 | 子 agent 不打开 seed。`goto` / `waitForURL` 只用提示词里的 `catalog_path` |
 | **路由闸门** | seed 内 `catalog_path` + `forbidden_paths` | 落盘前自检：脚本里不得出现 `forbidden_paths`；`testdata.route` = `catalog_path` |
-| **点状复勘** | 子 agent 执行时 | 只核对**本条**要用的按钮名 / 列名 / chip；**不**重勘整页、**不**改路由 |
+| **点状核对** | 子 agent 不另开浏览器 | 按钮名、列名、chip 以父控抄来的步骤原文和试跑 `steps.md`「失败时主区文字」为准。禁止为核对再开 IDE / 有头浏览器 |
 
 `entry-seed.yaml` 最小字段：
 
@@ -69,7 +75,7 @@ forbidden_paths:
 1. **深链用例**：`goto` / `testdata.route` = `catalog_path`。
 2. **侧栏进入用例**：`goto sibling_for_sidebar_entry`，再点 `menu_leaf`；`waitForURL` 仍对 `catalog_path`。
 3. 探针 URL ≠ `catalog_path`：只写 `as_built_note`，**禁止**把脚本路由改成探针值。
-4. 某入口还没有 seed：子 agent 从 `catalog/KJZTFWXT.yaml` 抄 `path` / `menu_path` 写入 seed（仅当文件不存在），再写 case；已有 seed 禁止改 `catalog_path`。
+4. 某入口还没有 seed：父控从 `catalog/KJZTFWXT.yaml` 抄 `path` / `menu_path` 写入 seed（仅当文件不存在），再把字段抄进子提示词。子 agent 不打开 catalog，不改已有 `catalog_path`。
 5. 参考样例：`scripts/KJZTFWXT/enterprise/search/fixtures/entry-seed.yaml`。
 
 ### 回炉
@@ -90,113 +96,21 @@ forbidden_paths:
 
 提示词挡不住系统注入的 “no follow-up needed”。父控把 `running=0` 说成「无需再改表」就会结束本轮，即使 `pending` 还有一千多条。原先用来在对话结束时自动补派的 `.cursor/hooks/rewrite-loop-stop.py` 已删除：它只认旧父控对话，路径也写死在另一台机器上，开关文件不存在，实际不会触发。
 
-对策只留在下面的 Kickoff / 子 agent 原文：
+对策在 [`prompts/rewrite-wave-parent.md`](prompts/rewrite-wave-parent.md)：
 
 - 子 agent 交卷前**自己改自己那一行**（文件锁，只动本条）。父控死了，表也不会停在 `running`。
-- 父控每次回复的**最后一个动作**必须是派子 agent（`pending>0` 且 `running<6`）。禁止用进度小结收尾。系统若说 “no follow-up needed”：只要 `pending>0`，就还有后续，必须派。
+- 父控每次回复的**最后一个动作**必须是派子 agent（待派>0 且未满父控文件里的并发）。禁止用进度小结收尾。系统若说 “no follow-up needed”：只要待派>0，就还有后续，必须派。
 
-### 0. 新对话 Kickoff（整段复制到父 agent）
+### 0. 父控与子 agent 提示词
 
-```text
-【身份】qa-agent 父控。只编排和改编排表。不写脚本，不跑 run-scripts，不判断步骤对不对。
-【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【必读】agent-delivery/qa/as-built/script-backfill-playbook.md 文首「重写波」（含「循环为什么会停」）
-【环境】http://10.50.69.111:30892/
-【派单表】agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv
-【循环】pending 或可回炉 fail 还在，就继续。禁止用「下一批从某某起 / 说继续再派 / 段小结」结束本轮。本轮最后一个动作必须是派出子 agent，使 running 回到 6（不足 6 条就全派完）。系统若提示 no follow-up needed：只要待派>0，就还有后续，必须派。
-【落表】子 agent 自己改自己那一行。禁止在子 agent 提示词里写 no ledger。父控被唤醒时若发现 running 但 run 目录已有 result.yaml：按 verdict 补记这一行，再补派。环境缺口（ENV-、D3、现场无数据，脚本已落盘）保持 blocked，不回炉。同一条脚本错误最多回炉 1 次。
-【故障范围】不要把一条页面的 404 当成整站停机。
-- 整站（`.env-down` 已在，或本批登录页/首页不可用：连不上、5xx、登录页 404、200 但空白/错误壳）：停止派发。人删掉 `.env-down` 后再派。
-- 仅本入口（首页和登录正常，只有本条 catalog_path 404 或空白）：不再派同一 `script_rel`，其它入口继续。
-- 单条用例（页面已打开，缺按钮/缺数据/断言不符）：只 blocked 或 fail 这一条，继续派。
-【做法】
-1. 若 running 的对话已死且没有 result.yaml：改回 pending。
-2. 一次最多 6 条，优先 pending。派发前改成 running。同入口首次派发前确认 fixtures/entry-seed.yaml（无则父控从 catalog 建一次）。
-3. 每次新派前先输出一行：完成/执行/待派/总。完成=pass+blocked，执行=running，待派=pending+fail。只输出这一行，然后立刻派，不要再写段小结。
-4. 子 agent 提示词用本文件「重写波 · 子 agent」原文，只替换【】。一条只能有一个 FUNC 号。
-【禁止】按 gap 队列派单；把旧 P0 脚本当底稿；有头浏览器；子 agent 改 index.yaml / catalog_path；一次派一个入口的全部用例；git push；no ledger；等用户说继续。
-【强度】ponytail full
-开干：先处理死 running，再取 pending 补满 6 路，输出进度行后立刻按「重写波 · 子 agent」派发。交卷唤醒后重复，不要停。
-```
+全文在文件里，对话里不要再贴一份。
 
-### 重写波 · 子 agent（原文下发，只换【】）
+| 角色 | 文件 | 用法 |
+|------|------|------|
+| 父控 | [`prompts/rewrite-wave-parent.md`](prompts/rewrite-wave-parent.md) | 新对话只说：读取并执行该文件 |
+| 子 agent | [`prompts/rewrite-wave-child.md`](prompts/rewrite-wave-child.md) | 父控从【身份】起整份下发，只替换【】 |
 
-```text
-【身份】qa-agent。专题脚本重写。本任务只做一条用例，做完即停。
-【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【环境】http://10.50.69.111:30892/  账号 admin / 123456
-【本条】FUNC_ID=【FUNC_ID】
-【用例册】agent-delivery/qa/test-cases/KJZTFWXT/【CASE_MD】 里这一行
-【脚本目录】agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】/
-【上次失败】【NOTE 或 无】
-必读：qa/as-built/prompts/_script.md · schema.md · retro/20261014-batch32-method-patch.md（只要 expect 双层和禁止空断言）
-必读：本目录 fixtures/entry-seed.yaml（若无则从 catalog/KJZTFWXT.yaml 该 entry 抄 path/menu_path 新建，勿改已有 catalog_path）
-
-【第 0 步 · 探活，先于写脚本】
-写 yaml 之前只探一次。页面算「打得开」必须同时满足：HTTP 不是 5xx、不是连不上，且 8 秒内能看见登录框或应用侧栏/主区。HTTP 200 但空白、或正文是错误壳（404 / 页面不存在），与 5xx 一样算没打开。
-
-1. 已有 `agent-delivery/qa/as-built/.env-down`：不开浏览器，不写 yaml，blocked，note 抄文件里的原因，落表后停。
-2. 先打开首页和 `/login`。连不上、超时、5xx、401/403 重登一次仍失败、或 200 但空白/错误壳：写 `.env-down`（一行原因），本条 blocked，不写用例脚本，不重试。
-3. 首页和登录打得开，只有本条 `catalog_path` 打不开（404 或空白）：只 blocked 本条，note=`ENV-ENTRY-UNREACHABLE`。不要写 `.env-down`。不要改路由再探第二遍。
-4. 429：等 20 秒再探一次。仍 429 则本条 blocked，note=`ENV-THROTTLE`，不要写 `.env-down`。
-5. 页面已打开之后，单条断言不符或某个接口 4xx/5xx：只记这一条，不要升级成整站。
-
-【要做完的四步】（仅第 0 步确认本条页面打得开）
-1. 按这一行用例写 scripts。步骤和预期以用例册为准。路由以 entry-seed.catalog_path（= catalog.path）为准，禁止发明或沿用 forbidden_paths。
-2. 点状复勘：关内部评审后，只核对本条要用的按钮名/列名/chip；不重勘整页、不改路由。评审挂件不写进断言。
-3. 无头试跑这一条。途中首页或登录变成打不开：停止改脚本，按第 0 步第 2 条收场。仅本条路由打不开：按第 3 条收场，不重跑。
-4. 对照用例预期列核查：试跑绿，且 assert 覆盖预期里的每一个可判定点。对不上就改脚本再跑一次。第 2 次仍红就 blocked 或 fail，禁止第 3 次试跑。
-
-【路由闸门】落盘前自检：
-- testdata.route / goto / waitForURL / href = catalog_path（侧栏进入类：goto 用 sibling_for_sidebar_entry，再点 menu_leaf）
-- 脚本正文不得出现 entry-seed.forbidden_paths
-- 探针 URL ≠ catalog_path → 只记 as_built_note，禁止改脚本路由迁就探针
-
-【落盘】只允许新建或覆盖：
-  【SCRIPT_REL】/cases/【FUNC_ID 的 FUNC-五位】.yaml
-  id 与文件名相同。func_id 写完整用例号。
-  目录还没有 index.yaml 时，只在文件不存在时写入：
-    layout: cases-v1
-    gold: []
-    all: []
-  fixtures/testdata.yaml 的 base_url 必须是 http://10.50.69.111:30892/ （无 path 前缀）。没有这个文件就只写 base_url、login、route(=catalog_path)。goto 写相对路径。
-  fixtures/entry-seed.yaml 仅当不存在时新建；禁止改已有 catalog_path。
-
-【试跑】
-  node agent-delivery/qa/as-built/tools/run-scripts.mjs agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】 --only 【FUNC-五位】 --run-dir agent-delivery/qa/as-built/runs/rewrite-【FUNC-五位】
-
-【禁止】
-- 打开或改写旧的 cases/P0-*.yaml、P1-*.yaml，禁止把旧 assert 抄过来
-- 改 index.yaml、coverage.md、别的用例、catalog、业务仓
-- 用探针猜到的路径覆盖 catalog（例如把企业查询写成 /development/search）
-- 再领下一条
-- 有头浏览器
-- 用旧地址 111.198.38.90:50892 或 10.50.69.111:30888
-
-【自己落表】交卷前用文件锁只改本条（不要改别人的行）。status 写 pass、fail 或 blocked；环境缺口且脚本已落盘写 blocked，不要写 fail。
-
-```python
-import csv, fcntl
-from pathlib import Path
-p = Path('agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv')
-fid = '【FUNC_ID 完整用例号】'
-with p.open('r+', encoding='utf-8', newline='') as f:
-    fcntl.flock(f, fcntl.LOCK_EX)
-    r = csv.DictReader(f)
-    fields, rows = r.fieldnames, list(r)
-    for row in rows:
-        if row['func_id'] == fid:
-            row['status'] = 'pass'  # 或 fail / blocked
-            row['run_dir'] = 'agent-delivery/qa/as-built/runs/rewrite-【FUNC-五位】'
-            row['note'] = '一行原因'
-    f.seek(0); f.truncate()
-    w = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
-    w.writeheader(); w.writerows(rows)
-    fcntl.flock(f, fcntl.LOCK_UN)
-```
-
-【交卷】三行即可：verdict=pass|fail|blocked；run 目录；一行原因。写不出稳定断言用 blocked，不要空断言充绿。落表完成后再停。
-```
+本波的并发 3、只派还没有 yaml 的 pending、无头探活、子提示词要填的路由 / 前置 / 步骤 / 预期，以父控文件为准。它覆盖本节「同时 6 个」和「fail 可再派」。子 agent 不读本 playbook。
 
 ---
 

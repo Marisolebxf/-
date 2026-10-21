@@ -1,15 +1,33 @@
 # QA-KJZTFWXT-BLINE-SCRIPT-REWRITE-L01 · 专题脚本重写中途交接
 
-> 2026-10-21 叫停时的续跑说明。任务未完成，状态保持 `in_progress`。算法库不在本单。
+> 2026-10-21 晚：写法已改到提示词文件。任务未完成，状态保持 `in_progress`。算法库不在本单。下文「叫停时进度」是凌晨快照，不要按那段的地址和并发续跑。
 
 ## 续跑（新对话先读这段）
 
-1. 父控只编排。提示词用 `agent-delivery/qa/as-built/script-backfill-playbook.md` 文首「0. 新对话 Kickoff」原文。子 agent 用同文件「重写波 · 子 agent」原文，一条一个 FUNC。
-2. 派单表只认 `agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv`。`pass` 不重派。`pending` 才是还要写脚本的队列。
-3. 开工前先探活 `https://edu.itic-sci.com/tts/svcz/` 和 `/login`。页面算打开：不是连不上、不是 5xx，且约 8 秒内能看见登录框或侧栏/主区。HTTP 200 但空白或错误壳，与 5xx 同样算没打开。探活失败就停，不要派。
-4. 登记表 note 里曾写 `http://10.50.69.111:30888/` 已探活。那是过时备注。环境以 playbook 文首 edu 为准。
-5. 自动续跑 hook 已删除（`.cursor/hooks/rewrite-loop-stop.py` 与 `.cursor/hooks.json`）。不要再创建 `.rewrite-loop-armed`，也不要改 `PARENT`。续跑靠 Kickoff 里「最后一个动作必须是派子 agent」。
-6. 进度行格式：`完成/执行/待派/总`。完成 = pass + blocked，执行 = running，待派 = pending + fail。同时最多 6 路。
+1. 新对话只说：读取并执行 `agent-delivery/qa/as-built/prompts/rewrite-wave-parent.md`。先停掉还在派单的旧父控，避免两份父控同时改登记表。已发出的 `_dispatch-FUNC-*.md` 是当时的副本，不会跟着模板变。
+2. 环境 `http://10.50.69.111:30892/`（无 path 前缀）。禁止 `edu.itic-sci.com/tts/svcz`、`10.50.69.111:30888`、`111.198.38.90:50892`。
+3. 本波并发 3。只派还没有 `cases/FUNC-xxxxx.yaml` 的 `pending`。不重写已有 pass / blocked / fail。不重派 `FUNC-02593`、`FUNC-03535`。
+4. 父控整份下发 `prompts/rewrite-wave-child.md`，只替换【】。测试步骤、前置原样抄。不把前置改成点击，不写「当前已在某页」。
+5. 子 agent 写 yaml 前只读 `repos/lumen-ui-topic` 里本条路由对应的一个页面文件：`src/router/menu.ts` 对上 path 和 workspace；该项没写 component 就读同一 path 上写了 component 的项；页面按 workspace 转到另一组件时只再读那个分支文件。不读 `demo-ui-topic`，不顺着 import 读级联、过程页、记录表。源码只落实步骤里已有的点击；按钮可见名和源码不一致时点源码里的名字，仍算同一步。源码和 30892 不一致时，以「失败时主区文字」为准。
+6. 无头试跑，最多两次。红了可改失败的那条 assert，或按「失败时主区文字」补一次点击。禁止第 3 次。禁止 `--headless false`、IDE / MCP 浏览器。
+7. 不要创建 `.rewrite-loop-armed`，不要恢复 rewrite-loop hook。
+8. 用例册还没按红线 3.1 改。现行短步骤仍会停在配置页或过程页。本阶段不改用例正文。
+
+## 阶段结论（2026-10-21）
+
+17:28 之后抽查的 fail，多数是脚本没有把页面点到预期要看的状态。用例把路径写成前置里的状态句，步骤只剩最后一下。父控不知道中间点击，不能代补。完整点击应写在用例测试步骤里，第一条是 `goto`（`prompts/_case.md` 红线 3.1）。本阶段只改说明，不改用例册。
+
+子 agent 顺序：按抄来的步骤写 yaml（写前只读上面那一个页面文件）→ 一次无头试跑 → 红则只读失败时主区文字 → 第二次试跑 → 改自己那一行登记表后停。没有实勘、复勘、单独验收。试跑绿即 pass。
+
+`run-scripts.mjs` 在 fail / blocked 时把 `main`（否则 `body`）正文前 1500 字写入 `steps.md`「失败时主区文字」。
+
+本阶段提交不含登记表、在途 yaml、`_dispatch-FUNC-*.md`。那些是波次现场。
+
+## 凌晨叫停记录（历史，不要按这里续跑）
+
+1. 当时父控提示词嵌在 playbook「0. 新对话 Kickoff」。该段已撤下，改指向 `rewrite-wave-parent.md`。
+2. 当时环境写成 edu，并发写成 6。这两条都已作废。
+3. 自动续跑 hook 当时已删除。不要再创建 `.rewrite-loop-armed`。
 
 ## 叫停时进度（2026-10-21 03:14 之后未再派）
 
@@ -88,7 +106,7 @@ pending 头：`service/rec-cultivate` 36，`service/org-capability` 34，`servic
 - commit：见本提交
 - pipeline：编排仓无业务 CI
 - 部署：无
-- 试跑环境：`https://edu.itic-sci.com/tts/svcz/`
+- 试跑环境：`http://10.50.69.111:30892/`（2026-10-21 晚；此前 edu 地址作废）
 
 ## 涉及文件
 

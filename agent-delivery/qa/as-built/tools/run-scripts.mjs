@@ -746,10 +746,17 @@ for (const script of selected) {
   const r = await runScript(page, script);
   results.push({ script, ...r });
   const shotCount = fs.existsSync(path.join(runDir, 'scripts', script.id, 'screenshots')) ? fs.readdirSync(path.join(runDir, 'scripts', script.id, 'screenshots')).length : 0;
+  let visibleText = '';
+  if (r.verdict === 'fail' || r.verdict === 'blocked') {
+    visibleText = await page.locator('main').innerText().catch(() => '');
+    if (!visibleText.trim()) visibleText = await page.locator('body').innerText().catch(() => '');
+    visibleText = visibleText.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, 1500);
+  }
   fs.writeFileSync(path.join(runDir, 'scripts', script.id, 'result.yaml'), yamlDump({
     id: script.id, priority: script.priority, func_id: script.func_id,
     verdict: r.verdict, fail_class: r.fail_class, actual: r.actual,
     screenshot_count: shotCount,
+    visible_text: visibleText || null,
     time: new Date().toISOString().slice(0, 16).replace('T', ' '),
   }) + '\n');
   const md = [`# ${script.id} 逐步实际操作（playwright-runner）`, ''];
@@ -759,6 +766,7 @@ for (const script of selected) {
     for (const v of r.verdicts) md.push(`- ${v.status === 'pass' ? '✓' : v.status === 'fail' ? '✗' : '⚠'} ${v.note}${v.detail ? ' — ' + v.detail : ''}`);
   }
   md.push('', `判定：**${r.verdict}**`);
+  if (visibleText) md.push('', '## 失败时主区文字', '', visibleText);
   fs.writeFileSync(path.join(runDir, 'scripts', script.id, 'steps.md'), md.join('\n') + '\n');
   await ensureReviewOff(page).catch(() => {});
   await page.evaluate(() => { document.querySelectorAll('.arco-trigger-popup, .arco-drawer').forEach((e) => e.remove()); }).catch(() => {});

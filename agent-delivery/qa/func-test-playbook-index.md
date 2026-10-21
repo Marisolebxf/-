@@ -50,15 +50,7 @@
 
 ### S2 · 脚本编写 / 补齐
 
-```text
-【身份】qa-agent 父控。阶段 S2。总索引：qa/func-test-playbook-index.md
-【系统】【SYSTEM】
-【必读】_script.md → schema.md → method-patch → script-backfill-playbook.md 文首「重写波」
-【第一步】读 qa/as-built/script-rewrite-ledger-KJZTFWXT.csv，不要按 gap 队列派单
-【执行】一条现行用例一个子 agent，同时最多 6 个。子 agent 自己实现、复勘、试跑、核查。父只改表
-【环境】http://10.50.69.111:30892/
-【禁止】有头浏览器；子改 catalog 或 index.yaml；沿用旧 P0 脚本；全量刷分入库 runs；改业务仓
-```
+新对话只说：读取并执行 `as-built/prompts/rewrite-wave-parent.md`。子提示词在 `as-built/prompts/rewrite-wave-child.md`，由父控整份下发。不要在对话里再贴这两份全文。
 
 ### S3 · 脚本执行（冒烟 / 全量 / 回归）
 
