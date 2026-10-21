@@ -1,0 +1,144 @@
+id: FUNC-03398
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03398
+priority: P0
+title: 成功结果页对象行回显分析对象与任务编号
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已有一条成功结果
+locators:
+  tab_rec: tab「分析记录」
+  view_result: button「查看结果」（已完成行、非 disabled）
+  object_row: 结果 SectionPanel 下「对象：… · 任务 …」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 打开一条成功结果；对象行与任务编号在 expect
+expect:
+  - note: 前置：经分析记录打开成功结果页（步骤 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法打开成功结果 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=development/);
+      const recTab = page.getByRole('tab', { name: '分析记录' });
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无成功结果可打开');
+      }
+      const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
+      const doneCount = await doneRow.count();
+      let viewBtn = doneCount
+        ? doneRow.first().getByRole('button', { name: '查看结果' })
+        : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+      if (!(await viewBtn.count())) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
+      }
+      if (await viewBtn.isDisabled()) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 已完成记录存在但「查看结果」仍为 disabled');
+      }
+      let rowText = '';
+      if (doneCount) {
+        rowText = ((await doneRow.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      } else {
+        let row = viewBtn.locator('xpath=ancestor::tr[1]');
+        if ((await row.count()) < 1) row = viewBtn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+        rowText = (await row.count()) ? ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ') : '';
+      }
+      const taskFromRow = (rowText.match(TID_RE) || [])[0] || '';
+      await viewBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(2000);
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+      globalThis.__func03398 = { taskFromRow, url: page.url() };
+  - note: 1、对象行同时给出分析对象与任务编号
+    assert: |-
+      const ctx = globalThis.__func03398;
+      if (!ctx) throw new Error('前置：未打开成功结果页');
+      const main = page.locator('main').first();
+      const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const lineMatch = body.match(/对象[：:]\s*([^·\n]+?)\s*·\s*任务\s+(CHAIN-\d{8}-\d{3})/);
+      if (!lineMatch) {
+        throw new Error('结果页未见对象行「对象：… · 任务 CHAIN-*」片段：' + body.slice(0, 360));
+      }
+      const objectName = (lineMatch[1] || '').replace(/\s+/g, ' ').trim();
+      const taskId = lineMatch[2] || '';
+      const badObject = ['', '—', '-', '未选产业', '未选', '尚未选择', '暂无', '空'];
+      if (!objectName || badObject.some((b) => objectName === b || objectName.startsWith(b))) {
+        throw new Error('对象行分析对象为空或占位：「' + objectName + '」');
+      }
+      if (objectName.length < 2) {
+        throw new Error('对象行分析对象过短：「' + objectName + '」');
+      }
+      if (!taskId || !/CHAIN-\d{8}-\d{3}/.test(taskId)) {
+        throw new Error('对象行任务编号无效：' + taskId);
+      }
+      const urlTask = new URL(page.url()).searchParams.get('task_id') || '';
+      if (urlTask && urlTask !== taskId) {
+        throw new Error('对象行任务编号与 URL task_id 不一致：行=' + taskId + ' url=' + urlTask);
+      }
+      if (ctx.taskFromRow && ctx.taskFromRow !== taskId) {
+        throw new Error('对象行任务编号与所点记录不一致：行=' + taskId + ' 记录=' + ctx.taskFromRow);
+      }
+      await expect(main.getByText(new RegExp('对象[：:].*' + taskId.replace(/[-]/g, '\\$&'))).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  结果顶栏对象行 UI 文案「对象：{产业名} · 任务 {taskId}」（IndustryShenzhenPage SectionPanel）。
+  打开路径=分析记录已完成「查看结果」（同 03388/00763）。无已完成→ENV-CHAIN-SZ-DEV-NO-DONE-TASK。
+  用例要求回显发起时产业，禁止「未选产业」。B 档零 allow_skip。

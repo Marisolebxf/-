@@ -1,0 +1,122 @@
+id: FUNC-00935
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00935
+priority: P1
+title: 浮层按钮随勾选状态正确门控
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 选择分析企业浮层已打开
+locators:
+  cancel_sel: button「取消选择」
+  confirm: button「确定」
+  overlay_title: 选择分析企业
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 30888 评估路由；对比篮补种→打开浮层；门控断言在 expect 内自含
+expect:
+  - note: 未勾选时「取消选择」与「确定」均为禁用态且浮层不关闭
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const openSelectOverlay = async () => {
+        await ensureBasketEnterprises(2);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        const openCta = page.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+        await expect(openCta).toBeVisible({ timeout: 10000 });
+        await openCta.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      };
+      await openSelectOverlay();
+      const footer = page.locator('div').filter({ has: page.getByText('选择分析企业', { exact: true }) }).filter({ has: page.getByRole('button', { name: '确定' }) }).last();
+      const cancelSel = footer.getByRole('button', { name: '取消选择' });
+      const confirm = footer.getByRole('button', { name: '确定' });
+      await expect(cancelSel).toBeDisabled();
+      await expect(confirm).toBeDisabled();
+      await cancelSel.click({ force: true, timeout: 3000 }).catch(() => {});
+      await confirm.click({ force: true, timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+  - note: 「取消选择」可清空当前勾选
+    assert: |-
+      const sels = page.locator('[aria-label^="选择 "]');
+      if (await sels.count() < 2) throw new Error('对比篮可选企业不足 2 家');
+      await sels.nth(0).click({ force: true });
+      await page.waitForTimeout(200);
+      await sels.nth(1).click({ force: true });
+      await page.waitForTimeout(300);
+      const footer = page.locator('div').filter({ has: page.getByText('选择分析企业', { exact: true }) }).filter({ has: page.getByRole('button', { name: '确定' }) }).last();
+      const confirm = footer.getByRole('button', { name: '确定' });
+      const cancelSel = footer.getByRole('button', { name: '取消选择' });
+      await expect(confirm).toBeEnabled({ timeout: 5000 });
+      await expect(cancelSel).toBeEnabled({ timeout: 5000 });
+      await cancelSel.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const checked = page.locator('[aria-label^="选择 "][aria-checked="true"]');
+      if (await checked.count() > 0) throw new Error('取消选择后仍有勾选');
+      await expect(confirm).toBeDisabled();
+  - note: 清空后「确定」回到禁用且对象区无回填
+    assert: |-
+      const footer = page.locator('div').filter({ has: page.getByText('选择分析企业', { exact: true }) }).filter({ has: page.getByRole('button', { name: '确定' }) }).last();
+      const confirm = footer.getByRole('button', { name: '确定' });
+      await expect(confirm).toBeDisabled();
+      await confirm.click({ force: true, timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(300);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      if (/enterprise_codes/.test(page.url())) throw new Error('未点确定却出现 enterprise_codes 回填');
+      await page.getByRole('button', { name: '取消' }).click({ timeout: 8000 }).catch(async () => {
+        await page.keyboard.press('Escape');
+      });
+      await page.waitForTimeout(500);
+      if (/enterprise_codes/.test(page.url())) throw new Error('关闭浮层后对象区仍带 enterprise_codes');
+      const objSection = page.locator('div').filter({ has: page.getByText('评估对象', { exact: true }) }).first();
+      await expect(objSection.getByText(/暂未选择评估对象|尚未选择评估对象|请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/evaluation；空态 CTA「商业竞争力对标分析」。对比篮不足时经企业查询补种（同 FUNC-00934）。浮层 footer 用含「选择分析企业」+「确定」的容器限定按钮。回填正向归 FUNC-00934。接旧 P1-01 / 用例册 00935。tier B，无 allow_skip。

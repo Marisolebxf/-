@@ -1,0 +1,106 @@
+id: FUNC-02620
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02620
+priority: P1
+title: 点击刷新后仍停留在当前产业链全景
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 当前为「产业链全景」
+  - 已选中一条产业链
+locators:
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  refresh_btn: button aria-label「刷新」
+  chain_select: .industry-overview-chain-select
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 确认「产业链全景」Tab 与已选产业链后点击图谱工具「刷新」；预期在 expect
+expect:
+  - note: 前置：当前为「产业链全景」且已选中一条产业链、图谱已加载
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainRaw = (await chain.innerText()).replace(/\s+/g, ' ').trim();
+      if (!chainRaw || /请选择|可选产业链/.test(chainRaw)) {
+        throw new Error('前置：须已选中一条产业链，实际：' + chainRaw);
+      }
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：当前链无快照，无法验刷新');
+      }
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const titleBefore = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      if (!/产业链全景$/.test(titleBefore)) {
+        throw new Error('前置：全景标题异常：' + titleBefore);
+      }
+      const bodyBefore = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (!/\d+\s*个链位环节/.test(bodyBefore) || !/\d+\s*条关系/.test(bodyBefore)) {
+        throw new Error('前置：环节数说明未出现：' + bodyBefore.slice(0, 240));
+      }
+  - note: 步骤：点击图谱工具「刷新」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const refreshBtn = panel.locator('[aria-label="刷新"]').first();
+      await expect(refreshBtn).toBeVisible({ timeout: 8000 });
+      await expect(refreshBtn).toBeEnabled();
+      await refreshBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 8000 });
+  - note: 1、当前产业链全景标题仍在
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select');
+      const chainName = (await chain.innerText()).replace(/\s+/g, ' ').trim();
+      const expectTitle = (chainName + '产业链全景').replace(/\s+/g, ' ');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 10000 });
+      const titleAfter = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      if (titleAfter !== expectTitle) {
+        throw new Error('刷新后标题应仍为「' + expectTitle + '」，实际：' + titleAfter);
+      }
+  - note: 2、环节数说明仍在
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+      const body = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (!/\d+\s*个链位环节/.test(body) || !/\d+\s*条关系/.test(body)) {
+        throw new Error('刷新后环节数说明丢失：' + body.slice(0, 240));
+      }
+      if (!/当前产业链图谱包含/.test(body)) {
+        throw new Error('刷新后缺少环节数说明句：' + body.slice(0, 240));
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；图谱工具 SharedMapChrome aria-label「刷新」（scout.json）。
+  默认 boot 链「半导体与集成电路」时 H2 为「半导体与集成电路产业链全景」，环节文案「当前产业链图谱包含 6 个链位环节和 5 条关系」。
+  刷新后仍停留 overview 同 Tab，不重定向 panorama。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

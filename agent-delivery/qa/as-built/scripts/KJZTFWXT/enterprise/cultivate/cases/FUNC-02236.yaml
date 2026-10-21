@@ -1,0 +1,97 @@
+id: FUNC-02236
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02236
+priority: P0
+title: 开始分析后过程区五阶段与排队或进行中提示
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 已登录；条件筛选推荐 Tab 且至少选定一个条件（脚本选产业类别「人工智能」）
+locators:
+  industry: placeholder「全部产业类别」
+  start: button「开始分析」
+  process_title: 可视化分析过程
+  cancel: button「取消任务」
+  later: button「稍后查看」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 产业类别选人工智能→开始分析→在出结果前抓取过程区快照（expect 机检）
+expect:
+  - note: 1、标题为「可视化分析过程」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensureProcessSnap = async () => {
+        if (globalThis.__func02236?.body) return globalThis.__func02236;
+        await dismissBasket();
+        await expect(stack()).toBeVisible({ timeout: 15000 });
+        await page.keyboard.press('Escape').catch(() => {});
+        const ind = page.locator('input[placeholder="全部产业类别"]').first();
+        await ind.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.locator(optSel).filter({ hasText: '人工智能' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        let body = '';
+        let sawProcess = false;
+        for (let i = 0; i < 20; i++) {
+          await page.waitForTimeout(i === 0 ? 400 : 500);
+          body = await stack().innerText().catch(() => '');
+          const url = page.url();
+          if (/可视化分析过程/.test(body) || url.includes('analysis_view=processing')) {
+            sawProcess = true;
+            break;
+          }
+          if (/已打开今天相同条件的推荐分析结果/.test(body) && !/可视化分析过程/.test(body)) {
+            throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001：当天复用已有结果，未见「可视化分析过程」（与 02202 分流）');
+          }
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(body)) {
+            throw new Error('ENV-CULTIVATE-ANALYSIS-FAIL-001：秒失败未见过程区五阶段（与 02188 同源）');
+          }
+          if (/培育推荐分析结果/.test(body) && !/可视化分析过程/.test(body)) {
+            throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001：任务瞬时完成跳过过程区');
+          }
+        }
+        if (!sawProcess) {
+          throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001：20s 内未见「可视化分析过程」: ' + body.slice(0, 240));
+        }
+        globalThis.__func02236 = { body, url: page.url() };
+        return globalThis.__func02236;
+      };
+      const snap = await ensureProcessSnap();
+      await expect(stack().getByText('可视化分析过程').first()).toBeVisible({ timeout: 5000 });
+      if (!/可视化分析过程/.test(snap.body)) throw new Error('过程区正文未见标题「可视化分析过程」');
+  - note: 2、阶段为任务提交、权限与配置校验、数据汇聚、算法计算、结果组装
+    assert: |-
+      const snap = globalThis.__func02236;
+      if (!snap?.body) throw new Error('前置：未抓取过程区快照');
+      const stages = ['任务提交', '权限与配置校验', '数据汇聚', '算法计算', '结果组装'];
+      for (const s of stages) {
+        if (!snap.body.includes(s)) throw new Error('过程区缺少阶段「' + s + '」: ' + snap.body.slice(0, 320));
+      }
+      if (!/排队中\s*·\s*等待调度|进行中|等待中|分析中|当前阶段/.test(snap.body)) {
+        throw new Error('未见排队或进行中提示（期望含「排队中 · 等待调度」或阶段状态）: ' + snap.body.slice(0, 320));
+      }
+  - note: 3、有「取消任务」和「稍后查看」
+    assert: |-
+      const snap = globalThis.__func02236;
+      if (!snap?.body) throw new Error('前置：未抓取过程区快照');
+      await expect(page.getByRole('button', { name: '取消任务' }).first()).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: '稍后查看' }).first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation。步骤=条件筛选推荐仅产业类别选「人工智能」→开始分析→出结果前读 recruit-tab-stack 过程区。机检=五阶段条+排队/进行中文案+取消任务/稍后查看。当天同条件复用→ENV-CULTIVATE-PROCESS-WINDOW-001；秒失败无过程→ENV-CULTIVATE-ANALYSIS-FAIL-001。D4·2026-10-20 rewrite-FUNC-02236 svcz 3/3 expect 绿。登录与关评审由 runner 前置。A 档零 allow_skip。

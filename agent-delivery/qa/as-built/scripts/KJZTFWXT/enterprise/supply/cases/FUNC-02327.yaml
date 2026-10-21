@@ -1,0 +1,131 @@
+id: FUNC-02327
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02327
+priority: P1
+title: 篮内无企业时选择窗给出空篮说明
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 对比篮企业页当前没有企业（assert 自含：非空则清空对比篮）
+locators:
+  config_cta: button「前往对比篮选择企业」
+  overlay_title: 选择分析企业
+  empty_title: 开始收集企业
+  empty_desc: 对比篮暂无企业
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 确保篮空后点「前往对比篮选择企业」；空态文案在 expect
+expect:
+  - note: 1、说明为对比篮暂无企业，并提示先从企业查询加入后再回来选
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const visiblePanel = () => page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      const overlayEnterpriseCount = async (scope) => {
+        const txt = (await scope.innerText()).replace(/\s+/g, ' ');
+        const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        const cards = scope.locator('.ent-compare-item-card');
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const cardN = await cards.count();
+        let selVis = 0;
+        for (let i = 0, c = await sels.count(); i < c; i++) {
+          if (await sels.nth(i).isVisible().catch(() => false)) selVis++;
+        }
+        return cardN || selVis;
+      };
+      const clearBasketInPicker = async (scope) => {
+        const clearBtn = scope.getByRole('button', { name: '清空对比篮', exact: true });
+        if (!(await clearBtn.first().isVisible().catch(() => false))) return;
+        await clearBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const modal = page.locator('.arco-modal:visible').filter({ hasText: '清空对比篮' }).last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        await modal.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await expect(modal).toBeHidden({ timeout: 10000 });
+      };
+      const ensureBasketEmpty = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        let dockEnt = null;
+        if (await dockBtn.count()) {
+          const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+          const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+          if (entM) dockEnt = parseInt(entM[1], 10);
+        }
+        const main = page.locator('main.content-shell-layout, main').first();
+        const body = await main.innerText().catch(() => '');
+        const fromBasket = body.match(/来自对比篮\s*[·•]\s*(\d+)\s*家/);
+        const configHasObjects = fromBasket && parseInt(fromBasket[1], 10) > 0;
+        if (dockEnt === 0 && !configHasObjects) return;
+        const openPicker = async () => {
+          const cta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+          const adjust = main.getByRole('button', { name: '返回对比篮调整对象', exact: true });
+          if (await adjust.isVisible().catch(() => false)) {
+            await adjust.click({ timeout: 8000 });
+          } else if (await cta.isVisible().catch(() => false)) {
+            await cta.click({ timeout: 8000 });
+          } else {
+            throw new Error('未找到打开「选择分析企业」入口');
+          }
+          await page.waitForTimeout(600);
+          await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+        };
+        await openPicker();
+        const scope = (await visiblePanel().count()) ? visiblePanel() : page.locator('body');
+        const n = await overlayEnterpriseCount(scope);
+        if (n > 0) await clearBasketInPicker(scope);
+        const afterScope = (await visiblePanel().count()) ? visiblePanel() : scope;
+        const afterN = await overlayEnterpriseCount(afterScope);
+        if (afterN !== 0) throw new Error('前置：对比篮应清空为 0 家，当前 ' + afterN);
+        await closeBasket();
+        await page.waitForTimeout(400);
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await ensureBasketEmpty();
+      const main = page.locator('main.content-shell-layout, main').first();
+      const cta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+      await expect(cta.first()).toBeVisible({ timeout: 8000 });
+      await cta.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const panel = visiblePanel();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      globalThis.__func02327_panel = panel;
+      await expect(panel.getByText('对比篮暂无企业', { exact: false }).first()).toBeVisible({ timeout: 10000 });
+      const hint = panel.getByText(/请先从企业查询等入口加入企业，再回到本页选择分析对象/, { exact: false });
+      await expect(hint.first()).toBeVisible({ timeout: 8000 });
+  - note: 2、出现「开始收集企业」
+    assert: |-
+      const panel = globalThis.__func02327_panel
+        || page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      await expect(panel.getByText('开始收集企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const cards = panel.locator('.ent-compare-item-card');
+      const sels = panel.locator('[aria-label^="选择 "]');
+      let selVis = 0;
+      for (let i = 0, c = await sels.count(); i < c; i++) {
+        if (await sels.nth(i).isVisible().catch(() => false)) selVis++;
+      }
+      if ((await cards.count()) > 0 || selVis > 0) {
+        throw new Error('空篮态不应列出可选企业卡片');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。前置=对比篮企业 0 家（非空则浮层内「清空对比篮」→确定，会清账号篮内全部企业）。步骤=配置页点「前往对比篮选择企业」。机检=浮层「对比篮暂无企业」+ picker 文案「请先从企业查询等入口加入企业，再回到本页选择分析对象」+ Section「开始收集企业」且无企业卡片。登录与关评审由 runner 前置。B 档零 allow_skip。

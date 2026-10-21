@@ -1,0 +1,87 @@
+id: FUNC-02601
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02601
+priority: P0
+title: 产业整体概况关键指标空态文案
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_profile: '#industry-overview-tab-profile'
+  profile_panel: '[data-frame-id="F-OV-03"]'
+  metric_card: .industry-overview-metric-card
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 点击「产业整体概况」，校验关键指标区空态文案
+expect:
+  - note: 步骤：点击「产业整体概况」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业整体概况' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=profile/, { timeout: 8000 });
+      const profTab = page.locator('#industry-overview-tab-profile');
+      const aria = await profTab.getAttribute('aria-selected');
+      const cls = await profTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('点击后「产业整体概况」Tab 未选中');
+      }
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+  - note: 1、出现「关键指标」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel.getByRole('heading', { name: '关键指标', level: 2 })).toBeVisible({
+        timeout: 8000,
+      });
+      const cards = panel.locator('.industry-overview-metric-card');
+      const n = await cards.count();
+      if (n < 1) throw new Error('关键指标区应展示指标卡片，实际 count=' + n);
+  - note: 2、市场规模、市场增长率为「暂无正式数据源」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      const assertMetric = async (label, expected) => {
+        const card = panel.locator('.industry-overview-metric-card').filter({ hasText: label });
+        await expect(card.first()).toBeVisible({ timeout: 8000 });
+        const val = card.first().locator('.industry-overview-metric-card__value strong');
+        const txt = (await val.innerText()).replace(/\s+/g, ' ').trim();
+        if (txt !== expected) {
+          throw new Error(label + ' 应为「' + expected + '」，实际：' + txt);
+        }
+      };
+      await assertMetric('市场规模', '暂无正式数据源');
+      await assertMetric('市场增长率', '暂无正式数据源');
+  - note: 3、投融资事件数、投融资总额为「数据筹备中」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      const assertMetric = async (label, expected) => {
+        const card = panel.locator('.industry-overview-metric-card').filter({ hasText: label });
+        await expect(card.first()).toBeVisible({ timeout: 8000 });
+        const val = card.first().locator('.industry-overview-metric-card__value strong');
+        const txt = (await val.innerText()).replace(/\s+/g, ' ').trim();
+        if (txt !== expected) {
+          throw new Error(label + ' 应为「' + expected + '」，实际：' + txt);
+        }
+      };
+      await assertMetric('投融资事件数', '数据筹备中');
+      await assertMetric('投融资总额', '数据筹备中');
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；概况区 data-frame-id=F-OV-03，Tab id=industry-overview-tab-profile，URL ?tab=profile。
+  关键指标 .industry-overview-metric-card：市场规模/市场增长率 pending Q056 展示「暂无正式数据源」；投融资事件数/投融资总额 pending QC07 展示「数据筹备中」。
+  关联企业/机构等计数不钉死（用例备注）；登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

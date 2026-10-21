@@ -1,0 +1,58 @@
+id: FUNC-01152
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01152
+priority: P1
+title: Tab 切换往返后选中态恢复且检索词保持
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入产业查询页（深链 /industry-center/search）
+locators:
+  tablist: '.enterprise-search-mode-tabs[role=tablist][aria-label=检索模式]'
+  tab_smart: '.enterprise-search-mode-tabs [role=tab] → 智能检索'
+  tab_industry: '.enterprise-search-mode-tabs [role=tab] → 查产业'
+  smart_input: placeholder /输入产业、产业链、链位方向或同义词/
+  industry_input: placeholder /输入产业或产业链名称/
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 关对比篮；智能检索输入「光刻」；查产业↔智能检索往返
+expect:
+  - note: 切回后「智能检索」呈选中态且内容区恢复
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      const smartInput = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(smartInput).toBeVisible({ timeout: 8000 });
+      await smartInput.fill('光刻');
+      await tabs.nth(1).click();
+      await page.waitForTimeout(500);
+      await expect(page.getByPlaceholder(/输入产业或产业链名称/)).toBeVisible({ timeout: 8000 });
+      await tabs.nth(0).click();
+      await page.waitForTimeout(500);
+      const smart = tabs.nth(0);
+      const sAria = await smart.getAttribute('aria-selected');
+      const sCls = (await smart.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        throw new Error('切回后智能检索未选中');
+      }
+      await expect(page).toHaveURL(/[?&]mode=smart/);
+      await expect(smartInput).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder(/输入产业或产业链名称/)).toHaveCount(0);
+  - note: 检索框内「光刻」保持不变
+    assert: |-
+      await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toHaveValue('光刻')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 检索三 Tab 作用域 .enterprise-search-mode-tabs；查产业与智能检索 placeholder 不同，往返后须回到智能检索 placeholder 且 ?mode=smart。互斥归 01151。route=catalog_path /industry-center/search。

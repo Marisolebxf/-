@@ -1,0 +1,131 @@
+id: FUNC-01728
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01728
+priority: P1
+title: 未付费账号在领域分析报告中点击导出受限且不下载
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 已打开重点企业领域分析报告（admin 未开通付费导出权益）
+locators:
+  report_btn: button「查看 HTML 报告」/「生成 / 查看报告」
+  export_btn: button「导出」（ReportExportButton）
+  paid_badge: '[data-paid-badge="required"]'
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 进入领域分析 HTML 只读报告；导出闸门与无下载在 expect 判定
+expect:
+  - note: 1、提示需付费才能导出；2、仍停留在报告页；3、没有下载文件
+    assert: |-
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const ensureDomainPage = async () => {
+        const origin = new URL(page.url()).origin;
+        if ((await page.getByText('404 Not Found').count()) > 0 || !/key-enterprise-analysis/.test(page.url())) {
+          await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+        if ((await page.getByText('404 Not Found').count()) > 0) {
+          await page.goto(origin + '/enterprise-center/overview', { waitUntil: 'domcontentloaded' });
+          await page.getByRole('link', { name: '企业查询', exact: true }).click();
+          await page.waitForURL(/search|key-enterprise/, { timeout: 12000 });
+          await page.getByRole('link', { name: '重点企业领域分析', exact: true }).click();
+          await page.waitForURL(/key-enterprise-analysis/, { timeout: 12000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      const openDomainHtmlReport = async () => {
+        await ensureDomainPage();
+        await closeBasket();
+        if (/demo_state=report/.test(page.url()) && (await page.getByText('只读报告').count())) return;
+        const legacy = page.getByRole('button', { name: '查看 HTML 报告', exact: true });
+        const headCta = page.getByRole('button', { name: /生成\s*\/\s*查看报告/ });
+        if ((await legacy.count()) && await legacy.first().isVisible().catch(() => false)) {
+          await legacy.first().click({ timeout: 8000 });
+        } else if ((await headCta.count()) && await headCta.first().isVisible().catch(() => false)) {
+          await headCta.first().click({ timeout: 8000 });
+        } else {
+          const dataBtn = page.locator('[data-keyent-open-html-report]');
+          if ((await dataBtn.count()) && await dataBtn.first().isVisible().catch(() => false)) {
+            await dataBtn.first().click({ timeout: 8000 });
+          } else {
+            const u = new URL(page.url());
+            u.searchParams.set('workspace', 'domain');
+            u.searchParams.set('view', 'domain');
+            u.searchParams.set('demo_state', 'report');
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+          }
+        }
+        await page.waitForTimeout(800);
+        const bg = page.getByRole('button', { name: '后台继续' });
+        if (await bg.isVisible().catch(() => false)) {
+          await bg.click({ timeout: 5000 });
+          await page.waitForTimeout(400);
+        }
+        if (!(await page.getByText('只读报告').count())) {
+          const u = new URL(page.url());
+          u.searchParams.set('workspace', 'domain');
+          u.searchParams.set('view', 'domain');
+          u.searchParams.set('demo_state', 'report');
+          await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+        }
+        await expect(page.getByText('只读报告').first()).toBeVisible({ timeout: 12000 });
+      };
+      await openDomainHtmlReport();
+      const reportUrlBefore = page.url();
+      const exportBtn = page.getByRole('button', { name: '导出', exact: true });
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
+      const paidBadge = page.locator('[data-paid-badge="required"]');
+      const identityPaidHint = /导出\s*PDF\s*需付费权益|需付费.*导出|付费用户可导出/;
+      const bodyBefore = (await page.locator('body').innerText().catch(() => '')) || '';
+      const hasPaidCue =
+        (await paidBadge.count()) > 0 ||
+        identityPaidHint.test(bodyBefore) ||
+        (await page.getByText('付费', { exact: true }).count()) > 0;
+      if (!hasPaidCue) {
+        throw new Error('报告页未见付费/export 受限提示（角标或报告身份文案）；样本=' + bodyBefore.slice(0, 420));
+      }
+      const downloadPromise = page.waitForEvent('download', { timeout: 2500 }).catch(() => null);
+      await exportBtn.hover({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let tooltipPaid = false;
+      const tip = page.locator('.arco-tooltip-content:visible');
+      if (await tip.count()) {
+        const t = (await tip.first().innerText().catch(() => '')) || '';
+        tooltipPaid = /付费/.test(t);
+      }
+      await exportBtn.click({ timeout: 8000, force: true }).catch(() => {});
+      await page.waitForTimeout(600);
+      const dl = await downloadPromise;
+      if (dl) throw new Error('未付费点击导出触发了下载：' + (await dl.suggestedFilename().catch(() => 'unknown')));
+      const isDisabled = await exportBtn.isDisabled().catch(() => false);
+      const bodyAfter = (await page.locator('body').innerText().catch(() => '')) || '';
+      const toastPaid = /付费|开通.*权益|需付费/.test(bodyAfter);
+      if (!isDisabled && !tooltipPaid && !toastPaid) {
+        throw new Error('导出钮可点且未见付费提示（disabled/tooltip/toast 均无）');
+      }
+      await expect(page.getByText('只读报告').first()).toBeVisible({ timeout: 8000 });
+      const stillReport =
+        /demo_state=report/.test(page.url()) ||
+        /只读报告|报告目录|报告身份/.test(bodyAfter);
+      if (!stillReport) {
+        throw new Error('点击导出后离开报告页: ' + page.url());
+      }
+      if (reportUrlBefore && !/demo_state=report/.test(reportUrlBefore) && page.url() !== reportUrlBefore) {
+        const leftReport = !/demo_state=report/.test(page.url()) && !(await page.getByText('只读报告').count());
+        if (leftReport) throw new Error('URL 漂移且非报告态: ' + page.url());
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D2·30888 未付费导出走 ReportExportButton UI 锁（disabled +「付费」角标 + Tooltip「付费用户可导出报告 PDF」）；报告身份含「导出 PDF 需付费权益」。与 FUNC-01616（类型分析）同闸门，领域 workspace=domain。打开报告：页头「查看 HTML 报告」/「生成/查看报告」或 demo_state=report 深链（对齐 01710/01709）。登录与关内部评审由 runner 会话前置。B 档。

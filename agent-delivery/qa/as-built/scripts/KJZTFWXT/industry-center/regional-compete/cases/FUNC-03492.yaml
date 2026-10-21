@@ -1,0 +1,214 @@
+id: FUNC-03492
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03492
+priority: P0
+title: 结果页展示 GIS 区域热力的交付说明
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已打开一条单产业×多区域（≥2）的成功结果
+locators:
+  gis_block: '[data-testid="regional-comp-heatmap-gis"]'
+  gis_heading: 区块标题「GIS 区域热力」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 打开多区域成功结果页（生物+三城配置或分析记录）；GIS 说明三条预期在 expect
+expect:
+  - note: 前置：打开一条多区域成功结果页（用例步骤 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const HINT = /今日已分析过相同条件，已打开结果/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const root = () => page.locator('main.diagnosis-main').first();
+      const isSuccessResult = async () => {
+        if (!/[?&]view=result/.test(page.url())) return false;
+        return await page.getByText('区域产业竞争力评价结果').first().isVisible().catch(() => false);
+      };
+      const regionCountInObject = async () => {
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = body.match(/对象[：:]\s*(.+?)\s*·\s*任务/);
+        const summary = m ? m[1] : body;
+        const names = ['深圳市', '上海市', '杭州市', '北京市', '广东省'];
+        return names.filter((n) => summary.includes(n) || summary.includes(n.replace('市', ''))).length;
+      };
+      const pickSelect = async (ariaLabel, textRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
+        await view.waitFor({ state: 'visible', timeout: 8000 });
+        const raw = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (textRe.test(raw)) return;
+        for (let i = 0; i < 8; i++) {
+          await view.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(600);
+          const popup = page.locator('.arco-trigger-popup:visible').last();
+          const opt = popup.locator('.arco-select-option').filter({ hasText: textRe });
+          if (await opt.count()) {
+            await opt.first().click({ force: true, timeout: 8000 });
+            await page.waitForTimeout(800);
+            await page.keyboard.press('Escape').catch(() => {});
+            return;
+          }
+          await page.waitForTimeout(400);
+        }
+        throw new Error('下拉未见选项 ' + textRe + '（' + ariaLabel + '）');
+      };
+      const pickRegions = async (names) => {
+        const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|请选择区域|广东/ }).first();
+        await regionMulti.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        for (const name of names) {
+          const hit = pop.getByText(name, { exact: true }).first();
+          if (await hit.count()) await hit.click({ force: true, timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(350);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(500);
+      };
+      const applyMultiRegionConfig = async () => {
+        await page.getByText('单产业 × 多区域', { exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        await pickSelect('集群', /^生物产业$/);
+        await page.waitForTimeout(600);
+        await pickSelect('产业', /^生物$/);
+        await page.waitForTimeout(600);
+        await pickRegions(['深圳市', '上海市', '杭州市']);
+      };
+      const openResultFromProcessing = async () => {
+        const btn = page.getByRole('button', { name: /查看分析结果|查看结果/ });
+        for (let i = 0; i < 30; i++) {
+          if (await isSuccessResult()) return;
+          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
+            await btn.first().click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(800);
+          }
+          await page.waitForTimeout(i < 6 ? 500 : 1500);
+        }
+      };
+      const waitSuccessAfterStart = async () => {
+        let last = '';
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 500 : 2000);
+          last = await page.locator('main').first().innerText().catch(() => '');
+          if (await isSuccessResult()) return;
+          if (/分析结果已生成|生成结束/.test(last)) {
+            await openResultFromProcessing();
+            if (await isSuccessResult()) return;
+          }
+          if (/分析失败|本次分析失败|INPUT_OBJECT_INVALID|对象无效/.test(last) && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CHAIN-REG-COMPETE-BIO-FAIL-001：生物产业组合无法到达成功结果');
+          }
+        }
+        if (/view=processing|可视化分析过程|生成中/.test(page.url() + last)) {
+          throw new Error('ENV-CHAIN-REG-COMPETE-ASYNC-NO-SUCCESS-001：分析长期停留过程态');
+        }
+        throw new Error('未在超时内到达成功结果：' + (last || '').slice(0, 220));
+      };
+      const openFromRecordsMulti = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const rows = page.locator('tr').filter({ hasText: '区域产业竞争力评价' }).filter({ hasText: /已完成|成功/ });
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 10); i++) {
+          const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
+          if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
+          await view.click({ timeout: 12000, force: true });
+          for (let j = 0; j < 20; j++) {
+            await page.waitForTimeout(500);
+            if (!(await isSuccessResult())) continue;
+            if ((await regionCountInObject()) >= 2) return true;
+            break;
+          }
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(800);
+        }
+        return false;
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        if (!(await page.getByText('三大一级维度权重').first().isVisible().catch(() => false))) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价 SPA404 ' + page.url());
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      await ensureLand();
+      if (await isSuccessResult() && (await regionCountInObject()) >= 2) {
+        globalThis.__func03492 = { opened: true };
+        return;
+      }
+      await applyMultiRegionConfig();
+      const start = page.locator('main').getByRole('button', { name: '开始分析', exact: true }).first();
+      if (!(await isSuccessResult())) {
+        await expect(start).toBeEnabled({ timeout: 25000 });
+        await start.click({ timeout: 15000 });
+        for (let i = 0; i < 16; i++) {
+          await page.waitForTimeout(i === 0 ? 400 : 600);
+          const last = await page.locator('main').innerText().catch(() => '');
+          if (HINT.test(last) && (await isSuccessResult())) break;
+          if (await isSuccessResult()) break;
+        }
+        if (!(await isSuccessResult())) await waitSuccessAfterStart();
+      }
+      if ((await regionCountInObject()) < 2) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await openFromRecordsMulti())) {
+          throw new Error('ENV-CHAIN-REG-COMPETE-NO-MULTI-REGION-RESULT: 无≥2区域的成功结果可打开 GIS 说明块');
+        }
+      }
+      await expect(root()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('区域产业竞争力评价结果').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func03492 = { opened: true };
+  - note: 1、可见「GIS 区域热力」
+    assert: |-
+      if (!globalThis.__func03492?.opened) throw new Error('前置：未打开多区域成功结果');
+      const gis = page.locator('[data-testid="regional-comp-heatmap-gis"]');
+      await expect(gis.first()).toBeVisible({ timeout: 8000 });
+      await expect(gis.getByRole('heading', { name: 'GIS 区域热力' }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、文案写明当前先交付柱状与矩阵热力
+    assert: |-
+      if (!globalThis.__func03492?.opened) throw new Error('前置：未打开多区域成功结果');
+      const gis = page.locator('[data-testid="regional-comp-heatmap-gis"]');
+      const txt = ((await gis.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/当前先交付柱状与矩阵热力/.test(txt)) {
+        throw new Error('GIS 说明未见「当前先交付柱状与矩阵热力」：' + txt.slice(0, 200));
+      }
+      await expect(gis.getByText(/当前先交付柱状与矩阵热力/).first()).toBeVisible();
+  - note: 3、文案写明地理热力分期
+    assert: |-
+      if (!globalThis.__func03492?.opened) throw new Error('前置：未打开多区域成功结果');
+      const gis = page.locator('[data-testid="regional-comp-heatmap-gis"]');
+      const txt = ((await gis.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/GIS 按批准分期|地理热力.*分期/.test(txt)) {
+        throw new Error('GIS 说明未见地理热力分期表述：' + txt.slice(0, 240));
+      }
+      await expect(gis.getByText(/GIS 按批准分期/).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  03492=多区域成功结果页「GIS 区域热力」说明块（非 Leaflet 地图）；UI data-testid=regional-comp-heatmap-gis，
+  alert 原文含「当前先交付柱状与矩阵热力；GIS 按批准分期」（IndustryRegionalResultBoard showGisPlaceholder：单产业且 regionCount≥2）。
+  打开结果=生物/生物/深圳+上海+杭州 开始分析（同 03488/03489）或分析记录扫已完成多区域行；单区域深链不展示 GIS 块。
+  catalog_path=entry-seed；404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,83 @@
+id: FUNC-01132
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01132
+priority: P0
+title: 切换 Tab 不重置筛选区已选集群与产业链
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已选定产业集群并选取产业链
+locators:
+  filter_cluster: 'span[aria-label="集群"]'
+  filter_industry: 'span[aria-label="产业"]'
+  filter_chain: '.industry-overview-chain-select'
+  tablist: '[aria-label=专题全景视图]'
+  tab_news: '#industry-overview-tab-news'
+  tab_panorama: '#industry-overview-tab-panorama'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 全景 Tab 回读筛选已选值，切产业资讯再回读，切回产业链全景再回读
+expect:
+  - note: 切 Tab 后筛选区已选集群与产业链保持
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const readFilters = async () => {
+        const cluster = await page.locator('span[aria-label="集群"]').getAttribute('title');
+        const industry = await page.locator('span[aria-label="产业"]').getAttribute('title');
+        const chain = await page.locator('.industry-overview-chain-select').getAttribute('title');
+        return { cluster, industry, chain };
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(mode.locator('#industry-overview-tab-panorama')).toBeVisible({ timeout: 8000 });
+      const baseline = await readFilters();
+      if (!baseline.cluster || !baseline.chain) {
+        throw new Error('前置未选集群/产业链: ' + JSON.stringify(baseline));
+      }
+      await mode.locator('#industry-overview-tab-news').click();
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]tab=news/);
+      const onNews = await readFilters();
+      if (onNews.cluster !== baseline.cluster || onNews.chain !== baseline.chain) {
+        throw new Error(
+          '切资讯后筛选被重置: ' + onNews.cluster + '/' + onNews.chain + ' vs ' + baseline.cluster + '/' + baseline.chain
+        );
+      }
+      if (baseline.industry && onNews.industry !== baseline.industry) {
+        throw new Error('切资讯后产业被重置: ' + onNews.industry + ' vs ' + baseline.industry);
+      }
+      await mode.locator('#industry-overview-tab-panorama').click();
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]tab=panorama/);
+      const onPanorama = await readFilters();
+      if (onPanorama.cluster !== baseline.cluster || onPanorama.chain !== baseline.chain) {
+        throw new Error(
+          '切回全景后筛选被重置: ' + onPanorama.cluster + '/' + onPanorama.chain + ' vs ' + baseline.cluster + '/' + baseline.chain
+        );
+      }
+  - note: 各 Tab 共用同一组筛选条件
+    assert: |-
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('span[aria-label="产业"]')).toBeVisible();
+      await expect(page.locator('.industry-overview-chain-select')).toBeVisible();
+      await mode.locator('#industry-overview-tab-news').click();
+      await page.waitForTimeout(500);
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('.industry-overview-chain-select')).toBeVisible();
+      await mode.locator('#industry-overview-tab-panorama').click();
+      await page.waitForTimeout(500);
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/overview；筛选三级级联集群/产业/产业链，读 title 属性证已选值；主区 Tab 作用域 [aria-label=专题全景视图]，稳定 id industry-overview-tab-panorama/news。进入页默认 boot 已选集群与产业链（testdata filters.default_boot）。互斥切换归 01131；切回恢复归 01136。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

@@ -1,0 +1,49 @@
+id: FUNC-01330
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01330
+priority: P0
+tier: A
+title: 智能检索输入框占位与搜索按钮构成正确
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入 /service-center/search；当前为「智能检索」Tab（默认）
+locators:
+  smart_tab: tab「智能检索」
+  search_input: textbox placeholder「用一句话描述机构需求，如「深圳 检验检测」」
+  search_btn: button「搜索」（arco-input-search-btn）
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 确认智能检索 Tab 激活后读占位与搜索按钮（判定在 expect）
+expect:
+  - note: 当前为「智能检索」Tab 且输入框占位为「用一句话描述机构需求，如「深圳 检验检测」」
+    assert: |-
+      const hideCompareBasket = async () => {
+        const x = page.locator('[aria-label="关闭对比篮"]');
+        if (!(await x.count())) return;
+        if (await x.first().isVisible().catch(() => false)) {
+          await x.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await hideCompareBasket();
+      const on404 = await page.getByText('抱歉，页面不存在').isVisible().catch(() => false);
+      if (on404) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-center/search SPA404 url=' + page.url());
+      }
+      const tab = page.getByRole('tab', { name: '智能检索' });
+      await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      const ph = '用一句话描述机构需求，如「深圳 检验检测」';
+      await expect(page.getByPlaceholder(ph)).toBeVisible({ timeout: 8000 });
+  - note: 「搜索」按钮可见、可点，且为 Arco 搜索栏按钮样式
+    assert: |-
+      const btn = page.getByRole('button', { name: '搜索', exact: true });
+      await expect(btn).toBeVisible({ timeout: 8000 });
+      await expect(btn).toBeEnabled();
+      const klass = await btn.getAttribute('class');
+      if (!klass || !klass.includes('arco-input-search-btn')) {
+        throw new Error('搜索按钮 class 不含 arco-input-search-btn: ' + klass);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 用例主流程只验占位与搜索按钮；快捷示例 chip 归 01331。空输入归 04034。catalog_path=/service-center/search。登录与关内部评审由 runner 会话前置。对比篮浮层可见才关。A 档零 allow_skip。对照重写 id=FUNC-01330，不沿用 P0-03 金样文件。

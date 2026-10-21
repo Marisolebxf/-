@@ -1,0 +1,86 @@
+id: FUNC-01598
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01598
+priority: P1
+title: 区域下第二级板块共 3 项
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  filter_heading: main 内「产业与企业类型筛选」
+  region_cascader_view: main 内 [aria-label="选择区域"] 或 .sci-arco-cascader .arco-cascader-view（P7）
+  cascade_region_group: 级联第一级「区域」项
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开区域级联并展开「区域」；第二级项数与名称在 expect 判定
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]')).toBeVisible({ timeout: 8000 });
+  - note: 展开「区域」后第二级为京津冀、长三角、大湾区，共 3 项
+    assert: |-
+      const main = page.locator('main');
+      let regionView = main.locator('[aria-label="选择区域"]').first();
+      if ((await main.locator('[aria-label="选择区域"]').count()) < 1) {
+        regionView = main.locator('.sci-arco-cascader .arco-cascader-view').first();
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let panel = page.locator('.arco-cascader-list-column').first().locator('xpath=ancestor::*[contains(@class,"arco-trigger-popup") or starts-with(@id,"arco-cascader-popup")]').first();
+      if (!(await panel.isVisible().catch(() => false))) {
+        const combo = main.locator('.sci-arco-cascader').first();
+        const popupId = await combo.getAttribute('aria-controls');
+        if (!popupId) throw new Error('区域级联未暴露 aria-controls');
+        panel = page.locator('#' + popupId);
+      }
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const firstCol = panel.locator('.arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const firstItems = firstCol.locator('.arco-cascader-list-item');
+      const nFirst = await firstItems.count();
+      let regionItem = null;
+      for (let i = 0; i < nFirst; i++) {
+        const t = ((await firstItems.nth(i).innerText()) || '').replace(/\s+/g, '').trim();
+        if (t === '区域') {
+          regionItem = firstItems.nth(i);
+          break;
+        }
+      }
+      if (!regionItem) {
+        const sample = await firstItems.allTextContents();
+        throw new Error('第一级未见精确「区域」项，样本=' + sample.join('|'));
+      }
+      await regionItem.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const secondCol = panel.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      const expected = ['京津冀', '长三角', '大湾区'];
+      const texts = (await secondCol.locator('.arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      if (texts.length !== 3) {
+        throw new Error(`「区域」第二级项数为 ${texts.length}，预期 3；实际=${texts.join('、')}`);
+      }
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`第二级未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      const extras = texts.filter((t) => !expected.some((n) => t === n || t.includes(n)));
+      if (extras.length) {
+        throw new Error(`第二级出现预期外项：${extras.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 区域级联触发器同 FUNC-01597/01599（aria-label=选择区域 + aria-controls popup）；第一级点精确「区域」。第二级 3 项对齐用例 FUNC-01598。登录与关内部评审由 runner 会话前置。

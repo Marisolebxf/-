@@ -1,0 +1,184 @@
+id: FUNC-03514
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03514
+priority: P1
+title: 分析记录任务状态筛「已完成」仅保留已完成且条数变少
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 记录中既有已完成也有失败（assert 自含）
+locators:
+  tab_records: tab「分析记录」
+  status_filter: 任务状态
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入竞争力工作区→分析记录 Tab→任务状态选「已完成」；行状态与条数在 expect
+expect:
+  - note: 前置：分析记录 Tab；「全部状态」下同时有已完成与失败行，并采样基线条数
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await recover404Shell();
+        if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) await recover404Shell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 15000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await page.waitForTimeout(800);
+      };
+      const chainRows = () => main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+      const countVisibleChainRows = async () => {
+        const rows = chainRows();
+        const n = await rows.count();
+        let c = 0;
+        for (let i = 0; i < n; i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) c++;
+        }
+        return c;
+      };
+      const openRecordsTab = async () => {
+        const byRole = page.getByRole('tab', { name: '分析记录' });
+        const byKey = page.locator('[role=tab][data-tab-key="records"]');
+        if (await byRole.count()) {
+          await expect(byRole.first()).toBeVisible({ timeout: 15000 });
+          await byRole.first().click({ timeout: 10000 });
+          return;
+        }
+        await expect(byKey.first()).toBeVisible({ timeout: 15000 });
+        await byKey.first().click({ timeout: 10000 });
+      };
+      await dismissBasket();
+      await recover404Shell();
+      const failIf404Shell = async (where) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: edu SPA404（' + where + '） ' + page.url());
+        }
+      };
+      const onRegional = () =>
+        /\/industry-center\/regional/.test(page.url()) && /workspace=competitiveness/.test(page.url());
+      let onWork = onRegional() && !(await bodyIs404());
+      if (!onWork) {
+        await enterViaSidebar();
+        onWork = /\/industry-center\/regional/.test(page.url()) && !(await bodyIs404());
+      }
+      if (!onWork) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+      }
+      if (await bodyIs404()) await enterViaSidebar();
+      await failIf404Shell('区域产业竞争力评价着陆');
+      await openRecordsTab();
+      await page.waitForTimeout(1500);
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(body)) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS: 分析记录无 CHAIN 任务行');
+      }
+      if (!/已完成/.test(body) || !/失败/.test(body)) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-FILTER-MIX-03514：前置不满足（需同时有已完成与失败）');
+      }
+      if (!/任务状态|全部状态/.test(body)) {
+        throw new Error('分析记录区未见任务状态筛选');
+      }
+      const nAll = await countVisibleChainRows();
+      if (nAll < 2) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-FILTER-MIX-03514：全部状态可见行不足 2（n=' + nAll + '）');
+      }
+      globalThis.__func03514 = { nAll, chainRows, TID_RE, main };
+  - note: 1、任务状态下拉选「已完成」（用例步骤 1）
+    assert: |-
+      const ctx = globalThis.__func03514;
+      if (!ctx) throw new Error('前置：分析记录未就绪');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      const statusLabel = page.getByText('任务状态', { exact: false }).first();
+      await expect(statusLabel).toBeVisible({ timeout: 8000 });
+      let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      if ((await trigger.count()) < 1) {
+        trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+      }
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const opt = page.locator(optSel).filter({ hasText: /^已完成$/ }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/已完成/.test(shown)) {
+        throw new Error('任务状态筛选未回显「已完成」：' + shown);
+      }
+  - note: 1、每一行状态都是「已完成」；2、条数少于选「全部状态」时
+    assert: |-
+      const ctx = globalThis.__func03514;
+      if (!ctx) throw new Error('前置：分析记录未就绪');
+      const rows = ctx.chainRows();
+      const n = await rows.count();
+      if (n < 1) throw new Error('筛「已完成」后未见 CHAIN 任务行');
+      const bad = [];
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const id = (rt.match(ctx.TID_RE) || [])[0] || ('row' + i);
+        if (/失败|分析中/.test(rt)) bad.push(id + ' 含非已完成状态');
+        else if (!/已完成/.test(rt)) bad.push(id + ' 未见「已完成」：' + rt.slice(0, 100));
+      }
+      if (bad.length) throw new Error('筛已完成后行状态不符：' + bad.join('; '));
+      let nDone = 0;
+      for (let i = 0; i < n; i++) {
+        if (await rows.nth(i).isVisible().catch(() => false)) nDone++;
+      }
+      if (nDone >= ctx.nAll) {
+        throw new Error('筛已完成后条数应少于全部状态：done=' + nDone + ' all=' + ctx.nAll);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed competitiveness。步骤=分析记录 Tab→任务状态选「已完成」（4 项：全部状态/分析中/已完成/失败）。
+  前置=全部状态下 main 同时含「已完成」「失败」且可见 CHAIN 行≥2，否则 ENV-CHAIN-REGIONAL-COMPETE-FILTER-MIX-03514 / NO-RECORDS。
+  机检=每可见 CHAIN 行仅「已完成」、nDone<nAll。edu SPA404→侧栏 search→区域产业竞争力评价（同 03505）。登录关评审 runner 前置。B 档零 allow_skip。

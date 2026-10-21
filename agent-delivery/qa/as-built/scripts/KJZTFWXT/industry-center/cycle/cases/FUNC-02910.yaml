@@ -1,0 +1,105 @@
+id: FUNC-02910
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02910
+priority: P0
+title: 诊断记录已完成任务复制配置回到分析配置
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: A
+preconditions:
+  - 诊断记录有一条已完成任务
+locators:
+  records_tab: tab「诊断记录」
+  copy_config: button「复制配置」
+  config_heading: heading「分析配置」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 诊断记录已完成行点「复制配置」；toast/配置回显/非生成中在 expect
+expect:
+  - note: 1、提示「已复制分析配置，可调整后重新分析」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const copies = main().getByRole('button', { name: '复制配置' });
+      const n = await copies.count();
+      let clicked = false;
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        let row = copies.nth(i).locator('xpath=ancestor::tr[1]');
+        if ((await row.count()) < 1) row = copies.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+        const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+        if (!rt || !/已完成/.test(rt) || !/产业周期分析/.test(rt)) continue;
+        await copies.nth(i).click({ timeout: 15000 });
+        clicked = true;
+        break;
+      }
+      if (!clicked) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001：诊断记录无已完成产业周期任务可点「复制配置」');
+      }
+      await page.waitForTimeout(600);
+      const toast = page.locator('.arco-message:visible, .arco-message-wrapper:visible').filter({ hasText: /已复制分析配置/ });
+      await expect(toast.first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func02910 = { toastOk: true };
+  - note: 2、分析配置里的对象、时间和参数已填上；3、页面停在分析配置，没有进入生成中
+    assert: |-
+      if (!globalThis.__func02910?.toastOk) throw new Error('前置：复制配置 toast 未通过');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const url = page.url();
+      if (/view=result|demo_state=processing/.test(url)) {
+        throw new Error('复制后不应进入结果/过程 URL：' + url);
+      }
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/产业周期分析生成中|可视化分析过程/.test(body)) {
+        throw new Error('复制后不应进入生成中态');
+      }
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
+      const configTab = page.getByRole('tab', { name: '产业周期分析' }).first();
+      await expect(configTab).toHaveAttribute('aria-selected', 'true');
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      const clusterText = ((await cluster.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!clusterText || /请选择|未选/.test(clusterText)) {
+        throw new Error('分析对象（集群）未回显：「' + clusterText + '」');
+      }
+      const timeBlock = page.locator('text=分析时间范围').first();
+      await expect(timeBlock).toBeVisible({ timeout: 8000 });
+      const timeTrigger = timeBlock.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      const timeText = ((await timeTrigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/近3年|近5年/.test(timeText)) {
+        throw new Error('分析时间范围未回显近3年/近5年：「' + timeText + '」');
+      }
+      const spin = page.locator('[role=spinbutton]');
+      const spinN = await spin.count();
+      let filled = 0;
+      for (let i = 0; i < Math.min(spinN, 8); i++) {
+        const v = await spin.nth(i).inputValue().catch(() => '');
+        if (v && String(v).trim() !== '') filled++;
+      }
+      if (filled < 1) {
+        throw new Error('周期参数至少应有一项已填（spinbutton 非空），实际 filled=' + filled);
+      }
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。copyHistoryConfig 会 patchQuery 回到 tab=cycle 并清 view。
+  步骤=诊断记录已完成行「复制配置」→ toast + h2 分析配置 + 产业周期分析 Tab 选中 + 集群/近3|5年/至少1个周期参数非空 + 无生成中。
+  无已完成任务→ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001。登录关评审 runner 前置。A 档零 allow_skip。

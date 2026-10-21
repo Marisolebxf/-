@@ -1,0 +1,91 @@
+id: FUNC-02695
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02695
+priority: P0
+title: 检索结果点查看摘要打开对应该行的抽屉
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已用「光刻」搜出结果
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  result_list: .industry-search-result-list
+  result_card: .industry-search-result-card
+  drawer: .arco-drawer.industry-search-drawer
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索「光刻」后在第一条结果点「查看摘要」；抽屉标题、来源与底栏在 expect 判定
+expect:
+  - note: 1、抽屉标题为该行名称
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const first = region.locator('.industry-search-result-list .industry-search-result-card').first();
+      await expect(first).toBeVisible({ timeout: 12000 });
+      const rowName = (await first.locator('.industry-search-result-title h3').innerText())
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!rowName) throw new Error('第一条结果缺少名称');
+      const rowSource = await first.locator('.industry-search-result-meta').evaluate((el) => {
+        const t = (el.textContent || '').replace(/\s+/g, ' ');
+        const m = t.match(/来源：(\S+)/);
+        return m ? m[1].trim() : '';
+      });
+      if (!rowSource) throw new Error('第一条结果缺少来源');
+      await first.getByRole('button', { name: '查看摘要', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.locator('.arco-drawer-title')).toHaveText(rowName, { timeout: 8000 });
+      const drawerBody = drawer.locator('.industry-search-drawer-body');
+      await expect(drawerBody.getByText('来源', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(drawerBody.getByText(rowSource, { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 2、来源与该行来源一致
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const rowSource = await page
+        .locator('[role=region][aria-label="产业查询结果"] .industry-search-result-card')
+        .first()
+        .locator('.industry-search-result-meta')
+        .evaluate((el) => {
+          const t = (el.textContent || '').replace(/\s+/g, ' ');
+          const m = t.match(/来源：(\S+)/);
+          return m ? m[1].trim() : '';
+        });
+      if (!rowSource) throw new Error('无法读取第一条结果来源');
+      const drawerBody = drawer.locator('.industry-search-drawer-body');
+      await expect(drawerBody.getByText(rowSource, { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 3、底部有「关闭」和「进入全景」
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const footer = drawer.locator('.industry-search-drawer-footer');
+      await expect(footer.getByRole('button', { name: '关闭', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(footer.getByRole('button', { name: '进入全景', exact: true })).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  关键词「光刻」；检索结果态第一条 industry-search-result-card 点「查看摘要」。
+  行来源现场常为 llm_ods_demo（与抽屉 descriptions 来源字段一致）。
+  路由 catalog_path /industry-center/search；抽屉底栏「关闭」「进入全景」（非「进入全景图谱」）。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,116 @@
+id: FUNC-02094
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02094
+priority: P1
+title: 未选产业链时切到对标仍是同一句引导且无城市对比表
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入深圳企业现状分析页
+  - 尚未选定产业链/产业集群
+locators:
+  guide: 请先选择产业链以加载深圳现状分析（语义等价变体见 expect）
+  tab_bench: 多城市横向对标 / 多城市横向对标分析
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 未选链前提下点击「多城市横向对标」Tab（判定在 expect）
+expect:
+  - note: 前置未选链且结果区为待选择引导态
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForLoadState('domcontentloaded');
+      const chain = page.locator('main .arco-select-view').filter({
+        has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+      }).first();
+      if (await chain.count()) {
+        const val = await chain.locator('.arco-select-view-value, .arco-select-view-value-mirror').first().innerText().catch(() => '');
+        const picked = (val || '').trim();
+        if (picked && !/请选择|选择产业/.test(picked)) {
+          throw new Error('前置未满足：产业集群已选中「' + picked + '」');
+        }
+      }
+      const main = page.locator('main');
+      const guidePatterns = [
+        /请选择产业链后查看深圳企业定位与城市对标结果/,
+        /请先选择产业链以加载深圳现状分析/,
+        /请先选择产业集群以加载深圳现状分析/,
+        /请先选择.*以加载深圳现状分析/,
+      ];
+      let guideOk = false;
+      for (const re of guidePatterns) {
+        if (await main.getByText(re).count()) {
+          guideOk = true;
+          break;
+        }
+      }
+      if (!guideOk) {
+        const txt = (await main.innerText().catch(() => '')).slice(0, 400);
+        throw new Error('未选链时定位 Tab 未见待选择引导: ' + txt);
+      }
+  - note: 点击「多城市横向对标」后仍显示同一句引导（语义等价）
+    assert: |-
+      const benchTab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: /多城市横向对标/ }).first();
+      await expect(benchTab).toBeVisible({ timeout: 8000 });
+      await benchTab.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const main = page.locator('main');
+      const guidePatterns = [
+        /请选择产业链后查看深圳企业定位与城市对标结果/,
+        /请先选择产业链以加载深圳现状分析/,
+        /请先选择产业集群以加载深圳现状分析/,
+        /请先选择.*以加载深圳现状分析/,
+      ];
+      let guideOk = false;
+      for (const re of guidePatterns) {
+        if (await main.getByText(re).count()) {
+          await expect(main.getByText(re).first()).toBeVisible({ timeout: 8000 });
+          guideOk = true;
+          break;
+        }
+      }
+      if (!guideOk) {
+        const txt = (await main.innerText().catch(() => '')).slice(0, 400);
+        throw new Error('对标 Tab 下未见未选链引导: ' + txt);
+      }
+  - note: 页面没有城市对比表（无城市×指标对比表体）
+    assert: |-
+      const main = page.locator('main');
+      const tableHints = [
+        /城市\s*×\s*指标/,
+        /城市对比表/,
+        /城市×指标对比表/,
+      ];
+      for (const re of tableHints) {
+        const el = main.getByText(re);
+        if (await el.count()) {
+          const vis = await el.first().isVisible().catch(() => false);
+          if (vis) throw new Error('未选链对标 Tab 出现城市对比表标题: ' + re);
+        }
+      }
+      const forbidden = ['深圳相关企业清单', '覆盖产业链环节', '产业链完整度', '链中角色分布'];
+      for (const label of forbidden) {
+        const el = main.getByText(label, { exact: true });
+        if (await el.count()) {
+          const vis = await el.first().isVisible().catch(() => false);
+          if (vis) throw new Error('未选链对标 Tab 出现结果区块：' + label);
+        }
+      }
+      const dataRows = main.locator('.arco-table tbody tr:not(.arco-table-empty-row)');
+      const rowCount = await dataRows.count();
+      if (rowCount > 0) {
+        const firstTxt = await dataRows.first().innerText().catch(() => '');
+        if (firstTxt && !/暂无|无数据|empty/i.test(firstTxt)) {
+          throw new Error('未选链对标 Tab 出现表数据行: ' + firstTxt.slice(0, 80));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例册文案「请先选择产业链以加载深圳现状分析」；30888 现场常为「请选择产业链后查看深圳企业定位与城市对标结果」（D1 语义等价，同 FUNC-00963）。
+  深链 enterprise-center 前缀。产业集群 placeholder「选择产业集群」。登录与关内部评审由 runner 会话前置。禁止 50892。B 档不进金样。

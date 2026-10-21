@@ -1,0 +1,86 @@
+id: FUNC-03423
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03423
+priority: P0
+title: 侧栏进入深圳产业发展分析路由与页标题正确
+entry_id: chain-sz-dev
+tier: A
+preconditions:
+  - 系统可访问；已登录 admin
+locators:
+  menu_group: 侧栏分组「产业链分析」
+  menu_leaf: 侧栏项「深圳产业发展分析」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 展开「产业链分析」并点「深圳产业发展分析」；路由与页标题在 expect 判定
+expect:
+  - note: 地址含 /industry-center/shenzhen，且工作区与页签均为 development
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search 与深圳发展分析深链均 SPA404，无法验侧栏进入 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+      await expect(page).toHaveURL(/workspace=development/);
+      await expect(page).toHaveURL(/tab=development/);
+  - note: 页标题为「深圳产业发展分析」
+    assert: |-
+      await expect(page).toHaveTitle(/深圳产业发展分析/);
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析', level: 1 })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog_path=entry-seed development 深链；侧栏类 goto sibling /industry-center/search 再点 menu_leaf；深链仅 sibling 404 时 enter 回落（同 FUNC-00732/sz-compare）。作废 00754 深链版，本条验菜单进入。A 档零 allow_skip。

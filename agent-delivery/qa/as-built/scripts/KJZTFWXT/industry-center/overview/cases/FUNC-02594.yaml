@@ -1,0 +1,57 @@
+id: FUNC-02594
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02594
+priority: P0
+title: 产业链全景图例给出五类标记
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 当前为「产业链全景」
+locators:
+  tablist: '[aria-label=专题全景视图]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  legend: .industry-overview-graph-legend[aria-label=产业链全景图例]
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 打开「产业链全景」Tab 后读取图例文案
+expect:
+  - note: 1、图例含上游、中游、下游、关键环节、瓶颈关注五项
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(mode).toBeVisible({ timeout: 10000 });
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const legend = page.locator('.industry-overview-graph-legend[aria-label="产业链全景图例"]');
+      await expect(legend).toBeVisible({ timeout: 10000 });
+      const text = (await legend.innerText()).replace(/\s+/g, ' ');
+      const required = ['上游', '中游', '下游', '关键环节', '瓶颈关注'];
+      const missing = required.filter((label) => !text.includes(label));
+      if (missing.length) {
+        throw new Error('图例缺少标记：' + missing.join('、') + '；现场：' + text);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例步骤「打开产业链全景」= 主区 Tab #industry-overview-tab-panorama（默认已选则仅回读）。
+  图例容器 .industry-overview-graph-legend，aria-label=产业链全景图例；五类文案与 scout.json 及 lumen-ui-topic IndustryOverviewPage 一致。
+  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

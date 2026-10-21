@@ -1,0 +1,281 @@
+id: FUNC-02622
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02622
+priority: P1
+title: 点击放大后环节圆点变大且画布占位与文案不变
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 当前为「产业链全景」
+  - 产业链为「半导体与集成电路」
+locators:
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  zoom_in: button aria-label「放大」
+  canvas_wrap: .industry-overview-canvas
+  canvas: .industry-overview-canvas canvas
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 产业链全景 Tab 内点击图谱工具「放大」；判定在 expect
+expect:
+  - note: 前置：产业链为「半导体与集成电路」且「产业链全景」Tab 图谱已加载
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainTxt = await chain.innerText();
+      if (!/半导体与集成电路/.test(chainTxt)) {
+        throw new Error('前置：产业链应为「半导体与集成电路」，实际：' + chainTxt);
+      }
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：当前链无快照，无法验放大');
+      }
+      const canvas = panel.locator('.industry-overview-canvas canvas').first();
+      await expect(canvas).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1500);
+      globalThis.__func02622_ready = true;
+  - note: 步骤：点击图谱工具「放大」
+    assert: |-
+      if (!globalThis.__func02622_ready) throw new Error('前置未完成');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const measure = async () => {
+        const wrap = panel.locator('.industry-overview-canvas').first();
+        const wrapBox = await wrap.boundingBox();
+        const h2 = panel.locator('h2').first();
+        const title = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+        const stats = (await panel.innerText()).replace(/\s+/g, ' ');
+        const nodeSpan = await panel.evaluate(() => {
+          const measureCanvas = (c) => {
+            if (!c || c.tagName !== 'CANVAS') return 0;
+            const w = c.width;
+            const h = c.height;
+            if (w < 40 || h < 40) return 0;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            if (!ctx) return 0;
+            const { data } = ctx.getImageData(0, 0, w, h);
+            const visited = new Uint8Array(w * h);
+            const isFg = (x, y) => {
+              const i = (y * w + x) * 4;
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+              const a = data[i + 3];
+              if (a < 180) return false;
+              if (r > 245 && g > 245 && b > 245) return false;
+              return true;
+            };
+            let maxSpan = 0;
+            for (let y = 0; y < h; y++) {
+              for (let x = 0; x < w; x++) {
+                const idx = y * w + x;
+                if (visited[idx] || !isFg(x, y)) continue;
+                let minX = x;
+                let maxX = x;
+                let minY = y;
+                let maxY = y;
+                let count = 0;
+                const stack = [[x, y]];
+                visited[idx] = 1;
+                while (stack.length) {
+                  const [cx, cy] = stack.pop();
+                  count++;
+                  minX = Math.min(minX, cx);
+                  maxX = Math.max(maxX, cx);
+                  minY = Math.min(minY, cy);
+                  maxY = Math.max(maxY, cy);
+                  for (const [dx, dy] of [
+                    [1, 0],
+                    [-1, 0],
+                    [0, 1],
+                    [0, -1],
+                  ]) {
+                    const nx = cx + dx;
+                    const ny = cy + dy;
+                    if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                    const ni = ny * w + nx;
+                    if (!visited[ni] && isFg(nx, ny)) {
+                      visited[ni] = 1;
+                      stack.push([nx, ny]);
+                    }
+                  }
+                }
+                if (count < 120) continue;
+                const span = Math.max(maxX - minX + 1, maxY - minY + 1);
+                if (span > maxSpan) maxSpan = span;
+              }
+            }
+            return maxSpan;
+          };
+          const canvases = Array.from(
+            document.querySelectorAll('[data-frame-id="F-OV-01"] .industry-overview-canvas canvas'),
+          );
+          let best = 0;
+          for (const c of canvases) {
+            best = Math.max(best, measureCanvas(c));
+          }
+          return best > 0 ? best : null;
+        });
+        return { wrapBox, title, stats, nodeSpan };
+      };
+      const before = await measure();
+      if (!before.wrapBox || before.wrapBox.width < 80 || before.wrapBox.height < 80) {
+        throw new Error('画布占位尺寸异常: ' + JSON.stringify(before.wrapBox));
+      }
+      if (before.nodeSpan == null) {
+        throw new Error('放大前无法从 canvas 读取环节圆点跨度（像素连通域）');
+      }
+      globalThis.__func02622_before = before;
+      const zoom = panel.locator('[aria-label="放大"]').first();
+      await expect(zoom).toBeVisible({ timeout: 8000 });
+      await expect(zoom).toBeEnabled();
+      await zoom.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+  - note: 1、环节圆点比点按前更大
+    assert: |-
+      const before = globalThis.__func02622_before;
+      if (!before) throw new Error('前置：未记录放大前 canvas 度量');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const afterSpan = await panel.evaluate(() => {
+        const measureCanvas = (c) => {
+          if (!c || c.tagName !== 'CANVAS') return 0;
+          const w = c.width;
+          const h = c.height;
+          const ctx = c.getContext('2d', { willReadFrequently: true });
+          if (!ctx) return 0;
+          const { data } = ctx.getImageData(0, 0, w, h);
+          const visited = new Uint8Array(w * h);
+          const isFg = (x, y) => {
+            const i = (y * w + x) * 4;
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const a = data[i + 3];
+            if (a < 180) return false;
+            if (r > 245 && g > 245 && b > 245) return false;
+            return true;
+          };
+          let maxSpan = 0;
+          for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+              const idx = y * w + x;
+              if (visited[idx] || !isFg(x, y)) continue;
+              let minX = x;
+              let maxX = x;
+              let minY = y;
+              let maxY = y;
+              let count = 0;
+              const stack = [[x, y]];
+              visited[idx] = 1;
+              while (stack.length) {
+                const [cx, cy] = stack.pop();
+                count++;
+                minX = Math.min(minX, cx);
+                maxX = Math.max(maxX, cx);
+                minY = Math.min(minY, cy);
+                maxY = Math.max(maxY, cy);
+                for (const [dx, dy] of [
+                  [1, 0],
+                  [-1, 0],
+                  [0, 1],
+                  [0, -1],
+                ]) {
+                  const nx = cx + dx;
+                  const ny = cy + dy;
+                  if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                  const ni = ny * w + nx;
+                  if (!visited[ni] && isFg(nx, ny)) {
+                    visited[ni] = 1;
+                    stack.push([nx, ny]);
+                  }
+                }
+              }
+              if (count < 120) continue;
+              const span = Math.max(maxX - minX + 1, maxY - minY + 1);
+              if (span > maxSpan) maxSpan = span;
+            }
+          }
+          return maxSpan;
+        };
+        const canvases = Array.from(
+          document.querySelectorAll('[data-frame-id="F-OV-01"] .industry-overview-canvas canvas'),
+        );
+        let best = 0;
+        for (const c of canvases) {
+          best = Math.max(best, measureCanvas(c));
+        }
+        return best > 0 ? best : null;
+      });
+      if (afterSpan == null) throw new Error('放大后无法读取环节圆点跨度');
+      if (afterSpan <= before.nodeSpan) {
+        throw new Error(
+          '放大后环节圆点未变大: beforeSpan=' + before.nodeSpan + ' afterSpan=' + afterSpan,
+        );
+      }
+  - note: 2、画布占位宽高与点按前相同
+    assert: |-
+      const before = globalThis.__func02622_before;
+      if (!before || !before.wrapBox) throw new Error('前置：未记录放大前画布占位');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const wrap = panel.locator('.industry-overview-canvas').first();
+      const afterBox = await wrap.boundingBox();
+      if (!afterBox) throw new Error('放大后画布占位不可见');
+      const dw = Math.abs(afterBox.width - before.wrapBox.width);
+      const dh = Math.abs(afterBox.height - before.wrapBox.height);
+      if (dw > 2 || dh > 2) {
+        throw new Error(
+          '画布占位变化过大: before=' +
+            JSON.stringify(before.wrapBox) +
+            ' after=' +
+            JSON.stringify(afterBox),
+        );
+      }
+  - note: 3、全景标题与环节数说明与点按前相同
+    assert: |-
+      const before = globalThis.__func02622_before;
+      if (!before) throw new Error('前置：未记录放大前文案');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const title = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      if (title !== before.title) {
+        throw new Error('全景标题变化: before=' + before.title + ' after=' + title);
+      }
+      const stats = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (stats !== before.stats) {
+        throw new Error('环节数说明等面板文案变化: ' + stats.slice(0, 160));
+      }
+      if (!/\d+\s*个链位环节/.test(stats) || !/\d+\s*条关系/.test(stats)) {
+        throw new Error('环节数说明缺失: ' + stats.slice(0, 160));
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；图谱工具 SharedMapChrome aria「放大」（fixtures/scout）。
+  页面不提供缩放比例读数；G6 多层 canvas 取含图形层的最大环节连通域跨度作放大代理（zoomBy 1.2）。
+  画布占位取 .industry-overview-canvas 布局盒；标题 H2 与 panel 内环节统计文案逐字比对。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

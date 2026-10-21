@@ -1,0 +1,140 @@
+id: FUNC-05411
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05411
+priority: P1
+title: 只带 1 家企业进入技术力评估时，页面提示至少需要 2 家
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 企业页至少 1 家
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+  check: .ent-compare-item-card__check
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal
+  tech_option: .ent-compare-analysis-option 含 技术力评估
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: wait
+    for: .system-compare-panel 可见
+expect:
+  - note: 前置：勾选 1 家→发起分析→技术力评估→下一步前往配置（到达页见 05394）
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedFromAddModal = async (panel) => {
+        await panel.getByRole('button', { name: '新增' }).click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder(/企业名称|搜索/).first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(400);
+            const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+            if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-ADD-MODAL-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const seedFromEnterpriseSearch = async () => {
+        const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+        await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        if (await recSection.count()) {
+          const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({
+            has: page.getByRole('button', { name: '查看画像', exact: true }),
+          });
+          for (let i = 0; i < await cards.count(); i++) {
+            const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+            if (await btn.count() && (await btn.isVisible().catch(() => false))) {
+              await btn.click({ timeout: 8000 });
+              await page.waitForTimeout(700);
+              break;
+            }
+          }
+        }
+        await page.goto(origin + hostPath, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      };
+      let panel = await openPanel();
+      let entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let n = await panel.locator('.ent-compare-item-card').count();
+      if (n < 1) {
+        await seedFromAddModal(panel).catch(() => {});
+        n = await panel.locator('.ent-compare-item-card').count();
+      }
+      if (n < 1) {
+        await seedFromEnterpriseSearch();
+        panel = await openPanel();
+        entTab = panel.locator('#compare-basket-tab-enterprise');
+        await entTab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        n = await panel.locator('.ent-compare-item-card').count();
+      }
+      if (n < 1) throw new Error('ENV-SHELL-COMPARE-BASKET-EMPTY-001：无法满足企业页至少 1 家');
+      const cancel = panel.getByRole('button', { name: '取消选择' });
+      if (await cancel.count() && !(await cancel.isDisabled())) {
+        await cancel.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const checks = panel.locator('.ent-compare-item-card__check');
+      await checks.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const selLine = panel.getByText(/已选\s*\d+\s*家/).first();
+      await expect(selLine).toBeVisible({ timeout: 8000 });
+      const selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/已选\s*1\s*家/.test(selTxt)) throw new Error('应勾选 1 家: ' + selTxt);
+      const launch = panel.getByRole('button', { name: '发起分析' });
+      if (await launch.isDisabled()) throw new Error('勾选 1 家后发起分析仍 disabled');
+      await launch.click({ timeout: 8000 });
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      const tech = modal.locator('.ent-compare-analysis-option').filter({ hasText: '技术力评估' }).first();
+      if (!(await tech.count())) await modal.getByText('技术力评估').first().click({ timeout: 8000 });
+      else await tech.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await modal.getByRole('button', { name: '下一步：前往配置' }).click({ timeout: 10000 });
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(1500);
+      if (page.url().includes(hostPath) && !page.url().includes('evaluation')) {
+        throw new Error('点击前往配置后仍停在宿主页: ' + page.url());
+      }
+  - note: 提示至少需要 2 家企业
+    assert: |-
+      if (!page.url().includes('/enterprise/evaluation')) {
+        throw new Error('未在技术力评估配置页: ' + page.url());
+      }
+      await page.waitForTimeout(2000);
+      const hintRe = /至少需要\s*2\s*家企业/;
+      const hint = page.getByText(hintRe).first();
+      await expect(hint).toBeVisible({ timeout: 15000 });
+      const txt = ((await hint.innerText()) || '').replace(/\s+/g, ' ');
+      if (!hintRe.test(txt)) throw new Error('家数提示文案异常: ' + txt);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。2026-10-20 实勘顶栏 warning「子类型 technology 至少需要 2 家企业」（全页可见，非 main 内）。到达页同 FUNC-05394；本条只验家数提示。

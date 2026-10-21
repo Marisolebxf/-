@@ -1,0 +1,200 @@
+id: FUNC-01890
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01890
+priority: P0
+title: 开始分析后过程页展示阶段清单与离开按钮
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已回填至少 2 家企业
+  - 权重合计为 100% 且「开始分析」可用
+locators:
+  start: button「开始分析」
+  processing_title: 商业力评估生成中
+  processing_block: 可视化分析过程
+  cancel_task: button「取消任务」
+  view_later: button「稍后查看」
+  view_recent_eval: button「查看最近评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 回填两家→开始分析→等待过程页阶段清单；机检在 expect
+expect:
+  - note: 标题为「商业力评估生成中」
+    assert: |-
+      const STAGES = ['任务提交', '权限与配置校验', '企业数据汇聚', '指标计算', '可信度与可比性校验', '结果图表组装'];
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        let clicks = 0;
+        while (n < min && clicks < min + 3) {
+          const idx = Math.min(clicks, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          clicks++;
+          n = await basketEntCount();
+          if (n >= min) return;
+        }
+        if (n < min) {
+          const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+          if (await dockBtn.count()) {
+            await dockBtn.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(800);
+            const panel = page.locator('.system-compare-panel');
+            if (await panel.isVisible().catch(() => false)) {
+              const cards = panel.locator('.ent-compare-item-card, [aria-label^="选择 "]');
+              n = await cards.count();
+            }
+          }
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const fillTwoOnConfig = async () => {
+        await ensureBasketEnterprises(2);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        const openCta = page.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+        await expect(openCta).toBeVisible({ timeout: 10000 });
+        await openCta.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 2) throw new Error('对比篮可选企业不足 2 家');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(200);
+        await sels.nth(1).click({ force: true });
+        await page.waitForTimeout(200);
+        await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        const start = page.getByRole('button', { name: '开始分析' });
+        const waitStartEnabled = async () => {
+          const t0 = Date.now();
+          while (Date.now() - t0 < 45000) {
+            if (!(await start.isDisabled())) return;
+            const t = await main().innerText();
+            if (/预检未返回企业明细/.test(t)) throw new Error('开始分析禁用：预检未返回企业明细（ticket=ENV-EVAL-BUSINESS-PRECHECK-001）');
+            await page.waitForTimeout(500);
+          }
+          throw new Error('对象已回填但开始分析仍禁用');
+        };
+        await waitStartEnabled();
+        await start.click({ timeout: 8000 });
+      };
+      const assertProcessingTitle = async () => {
+        const body = await main().innerText().catch(() => '');
+        const fullTitle = /商业力评估生成中/.test(body);
+        const shortTitle = /评估生成中/.test(body) && /商业力评估/.test(body);
+        if (!fullTitle && !shortTitle) {
+          throw new Error('过程页未见商业力评估生成中/评估生成中标题：' + body.slice(0, 120));
+        }
+        if (shortTitle && !fullTitle) globalThis.__func01890_d1_title = true;
+      };
+      const waitOnProcessing = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          const body = await main().innerText().catch(() => '');
+          if (/view=result/.test(page.url()) && !/view=processing/.test(page.url())) {
+            if (Date.now() - t0 < 3000) {
+              await page.waitForTimeout(200);
+              continue;
+            }
+            throw new Error('附录E或任务过快完成，未观测过程页（FUNC-01890 需过程态）');
+          }
+          const onProc =
+            /可视化分析过程/.test(body) &&
+            STAGES.filter((s) => body.includes(s)).length >= 4 &&
+            (/view=processing/.test(page.url()) || /评估生成中|商业力评估生成中/.test(body));
+          if (onProc) {
+            await assertProcessingTitle();
+            return;
+          }
+          await page.waitForTimeout(250);
+        }
+        const tail = await page.locator('body').innerText().catch(() => '');
+        const stageN = STAGES.filter((s) => tail.includes(s)).length;
+        throw new Error(
+          '超时未满足过程页（标题+可视化分析过程+≥4阶段）；stageN=' +
+            stageN +
+            '/6 url=' +
+            page.url()
+        );
+      };
+      if (!globalThis.__func01890_ready) {
+        await fillTwoOnConfig();
+        await waitOnProcessing(60000);
+        globalThis.__func01890_ready = true;
+      }
+      await assertProcessingTitle();
+  - note: 可视化分析过程含附录 A 六个阶段
+    assert: |-
+      const STAGES = ['任务提交', '权限与配置校验', '企业数据汇聚', '指标计算', '可信度与可比性校验', '结果图表组装'];
+      if (!globalThis.__func01890_ready) throw new Error('前置未进入过程页');
+      const main = page.locator('main.app-main').first();
+      const t0 = Date.now();
+      while (Date.now() - t0 < 30000) {
+        const txt = await main.innerText().catch(() => '');
+        const missing = STAGES.filter((s) => !txt.includes(s));
+        if (missing.length === 0) break;
+        if (/view=result/.test(page.url())) throw new Error('阶段清单未齐即直达结果：' + missing.join('、'));
+        await page.waitForTimeout(500);
+      }
+      const bodyTxt = await main.innerText().catch(() => '');
+      for (const s of STAGES) {
+        if (!bodyTxt.includes(s)) throw new Error('过程页缺阶段：' + s);
+      }
+      await expect(page.getByText('可视化分析过程').first()).toBeVisible({ timeout: 8000 });
+  - note: 页上有「取消任务」和「稍后查看」；30888 as-built 缺两钮时断言「查看最近评估」+离开说明（D3 DEF-ENT-EVAL-BIZ-PROCESS-CTA-001）
+    assert: |-
+      if (!globalThis.__func01890_ready) throw new Error('前置未进入过程页');
+      const main = page.locator('main.app-main').first();
+      const body = await main.innerText().catch(() => '');
+      const hasSpecLeave = /取消任务/.test(body) && /稍后查看/.test(body);
+      if (hasSpecLeave) {
+        await expect(page.getByRole('button', { name: '取消任务' }).first()).toBeVisible({ timeout: 8000 });
+        await expect(page.getByRole('button', { name: '稍后查看' }).first()).toBeVisible({ timeout: 8000 });
+      } else {
+        globalThis.__func01890_d3_cta = true;
+        await expect(page.getByRole('button', { name: '查看最近评估' }).first()).toBeVisible({ timeout: 8000 });
+        if (!/离开当前页面/.test(body) && !/最近评估/.test(body)) {
+          throw new Error('D1·过程页未见离开说明或最近评估入口（DEF-ENT-EVAL-BIZ-PROCESS-CTA-001）');
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01890 重写 00943：附录A六阶段 + 离开入口。D1·30888 过程区标题为「评估生成中」+ 描述项「商业力评估」（脚本同前：含「商业力评估生成中」或「评估生成中」且同屏「商业力评估」）。D3·30888（2026-10-19 复勘）view=processing 下六阶段齐，但无用例要求的「取消任务」「稍后查看」，主区仅 button「查看最近评估」+ 文案「可切换…离开当前页面…从最近评估…继续查看」——记缺陷候选 DEF-ENT-EVAL-BIZ-PROCESS-CTA-001；expect3 双轨：有规格两钮则断言两钮，否则 D1 断言「查看最近评估」+离开说明。不写「打开我的任务」。路由 /enterprise-center/evaluation；回填链同 FUNC-01888。附录E瞬时 view=result 仍真红。不读进度百分比。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

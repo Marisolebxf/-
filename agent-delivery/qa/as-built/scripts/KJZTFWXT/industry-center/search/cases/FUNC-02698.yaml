@@ -1,0 +1,67 @@
+id: FUNC-02698
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02698
+priority: P0
+title: 摘要抽屉进入全景打开该对象全景页
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 已打开「新一代信息技术」的摘要抽屉
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+  drawer: .arco-drawer.industry-search-drawer
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 推荐行打开摘要抽屉后点底栏「进入全景」；路由与页标题在 expect 判定
+expect:
+  - note: 1、页标题含「产业链全景图谱」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('前置应为推荐产业列表 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '新一代信息技术' }).first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      await card.getByRole('button', { name: '查看摘要', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const enterPanorama = drawer.locator('.industry-search-drawer-footer').getByRole('button', {
+        name: '进入全景',
+        exact: true,
+      });
+      await expect(enterPanorama).toBeVisible({ timeout: 8000 });
+      await enterPanorama.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      await expect(page).toHaveTitle(/产业链全景图谱/, { timeout: 12000 });
+  - note: 2、页面标题含「新一代信息技术全景图谱」
+    assert: |-
+      await expect(page.getByRole('heading', { level: 1, name: /新一代信息技术全景图谱/ })).toBeVisible({
+        timeout: 12000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；recommendation 态打开「新一代信息技术」摘要抽屉后点底栏「进入全景」
+  （非列表行「进入全景图谱」）→ /industry-center/panorama；document.title 含「产业链全景图谱」；
+  主区 H1「新一代信息技术全景图谱」。登录与关内部评审由 runner 前置。A 档零 allow_skip。

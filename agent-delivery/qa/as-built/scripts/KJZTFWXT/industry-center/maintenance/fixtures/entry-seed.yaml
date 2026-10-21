@@ -1,0 +1,17 @@
+# 维护管理（产业链）入口 seed（重写波路由闸门）
+# 真源优先级：catalog.path > 本文件 > 用例册路由列 > 探针猜到的 URL
+
+entry_id: chain-maintenance
+catalog_path: /industry-center/maintenance
+menu_path: [产业链分析, 维护管理]
+menu_leaf: 维护管理
+
+sibling_for_sidebar_entry: /industry-center/overview
+
+forbidden_paths:
+  - /service/maintenance
+
+route_gate:
+  - fixtures/testdata.yaml 的 route 必须等于 catalog_path
+  - steps goto / expect waitForURL / locators href 禁止出现 forbidden_paths
+  - 探针若看到与 catalog_path 不同的 URL：记 as_built_note，不得改脚本路由去迁就探针

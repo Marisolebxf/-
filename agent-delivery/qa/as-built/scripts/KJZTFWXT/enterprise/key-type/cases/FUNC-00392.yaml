@@ -1,0 +1,69 @@
+id: FUNC-00392
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00392
+priority: P1
+title: 移除已选企业类型标签后回到全部类型
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已勾选「高新技术企业」（30888 现场选项与 tag 文案「高企」）
+locators:
+  type_trigger: main 内 placeholder「全部」的企业类型 .arco-select-view
+  type_option_live: 下拉「高企」
+  type_tag_live: 筛选栏 tag「高企」
+  tag_close: .arco-tag-close-btn
+  kpi_section: section 含三卡 KPI
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 若无已选类型则先勾选「高企」，再点击该 tag 的关闭按钮；回显与三卡在 expect 内判定
+expect:
+  - note: 1、点击类型标签移除后，该标签从筛选栏消失
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const typeInp = main.getByPlaceholder('全部').last();
+      await expect(typeInp).toBeVisible({ timeout: 8000 });
+      let tag = main.locator('.arco-tag').filter({ hasText: /^高企$/ }).first();
+      if (!(await tag.isVisible().catch(() => false))) {
+        const typeView = typeInp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        await typeView.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const opt = page.locator('.arco-select-option').filter({ hasText: /^高企$/ }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+        tag = main.locator('.arco-tag').filter({ hasText: /^高企$/ }).first();
+        await expect(tag).toBeVisible({ timeout: 8000 });
+      }
+      await tag.hover().catch(() => {});
+      await tag.locator('.arco-tag-close-btn, [aria-label="Close"], [aria-label="close"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const remain = await main.locator('.arco-tag').filter({ hasText: /^高企$/ }).count();
+      if (remain) throw new Error('移除后可见 tag 仍 ' + remain + ' 个');
+  - note: 2、企业类型回到「全部类型」语义（placeholder「全部」空值）
+    assert: |-
+      const main = page.locator('main');
+      const typeInp = main.getByPlaceholder('全部').last();
+      await expect(typeInp).toBeVisible({ timeout: 8000 });
+      const val = await typeInp.inputValue();
+      if (val) throw new Error('移除后企业类型输入仍非空: ' + val);
+  - note: 3、类型与区域分析三卡（匹配企业数、覆盖企业类型数、覆盖区域数）仍在
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      await expect(kpiSection).toBeVisible({ timeout: 8000 });
+      const names = ['匹配企业数', '覆盖企业类型数', '覆盖区域数'];
+      for (const n of names) {
+        await expect(kpiSection.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise-center/key-enterprise-analysis?workspace=type&view=type。用例册「高新技术企业」；现场选项与 tag「高企」。全部类型=placeholder「全部」空值。登录与关内部评审由 runner 会话前置。

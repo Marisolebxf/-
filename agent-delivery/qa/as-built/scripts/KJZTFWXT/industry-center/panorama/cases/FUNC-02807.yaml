@@ -1,0 +1,84 @@
+id: FUNC-02807
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02807
+priority: P1
+title: 清空所属产业链后标题改到产业级并出现开始分析
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 所属产业链为「半导体与集成电路」
+locators:
+  context: '[data-testid="panorama-analysis-context"]'
+  segment: .industry-catalog-select
+  clear_btn: .industry-catalog-select .arco-select-view-clear-btn
+  h1: '#panorama-workspace-title'
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 前置确认默认链后 hover 点所属产业链清除图标
+expect:
+  - note: 1、所属产业链为空；2、主标题「新一代信息技术全景图谱」；3、出现「开始分析」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const readView = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const segWrap = ctx.locator('.industry-catalog-select').first();
+      const segView = segWrap.locator('.arco-select-view').first();
+      await expect(segView).toBeVisible({ timeout: 8000 });
+      const before = await readView(segView);
+      if (!/半导体与集成电路/.test(before)) {
+        throw new Error('前置：所属产业链应为「半导体与集成电路」，现场: ' + before);
+      }
+      await segView.scrollIntoViewIfNeeded();
+      await segView.hover();
+      await page.waitForTimeout(400);
+      const clr = segWrap.locator('.arco-select-view-clear-btn, .arco-select-clear-icon').first();
+      if (!(await clr.count())) {
+        throw new Error('所属产业链 hover 后未见清除控件（allowClear）');
+      }
+      await clr.click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(800);
+      const after = await readView(segView);
+      const valueTxt = ((await segWrap.locator('.arco-select-view-value').first().innerText().catch(() => '')) || '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const echo = after || valueTxt;
+      if (/半导体与集成电路/.test(echo)) {
+        throw new Error('清除后所属产业链仍回显细分链: ' + echo);
+      }
+      const phOk =
+        /请选择产业链/.test(echo) ||
+        echo === '' ||
+        (await segWrap.locator('input[placeholder="请选择产业链"]').count()) > 0;
+      if (!phOk && echo) {
+        throw new Error('清除后所属产业链非空态，现场: ' + echo);
+      }
+      await expect(page.locator('#panorama-workspace-title')).toHaveText('新一代信息技术全景图谱', {
+        timeout: 8000,
+      });
+      const start = page.getByRole('button', { name: '开始分析' });
+      await expect(start.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 /industry-center/panorama；用例「所属产业链」= IndustryCatalogSelect showChain only、allowClear（chainPlaceholder=请选择产业链）。
+  清空 chainId 后 panoramaTitle=产业级「{集群名}全景图谱」（draftIndustryId 仍为默认新一代信息技术）；dirty 时 showStartAnalysis 显式按钮（canStart 须再选链，本用例只断言出现）。
+  清除点法对齐 service/chain-graph P0-04（hover + arco-select-view-clear-btn）。登录与关内部评审由 runner 前置。A 档零 allow_skip。

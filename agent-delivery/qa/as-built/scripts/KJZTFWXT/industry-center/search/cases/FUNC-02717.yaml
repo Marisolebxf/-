@@ -1,0 +1,61 @@
+id: FUNC-02717
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02717
+priority: P0
+title: 高级筛选默认面板字段库未选条件且应用禁用
+entry_id: chain-search
+tier: B
+preconditions:
+  - 已进入产业查询页
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  apply_btn: button 应用筛选（0）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点击「高级筛选」Tab；三条预期在 expect 分步判定
+expect:
+  - note: 1、标题为「高级筛选 · 字段库」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+  - note: 2、显示「已选 0 个条件」
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib.getByText('已选 0 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 3、「应用筛选（0）」不可点
+    assert: |-
+      const applyBtn = page.getByRole('button', { name: /应用筛选\s*[（(]\s*0\s*[）)]/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      if (!(await applyBtn.isDisabled())) {
+        throw new Error('默认无筛选条件时「应用筛选（0）」应为禁用，实际可点');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab filter 文案「高级筛选」，URL 含 mode=advanced。
+  字段库 region aria-label 现场可为「高级筛选字段库」或 lumen「产业高级筛选字段库」；标题 h2「高级筛选 · 字段库」。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑：goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout/env-gate+fixtures。
+  附录 A 字段分组本用例未在预期列要求机检。登录与关内部评审由 runner 前置。

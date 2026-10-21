@@ -1,0 +1,109 @@
+id: FUNC-01718
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01718
+priority: P1
+title: 选择分析企业内企业类型下拉共 7 项
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 「选择分析企业」已打开（assert 可自含入篮与打开选择器）
+locators:
+  picker_title: text「选择分析企业」
+  type_select: .arco-select-view（全部企业类型）
+  type_popup_options: .arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 打开选择器后展开「全部企业类型」；项数与名称在 expect 判定
+expect:
+  - note: 1、选项共 7 个（附录 A 七类；30888 现场为外企/高企/小微/上市/专精特新/小巨人/链主龙头）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const expected = ['外企', '高企', '小微', '上市', '专精特新', '小巨人', '链主龙头'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const gotoRoute = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const clickPageOpenPicker = async () => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(800);
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      await gotoRoute();
+      await ensureBasketEnterprises(1);
+      await gotoRoute();
+      await clickPageOpenPicker();
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      const root = pickerRoot();
+      const scope = (await root.count()) ? root : page.locator('body');
+      const typeView = scope.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first();
+      await expect(typeView).toBeVisible({ timeout: 8000 });
+      await typeView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const opts = page.locator('.arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const texts = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
+      if (texts.length !== 7) {
+        throw new Error(`企业类型选项数为 ${texts.length}，预期 7；实见=${texts.join('、')}`);
+      }
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`下拉未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 01718 前置「选择分析企业」已打开；流程对齐 01716/01717（对比篮≥1、页内选择器）。展开 placeholder「全部企业类型」的 .arco-select-view。用例附录 A 为全称七类；30888 现场下拉文案为外企/高企/小微/上市/专精特新/小巨人/链主龙头（与 ent-key-type FUNC-01592 一致）。登录与关内部评审由 runner 会话前置。B 档。

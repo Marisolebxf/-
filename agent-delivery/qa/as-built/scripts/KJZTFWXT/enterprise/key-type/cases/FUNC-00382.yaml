@@ -1,0 +1,51 @@
+id: FUNC-00382
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00382
+priority: P0
+title: 空间分布区默认呈现地图视图且提供视图切换
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 已进入类型分析页（经侧栏进入以核对默认态）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  section_title_live: heading「三级地理透视与可视化呈现」
+  map_panel: section.analysis-workspace-panel（含空间分布标题）
+  map_btn: button「地图视图」
+  list_btn: button「列表视图」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析页；空间分布默认地图与视图切换在 expect 内判定
+expect:
+  - note: 1、区块标题为空间分布区标题（用例册「重点企业空间分布」；30888 现场「三级地理透视与可视化呈现」）
+    assert: |-
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click({ timeout: 10000 });
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await page.waitForTimeout(2000);
+      const close = page.getByRole('button', { name: '关闭对比篮' });
+      if (await close.count()) await close.first().click({ timeout: 3000 }).catch(() => {});
+      await expect(page.getByRole('heading', { name: '三级地理透视与可视化呈现' }).first()).toBeVisible({ timeout: 10000 });
+  - note: 2、主工作区默认呈现地图（空间分布区内 Leaflet 可见，「地图视图」为选中态）
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 });
+      const mapBtn = panel.getByRole('button', { name: '地图视图', exact: true });
+      await expect(mapBtn).toBeVisible({ timeout: 8000 });
+      const cls = (await mapBtn.getAttribute('class')) || '';
+      if (!cls.includes('arco-btn-primary')) {
+        throw new Error('默认态「地图视图」未呈选中态（非 primary）: ' + cls);
+      }
+  - note: 3、提供「地图视图」与「列表视图」切换入口
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel.getByRole('button', { name: '地图视图', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(panel.getByRole('button', { name: '列表视图', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 侧栏为 link 非 menuitem；路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type（用例 catalog /enterprise/... 深链 404）。空间分布区块标题现场为「三级地理透视与可视化呈现」（用例册仍写重点企业空间分布）。与 00384 分开验收。登录与关内部评审由 runner 会话前置。

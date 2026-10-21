@@ -1,0 +1,139 @@
+id: FUNC-05422
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05422
+priority: P1
+title: 产业页全选当前筛选结果已选等于列出全部
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 产业页至少 1 个对象
+locators:
+  panel: .system-compare-panel
+  industry_tab: '#compare-basket-tab-industry'
+  industry_panel: '#compare-basket-panel-industry'
+  select_all: checkbox aria-label「全选当前筛选结果」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 产业页签点「全选当前筛选结果」；已选计数在 expect 判定
+expect:
+  - note: 前置开篮、产业 Tab，清筛选与取消选择后点击全选
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedIndustryFromAdd = async (panel) => {
+        await panel.getByRole('button', { name: '新增' }).first().click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        const search = modal.getByPlaceholder(/产业或产业链名称/).first();
+        if (await search.count()) {
+          await search.fill('电子');
+          await page.waitForTimeout(400);
+          const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+          if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+        const joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-IND-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const openIndustryTab = async (panel) => {
+        const indTab = panel.locator('#compare-basket-tab-industry');
+        if (await indTab.count()) await indTab.click({ timeout: 15000 });
+        else await panel.getByRole('tab', { name: /^产业/ }).first().click({ timeout: 15000 });
+        await page.waitForTimeout(600);
+        const indPanel = page.locator('#compare-basket-panel-industry');
+        await expect(indPanel).toBeVisible({ timeout: 12000 });
+        await expect(indPanel.getByText('篮内产业对象').first()).toBeVisible({ timeout: 8000 });
+        const cls = (await panel.locator('#compare-basket-tab-industry').getAttribute('class')) || '';
+        if (!/active/.test(cls)) {
+          await panel.getByRole('tab', { name: /^产业/ }).first().click({ timeout: 15000 });
+          await page.waitForTimeout(600);
+        }
+        return { indTab: panel.locator('#compare-basket-tab-industry'), indPanel };
+      };
+      const countListedIndRows = async (indPanel) => {
+        const rows = indPanel.locator('.overflow-y-auto .grid > div').filter({
+          has: page.getByRole('button', { name: '查看对象', exact: true }),
+        });
+        let n = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) n += 1;
+        }
+        return n;
+      };
+      const industryBar = (indPanel) => indPanel.locator('[data-testid="compare-basket-action-bar"]');
+      let panel = await openPanel();
+      let { indPanel } = await openIndustryTab(panel);
+      let listN = await countListedIndRows(indPanel);
+      if (listN < 1) {
+        await seedIndustryFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        ({ indPanel } = await openIndustryTab(panel));
+        listN = await countListedIndRows(indPanel);
+      }
+      if (listN < 1) throw new Error('ENV-SHELL-COMPARE-IND-EMPTY-001：产业页至少 1 个对象');
+      const search = indPanel.getByPlaceholder('按产业或产业链名称搜索');
+      if (await search.count()) {
+        await search.fill('');
+        await page.waitForTimeout(400);
+      }
+      const resetBtn = indPanel.getByRole('button', { name: '重置', exact: true });
+      if (await resetBtn.count() && !(await resetBtn.isDisabled())) {
+        await resetBtn.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(500);
+      }
+      listN = await countListedIndRows(indPanel);
+      if (listN < 1) throw new Error('重置筛选后产业列表为空');
+      const bar = industryBar(indPanel);
+      await bar.scrollIntoViewIfNeeded().catch(() => {});
+      await expect(bar).toBeVisible({ timeout: 8000 });
+      const cancel = bar.getByRole('button', { name: '取消选择', exact: true });
+      if (await cancel.count() && !(await cancel.isDisabled())) {
+        await cancel.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const selectAllCb = bar.locator('[aria-label="全选当前筛选结果"]').first();
+      if (!(await selectAllCb.count())) throw new Error('产业底栏未见全选 checkbox');
+      // ponytail: 产业底栏在 headless 视口外，Playwright 常规 click 报 outside viewport
+      await selectAllCb.evaluate((el) => {
+        const t = el.closest('label') || el;
+        t.click();
+      });
+      await page.waitForTimeout(500);
+      globalThis.__func05422 = { listN };
+  - note: 底栏「已选」对象数等于当前列出的产业行数
+    assert: |-
+      const st = globalThis.__func05422 || {};
+      if (typeof st.listN !== 'number') throw new Error('前置：未完成全选点击');
+      const indPanel = page.locator('#compare-basket-panel-industry');
+      await expect(indPanel).toBeVisible({ timeout: 8000 });
+      const bar = indPanel.locator('[data-testid="compare-basket-action-bar"]');
+      await expect(bar).toBeVisible({ timeout: 8000 });
+      const selLine = bar.getByText(/已选\s*\d+\s*个对象/).first();
+      await expect(selLine).toBeVisible({ timeout: 8000 });
+      const selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      const m = selTxt.match(/已选\s*(\d+)\s*个对象/);
+      if (!m) throw new Error('底栏未见「已选 N 个对象」: ' + selTxt);
+      const selected = parseInt(m[1], 10);
+      if (selected !== st.listN) {
+        throw new Error(`底栏已选应为 ${st.listN} 个对象，实际 ${selected} 个（列出 ${st.listN} 行）`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。产业 Tab #compare-basket-tab-industry；产业底栏 action-bar 无「加入招引候选」。机检=无筛选下列出行数 N → 全选后底栏「已选 N 个对象」。空篮经产业「新增」入篮（改会话数据）。登录与关评审由 runner 前置。A 档零 allow_skip。

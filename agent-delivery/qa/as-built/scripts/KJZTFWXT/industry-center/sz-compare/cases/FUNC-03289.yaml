@@ -1,0 +1,113 @@
+id: FUNC-03289
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03289
+priority: P0
+title: 集群下拉选项共 15 个且名称与附录 A 一致
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入分析配置
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  cluster_popup: .arco-trigger-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 进入分析配置后展开集群下拉；选项个数与附录 A 在 expect 判定
+expect:
+  - note: 1、选项共 15 个，名称见附录 A
+    assert: |-
+      const expected = [
+        '新一代信息技术',
+        '生物产业',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意产业',
+        '海洋产业',
+        '未来制造（智能机器人）',
+        '未来信息（光载信息、AI 底层生态）',
+        '未来能源',
+        '未来空间',
+        '未来健康（合成生物、细胞基因、脑机工程）',
+      ];
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法展开集群下拉 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=comparison/);
+      await expect(page).toHaveURL(/tab=comparison/);
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(clusterView).toBeVisible({ timeout: 10000 });
+      await clusterView.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const options = await popup.locator('.arco-select-option').allTextContents();
+      const normalized = [...new Set(options.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
+      if (normalized.length !== 15) {
+        throw new Error('集群选项个数应为 15，实际 ' + normalized.length + '：' + normalized.join('、'));
+      }
+      const missing = expected.filter((name) => !normalized.includes(name));
+      const extra = normalized.filter((name) => !expected.includes(name));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '集群选项与附录 A 不一致；缺失：' + (missing.join('、') || '无') +
+          '；多余：' + (extra.join('、') || '无') +
+          '；现场：' + normalized.join('、')
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03289 集群下拉用 .arco-select-view[aria-label=集群] 展开；选项全名含括号副标题，与 overview FUNC-02590、用例附录 A 一致。路由 catalog_path 见 entry-seed。

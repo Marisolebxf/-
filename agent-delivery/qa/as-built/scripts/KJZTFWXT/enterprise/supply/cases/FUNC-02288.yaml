@@ -1,0 +1,105 @@
+id: FUNC-02288
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02288
+priority: P0
+title: 对比篮回填 1 家后开始分析并到达成功结果
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已进入供应链关系分析页；对比篮至少有 1 家企业
+  - 该对象与当前关系范围当天尚无成功结果（机检：若当天复用直达结果则点「重新分析」再走过程）
+locators:
+  cta: 前往对比篮选择企业
+  overlay_title: 选择分析企业
+  confirm: 确定
+  start: 开始分析
+  reanalyze: 重新分析
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 浮层勾选 1 家→确定→开始分析→等待成功结果；断言在 expect
+expect:
+  - note: 结果页出现「任务摘要」（含过程结束或重新分析后到达 view=result）
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      const n = await sels.count();
+      if (n < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      const first = sels.first();
+      const aria = (await first.getAttribute('aria-label')) || '';
+      const entName = aria.replace(/^选择\s*/, '').trim();
+      if (!entName) throw new Error('无法读取勾选企业名');
+      await page.evaluate((name) => { globalThis.__FUNC_02288_ENT__ = name; }, entName);
+      await first.click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await closeBasket();
+      await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      const start = page.getByRole('button', { name: '开始分析' });
+      if (await start.isDisabled()) throw new Error('ENV-SUPPLY-START-DISABLED-001');
+      await start.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const main = page.locator('main.content-shell-layout, main').first();
+      let body = await main.innerText().catch(() => '');
+      if (/view=result/.test(page.url()) && /任务摘要/.test(body)) {
+        const reBtn = page.getByRole('button', { name: '重新分析' });
+        if (await reBtn.count()) {
+          await reBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        }
+      }
+      const deadline = Date.now() + 120000;
+      while (Date.now() < deadline) {
+        body = await main.innerText().catch(() => '');
+        const url = page.url();
+        if (/分析失败/.test(body) && !/view=result/.test(url) && !/任务摘要/.test(body)) {
+          throw new Error('ENV-SUPPLY-ANALYSIS-FAIL-001');
+        }
+        if (/view=result/.test(url) && /任务摘要/.test(body)) break;
+        if (/企业供应链关系分析生成中|view=processing|任务提交|数据汇聚|算法计算|结果组装/.test(body + url)) {
+          await page.waitForTimeout(1500);
+          continue;
+        }
+        await page.waitForTimeout(800);
+      }
+      body = await main.innerText().catch(() => '');
+      if (!/view=result/.test(page.url()) || !/任务摘要/.test(body)) {
+        throw new Error('ENV-SUPPLY-ASYNC-NO-SUCCESS-001');
+      }
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 5000 });
+  - note: 任务摘要中的分析对象与所勾选企业一致
+    assert: |-
+      const entName = await page.evaluate(() => globalThis.__FUNC_02288_ENT__ || '');
+      if (!entName) throw new Error('缺少勾选企业名上下文');
+      const main = page.locator('main.content-shell-layout, main').first();
+      const t = await main.innerText();
+      const m = t.match(/分析对象[：:]\s*([^\n]+)/);
+      if (!m) throw new Error('任务摘要未见分析对象行');
+      if (!m[1].includes(entName)) {
+        throw new Error('分析对象与勾选不一致: 摘要=' + m[1] + ' 勾选=' + entName);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=前往对比篮选择企业→勾选 1 家→确定→开始分析→等待过程结束。当天同条件复用直达结果时点「重新分析」以满足「等待过程页结束」。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001；120s 未达成功结果→ENV-SUPPLY-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,98 @@
+id: FUNC-01818
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01818
+priority: P1
+title: 侧栏商业力与技术力菜单标题同壳隔离
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 当前在企业技术力评估对比分析
+locators:
+  tech_menu: 侧栏 link「企业技术力评估对比分析」
+  biz_menu: 侧栏 link「企业商业力评估对比分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 前置技术力页→侧栏切商业力再切回技术力；标题断言在 expect
+expect:
+  - note: 1、商业力页标题为「企业商业力评估对比分析」
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const clickSidebar = async (name) => {
+        const link = page.getByRole('link', { name, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 8000 });
+          return;
+        }
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+        const retry = page.getByRole('link', { name, exact: true });
+        if (await retry.count()) {
+          await retry.first().click({ timeout: 8000 });
+          return;
+        }
+        throw new Error('侧栏未找到: ' + name);
+      };
+      await closeBasket();
+      await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 15000 });
+      await clickSidebar('企业商业力评估对比分析');
+      await page.waitForURL(/\/enterprise(\-center)?\/evaluation/, { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      const bizHead = page.locator('main').getByRole('heading', { name: '企业商业力评估对比分析' }).first();
+      await expect(bizHead).toBeVisible();
+      const techLeak = page.locator('main').getByRole('heading', { name: '企业技术力评估对比分析', exact: true });
+      if (await techLeak.count() && await techLeak.first().isVisible().catch(() => false)) {
+        throw new Error('商业力页仍呈现技术力主标题');
+      }
+  - note: 2、返回后标题为「企业技术力评估对比分析」
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const clickSidebar = async (name) => {
+        const link = page.getByRole('link', { name, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 8000 });
+          return;
+        }
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+        const retry = page.getByRole('link', { name, exact: true });
+        if (await retry.count()) {
+          await retry.first().click({ timeout: 8000 });
+          return;
+        }
+        throw new Error('侧栏未找到: ' + name);
+      };
+      await closeBasket();
+      await clickSidebar('企业技术力评估对比分析');
+      await page.waitForURL(/\/enterprise(\-center)?\/evaluation/, { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      const bizLeak = page.locator('main').getByRole('heading', { name: '企业商业力评估对比分析', exact: true });
+      if (await bizLeak.count() && await bizLeak.first().isVisible().catch(() => false)) {
+        throw new Error('返回技术力后仍呈现商业力主标题');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01818·只验侧栏同壳菜单隔离（不在商业力页做分析配置）。30888 路由常为 /enterprise-center/evaluation?workspace=*&mode=*；商业力 workspace=business。前置深链 technology 等价侧栏已在技术力页。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

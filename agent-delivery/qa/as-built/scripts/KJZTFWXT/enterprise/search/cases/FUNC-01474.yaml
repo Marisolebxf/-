@@ -1,0 +1,48 @@
+id: FUNC-01474
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01474
+priority: P0
+title: 智能搜索结果区当前条件回显含智能输入与本次词
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 智能搜索已检索出结果（本条 steps 自含关键词检索出结果）
+locators:
+  search_input: textbox 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  result_title: 文案「智能搜索结果」
+  current_condition: 结果标题下「当前条件」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与命中条数
+    timeout_ms: 2000
+expect:
+  - note: 出现「当前条件」
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('当前条件').first()).toBeVisible({ timeout: 8000 });
+  - note: 文案含「智能输入」及本次所填词
+    assert: |-
+      const keyword = '人工智能';
+      const main = page.locator('main');
+      await expect(main.getByText('当前条件').first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText(/智能输入[：:]\s*人工智能/).first()).toBeVisible({ timeout: 8000 });
+      const mainText = (await main.innerText()).replace(/\s+/g, ' ');
+      if (!mainText.includes('智能输入')) throw new Error('当前条件区未见「智能输入」');
+      if (!mainText.includes(keyword)) throw new Error('当前条件区未见本次所填词: ' + keyword);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。智能搜索结果态当前条件文案为「智能输入：<词>」（scout p0-03）；查企业结果则为「关键词」（本条不测）。作废 00454 后重写，现场无已匹配字段芯片。

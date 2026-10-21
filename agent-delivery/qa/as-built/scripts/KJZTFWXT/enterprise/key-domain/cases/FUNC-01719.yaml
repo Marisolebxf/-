@@ -1,0 +1,162 @@
+id: FUNC-01719
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01719
+priority: P1
+title: 选择外资企业后名单只留该类型
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 「选择分析企业」已打开（assert 可自含入篮与打开选择器）
+locators:
+  picker_title: text「选择分析企业」
+  type_select: placeholder「全部企业类型」
+  type_option: 下拉「外资企业」
+  enterprise_card: .ent-compare-item-card
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 展开全部企业类型并选外资企业；名单过滤在 expect 判定
+expect:
+  - note: 1、列出的企业带「外资企业」标识；2、不带该标识的企业不再列出
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const typeOptionShort = '外企';
+      const foreignMarkRe = /外资企业|外企|外商|外资|中外合资/;
+      const hasForeignMark = (txt) => foreignMarkRe.test(txt || '');
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const gotoRoute = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const clickPageOpenPicker = async () => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(800);
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseRows = async (scope) => {
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const n = await sels.count();
+        const rows = [];
+        for (let i = 0; i < n; i++) {
+          const sel = sels.nth(i);
+          if (!(await sel.isVisible().catch(() => false))) continue;
+          const aria = (await sel.getAttribute('aria-label')) || '';
+          const name = aria.replace(/^选择\s*/, '').trim();
+          const card = sel.locator('xpath=ancestor::div[contains(@class,"ent-compare-item-card")][1]');
+          let text = '';
+          if (await card.count()) {
+            text = (await card.innerText().catch(() => '')) || '';
+          } else {
+            text = (await sel.locator('xpath=ancestor::div[contains(@class,"ent-compare-item-card")][1]').innerText().catch(() => '')) || name;
+          }
+          rows.push({ name, text });
+        }
+        return rows;
+      };
+      await gotoRoute();
+      await ensureBasketEnterprises(3);
+      await gotoRoute();
+      await clickPageOpenPicker();
+      const root = pickerRoot();
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      const scope = (await root.count()) ? root : page.locator('body');
+      await expect(scope.getByPlaceholder('按企业名称搜索').first()).toBeVisible({ timeout: 8000 });
+      let rowsBefore = await listEnterpriseRows(scope);
+      if (!rowsBefore.length) {
+        await page.waitForTimeout(600);
+        rowsBefore = await listEnterpriseRows(scope);
+      }
+      if (!rowsBefore.length) throw new Error('选择器未列出企业');
+      const beforeCount = rowsBefore.length;
+      const nonForeignNames = rowsBefore.filter((r) => !hasForeignMark(r.text)).map((r) => r.name).filter(Boolean);
+      const typeView = scope.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first();
+      await expect(typeView).toBeVisible({ timeout: 8000 });
+      await typeView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const opts = page.locator('.arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const popup = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      let optClick = popup.getByText(typeOptionShort, { exact: true }).last();
+      if (!(await optClick.count())) {
+        optClick = popup.getByText('外资企业', { exact: true }).last();
+      }
+      await optClick.click({ timeout: 12000, force: true });
+      await page.waitForTimeout(900);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(400);
+      const emptyAfter = scope.getByText('当前篮内无匹配企业', { exact: true });
+      const rowsAfter = (await emptyAfter.count()) && (await emptyAfter.first().isVisible().catch(() => false))
+        ? []
+        : await listEnterpriseRows(scope);
+      const afterCount = rowsAfter.length;
+      if (nonForeignNames.length > 0 && afterCount >= beforeCount) {
+        throw new Error('选择外企后名单未缩小（前' + beforeCount + '后' + afterCount + '），疑似类型筛选未生效');
+      }
+      const namesAfter = new Set(rowsAfter.map((r) => r.name).filter(Boolean));
+      const leaked = nonForeignNames.filter((nm) => namesAfter.has(nm));
+      if (leaked.length) throw new Error('不带外企/外资标识的企业仍在列表：' + leaked.join('、'));
+      for (const row of rowsAfter) {
+        if (!hasForeignMark(row.text)) {
+          throw new Error('筛选后可见企业应带外资企业/外企标识：' + (row.name || row.text.slice(0, 40)));
+        }
+      }
+      if (afterCount === 0 && beforeCount > 0 && nonForeignNames.length === beforeCount) return;
+      const foreignBefore = beforeCount - nonForeignNames.length;
+      if (foreignBefore > 0 && afterCount < 1) {
+        throw new Error('篮内含外企时筛选后应至少 1 家；筛选前外企约 ' + foreignBefore + ' 家');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·对齐 01715/01717/01718：列出家数与卡片文案以 picker 内 [aria-label^="选择 "] 为准（.ent-compare-item-card 全页查询不可靠）。30888 下拉选「外企」（用例写外资企业）；卡上外资类标识接受外资企业/外企/外商/外资/中外合资。筛后校验 typeView 含外企或外资。篮内全无外企时见「当前篮内无匹配企业」亦符合用例第 2 条。若筛后仍见无标识企业=产品筛选或标签展示缺陷（C6）。登录与关内部评审由 runner 会话前置。B 档。

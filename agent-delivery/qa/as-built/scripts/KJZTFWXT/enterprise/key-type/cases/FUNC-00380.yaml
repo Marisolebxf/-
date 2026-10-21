@@ -1,0 +1,92 @@
+id: FUNC-00380
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00380
+priority: P0
+title: 筛选区区域时间产业企业类型四组默认值正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 已登录；筛选区为默认条件（经侧栏重新进入以还原默认态）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  filter_heading: main 内「产业与企业类型筛选」
+  region_input: input[placeholder="全国热门科创城市 / 深圳 / 全部"]
+  industry_input: getByPlaceholder("选择产业集群")
+  type_input: 企业类型行 input[placeholder="全部"]
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏点「重点企业类型分析」；四组默认断言在 expect 内分步核对
+expect:
+  - note: 筛选区含区域、时间、产业、企业类型四组标签与控件
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/\/enterprise-center\/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      for (const t of ['区域', '时间', '企业类型']) {
+        await expect(main.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+      await expect(main.getByText(/产业集群/).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]')).toBeVisible({ timeout: 8000 });
+      await expect(main.getByPlaceholder('时间窗口').first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByPlaceholder('选择产业集群').first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByPlaceholder('全部').first()).toBeVisible({ timeout: 8000 });
+  - note: 区域级联默认为「全国热门科创城市 / 深圳 / 全部」
+    assert: |-
+      const main = page.locator('main');
+      const regionInp = main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]');
+      await expect(regionInp).toHaveCount(1);
+      const val = await regionInp.inputValue();
+      if (val) throw new Error('区域级联非默认 placeholder 态: ' + val);
+      const casc = regionInp.locator('xpath=ancestor::*[contains(@class,"cascader")][1]');
+      if (await casc.count()) {
+        const title = (await casc.first().getAttribute('title')) || '';
+        if (title && !/全国热门科创城市\s*\/\s*深圳\s*\/\s*全部/.test(title)) {
+          throw new Error('区域级联 title 不符: ' + title);
+        }
+      }
+  - note: 开始与结束年份默认为 2022 与 2026（30888 现场为近3年 2023—2026，按 as-built 核 2023/2026）
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('近3年').first()).toBeVisible({ timeout: 8000 });
+      const yStart = main.getByText('2023', { exact: true }).first();
+      const yEnd = main.getByText('2026', { exact: true }).first();
+      await expect(yStart).toBeVisible({ timeout: 8000 });
+      await expect(yEnd).toBeVisible({ timeout: 8000 });
+      const timeLbl = main.getByText('时间', { exact: true }).first();
+      const block = await timeLbl.evaluate((el) => {
+        let n = el.parentElement;
+        for (let i = 0; i < 6 && n; i++) {
+          const t = n.innerText || '';
+          if (t.includes('2023') && t.includes('2026')) return t;
+          n = n.parentElement;
+        }
+        return '';
+      });
+      if (!/2023/.test(block) || !/2026/.test(block)) throw new Error('时间区未同时含 2023/2026: ' + block.slice(0, 120));
+  - note: 产业默认为「全部产业」（30888 现场为产业集群选择器 placeholder「选择产业集群」空值）
+    assert: |-
+      const main = page.locator('main');
+      const inp = main.getByPlaceholder('选择产业集群').first();
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      const val = await inp.inputValue();
+      if (val) throw new Error('产业集群已选非默认: ' + val);
+  - note: 企业类型默认为「全部类型」（30888 现场 placeholder 文案为「全部」空值）
+    assert: |-
+      const main = page.locator('main');
+      const typeLbl = main.getByText('企业类型', { exact: true }).first();
+      const row = typeLbl.locator('xpath=ancestor::div[1]');
+      const inp = row.getByPlaceholder('全部');
+      if ((await inp.count()) < 1) throw new Error('企业类型行无 placeholder 全部');
+      const val = await inp.first().inputValue();
+      if (val) throw new Error('企业类型已选非默认: ' + val);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 侧栏为 link「重点企业类型分析」，路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type（catalog 深链 /enterprise/… 本环境无筛选壳）。筛选标题「产业与企业类型筛选」，产业标签「产业集群 / 产业」。D2·用例册年份 2022–2026、产业「全部产业」、类型「全部类型」；现场默认近3年 2023—2026、产业集群「选择产业集群」、类型 placeholder「全部」。断言跟现场，note 对齐用例五点语义。

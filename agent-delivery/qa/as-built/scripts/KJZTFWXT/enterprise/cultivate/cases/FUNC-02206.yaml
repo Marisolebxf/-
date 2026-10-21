@@ -1,0 +1,200 @@
+id: FUNC-02206
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02206
+priority: P0
+title: 主流程-候选下拉产业与规模
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 停在候选工作台；候选名单非空（assert 自含对比篮/企业查询加入培育候选兜底）
+locators:
+  industry_filter: placeholder「全部产业」
+  scale_filter: placeholder「全部规模」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates
+  - action: evaluate
+    note: 展开「全部产业」与「全部规模」下拉（选项断言在 expect）
+expect:
+  - note: 1、全部产业现为 1 项「人工智能与应用」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const origin = new URL(page.url()).origin;
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const candRoute =
+        '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates';
+      const searchRoute = '/enterprise/enterprise-search';
+      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
+      const isCandidateWorkspace = async () => {
+        if (!(await candTab().count())) return false;
+        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
+      };
+      const openCandidateTab = async () => {
+        if (await isCandidateWorkspace()) return;
+        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        await candTab().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        if (!(await isCandidateWorkspace())) {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) {
+            await byKey.click({ timeout: 8000, force: true });
+            await page.waitForTimeout(900);
+          }
+        }
+        if (!(await isCandidateWorkspace())) {
+          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
+        }
+      };
+      const actionBar = () => stack().getByTestId('candidate-action-bar');
+      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
+      const hasCandidatePanel = async () => {
+        const bar = actionBar();
+        return (await bar.count()) > 0 && (await bar.first().isVisible().catch(() => false));
+      };
+      const ensureOneCandidate = async () => {
+        await openCandidateTab();
+        if (await hasCandidatePanel()) return;
+        let rows = await rowCount();
+        if (rows > 0 && (await page.getByRole('button', { name: '执行指定对象复核' }).count())) return;
+        const tryBasket = async () => {
+          const dock = page.getByRole('button', { name: /打开对比篮/ });
+          if (!(await dock.count())) return false;
+          await dock.first().click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          const addC = page.getByRole('button', { name: '加入培育候选' });
+          if (!(await addC.count())) return false;
+          const sels = page.locator('[aria-label^="选择 "]');
+          if (await sels.count()) await sels.first().click();
+          await page.waitForTimeout(400);
+          if (!(await addC.first().isEnabled())) return false;
+          await addC.first().click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+          await page.keyboard.press('Escape').catch(() => {});
+          return true;
+        };
+        if (await tryBasket()) {
+          await openCandidateTab();
+          if ((await rowCount()) > 0) return;
+        }
+        await page.goto(origin + searchRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+        await page.getByRole('button', { name: '搜索' }).click();
+        await page.waitForTimeout(5000);
+        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addOpt = page.getByText('加入培育候选', { exact: true }).first();
+        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        await openCandidateTab();
+        if (!(await hasCandidatePanel())) {
+          const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+          throw new Error(
+            '环境闸门 ENV-CULTIVATE-CANDIDATE-EMPTY：候选工作台无企业: ' + txt.slice(0, 160),
+          );
+        }
+      };
+      const readSelectOptions = async (placeholder) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const ph = page.locator(`input[placeholder="${placeholder}"]`).first();
+        await expect(ph).toBeVisible({ timeout: 8000 });
+        await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const raw = (await pop.locator('.arco-select-option').allTextContents())
+          .map((t) => t.replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+        const labels = [...new Set(raw)];
+        await page.keyboard.press('Escape').catch(() => {});
+        return labels;
+      };
+      await dismissBasket();
+      await ensureOneCandidate();
+      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({
+        timeout: 10000,
+      });
+      for (let i = 0; i < 25; i++) {
+        const opts = await readSelectOptions('全部产业');
+        if (opts.length >= 1) break;
+        await page.waitForTimeout(1000);
+      }
+      const industryOpts = await readSelectOptions('全部产业');
+      if (industryOpts.length !== 1) {
+        throw new Error(
+          '全部产业选项数=' + industryOpts.length + '，用例预期 1 项；现场=' + (industryOpts.join('、') || '（空）'),
+        );
+      }
+      const label = industryOpts[0];
+      if (label !== '人工智能与应用' && !label.includes('人工智能与应用')) {
+        throw new Error('全部产业预期「人工智能与应用」，现场=' + label);
+      }
+  - note: 2、全部规模现为 1 项「小型」
+    assert: |-
+      const readSelectOptions = async (placeholder) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const ph = page.locator(`input[placeholder="${placeholder}"]`).first();
+        await expect(ph).toBeVisible({ timeout: 8000 });
+        await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const raw = (await pop.locator('.arco-select-option').allTextContents())
+          .map((t) => t.replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+        const labels = [...new Set(raw)];
+        await page.keyboard.press('Escape').catch(() => {});
+        return labels;
+      };
+      for (let i = 0; i < 25; i++) {
+        const opts = await readSelectOptions('全部规模');
+        if (opts.length >= 1) break;
+        await page.waitForTimeout(1000);
+      }
+      const scaleOpts = await readSelectOptions('全部规模');
+      if (scaleOpts.length !== 1) {
+        throw new Error(
+          '全部规模选项数=' + scaleOpts.length + '，用例预期 1 项；现场=' + (scaleOpts.join('、') || '（空）'),
+        );
+      }
+      const label = scaleOpts[0];
+      if (label !== '小型' && !/^小型$/.test(label)) {
+        throw new Error('全部规模预期「小型」，现场=' + label);
+      }
+  - note: 3、空值不出现在选项里（— / 空白 / 占位符不算有效选项）
+    assert: |-
+      const readSelectOptions = async (placeholder) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const ph = page.locator(`input[placeholder="${placeholder}"]`).first();
+        await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').last();
+        const raw = (await pop.locator('.arco-select-option').allTextContents())
+          .map((t) => t.replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+        const labels = [...new Set(raw)];
+        await page.keyboard.press('Escape').catch(() => {});
+        return labels;
+      };
+      const bad = (t) => !t || t === '—' || t === '-' || /^全部/.test(t);
+      for (const ph of ['全部产业', '全部规模']) {
+        const opts = await readSelectOptions(ph);
+        const invalid = opts.filter(bad);
+        if (invalid.length) {
+          throw new Error(ph + ' 下拉出现空值或占位项：' + invalid.join('、') + '；全部=' + opts.join('、'));
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation&entry=candidates。步骤=候选工作台展开「全部产业」「全部规模」。D2·2026-10-20 rewrite-FUNC-02206 机跑 expect①② 红、③ 绿：下拉各 1 项但现场为「其他文化艺术经纪代理」「中型」，用例快照为「人工智能与应用」「小型」（选项随名单/hydrateProfiles 变化，断言按用例册未放宽）。登录与关评审由 runner 前置。A 档零 allow_skip。

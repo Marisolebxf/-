@@ -1,0 +1,115 @@
+id: FUNC-03008
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03008
+priority: P1
+title: 重置参数恢复官方指标与模板且保留已选产业
+story: US-CHAIN-REG-01
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已选产业
+  - 已改动过指标或模板（工作集非官方默认态）
+locators:
+  industry: .arco-select-view[aria-label=产业]
+  reset: button「重置参数」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进页→选产业→改指标→重置（判定在 expect）
+expect:
+  - note: 1、模板回到「区域产业指数官方模板」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNot404 = async () => {
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            const u = new URL('/industry-center/search', baseUrl);
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          }
+          await assertNot404();
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        await assertNot404();
+      };
+      const industryPick = '集成电路';
+      await enterRegionalIndex();
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 15000 });
+      await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup .arco-select-option', { hasText: industryPick }).first().click({ force: true });
+      await page.waitForTimeout(900);
+      globalThis.__func03008 = { industryPick };
+      const row = page.getByRole('row').filter({ hasText: '政策覆盖率' }).first();
+      await expect(row).toBeVisible({ timeout: 8000 });
+      await row.getByRole('button', { name: '移除' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByText(/已计入 5 项/).first()).toBeVisible({ timeout: 8000 });
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 15000 });
+  - note: 2、指标恢复为默认六行（官方权重 16×5+20）
+    assert: |-
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 12000 });
+      for (const name of ['企业商业化能力', '融资事件', '专利', '技术成熟度', '科研机构', '政策覆盖率']) {
+        await expect(page.getByRole('row').filter({ hasText: name }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const spins = page.locator('main [role=spinbutton]');
+      const vals = [];
+      for (let i = 0; i < Math.min(await spins.count(), 6); i++) vals.push(await spins.nth(i).inputValue());
+      if (vals.length === 6 && vals.join(',') !== '16,16,16,16,16,20') {
+        throw new Error('重置后权重 ' + vals.join('/'));
+      }
+  - note: 3、已选产业仍然保留（重置不会把产业清空）
+    assert: |-
+      const industryPick = globalThis.__func03008?.industryPick || '集成电路';
+      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industryView).toBeVisible({ timeout: 8000 });
+      await expect(industryView).toContainText(industryPick, { timeout: 8000 });
+      const ph = page.locator('input[placeholder="请选择产业"]').first();
+      if (await ph.isVisible().catch(() => false)) {
+        throw new Error('重置后产业回空态（请选择产业）');
+      }
+      const mainText = await page.locator('main').first().innerText().catch(() => '');
+      if (!mainText.includes(industryPick)) {
+        throw new Error('配置汇总未保留产业「' + industryPick + '」');
+      }
+      if (/view=processing/.test(page.url())) throw new Error('重置进入过程态');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  替换作废 00571/P1-01：重置保留产业、恢复官方模板+六行。前置=选「集成电路」+移除「政策覆盖率」。catalog_path=entry-seed；edu 深链与 sibling /industry-center/search 均 SPA 404（ENV-EDU-TTS-SVCZ-404-001，同 03007/00562）。
+  登录关评审 runner 前置。B 档零 allow_skip。

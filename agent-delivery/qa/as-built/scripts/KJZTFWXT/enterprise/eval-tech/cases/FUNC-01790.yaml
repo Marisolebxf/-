@@ -1,0 +1,206 @@
+id: FUNC-01790
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01790
+priority: P0
+title: 结果页重新分析后得到新的技术力评估结果
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已打开一条已完成的技术力评估结果（脚本内：最近评估→恢复结果；兜底对比篮发起分析）
+locators:
+  restore: button「恢复结果」
+  reanalyze: button「重新分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 结果态→点「重新分析」→等待新结果；机检在 expect
+expect:
+  - note: 1、页面为「技术力评估结果」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const TID_RE = /((?:DEMO-)?EVAL-\d{8}-\d{3})/;
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const parseTid = async () => {
+        const u = page.url();
+        let tid = (u.match(/task_id=((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1];
+        if (!tid) {
+          const t = await page.locator('body').innerText().catch(() => '');
+          tid = (t.match(/任务\s*ID[：:\s]*((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1] || (TID_RE.exec(t) || [])[1] || null;
+        }
+        return tid;
+      };
+      const bodyRes = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        return /技术力评估结果/.test(t) && /\d+\s*分/.test(t);
+      };
+      const waitBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await bodyRes()) return true;
+          await page.waitForTimeout(1000);
+        }
+        return await bodyRes();
+      };
+      const recoverFromRecentTab = async (excludeTid) => {
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (!(await tab.isVisible().catch(() => false))) return null;
+        await tab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const body = await page.locator('body').innerText().catch(() => '');
+        const ids = [...body.matchAll(/EVAL-\d{8}-\d{3}/g)].map((m) => m[0]);
+        const uniq = [...new Set(ids)];
+        const candidate = uniq.find((id) => id !== excludeTid) || uniq[0] || null;
+        if (!candidate) return null;
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          if (await waitBody(45000)) return candidate;
+        }
+        await page.goto(toUrl(evalRoute + '&view=result&analysis_type=technology&task_id=' + candidate), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        if (await waitBody(45000)) return candidate;
+        return null;
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await closeBasket();
+      let branch = null;
+      const tab0 = page.getByRole('tab', { name: /最近评估/ }).first();
+      if (await tab0.isVisible().catch(() => false)) {
+        await tab0.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+      }
+      const restore0 = page.getByRole('button', { name: '恢复结果' });
+      if (await restore0.count()) {
+        await restore0.first().click({ timeout: 8000 });
+        if (await waitBody(60000)) branch = 'restore';
+      }
+      if (!(await bodyRes())) {
+        const tid = await recoverFromRecentTab(null);
+        if (tid) branch = 'recent_' + tid;
+      }
+      if (!(await bodyRes()) && /^DEMO-EVAL-/.test(await parseTid() || '')) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        const tid = await recoverFromRecentTab(null);
+        if (tid) branch = 'recent_live_' + tid;
+      }
+      if (!(await bodyRes())) throw new Error('未达结果态（ticket=ENV-EVAL-TECH-RESULT-SHELL-001，URL=' + page.url() + '）');
+      const prevTid = await parseTid();
+      if (!prevTid) throw new Error('结果态未见 task_id：' + page.url());
+      const pickReanalyze = async (allowFallback) => {
+        const main = page.locator('main');
+        await main.first().scrollIntoViewIfNeeded().catch(() => {});
+        const tryLabel = async (name) => {
+          const roleBtn = page.getByRole('button', { name, exact: true });
+          if (await roleBtn.count() && await roleBtn.first().isVisible().catch(() => false)) return { el: roleBtn.first(), label: name };
+          const filterBtn = main.locator('button').filter({ hasText: name });
+          if (await filterBtn.count() && await filterBtn.first().isVisible().catch(() => false)) return { el: filterBtn.first(), label: name };
+          return null;
+        };
+        const primary = await tryLabel('重新分析');
+        if (primary) return primary;
+        if (allowFallback) return await tryLabel('按此配置新建评估');
+        return null;
+      };
+      const ensureFullResultToolbar = async () => {
+        let hit = await pickReanalyze(false);
+        if (hit) return hit;
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (await tab.isVisible().catch(() => false)) {
+          await tab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          await waitBody(60000);
+        }
+        hit = await pickReanalyze(false);
+        if (hit) return hit;
+        return await pickReanalyze(true);
+      };
+      let rePick = await ensureFullResultToolbar();
+      if (!rePick) {
+        await page.waitForTimeout(2000);
+        rePick = await pickReanalyze(true);
+      }
+      if (!rePick) {
+        const snippet = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
+        throw new Error('结果态未见可点「重新分析/按此配置新建评估」（URL=' + page.url() + '，片段=' + snippet + '）');
+      }
+      const reEl = rePick.el;
+      await expect(reEl).toBeEnabled({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      try { await reEl.click({ timeout: 8000 }); } catch { await reEl.click({ force: true, timeout: 8000 }); }
+      await page.waitForTimeout(1500);
+      if (rePick.label === '按此配置新建评估') {
+        const start = page.getByRole('button', { name: '开始分析' });
+        if (await start.count() && await start.first().isVisible().catch(() => false)) {
+          if (await start.first().isDisabled()) {
+            const t = await page.locator('body').innerText().catch(() => '');
+            if (/预检未返回企业明细/.test(t)) throw new Error('按此配置后开始分析禁用（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+          } else {
+            await start.first().click({ timeout: 8000 });
+          }
+        }
+      }
+      let newTid = null;
+      const t1 = Date.now();
+      while (Date.now() - t1 < 120000) {
+        const t = await page.locator('body').innerText().catch(() => '');
+        if (/预检未返回企业明细/.test(t)) throw new Error('重新分析后预检阻塞（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+        const cur = await parseTid();
+        if (/view=processing|技术力评估生成中|可视化分析过程/.test(t + page.url())) {
+          await page.waitForTimeout(1500);
+          continue;
+        }
+        if (await bodyRes() && cur && cur !== prevTid) { newTid = cur; break; }
+        await page.waitForTimeout(1000);
+      }
+      if (!(await bodyRes())) {
+        const recovered = await recoverFromRecentTab(prevTid);
+        if (recovered) { newTid = recovered; branch = (branch || '') + '+recover'; }
+      }
+      if (!(await bodyRes())) throw new Error('重新分析后未回到结果态（旧 tid=' + prevTid + '，URL=' + page.url() + '）');
+      newTid = newTid || (await parseTid());
+      await page.evaluate((d) => { window.__gkx_qa_01790 = d; }, { prevTid, newTid, branch, url: page.url() });
+      if (!(await page.getByText('技术力评估结果').first().isVisible().catch(() => false))) {
+        throw new Error('结果标题不可见（tid 已落盘 new=' + newTid + '）');
+      }
+  - note: 2、任务 ID 与点击前不同
+    assert: |-
+      const s = await page.evaluate(() => window.__gkx_qa_01790 || null);
+      if (!s || !s.prevTid) throw new Error('缺 expect1 落盘：' + JSON.stringify(s));
+      const tid = s.newTid || (await (async () => {
+        const u = page.url();
+        let t = (u.match(/task_id=((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1];
+        if (!t) {
+          const body = await page.locator('body').innerText().catch(() => '');
+          t = (body.match(/任务\s*ID[：:\s]*((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1] || null;
+        }
+        return t;
+      })());
+      if (!tid) throw new Error('新结果未见 task_id：' + page.url());
+      if (tid === s.prevTid) throw new Error('task_id 未变化仍为 ' + s.prevTid);
+  - note: 3、「技术力最高得分」有分值
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('技术力最高得分', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const block = main.locator('*').filter({ hasText: '技术力最高得分' }).first();
+      const text = await (await block.count() ? block : main).innerText().catch(() => '');
+      if (!/技术力最高得分[\s\S]{0,80}\d+\s*分/.test(text) && !/\d+\s*分/.test(text)) {
+        throw new Error('技术力最高得分附近未见分值，片段：' + text.slice(0, 200));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01790 主流程重新分析；30888 /enterprise-center/evaluation。D1：深链落「最近评估」结果摘要时先「恢复结果」；无「重新分析」时回退「按此配置新建评估」+「开始分析」。task_id 含 DEMO-EVAL 前缀。
+  轮询至结果态+新 tid（用例「无弹框直接新结果」）；不断言过程态（区别于 00924/P0-20）。B 档零 allow_skip。

@@ -1,0 +1,52 @@
+id: FUNC-01004
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01004
+priority: P0
+title: 路由直达培育企业推荐分析页且页头与默认 Tab 正确
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  catalog_route: /enterprise/attraction?workspace=cultivation
+  h1: heading「培育企业推荐分析」
+  tab_filter: tab「条件筛选推荐」
+  tab_cand: tab「候选工作台」
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation
+  - action: assert_url
+    expect_contains: workspace=cultivation
+  - action: assert_visible
+    target: heading 培育企业推荐分析
+expect:
+  - note: 路由为 /enterprise/attraction 且 query 含 workspace=cultivation
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/attraction/);
+      await expect(page).toHaveURL(/workspace=cultivation/);
+  - note: 页标题为「培育企业推荐分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      await expect(page).toHaveTitle(/培育企业推荐分析 - 科技专题服务系统/);
+      await expect(page.getByRole('heading', { name: '培育企业推荐分析' })).toBeVisible({ timeout: 8000 });
+  - note: Tab 集合为三枚且默认选中「条件筛选推荐」
+    assert: |-
+      for (const t of ['条件筛选推荐', '候选工作台', '最近分析']) {
+        await expect(page.getByRole('tab', { name: t }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const sel = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+      const aria = await sel.getAttribute('aria-selected');
+      const cls = (await sel.getAttribute('class')) || '';
+      if (aria !== 'true' && !/\bactive\b/.test(cls)) {
+        throw new Error('默认未选中条件筛选推荐 aria=' + aria + ' class=' + cls);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·2026-10-20 edu svcz 深链 goto 对齐 entry-seed catalog_path + workspace=cultivation（探针未同显 recommendation_tab，不额外判 Fail）。对比篮关闭钮可见再点。点状复勘 fixtures/scout/rewrite-FUNC-01004/。登录与关评审由 runner ensureBusinessSession。A 档零 allow_skip。

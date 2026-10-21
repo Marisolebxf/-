@@ -1,0 +1,81 @@
+id: FUNC-00402
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00402
+priority: P1
+title: 列表视图显示当前区域暂无可展示对象
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+  - 空间分布为地图视图（默认态）
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  list_btn: button「列表视图」
+  empty_text: 文案「当前区域暂无可展示对象」
+  list_table: panel 内 .arco-table（区域聚合：地域/重点企业数列）
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 默认地图态；点「列表视图」与空态/聚合表判定在 expect 内自含
+expect:
+  - note: 列表区文案为「当前区域暂无可展示对象」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const listBtn = panel.getByRole('button', { name: '列表视图', exact: true });
+      await expect(listBtn).toBeVisible({ timeout: 8000 });
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForFunction(
+        (emptyPhrase) => {
+          const panels = [...document.querySelectorAll('section.analysis-workspace-panel')];
+          const p = panels.find((el) => el.textContent?.includes('三级地理透视与可视化呈现'));
+          if (!p) return false;
+          if (p.textContent?.includes(emptyPhrase)) return true;
+          const tr = p.querySelector('.arco-table-tbody tr, .arco-table-body tbody tr, table tbody tr');
+          return Boolean(tr && /\d+\s*家/.test(tr.textContent || ''));
+        },
+        '当前区域暂无可展示对象',
+        { timeout: 15000 },
+      );
+      const mapInPanel = panel.locator('.leaflet-container');
+      const mapVis = (await mapInPanel.count()) > 0 && (await mapInPanel.first().isVisible().catch(() => false));
+      if (mapVis) throw new Error('列表视图下空间分布区仍展示地图');
+      const empty = panel.getByText('当前区域暂无可展示对象', { exact: true }).first();
+      const emptyVis = await empty.isVisible().catch(() => false);
+      if (emptyVis) return;
+      const table = panel.locator('.arco-table').first();
+      const tableVis = await table.isVisible().catch(() => false);
+      if (!tableVis) {
+        throw new Error('blocked·列表视图无空态文案亦无 .arco-table，无法覆盖用例');
+      }
+      const headers = await table.locator('.arco-table-th').allTextContents();
+      const hasRegionCol = headers.some((t) => /地域|企业名称/.test(String(t)));
+      const hasCountCol = headers.some((t) => /重点企业数/.test(String(t)));
+      if (!hasRegionCol || !hasCountCol) {
+        throw new Error('blocked·区域聚合表列头不稳定：' + headers.join('|'));
+      }
+      const bodyRows = table.locator('.arco-table-tbody tr, .arco-table-body tbody tr, tbody tr');
+      const rowCount = await bodyRows.count();
+      const bodyText = rowCount > 0
+        ? await bodyRows.first().innerText()
+        : await table.innerText();
+      const panelListText = await panel.innerText();
+      const hasCount = /\d+\s*家/.test(bodyText) || /\d+\s*家/.test(panelListText);
+      if (rowCount < 1 && !hasCount) {
+        throw new Error('blocked·区域聚合表无数据行且无「N 家」文案');
+      }
+      if (!hasCount) {
+        throw new Error('blocked·数据行未出现「N 家」家数展示');
+      }
+      throw new Error('D3·30888 默认深圳下列表为区域聚合表（有地域/重点企业数行），无「当前区域暂无可展示对象」；与用例册 v2.0 预期不一致');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D3·30888 默认深圳筛选下点「列表视图」为区域聚合表（列「地域」「重点企业数」、行含「N 家」），非用例空态文案；脚本先验 D1 列表态再对空态文案 Fail。D1 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type。登录与关内部评审由 runner 会话前置。

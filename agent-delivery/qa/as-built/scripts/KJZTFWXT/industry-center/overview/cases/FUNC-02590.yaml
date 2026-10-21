@@ -1,0 +1,67 @@
+id: FUNC-02590
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02590
+priority: P0
+title: 产业集群左侧选框展开后选项共 15 个
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景
+locators:
+  cluster: span[aria-label=集群]（P7 点可见 view）
+  cluster_popup: .arco-trigger-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 展开产业集群左侧选框；选项个数与附录 A 清单在 expect 判定
+expect:
+  - note: 1、选项共 15 个（名称见附录 A）
+    assert: |-
+      const expected = [
+        '新一代信息技术',
+        '生物产业',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意产业',
+        '海洋产业',
+        '未来制造（智能机器人）',
+        '未来信息（光载信息、AI 底层生态）',
+        '未来能源',
+        '未来空间',
+        '未来健康（合成生物、细胞基因、脑机工程）',
+      ];
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const options = await popup.locator('.arco-select-option').allTextContents();
+      const normalized = [...new Set(options.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
+      if (normalized.length !== 15) {
+        throw new Error('集群选项个数应为 15，实际 ' + normalized.length + '：' + normalized.join('、'));
+      }
+      const missing = expected.filter((name) => !normalized.includes(name));
+      const extra = normalized.filter((name) => !expected.includes(name));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '集群选项与附录 A 不一致；缺失：' + (missing.join('、') || '无') +
+          '；多余：' + (extra.join('、') || '无') +
+          '；现场：' + normalized.join('、')
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例步骤「展开产业后左侧选框」= 筛选区 aria-label 集群 的左侧产业集群下拉（02589 备注）。选项全名含括号副标题，与 fixtures/testdata.yaml clusters_observed_sample、scout-cluster-options 前 15 项一致。
+  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

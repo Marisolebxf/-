@@ -1,0 +1,210 @@
+id: FUNC-01460
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01460
+priority: P1
+title: 异常-失败条件筛选继续查看失败页
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；最近分析有一条条件筛选且状态为失败的记录
+locators:
+  recent_tab: Tab「最近分析」
+  continue_btn: button「继续查看」
+  fail_title: 推荐分析失败
+  back_btn: button「返回配置」
+  retry_btn: button「重试（保留条件）」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
+  - action: wait
+    for: 招引页 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 最近分析→失败条件筛选行「继续查看」；失败页标题与按钮在 expect 判定
+expect:
+  - note: 1、对该失败记录点击「继续查看」后标题为「推荐分析失败」
+    assert: |-
+      const toUrl = (p) => baseUrl.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const histRoute =
+        '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=history';
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const historyDeepLink = async () => {
+        await page.goto(toUrl(histRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady().catch(() => {});
+        if (await hasHistoryTab()) {
+          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+          if ((await tab.count()) < 1) {
+            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+            await expect(legacy).toBeVisible({ timeout: 12000 });
+            await legacy.click({ timeout: 8000 });
+          } else {
+            await expect(tab).toBeVisible({ timeout: 12000 });
+            await tab.click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(900);
+          return;
+        }
+        await historyDeepLink();
+        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
+          throw new Error(
+            '环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/深链（仅条件筛选+候选工作台时不自动化本用例）',
+          );
+        }
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+      };
+      const scrollHistoryActions = async () => {
+        const bodies = stack().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const isFailedFilterRow = (rowText, taskIdHint) => {
+        if (taskIdHint && !rowText.includes(taskIdHint)) return false;
+        if (!/失败/.test(rowText)) return false;
+        if (/候选工作台/.test(rowText) && !/条件筛选/.test(rowText)) return false;
+        return /条件筛选/.test(rowText) && /继续查看/.test(rowText);
+      };
+      const pickFailedFilterOnPage = async (taskIdHint) => {
+        await scrollHistoryActions();
+        const rows = stack().locator('table tbody tr, .arco-table-tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const txt = await row.innerText().catch(() => '');
+          if (!isFailedFilterRow(txt, taskIdHint)) continue;
+          const cont = row.getByRole('button', { name: '继续查看' }).first();
+          if (!(await cont.count()) || !(await cont.isVisible().catch(() => false))) continue;
+          return { btn: cont, rowTxt: txt };
+        }
+        return null;
+      };
+      const pickFailedFilterContinue = async (taskIdHint) => {
+        const pag = stack().locator('.arco-pagination').first();
+        for (let guard = 0; guard < 24; guard++) {
+          const hit = await pickFailedFilterOnPage(taskIdHint);
+          if (hit) return hit;
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        throw new Error(
+          '环境闸门 ENV-ATTRACT-NO-FAILED-FILTER-001：最近分析无「失败」的条件筛选任务可「继续查看」',
+        );
+      };
+      const fetchFailedFilterTaskId = async () => {
+        const listUrl = toUrl('/topicAsync/topic/v1/analysis/tasks/list');
+        for (const user_id of ['admin', 'guest']) {
+          for (let pageNum = 1; pageNum <= 8; pageNum++) {
+            const resp = await page.request.post(listUrl, {
+              data: {
+                user_id,
+                analysisType: 'talent_recommend',
+                subType: 'attraction',
+                page: pageNum,
+                size: 50,
+              },
+            });
+            if (!resp.ok()) continue;
+            let json = {};
+            try { json = await resp.json(); } catch { continue; }
+            const data = json?.data ?? json;
+            const records = data?.records ?? data?.list ?? [];
+            for (const r of records) {
+              if (String(r?.status || '').toLowerCase() !== 'failed') continue;
+              let params = {};
+              try {
+                params = r.targetParams ? JSON.parse(r.targetParams) : {};
+              } catch { params = {}; }
+              if (params.selectionMode === 'filter') return String(r.taskId || r.taskName || '');
+            }
+            if (!records.length || records.length < 50) break;
+          }
+        }
+        return null;
+      };
+      await dismissBasket();
+      await openRecentTab();
+      await waitHistoryShell();
+      let taskHint = globalThis.__func01460_failed_tid;
+      if (!taskHint) {
+        taskHint = await fetchFailedFilterTaskId();
+        if (taskHint) globalThis.__func01460_failed_tid = taskHint;
+      }
+      const { btn, rowTxt } = await pickFailedFilterContinue(taskHint || null);
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click({ timeout: 15000 });
+      await page.waitForTimeout(1200);
+      const main = page.locator('main').first();
+      const failHeading = main.getByText('推荐分析失败', { exact: true });
+      if ((await failHeading.count()) < 1) {
+        const body = await page.locator('body').innerText();
+        if (/候选分析失败/.test(body) && /条件筛选/.test(rowTxt)) {
+          throw new Error(
+            '失败条件筛选任务打开了候选失败页「候选分析失败」（应为 RecruitWorkbench「推荐分析失败」），行摘要=' +
+              rowTxt.slice(0, 120),
+          );
+        }
+        if (/可视化分析过程/.test(body) && !/推荐分析失败/.test(body)) {
+          throw new Error('点击继续查看后仍在过程页，行摘要=' + rowTxt.slice(0, 120));
+        }
+        throw new Error('未见「推荐分析失败」标题；行摘要=' + rowTxt.slice(0, 120) + ' body=' + body.slice(0, 280));
+      }
+      await expect(failHeading.first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func01460 = { rowTxt };
+  - note: 2、可见「返回配置」与「重试（保留条件）」
+    assert: |-
+      if (!globalThis.__func01460) throw new Error('前置：未打开失败继续查看页');
+      const main = page.locator('main').first();
+      const back = main.getByRole('button', { name: '返回配置' });
+      const retry = main.getByRole('button', { name: '重试（保留条件）' });
+      await expect(back.first()).toBeVisible({ timeout: 8000 });
+      await expect(retry.first()).toBeVisible({ timeout: 8000 });
+      const body = await main.innerText().catch(() => '');
+      if (!/推荐分析失败/.test(body)) {
+        throw new Error('main 未见失败页语义，前段=' + body.slice(0, 200));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·RecruitWorkbench a-result title=推荐分析失败；extra=返回配置+重试（保留条件）。步骤=最近分析失败「条件筛选」行点继续查看。深链 entry=history，路由 catalog /enterprise/attraction（assert 内 toUrl 用 baseUrl）。列表 API talent_recommend+attraction 筛 selectionMode=filter 锚 taskId，表格分页+横滚。D4·2026-10-20 机跑 rewrite-FUNC-01460 svcz 2/2 expect 绿。无失败条件筛选→ENV-ATTRACT-NO-FAILED-FILTER-001；无最近分析 Tab→ENV-ATTRACT-NO-HISTORY-TAB-001。登录与关评审由 runner 前置。B 档零 allow_skip。

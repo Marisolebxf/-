@@ -1,0 +1,94 @@
+id: FUNC-01594
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01594
+priority: P0
+title: 查看画像打开企业详情且默认停在工商概况
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单中有企业行（默认深圳筛选）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  list_drawer: .arco-drawer:visible（企业清单）
+  view_profile: 清单行 button「查看画像」
+  detail_drawer: .arco-drawer:visible 且标题「企业详情」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单并点首行「查看画像」；详情字段在 expect 内判定
+expect:
+  - note: 点击「查看企业清单」后抽屉内有企业行（前置）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const listDrawer = page.locator('.arco-drawer:visible').first();
+      await expect(listDrawer).toBeVisible({ timeout: 8000 });
+      const empty = listDrawer.getByText('当前搜索条件无匹配企业');
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置不满足：默认深圳清单无企业行（空态）');
+      }
+      const profiles = listDrawer.getByRole('button', { name: '查看画像' });
+      if ((await profiles.count()) < 1) throw new Error('抽屉内未见「查看画像」，判定无企业行');
+      await profiles.first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+  - note: 抽屉标题为「企业详情」
+    assert: |-
+      const detail = page.locator('.arco-drawer:visible').filter({
+        has: page.locator('.arco-drawer-header').filter({ hasText: '企业详情' }),
+      }).last();
+      await expect(detail).toBeVisible({ timeout: 12000 });
+      await expect(detail.locator('.arco-drawer-header')).toContainText('企业详情');
+  - note: 首屏含法定代表人、成立时间、注册资本、所属产业、链位与统一社会信用代码
+    assert: |-
+      const detail = page.locator('.arco-drawer:visible').filter({
+        has: page.locator('.arco-drawer-header').filter({ hasText: '企业详情' }),
+      }).last();
+      await expect(detail).toBeVisible({ timeout: 12000 });
+      const listDrawers = page.locator('.arco-drawer:visible').filter({
+        hasNot: page.locator('.arco-drawer-header').filter({ hasText: '企业详情' }),
+      });
+      if (await listDrawers.count()) {
+        const closeBtn = listDrawers.first().locator('.arco-drawer-close-btn');
+        if (await closeBtn.isVisible().catch(() => false)) {
+          await closeBtn.click({ timeout: 3000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      await expect(detail.getByText('经营范围').first()).toBeVisible({ timeout: 15000 });
+      const bodyTxt = ((await detail.innerText()) || '').replace(/\s+/g, ' ');
+      for (const label of ['法定代表人', '成立时间', '注册资本', '所属产业', '链位', '统一社会信用代码']) {
+        if (!bodyTxt.includes(label)) {
+          throw new Error(`企业详情首屏缺「${label}」；样本=${bodyTxt.slice(0, 200)}`);
+        }
+      }
+      const usccRe = /[0-9A-HJ-NP-RTUW-Y]{2}\d{6}[0-9A-HJ-NP-RTUW-Y]{10}/;
+      if (!usccRe.test(bodyTxt)) {
+        throw new Error('首屏未见统一社会信用代码值: ' + bodyTxt.slice(0, 160));
+      }
+  - note: 默认页签为工商概况，含经营范围、注册地址与官网
+    assert: |-
+      const detail = page.locator('.arco-drawer:visible').filter({
+        has: page.locator('.arco-drawer-header').filter({ hasText: '企业详情' }),
+      }).last();
+      await expect(detail).toBeVisible({ timeout: 8000 });
+      await expect(detail.getByRole('tab', { name: '工商概况' })).toHaveAttribute('aria-selected', 'true');
+      const tabTxt = ((await detail.innerText()) || '').replace(/\s+/g, ' ');
+      for (const label of ['经营范围', '注册地址', '官网']) {
+        if (!tabTxt.includes(label)) {
+          throw new Error(`工商概况缺「${label}」；样本=${tabTxt.slice(0, 200)}`);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；清单「查看画像」直开 EnterpriseDetailDrawer（非画像快览）。首屏 meta 现场为「注册资本(万)」，断言用「注册资本」子串。清单与详情可叠层，断言前关清单抽屉以免 meta 被挡。不钉死企业编号。登录与关内部评审由 runner 会话前置。

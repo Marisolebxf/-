@@ -1,0 +1,154 @@
+id: FUNC-03114
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03114
+priority: P0
+title: 选新能源后下级与所属产业链选项个数
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入产业关键环节识别页
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 集群选新能源→展开产业/所属产业链并数选项（判定在 expect）
+expect:
+  - note: 1、第二个下拉为「新能源」和「新能源(L1)」，共 2 个
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            await assertNotSpa404('direct-catalog');
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const pickSelect = async (trigger, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const readPopupLabels = async () => {
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const options = pop.locator('.arco-select-option');
+        const count = await options.count();
+        const labels = [];
+        for (let i = 0; i < count; i++) {
+          labels.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        return { count, labels };
+      };
+      await enterKeyLink();
+      await assertNotSpa404('landing');
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await pickSelect(page.locator('.arco-select-view[aria-label="集群"]').first(), '新能源');
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await industry.scrollIntoViewIfNeeded();
+      await page.keyboard.press('Escape').catch(() => {});
+      await industry.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const indPop = await readPopupLabels();
+      const wantInd = ['新能源', '新能源(L1)'];
+      if (indPop.count !== 2) {
+        throw new Error('分析对象第二个下拉应为 2 个，实际 count=' + indPop.count + ' labels=' + JSON.stringify(indPop.labels));
+      }
+      for (const w of wantInd) {
+        if (!indPop.labels.some((l) => l === w || l.startsWith(w))) {
+          throw new Error('第二个下拉缺「' + w + '」，实际=' + JSON.stringify(indPop.labels));
+        }
+      }
+      await pickSelect(industry, '新能源');
+      globalThis.__func03114_industryOk = true;
+  - note: 2、「所属产业链」只有「新能源」，共 1 个
+    assert: |-
+      if (!globalThis.__func03114_industryOk) throw new Error('前置：未完成第二个下拉选新能源');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const seg = page.locator('.arco-select-view.industry-catalog-select').first();
+      await expect(seg).toBeVisible({ timeout: 8000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      await seg.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const labels = [];
+      for (let i = 0; i < count; i++) {
+        labels.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 1) {
+        throw new Error('所属产业链下拉应为 1 个，实际 count=' + count + ' labels=' + JSON.stringify(labels));
+      }
+      if (!/^新能源/.test(labels[0] || '')) {
+        throw new Error('所属产业链唯一选项应为「新能源」，实际=' + (labels[0] || '(空)'));
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例「分析对象第一个/第二个下拉」= 现场 aria-label「集群」「产业」；「所属产业链」= .arco-select-view.industry-catalog-select（同 03098/03110）。
+  catalog_path=entry-seed；edu 深链 SPA 404 时 sibling /industry-center/search + 侧栏进入。与 03088 同对象组，本条只数选项。登录关评审 runner 前置。B 档零 allow_skip。

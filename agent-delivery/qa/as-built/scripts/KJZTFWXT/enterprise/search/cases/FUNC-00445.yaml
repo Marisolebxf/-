@@ -1,0 +1,53 @@
+id: FUNC-00445
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00445
+priority: P0
+title: 高级筛选字段库与底部 Footer 构成齐备
+story: US-E1-SCH-04
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已进入企业查询
+locators:
+  adv_tab: tab 高级筛选
+  field_lib: region 高级筛选字段库
+  footer: 底边 Footer（保存为查询方案/使用查询方案/清空条件/应用筛选）
+  apply_btn: button 应用筛选
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 高级筛选
+  - action: wait
+    for: 高级筛选字段库渲染
+    timeout_ms: 600
+expect:
+  - note: 字段库呈现「企业所属地区」「经营状态」等字段标签
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText('经营状态').first()).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText(/企业所属地区|注册区县/).first()).toBeVisible({ timeout: 8000 });
+  - note: Footer 含「保存为查询方案」「使用查询方案」「清空条件」「应用筛选」
+    assert: |-
+      await expect(page.getByRole('button', { name: '保存为查询方案' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '使用查询方案' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: /应用筛选/ })).toBeVisible({ timeout: 8000 });
+  - note: 无条件时「应用筛选」为禁用或点击无结果
+    assert: |-
+      const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      const disabled = await applyBtn.isDisabled();
+      if (disabled) {
+        await expect(applyBtn).toBeDisabled();
+      } else {
+        await applyBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        const hit = page.getByText(/命中\s*[1-9]\d*\s*家企业/);
+        const hasHit = (await hit.count()) > 0 && (await hit.first().isVisible().catch(() => false));
+        expect(hasHit).toBe(false);
+        await expect(page.getByRole('region', { name: '高级筛选字段库' })).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise/enterprise-search。D2·字段库地区项现场为「注册区县推荐」无「企业所属地区」文案，机检用 /企业所属地区|注册区县/ 代理。Footer「应用筛选（0）」匹配 /应用筛选/。无条件时按钮 disabled（observed 2026-10-19）。

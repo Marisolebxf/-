@@ -1,0 +1,260 @@
+id: FUNC-03495
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03495
+priority: P0
+title: 成功结果页展示优势短板与版本边界结论三块
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已打开一条成功结果
+locators:
+  result_root: main.diagnosis-main
+  advantage_card: .diagnosis-advantage-card--strength
+  weakness_card: .diagnosis-advantage-card--weakness
+  version_heading: h3「版本边界」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 分析记录或新建分析打开成功结果页至结论三块（用例步骤 1.打开该结果页）
+expect:
+  - note: 前置：已打开区域产业竞争力评价成功结果页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const root = () => page.locator('main.diagnosis-main, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳');
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=competitiveness/.test(page.url()) &&
+          /tab=competitiveness/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          await enterViaSidebar().catch(() => {});
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价不可达');
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      const onSuccessResult = async () => {
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /区域产业竞争力评价结果/.test(body) && /[?&]view=result/.test(page.url());
+      };
+      const advantageHasFirstPlace = (text) => {
+        const card = text.match(/优势[\s\S]{0,320}/);
+        if (!card) return false;
+        if (/优势未返回/.test(card[0])) return false;
+        return /第\s*1\s*名|第\s*1（|竞争力第\s*1|排名第\s*1/.test(card[0]);
+      };
+      const openResultDeep = async (taskId) => {
+        await page.goto(
+          toUrl('/industry-center/regional?view=result&task_id=' + taskId + '&tab=competitiveness&workspace=competitiveness'),
+          { waitUntil: 'domcontentloaded', timeout: 60000 }
+        );
+        await page.waitForTimeout(3500);
+        await dismissBasket();
+      };
+      const tryBody = async () => {
+        if (!(await onSuccessResult())) return null;
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/优势/.test(body) || !/短板/.test(body) || !/版本边界/.test(body)) return null;
+        if (!/仅同任务快照可横向比较/.test(body)) return null;
+        if (!advantageHasFirstPlace(body)) return null;
+        return body;
+      };
+      const resultBodyRelaxed = async () => {
+        if (!/[?&]view=result/.test(page.url())) return null;
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/区域产业竞争力评价结果/.test(body)) return null;
+        return body;
+      };
+      const openFromRecords = async () => {
+        await ensureLand();
+        const recTab = page.getByRole('tab', { name: '分析记录', exact: true }).first();
+        await recTab.click({ timeout: 10000 });
+        await page.waitForTimeout(2500);
+        await dismissBasket();
+        const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 15); i++) {
+          const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/已完成/.test(txt)) continue;
+          const m = txt.match(TID_RE);
+          const viewBtn = rows.nth(i).getByRole('button', { name: /查看结果/ });
+          if (!(await viewBtn.count())) continue;
+          await viewBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(3500);
+          await dismissBasket();
+          if (!/view=result/.test(page.url()) && m) await openResultDeep(m[0]);
+          let body = await tryBody();
+          if (body) return body;
+          body = await resultBodyRelaxed();
+          if (body) return body;
+          await ensureLand();
+          await recTab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+        }
+        return null;
+      };
+      const openAnySuccessResult = async () => {
+        await ensureLand();
+        let anyBody = await tryBody();
+        if (anyBody) return anyBody;
+        anyBody = await openFromRecords();
+        if (anyBody) return anyBody;
+        const seedIds = [];
+        const recRows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr');
+        const rn = await recRows.count();
+        for (let i = 0; i < Math.min(rn, 20); i++) {
+          const t = ((await recRows.nth(i).innerText().catch(() => '')) || '').match(TID_RE);
+          if (t) seedIds.push(t[0]);
+        }
+        for (const tid of [...new Set(seedIds)].slice(0, 8)) {
+          await openResultDeep(tid);
+          const b = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/区域产业竞争力评价结果/.test(b) && /[?&]view=result/.test(page.url())) return b;
+        }
+        return null;
+      };
+      const runFreshAnalysis = async () => {
+        await ensureLand();
+        const pickSelect = async (ariaLabel, textRe) => {
+          const view = page.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
+          await view.waitFor({ state: 'visible', timeout: 8000 });
+          await view.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          const opt = pop.locator('.arco-select-option').filter({ hasText: textRe });
+          if (!(await opt.count())) throw new Error('选项不可用 ' + ariaLabel);
+          await opt.first().click({ force: true, timeout: 8000 });
+          await page.waitForTimeout(700);
+        };
+        await page.getByText('单产业 × 多区域', { exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        await pickSelect('集群', /新一代信息技术|集成电路/);
+        await page.waitForTimeout(500);
+        await pickSelect('产业', /集成电路|传感器/);
+        await page.waitForTimeout(500);
+        const regionMulti = page.locator('main .arco-select-view-multiple').first();
+        await regionMulti.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        for (const name of ['深圳市', '上海市']) {
+          const hit = pop.getByText(name, { exact: true }).first();
+          if (await hit.count()) await hit.click({ force: true }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        const start = page.locator('main').getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start).toBeEnabled({ timeout: 25000 });
+        await start.click({ timeout: 15000 });
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 800 : 2000);
+          const b = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/区域产业竞争力评价结果/.test(b) && /view=result/.test(page.url())) return b;
+          const btn = page.getByRole('button', { name: /查看分析结果|查看结果/ });
+          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
+            await btn.first().click({ timeout: 8000 }).catch(() => {});
+          }
+          if (/分析失败|INPUT_OBJECT_INVALID/.test(b)) break;
+        }
+        return ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      };
+      let body = await openAnySuccessResult();
+      if (!body || !advantageHasFirstPlace(body)) {
+        const fresh = await runFreshAnalysis().catch(() => null);
+        if (fresh && /区域产业竞争力评价结果/.test(fresh)) body = fresh;
+      }
+      if (!body || !/区域产业竞争力评价结果/.test(body)) {
+        throw new Error('ENV-GAP-CHAIN-REG-ADV: 无法打开成功结果页');
+      }
+      globalThis.__func03495ResultBody = body;
+      globalThis.__func03495AdvOk = advantageHasFirstPlace(body);
+      if (!globalThis.__func03495AdvOk) {
+        throw new Error(
+          'ENV-GAP-CHAIN-REG-ADV: 结果页已打开但优势文案未返回第1名区域（优势未返回或 GAP-CHAIN-REG-METRICS 降级）'
+        );
+      }
+      await expect(root()).toBeVisible({ timeout: 8000 });
+      await expect(root().getByText('区域产业竞争力评价结果').first()).toBeVisible({ timeout: 8000 });
+  - note: 1、可见「优势」，并写明第 1 名区域
+    assert: |-
+      const root = page.locator('main.diagnosis-main, main').first();
+      const strength = root.locator('.diagnosis-advantage-card--strength').first();
+      await expect(strength.getByText('优势', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const advText = ((await strength.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/优势未返回/.test(advText)) {
+        throw new Error('优势区块为 empty「优势未返回」，未写明第 1 名区域');
+      }
+      if (!/第\s*1\s*名|第\s*1（|竞争力第\s*1|排名第\s*1/.test(advText)) {
+        throw new Error('优势文案未见第 1 名区域表述：' + advText.slice(0, 200));
+      }
+  - note: 2、可见「短板」
+    assert: |-
+      const root = page.locator('main.diagnosis-main, main').first();
+      const weakness = root.locator('.diagnosis-advantage-card--weakness').first();
+      await expect(weakness.getByText('短板', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、可见「版本边界」，并写明仅同任务快照可横向比较
+    assert: |-
+      const root = page.locator('main.diagnosis-main, main').first();
+      await expect(root.getByRole('heading', { name: '版本边界' }).first()).toBeVisible({ timeout: 8000 });
+      const boundary = root.locator('.arco-alert').filter({ hasText: /仅同任务快照可横向比较/ }).first();
+      await expect(boundary).toBeVisible({ timeout: 8000 });
+      const txt = ((await boundary.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/仅同任务快照可横向比较/.test(txt)) {
+        throw new Error('版本边界文案缺少「仅同任务快照可横向比较」：' + txt.slice(0, 240));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  结论三块 UI=IndustryRegionalResultBoard：优势/短板卡片标题 strong；版本边界 h3 + a-alert（默认含仅同任务快照可横向比较，不断言 GAP 编号）。
+  优势第1名现场文案算法侧为「{区域}竞争力第 1（…）」；仅见「优势未返回」→ ENV-GAP-CHAIN-REG-ADV blocked。
+  打开路径=分析记录已完成「查看结果」或 view=result 深链；catalog 配置页 route 仍 entry-seed competitiveness。

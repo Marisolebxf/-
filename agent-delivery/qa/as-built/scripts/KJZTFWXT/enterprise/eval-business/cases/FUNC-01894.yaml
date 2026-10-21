@@ -1,0 +1,96 @@
+id: FUNC-01894
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01894
+priority: P0
+title: 结果页标明任务、对象家数与生成时间
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开一次成功的商业力评估结果（as-built：最近评估→恢复结果）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  result_heading: heading「商业力评估结果」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 停留在「商业力评估结果」页眉；导航与判定在 expect
+expect:
+  - note: 1、展示任务 ID
+    assert: |-
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const onResult = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        const t = await main().innerText().catch(() => '');
+        return /商业力评估结果/.test(t);
+      };
+      const ensureResultPage = async () => {
+        if (globalThis.__func01894_onResult) return;
+        if (await onResult()) {
+          globalThis.__func01894_onResult = true;
+          return;
+        }
+        await dismissBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 });
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        await restore.first().waitFor({ state: 'visible', timeout: 10000 });
+        if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」');
+        await restore.first().click({ timeout: 8000 });
+        const t0 = Date.now();
+        while (Date.now() - t0 < 30000) {
+          if (await onResult()) break;
+          await page.waitForTimeout(500);
+        }
+        await expect(page).toHaveURL(/view=result/);
+        await expect(page.getByText('商业力评估结果').first()).toBeVisible({ timeout: 15000 });
+        globalThis.__func01894_onResult = true;
+      };
+      await ensureResultPage();
+      let tid = null;
+      const url = page.url();
+      const um = url.match(/task_id=(EVAL-\d{8}-\d{3})/);
+      if (um) tid = um[1];
+      if (!tid) {
+        const t = await main().innerText().catch(() => '');
+        const tm = t.match(/EVAL-\d{8}-\d{3}/);
+        if (tm) tid = tm[0];
+      }
+      if (!tid || !/^EVAL-\d{8}-\d{3}$/.test(tid)) throw new Error('未见 EVAL-YYYYMMDD-NNN 任务 ID：' + url);
+      globalThis.__func01894_taskId = tid;
+      await expect(main().getByText(tid).first()).toBeVisible({ timeout: 10000 });
+  - note: 2、展示对象家数
+    assert: |-
+      if (!globalThis.__func01894_onResult) throw new Error('前置：结果页未就绪');
+      const main = () => page.locator('main.app-main').first();
+      const t = await main().innerText().catch(() => '');
+      let m = t.match(/对象[：:]\s*(\d+)\s*家/);
+      if (!m) m = t.match(/纳入评价企业[\s\S]{0,24}?(\d+)\s*家/);
+      if (!m) throw new Error('结果页眉未解析对象家数');
+      const n = parseInt(m[1], 10);
+      if (!(n >= 1)) throw new Error('对象家数无效：' + n);
+      globalThis.__func01894_objectN = n;
+      await expect(main().getByText(new RegExp('对象[：:]\\s*' + n + '\\s*家')).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、展示生成时间
+    assert: |-
+      if (!globalThis.__func01894_onResult) throw new Error('前置：结果页未就绪');
+      const main = () => page.locator('main.app-main').first();
+      const t = await main().innerText().catch(() => '');
+      let m = t.match(/生成时间[：:]\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
+      if (!m) m = t.match(/生成时间[：:]\s*(\d{4}\/\d{1,2}\/\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
+      if (!m) throw new Error('结果页眉未见生成时间');
+      await expect(main().getByText(new RegExp('生成时间[：:]\\s*' + m[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·30888 路由 /enterprise-center/evaluation。用例前置「已打开成功结果」改 as-built「最近评估→恢复结果」直达结果页眉（与 FUNC-00944/01888 同域；全路径发起见 01888）。页眉文案 observed：任务 ID：EVAL-*、对象：N 家、生成时间：YYYY-MM-DD HH:mm:ss（probe-p006-result.json）。登录与关内部评审由 runner 会话前置。tier B，无 allow_skip。

@@ -1,0 +1,108 @@
+id: FUNC-03992
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03992
+priority: P0
+tier: B
+title: 主流程-查机构表单占位与示例填充
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入服务机构查询（/service-center/search）
+locators:
+  tab_org: '.enterprise-search-mode-tabs [role=tab] → 查机构（第 2 枚）'
+  org_input: textbox placeholder「输入机构名称、城市或行业关键词」
+  org_examples: button.enterprise-search-example-button ×4（附录 B）
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 进入页 → 点「查机构」→ 点示例「契约卡面」（判定在 expect）
+expect:
+  - note: 占位为「输入机构名称、城市或行业关键词」；示例共 4 枚且与附录 B 一致
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      await tabs.nth(1).click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/mode=org/);
+      const ph = '输入机构名称、城市或行业关键词';
+      const inp = page.getByPlaceholder(ph);
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      const chips = ['契约卡面', '深圳', '检验检测', '科技创新'];
+      const btns = page.locator('button.enterprise-search-example-button');
+      await expect(btns).toHaveCount(4, { timeout: 8000 });
+      for (const t of chips) {
+        await expect(page.getByRole('button', { name: t, exact: true })).toBeVisible({ timeout: 8000 });
+      }
+      if (await page.getByPlaceholder(/用一句话描述机构需求/).count()) {
+        const vis = await page.getByPlaceholder(/用一句话描述机构需求/).isVisible().catch(() => false);
+        if (vis) throw new Error('查机构态仍见智能检索占位，非单框表单');
+      }
+  - note: 点击示例「契约卡面」后输入框填入该词且不自动进入检索结果
+    assert: |-
+      const ph = '输入机构名称、城市或行业关键词';
+      const inp = page.getByPlaceholder(ph);
+      await page.getByRole('button', { name: '契约卡面', exact: true }).click();
+      await page.waitForTimeout(400);
+      await expect(inp).toHaveValue('契约卡面');
+      if ((await page.getByRole('heading', { name: '检索结果' }).count()) > 0) {
+        const vis = await page.getByRole('heading', { name: '检索结果' }).first().isVisible().catch(() => false);
+        if (vis) throw new Error('点击示例 chip 后不应出现「检索结果」标题');
+      }
+      if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) {
+        const vis = await page.getByText(/共 \d+ 家匹配机构/).first().isVisible().catch(() => false);
+        if (vis) throw new Error('点击示例 chip 后不应出现匹配机构计数');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 查机构 Tab 单关键词框 + 4 枚 enterprise-search-example-button（附录 B）。点击仅回填、不自动检索（成功检索见 03989）。深链 SPA404 时侧栏 sibling /industry-center/search → menu_leaf 服务机构查询。catalog_path=/service-center/search。对照重写 id=FUNC-03992，不读旧 P0-11。

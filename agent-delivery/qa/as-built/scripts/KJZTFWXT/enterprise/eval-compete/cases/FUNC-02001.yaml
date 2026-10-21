@@ -1,0 +1,92 @@
+id: FUNC-02001
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02001
+priority: P0
+title: 创新能力行查看打开指标说明抽屉并展示业务字段
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已进入综合竞争力评估配置（指标与权重区可见）
+locators:
+  metric_row: 创新能力行
+  view_btn: 创新能力行「查看」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 当前分析 tab；创新能力行「查看」→ 指标说明抽屉；关闭在末条 expect
+expect:
+  - note: 1、标题为「创新能力 · 指标说明」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoCompeteConfig = async () => {
+        if (!/\/enterprise(\-center)?\/evaluation/.test(page.url()) || !/workspace=competitiveness/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: /企业.*竞争力/ }).first()).toBeVisible({ timeout: 12000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        await expect(page.getByText('创新能力', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      };
+      const openInnovationDrawer = async () => {
+        const row = page.getByRole('row').filter({ hasText: '创新能力' }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        const view = row.getByRole('button', { name: '查看' }).first();
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      await gotoCompeteConfig();
+      await openInnovationDrawer();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = drawer.locator('.arco-drawer-title, .arco-drawer-header').first();
+      const titleText = (await title.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+      if (!/创新能力/.test(titleText) || !/指标说明/.test(titleText)) {
+        throw new Error('抽屉标题不符：' + titleText);
+      }
+      globalThis.__func02001_drawerOpened = true;
+  - note: 2、含衡量目的、所属维度、业务口径
+    assert: |-
+      if (!globalThis.__func02001_drawerOpened) throw new Error('前置：抽屉未打开');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block2 = ['衡量目的', '所属维度', '业务口径'];
+      const miss2 = block2.filter((k) => !t.includes(k));
+      if (miss2.length) throw new Error('抽屉缺字段: ' + miss2.join('、') + '；片段: ' + t.slice(0, 280));
+      if (/技术.*映射|市场.*映射|组织.*映射/.test(t)) {
+        throw new Error('关评审后不应出现技术/市场/组织映射段');
+      }
+  - note: 3、含单位、指标方向、适用范围、数据状态、缺失影响
+    assert: |-
+      if (!globalThis.__func02001_drawerOpened) throw new Error('前置：抽屉未打开');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block3 = ['单位', '指标方向', '适用范围', '数据状态', '缺失影响'];
+      const miss3 = block3.filter((k) => !t.includes(k));
+      if (miss3.length) throw new Error('抽屉缺字段: ' + miss3.join('、') + '；片段: ' + t.slice(0, 280));
+      const closeBtn = drawer.locator('.arco-drawer-close-btn').first();
+      if (await closeBtn.count()) {
+        await closeBtn.click({ timeout: 5000 });
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await page.waitForTimeout(500);
+      await expect(page.locator('.arco-drawer:visible')).toHaveCount(0, { timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 FUNC-02001 重写作废 00422：仅断言「创新能力 · 指标说明」抽屉八项业务字段，关评审后无技术/市场/组织映射段。深链 /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness；创新能力指标行「查看」。抽屉限定 .arco-drawer:visible。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

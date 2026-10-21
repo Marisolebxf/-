@@ -1,0 +1,113 @@
+id: FUNC-04093
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04093
+priority: P0
+tier: A
+title: 主流程-分析记录列
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
+  - 已进入本页
+locators:
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+  - action: evaluate
+    note: 点击「分析记录」，表头五列在 expect 判定
+expect:
+  - note: 1、表头依次为任务、类型、状态、创建时间、操作
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const expectedHeaders = ['任务', '类型', '状态', '创建时间', '操作'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(toUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=field/);
+        await expect(page).toHaveURL(/tab=coverage/);
+        return !(await bodyIs404());
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        const siblings = ['/industry-center/search', '/service-portal/overview/overview', '/service-portal/overview'];
+        let ok = false;
+        for (const s of siblings) {
+          if (await enterViaSidebar(s)) {
+            ok = true;
+            break;
+          }
+        }
+        if (!ok) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均 SPA404，无法验分析记录表头 url=' + page.url());
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构产业领域分析深链与侧栏入口均不可用 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(recTab.first()).toBeVisible({ timeout: 12000 });
+      await recTab.first().click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      const aria = await recTab.first().getAttribute('aria-selected');
+      const cls = (await recTab.first().getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('分析记录 Tab 未选中 url=' + page.url());
+      }
+      const thLoc = page.locator('main .arco-table thead .arco-table-th, main .arco-table-th');
+      await expect(thLoc.first()).toBeVisible({ timeout: 12000 });
+      const raw = await thLoc.allTextContents();
+      const headers = raw.map((s) => (s || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+      if (headers.length < expectedHeaders.length) {
+        throw new Error('表头列数不足: ' + JSON.stringify(headers));
+      }
+      for (let i = 0; i < expectedHeaders.length; i++) {
+        if (headers[i] !== expectedHeaders[i]) {
+          throw new Error('第' + (i + 1) + '列应为「' + expectedHeaders[i] + '」，实际「' + headers[i] + '」；全部=' + JSON.stringify(headers));
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04093=配置页 catalog_path 着陆→点 Tab「分析记录」；五列表头顺序任务/类型/状态/创建时间/操作（对齐 scout-p010/env-gate g5）。
+  edu 深链 SPA404→sibling entry-seed /service-portal/overview/overview 侧栏补进；禁止改 catalog_path。

@@ -1,0 +1,59 @@
+id: FUNC-00461
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00461
+priority: P1
+title: 排序方向按钮可往返切换且列表稳定
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空结果列表（本条 steps 自含智能搜索「人工智能」出结果）
+  - 已选择任一排序项（默认综合竞争力优先即满足）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  sort_dir_btn: button「切换排序方向」（aria-label 切换排序方向）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与长卡片
+    timeout_ms: 2000
+  - action: evaluate
+    note: 两次点击「切换排序方向」与列表稳定断言在 expect 内自含（P2 跨 tick）
+expect:
+  - note: 每次切换后列表仍可见且无白屏
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 15000 });
+      const sortSel = page.locator('main .arco-select-view').filter({ hasText: /综合竞争力优先|有效专利数|最新营收|成立时间/ }).last();
+      await expect(sortSel).toBeVisible({ timeout: 8000 });
+      const sortDirBtn = page.getByRole('button', { name: '切换排序方向' });
+      await expect(sortDirBtn).toBeVisible({ timeout: 8000 });
+      const assertListStable = async (phase) => {
+        await expect(page.locator('main')).toBeVisible({ timeout: 8000 });
+        const hit = page.getByText(/命中\s*[1-9]\d*\s*家企业/).first();
+        await expect(hit).toBeVisible({ timeout: 15000 });
+        const card = page.getByRole('button', { name: '查看画像' }).first();
+        await expect(card).toBeVisible({ timeout: 8000 });
+        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (mainText.length < 20) throw new Error(phase + '：主区内容过短疑似白屏');
+      };
+      await sortDirBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await assertListStable('第一次切换排序方向后');
+      await sortDirBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await assertListStable('第二次切换排序方向后');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。列表重排顺序 observed 不核单调性。

@@ -1,0 +1,135 @@
+id: FUNC-01694
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01694
+priority: P0
+title: 重点领域分布表头列出全部列名
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 结果页已出现「重点领域分布」或 30888 结果 KPI（assert 可自含选择分析企业回填）
+locators:
+  section_legacy: heading「重点领域分布」
+  table_headers: 产业领域 / 涉及企业 / 识别依据 / 代表企业 / 操作
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: evaluate
+    note: 无结果则入篮并选择分析企业→确定；浏览重点领域分布表头（列名在 expect）
+expect:
+  - note: 1、列名为产业领域、涉及企业、识别依据、代表企业、操作
+    assert: |-
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?view=domain',
+      ];
+      const cols = ['产业领域', '涉及企业', '识别依据', '代表企业', '操作'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
+        }
+        throw new Error('深链均不可达');
+      };
+      const ensureBasketEnterprise = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const entCount = entM ? parseInt(entM[1], 10) : 0;
+        if (entCount >= 1) return;
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureResult = async () => {
+        await closeBasket();
+        const main = page.locator('main');
+        const distHeading = page.getByRole('heading', { name: '重点领域分布' });
+        const kpi = main.getByText('已覆盖领域', { exact: true });
+        if (await distHeading.count()) return 'legacy';
+        if (await kpi.count() && await kpi.first().isVisible().catch(() => false)) return '30888';
+        await ensureBasketEnterprise();
+        await gotoRoute();
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count()) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+        const pickerSels = page.locator('[aria-label^="选择 "]');
+        if (!(await pickerSels.count())) throw new Error('选择分析企业弹层无可勾选企业');
+        await pickerSels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+        if (await distHeading.count()) return 'legacy';
+        if (await kpi.count()) return '30888';
+        throw new Error('确定后未进入结果态: ' + page.url());
+      };
+      const distributionTableHeaderHay = async () => {
+        const main = page.locator('main');
+        const distHeading = page.getByRole('heading', { name: '重点领域分布' });
+        if (await distHeading.count()) {
+          const sec = distHeading.locator('xpath=ancestor::section[1]').first();
+          const root = (await sec.count()) ? sec : distHeading.locator('xpath=ancestor::div[contains(@class,"col-span")][1]').first();
+          const table = root.locator('.arco-table').first();
+          if (await table.count()) {
+            const parts = [];
+            for (const thead of await table.locator('thead').all()) {
+              const t = (await thead.innerText().catch(() => '')) || '';
+              if (t.trim()) parts.push(t.replace(/\s+/g, ' ').trim());
+            }
+            if (parts.join(' ')) return parts.join(' ');
+          }
+        }
+        const tables = main.locator('.arco-table');
+        const n = await tables.count();
+        for (let i = 0; i < n; i++) {
+          const theadText = (await tables.nth(i).locator('thead').first().innerText().catch(() => '')) || '';
+          const norm = theadText.replace(/\s+/g, ' ').trim();
+          if (norm.includes('产业领域') && norm.includes('代表企业') && norm.includes('操作')) return norm;
+        }
+        const mainHay = (await main.innerText().catch(() => '')) || '';
+        const idx = mainHay.indexOf('重点领域分布');
+        if (idx >= 0) return mainHay.slice(idx, idx + 400);
+        return mainHay.slice(0, 500);
+      };
+      if (/enterprise_codes=/.test(page.url())) await gotoRoute();
+      await ensureResult();
+      const headerHay = await distributionTableHeaderHay();
+      for (const col of cols) {
+        if (!headerHay.includes(col)) {
+          throw new Error('重点领域分布表头缺「' + col + '」: ' + headerHay.slice(0, 280));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 30888 结果态可能无独立「重点领域分布」heading（与 01693 跨领域布局一致），以含五列表头的 arco-table 或 main 文本代位；深链优先 enterprise-center。B 档。

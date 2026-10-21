@@ -1,0 +1,120 @@
+id: FUNC-02908
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02908
+priority: P0
+title: 诊断记录按任务状态筛「已完成」
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: A
+preconditions:
+  - 诊断记录里同时有已完成和失败（assert 自含）
+locators:
+  records_tab: tab「诊断记录」
+  status_filter: 任务状态
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: click
+    target: 诊断记录
+  - action: evaluate
+    note: 任务状态选「已完成」；行状态与条数在 expect
+expect:
+  - note: 前置：诊断记录 Tab；「全部状态」下同时有已完成与失败行，并采样基线条数
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const chainRows = () => main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+      const countVisibleChainRows = async () => {
+        const rows = chainRows();
+        const n = await rows.count();
+        let c = 0;
+        for (let i = 0; i < n; i++) {
+          const vis = await rows.nth(i).isVisible().catch(() => false);
+          if (vis) c++;
+        }
+        return c;
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(body)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-RECORDS-001：诊断记录未见 CHAIN 任务行');
+      }
+      if (!/已完成/.test(body) || !/失败/.test(body)) {
+        throw new Error('ENV-CHAIN-CYCLE-FILTER-MIX-001：前置不满足（需同时有已完成与失败）');
+      }
+      const nAll = await countVisibleChainRows();
+      if (nAll < 2) {
+        throw new Error('ENV-CHAIN-CYCLE-FILTER-MIX-001：全部状态可见行不足 2（n=' + nAll + '）');
+      }
+      globalThis.__func02908 = { nAll, chainRows, TID_RE, main };
+  - note: 1、任务状态选「已完成」（步骤 1）
+    assert: |-
+      const ctx = globalThis.__func02908;
+      if (!ctx) throw new Error('前置：诊断记录未就绪');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      const statusLabel = page.getByText('任务状态', { exact: false }).first();
+      await expect(statusLabel).toBeVisible({ timeout: 8000 });
+      let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      if ((await trigger.count()) < 1) {
+        trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+      }
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const opt = page.locator(optSel).filter({ hasText: /^已完成$/ }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/已完成/.test(shown)) {
+        throw new Error('任务状态筛选未回显「已完成」：' + shown);
+      }
+  - note: 1、每一行状态都是「已完成」；2、条数少于「全部状态」时的条数
+    assert: |-
+      const ctx = globalThis.__func02908;
+      if (!ctx) throw new Error('前置：诊断记录未就绪');
+      const rows = ctx.chainRows();
+      const n = await rows.count();
+      if (n < 1) throw new Error('筛「已完成」后未见 CHAIN 任务行');
+      const bad = [];
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const id = (rt.match(ctx.TID_RE) || [])[0] || ('row' + i);
+        if (/失败/.test(rt)) bad.push(id + ' 仍含「失败」');
+        else if (!/已完成/.test(rt)) bad.push(id + ' 未见「已完成」：' + rt.slice(0, 100));
+      }
+      if (bad.length) throw new Error('筛已完成后行状态不符：' + bad.join('; '));
+      let nDone = 0;
+      for (let i = 0; i < n; i++) {
+        if (await rows.nth(i).isVisible().catch(() => false)) nDone++;
+      }
+      if (nDone >= ctx.nAll) {
+        throw new Error('筛已完成后条数应少于全部状态：done=' + nDone + ' all=' + ctx.nAll);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。步骤=诊断记录→任务状态选「已完成」。
+  前置=全部状态下 main 同时含「已完成」「失败」且可见 CHAIN 行≥2，否则 ENV-CHAIN-CYCLE-FILTER-MIX-001。
+  机检=每可见 CHAIN 行仅「已完成」态、无「失败」；可见行数 nDone<nAll（基线采于筛前当前页）。
+  筛选控件=P7 点 .arco-select-view（任务状态旁或回显全部状态/已完成）。登录关评审 runner 前置。A 档零 allow_skip。

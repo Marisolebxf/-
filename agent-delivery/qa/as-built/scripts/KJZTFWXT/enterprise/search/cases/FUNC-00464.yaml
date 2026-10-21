@@ -1,0 +1,53 @@
+id: FUNC-00464
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00464
+priority: P1
+title: 字段库可收起再展开且 Footer 操作不丢失
+story: US-E1-SCH-04
+entry_id: ent-search
+tier: B
+preconditions:
+  - 高级筛选字段库为展开态
+locators:
+  adv_tab: tab 高级筛选
+  field_lib: region 高级筛选字段库
+  collapse_btn: button 收起字段库
+  expand_btn: button 展开字段库
+  footer_apply: button 应用筛选
+  footer_clear: button 清空条件
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 高级筛选
+  - action: wait
+    for: 高级筛选字段库展开态
+    timeout_ms: 800
+expect:
+  - note: 收起后字段标签隐藏且 Footer 操作仍在
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText('经营状态').first()).toBeVisible({ timeout: 8000 });
+      const collapseBtn = page.getByRole('button', { name: '收起字段库' });
+      await expect(collapseBtn).toBeVisible({ timeout: 8000 });
+      await collapseBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByRole('button', { name: '展开字段库' })).toBeVisible({ timeout: 8000 });
+      const statusInLib = fieldLib.getByText('经营状态');
+      const statusVisible = (await statusInLib.count()) > 0 && (await statusInLib.first().isVisible().catch(() => false));
+      if (statusVisible) {
+        throw new Error('收起后字段库内「经营状态」标签仍可见');
+      }
+      await expect(page.getByRole('button', { name: '保存为查询方案' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '使用查询方案' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '清空条件' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: /应用筛选/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 展开后字段标签恢复可见
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await page.getByRole('button', { name: '展开字段库' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(fieldLib.getByText('经营状态').first()).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText(/企业所属地区|注册区县/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search。字段地区文案现场可为「注册区县」类，机检用 /企业所属地区|注册区县/。收起判定以字段库 region 内「经营状态」不可见为准。

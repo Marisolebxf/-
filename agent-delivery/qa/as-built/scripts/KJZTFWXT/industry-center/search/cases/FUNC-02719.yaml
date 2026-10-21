@@ -1,0 +1,90 @@
+id: FUNC-02719
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02719
+priority: P0
+title: 搜索字段名称后字段库只留匹配项
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选字段库已展开
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_search: placeholder「搜索字段名称 / key」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 高级筛选 Tab、字段库展开、输入「层级」；预期在 expect 判定
+expect:
+  - note: 1、字段库只保留「产业层级」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const normalizeTagLabel = (raw) =>
+        (raw || '').replace(/\s+/g, ' ').trim().replace(/\s*推荐\s*$/, '').trim();
+      const collectVisibleFieldTags = async (fieldLib) => {
+        const tags = fieldLib.locator('.fp-tags .arco-tag');
+        const n = await tags.count();
+        const labels = [];
+        for (let i = 0; i < n; i++) {
+          const tag = tags.nth(i);
+          if (!(await tag.isVisible().catch(() => false))) continue;
+          labels.push(normalizeTagLabel(await tag.innerText()));
+        }
+        return labels.filter(Boolean);
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const collapseBtn = fieldLib.getByRole('button', { name: /收起字段库|展开字段库/ }).first();
+      if (await collapseBtn.count()) {
+        const btnText = ((await collapseBtn.innerText()) || '').replace(/\s+/g, '');
+        if (btnText.includes('展开')) {
+          await collapseBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        await expect(fieldLib.getByRole('button', { name: '收起字段库' }).first()).toBeVisible({
+          timeout: 8000,
+        });
+      }
+      const searchInput = fieldLib.getByPlaceholder('搜索字段名称 / key');
+      await expect(searchInput).toBeVisible({ timeout: 8000 });
+      const beforeLabels = await collectVisibleFieldTags(fieldLib);
+      if (beforeLabels.length < 3) {
+        throw new Error('前置：字段库展开后应有多于 2 个字段 Tag，实际=' + JSON.stringify(beforeLabels));
+      }
+      await searchInput.fill('层级');
+      await page.waitForTimeout(400);
+      const afterLabels = await collectVisibleFieldTags(fieldLib);
+      if (afterLabels.length !== 1 || afterLabels[0] !== '产业层级') {
+        throw new Error(
+          '字段库应只保留「产业层级」，实际可见 Tag=' + JSON.stringify(afterLabels),
+        );
+      }
+      await expect(fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '对象类型' })).toHaveCount(0);
+      await expect(fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '产业层级' })).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab（.enterprise-search-mode-tabs 第 3 枚）。
+  字段搜索 scoped 在 region「高级筛选字段库」内 placeholder「搜索字段名称 / key」；字段 Tag 在 .fp-tags .arco-tag（含「推荐」后缀，断言归一化 strip）。
+  过滤逻辑=label/key 包含查询串（FilterPanel fieldKeyword）。登录与关内部评审由 runner 前置。B 档零 allow_skip。

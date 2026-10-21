@@ -1,0 +1,242 @@
+id: FUNC-02418
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02418
+priority: P1
+title: 问题清单五筛选项与空维度说明
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 已打开有问题的成功结果；其中至少一维没有问题（assert 自含）
+locators:
+  section_issues: 共性问题 Top 5 / 问题清单
+  filters: [全部, 技术研发, 市场拓展, 融资, 管理]
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: evaluate
+    note: 点击问题清单维度筛选项（前置与断言在 expect 自含）
+expect:
+  - note: 前置：成功结果页已打开；问题清单「全部」下至少一张问题卡；四维中至少一维无共性问题
+    assert: |-
+      const historyRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points&view=history';
+      const FILTER_LABELS = ['全部', '技术研发', '市场拓展', '融资', '管理'];
+      const DIM_KEYS = ['技术研发', '市场拓展', '融资', '管理'];
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitResultShell = async () => {
+        const hasSummary = async () => {
+          const t = await main().innerText().catch(() => '');
+          return /对象与诊断摘要|四维诊断/.test(t);
+        };
+        if (await hasSummary()) return true;
+        try {
+          await page
+            .getByText('对象与诊断摘要')
+            .or(page.getByText('四维诊断'))
+            .first()
+            .waitFor({ state: 'visible', timeout: 8000 });
+          return true;
+        } catch (_) {}
+        const u = page.url();
+        if (u.includes('view=history') && u.includes('task_id=')) {
+          await page.goto(u.replace('view=history', 'view=result'), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2500);
+          if (await hasSummary()) return true;
+        }
+        await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 4000 }).catch(async () => {
+          await page.getByText('当前分析', { exact: true }).first().click({ timeout: 4000 }).catch(() => {});
+        });
+        await page.waitForTimeout(2000);
+        try {
+          await page
+            .getByText('对象与诊断摘要')
+            .or(page.getByText('四维诊断'))
+            .first()
+            .waitFor({ state: 'visible', timeout: 10000 });
+          return true;
+        } catch (_) {
+          return false;
+        }
+      };
+      const filterBar = () =>
+        main()
+          .locator('div, section')
+          .filter({ has: page.getByText('全部', { exact: true }) })
+          .filter({ has: page.getByText('融资', { exact: true }) })
+          .filter({ has: page.getByText('管理', { exact: true }) })
+          .last();
+      const filterChip = (bar, name) => bar.getByText(name, { exact: true }).first();
+      const clickFilter = async (bar, name) => {
+        const chip = filterChip(bar, name);
+        await chip.scrollIntoViewIfNeeded().catch(() => {});
+        await chip.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+      };
+      const emptyVisible = async () =>
+        page.getByText('当前维度没有可展示的共性问题').first().isVisible().catch(() => false);
+      const problemListSlice = (body) => {
+        const markers = ['共性问题 Top 5', '问题清单'];
+        let start = -1;
+        for (const m of markers) {
+          const i = body.indexOf(m);
+          if (i >= 0 && (start < 0 || i < start)) start = i;
+        }
+        if (start < 0) return '';
+        const end = body.indexOf('发展痛难点分析建议报告', start);
+        return end >= 0 ? body.slice(start, end) : body.slice(start);
+      };
+      const fourDimSlice = (body) => {
+        const start = body.indexOf('四维诊断');
+        if (start < 0) return '';
+        const tailMarkers = ['共性问题 Top 5', '问题清单', '发展痛难点分析建议报告'];
+        let end = body.length;
+        for (const m of tailMarkers) {
+          const i = body.indexOf(m, start + 4);
+          if (i >= 0 && i < end) end = i;
+        }
+        return body.slice(start, end);
+      };
+      const dimCardText = (slice, dim) => {
+        const i = slice.indexOf(dim);
+        if (i < 0) return '';
+        let end = slice.length;
+        for (const d of DIM_KEYS) {
+          if (d === dim) continue;
+          const j = slice.indexOf(d, i + dim.length);
+          if (j >= 0 && j < end) end = j;
+        }
+        return slice.slice(i, end);
+      };
+      const dimHasNoIssues = (fourSlice, dim) => {
+        const card = dimCardText(fourSlice, dim);
+        if (!card) return false;
+        if (/\d+\s*项/.test(card)) return false;
+        if (/数据不足/.test(card) && /数据不足，暂不判断/.test(card)) return true;
+        return false;
+      };
+      const hasProblemCardsOnAll = (slice) =>
+        !!slice && /阅读优先级[：:]\s*(高|中|低)/.test(slice);
+      const rowOpenControl = (row, label) =>
+        row
+          .getByRole('button', { name: label })
+          .or(row.getByRole('link', { name: label }))
+          .first();
+      const openResultFromRow = async (row) => {
+        for (const label of ['结果预览', '预览结果', '恢复结果']) {
+          const btn = rowOpenControl(row, label);
+          if (!(await btn.count())) continue;
+          await btn.scrollIntoViewIfNeeded().catch(() => {});
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(1500);
+          if (await waitResultShell()) return label;
+        }
+        return '';
+      };
+      const pickEmptyDimCandidates = (fourSlice) => {
+        const order = ['融资', '技术研发', '管理', '市场拓展'];
+        const preferred = order.filter((d) => dimHasNoIssues(fourSlice, d));
+        const rest = DIM_KEYS.filter((d) => !preferred.includes(d));
+        return [...preferred, ...rest];
+      };
+      const tryEmptyFilterOnPage = async () => {
+        const body = await main().innerText().catch(() => '');
+        const probSlice = problemListSlice(body);
+        const fourSlice = fourDimSlice(body);
+        if (!probSlice || !/四维诊断/.test(body)) return false;
+        if (!hasProblemCardsOnAll(probSlice)) return false;
+        const bar = filterBar();
+        if (!(await bar.count())) return false;
+        const candidates = pickEmptyDimCandidates(fourSlice);
+        for (const d of candidates) {
+          await clickFilter(bar, d);
+          if (await emptyVisible()) {
+            globalThis.__func02418 = { ready: true, emptyDim: d };
+            return true;
+          }
+        }
+        await clickFilter(bar, '全部');
+        return false;
+      };
+      const gotoHistoryPage = async (pageNum) => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        if (pageNum <= 1) return;
+        const pag = main().locator('.arco-pagination').first();
+        if (!(await pag.count())) return;
+        const btn = pag.locator('.arco-pagination-item').filter({ hasText: new RegExp('^\\s*' + pageNum + '\\s*$') }).first();
+        if ((await btn.count()) && (await btn.isVisible().catch(() => false))) {
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+        if ((await next.count()) && (await next.isVisible().catch(() => false))) {
+          await next.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        }
+      };
+      const openMixedResult = async () => {
+        for (const pageNum of [1, 2]) {
+          await gotoHistoryPage(pageNum);
+          const n = await main().locator(rowSel).count();
+          if (!n) continue;
+          for (let i = 0; i < n; i++) {
+            if (i > 0) {
+              await gotoHistoryPage(pageNum);
+            }
+            const row = main().locator(rowSel).nth(i);
+            const rowText = await row.innerText().catch(() => '');
+            if (!/已完成/.test(rowText)) continue;
+            const via = await openResultFromRow(row);
+            if (!via) continue;
+            if (await tryEmptyFilterOnPage()) return;
+          }
+        }
+        throw new Error('ENV-PAIN-NO-MIXED-ISSUES-001：历史中无「有问题且至少一维无共性问题」的成功结果');
+      };
+      await openMixedResult();
+      await expect(page.getByText(/共性问题 Top 5|问题清单/).first()).toBeVisible({ timeout: 15000 });
+      const bar0 = filterBar();
+      if (!(await bar0.count())) throw new Error('问题清单区未见五筛选项条');
+      for (const label of FILTER_LABELS) {
+        await expect(filterChip(bar0, label)).toBeVisible({ timeout: 8000 });
+      }
+      globalThis.__func02418_filters_ok = true;
+      globalThis.__func02418_group = true;
+  - note: 1、筛选项共 5 个，名称见附录C（全部、技术研发、市场拓展、融资、管理）
+    assert: |-
+      if (!globalThis.__func02418?.ready || !globalThis.__func02418_filters_ok) {
+        throw new Error('前置：未到混合问题结果页或未验筛选项');
+      }
+      const FILTER_LABELS = ['全部', '技术研发', '市场拓展', '融资', '管理'];
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const bar = main()
+        .locator('div, section')
+        .filter({ has: page.getByText('全部', { exact: true }) })
+        .filter({ has: page.getByText('融资', { exact: true }) })
+        .last();
+      if (!(await bar.count())) throw new Error('问题清单筛选项条丢失');
+      for (const label of FILTER_LABELS) {
+        await expect(bar.getByText(label, { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      }
+  - note: 2、点击无问题维度（优先融资）后显示「当前维度没有可展示的共性问题」
+    assert: |-
+      const ctx = globalThis.__func02418;
+      if (!ctx?.ready) throw new Error('前置：未到混合问题结果页');
+      await expect(page.getByText('当前维度没有可展示的共性问题').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 结果页问题清单筛选项为附录C五文案（现场无 .arco-radio-group，用「全部+融资」共父容器点选）。最近分析「结果预览/预览结果/恢复结果」→对象与诊断摘要/四维诊断（同 02397）。机检=五筛选项可见+点无共性问题维→「当前维度没有可展示的共性问题」。无混合结果→ENV-PAIN-NO-MIXED-ISSUES-001(blocked)。登录与关评审由 runner 前置。B 档零 allow_skip。

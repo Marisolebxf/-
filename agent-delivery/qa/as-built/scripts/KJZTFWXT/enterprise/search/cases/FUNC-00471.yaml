@@ -1,0 +1,67 @@
+id: FUNC-00471
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00471
+priority: P1
+title: 查企业模式下点击热门场景同样进入高级筛选结果
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已进入企业查询
+  - 查企业模式下可见热门场景
+locators:
+  company_tab: tab 查企业
+  hot_scene_chip: 热门场景行 .enterprise-search-hot-button（排除 .enterprise-search-hot-enterprises）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 切换查企业、点热门场景 chip 与两条 expect 在 assert 内自含（P2 跨 tick）
+expect:
+  - note: 页面进入高级筛选结果而非停留查企业结果
+    assert: |-
+      await page.getByRole('tab', { name: '查企业' }).click();
+      await page.waitForTimeout(500);
+      const main = page.locator('main');
+      await expect(main.getByText('热门场景', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const chips = main.locator('.enterprise-search-hot-button');
+      let chip = null;
+      let label = '';
+      const n = await chips.count();
+      for (let i = 0; i < n; i++) {
+        const c = chips.nth(i);
+        const inHotEnt = await c.evaluate((el) => el.closest('.enterprise-search-hot-enterprises') !== null);
+        if (!inHotEnt) {
+          chip = c;
+          label = (await c.innerText()).trim();
+          break;
+        }
+      }
+      if (!chip || !label) {
+        throw new Error('查企业 Tab 下未见热门场景 chip（前置不满足）');
+      }
+      await chip.click();
+      await page.waitForTimeout(1200);
+      await expect(page.getByText('查企业结果', { exact: false })).toHaveCount(0);
+      await expect(page).toHaveURL(/mode=advanced/, { timeout: 8000 });
+      const advTab = page.getByRole('tab', { name: '高级筛选' });
+      if (await advTab.count()) {
+        await expect(advTab).toHaveAttribute('aria-selected', 'true', { timeout: 5000 });
+      }
+      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: /应用筛选/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 出现该场景条件摘要
+    assert: |-
+      const main = page.locator('main');
+      const text = await main.innerText();
+      const hasSummary =
+        /已选\s*[1-9]\d*\s*个条件/.test(text) ||
+        (await page.getByText('当前条件').count()) > 0;
+      if (!hasSummary) {
+        throw new Error('未见场景条件摘要（已选条件或当前条件）');
+      }
+      const hints = ['专精特新', '国高企', '上市', '高新技术', '头部科技', '深圳', '小巨人', '企业'];
+      if (!hints.some((h) => text.includes(h))) {
+        throw new Error('条件摘要区未见热门场景相关中文标签');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search（用例册 mode=company 对应 Hub「查企业」Tab）。热门场景 chip 与「热门企业」共用 .enterprise-search-hot-button，须排除 .enterprise-search-hot-enterprises。本条预期列无「高级筛选结果」标题/命中条数（区别于 00444）；机检「进入高级筛选结果」= 非查企业结果态 + mode=advanced + 高筛字段库与底栏应用筛选可见。D3·点 chip 后结果标题须再点「应用筛选」才出现，不写入本条断言。

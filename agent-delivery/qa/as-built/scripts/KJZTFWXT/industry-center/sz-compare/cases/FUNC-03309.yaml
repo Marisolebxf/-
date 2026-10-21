@@ -1,0 +1,125 @@
+id: FUNC-03309
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03309
+priority: P0
+title: 分析记录任务状态下拉共 4 项（附录A）
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开「分析记录」
+locators:
+  tab_rec: '[role=tab][data-tab-key=records]'
+  records_frame: '[data-frame-id="F-SZ-04"]'
+  status_filter: .diagnosis-records__filters .arco-select-view
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 进入对比页并切到「分析记录」，展开任务状态下拉（判定在 expect）
+expect:
+  - note: 前置：分析记录 Tab 已打开且任务状态筛选可见
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比深链与侧栏入口均不可用，无法验任务状态下拉 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(recTab).toBeVisible({ timeout: 8000 });
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      const frame = page.locator('[data-frame-id="F-SZ-04"]');
+      await expect(frame).toBeVisible({ timeout: 10000 });
+      await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func03309_ready = true;
+  - note: 1、展开「任务状态」下拉后选项共 4 个：全部状态、分析中、已完成、失败（附录 A）
+    assert: |-
+      if (!globalThis.__func03309_ready) throw new Error('前置：未进入分析记录');
+      const expected = ['全部状态', '分析中', '已完成', '失败'];
+      const statusRow = page.locator('.diagnosis-records__filters > div').filter({ hasText: '任务状态' });
+      const statusSelect = statusRow.locator('.arco-select-view').first();
+      await expect(statusSelect).toBeVisible({ timeout: 8000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      await statusSelect.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opts = popup.locator('.arco-select-option');
+      const count = await opts.count();
+      if (count !== 4) {
+        throw new Error('任务状态选项应为 4 个，实际 ' + count);
+      }
+      const labels = [];
+      for (let i = 0; i < count; i++) {
+        labels.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      for (const name of expected) {
+        if (!labels.includes(name)) {
+          throw new Error('缺少状态选项「' + name + '」；实际：' + labels.join('、'));
+        }
+      }
+      if (labels.join('|') !== expected.join('|')) {
+        throw new Error('选项顺序或文案不符；期望 ' + expected.join('、') + '；实际 ' + labels.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  F-SZ-04 分析记录区任务状态筛选与 lumen IndustryShenzhenPage RECORD_STATUS_OPTIONS 一致（4 项顺序固定）；
+  入口 route=entry-seed catalog_path；与同批 03308 共用深链/侧栏 fallback。edu 深链/侧栏 SPA404 时 ENV-EDU-TTS-SVCZ-404-001。

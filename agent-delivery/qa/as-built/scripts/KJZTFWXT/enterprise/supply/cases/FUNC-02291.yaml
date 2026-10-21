@@ -1,0 +1,167 @@
+id: FUNC-02291
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02291
+priority: P0
+title: 过程页取消任务后回到配置且任务变为已取消
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已进入分析过程页；对象仍显示在配置中（assert 自含：回填对象→开始分析→抢窗点取消）
+locators:
+  route: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  start: button「开始分析」
+  cancel_task: button「取消任务」
+  pick_cta: 前往对比篮选择企业
+  history_tab: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 回填→开始分析→点「取消任务」；最近分析断言在 expect
+expect:
+  - note: 1、回到配置页且对象仍在；2、提示已取消任务，可重新配置后发起
+    assert: |-
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensureFilled = async () => {
+        await dismissBasket();
+        if (await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) {
+          globalThis.__func02291_filledHint = await main().getByText(/来自对比篮[^\n]*/).first().innerText().catch(() => '');
+          return;
+        }
+        await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const sels = page.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-001: 对比篮无可选企业');
+        await sels.nth(0).click();
+        if ((await sels.count()) >= 2) await sels.nth(1).click();
+        globalThis.__func02291_filledHint = await sels.nth(0).getAttribute('aria-label').catch(() => '') || '';
+        await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+        globalThis.__func02291_filledHint = await main().getByText(/来自对比篮[^\n]*/).first().innerText().catch(() => '');
+      };
+      const clickCancelAsap = async () => {
+        return page.evaluate(() => {
+          return new Promise((resolve) => {
+            const failedUi = () => {
+              const t = document.body.innerText || '';
+              return /分析失败|任务失败|供应链.*失败/.test(t) && !/取消任务/.test(t);
+            };
+            const tryClick = () => {
+              if (failedUi()) {
+                resolve('failed');
+                return true;
+              }
+              const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+                /取消任务/.test((b.textContent || '').trim()),
+              );
+              if (btn) {
+                btn.click();
+                resolve('ok');
+                return true;
+              }
+              return false;
+            };
+            if (tryClick()) return;
+            const deadline = Date.now() + 90000;
+            const obs = new MutationObserver(() => { tryClick(); });
+            obs.observe(document.body, { childList: true, subtree: true });
+            const tick = setInterval(() => {
+              if (tryClick()) {
+                clearInterval(tick);
+                obs.disconnect();
+              } else if (Date.now() > deadline) {
+                clearInterval(tick);
+                obs.disconnect();
+                resolve('timeout');
+              }
+            }, 40);
+          });
+        });
+      };
+      await ensureFilled();
+      const start = main().getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      globalThis.__func02291_urlBeforeStart = page.url();
+      const cancelRace = clickCancelAsap();
+      await start.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      const cancelResult = await cancelRace;
+      if (cancelResult === 'failed') {
+        throw new Error('D3:任务无 running 窗口即失败，未见取消任务（ticket=ENV-SUPPLY-PROCESS-WINDOW-001）');
+      }
+      if (cancelResult === 'timeout') {
+        const bodyText = await main().innerText().catch(() => '');
+        const url = page.url();
+        if (/view=result/.test(url) || (/任务摘要/.test(bodyText) && !/可视化分析过程/.test(bodyText))) {
+          throw new Error('ENV-SUPPLY-PROCESS-WINDOW-001: 分析瞬时完成直达结果，未见可点「取消任务」（URL=' + url + '）');
+        }
+        if (/可视化分析过程|企业供应链关系分析生成中/.test(bodyText) || /view=processing/.test(url)) {
+          throw new Error('ENV-SUPPLY-PROCESS-WINDOW-001: 90s 内未点到「取消任务」（URL=' + url + ' | ' + bodyText.slice(0, 200) + '）');
+        }
+        throw new Error('ENV-SUPPLY-PROCESS-WINDOW-001: 开始后未见过程窗或取消钮（URL=' + url + '）');
+      }
+      await page.waitForTimeout(800);
+      globalThis.__func02291_cancelled = true;
+      globalThis.__func02291_taskId = (page.url().match(/task_id=([^&]+)/) || [])[1] || '';
+      const toastOk = await page
+        .locator('.arco-message, .arco-notification, [role="alert"]')
+        .filter({ hasText: /已取消任务，可重新配置后发起/ })
+        .first()
+        .isVisible({ timeout: 8000 })
+        .catch(() => false);
+      const bodyAfter = await page.locator('body').innerText().catch(() => '');
+      if (!toastOk && !/已取消任务，可重新配置后发起/.test(bodyAfter)) {
+        throw new Error('取消后未见提示「已取消任务，可重新配置后发起」');
+      }
+      const mainText = await main().innerText().catch(() => '');
+      if (/view=processing/.test(page.url()) && /取消任务/.test(mainText)) {
+        throw new Error('点取消后仍停留在过程态');
+      }
+      if (!/来自对比篮/.test(mainText)) {
+        throw new Error('取消后配置页未见「来自对比篮」对象回显');
+      }
+      await expect(main().getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、最近分析中该任务状态为「已取消」
+    assert: |-
+      if (!globalThis.__func02291_cancelled) throw new Error('前置：未完成取消任务');
+      const main = () => page.locator('main').first();
+      const hist = main().getByRole('tab', { name: '最近分析' }).first();
+      await expect(hist).toBeVisible({ timeout: 8000 });
+      await hist.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/view=history|最近分析/, { timeout: 10000 });
+      const taskId = globalThis.__func02291_taskId || '';
+      let row = page.locator('main tr, main [role="row"]').filter({ hasText: '已取消' });
+      if (taskId) {
+        const byId = page.locator('main tr, main [role="row"]').filter({ hasText: taskId });
+        if (await byId.count()) row = byId.filter({ hasText: '已取消' });
+      }
+      if (!(await row.count())) {
+        row = page.locator('main').filter({ hasText: '已取消' }).locator('tr, [role="row"]').first();
+      }
+      await expect(row.first()).toBeVisible({ timeout: 15000 });
+      const rowText = await row.first().innerText().catch(() => '');
+      if (!/已取消/.test(rowText)) throw new Error('最近分析未见状态「已取消」：' + rowText.slice(0, 120));
+      if (taskId && !rowText.includes(taskId)) {
+        const body = await main().innerText().catch(() => '');
+        if (!body.includes(taskId) || !/已取消/.test(body)) {
+          throw new Error('未在最近分析定位 task_id=' + taskId + ' 的已取消行');
+        }
+      }
+      const continueBtn = row.first().getByRole('button', { name: '继续查看' });
+      if (await continueBtn.count()) {
+        await expect(continueBtn.first()).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=对比篮回填→开始分析→MutationObserver 抢「取消任务」→最近分析查「已取消」。预期① toast/正文「已取消任务，可重新配置后发起」+配置态「来自对比篮」②最近分析对应行「已取消」+「继续查看」。过程窗不可达→ ENV-SUPPLY-PROCESS-WINDOW-001；对比篮空→ ENV-SUPPLY-BASKET-001。登录与关评审由 runner 前置。B 档零 allow_skip。

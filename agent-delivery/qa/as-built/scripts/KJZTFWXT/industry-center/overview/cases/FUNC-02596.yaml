@@ -1,0 +1,86 @@
+id: FUNC-02596
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02596
+priority: P0
+title: 点击图谱环节后右侧展示该环节的层级与企业列表
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 当前为「产业链全景」
+  - 产业链为「半导体与集成电路」
+locators:
+  tab_panorama: '#industry-overview-tab-panorama'
+  canvas: .industry-overview-canvas canvas
+  detail_panel: .industry-overview-object-panel
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 产业链全景 Tab 内于图谱点击「集成电路设计」
+expect:
+  - note: 前置：产业链为「半导体与集成电路」且打开「产业链全景」Tab
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainTxt = await chain.innerText();
+      if (!/半导体与集成电路/.test(chainTxt)) {
+        throw new Error('前置：产业链应为「半导体与集成电路」，实际：' + chainTxt);
+      }
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+  - note: 步骤：在图谱中点击「集成电路设计」
+    assert: |-
+      const nodeName = '集成电路设计';
+      const hitCanvas = page.locator('.industry-panorama-graph__canvas canvas').nth(1);
+      await expect(hitCanvas).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(2000);
+      await hitCanvas.click({ position: { x: 80, y: 380 }, force: true, timeout: 8000 });
+      await page.waitForTimeout(500);
+      const panelH3 = page.locator('.industry-overview-object-panel h3');
+      const t = ((await panelH3.innerText().catch(() => '')) || '').trim();
+      if (t !== nodeName) {
+        throw new Error('图谱点击未选中「' + nodeName + '」，右侧标题：' + t);
+      }
+  - note: 1、右侧标题为「集成电路设计」
+    assert: |-
+      const h3 = page.locator('.industry-overview-object-panel h3');
+      await expect(h3).toHaveText('集成电路设计', { timeout: 8000 });
+  - note: 2、展示产业阶段、产业层级、主要投入、主要产出
+    assert: |-
+      const panel = page.locator('.industry-overview-object-panel');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const body = (await panel.innerText()).replace(/\s+/g, ' ');
+      for (const label of ['产业阶段', '产业层级', '主要投入', '主要产出']) {
+        if (!body.includes(label)) throw new Error('详情缺少字段标签「' + label + '」');
+      }
+      if (!/\bL1\b/.test(body)) throw new Error('产业层级现场应为 L1，面板：' + body.slice(0, 240));
+  - note: 3、企业列表为「暂无已发布企业」
+    assert: |-
+      const panel = page.locator('.industry-overview-object-panel');
+      await expect(panel.getByText('企业列表', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(panel.getByText('暂无已发布企业', { exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例要求「在图谱中点击」；overview 无结构列表。G6 四层 canvas，机检点 interaction 层 canvas:nth(1) 相对坐标 (80,380) 命中「集成电路设计」（1920×1080 viewport 实勘；布局漂移时需复勘坐标）。
+  详情 .industry-overview-object-panel；字段 a-descriptions-item 标签与 IndustryPanoramaDetail variant=overview 一致；产业层级现场 L1。
+  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

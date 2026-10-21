@@ -1,0 +1,63 @@
+id: FUNC-01136
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01136
+priority: P1
+title: 切回产业链全景后选中态与内容恢复
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景页
+  - 已从「产业链全景」切至「产业资讯」
+locators:
+  tablist: '[aria-label=专题全景视图]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  tab_news: '#industry-overview-tab-news'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 先切至产业资讯，再切回产业链全景，回读选中态与内容区
+expect:
+  - note: 切回后「产业链全景」呈选中态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const isSelected = async (el) => {
+        const aria = await el.getAttribute('aria-selected');
+        const cls = await el.getAttribute('class');
+        return aria === 'true' || (cls || '').includes('active');
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const tabNews = mode.locator('[role=tab]').filter({ hasText: '产业资讯' });
+      const tabPanorama = mode.locator('[role=tab]').filter({ hasText: '产业链全景' });
+      await tabNews.click();
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]tab=news/, { timeout: 8000 });
+      await tabPanorama.click();
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]tab=panorama/, { timeout: 8000 });
+      if (!(await isSelected(tabPanorama))) {
+        throw new Error('切回后产业链全景未呈选中态');
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveCount(1);
+  - note: 内容区恢复该 Tab 内容
+    assert: |-
+      const vis = async (loc) => loc.isVisible().catch(() => false);
+      await expect(page.getByRole('button', { name: '进入全景图谱' })).toBeVisible({ timeout: 8000 });
+      if (await vis(page.getByText('全部类型', { exact: true }).first())) {
+        throw new Error('切回全景后仍见资讯区「全部类型」');
+      }
+      if (await vis(page.getByText('关键指标', { exact: true }).first())) {
+        throw new Error('切回全景后仍见概况区「关键指标」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/overview；主区 Tab 作用域 [aria-label=专题全景视图]；切至资讯 ?tab=news 后切回 ?tab=panorama。选中态 aria-selected=true 或 class 含 active。全景内容锚点「进入全景图谱」，互斥校验资讯「全部类型」/概况「关键指标」不可见。与 01131 互斥切换成对；对比篮浮层可见才关。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

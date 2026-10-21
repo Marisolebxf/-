@@ -1,0 +1,65 @@
+id: FUNC-01620
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01620
+priority: P1
+title: 再次点击全选当前结果后已选归零
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单已全选且已选家数大于 0
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible（企业清单）
+  select_all: 抽屉 footer 文案「全选当前结果」
+  selected_count: 文案「已选 N 家」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、全选后再点全选取消；已选归零在 expect 内
+expect:
+  - note: 1、企业清单已全选且已选家数大于 0（前置）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      const footer = drawer.locator('.arco-drawer-footer').first();
+      await expect(footer).toBeVisible({ timeout: 8000 });
+      const selectAll = footer.getByText('全选当前结果', { exact: true });
+      await expect(selectAll).toBeVisible({ timeout: 8000 });
+      await selectAll.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const selectedSpan = footer.locator('span').filter({ hasText: /已选\s+\d+\s*家/ }).first();
+      await expect(selectedSpan).toBeVisible({ timeout: 8000 });
+      const selectedText = ((await selectedSpan.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const m = selectedText.match(/已选\s+(\d+)\s*家/);
+      if (!m) throw new Error('未读到已选家数文案: ' + selectedText);
+      const n = parseInt(m[1], 10);
+      if (!(n > 0)) throw new Error('全选后已选家数未大于 0: ' + selectedText);
+  - note: 1、再次点击「全选当前结果」后已选家数回到 0
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const footer = drawer.locator('.arco-drawer-footer').first();
+      const selectAll = footer.getByText('全选当前结果', { exact: true });
+      await selectAll.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(drawer.getByText('已选 0 家').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 与 FUNC-01604 同抽屉 footer「全选当前结果」toggle；二次点击取消全选后「已选 0 家」。登录与关内部评审由 runner 会话前置。

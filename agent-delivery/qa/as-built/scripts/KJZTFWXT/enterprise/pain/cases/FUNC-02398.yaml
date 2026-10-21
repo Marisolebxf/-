@@ -1,0 +1,146 @@
+id: FUNC-02398
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02398
+priority: P0
+title: 集合成功结果展示共性诊断与共性问题 Top 5
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 最近分析中有一条多家企业且已完成的痛点任务（assert 自含）
+locators:
+  section: 共性问题 Top 5
+  restore: button「恢复结果」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: evaluate
+    note: 点击多家企业已完成行的「恢复结果」（前置在 expect 自含）
+expect:
+  - note: 前置：集合成功结果页已打开
+    assert: |-
+      const historyRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points&view=history';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const summarySliceFromBody = (body) => {
+        const summaryIdx = body.indexOf('对象与诊断摘要');
+        return summaryIdx >= 0 ? body.slice(summaryIdx, summaryIdx + 900) : body;
+      };
+      const isMultiEntSummary = (raw) => {
+        const s = (raw || '').trim();
+        if (!s) return false;
+        const m = s.match(/等\s*(\d+)\s*家/);
+        if (m && parseInt(m[1], 10) >= 2) return true;
+        if (/、/.test(s)) {
+          const parts = s.split(/、|，|,/).map((x) => x.trim()).filter(Boolean);
+          return parts.length >= 2;
+        }
+        return false;
+      };
+      const isCollectionHistoryRow = (rowText) => {
+        if (!/已完成/.test(rowText) || !/恢复结果/.test(rowText)) return false;
+        const entLine = rowText
+          .split('\n')
+          .map((l) => l.trim())
+          .find((l) => /等\s*\d+\s*家/.test(l) || (/、/.test(l) && l.length > 8));
+        if (!entLine) return false;
+        const entCount = entLine.match(/等\s*(\d+)\s*家/);
+        if (entCount && parseInt(entCount[1], 10) >= 2) return true;
+        if (/、/.test(entLine)) {
+          return entLine.split(/、|，|,/).map((x) => x.trim()).filter(Boolean).length >= 2;
+        }
+        return false;
+      };
+      const openResultFromRow = async (row) => {
+        const btn = row.getByRole('button', { name: '恢复结果' }).first();
+        if (!(await btn.count())) return false;
+        await btn.scrollIntoViewIfNeeded().catch(() => {});
+        await btn.click({ timeout: 8000 });
+        await page.waitForURL(/view=result|task_id=/, { timeout: 15000 }).catch(() => {});
+        await page
+          .getByText(/共性问题 Top 5|对象与诊断摘要/)
+          .first()
+          .waitFor({ state: 'visible', timeout: 20000 })
+          .catch(() => {});
+        await page.waitForTimeout(800);
+        return true;
+      };
+      const openViaHistoryRestore = async () => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+        const rows = main().locator(rowSel);
+        const n = await rows.count();
+        if (!n) throw new Error('ENV-PAIN-HISTORY-EMPTY-001：最近分析列表为空');
+        let sawCollectionRow = false;
+        for (let i = 0; i < n; i++) {
+          if (i > 0) {
+            await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(1000);
+            await closeBasket();
+          }
+          const row = main().locator(rowSel).nth(i);
+          const rowText = await row.innerText().catch(() => '');
+          if (!isCollectionHistoryRow(rowText)) continue;
+          sawCollectionRow = true;
+          const ok = await openResultFromRow(row);
+          if (!ok) continue;
+          const body = await main().innerText().catch(() => '');
+          if (/view=result/.test(page.url()) && body.length < 120 && !/共性问题 Top 5/.test(body)) {
+            throw new Error('ENV-PAIN-RESULT-SHELL-001：恢复结果后主区未加载（仅返回配置壳层）');
+          }
+          const slice = summarySliceFromBody(body);
+          if (!/对象与诊断摘要/.test(body)) continue;
+          if (!/企业集合共性诊断/.test(slice)) continue;
+          if (!body.includes('共性问题 Top 5')) continue;
+          const objM = slice.match(/分析对象[：:]\s*([^\n]+)/);
+          const objRaw = objM && objM[1] ? objM[1].trim() : '';
+          if (!isMultiEntSummary(objRaw)) continue;
+          globalThis.__func02398_slice = slice;
+          globalThis.__func02398_obj = objRaw;
+          globalThis.__func02398_ready = true;
+          return;
+        }
+        if (!sawCollectionRow) {
+          throw new Error('ENV-PAIN-NO-COLLECTION-RESULT-001：历史中无多家企业已完成集合结果');
+        }
+        throw new Error('ENV-PAIN-RESULT-SHELL-001：恢复结果后主区未加载（仅返回配置壳层）');
+      };
+      await openViaHistoryRestore();
+      await expect(page.getByText('共性问题 Top 5').first()).toBeVisible({ timeout: 15000 });
+  - note: 1、诊断方式为「企业集合共性诊断」
+    assert: |-
+      if (!globalThis.__func02398_ready) throw new Error('前置：未到集合成功结果页');
+      const slice = globalThis.__func02398_slice || '';
+      if (!/诊断方式[：:]\s*企业集合共性诊断/.test(slice) && !/企业集合共性诊断/.test(slice)) {
+        throw new Error('对象与诊断摘要区未见「企业集合共性诊断」');
+      }
+  - note: 2、页面有「共性问题 Top 5」
+    assert: |-
+      if (!globalThis.__func02398_ready) throw new Error('前置：未到集合成功结果页');
+      await expect(page.getByText('共性问题 Top 5').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、分析对象含多家企业
+    assert: |-
+      if (!globalThis.__func02398_ready) throw new Error('前置：未到集合成功结果页');
+      const objRaw = globalThis.__func02398_obj || '';
+      const m = objRaw.match(/等\s*(\d+)\s*家/);
+      if (m && parseInt(m[1], 10) >= 2) return;
+      if (/、/.test(objRaw)) {
+        const parts = objRaw.split(/、|，|,/).map((x) => x.trim()).filter(Boolean);
+        if (parts.length >= 2) return;
+      }
+      throw new Error('分析对象未见多家企业：' + (objRaw || '(空)'));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz；最近分析 view=history→筛多家企业已完成行→恢复结果+wait view=result。验「企业集合共性诊断」、共性问题 Top 5、分析对象多家。edu 2026-10-20 恢复后主区仅「返回配置」→ENV-PAIN-RESULT-SHELL-001(blocked，同 02395)。无历史/无集合行→ENV-PAIN-HISTORY-EMPTY-001 / ENV-PAIN-NO-COLLECTION-RESULT-001。

@@ -1,0 +1,81 @@
+id: FUNC-00394
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00394
+priority: P2
+title: 地图工具栏放大与缩小改变视野
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 空间分布为地图视图
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  map_toolbar: role=toolbar aria-label「地图工具栏」
+  zoom_in: button aria-label「放大」
+  zoom_out: button aria-label「缩小」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 地图视图下点击放大、缩小；TILEMATRIX 代理证据在 expect 内顺序判定
+expect:
+  - note: 前置：空间分布为地图视图（Leaflet 容器可见）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      const toolbar = page.locator('[role="toolbar"][aria-label="地图工具栏"]').first();
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+  - note: 1、点击「放大」后视野比操作前更近（瓦片 TILEMATRIX 增大）
+    assert: |-
+      const toolbar = page.locator('[role="toolbar"][aria-label="地图工具栏"]').first();
+      const readTileMatrix = async () => {
+        const levels = await page.evaluate(() =>
+          Array.from(document.querySelectorAll('.leaflet-tile-loaded[src*="TILEMATRIX="]'))
+            .map((i) => i.src.match(/TILEMATRIX=(\d+)/)?.[1])
+            .filter(Boolean)
+            .map(Number),
+        );
+        return levels.length ? Math.max(...levels) : null;
+      };
+      const before = await readTileMatrix();
+      await toolbar.locator('button[aria-label="放大"]').click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const after = await readTileMatrix();
+      if (before == null || after == null) {
+        throw new Error('瓦片 TILEMATRIX 不可读（before=' + before + ', after=' + after + '）');
+      }
+      if (after <= before) {
+        throw new Error('放大后未更近: TILEMATRIX ' + before + '→' + after);
+      }
+  - note: 2、点击「缩小」后视野回退（TILEMATRIX 较放大后减小）
+    assert: |-
+      const toolbar = page.locator('[role="toolbar"][aria-label="地图工具栏"]').first();
+      const readTileMatrix = async () => {
+        const levels = await page.evaluate(() =>
+          Array.from(document.querySelectorAll('.leaflet-tile-loaded[src*="TILEMATRIX="]'))
+            .map((i) => i.src.match(/TILEMATRIX=(\d+)/)?.[1])
+            .filter(Boolean)
+            .map(Number),
+        );
+        return levels.length ? Math.max(...levels) : null;
+      };
+      const cur = await readTileMatrix();
+      await toolbar.locator('button[aria-label="缩小"]').click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const back = await readTileMatrix();
+      if (cur == null || back == null) {
+        throw new Error('瓦片 TILEMATRIX 不可读（cur=' + cur + ', back=' + back + '）');
+      }
+      if (back >= cur) {
+        throw new Error('缩小后未回退: TILEMATRIX ' + cur + '→' + back);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: Leaflet zoom 不暴露 DOM；按 schema X3 用天地图瓦片 TILEMATRIX 作视野代理。深链跟 FUNC-00393。登录与关内部评审由 runner 会话前置。

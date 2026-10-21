@@ -1,0 +1,217 @@
+id: FUNC-01900
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01900
+priority: P0
+title: 重新分析生成新任务并进入新的商业力评估结果
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开一次成功的商业力评估结果（脚本内：最近评估→恢复结果；兜底按此配置新建评估）
+locators:
+  restore: button「恢复结果」
+  reanalyze: button「重新分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 结果态→点「重新分析」→等待新结果；机检在 expect
+expect:
+  - note: 1、新结果任务 ID 与点击前不同；2、生成时间晚于上一次；3、页标题仍为「商业力评估结果」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const TID_RE = /((?:DEMO-)?EVAL-\d{8}-\d{3})/;
+      const parseGenTime = (text) => {
+        const m = String(text || '').match(/生成时间[：:]\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
+        return m ? new Date(m[1].replace(/-/g, '/')) : null;
+      };
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const parseTid = async () => {
+        const u = page.url();
+        let tid = (u.match(/task_id=((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1];
+        if (!tid) {
+          const t = await page.locator('body').innerText().catch(() => '');
+          tid = (t.match(/任务\s*ID[：:\s]*((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1] || (TID_RE.exec(t) || [])[1] || null;
+        }
+        return tid;
+      };
+      const bodyRes = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        return /商业力评估结果/.test(t) && /\d+\s*分/.test(t);
+      };
+      const waitBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await bodyRes()) return true;
+          await page.waitForTimeout(1000);
+        }
+        return await bodyRes();
+      };
+      const recoverFromRecentTab = async (excludeTid) => {
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (!(await tab.isVisible().catch(() => false))) return null;
+        await tab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const body = await page.locator('body').innerText().catch(() => '');
+        const ids = [...body.matchAll(/EVAL-\d{8}-\d{3}/g)].map((m) => m[0]);
+        const uniq = [...new Set(ids)];
+        const candidate = uniq.find((id) => id !== excludeTid) || uniq[0] || null;
+        if (!candidate) return null;
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          if (await waitBody(45000)) return candidate;
+        }
+        await page.goto(toUrl(evalRoute + '&view=result&analysis_type=business&task_id=' + encodeURIComponent(candidate)), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        if (await waitBody(45000)) return candidate;
+        return null;
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await closeBasket();
+      let branch = null;
+      const tab0 = page.getByRole('tab', { name: /最近评估/ }).first();
+      if (await tab0.isVisible().catch(() => false)) {
+        await tab0.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+      }
+      const restore0 = page.getByRole('button', { name: '恢复结果' });
+      if (await restore0.count()) {
+        await restore0.first().click({ timeout: 8000 });
+        if (await waitBody(60000)) branch = 'restore';
+      }
+      if (!(await bodyRes())) {
+        const tid = await recoverFromRecentTab(null);
+        if (tid) branch = 'recent_' + tid;
+      }
+      if (!(await bodyRes()) && /^DEMO-EVAL-/.test(await parseTid() || '')) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        const tid = await recoverFromRecentTab(null);
+        if (tid) branch = 'recent_live_' + tid;
+      }
+      if (!(await bodyRes())) throw new Error('未达结果态（ticket=ENV-EVAL-BUSINESS-RESULT-SHELL-001，URL=' + page.url() + '）');
+      const prevTid = await parseTid();
+      if (!prevTid) throw new Error('结果态未见 task_id：' + page.url());
+      const prevGen = parseGenTime(await page.locator('body').innerText().catch(() => ''));
+      const pickReanalyze = async (allowFallback) => {
+        const main = page.locator('main');
+        await main.first().scrollIntoViewIfNeeded().catch(() => {});
+        const tryLabel = async (name) => {
+          const roleBtn = page.getByRole('button', { name, exact: true });
+          if (await roleBtn.count() && await roleBtn.first().isVisible().catch(() => false)) return { el: roleBtn.first(), label: name };
+          const filterBtn = main.locator('button').filter({ hasText: name });
+          if (await filterBtn.count() && await filterBtn.first().isVisible().catch(() => false)) return { el: filterBtn.first(), label: name };
+          return null;
+        };
+        const primary = await tryLabel('重新分析');
+        if (primary) return primary;
+        if (allowFallback) return await tryLabel('按此配置新建评估');
+        return null;
+      };
+      const ensureFullResultToolbar = async () => {
+        let hit = await pickReanalyze(false);
+        if (hit) return hit;
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (await tab.isVisible().catch(() => false)) {
+          await tab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          await waitBody(60000);
+        }
+        hit = await pickReanalyze(false);
+        if (hit) return hit;
+        return await pickReanalyze(true);
+      };
+      let rePick = await ensureFullResultToolbar();
+      if (!rePick) {
+        await page.waitForTimeout(2000);
+        rePick = await pickReanalyze(true);
+      }
+      if (!rePick) {
+        const snippet = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 240);
+        throw new Error('结果态未见可点「重新分析/按此配置新建评估」（URL=' + page.url() + '，片段=' + snippet + '）');
+      }
+      const reEl = rePick.el;
+      await expect(reEl).toBeEnabled({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      try { await reEl.click({ timeout: 8000 }); } catch { await reEl.click({ force: true, timeout: 8000 }); }
+      await page.waitForTimeout(1500);
+      if (rePick.label === '按此配置新建评估') {
+        const start = page.getByRole('button', { name: '开始分析' });
+        if (await start.count() && await start.first().isVisible().catch(() => false)) {
+          if (await start.first().isDisabled()) {
+            const t = await page.locator('body').innerText().catch(() => '');
+            if (/预检未返回企业明细/.test(t)) throw new Error('按此配置后开始分析禁用（ticket=ENV-EVAL-BUSINESS-PRECHECK-001）');
+          } else {
+            await start.first().click({ timeout: 8000 });
+          }
+        }
+      }
+      let newTid = null;
+      let newGen = null;
+      const t1 = Date.now();
+      while (Date.now() - t1 < 120000) {
+        const t = await page.locator('body').innerText().catch(() => '');
+        if (/预检未返回企业明细/.test(t)) throw new Error('重新分析后预检阻塞（ticket=ENV-EVAL-BUSINESS-PRECHECK-001）');
+        const cur = await parseTid();
+        if (/view=processing|商业力.*生成中|评估生成中|可视化分析过程/.test(t + page.url())) {
+          await page.waitForTimeout(1500);
+          continue;
+        }
+        if (await bodyRes() && cur && cur !== prevTid) {
+          newTid = cur;
+          newGen = parseGenTime(t);
+          break;
+        }
+        await page.waitForTimeout(1000);
+      }
+      if (!(await bodyRes())) {
+        const recovered = await recoverFromRecentTab(prevTid);
+        if (recovered) {
+          newTid = recovered;
+          newGen = parseGenTime(await page.locator('body').innerText().catch(() => ''));
+          branch = (branch || '') + '+recover';
+        }
+      }
+      if (!(await bodyRes())) throw new Error('重新分析后未回到结果态（旧 tid=' + prevTid + '，URL=' + page.url() + '）');
+      newTid = newTid || (await parseTid());
+      if (!newGen) newGen = parseGenTime(await page.locator('body').innerText().catch(() => ''));
+      globalThis.__func01900 = { prevTid, newTid, prevGen: prevGen ? prevGen.toISOString() : null, newGen: newGen ? newGen.toISOString() : null, branch, url: page.url() };
+      if (!(await page.getByText('商业力评估结果').first().isVisible().catch(() => false))) {
+        throw new Error('结果标题不可见（new tid=' + newTid + '）');
+      }
+      if (prevGen && newGen && newGen.getTime() < prevGen.getTime()) {
+        throw new Error('生成时间未晚于上一次（旧=' + prevGen.toISOString() + '，新=' + newGen.toISOString() + '）');
+      }
+  - note: 1、新结果的任务 ID 与点击前不同
+    assert: |-
+      const s = globalThis.__func01900;
+      if (!s || !s.prevTid) throw new Error('缺 expect1 落盘：' + JSON.stringify(s || null));
+      const tid = s.newTid || (await (async () => {
+        const u = page.url();
+        let t = (u.match(/task_id=((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1];
+        if (!t) {
+          const body = await page.locator('body').innerText().catch(() => '');
+          t = (body.match(/任务\s*ID[：:\s]*((?:DEMO-)?EVAL-\d{8}-\d{3})/) || [])[1] || null;
+        }
+        return t;
+      })());
+      if (!tid) throw new Error('新结果未见 task_id：' + page.url());
+      if (tid === s.prevTid) throw new Error('task_id 未变化仍为 ' + s.prevTid);
+  - note: 3、页标题仍为「商业力评估结果」
+    assert: |-
+      await expect(page.getByText('商业力评估结果').first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01900 主流程重新分析（重写 00954）；对齐 FUNC-01790 商业力版。30888 /enterprise-center/evaluation。最近评估→恢复结果；DEMO 壳回退 recover；无「重新分析」时「按此配置新建评估」+「开始分析」。轮询至新结果态+新 tid、生成时间不早于上一次。区别于 P1-09（过程态）。B 档零 allow_skip；预检 ENV-EVAL-BUSINESS-PRECHECK-001。

@@ -1,0 +1,110 @@
+id: FUNC-03997
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03997
+priority: P0
+tier: B
+title: 主流程-字段库构成（分组与条件关系）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「高级筛选」
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  cond_relation_and: text「同时满足(AND)」
+  cond_relation_or: text「任一满足(OR)」
+  empty_edit_hint: text「从左侧字段库添加筛选条件」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 进入高级筛选并浏览字段库（判定在 expect）
+expect:
+  - note: 1、分组为基本信息、服务领域、技术能力；2、字段名与附录 C 一致；3、条件关系为「同时满足(AND)」与「任一满足(OR)」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      const groups = {
+        基本信息: ['机构名称', '机构类型', '服务链环节', '所在城市', '成立年份'],
+        服务领域: ['覆盖产业领域'],
+        技术能力: ['专利数量', '核心专家', '成功案例', '标准制定', '技术力分（演示）'],
+      };
+      for (const [group, fields] of Object.entries(groups)) {
+        await expect(fieldLib.getByText(group, { exact: true })).toBeVisible({ timeout: 8000 });
+        for (const name of fields) {
+          const tag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: name });
+          const n = await tag.count();
+          if (n < 1) throw new Error('字段库缺少字段「' + name + '」（分组「' + group + '」）');
+          await expect(tag.first()).toBeVisible({ timeout: 8000 });
+        }
+      }
+      await expect(fieldLib.getByText('同时满足(AND)', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText('任一满足(OR)', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 未选条件时右侧为「从左侧字段库添加筛选条件」
+    assert: |-
+      await expect(page.getByText('从左侧字段库添加筛选条件', { exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 03997；catalog_path=/service-center/search。字段库三组与附录 C 对齐（基本信息/服务领域/技术能力）；
+  条件关系文案「同时满足(AND)」「任一满足(OR)」；部分字段 Tag 带「推荐」角标，机检只验字段名。
+  edu 深链 SPA404 时侧栏经 sibling /industry-center/search 进入（同 FUNC-03990）。

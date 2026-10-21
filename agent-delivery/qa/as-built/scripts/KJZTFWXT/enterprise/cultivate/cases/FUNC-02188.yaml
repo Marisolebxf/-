@@ -1,0 +1,133 @@
+id: FUNC-02188
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02188
+priority: P0
+title: 产业类别人工智能条件筛选发起培育推荐并到达成功结果
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 已登录；已打开培育企业推荐分析且停在条件筛选推荐
+locators:
+  industry: placeholder「全部产业类别」
+  start: button「开始分析」
+  process_title: 可视化分析过程
+  result_title: 培育推荐分析结果
+  filter_summary: 本次筛选
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 产业类别选人工智能→开始分析→过程与成功态由 expect 机检
+expect:
+  - note: 1、过程中出现「可视化分析过程」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openIndustry = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickAi = async () => {
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        const label = ((await opt.innerText().catch(() => '')) || '人工智能').trim();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        return label;
+      };
+      await dismissBasket();
+      await expect(stack()).toBeVisible({ timeout: 15000 });
+      await openIndustry();
+      const industryEcho = await pickAi();
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      await start.click();
+      let sawProcess = false;
+      let sameDayOpen = false;
+      let last = '';
+      for (let i = 0; i < 16; i++) {
+        await page.waitForTimeout(i === 0 ? 800 : 2000);
+        last = await stack().innerText().catch(() => '');
+        const url = page.url();
+        if (/可视化分析过程/.test(last) || url.includes('analysis_view=processing')) sawProcess = true;
+        if (/已打开今天相同条件的推荐分析结果/.test(last)) sameDayOpen = true;
+        const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+        if (failVis && !/可视化分析过程/.test(last)) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：条件筛选发起后进入推荐分析失败，无法继续金样成功态');
+        }
+        if (sawProcess) break;
+      }
+      globalThis.__func02188 = { industryEcho, sawProcess, sameDayOpen, lastBody: last };
+      if (sameDayOpen && !sawProcess) {
+        throw new Error('当天复用已有结果，未进入新的「可视化分析过程」（与 02202 冲突，金样 02188 需新发起过程）');
+      }
+      if (!sawProcess) {
+        throw new Error('过程中未出现「可视化分析过程」（轮询内未见过程标题或 analysis_view=processing）: ' + last.slice(0, 200));
+      }
+  - note: 2、结束后出现「培育推荐分析结果」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const title = () => stack().getByText('培育推荐分析结果').first();
+      const ctx = globalThis.__func02188;
+      if (!ctx) throw new Error('前置：未完成条件筛选发起');
+      let last = ctx.lastBody || '';
+      let ok = false;
+      for (let i = 0; i < 60; i++) {
+        await page.waitForTimeout(i === 0 ? 500 : 2500);
+        last = await stack().innerText().catch(() => '');
+        const url = page.url();
+        const titleVis = await title().isVisible().catch(() => false);
+        if (titleVis && !/可视化分析过程/.test(last)) {
+          ok = true;
+          break;
+        }
+        const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+        if (failVis && !/可视化分析过程/.test(last)) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：条件筛选发起后进入推荐分析失败，无法到达培育推荐分析结果');
+        }
+        if (/已打开今天相同条件的推荐分析结果/.test(last) && titleVis) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) {
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：条件筛选发起后长期停留在可视化分析过程，无法在超时内到达「培育推荐分析结果」');
+        }
+        throw new Error('未在超时内到达培育推荐分析结果: ' + last.slice(0, 200));
+      }
+      await expect(title()).toBeVisible({ timeout: 8000 });
+      globalThis.__func02188.lastBody = last;
+  - note: 3、本次筛选含本次选择的产业类别
+    assert: |-
+      const ctx = globalThis.__func02188;
+      if (!ctx?.lastBody) throw new Error('前置：未到达成功结果');
+      const body = await page.getByTestId('recruit-tab-stack').innerText().catch(() => ctx.lastBody || '');
+      if (!/本次筛选/.test(body)) throw new Error('成功结果未见「本次筛选」摘要');
+      const echo = ctx.industryEcho || '人工智能';
+      const tokens = [echo, '人工智能'];
+      const tagAfter = await page
+        .locator('input[placeholder="全部产业类别"]')
+        .locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]')
+        .innerText()
+        .catch(() => '');
+      if (tagAfter && tagAfter.length >= 2 && !tokens.includes(tagAfter.trim())) tokens.push(tagAfter.trim());
+      const hit = tokens.some((tok) => tok && tok.length >= 2 && body.includes(tok));
+      if (!hit) {
+        throw new Error('本次筛选未含所选产业类别（允许编码回显）；tokens=' + tokens.join('|') + ' body=' + body.slice(0, 280));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation。步骤=产业类别 placeholder 全部产业类别→选「人工智能」→开始分析。D2·本次筛选产业可能为编码（如 AI001）非汉字，断言允编码回显。D4·2026-10-20 rewrite-FUNC-02188 svcz 机跑 expect① 绿、②③ 红：发起后可见「可视化分析过程」但终态「推荐分析失败」（ENV-CULTIVATE-ANALYSIS-FAIL-001，与 env-gate history 多失败同源）。当天同条件复用（02202）会跳过过程，金样 expect① 显式失败。登录与关评审由 runner 前置。A 档零 allow_skip。

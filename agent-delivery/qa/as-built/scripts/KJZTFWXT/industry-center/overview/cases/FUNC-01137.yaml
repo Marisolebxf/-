@@ -1,0 +1,58 @@
+id: FUNC-01137
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01137
+priority: P1
+title: 从全景图谱后退返回后筛选与 Tab 保持
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已选定产业集群与产业链
+  - 已点击「进入全景图谱」跳离本页
+locators:
+  filter_cluster: 'span[aria-label="集群"]'
+  filter_chain: '.industry-overview-chain-select'
+  enter_panorama: button「进入全景图谱」
+  tablist: '[aria-label=专题全景视图]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 记录筛选与 Tab → 点击「进入全景图谱」→ 浏览器后退 → 回读筛选与 Tab
+expect:
+  - note: 返回后筛选区已选集群与产业链保持
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const cluster0 = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      const chain0 = await page.locator('.industry-overview-chain-select').getAttribute('title');
+      if (!cluster0 || !chain0) {
+        throw new Error('前置未选集群/产业链: ' + cluster0 + '/' + chain0);
+      }
+      const enter = page.getByRole('button', { name: '进入全景图谱' });
+      await expect(enter.first()).toBeVisible({ timeout: 8000 });
+      await enter.first().click();
+      await page.waitForURL(/\/industry-center\/panorama/, { timeout: 12000 });
+      await page.goBack();
+      await page.waitForURL(/\/industry-center\/overview/, { timeout: 12000 });
+      await page.waitForTimeout(800);
+      const cluster1 = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      const chain1 = await page.locator('.industry-overview-chain-select').getAttribute('title');
+      if (cluster1 !== cluster0 || chain1 !== chain0) {
+        throw new Error('返回后筛选未保持: was ' + cluster0 + '/' + chain0 + ' got ' + cluster1 + '/' + chain1);
+      }
+  - note: Tab 选中态保持，不因跳转重置
+    assert: |-
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景', { timeout: 8000 });
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveCount(1);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: catalog_path /industry-center/overview；后退后 URL 常带 ?tab=panorama&industry_id&chain_id（scout-after-back.json observed）。筛选读 cluster/chain 的 title 属性（与 01132 同口径）。默认全景 Tab 下跳图谱再后退；Tab 保持验「产业链全景」aria-selected。对比篮可见才关。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。本条结束勿假设仍在 overview（P8）。

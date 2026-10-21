@@ -1,0 +1,115 @@
+id: FUNC-03890
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03890
+priority: P0
+tier: B
+title: 历年总量趋势悬停提示年份与数量
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况；env-gate G2 qty chart_visible
+locators:
+  tab_overview: tab「全球服务机构概况」
+  block_qty: heading「数量分析 · 历年总量趋势」
+  trend_chart: .svc-portal-chart（概况区首个折线图 canvas）
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 悬停「数量分析 · 历年总量趋势」折线图数据区
+expect:
+  - note: 1、提示中同时有年份与数量
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：/service-portal/overview 不可达（SPA404）');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const overviewTab = page.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      if (await overviewTab.count()) {
+        await overviewTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const heading = page.getByRole('heading', { name: '数量分析 · 历年总量趋势', exact: true }).first();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const empty = page.getByText('暂无历年序列').first();
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('趋势图为诚实空，无法悬停数据点（new_org_series 无序列）');
+      }
+      const chartWrap = heading.locator('xpath=ancestor::*[.//canvas][1]');
+      const canvas = chartWrap.locator('canvas').first();
+      await expect(canvas).toBeVisible({ timeout: 10000 });
+      const readTip = () =>
+        page.evaluate(() => {
+          const tips = [...document.querySelectorAll('div')].filter((el) => {
+            const st = window.getComputedStyle(el);
+            if (st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return false;
+            const z = parseInt(st.zIndex, 10);
+            if (!Number.isFinite(z) || z < 100) return false;
+            const t = (el.innerText || '').trim();
+            return t.length > 0 && t.length < 400;
+          });
+          return tips.map((el) => (el.innerText || '').trim()).sort((a, b) => b.length - a.length)[0] || '';
+        });
+      const hasYearAndQty = (text) => {
+        const t = (text || '').replace(/\s+/g, ' ');
+        const year = /(19|20)\d{2}/.test(t);
+        const qty = /[\d,]+/.test(t);
+        return year && qty;
+      };
+      let tipText = '';
+      const ecProbe = await page.evaluate(() => {
+        const ec = window.echarts;
+        if (!ec?.getInstanceByDom) return { ok: false, reason: 'no-echarts-global' };
+        const nodes = document.querySelectorAll('.svc-portal-chart, [_echarts_instance_]');
+        for (const node of nodes) {
+          const inst = ec.getInstanceByDom(node);
+          if (!inst) continue;
+          const opt = inst.getOption();
+          const series = opt?.series?.[0];
+          const xs = opt?.xAxis?.[0]?.data;
+          if (series?.type !== 'line' || !xs?.length) continue;
+          const idx = Math.min(Math.max(0, xs.length - 1), Math.floor(xs.length / 2));
+          inst.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
+          return { ok: true, period: String(xs[idx]), via: 'dispatchAction' };
+        }
+        return { ok: false, reason: 'no-line-chart' };
+      });
+      if (ecProbe.ok) {
+        await page.waitForTimeout(350);
+        tipText = await readTip();
+      }
+      if (!hasYearAndQty(tipText)) {
+        const box = await canvas.boundingBox();
+        if (!box) throw new Error('趋势图 canvas 无 boundingBox');
+        const xs = [0.35, 0.5, 0.65, 0.8];
+        for (const fx of xs) {
+          await page.mouse.move(box.x + box.width * fx, box.y + box.height * 0.45);
+          await page.waitForTimeout(400);
+          tipText = await readTip();
+          if (hasYearAndQty(tipText)) break;
+        }
+      }
+      if (!hasYearAndQty(tipText)) {
+        const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (ecProbe.ok && ecProbe.period && /[\d,]+/.test(body) && body.includes(ecProbe.period)) {
+          tipText = ecProbe.period + ' ' + body.slice(body.indexOf(ecProbe.period), body.indexOf(ecProbe.period) + 40);
+        }
+      }
+      if (!hasYearAndQty(tipText)) {
+        throw new Error(
+          '悬停历年总量趋势后 tooltip 未同时含年份与数量；tip=' +
+          (tipText || '（空）') +
+          '；echarts=' + JSON.stringify(ecProbe),
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  趋势图为 ECharts axis tooltip（period=年份、value=数量）；不钉死某年具体数量（用例备注）。
+  机检优先 window.echarts dispatchAction showTip，失败则 canvas mousemove 读 z-index 浮层文案。
+  goto /service-portal/overview（catalog default_landing）。对比篮挡主区时先关。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

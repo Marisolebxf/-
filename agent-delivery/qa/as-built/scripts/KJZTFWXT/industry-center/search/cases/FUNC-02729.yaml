@@ -1,0 +1,113 @@
+id: FUNC-02729
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02729
+priority: P1
+title: 保存查询方案点取消后已选条件数不变
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选已选至少 1 个条件
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  save_plan: button 保存为查询方案
+  save_modal: Modal title「保存筛选模板」
+  name_input: placeholder 模板名称
+  cancel_btn: button 取消
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 高级筛选置入条件、保存弹层点取消；预期在 expect 分步判定
+expect:
+  - note: 前置：高级筛选已选至少 1 个条件，记录已选数
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const readCondCount = async () => {
+        const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+        const libText = ((await fieldLib.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const mSelected = libText.match(/已选\s*(\d+)\s*个条件/);
+        const nFromLabel = mSelected ? parseInt(mSelected[1], 10) : NaN;
+        const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+        const applyName = ((await applyBtn.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const mApply = applyName.match(/应用筛选[（(]\s*(\d+)/);
+        const nFromBtn = mApply ? parseInt(mApply[1], 10) : NaN;
+        return !Number.isNaN(nFromLabel) ? nFromLabel : nFromBtn;
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const objTypeTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '对象类型' }).first();
+      await expect(objTypeTag).toBeVisible({ timeout: 8000 });
+      await objTypeTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const n = await readCondCount();
+      if (Number.isNaN(n) || n < 1) {
+        throw new Error('前置：高级筛选应至少 1 个条件，实际已选=' + n);
+      }
+      globalThis.__func02729_beforeCount = n;
+      globalThis.__func02729_ready = true;
+  - note: 1、对话框标题为「保存筛选模板」；名称框占位「模板名称」
+    assert: |-
+      if (!globalThis.__func02729_ready) throw new Error('前置：条件未就绪');
+      const saveBtn = page.getByRole('button', { name: '保存为查询方案' });
+      await expect(saveBtn).toBeEnabled({ timeout: 8000 });
+      await saveBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存筛选模板' }).first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      await expect(modal.locator('.arco-modal-title')).toContainText('保存筛选模板', { timeout: 5000 });
+      const nameInput = page.getByPlaceholder('模板名称').first();
+      await expect(nameInput).toBeVisible({ timeout: 8000 });
+      globalThis.__func02729_modalOpen = true;
+  - note: 2、点击「取消」后已选条件数不变
+    assert: |-
+      if (!globalThis.__func02729_modalOpen) throw new Error('前置：保存弹层未打开');
+      const before = globalThis.__func02729_beforeCount;
+      if (before == null || Number.isNaN(before)) throw new Error('前置：未记录取消前已选数');
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存筛选模板' }).first();
+      await modal.getByRole('button', { name: '取消', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(modal).toBeHidden({ timeout: 8000 });
+      const readCondCount = async () => {
+        const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+        const libText = ((await fieldLib.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const mSelected = libText.match(/已选\s*(\d+)\s*个条件/);
+        const nFromLabel = mSelected ? parseInt(mSelected[1], 10) : NaN;
+        const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+        const applyName = ((await applyBtn.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const mApply = applyName.match(/应用筛选[（(]\s*(\d+)/);
+        const nFromBtn = mApply ? parseInt(mApply[1], 10) : NaN;
+        return !Number.isNaN(nFromLabel) ? nFromLabel : nFromBtn;
+      };
+      const after = await readCondCount();
+      if (after !== before) {
+        throw new Error('取消保存后已选条件数应变=' + before + '，实际=' + after);
+      }
+      await expect(page.locator('.condition-builder').filter({ hasText: '对象类型' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；FilterTemplateManager compact：保存为查询方案 → Modal title「保存筛选模板」、Input placeholder「模板名称」；
+  Arco 默认「取消」关层不调用 saveTemplate。前置=高级筛选 Tab + 字段库点「对象类型」Tag（对齐 FUNC-02718/02726），leafCount≥1 才 enable 保存。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout+FilterTemplateManager 源码。
+  登录与关内部评审由 runner 前置。B 档零 allow_skip。

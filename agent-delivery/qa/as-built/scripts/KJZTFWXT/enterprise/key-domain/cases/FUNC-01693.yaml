@@ -1,0 +1,187 @@
+id: FUNC-01693
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01693
+priority: P0
+title: 跨领域布局图例含企业与产业领域
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 结果页已出现「跨领域布局」（assert 可自含选择分析企业回填；30888 无独立 heading 时以关系图图例代位）
+locators:
+  section_legacy: heading「跨领域布局」
+  section_30888: main canvas 关系图 + 图例「企业」「产业领域」
+  pick_enterprise: button「选择分析企业」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: evaluate
+    note: 无结果则入篮并选择分析企业→确定；浏览跨领域关系图（图例在 expect）
+expect:
+  - note: 1、图例含「企业」
+    assert: |-
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?view=domain',
+      ];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
+        }
+        throw new Error('深链均不可达');
+      };
+      const ensureBasketEnterprise = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const entCount = entM ? parseInt(entM[1], 10) : 0;
+        if (entCount >= 1) return;
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureResult = async () => {
+        await closeBasket();
+        if (await page.getByRole('heading', { name: '跨领域布局' }).count()) return 'legacy';
+        const main = page.locator('main');
+        const kpi = main.getByText('已覆盖领域', { exact: true });
+        if (await kpi.count() && await kpi.first().isVisible().catch(() => false)) return '30888';
+        await ensureBasketEnterprise();
+        await gotoRoute();
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count()) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+        const pickerSels = page.locator('[aria-label^="选择 "]');
+        if (!(await pickerSels.count())) throw new Error('选择分析企业弹层无可勾选企业');
+        await pickerSels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+        if (await page.getByRole('heading', { name: '跨领域布局' }).count()) return 'legacy';
+        if (await kpi.count()) return '30888';
+        throw new Error('确定后未进入结果态: ' + page.url());
+      };
+      const crossRoot = async () => {
+        const legacy = page.getByRole('heading', { name: '跨领域布局' });
+        if (await legacy.count()) {
+          const sec = legacy.locator('xpath=ancestor::section[1]').first();
+          if (await sec.count()) return sec;
+          return legacy.locator('xpath=ancestor::div[contains(@class,"col-span")][1]').first();
+        }
+        const canvas = page.locator('main canvas').last();
+        await expect(canvas).toBeVisible({ timeout: 12000 });
+        const host = canvas.locator('xpath=ancestor::div[contains(@class,"col-span")][1]').first();
+        return (await host.count()) ? host : page.locator('main');
+      };
+      const legendFromEcharts = async (label) => {
+        return await page.evaluate((want) => {
+          const nodes = document.querySelectorAll('[_echarts_instance_], div[_echarts_instance_]');
+          for (const el of nodes) {
+            const g = window.echarts;
+            if (!g || !g.getInstanceByDom) continue;
+            const inst = g.getInstanceByDom(el);
+            if (!inst) continue;
+            const opt = inst.getOption();
+            const legends = [];
+            const leg = opt.legend;
+            if (Array.isArray(leg)) leg.forEach((x) => { if (x && x.data) legends.push(...x.data); });
+            else if (leg && leg.data) legends.push(...leg.data);
+            if (legends.some((s) => String(s) === want)) return true;
+          }
+          return false;
+        }, label);
+      };
+      const assertLegendLabel = async (root, label) => {
+        if (await root.getByText(label, { exact: true }).count()) {
+          await expect(root.getByText(label, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+          return;
+        }
+        if (await root.locator('svg text').filter({ hasText: label }).count()) return;
+        if (await legendFromEcharts(label)) return;
+        const hay = (await root.innerText().catch(() => '')) || '';
+        if (hay.includes(label)) return;
+        throw new Error('跨领域布局图例缺「' + label + '」: ' + hay.slice(0, 200));
+      };
+      if (/enterprise_codes=/.test(page.url())) await gotoRoute();
+      await ensureResult();
+      const root = await crossRoot();
+      await assertLegendLabel(root, '企业');
+  - note: 2、图例含「产业领域」
+    assert: |-
+      const crossRoot = async () => {
+        const legacy = page.getByRole('heading', { name: '跨领域布局' });
+        if (await legacy.count()) {
+          const sec = legacy.locator('xpath=ancestor::section[1]').first();
+          if (await sec.count()) return sec;
+          return legacy.locator('xpath=ancestor::div[contains(@class,"col-span")][1]').first();
+        }
+        const canvas = page.locator('main canvas').last();
+        await expect(canvas).toBeVisible({ timeout: 12000 });
+        const host = canvas.locator('xpath=ancestor::div[contains(@class,"col-span")][1]').first();
+        return (await host.count()) ? host : page.locator('main');
+      };
+      const legendFromEcharts = async (label) => {
+        return await page.evaluate((want) => {
+          const nodes = document.querySelectorAll('[_echarts_instance_], div[_echarts_instance_]');
+          for (const el of nodes) {
+            const g = window.echarts;
+            if (!g || !g.getInstanceByDom) continue;
+            const inst = g.getInstanceByDom(el);
+            if (!inst) continue;
+            const opt = inst.getOption();
+            const legends = [];
+            const leg = opt.legend;
+            if (Array.isArray(leg)) leg.forEach((x) => { if (x && x.data) legends.push(...x.data); });
+            else if (leg && leg.data) legends.push(...leg.data);
+            if (legends.some((s) => String(s) === want)) return true;
+          }
+          return false;
+        }, label);
+      };
+      const root = await crossRoot();
+      const label = '产业领域';
+      if (await root.getByText(label, { exact: true }).count()) {
+        await expect(root.getByText(label, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      } else if (await root.locator('svg text').filter({ hasText: label }).count()) {
+        return;
+      } else if (await legendFromEcharts(label)) {
+        return;
+      } else {
+        const hay = (await root.innerText().catch(() => '')) || '';
+        if (!hay.includes(label)) throw new Error('跨领域布局图例缺「产业领域」: ' + hay.slice(0, 200));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·50892 有 heading「跨领域布局」；30888 结果态无该标题，关系图 canvas 仍在主区且 graphOption.legend=['企业','产业领域']。回填逻辑对齐 FUNC-00515（选择分析企业）。图例可读 DOM/SVG 或 window.echarts.getOption。登录与关内部评审由 runner 会话前置。B 档。

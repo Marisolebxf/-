@@ -1,0 +1,54 @@
+id: FUNC-03888
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03888
+priority: P0
+tier: A
+title: 页头进入深圳介绍且同名页签选中
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况（runner 会话前置 + goto overview）
+locators:
+  sz_header_btn: header 区 button「深圳产业服务介绍」（非 Tab）
+  tab_sz: tab「深圳产业服务介绍」
+steps:
+  - action: goto
+    target: /service-portal/overview
+expect:
+  - note: 1、主标题为「深圳产业服务介绍」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况|深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/overview SPA404，无法验页头分流 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      await page.getByRole('button', { name: '深圳产业服务介绍', exact: true }).first().click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、同名页签呈选中
+    assert: |-
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      const sel = tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true });
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      const aria = await sel.getAttribute('aria-selected');
+      const cls = (await sel.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('arco-tabs-tab-active') && !cls.includes('active')) {
+        throw new Error('深圳 Tab 未选中（aria-selected=' + aria + '）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  前置在概况；点击页头 primary button（role=button），勿与同文案 Tab（role=tab）混淆。路由 /service-portal/shenzhen（catalog TRACE）。
+  Tab 在 aria-label=专题服务子导航。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。
+  edu.itic-sci.com/tts/svcz 2026-10-21 无头 --only：/service-portal/overview SPA404 → ENV-EDU-TTS-SVCZ-404-001，页头按钮与深圳 Tab 断言未触达。

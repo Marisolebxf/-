@@ -1,0 +1,84 @@
+id: FUNC-02303
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02303
+priority: P0
+title: 断链风险卡片展示风险类型与风险依据
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果（assert 自含最近分析恢复）
+locators:
+  risk_tab: 断链风险
+  restore: 恢复结果
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 恢复成功结果后点「断链风险」浏览卡片
+expect:
+  - note: 1、已进入成功结果且断链风险 Tab 有至少 1 项
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const restoreFirstCompleted = async () => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/view=result/.test(page.url())) {
+          const body = await main().innerText().catch(() => '');
+          if (/任务摘要/.test(body) && /供应链图谱/.test(body)) return;
+        }
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (!(await restore.count())) {
+          throw new Error('ENV-SUPPLY-NO-COMPLETED-001');
+        }
+        await restore.first().click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      };
+      await restoreFirstCompleted();
+      await dismissBasket();
+      await expect(page.getByText('关键节点与断链风险').first()).toBeVisible({ timeout: 12000 });
+      await page.getByText('断链风险', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const body = await main().innerText();
+      if (/断链风险 · 0 项|暂无断链|当前筛选下暂无/.test(body)) {
+        throw new Error('ENV-SUPPLY-BREAK-RISK-EMPTY-001');
+      }
+      if (!/断链风险 · [1-9]|当前查看：断链风险 · [1-9]/.test(body)) {
+        throw new Error('断链风险区未见非零项计数');
+      }
+  - note: 2、卡片标出风险类型（现场出现哪类验哪类，不要求三类全集）
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const body = await main().innerText();
+      const idx = body.indexOf('关键节点与断链风险');
+      const block = idx >= 0 ? body.slice(idx) : body;
+      if (!/(单点依赖|节点异常|路径脆弱)/.test(block)) {
+        throw new Error('断链风险卡片未见风险类型标注');
+      }
+  - note: 3、卡片含风险依据文案
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const body = await main().innerText();
+      const idx = body.indexOf('关键节点与断链风险');
+      const block = idx >= 0 ? body.slice(idx) : body;
+      if (!/风险依据[：:]\s*\S+/.test(block)) {
+        throw new Error('断链风险卡片未见「风险依据」正文');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析「恢复结果」进成功结果。步骤=点「断链风险」。机检=非零项+卡片风险类型（单点依赖/节点异常/路径脆弱之一）+「风险依据：…」。用例备注本轮可仅单点依赖，不要求三类全集。无已完成→ENV-SUPPLY-NO-COMPLETED-001；0 项→ENV-SUPPLY-BREAK-RISK-EMPTY-001。登录与关评审由 runner 前置。A 档零 allow_skip。

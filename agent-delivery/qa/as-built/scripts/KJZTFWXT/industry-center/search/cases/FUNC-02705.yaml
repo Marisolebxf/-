@@ -1,0 +1,94 @@
+id: FUNC-02705
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02705
+priority: P0
+title: 查产业点击示例新能源汽车只写入检索框不自动搜索
+entry_id: chain-search
+tier: A
+preconditions:
+  - 当前为「查产业」Tab
+  - 尚未搜索
+locators:
+  example_chip: .enterprise-search-example-button「新能源汽车」
+  industry_input: textbox placeholder 含「输入产业或产业链名称」
+  result_region: '[role=region][aria-label="产业查询结果"]'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 切查产业 Tab 后点击示例「新能源汽车」；终态在 expect 判定（P2 跨 tick）
+expect:
+  - note: 前置：查产业 Tab 且检索框为空、尚未出现检索结果区
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const ind = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(1);
+      await expect(ind).toBeVisible({ timeout: 10000 });
+      await ind.click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/[?&]mode=industry/);
+      const iAria = await ind.getAttribute('aria-selected');
+      const iCls = (await ind.getAttribute('class')) || '';
+      if (iAria !== 'true' && !iCls.includes('active')) {
+        throw new Error('前置应为查产业 Tab');
+      }
+      const input = page.getByPlaceholder(/输入产业或产业链名称/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      const val = await input.inputValue();
+      if (val.trim() !== '') {
+        await input.fill('');
+        await page.waitForTimeout(200);
+      }
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const hitTitle = await region.getByText(/产业查询返回 \d+ 条结果/).count();
+      if (hitTitle > 0) {
+        throw new Error('前置不应已出现检索命中列表');
+      }
+      const resultH2 = region.getByRole('heading', { level: 2, name: '检索结果' });
+      if (await resultH2.count()) {
+        const vis = await resultH2.first().isVisible().catch(() => false);
+        if (vis) {
+          throw new Error('前置不应已显示「检索结果」');
+        }
+      }
+  - note: 步骤：点击示例「新能源汽车」
+    assert: |-
+      const chip = page.locator('.enterprise-search-example-button').filter({ hasText: '新能源汽车' }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await expect(chip).toBeEnabled();
+      await chip.click();
+      await page.waitForTimeout(800);
+  - note: 1、检索框内容为「新能源汽车」
+    assert: |-
+      const input = page.getByPlaceholder(/输入产业或产业链名称/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await expect(input).toHaveValue('新能源汽车', { timeout: 8000 });
+  - note: 2、不出现「检索结果」（未自动发起检索）
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const resultH2 = region.getByRole('heading', { level: 2, name: '检索结果' });
+      if (await resultH2.count()) {
+        const vis = await resultH2.first().isVisible().catch(() => false);
+        if (vis) {
+          throw new Error('点击示例词后不应出现「检索结果」');
+        }
+      }
+      const hitTitle = await region.getByText(/产业查询返回 \d+ 条结果/).count();
+      if (hitTitle > 0) {
+        throw new Error('点击示例词后不应自动检索，现场已出现命中列表');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  查产业 Tab 示例 chip=class enterprise-search-example-button，文案「新能源汽车」（testdata industry_tab.example_chips_observed[1]）。
+  只回填 inputValue，不触发搜索（与 02703 智能检索同口径，env-gate G4）。路由 catalog_path /industry-center/search。
+  对比篮遮挡 dismiss。登录与关内部评审由 runner 前置。A 档零 allow_skip。

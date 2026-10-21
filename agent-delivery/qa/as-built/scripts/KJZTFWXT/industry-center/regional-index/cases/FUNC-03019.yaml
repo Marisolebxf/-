@@ -1,0 +1,136 @@
+id: FUNC-03019
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03019
+priority: P1
+title: 删除分析记录时点取消后该记录仍在
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 分析记录至少有一条
+locators:
+  tab_records: tab「分析记录」
+  delete_button: button「删除」
+  modal_cancel: 弹框 button「取消」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 分析记录→任一行「删除」→Modal 验标题与文案→「取消」；记录仍在 expect 判定
+expect:
+  - note: 1、弹出「删除分析记录」，文案含「删除后列表不再显示」
+    assert: |-
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const throwEnv404 = (where) => {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 @' + where + ' ' + page.url());
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await dismissBasket();
+        if (await bodyIs404()) throwEnv404('sibling-search');
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      const pickChainDelete = async () => {
+        const dataRow = page.locator('tr').filter({ hasText: TID_RE }).first();
+        if (!(await dataRow.count())) return null;
+        const del = dataRow.getByRole('button', { name: '删除', exact: true }).first();
+        if (!(await del.count())) return null;
+        const rowText = ((await dataRow.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const tidM = rowText.match(TID_RE);
+        if (!tidM) return null;
+        return { del, tid: tidM[0] };
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await enterViaSidebar();
+      }
+      if (await bodyIs404()) throwEnv404('catalog-deep-link');
+      const tabRecords = page.getByRole('tab', { name: '分析记录' });
+      if (!(await tabRecords.count())) {
+        if (await bodyIs404()) throwEnv404('no-records-tab');
+        throw new Error('DEF-CHAIN-REGIONAL-INDEX-UI-001: 主区无「分析记录」Tab');
+      }
+      await tabRecords.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+      await expect(main().getByText('分析记录').first()).toBeVisible({ timeout: 8000 });
+      let picked = await pickChainDelete();
+      if (!picked) {
+        const mainText = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!TID_RE.test(mainText)) {
+          throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-RECORDS: 分析记录无 CHAIN 任务行');
+        }
+        const delTotal = await main().getByRole('button', { name: '删除', exact: true }).count();
+        if (delTotal === 0) {
+          throw new Error('DEF-CHAIN-REGIONAL-INDEX-DELETE-UI-001: 有任务行但操作列无「删除」');
+        }
+        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-RECORDS: 分析记录无可点「删除」的任务行');
+      }
+      globalThis.__func03019 = { tid: picked.tid, modalReady: false };
+      await picked.del.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '删除分析记录' });
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      await expect(modal.locator('.arco-modal-title').filter({ hasText: '删除分析记录' }).first()).toBeVisible();
+      const bodyText = (await modal.innerText()).replace(/\s+/g, ' ');
+      if (!/删除后列表不再显示/.test(bodyText)) {
+        throw new Error('弹框文案未含「删除后列表不再显示」，正文：' + bodyText.slice(0, 240));
+      }
+      globalThis.__func03019.modalReady = true;
+  - note: 2、取消后该记录仍在列表中
+    assert: |-
+      if (!globalThis.__func03019?.modalReady) throw new Error('前置：未打开删除分析记录弹框');
+      const expectedTid = globalThis.__func03019.tid;
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '删除分析记录' });
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      const cancelBtn = modal.getByRole('button', { name: '取消', exact: true });
+      await expect(cancelBtn).toBeVisible({ timeout: 5000 });
+      await cancelBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(modal).toBeHidden({ timeout: 10000 });
+      const rowStill = main().locator('tr').filter({ hasText: expectedTid });
+      await expect(rowStill.first()).toBeVisible({ timeout: 8000 });
+      const bodyAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!bodyAfter.includes(expectedTid)) {
+        throw new Error('取消删除后任务不在分析记录列表：' + expectedTid);
+      }
+      const msgDeleted = page.locator('.arco-message-content').filter({ hasText: /已删除/ });
+      if (await msgDeleted.count() && (await msgDeleted.first().isVisible().catch(() => false))) {
+        throw new Error('取消后不应出现「已删除」提示');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index；edu 深链 404 时 sibling 侧栏进页（同 FUNC-03009）。
+  步骤=Tab「分析记录」→首条 CHAIN 行「删除」→Modal「删除分析记录」含「删除后列表不再显示」→「取消」→任务 ID 仍在。非破坏性（确定删除见 FUNC-03021）。
+  无任务行→ENV-CHAIN-REGIONAL-INDEX-NO-RECORDS；有行无删→DEF-CHAIN-REGIONAL-INDEX-DELETE-UI-001。登录关评审 runner 前置。B 档零 allow_skip。

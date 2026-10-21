@@ -1,0 +1,76 @@
+id: FUNC-02298
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02298
+priority: P0
+title: 结果页图谱给出当前展示与四类图例
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果；图谱区停在「图谱」（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  tab_graph: tab「图谱」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析恢复结果→供应链图谱区阅读当前展示与图例
+expect:
+  - note: 1、当前展示写明级数与中心企业
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const ensureGraphTab = async () => {
+        const graphTab = main().locator('[role=tab], button').filter({ hasText: /^图谱$/ }).first();
+        if (await graphTab.count() && (await graphTab.isVisible().catch(() => false))) {
+          await graphTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      const restore = page.getByRole('button', { name: '恢复结果' });
+      if (!(await restore.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+      }
+      await restore.first().click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 25000 });
+      await dismissBasket();
+      await ensureGraphTab();
+      const display = page.getByText(/当前展示：\d+级/).first();
+      await expect(display).toBeVisible({ timeout: 10000 });
+      const dt = await display.innerText().catch(() => '');
+      if (!/中心/.test(dt)) throw new Error('当前展示未写明中心企业：' + dt);
+      globalThis.__func02298_ready = true;
+  - note: 2、图例含中心企业、供应商、客户、合作伙伴
+    assert: |-
+      if (!globalThis.__func02298_ready) throw new Error('前置：未进入成功结果图谱区');
+      for (const t of ['中心企业', '供应商', '客户', '合作伙伴']) {
+        await expect(page.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 3、说明为默认展示一级，选中节点后可「以此为中心下钻」
+    assert: |-
+      if (!globalThis.__func02298_ready) throw new Error('前置：未进入成功结果图谱区');
+      const mainEl = page.locator('main.content-shell-layout, main').first();
+      const t = await mainEl.innerText().catch(() => '');
+      if (!/默认展示一级/.test(t)) throw new Error('未见默认展示一级说明');
+      if (!/以此为中心下钻/.test(t)) throw new Error('未见选中节点下钻说明');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析「恢复结果」进成功结果；图谱 Tab 默认或显式点「图谱」。机检=当前展示含级数+中心、四类图例 exact、默认一级+下钻说明（scout-result 原文）。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

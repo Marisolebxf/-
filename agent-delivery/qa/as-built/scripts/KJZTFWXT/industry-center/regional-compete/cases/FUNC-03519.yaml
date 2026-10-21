@@ -1,0 +1,228 @@
+id: FUNC-03519
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03519
+priority: P1
+title: 生成中取消任务提示已取消
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 过程页处于分析中（assert 自含：配齐条件→开始分析→点「取消任务」）
+locators:
+  cancel: button「取消任务」
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入→配齐→生成中点「取消任务」；预期在 expect
+expect:
+  - note: 前置：过程页处于分析中并点击「取消任务」（无二次弹框）
+    assert: |-
+      page.setDefaultTimeout(20000);
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const PROCESS_TITLE = '区域产业竞争力评价生成中';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/三大一级维度权重/.test(t);
+      };
+      const onConfigReady = async () => {
+        if (await bodyIs404()) return false;
+        return await page.getByText('三大一级维度权重').first().isVisible().catch(() => false);
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳 ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        if (!(await onConfigReady())) {
+          await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价着陆失败 ' + page.url());
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      const pickIndustry = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+        await expect(view).toBeVisible({ timeout: 12000 });
+        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/集成电路/.test(shown)) return;
+        for (let i = 0; i < 8; i++) {
+          await view.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          const opt = pop.locator('.arco-select-option').filter({ hasText: /^集成电路$/ });
+          if (await opt.count()) {
+            await opt.first().click({ force: true, timeout: 8000 });
+            await page.waitForTimeout(700);
+            await page.keyboard.press('Escape').catch(() => {});
+            return;
+          }
+          await page.waitForTimeout(400);
+        }
+        throw new Error('ENV-CHAIN-REG-COMPETE-03519：无法选择产业「集成电路」');
+      };
+      const ensureOneRegion = async () => {
+        const view = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        const txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/深圳/.test(txt)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const opt = pop.locator('.arco-select-option').filter({ hasText: /^深圳市$/ });
+        if (await opt.count()) await opt.first().click({ force: true });
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const inProcess = async () => {
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return (
+          new RegExp(PROCESS_TITLE).test(body) ||
+          (/可视化分析过程/.test(body) && /生成中/.test(body)) ||
+          (/view=processing/.test(page.url()) && /可视化分析过程/.test(body))
+        );
+      };
+      const clickCancelAsap = async () => {
+        return page.evaluate(() => {
+          return new Promise((resolve) => {
+            const tryClick = () => {
+              const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+                /^取消任务$/.test((b.textContent || '').trim()),
+              );
+              if (btn && btn.offsetParent !== null) {
+                btn.click();
+                resolve('ok');
+                return true;
+              }
+              return false;
+            };
+            if (tryClick()) return;
+            const deadline = Date.now() + 90000;
+            const obs = new MutationObserver(() => {
+              tryClick();
+            });
+            obs.observe(document.body, { childList: true, subtree: true });
+            const tick = setInterval(() => {
+              if (tryClick()) {
+                clearInterval(tick);
+                obs.disconnect();
+              } else if (Date.now() > deadline) {
+                clearInterval(tick);
+                obs.disconnect();
+                resolve('timeout');
+              }
+            }, 40);
+          });
+        });
+      };
+      const waitCancelBtn = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          const cancel = page.getByRole('button', { name: '取消任务' }).first();
+          if (await cancel.isVisible().catch(() => false)) return cancel;
+          await page.waitForTimeout(350);
+        }
+        return null;
+      };
+      await ensureLand();
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(600);
+      await pickIndustry();
+      await ensureOneRegion();
+      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      if (await start.isDisabled()) {
+        throw new Error('ENV-CHAIN-REG-COMPETE-03519：配齐后「开始分析」仍 disabled');
+      }
+      const body0 = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/今日已分析过相同条件/.test(body0)) {
+        throw new Error('ENV-CHAIN-REG-COMPETE-TODAY-DONE-03519：当天已成功相同条件，无法新建跑态');
+      }
+      const cancelRace = clickCancelAsap();
+      await start.click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      let cancelResult = await cancelRace;
+      if (cancelResult === 'ok') {
+        globalThis.__func03519_cancelled = true;
+      } else {
+        if (!(await inProcess())) {
+          const snap = ((await main().innerText().catch(() => '')) || '').slice(0, 280);
+          throw new Error('ENV-CHAIN-REG-COMPETE-PROC-FAST-03519：未见过程页，片段: ' + snap);
+        }
+        const cancelBtn = await waitCancelBtn(45000);
+        if (!cancelBtn) {
+          throw new Error('ENV-CHAIN-REG-COMPETE-PROC-FAST-03519：过程页未见可点「取消任务」');
+        }
+        await cancelBtn.click({ timeout: 12000 }).catch(async () => {
+          await cancelBtn.click({ timeout: 12000, force: true });
+        });
+        globalThis.__func03519_cancelled = true;
+      }
+      await page.waitForTimeout(800);
+      if (!globalThis.__func03519_cancelled) {
+        throw new Error('前置：未点击「取消任务」');
+      }
+  - note: 1、提示「已取消任务，可重新配置后发起」
+    assert: |-
+      if (!globalThis.__func03519_cancelled) throw new Error('前置：未点击取消任务');
+      const toastOk = await page
+        .locator('.arco-message, .arco-notification, [role="alert"]')
+        .filter({ hasText: /已取消任务，可重新配置后发起/ })
+        .first()
+        .isVisible({ timeout: 10000 })
+        .catch(() => false);
+      const bodyAfter = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!toastOk && !/已取消任务，可重新配置后发起/.test(bodyAfter)) {
+        throw new Error('取消后未见提示「已取消任务，可重新配置后发起」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03519=侧栏 search→区域产业竞争力评价→集成电路+≥1 区域→开始分析（MutationObserver 抢「取消任务」或 waitCancelBtn）→无二次弹框。
+  仅机检 toast/正文「已取消任务，可重新配置后发起」；列表状态不在本脚本断言（用例备注勘察时可能仍显示已完成）。
+  catalog_path=entry-seed；深链 SPA404 同 03503/03505。过快/当天复用→ENV-CHAIN-REG-COMPETE-PROC-FAST-03519 / TODAY-DONE-03519。B 档零 allow_skip。

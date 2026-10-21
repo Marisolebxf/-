@@ -1,0 +1,63 @@
+id: FUNC-03919
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03919
+priority: P1
+tier: B
+title: 深圳类型统计区块说明没有类型分布且内容暂无
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + goto）
+locators:
+  tab_sz: tab「深圳产业服务介绍」
+  block_type: heading「产业机构类型统计」
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「深圳产业服务介绍」页签
+expect:
+  - note: 1、说明无类型分布矩阵且内容暂无
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验深圳类型统计空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const typeTitle = page.getByText('产业机构类型统计', { exact: true }).first();
+      await typeTitle.scrollIntoViewIfNeeded({ timeout: 8000 });
+      await expect(typeTitle).toBeVisible({ timeout: 8000 });
+      const emptyCopy = page.getByText(/无类型分布矩阵/).first();
+      await expect(emptyCopy).toBeVisible({ timeout: 8000 });
+      const emptyTxt = ((await emptyCopy.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/内容暂无/.test(emptyTxt)) {
+        throw new Error('类型统计空态应含「内容暂无」；现场=' + emptyTxt);
+      }
+      const section = typeTitle.locator('xpath=ancestor::*[contains(@class,"arco-card") or self::section][1]');
+      const sectionRoot = (await section.count()) ? section.first() : typeTitle.locator('xpath=ancestor::div[1]');
+      const typeCanvas = sectionRoot.locator('canvas').first();
+      if (await typeCanvas.isVisible().catch(() => false)) {
+        throw new Error('产业机构类型统计区不应渲染类型分布图 canvas，应保持空态文案');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深圳页类型区块固定诚实空（ServicePortalShenzhenPage a-empty「本包络无类型分布矩阵。分区保留，内容暂无。」）。
+  Tab 切至 /service-portal/shenzhen；断言含「无类型分布矩阵」与「内容暂无」且无 canvas。goto /service-portal。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+  edu.itic-sci.com/tts/svcz 2026-10-21 机跑 rewrite-FUNC-03919 ENV-EDU-TTS-SVCZ-404-001 深链 SPA404→ledger blocked；断言仍依用例册 03919（空态句见 ServicePortalShenzhenPage）。

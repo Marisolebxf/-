@@ -1,0 +1,116 @@
+id: FUNC-03009
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03009
+priority: P1
+title: 保存个人模板点取消后对话框关闭且仍在分析配置
+story: US-CHAIN-REG-01
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已在分析配置（workspace=index&tab=index）
+locators:
+  save: button「保存为个人模板」
+  save_modal: Modal title「保存为个人模板」
+  name_input: placeholder 请输入个人模板名称
+  cancel_btn: button 取消
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入或分析配置
+    timeout_ms: 12000
+  - action: evaluate
+    note: 404 则侧栏 fallback→保存弹层→取消（判定在 expect）
+expect:
+  - note: 前置：已在分析配置 Tab，配置区「保存为个人模板」可用
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const throwEnv404 = (where) => {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 @' + where + ' ' + page.url());
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await dismissBasket();
+        if (await bodyIs404()) throwEnv404('sibling-search');
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        try {
+          await expect(leaf().first()).toBeVisible({ timeout: 5000 });
+        } catch (_) {
+          if (await bodyIs404()) throwEnv404('sibling-search-no-menu');
+          throw _;
+        }
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await enterViaSidebar();
+      }
+      if (await bodyIs404()) throwEnv404('catalog-deep-link');
+      await expect(page.getByRole('heading', { name: '分析配置' }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible({ timeout: 12000 });
+      const saveBtn = page.getByRole('button', { name: '保存为个人模板' });
+      await expect(saveBtn).toBeVisible({ timeout: 8000 });
+      globalThis.__func03009_ready = true;
+  - note: 1、对话框标题为「保存为个人模板」，含模板名称；对话框显示已计入项数与权重合计
+    assert: |-
+      if (!globalThis.__func03009_ready) throw new Error('前置：分析配置未就绪');
+      const saveBtn = page.getByRole('button', { name: '保存为个人模板' });
+      await saveBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' }).first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      await expect(modal.locator('.arco-modal-title')).toContainText('保存为个人模板', { timeout: 5000 });
+      await expect(modal.getByText('模板名称', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      const nameInput = modal.getByPlaceholder('请输入个人模板名称');
+      await expect(nameInput).toBeVisible({ timeout: 8000 });
+      const hint = modal.locator('.diagnosis-config-review-hint, p').filter({ hasText: /已计入.*项.*权重合计/ });
+      await expect(hint.first()).toBeVisible({ timeout: 8000 });
+      const hintText = ((await hint.first().innerText()).trim() || '').replace(/\s+/g, ' ');
+      if (!/已计入\s*\d+\s*项/.test(hintText) || !/权重合计\s*\d+%/.test(hintText)) {
+        throw new Error('弹层未展示已计入项数与权重合计：' + hintText);
+      }
+      globalThis.__func03009_modalOpen = true;
+  - note: 2、取消后对话框关闭，仍在分析配置
+    assert: |-
+      if (!globalThis.__func03009_modalOpen) throw new Error('前置：保存弹层未打开');
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' }).first();
+      await modal.getByRole('button', { name: '取消', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(modal).toBeHidden({ timeout: 8000 });
+      await expect(page).toHaveURL(/workspace=index/);
+      await expect(page).toHaveURL(/tab=index/);
+      if (/view=processing/.test(page.url())) throw new Error('取消保存后误入过程态');
+      await expect(page.getByRole('heading', { name: '分析配置' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '保存为个人模板' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  替换作废 00574 取消分支。Modal title「保存为个人模板」、label「模板名称」、placeholder「请输入个人模板名称」；
+  弹层内 hint「已计入 N 项 · 权重合计 X%」（IndustryRegionalPage.vue）。Arco「取消」关层不调用 confirmSaveTemplate。
+  catalog_path 侧栏 sibling 进页（edu 深链 404 同 FUNC-03006）。登录关评审 runner 前置。B 档零 allow_skip。

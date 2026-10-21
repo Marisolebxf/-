@@ -1,0 +1,131 @@
+id: FUNC-05402
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05402
+priority: P1
+title: 展开企业类型下拉选项共 7 个且名称与附录 A 一致
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 企业页至少 1 家
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+  type_select: .arco-select-view（全部企业类型）
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 展开「全部企业类型」；选项个数与名称在 expect 判定
+expect:
+  - note: 前置开篮且企业页至少 1 家；展开类型下拉
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedFromAddModal = async (panel) => {
+        await panel.getByRole('button', { name: '新增' }).click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder(/企业名称|搜索/).first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(400);
+            const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+            if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-ADD-MODAL-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const seedFromEnterpriseSearch = async () => {
+        const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+        await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+        if (await clearBtn.isVisible().catch(() => false)) {
+          await clearBtn.click({ timeout: 4000 }).catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        if (await recSection.count()) {
+          const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({
+            has: page.getByRole('button', { name: '查看画像', exact: true }),
+          });
+          for (let i = 0; i < await cards.count(); i++) {
+            const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+            if (await btn.count() && (await btn.isVisible().catch(() => false))) {
+              await btn.click({ timeout: 8000 });
+              await page.waitForTimeout(700);
+              break;
+            }
+          }
+        }
+        await page.goto(origin + hostPath, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      };
+      let panel = await openPanel();
+      let entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let n = await panel.locator('.ent-compare-item-card').count();
+      if (n < 1) {
+        await seedFromAddModal(panel).catch(() => {});
+        n = await panel.locator('.ent-compare-item-card').count();
+      }
+      if (n < 1) {
+        await seedFromEnterpriseSearch();
+        panel = await openPanel();
+        entTab = panel.locator('#compare-basket-tab-enterprise');
+        await entTab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        n = await panel.locator('.ent-compare-item-card').count();
+      }
+      if (n < 1) throw new Error('ENV-SHELL-COMPARE-BASKET-EMPTY-001：无法满足企业页至少 1 家');
+      const typeTrigger = panel.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first();
+      await expect(typeTrigger).toBeVisible({ timeout: 8000 });
+      await typeTrigger.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const oc = await opts.count();
+      if (!oc) throw new Error('展开「全部企业类型」后无可见选项');
+      const labels = [];
+      for (let i = 0; i < oc; i++) {
+        const t = ((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (t) labels.push(t);
+      }
+      globalThis.__func05402 = { labels };
+  - note: 选项共 7 个，名称与附录 A 一致（未点选具体类型）
+    assert: |-
+      const st = globalThis.__func05402 || {};
+      const expected = ['外资企业', '高新技术企业', '小微企业', '上市企业', '专精特新', '小巨人', '链主龙头'];
+      const labels = Array.isArray(st.labels) ? st.labels : [];
+      if (labels.length !== 7) {
+        throw new Error(`选项应为 7 个，实际 ${labels.length}：${labels.join('、')}`);
+      }
+      for (const name of expected) {
+        if (!labels.includes(name)) throw new Error(`缺少附录 A 选项「${name}」；现场：${labels.join('、')}`);
+      }
+      const extras = labels.filter((l) => !expected.includes(l));
+      if (extras.length) throw new Error(`出现附录 A 外选项：${extras.join('、')}`);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。步骤=展开「全部企业类型」不点选。机检=下拉可见选项 7 个且名称=附录 A。过滤结果不在本条。空篮入篮同 FUNC-05390。登录与关评审由 runner 前置。

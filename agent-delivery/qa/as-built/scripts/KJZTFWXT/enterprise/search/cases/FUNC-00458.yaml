@@ -1,0 +1,100 @@
+id: FUNC-00458
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00458
+priority: P0
+title: 结果内再筛可施加、收窄且可清除恢复
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空结果列表（本条 steps 自含智能搜索「人工智能」出结果）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  refine_status: 结果工具条 .arco-select-view 经营状态
+  refine_scale: 结果工具条 企业规模
+  refine_qual: 结果工具条 资质荣誉（placeholder，现场非「资质标签」）
+  refine_tag: 当前条件区 .arco-tag（含再筛值，可关闭）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与命中条数
+    timeout_ms: 2000
+  - action: evaluate
+    note: 施加经营状态再筛、记录条数、清除再筛由 expect assert 自含（P2 跨 tick）
+expect:
+  - note: 施加后列表仍处结果态且条数变化可解释（仍可见命中摘要或明确未命中，且再筛标签已挂上）
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const main = page.locator('main');
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 20000 });
+      await page.waitForTimeout(600);
+      const parseHit = async () => {
+        const hit = page.getByText(/命中\s*(\d+)\s*家企业/).first();
+        if ((await hit.count()) && (await hit.isVisible().catch(() => false))) {
+          return Number((await hit.innerText()).match(/(\d+)/)[1]);
+        }
+        const empty = page.getByText(/未命中结果/).first();
+        if ((await empty.count()) && (await empty.isVisible().catch(() => false))) return 0;
+        throw new Error('结果态既无命中条数也无未命中提示');
+      };
+      const before = await parseHit();
+      if (before < 1) throw new Error('前置非空结果不满足: before=' + before);
+      for (const ph of ['经营状态', '企业规模', '资质荣誉']) {
+        const n = await main.locator('input[placeholder="' + ph + '"]').count();
+        if (n < 1) throw new Error('结果内再筛缺少控件 placeholder: ' + ph);
+      }
+      const statusSel = main.locator('.arco-select-view').filter({ hasText: '经营状态' }).first();
+      await expect(statusSel).toBeVisible({ timeout: 8000 });
+      await statusSel.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opt = page.locator('[role=listbox]:visible [role=option], .arco-select-option').filter({ hasText: '吊销' }).first();
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(main.locator('.arco-tag').filter({ hasText: '吊销' }).first()).toBeVisible({ timeout: 8000 });
+      const after = await parseHit();
+      if (after > before) throw new Error('再筛后条数反而增多: before=' + before + ' after=' + after);
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 8000 });
+      const listOrEmpty = async () => {
+        const hitOk = (await page.getByText(/命中\s*\d+\s*家企业/).count()) > 0;
+        const emptyOk = (await page.getByText(/未命中结果/).count()) > 0;
+        if (!hitOk && !emptyOk) throw new Error('再筛后既无列表命中摘要也无未命中态');
+      };
+      await listOrEmpty();
+      await page.evaluate((n) => { window.__qa_refine_before = n; }, before);
+  - note: 清除该再筛条件后结果恢复再筛前范围（命中条数与再筛标签均还原）
+    assert: |-
+      const main = page.locator('main');
+      const parseHit = async () => {
+        const hit = page.getByText(/命中\s*(\d+)\s*家企业/).first();
+        if ((await hit.count()) && (await hit.isVisible().catch(() => false))) {
+          return Number((await hit.innerText()).match(/(\d+)/)[1]);
+        }
+        const empty = page.getByText(/未命中结果/).first();
+        if ((await empty.count()) && (await empty.isVisible().catch(() => false))) return 0;
+        throw new Error('结果态既无命中条数也无未命中提示');
+      };
+      const before = await page.evaluate(() => window.__qa_refine_before);
+      if (typeof before !== 'number') throw new Error('缺少再筛前条数快照');
+      const revokeTag = main.locator('.arco-tag').filter({ hasText: '吊销' }).first();
+      await expect(revokeTag).toBeVisible({ timeout: 8000 });
+      await revokeTag.locator('.arco-icon-close').click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(main.locator('.arco-tag').filter({ hasText: '吊销' })).toHaveCount(0, { timeout: 8000 });
+      const restored = await parseHit();
+      if (restored !== before) throw new Error('清除后条数未恢复: before=' + before + ' restored=' + restored);
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 企业查询路由 /enterprise/enterprise-search（用例册 #results 深链作语义锚）。再筛触发器 placeholder 为经营状态/企业规模/资质荣誉（用例写资质标签，D1 跟现场）。条数仅校 after≤before 与同值可解释，不钉死具体 N。局部零命中另条 FUNC-00472。

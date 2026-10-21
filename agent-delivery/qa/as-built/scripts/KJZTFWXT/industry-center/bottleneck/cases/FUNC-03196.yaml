@@ -1,0 +1,95 @@
+id: FUNC-03196
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03196
+priority: P0
+title: 五维分组、数据状态与数据来源
+story: US-CHAIN-DIAG-05
+entry_id: chain-bottleneck
+tier: A
+preconditions:
+  - 已打开分析配置
+locators:
+  dim_table: 注册诊断维度表
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 逐行看分组、数据状态和数据来源（判定在 expect）
+expect:
+  - note: 前置：分析配置与注册诊断维度表可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=bottleneck/);
+      await expect(page).toHaveURL(/tab=bottleneck/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/产业瓶颈堵点识别/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别 SPA 404 ' + page.url());
+      }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('注册诊断维度').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func03196_ready = true;
+  - note: 1、分组 / 维度均为「五维诊断维度」
+    assert: |-
+      if (!globalThis.__func03196_ready) throw new Error('前置：未打开分析配置');
+      const names = ['技术', '人才', '市场需求', '资本', '政策'];
+      const sources = ['技术供给快照', '人才供给快照', '需求景气快照', '融资与投入快照', '政策覆盖快照'];
+      const readCells = async (row) => {
+        const cells = row.locator('td');
+        const n = await cells.count();
+        const vals = [];
+        for (let i = 0; i < n; i++) {
+          vals.push(((await cells.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        return vals;
+      };
+      const rows = [];
+      for (let i = 0; i < names.length; i++) {
+        const row = page
+          .getByRole('row')
+          .filter({ hasText: names[i] })
+          .filter({ hasText: sources[i] })
+          .first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        rows.push(await readCells(row));
+      }
+      globalThis.__func03196 = { names, sources, rows };
+      for (let i = 0; i < names.length; i++) {
+        const group = rows[i][2] || '';
+        if (group !== '五维诊断维度') {
+          throw new Error(names[i] + ' 分组/维度应为「五维诊断维度」，现场=' + group);
+        }
+      }
+  - note: 2、数据状态均为「可用」
+    assert: |-
+      const st = globalThis.__func03196;
+      if (!st?.rows) throw new Error('前置：未读取注册诊断维度表行');
+      for (let i = 0; i < st.names.length; i++) {
+        const status = st.rows[i][3] || '';
+        if (status !== '可用') {
+          throw new Error(st.names[i] + ' 数据状态应为「可用」，现场=' + status);
+        }
+      }
+  - note: 3、数据来源依次为五类快照（与指标名称行序一致）
+    assert: |-
+      const st = globalThis.__func03196;
+      if (!st?.rows) throw new Error('前置：未读取注册诊断维度表行');
+      const want = st.sources;
+      for (let i = 0; i < st.names.length; i++) {
+        const src = st.rows[i][5] || '';
+        if (src !== want[i]) {
+          throw new Error(
+            st.names[i] + ' 数据来源应为「' + want[i] + '」，现场=' + src + '；顺序期望 ' + JSON.stringify(want),
+          );
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck（entry-seed）；与 FUNC-03194 同走深链 goto。
+  注册诊断维度表列序：指标名称(1)/分组(2)/数据状态(3)/权重(4)/数据来源(5)。登录关评审 runner 前置。A 档零 allow_skip。

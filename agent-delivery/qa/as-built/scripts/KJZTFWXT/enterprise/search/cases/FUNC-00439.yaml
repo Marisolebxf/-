@@ -1,0 +1,33 @@
+id: FUNC-00439
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00439
+priority: P0
+title: 点击示例查询 chip 仅回填关键词不自动检索
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入企业查询初始态，可见示例查询
+locators:
+  example_chip: .enterprise-search-example-button（示例查询行，现场首 chip 如「南山区专精特新企业」）
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 点示例 chip 由 expect assert 自含（.enterprise-search-example-button）
+expect:
+  - note: 搜索框回填该示例词
+    assert: |-
+      const chip = page.locator('.enterprise-search-example-button').first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      const label = (await chip.innerText()).trim();
+      await chip.click();
+      await page.waitForTimeout(800);
+      await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toHaveValue(label);
+  - note: 页面维持初始引导态且无检索结果标题
+    assert: |-
+      await expect(page.getByText('示例查询').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('推荐企业').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('智能搜索结果')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search；示例 chip 词单为南山区专精特新企业/集成电路国高企/近三年新增企业（非用例册人工智能五词，以现场为准）。点后不自动出「智能搜索结果」。

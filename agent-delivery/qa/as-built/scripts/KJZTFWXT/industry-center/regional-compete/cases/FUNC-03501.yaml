@@ -1,0 +1,190 @@
+id: FUNC-03501
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03501
+priority: P0
+title: 产业随集群联动，单产业模式下改选后只留最后一项
+entry_id: chain-regional-compete
+tier: A
+preconditions:
+  - 评价模式为「单产业 × 多区域」
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  industry: .arco-select-view[aria-label=产业]
+  mode_single: radio「单产业 × 多区域」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: wait
+    for: 分析配置就绪
+    timeout_ms: 3500
+  - action: evaluate
+    note: 产业下拉枚举、改选单留、切集群清空与 BIO3 在 expect
+expect:
+  - note: 1、新一代信息技术下产业共 7 项；2、改选后只保留「人工智能与应用」；3、改集群后产业清空且生物产业下 3 项
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const IT7 = [
+        '新一代信息技术',
+        '半导体与集成电路',
+        '人工智能与应用',
+        '智能终端',
+        '软件与信息服务',
+        '新型网络与通信',
+        '超高清视频与显示',
+      ];
+      const BIO3 = ['生物', '生物医药与生命健康', '高端医疗器械'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /\b404\b/.test(t) && /返回首页/.test(t);
+      };
+      const throwEnv404 = async (hint) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: ' + hint + ' ' + page.url());
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        await throwEnv404('无可用侧栏壳（search 404）');
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=competitiveness/.test(page.url()) &&
+          /tab=competitiveness/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          try {
+            await enterViaSidebar();
+          } catch (e) {
+            if (/ENV-EDU-TTS-SVCZ-404-001/.test(String(e?.message || e))) throw e;
+          }
+        }
+        await throwEnv404('区域产业竞争力评价侧栏与 catalog 深链均 SPA404');
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      const ensureSingleMode = async () => {
+        await page.getByText('单产业 × 多区域', { exact: true }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const selectView = (ariaLabel) => page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+      const readViewText = async (ariaLabel) =>
+        ((await selectView(ariaLabel).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      const listDropdownOptions = async (ariaLabel) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = selectView(ariaLabel);
+        await expect(view).toBeVisible({ timeout: 10000 });
+        for (let i = 0; i < 6; i++) {
+          await view.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          if (await pop.isVisible().catch(() => false)) {
+            const raw = await pop.locator('.arco-select-option').allInnerTexts();
+            await page.keyboard.press('Escape').catch(() => {});
+            await page.waitForTimeout(300);
+            return raw.map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean);
+          }
+          await page.waitForTimeout(400);
+        }
+        throw new Error('下拉未展开：' + ariaLabel);
+      };
+      const pickSelect = async (ariaLabel, textRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = selectView(ariaLabel);
+        await expect(view).toBeVisible({ timeout: 10000 });
+        for (let i = 0; i < 8; i++) {
+          await view.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          const opt = pop.locator('.arco-select-option').filter({ hasText: textRe });
+          if (await opt.count()) {
+            await opt.first().click({ force: true, timeout: 8000 });
+            await page.waitForTimeout(700);
+            await page.keyboard.press('Escape').catch(() => {});
+            return;
+          }
+          await page.waitForTimeout(400);
+        }
+        throw new Error('下拉未见选项 ' + textRe + '（' + ariaLabel + '）');
+      };
+      const sameSet = (a, b) => {
+        if (a.length !== b.length) return false;
+        const sa = [...a].sort();
+        const sb = [...b].sort();
+        return sa.every((v, i) => v === sb[i]);
+      };
+      await ensureLand();
+      await ensureSingleMode();
+      const clusterText = await readViewText('集群');
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelect('集群', /^新一代信息技术$/);
+      }
+      const itOpts = await listDropdownOptions('产业');
+      if (!sameSet(itOpts, IT7)) {
+        throw new Error('预期1：新一代信息技术下产业选项不符（期望7项）：得 ' + JSON.stringify(itOpts));
+      }
+      await pickSelect('产业', /^半导体与集成电路$/);
+      await page.waitForTimeout(400);
+      await pickSelect('产业', /^人工智能与应用$/);
+      await page.waitForTimeout(500);
+      const shown = await readViewText('产业');
+      if (!/人工智能与应用/.test(shown)) {
+        throw new Error('预期2：改选后未保留「人工智能与应用」：「' + shown + '」');
+      }
+      if (/半导体与集成电路/.test(shown)) {
+        throw new Error('预期2：单产业仍残留「半导体与集成电路」：「' + shown + '」');
+      }
+      const tags = page.locator('.arco-select-view[aria-label="产业"] .arco-tag');
+      if ((await tags.count()) > 1) {
+        throw new Error('预期2：单产业出现多 tag');
+      }
+      await pickSelect('集群', /^生物产业$/);
+      await page.waitForTimeout(800);
+      const industryAfter = await readViewText('产业');
+      if (/人工智能与应用|半导体与集成电路/.test(industryAfter)) {
+        throw new Error('预期3：改集群后产业未清空：「' + industryAfter + '」');
+      }
+      if (!/请选择产业|请先选择集群/.test(industryAfter) && industryAfter.length > 0) {
+        throw new Error('预期3：改集群后产业应为空或占位，得：「' + industryAfter + '」');
+      }
+      const bioOpts = await listDropdownOptions('产业');
+      if (!sameSet(bioOpts, BIO3)) {
+        throw new Error('预期3：生物产业下产业选项不符（期望3项）：得 ' + JSON.stringify(bioOpts));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  单产业×多区域下 IndustryClusterSelect 单选产业；切集群清空不兼容产业（onClusterChange）。
+  附录A IT7/BIO3 与用例册一致。catalog_path=entry-seed competitiveness。未选提示归 FUNC-03534。
+  A 档零 allow_skip。

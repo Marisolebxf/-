@@ -1,0 +1,182 @@
+id: FUNC-02623
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02623
+priority: P1
+title: 点击缩小后环节圆点变小且文案与画布占位不变
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 当前为「产业链全景」
+  - 产业链为「半导体与集成电路」
+locators:
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  zoom_out_btn: button aria-label「缩小」
+  chain_select: .industry-overview-chain-select
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 确认产业链全景与半导体链后点击图谱工具「缩小」；判定在 expect
+expect:
+  - note: 前置：产业链全景 Tab、半导体与集成电路、图谱已加载并记录缩小前基线
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const measureNodeRadius = async () => {
+        return page.evaluate(() => {
+          const wrap = document.querySelector('[data-frame-id="F-OV-01"] .industry-panorama-graph__canvas');
+          if (!wrap) throw new Error('graph canvas 容器缺失');
+          const canvases = Array.from(wrap.querySelectorAll('canvas'));
+          const canvas = canvases[1] || canvases[0];
+          if (!canvas) throw new Error('G6 canvas 缺失');
+          const cx = 80;
+          const cy = 380;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('canvas 2d 不可用');
+          const isBg = (r, g, b, a) => {
+            if (a < 24) return true;
+            return r > 238 && g > 245 && b > 248;
+          };
+          const center = ctx.getImageData(cx, cy, 1, 1).data;
+          if (isBg(center[0], center[1], center[2], center[3])) {
+            throw new Error('采样点未落在环节圆点上，请调整探针坐标');
+          }
+          let radius = 0;
+          for (let d = 1; d <= 120; d++) {
+            const p = ctx.getImageData(cx + d, cy, 1, 1).data;
+            if (isBg(p[0], p[1], p[2], p[3])) {
+              radius = d - 1;
+              break;
+            }
+            radius = d;
+          }
+          if (radius < 8) throw new Error('环节圆点半径过小或采样失败：' + radius);
+          return radius;
+        });
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainRaw = (await chain.innerText()).replace(/\s+/g, ' ').trim();
+      if (!/半导体与集成电路/.test(chainRaw)) {
+        throw new Error('前置：产业链应为「半导体与集成电路」，实际：' + chainRaw);
+      }
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：当前链无快照，无法验缩小');
+      }
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(1500);
+      const canvasShell = panel.locator('.industry-overview-canvas').first();
+      const boxBefore = await canvasShell.boundingBox();
+      if (!boxBefore || boxBefore.width < 100 || boxBefore.height < 100) {
+        throw new Error('前置：画布占位不可读');
+      }
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const titleBefore = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      const bodyBefore = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (!/产业链全景$/.test(titleBefore)) {
+        throw new Error('前置：全景标题异常：' + titleBefore);
+      }
+      if (!/\d+\s*个链位环节/.test(bodyBefore) || !/\d+\s*条关系/.test(bodyBefore)) {
+        throw new Error('前置：环节数说明未出现：' + bodyBefore.slice(0, 240));
+      }
+      const radiusBefore = await measureNodeRadius();
+      globalThis.__func02623 = {
+        boxBefore,
+        titleBefore,
+        bodyBefore,
+        radiusBefore,
+      };
+  - note: 步骤：点击图谱工具「缩小」
+    assert: |-
+      if (!globalThis.__func02623) throw new Error('前置：未记录缩小前基线');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const zoomOut = panel.locator('[aria-label="缩小"]').first();
+      await expect(zoomOut).toBeVisible({ timeout: 8000 });
+      await expect(zoomOut).toBeEnabled();
+      await zoomOut.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      globalThis.__func02623.clicked = true;
+  - note: 1、环节圆点比点按前更小
+    assert: |-
+      if (!globalThis.__func02623?.clicked) throw new Error('前置：未完成缩小点击');
+      const radiusAfter = await page.evaluate(() => {
+        const wrap = document.querySelector('[data-frame-id="F-OV-01"] .industry-panorama-graph__canvas');
+        const canvases = Array.from(wrap.querySelectorAll('canvas'));
+        const canvas = canvases[1] || canvases[0];
+        const ctx = canvas.getContext('2d');
+        const cx = 80;
+        const cy = 380;
+        const isBg = (r, g, b, a) => a < 24 || (r > 238 && g > 245 && b > 248);
+        let radius = 0;
+        for (let d = 1; d <= 120; d++) {
+          const p = ctx.getImageData(cx + d, cy, 1, 1).data;
+          if (isBg(p[0], p[1], p[2], p[3])) {
+            radius = d - 1;
+            break;
+          }
+          radius = d;
+        }
+        return radius;
+      });
+      const before = globalThis.__func02623.radiusBefore;
+      if (!(radiusAfter < before)) {
+        throw new Error('缩小后环节圆点应更小：前 r=' + before + ' 后 r=' + radiusAfter);
+      }
+  - note: 2、画布占位宽高与点按前相同
+    assert: |-
+      if (!globalThis.__func02623?.boxBefore) throw new Error('前置：未记录画布占位');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const boxAfter = await panel.locator('.industry-overview-canvas').first().boundingBox();
+      const b = globalThis.__func02623.boxBefore;
+      if (!boxAfter) throw new Error('缩小后画布占位不可读');
+      const dw = Math.abs(boxAfter.width - b.width);
+      const dh = Math.abs(boxAfter.height - b.height);
+      if (dw > 2 || dh > 2) {
+        throw new Error(
+          '画布占位变化过大：前 ' + b.width + 'x' + b.height + ' 后 ' + boxAfter.width + 'x' + boxAfter.height
+        );
+      }
+  - note: 3、全景标题与环节数说明与点按前相同
+    assert: |-
+      if (!globalThis.__func02623?.titleBefore) throw new Error('前置：未记录标题与说明');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const titleAfter = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      if (titleAfter !== globalThis.__func02623.titleBefore) {
+        throw new Error('缩小后标题变化：前「' + globalThis.__func02623.titleBefore + '」后「' + titleAfter + '」');
+      }
+      const bodyAfter = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (bodyAfter !== globalThis.__func02623.bodyBefore) {
+        throw new Error('缩小后环节数说明或面板文案变化');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；图谱工具 SharedMapChrome aria-label「缩小」（scout.json）。
+  环节圆点视觉半径用 G6 主 canvas (80,380) 像素探针（与 FUNC-02596 同锚点「集成电路设计」）；页面不提供缩放比例读数。
+  默认 boot 链「半导体与集成电路」。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

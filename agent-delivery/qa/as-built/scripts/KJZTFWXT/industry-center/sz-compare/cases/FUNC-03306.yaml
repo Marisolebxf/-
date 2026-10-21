@@ -1,0 +1,217 @@
+id: FUNC-03306
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03306
+priority: P0
+title: 当天同条件再次开始分析不新增任务
+story: US-CHAIN-SZ-01
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 当天已对「人工智能与应用」及上海市、北京市成功分析过
+locators:
+  tab_config: tab「深圳产业情况分析对比」
+  tab_records: tab「分析记录」
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 前置当天成功分析→记记录条数→同条件再点开始→验结果页且条数不变
+expect:
+  - note: 1、进入标题为「深圳产业情况分析对比结果」的页面
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const landConfig = async () => {
+        await dismissBasket();
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1000);
+        if (await bodyIs404() || !onTarget()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404 ' + page.url());
+        }
+        await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 12000 });
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (re.test(cur)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03306：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const benchmarkView = () => {
+        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      };
+      const pickBenchmark = async (cityRe) => {
+        const view = benchmarkView();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        const tagText = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (cityRe.test(tagText)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+        }
+        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03306：标杆无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const selectStandardConditions = async () => {
+        const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+        const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!/新一代信息技术/.test(clusterText)) {
+          await pickSelectOption('集群', /^新一代信息技术$/);
+        }
+        await pickSelectOption('产业', /^人工智能与应用$/);
+        await pickBenchmark(/^上海市$/);
+        await pickBenchmark(/^北京市$/);
+      };
+      const isResultPage = async () => {
+        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
+        return new RegExp(RESULT_TITLE).test(await main().innerText().catch(() => ''));
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const waitForResult = async () => {
+        let last = '';
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i < 6 ? 800 : 1500);
+          if (await isResultPage()) return;
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析结果已生成|已打开结果|今日已分析过相同条件|当天已分析/.test(last)) {
+            await openViewResultIfShown();
+            if (await isResultPage()) return;
+          }
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 8) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03306：开始分析后任务失败');
+          }
+          await openViewResultIfShown();
+        }
+        throw new Error('开始分析后未在超时内到达结果页：' + last.slice(0, 240));
+      };
+      const clickStartIfEnabled = async () => {
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeVisible({ timeout: 10000 });
+        if (await start.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：开始分析仍 disabled');
+        }
+        await start.click({ timeout: 15000 });
+      };
+      const readRecordCount = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
+        const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        if (m) return Number(m[1]);
+        const rows = page.locator('.arco-table-body tr.arco-table-tr');
+        const n = await rows.count();
+        if (n > 0) return n;
+        throw new Error('ENV-CHAIN-SZ-COMPARE-03306：分析记录无法读取条数');
+      };
+      const goConfigTab = async () => {
+        await page.getByRole('tab', { name: '深圳产业情况分析对比' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(700);
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      };
+      await landConfig();
+      await selectStandardConditions();
+      await clickStartIfEnabled();
+      await waitForResult();
+      if (!(await isResultPage())) throw new Error('前置：首次分析未到达结果页，无法满足当天已成功分析');
+      await goConfigTab();
+      const nBefore = await readRecordCount();
+      await goConfigTab();
+      await selectStandardConditions();
+      await clickStartIfEnabled();
+      await waitForResult();
+      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+      globalThis.__szcmp03306_nBefore = nBefore;
+  - note: 2、分析记录的任务条数与点击前相同
+    assert: |-
+      const nBefore = globalThis.__szcmp03306_nBefore;
+      if (typeof nBefore !== 'number') throw new Error('前置：未记录点击前条数');
+      const main = () => page.locator('main').first();
+      await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const m = t.match(/共\s*(\d+)\s*条/);
+      let nAfter = m ? Number(m[1]) : null;
+      if (nAfter == null) {
+        const rows = page.locator('.arco-table-body tr.arco-table-tr');
+        const n = await rows.count();
+        if (n > 0) nAfter = n;
+      }
+      if (nAfter == null) throw new Error('分析记录无法读取条数');
+      if (nAfter !== nBefore) {
+        throw new Error('当天同条件再次开始分析后条数变化：前=' + nBefore + ' 后=' + nAfter);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03306 当天复用：先确保沪京+人工智能与应用成功结果→记分析记录条数→同条件再点开始→结果页标题+条数不变。入口 route=entry-seed catalog_path。B 档零 allow_skip。

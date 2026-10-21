@@ -1,0 +1,189 @@
+id: FUNC-03304
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03304
+priority: P0
+title: 结果页综合判断列出市场、技术、链条三项
+story: US-CHAIN-SZ-02
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开成功结果页
+locators:
+  result_title: heading「深圳产业情况分析对比结果」
+  judgment_section: heading「产业化潜力与发展阶段综合判断」
+  judgment_block: '[aria-label="产业化潜力与发展阶段综合判断内容"]'
+  three_assess: '[aria-label="三评估"]'
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 选产业与双标杆→开始分析→读取「产业化潜力与发展阶段综合判断」；三项断言在 expect
+expect:
+  - note: 前置：从开始分析进入成功结果页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比 SPA404 @' + where + ' ' + page.url());
+        }
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03304：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const benchmarkView = () => {
+        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      };
+      const pickBenchmark = async (cityRe) => {
+        const view = benchmarkView();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+        }
+        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03304：标杆无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const isResultPage = async () => {
+        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
+        const t = await main().innerText().catch(() => '');
+        return new RegExp(RESULT_TITLE).test(t);
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const waitForResult = async () => {
+        let last = '';
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i < 6 ? 800 : 1500);
+          if (await isResultPage()) return;
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析结果已生成|已打开结果|今日已分析过相同条件/.test(last)) {
+            await openViewResultIfShown();
+            if (await isResultPage()) return;
+          }
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 8) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03304：开始分析后任务失败');
+          }
+          await openViewResultIfShown();
+        }
+        throw new Error('开始分析后未在超时内到达结果页：' + last.slice(0, 240));
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03304 ' + page.url());
+      }
+      await assertNotSpa404('landing');
+      await expect(page).toHaveURL(/workspace=comparison/);
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelectOption('集群', /^新一代信息技术$/);
+      }
+      await pickSelectOption('产业', /^人工智能与应用$/);
+      await pickBenchmark(/^上海市$/);
+      await pickBenchmark(/^北京市$/);
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      if (await start.isDisabled()) {
+        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：选齐后「开始分析」仍 disabled');
+      }
+      await start.click({ timeout: 15000 });
+      await waitForResult();
+      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+      globalThis.__func03304_onResult = true;
+  - note: 1、读取「产业化潜力与发展阶段综合判断」区块可见
+    assert: |-
+      if (!globalThis.__func03304_onResult) throw new Error('前置：未到达成功结果页');
+      const h3 = page.getByRole('heading', { name: '产业化潜力与发展阶段综合判断', level: 3 });
+      await expect(h3).toBeVisible({ timeout: 10000 });
+      const block = page.locator('[aria-label="产业化潜力与发展阶段综合判断内容"]');
+      await expect(block).toBeVisible({ timeout: 8000 });
+      globalThis.__func03304_block = block;
+  - note: 1、能看到「市场前景」「技术成熟度」「链条完整性」三项
+    assert: |-
+      const block = globalThis.__func03304_block || page.locator('[aria-label="产业化潜力与发展阶段综合判断内容"]');
+      const grid = block.locator('[aria-label="三评估"]');
+      await expect(grid).toBeVisible({ timeout: 8000 });
+      for (const label of ['市场前景', '技术成熟度', '链条完整性']) {
+        const card = grid.locator('.diagnosis-advice-card').filter({ hasText: label }).first();
+        if (!(await card.count())) {
+          throw new Error('综合判断未见「' + label + '」评估卡');
+        }
+        await expect(card).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03304 验 IndustryShenzhenResultBoard「产业化潜力与发展阶段综合判断」下 aria-label=三评估 三卡（市场前景/技术成熟度/链条完整性）；等级可为「暂无」但不缺项。入口 route=entry-seed catalog_path；与 03299 同路径进入结果页。

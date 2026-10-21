@@ -1,0 +1,135 @@
+id: FUNC-01729
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01729
+priority: P1
+title: 新增企业弹层内按名称搜索过滤列表
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 「新增企业」弹层已打开（assert 自含：页内选择器→新增）
+locators:
+  picker_open: button「选择分析企业」/「打开对比篮」/「前往对比篮选择企业」
+  add_modal: .arco-modal-title「新增企业」
+  name_search: placeholder「输入企业名称」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 页内打开选择器→新增→取首行名称片段搜索；过滤与弹层仍在 expect 判定
+expect:
+  - note: 1、列表只保留名称匹配的企业；2、弹层不关闭
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const gotoRoute = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      const clickPageOpenPicker = async () => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+      };
+      const openAddModal = async () => {
+        await clickPageOpenPicker();
+        const panel = page.locator('.system-compare-panel').last();
+        await expect(panel).toBeVisible({ timeout: 12000 });
+        const addBtn = panel.getByRole('button', { name: '新增', exact: true });
+        await expect(addBtn.first()).toBeVisible({ timeout: 10000 });
+        await addBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const modal = page.locator('.arco-modal:visible').filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) }).last();
+        await expect(modal).toBeVisible({ timeout: 15000 });
+        await modal.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+        return modal;
+      };
+      const readSeedFromModal = async (modal) => {
+        const joinBtn = modal.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(joinBtn).toBeVisible({ timeout: 30000 });
+        const seedName = ((await joinBtn.locator('xpath=ancestor::tr[1]').locator('td').first().innerText()) || '').trim();
+        if (!seedName) throw new Error('无法读取首行企业名称');
+        const countBefore = await modal.getByRole('button', { name: /^(加入对比篮|移出对比篮)$/, exact: true }).count();
+        return { seedName, countBefore };
+      };
+      const pickFragment = (name) => {
+        const s = String(name).replace(/\s+/g, '');
+        const core = s.replace(/(股份有限公司|有限责任公司|有限公司|集团)$/u, '');
+        const base = core.length >= 2 ? core : s;
+        if (base.length <= 3) return base;
+        return base.slice(0, Math.min(6, base.length));
+      };
+      await gotoRoute();
+      const modal = await openAddModal();
+      const search = modal.getByPlaceholder('输入企业名称');
+      await expect(search.first()).toBeVisible({ timeout: 8000 });
+      const { seedName, countBefore } = await readSeedFromModal(modal);
+      let fragment = pickFragment(seedName);
+      const doSearch = async (kw) => {
+        const inp = search.first();
+        await inp.click({ timeout: 8000 });
+        await inp.fill('');
+        await inp.pressSequentially(kw, { delay: 35 });
+        await page.waitForTimeout(1000);
+        await modal.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+        await page.waitForTimeout(500);
+      };
+      await doSearch(fragment);
+      const snap = await modal.evaluate((root) => {
+        const kw = root.querySelector('input')?.value?.trim() || '';
+        const names = [...root.querySelectorAll('tbody .arco-table-tr')].map((tr) => (tr.querySelector('td')?.textContent || '').trim()).filter(Boolean);
+        const empty = !!root.querySelector('.arco-empty');
+        const err = (root.textContent || '').includes('名单读取失败');
+        return { kw, names, empty, err };
+      });
+      let namesAfter = snap.names;
+      if (!namesAfter.length && snap.empty && !snap.err) {
+        fragment = seedName.length > 8 ? seedName.slice(0, 8) : seedName;
+        await doSearch(fragment);
+        const snap2 = await modal.evaluate((root) => {
+          const names = [...root.querySelectorAll('tbody .arco-table-tr')].map((tr) => (tr.querySelector('td')?.textContent || '').trim()).filter(Boolean);
+          return { names, err: (root.textContent || '').includes('名单读取失败') };
+        });
+        namesAfter = snap2.names;
+        if (snap2.err) throw new Error('搜索后接口失败（名单读取失败）');
+      }
+      if (snap.err) throw new Error('搜索后接口失败（名单读取失败）');
+      if (!namesAfter.length) throw new Error('搜索「' + fragment + '」后无匹配行');
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal.locator('.arco-modal-title').filter({ hasText: '新增企业' }).first()).toBeVisible();
+      if (namesAfter.length > countBefore) {
+        throw new Error('搜索后行数不应多于初始（前 ' + countBefore + ' 后 ' + namesAfter.length + '）');
+      }
+      const fragLower = fragment.toLowerCase();
+      const seedLower = seedName.toLowerCase();
+      for (const nm of namesAfter) {
+        const ok = nm.toLowerCase().includes(fragLower) || nm.toLowerCase().includes(seedLower) || seedLower.includes(nm.toLowerCase());
+        if (!ok) throw new Error('行「' + nm + '」与搜索片段「' + fragment + '」/种子「' + seedName + '」不匹配');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 01729；打开路径对齐 01724（页内选择器→「新增」）。首行种子名经「加入对比篮」行读取；pressSequentially 写入「输入企业名称」触发智能检索 debounce。tbody 行名与片段/种子名匹配判定；弹层标题仍「新增企业」。登录与关内部评审由 runner 会话前置。B 档。

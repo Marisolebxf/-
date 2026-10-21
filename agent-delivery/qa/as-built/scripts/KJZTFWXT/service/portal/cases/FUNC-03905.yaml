@@ -1,0 +1,79 @@
+id: FUNC-03905
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03905
+priority: P0
+tier: B
+title: 重点机构卡片展示名称名次类型城市技术力与查看详情
+story: US-SVC-PT-06
+entry_id: svc-portal
+preconditions:
+  - 已打开深圳产业服务介绍（runner 深链 /service-portal/shenzhen）
+locators:
+  section_heading: heading「重点产业服务机构」
+  keyorg_card: button.svc-portal-keyorg-card
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 滚动到「重点产业服务机构」板块
+expect:
+  - note: 1、卡片含机构名、名次、类型与城市、技术力
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/shenzhen SPA404，无法验重点机构卡片');
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      const tab = page.getByRole('tab', { name: '深圳产业服务介绍', exact: true });
+      const aria = await tab.getAttribute('aria-selected');
+      const cls = await tab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('arco-tabs-tab-active')) {
+        await tab.click();
+        await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 12000 });
+      }
+      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('button.svc-portal-keyorg-card');
+      const n = await cards.count();
+      if (n === 0) {
+        const empty = await page.getByText(/暂无重点机构/).first().isVisible().catch(() => false);
+        if (empty) {
+          throw new Error('ENV-SVC-PORTAL-KEY-ORG-EMPTY：重点机构墙诚实空，无法验卡片构成（Q060）');
+        }
+        throw new Error('重点产业服务机构板块无卡片且无诚实空文案');
+      }
+      const card = cards.first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const name = ((await card.locator('.svc-portal-keyorg-card__name').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!name) throw new Error('首张卡片缺少机构名');
+      const rankText = ((await card.locator('.svc-portal-rank').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/No\.\d+/.test(rankText) && rankText !== '—') {
+        throw new Error('首张卡片名次未呈现 No.n 或占位：' + rankText);
+      }
+      const metaLine = ((await card.locator('.svc-portal-keyorg-card__meta > span').first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!metaLine || metaLine === '—') {
+        throw new Error('首张卡片缺少类型与城市/meta：' + metaLine);
+      }
+      const scoreText = ((await card.locator('.svc-portal-keyorg-card__score').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/技术力/.test(scoreText)) {
+        throw new Error('首张卡片未展示技术力：' + scoreText);
+      }
+  - note: 2、卡片含「查看详情」
+    assert: |-
+      const card = page.locator('button.svc-portal-keyorg-card').first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const linkText = ((await card.locator('.svc-portal-keyorg-card__link').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/查看详情/.test(linkText)) {
+        throw new Error('首张卡片未含「查看详情」：' + linkText);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例册 SVCPORTAL 预期②为「查看详情」；现场链接文案含括号四板块（SvcPortalKeyOrgSection.vue），以 /查看详情/ 匹配。
+  类型与城市在 .svc-portal-keyorg-card__meta 首行（serviceTypeLabel · city/province）。goto 用子路由 /service-portal/shenzhen，与用例路由列一致；catalog_path 仍为 /service-portal。
+  墙诚实空 → ENV-SVC-PORTAL-KEY-ORG-EMPTY（blocked）。edu 2026-10-21 机跑 /service-portal/shenzhen SPA404 → ENV-EDU-TTS-SVCZ-404-001→ledger blocked（同 03904/03906）。

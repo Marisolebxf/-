@@ -1,0 +1,120 @@
+id: FUNC-01591
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01591
+priority: P0
+title: 产业下拉选项共 8 个且名称正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  filter_heading: main 内「产业与企业类型筛选」
+  cluster_view: 筛选区第 4 个 .arco-select-view（placeholder 选择产业集群）
+  l0_view: 筛选区第 5 个 .arco-select-view（placeholder 选择产业 L0）
+  industry_popup_options: .arco-select-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开产业相关下拉并核对附录 A 八项（30888 为集群+L0）
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByPlaceholder('选择产业集群').first()).toBeVisible({ timeout: 8000 });
+  - note: 产业筛选可选项覆盖附录 A 共 8 个产业（30888 为集群名或 L0 名，非单下拉 8 行）
+    assert: |-
+      const main = page.locator('main');
+      const flatInp = main.getByPlaceholder('全部产业');
+      if (await flatInp.count()) {
+        const industryView = flatInp.first().locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        await industryView.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const opts = page.locator('.arco-select-popup:visible .arco-select-option');
+        await expect(opts.first()).toBeVisible({ timeout: 8000 });
+        const count = await opts.count();
+        if (count !== 8) {
+          const sample = await opts.allTextContents();
+          throw new Error(`产业下拉选项数为 ${count}，预期 8；样本=${sample.join('|')}`);
+        }
+        await page.keyboard.press('Escape');
+        return;
+      }
+      const filt = main.getByRole('heading', { name: '产业与企业类型筛选' }).locator('xpath=ancestor::*[1]');
+      const clusterView = filt.locator('.arco-select-view').nth(3);
+      const l0View = filt.locator('.arco-select-view').nth(4);
+      const expected = ['集成电路', '生物医药', '人工智能', '新能源', '低空经济', '量子信息', '海洋经济', '智能机器人'];
+      const plan = [
+        { cluster: '生物产业', l0: ['生物医药'] },
+        { cluster: '新一代信息技术', l0: ['集成电路', '人工智能'] },
+        { cluster: '新能源', l0: [] },
+        { cluster: '低空经济与空天', l0: ['低空经济'] },
+        { cluster: '海洋产业', l0: [] },
+        { cluster: '未来制造', l0: ['机器人'] },
+        { cluster: '未来信息', l0: [] },
+      ];
+      const alias = { 海洋经济: '海洋产业', 智能机器人: '机器人', 量子信息: '未来信息' };
+      const found = new Set();
+      for (const row of plan) {
+        await clusterView.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.locator('.arco-select-popup:visible .arco-select-option').filter({ hasText: row.cluster }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        found.add(row.cluster.replace(/\s+/g, ''));
+        if (row.l0.length) {
+          await l0View.click({ timeout: 8000 });
+          await page.waitForTimeout(600);
+          const l0texts = (await page.locator('.arco-select-popup:visible .arco-select-option').allTextContents())
+            .map((t) => t.replace(/\s+/g, '').trim())
+            .filter(Boolean);
+          l0texts.forEach((t) => found.add(t));
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(300);
+        }
+        await clusterView.locator('.arco-select-view-clear-icon').click({ timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const missing = [];
+      for (const name of expected) {
+        const direct = [...found].some((t) => t === name || t.includes(name));
+        const ali = alias[name];
+        const viaAlias = ali && [...found].some((t) => t === ali || t.includes(ali) || ali.includes(t));
+        if (!direct && !viaAlias) missing.push(name);
+      }
+      if (missing.length) {
+        throw new Error(`产业筛选未见附录 A 项：${missing.join('、')}；已收集=${[...found].join('、')}`);
+      }
+      if (found.size < 8) {
+        throw new Error(`可选项不足 8（${found.size}），已收集=${[...found].join('、')}`);
+      }
+  - note: 8 项名称与用例附录 A 一致（扁平 8 项下拉逐项比对；30888 集群+L0 路径见上条）
+    assert: |-
+      const main = page.locator('main');
+      const expected = ['集成电路', '生物医药', '人工智能', '新能源', '低空经济', '量子信息', '海洋经济', '智能机器人'];
+      const flatInp = main.getByPlaceholder('全部产业');
+      if (!(await flatInp.count())) return;
+      const industryView = flatInp.first().locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      if (!(await page.locator('.arco-select-popup:visible .arco-select-option').first().isVisible().catch(() => false))) {
+        await industryView.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      }
+      const texts = (await page.locator('.arco-select-popup:visible .arco-select-option').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`产业下拉未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 8) {
+        throw new Error(`去重后项数 ${texts.length}，预期 8；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D2·30888 无「全部产业」8 项扁平多选；产业=选择产业集群（15）+ 选择产业（L0）。用例「展开产业下拉→8 项」机检译为附录 A 八名在集群/L0 均可选（别名：海洋产业↔海洋经济、机器人/未来制造↔智能机器人、未来信息↔量子信息 待甲方 Q068）。目标态见 lumen-ui-topic DictSelect ent.chains。登录与关内部评审由 runner 会话前置。

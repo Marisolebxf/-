@@ -1,0 +1,92 @@
+id: FUNC-02725
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02725
+priority: P1
+title: 检索结果产业标签下拉无可选项显示暂无数据
+entry_id: chain-search
+tier: B
+preconditions:
+  - 已搜出检索结果
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  result_tools: .industry-search-result-tools
+  refine_tags: 结果内筛选区 placeholder「产业标签」的 Arco Select
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索出结果后展开「产业标签」；空态在 expect 判定
+expect:
+  - note: 前置：已搜出检索结果（智能检索「光刻」）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.locator('.industry-search-result-tools')).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const text = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(text) && /共\s*0\s*条/.test(text)) {
+        throw new Error('前置：光刻检索为空，无法验结果内产业标签');
+      }
+      let n = null;
+      const m1 = text.match(/共\s*(\d+)\s*条/);
+      const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
+      if (m1) n = parseInt(m1[1], 10);
+      else if (m2) n = parseInt(m2[1], 10);
+      if (n === null || Number.isNaN(n) || n < 1) {
+        throw new Error('前置：未能解析大于 0 的结果条数；片段=' + text.slice(0, 160));
+      }
+      globalThis.__func02725_hasResults = true;
+  - note: 1、展开「产业标签」后下拉显示「暂无数据」（无可选项）
+    assert: |-
+      if (!globalThis.__func02725_hasResults) throw new Error('前置：未搜出检索结果');
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const tools = region.locator('.industry-search-result-tools');
+      await expect(tools).toBeVisible({ timeout: 8000 });
+      const tagSelect = tools.locator('.arco-select:has(input[placeholder="产业标签"])').first();
+      await expect(tagSelect).toBeVisible({ timeout: 8000 });
+      await tagSelect.scrollIntoViewIfNeeded();
+      await tagSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const popText = ((await pop.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const emptyOk = /暂无数据/.test(popText);
+      if (!emptyOk) {
+        throw new Error('产业标签下拉应显示「暂无数据」，实际 popup=' + popText.slice(0, 120));
+      }
+      if (count > 0) {
+        const labels = [];
+        for (let i = 0; i < count; i++) {
+          labels.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        throw new Error('产业标签下拉应无可选项，实际 count=' + count + ' labels=' + JSON.stringify(labels));
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索「光刻」（testdata smart_search.keyword_primary）。
+  结果内产业标签=ResultToolbar refine tags（placeholder「产业标签」）；选项来自 buildIndustrySearchConfig 对 record.tags 去重，
+  当前 edu tts/svcz 数据 tags 为空故下拉 honest 空态「暂无数据」（对齐用例 02725 / coverage-fp 无对应功能点）。
+  选择器 scoped 在 region 内 .industry-search-result-tools，Arco Select 点法对齐 FUNC-02708（P7）。登录与关内部评审由 runner 前置。B 档零 allow_skip。

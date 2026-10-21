@@ -1,0 +1,144 @@
+id: FUNC-00748
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00748
+priority: P1
+title: 分析记录与对比 Tab 往返后产业条件保持
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 系统可访问；已登录 admin
+  - 产业已选「人工智能与应用」
+locators:
+  tab_cmp: '[role=tab][data-tab-key=comparison]'
+  tab_rec: '[role=tab][data-tab-key=records]'
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 选产业「人工智能与应用」→切分析记录→切回对比；互斥与条件保持分两层 expect
+expect:
+  - note: 1、两页签内容不叠在一起
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const INDUSTRY = '人工智能与应用';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onCompareTab = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-00748：产业选项不可用 ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const readIndustry = async () => {
+        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+        return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onCompareTab() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法验 Tab 往返 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelectOption('集群', /^新一代信息技术$/);
+      }
+      await pickSelectOption('产业', /^人工智能与应用$/);
+      const picked = await readIndustry();
+      if (!picked.includes(INDUSTRY)) {
+        throw new Error('前置：产业未选「' + INDUSTRY + '」，现场=' + picked);
+      }
+      globalThis.__func00748_industry = picked;
+      const cmpTab = page.locator('[role=tab][data-tab-key="comparison"]');
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(cmpTab).toBeVisible({ timeout: 8000 });
+      await expect(recTab).toBeVisible({ timeout: 8000 });
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+      const industryOnRecords = page.locator('.arco-select-view[aria-label="产业"]');
+      if (await industryOnRecords.count() && (await industryOnRecords.first().isVisible().catch(() => false))) {
+        throw new Error('分析记录 Tab 下仍可见产业下拉，与记录区叠加');
+      }
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toHaveCount(0);
+      await cmpTab.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await expect(cmpTab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('.arco-select-view[aria-label="产业"]').first()).toBeVisible({ timeout: 8000 });
+      if (await page.getByText('任务状态').first().isVisible().catch(() => false)) {
+        throw new Error('对比 Tab 下仍可见分析记录筛选，内容叠加');
+      }
+  - note: 2、切回后产业仍为「人工智能与应用」
+    assert: |-
+      const INDUSTRY = '人工智能与应用';
+      const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(view).toBeVisible({ timeout: 8000 });
+      const text = ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!text.includes(INDUSTRY)) {
+        throw new Error('切回后产业丢失，期望含「' + INDUSTRY + '」，现场=' + text);
+      }
+      const before = globalThis.__func00748_industry;
+      if (before && !text.includes(before.replace(/\s+/g, ' ').trim())) {
+        throw new Error('切回后产业与切换前不一致：前=' + before + ' 后=' + text);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: Tab 用 data-tab-key=comparison/records（同 00733）；互斥=记录 Tab 无产业下拉/无分析配置标题，对比 Tab 无任务状态筛选。产业前置选新一代信息技术集群下「人工智能与应用」。入口 catalog_path=entry-seed。

@@ -1,0 +1,221 @@
+id: FUNC-02318
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02318
+priority: P1
+title: 选择分析企业浮层行上移除立即离开篮内
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 选择分析企业的篮内至少有 1 家企业（assert 自含打开浮层）
+locators:
+  overlay_title: 选择分析企业
+  remove_btn: button「移除」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 打开选择分析企业后对一行点「移除」；无确认、名单与计数在 expect 判定
+expect:
+  - note: 1、无二次确认
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const visiblePanel = () => page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseNames = async (scope) => {
+        const names = [];
+        const cards = scope.locator('.ent-compare-item-card');
+        const cardN = await cards.count();
+        for (let i = 0; i < cardN; i++) {
+          const card = cards.nth(i);
+          const nameEl = card.locator('.ent-compare-item-card__name');
+          const name = (await nameEl.count())
+            ? (await nameEl.first().innerText()).trim()
+            : (await card.innerText()).split('\n')[0].trim();
+          if (name) names.push(name);
+        }
+        if (names.length) return names;
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        for (let i = 0; i < selN; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const overlayEnterpriseCount = async (scope) => {
+        const txt = (await scope.innerText()).replace(/\s+/g, ' ');
+        const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        return (await listEnterpriseNames(scope)).length;
+      };
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      const basketEntCount = async () => {
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        return entM ? parseInt(entM[1], 10) : 0;
+      };
+      const seedBasketFromSearchPage = async (min) => {
+        const searchInput = page
+          .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
+          .or(page.getByPlaceholder(/企业名|产业|资质/))
+          .first();
+        if (await searchInput.isVisible().catch(() => false)) {
+          await searchInput.fill('华为');
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
+          if (await searchBtn.isVisible().catch(() => false)) {
+            await searchBtn.click({ timeout: 8000 });
+            await page.waitForTimeout(1500);
+          }
+        }
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        let n = await basketEntCount();
+        for (let round = 0; round < 5 && n < min; round++) {
+          const btnN = await addBtns.count();
+          let clicked = 0;
+          for (let i = 0; i < btnN && n < min; i++) {
+            const btn = addBtns.nth(i);
+            if (!(await btn.isVisible().catch(() => false))) continue;
+            await btn.click({ timeout: 8000 });
+            await page.waitForTimeout(700);
+            clicked++;
+            n = await basketEntCount();
+          }
+          if (!clicked) break;
+        }
+        return (await basketEntCount()) >= min;
+      };
+      const ensureBasketEnterprises = async (min) => {
+        if ((await basketEntCount()) >= min) return;
+        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        if (await seedBasketFromSearchPage(min)) return;
+        throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      };
+      const openPicker = async () => {
+        const adjustBtn = page.getByRole('button', { name: '返回对比篮调整对象' });
+        const pickBtn = page.getByRole('button', { name: '选择分析企业' });
+        const emptyCta = page.getByRole('button', { name: '前往对比篮选择企业' });
+        if (await adjustBtn.count() && (await adjustBtn.first().isVisible().catch(() => false))) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await pickBtn.count() && (await pickBtn.first().isVisible().catch(() => false))) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else {
+          await expect(emptyCta.first()).toBeVisible({ timeout: 8000 });
+          await emptyCta.first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      };
+      const openPickerDeepLink = async () => {
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(toUrl(`${route}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 10000 });
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await ensureBasketEnterprises(1);
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await openPicker();
+      let panel = visiblePanel();
+      if (!(await panel.count()) || !(await panel.isVisible().catch(() => false))) {
+        await openPickerDeepLink();
+        panel = visiblePanel();
+      }
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const basketTab = panel.getByRole('tab', { name: '篮内企业' }).or(panel.getByText('篮内企业', { exact: true }));
+      if (await basketTab.count() && (await basketTab.first().isVisible().catch(() => false))) {
+        await basketTab.first().click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const beforeNames = await listEnterpriseNames(panel);
+      if (beforeNames.length < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      globalThis.__func02318_beforeCount = await overlayEnterpriseCount(panel);
+      globalThis.__func02318_target = beforeNames[0];
+      const targetName = beforeNames[0];
+      const removeBtn = panel.locator('.ent-compare-item-card').filter({ hasText: targetName }).getByRole('button', { name: '移除', exact: true }).first();
+      const rm = (await removeBtn.count()) ? removeBtn : panel.getByRole('button', { name: '移除', exact: true }).first();
+      await expect(rm).toBeVisible({ timeout: 8000 });
+      await rm.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const confirmModal = page.locator('.arco-modal:visible').filter({ hasText: /移除|删除|确认|清空对比篮/ });
+      if (await confirmModal.count() && (await confirmModal.first().isVisible().catch(() => false))) {
+        throw new Error('点「移除」不应弹出二次确认框');
+      }
+      globalThis.__func02318_removed = true;
+  - note: 2、该企业从篮内消失
+    assert: |-
+      if (!globalThis.__func02318_removed) throw new Error('前置：未完成移除点击');
+      const targetName = globalThis.__func02318_target;
+      if (!targetName) throw new Error('前置：待移除企业名未就绪');
+      const panel = page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const cards = panel.locator('.ent-compare-item-card');
+      const cardN = await cards.count();
+      for (let i = 0; i < cardN; i++) {
+        const card = cards.nth(i);
+        const nameEl = card.locator('.ent-compare-item-card__name');
+        const name = (await nameEl.count())
+          ? (await nameEl.first().innerText()).trim()
+          : (await card.innerText()).split('\n')[0].trim();
+        if (name && (name === targetName || name.includes(targetName) || targetName.includes(name))) {
+          throw new Error('移除后该企业仍在篮内卡片：' + targetName);
+        }
+      }
+      const sels = panel.locator('[aria-label^="选择 "]');
+      for (let i = 0, c = await sels.count(); i < c; i++) {
+        const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+        const m = aria.match(/^选择\s+(.+)$/);
+        if (m && m[1] && (m[1].trim() === targetName || m[1].includes(targetName))) {
+          throw new Error('移除后该企业仍在勾选行：' + targetName);
+        }
+      }
+      const leakRm = panel.locator('.ent-compare-item-card').filter({ hasText: targetName });
+      if (await leakRm.count() && (await leakRm.first().isVisible().catch(() => false))) {
+        throw new Error('篮内仍可见该企业行：' + targetName);
+      }
+  - note: 3、企业计数减少
+    assert: |-
+      if (!globalThis.__func02318_removed) throw new Error('前置：未完成移除点击');
+      const beforeCount = globalThis.__func02318_beforeCount;
+      if (typeof beforeCount !== 'number' || beforeCount < 1) throw new Error('前置：移除前计数未就绪');
+      const panel = page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const txt = (await panel.innerText()).replace(/\s+/g, ' ');
+      const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+      let afterCount = m ? parseInt(m[1], 10) : null;
+      if (afterCount === null) {
+        const cards = panel.locator('.ent-compare-item-card');
+        let selVis = 0;
+        const sels = panel.locator('[aria-label^="选择 "]');
+        for (let i = 0, c = await sels.count(); i < c; i++) {
+          if (await sels.nth(i).isVisible().catch(() => false)) selVis++;
+        }
+        afterCount = (await cards.count()) || selVis;
+      }
+      if (afterCount >= beforeCount) {
+        throw new Error(`企业计数应减少（前 ${beforeCount} 后 ${afterCount}，浮层片段：${txt.slice(0, 120)}）`);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。前置=篮内≥1（/enterprise/enterprise-search 检索入篮 + picker 深链，对齐 FUNC-02315）并打开「选择分析企业」。步骤=篮内企业 Tab 下行内「移除」，无 Modal 二次确认（对齐 EVALTECH 01812 / KEYDOM 01720）。机检=名单不含被移除企业 + 浮层「企业 N/50」计数减少。仍无法入篮→ENV-SUPPLY-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

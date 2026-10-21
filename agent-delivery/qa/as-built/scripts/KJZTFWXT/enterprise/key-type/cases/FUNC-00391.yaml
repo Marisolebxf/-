@@ -1,0 +1,89 @@
+id: FUNC-00391
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00391
+priority: P0
+title: 关闭企业清单后仍在看板且筛选保持
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单抽屉已打开
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer_close: .arco-drawer-close-btn
+  filter_section: 产业与企业类型筛选
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 进入类型分析页、打开企业清单抽屉后点关闭；判定在 expect 内
+expect:
+  - note: 1、企业清单关闭
+    assert: |-
+      const closeBasket = page.locator('[aria-label="关闭对比篮"]');
+      if (await closeBasket.count()) {
+        const vis = await closeBasket.first().isVisible().catch(() => false);
+        if (vis) { await closeBasket.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await page.waitForTimeout(400);
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const regionInp = main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]');
+      const casc = regionInp.locator('xpath=ancestor::*[contains(@class,"cascader")][1]');
+      const regionTitle = (await casc.count()) ? ((await casc.first().getAttribute('title')) || '') : '';
+      const timeBlock = await main.getByText('时间', { exact: true }).first().evaluate((el) => {
+        let n = el.parentElement;
+        for (let i = 0; i < 6 && n; i++) {
+          const t = n.innerText || '';
+          if (t.includes('近3年') || /\d{4}/.test(t)) return t.replace(/\s+/g, ' ');
+          n = n.parentElement;
+        }
+        return '';
+      });
+      const industryVal = await main.getByPlaceholder('选择产业集群').first().inputValue();
+      const typeRow = main.getByText('企业类型', { exact: true }).first().locator('xpath=ancestor::div[1]');
+      const typeVal = await typeRow.getByPlaceholder('全部').first().inputValue();
+      await page.evaluate((s) => { window.__qa391Filter = s; }, { regionTitle, timeBlock, industryVal, typeVal });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      await page.locator('.arco-drawer:visible .arco-drawer-close-btn, .arco-drawer:visible .arco-icon-close').first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(page.locator('.arco-drawer')).toBeHidden({ timeout: 8000 });
+  - note: 2、仍在类型分析页
+    assert: |-
+      await expect(page).toHaveURL(/key-enterprise-analysis/);
+      await expect(page.locator('main').getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: /查看.+清单/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、筛选条件保持
+    assert: |-
+      const snap = await page.evaluate(() => window.__qa391Filter);
+      if (!snap) throw new Error('缺少关抽屉前筛选快照');
+      const main = page.locator('main');
+      await expect(main.getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      const regionInp = main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]');
+      const casc = regionInp.locator('xpath=ancestor::*[contains(@class,"cascader")][1]');
+      const regionTitle = (await casc.count()) ? ((await casc.first().getAttribute('title')) || '') : '';
+      const timeBlock = await main.getByText('时间', { exact: true }).first().evaluate((el) => {
+        let n = el.parentElement;
+        for (let i = 0; i < 6 && n; i++) {
+          const t = n.innerText || '';
+          if (t.includes('近3年') || /\d{4}/.test(t)) return t.replace(/\s+/g, ' ');
+          n = n.parentElement;
+        }
+        return '';
+      });
+      const industryVal = await main.getByPlaceholder('选择产业集群').first().inputValue();
+      const typeRow = main.getByText('企业类型', { exact: true }).first().locator('xpath=ancestor::div[1]');
+      const typeVal = await typeRow.getByPlaceholder('全部').first().inputValue();
+      const now = { regionTitle, timeBlock, industryVal, typeVal };
+      if (JSON.stringify(now) !== JSON.stringify(snap)) {
+        throw new Error('关抽屉后筛选变化 ' + JSON.stringify(snap) + ' -> ' + JSON.stringify(now));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 00391 主流程-抽屉关闭恢复；抽屉限定 .arco-drawer。30888 经侧栏进类型分析（catalog 深链 /enterprise/... 404）。登录与关内部评审由 runner 会话前置。

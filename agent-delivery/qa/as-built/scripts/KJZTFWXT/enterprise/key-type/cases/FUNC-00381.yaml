@@ -1,0 +1,65 @@
+id: FUNC-00381
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00381
+priority: P0
+title: 类型与区域分析三张指标卡名称与单位正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  section: heading「产业与企业类型筛选」（现场承载三卡区；用例册「类型与区域分析」）
+  card1: 匹配企业数（单位 家）
+  card2: 覆盖企业类型数（单位 类）
+  card3: 覆盖区域数（单位 个）
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏 link 进入类型分析页；三卡名称、顺序与单位在 expect 内判定
+expect:
+  - note: 从侧栏进入重点企业类型分析后，区块标题为「类型与区域分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      await expect(kpiSection).toBeVisible({ timeout: 8000 });
+      await expect(kpiSection.getByRole('heading', { name: '产业与企业类型筛选' })).toBeVisible({ timeout: 8000 });
+  - note: 三卡依次为匹配企业数、覆盖企业类型数、覆盖区域数（同排左→右）
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      const names = ['匹配企业数', '覆盖企业类型数', '覆盖区域数'];
+      const boxes = [];
+      for (const n of names) {
+        const loc = kpiSection.getByText(n, { exact: true }).first();
+        await expect(loc).toBeVisible({ timeout: 8000 });
+        const b = await loc.boundingBox();
+        if (!b) throw new Error('无 boundingBox: ' + n);
+        boxes.push({ n, x: b.x });
+      }
+      for (let i = 1; i < boxes.length; i++) {
+        if (!(boxes[i].x > boxes[i - 1].x + 2)) {
+          throw new Error('三卡顺序非左→右: ' + JSON.stringify(boxes));
+        }
+      }
+  - note: 三卡单位依次为家、类、个（数值位存在即可，不钉死家数）
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      const txt = ((await kpiSection.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/匹配企业数[\s\S]*?\d+[\s\S]*?家/.test(txt)) {
+        throw new Error('匹配企业数缺数值或单位「家」: ' + txt.slice(0, 240));
+      }
+      if (!/覆盖企业类型数[\s\S]*?\d+[\s\S]*?类/.test(txt)) {
+        throw new Error('覆盖企业类型数缺数值或单位「类」');
+      }
+      if (!/覆盖区域数[\s\S]*?\d+[\s\S]*?个/.test(txt)) {
+        throw new Error('覆盖区域数缺数值或单位「个」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 侧栏为 link「重点企业类型分析」（非 menuitem）；路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type。三卡区 H2 现场「产业与企业类型筛选」（用例册「类型与区域分析」）。登录与关内部评审由 runner 会话前置。

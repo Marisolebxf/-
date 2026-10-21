@@ -1,0 +1,81 @@
+id: FUNC-02313
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02313
+priority: P1
+title: 关系范围三项全部取消后开始分析不可点
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已回填对象
+  - 供应商、客户、合作伙伴原本已勾选
+locators:
+  options: [供应商, 客户, 合作伙伴]
+  start: 开始分析
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 取消供应商、客户、合作伙伴三复选；禁用态在 expect
+expect:
+  - note: 「开始分析」不可点
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const opts = ['供应商', '客户', '合作伙伴'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensureFilled = async () => {
+        if (await page.getByText(/来自对比篮/).count()) return;
+        await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+        await sels.first().click();
+        await page.waitForTimeout(400);
+        await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+        await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      const toggleOffIfChecked = async (name) => {
+        const box = page.locator('main .arco-checkbox').filter({ hasText: name }).first();
+        await expect(box).toBeVisible({ timeout: 8000 });
+        const cls = (await box.getAttribute('class')) || '';
+        if (/arco-checkbox-checked/.test(cls)) {
+          await box.click();
+          await page.waitForTimeout(350);
+        }
+        const cls2 = (await box.getAttribute('class')) || '';
+        if (/arco-checkbox-checked/.test(cls2)) throw new Error(name + ' 取消后仍为勾选');
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await ensureFilled();
+      for (const n of opts) {
+        const box = page.locator('main .arco-checkbox').filter({ hasText: n }).first();
+        const cls = (await box.getAttribute('class')) || '';
+        if (!/arco-checkbox-checked/.test(cls)) throw new Error('前置：' + n + ' 默认未勾选');
+      }
+      for (const n of opts) {
+        await toggleOffIfChecked(n);
+      }
+      await page.waitForTimeout(400);
+      const start = page.getByRole('button', { name: '开始分析' });
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。前置=对比篮回填 1 家且三复选默认勾选。步骤=依次取消供应商/客户/合作伙伴。机检=「开始分析」arco disabled（非点击拦截）。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001。登录与关评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,117 @@
+id: FUNC-01830
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01830
+priority: P1
+title: 未付费时报告页「导出」禁用且旁有「付费」
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已打开技术力评估 HTML 报告（assert 自含：最近评估→查看 HTML 报告，同 FUNC-01825）
+  - 当前账号未开通报告导出付费权益（30888 admin 默认未付费）
+locators:
+  report_title: 技术力评估报告
+  export_locked: '[data-report-export-locked]'
+  paid_badge: '[data-paid-badge="required"]'
+  export_btn: '[data-report-export-locked] button[data-report-download]'
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 打开只读报告后点「导出」；禁用态、停留报告页、无下载在 expect 判定
+expect:
+  - note: 1、「导出」为禁用且旁有「付费」；2、页面仍为「技术力评估报告」；3、点击后无下载且仍停留在报告页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const main = () => page.locator('main.app-main').first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const reportReady = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        if (!/只读报告/.test(t) || !/view=report/.test(page.url())) return false;
+        return /技术力评估报告/.test(t) || /报告目录/.test(t);
+      };
+      const waitReportBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await reportReady()) return true;
+          await page.waitForTimeout(800);
+        }
+        return await reportReady();
+      };
+      const openReportFromHistory = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const restores = main().getByRole('button', { name: '恢复结果' });
+        const n = await restores.count();
+        for (let i = 0; i < n; i++) {
+          const restore = restores.nth(i);
+          if (!(await restore.isVisible().catch(() => false))) continue;
+          const row = restore.locator('xpath=ancestor::tr[1]');
+          const htmlBtn = row.getByRole('button', { name: /查看\s*HTML\s*报告/ }).first();
+          if (!(await htmlBtn.count())) continue;
+          if (!(await htmlBtn.isVisible().catch(() => false))) continue;
+          if (!(await htmlBtn.isEnabled().catch(() => false))) continue;
+          await htmlBtn.scrollIntoViewIfNeeded().catch(() => {});
+          await htmlBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+          const tNav = Date.now();
+          while (Date.now() - tNav < 30000 && !/view=report/.test(page.url())) {
+            await page.waitForTimeout(500);
+          }
+          if (/view=report/.test(page.url()) && (await waitReportBody(90000))) return;
+        }
+        const attrBtn = main().locator('[data-eval-history-open-html-report]:not(.arco-btn-disabled)').first();
+        if (await attrBtn.count() && await attrBtn.isVisible().catch(() => false) && await attrBtn.isEnabled().catch(() => false)) {
+          await attrBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+          if (/view=report/.test(page.url()) && (await waitReportBody(90000))) return;
+        }
+        throw new Error('最近评估无可打开 HTML 报告（ticket=ENV-EVAL-TECH-HISTORY-001）');
+      };
+      await openReportFromHistory();
+      await expect(page.getByText('企业评估 · 只读报告').first()).toBeVisible({ timeout: 10000 });
+      const reportHeading = page.getByText(/技术力评估报告|技术力评估\s*·/).first();
+      const reportToc = page.getByText(/报告目录/).first();
+      if (!(await reportHeading.isVisible().catch(() => false)) && !(await reportToc.isVisible().catch(() => false))) {
+        throw new Error('报告页未见「技术力评估报告」标题或「报告目录」（仍在报告壳？url=' + page.url() + '）');
+      }
+      const locked = page.locator('[data-report-export-locked]').first();
+      await expect(locked).toBeVisible({ timeout: 8000 });
+      const paidTag = locked.locator('[data-paid-badge="required"]');
+      await expect(paidTag).toBeVisible({ timeout: 5000 });
+      await expect(paidTag).toContainText('付费');
+      const exportBtn = locked.locator('button[data-report-download]').first();
+      await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      await expect(exportBtn).toBeDisabled();
+      const urlBefore = page.url();
+      let downloadFired = false;
+      const onDl = () => { downloadFired = true; };
+      page.once('download', onDl);
+      try {
+        await exportBtn.click({ timeout: 3000, force: true });
+      } catch {}
+      await page.waitForTimeout(1500);
+      if (downloadFired) throw new Error('未付费点击导出触发了下载');
+      if (!/view=report/.test(page.url())) throw new Error('点击导出后离开报告页：' + page.url());
+      if (!(await reportHeading.isVisible().catch(() => false)) && !(await reportToc.isVisible().catch(() => false))) {
+        throw new Error('点击导出后报告标题/目录不可见');
+      }
+      const unlocked = page.locator('[data-report-export-unlocked]');
+      if (await unlocked.count() && await unlocked.first().isVisible().catch(() => false)) {
+        throw new Error('未付费环境出现可导出按钮（data-report-export-unlocked）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01830 验报告阅读页导出付费锁（ReportExportButton：data-report-export-locked + data-paid-badge=required「付费」+ disabled 导出钮带锁图标）。前置同 01825 从「最近评估」进 view=report。30888 admin 默认未付费。D1：用例写「橙色标记为付费」→现场 Arco orangered Tag。点击 disabled 钮 force 点，不期望 download 事件。B 档零 allow_skip。

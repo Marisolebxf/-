@@ -1,0 +1,143 @@
+id: FUNC-03290
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03290
+priority: P0
+title: 新一代信息技术集群下产业下拉共 7 项（附录A）
+entry_id: chain-sz-compare
+tier: A
+preconditions:
+  - 已进入分析配置
+  - 集群已是「新一代信息技术」
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 确认集群为新一代信息技术→展开产业下拉（判定在 expect）
+expect:
+  - note: 前置：分析配置可见且集群为「新一代信息技术」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03290：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const readSelect = async (ariaLabel) => {
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search 与深圳对比深链均 SPA404，无法验产业下拉 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      const clusterText = await readSelect('集群');
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelectOption('集群', /^新一代信息技术$/);
+      }
+      const afterCluster = await readSelect('集群');
+      if (!/新一代信息技术/.test(afterCluster)) {
+        throw new Error('前置：集群应为「新一代信息技术」，现场=' + afterCluster);
+      }
+      globalThis.__func03290_ready = true;
+  - note: 1、选项共 7 个，名称见附录 A
+    assert: |-
+      if (!globalThis.__func03290_ready) throw new Error('前置：未满足分析配置与集群条件');
+      const want = [
+        '新一代信息技术',
+        '半导体与集成电路',
+        '人工智能与应用',
+        '智能终端',
+        '软件与信息服务',
+        '新型网络与通信',
+        '超高清视频与显示',
+      ];
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await industry.scrollIntoViewIfNeeded();
+      await industry.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim().split('\n')[0].trim());
+      }
+      if (count !== 7) {
+        throw new Error('产业下拉选项应为 7 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '产业下拉选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/shenzhen?workspace=comparison&tab=comparison（entry-seed）；集群默认非新一代信息技术时脚本会先选齐前置。
+  7 项对齐用例册附录 A（03290）。点法 P7：.arco-select-view[aria-label=产业] + .arco-trigger-popup .arco-select-option。
+  未选产业占位「请选择产业」见用例备注，非本 expect 判定点。A 档零 allow_skip。

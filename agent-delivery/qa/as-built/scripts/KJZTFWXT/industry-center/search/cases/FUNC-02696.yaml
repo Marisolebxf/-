@@ -1,0 +1,75 @@
+id: FUNC-02696
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02696
+priority: P0
+title: 关闭摘要抽屉后回到推荐产业列表
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 已从推荐产业打开摘要抽屉
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+  drawer: .arco-drawer.industry-search-drawer
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 推荐行打开摘要抽屉后点底栏「关闭」；抽屉消失与列表仍在 expect 判定
+expect:
+  - note: 1、抽屉关闭
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('前置应为推荐产业列表 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '新一代信息技术' }).first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      await card.getByRole('button', { name: '查看摘要', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const footerClose = drawer.locator('.industry-search-drawer-footer').getByRole('button', {
+        name: '关闭',
+        exact: true,
+      });
+      await expect(footerClose).toBeVisible({ timeout: 8000 });
+      await footerClose.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(drawer).toBeHidden({ timeout: 10000 });
+  - note: 2、推荐产业列表仍在
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 8000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('关闭摘要后应仍为 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      await expect(list.locator('.industry-search-recommendation-card').first()).toBeVisible({ timeout: 8000 });
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeHidden({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；recommendation 态打开「新一代信息技术」摘要抽屉后点底栏「关闭」（非右上角 close-btn）。
+  抽屉 class industry-search-drawer；关闭后 data-search-state 仍为 recommendation，推荐列表可见。
+  登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

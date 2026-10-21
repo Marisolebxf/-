@@ -1,0 +1,62 @@
+id: FUNC-03909
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03909
+priority: P0
+tier: B
+title: 重点机构抽屉进入分析侧画像到达产业领域分析页
+story: US-SVC-PT-06
+entry_id: svc-portal
+preconditions:
+  - 已打开任一重点机构详情抽屉（脚本自含：深圳页点首张重点机构卡）
+locators:
+  keyorg_card: button.svc-portal-keyorg-card
+  btn_go_analysis: button「进入分析侧画像」
+  keyorg_drawer: '[data-testid="svc-portal-keyorg-drawer"]'
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点重点机构卡开抽屉，再点「进入分析侧画像」
+expect:
+  - note: 1、页面标题变为「服务机构产业领域分析」（到达该页即止，不点开始分析）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/shenzhen SPA404，无法验进入分析侧画像 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      const cards = page.locator('button.svc-portal-keyorg-card');
+      const n = await cards.count();
+      if (n === 0) {
+        const empty = await page.getByText(/暂无重点机构/).first().isVisible().catch(() => false);
+        if (empty) {
+          throw new Error('ENV-SVC-PORTAL-KEY-ORG-EMPTY：重点机构墙诚实空，无法开抽屉点进入分析侧画像（Q060）');
+        }
+        throw new Error('重点产业服务机构无卡片，无法打开机构详情抽屉');
+      }
+      const card = cards.first();
+      await card.scrollIntoViewIfNeeded();
+      await card.click();
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 15000 });
+      const goBtn = drawer.getByRole('button', { name: '进入分析侧画像' });
+      await expect(goBtn).toBeVisible({ timeout: 8000 });
+      await expect(goBtn).toBeEnabled({ timeout: 20000 });
+      await goBtn.click();
+      await expect(page).toHaveURL(/\/service\/institution-judgment/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业领域分析', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const title = await page.title();
+      if (!/服务机构产业领域分析/.test(title)) {
+        throw new Error('浏览器 title 未含「服务机构产业领域分析」：' + title);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  抽屉 CTA 跳转 /service/institution-judgment?workspace=field&tab=coverage&org=…（SvcPortalKeyOrgDrawer.goAnalysis）。
+  goto 用子路由 /service-portal/shenzhen，与用例路由列一致；catalog_path 仍为 /service-portal。
+  用例「页面标题」= document.title 含产业领域分析 + h1 同文案。不在此页点「开始分析」。
+  墙诚实空 → ENV-SVC-PORTAL-KEY-ORG-EMPTY。登录与关内部评审由 runner 会话前置。

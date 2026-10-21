@@ -1,0 +1,131 @@
+id: FUNC-00772
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00772
+priority: P1
+title: 分析记录 Tab 与发展分析 Tab 互斥切换且切回后条件保持
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已进入页面
+  - 已选中产业并勾选目标
+locators:
+  tab_dev: tab「深圳产业发展分析」
+  tab_rec: '[role=tab][data-tab-key=records]'
+  industry_select: main .arco-select-view（分析对象）
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 选产业、调整发展目标勾选，再互切 Tab；条件保持见 expect
+expect:
+  - note: 记录区与配置区互斥呈现，不叠加
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const industrySample = '新一代信息技术';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const ensureConfigPage = async () => {
+        await dismissBasket();
+        const cfg = page.getByText('分析配置').first();
+        if (await cfg.isVisible().catch(() => false)) return;
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await cfg.isVisible().catch(() => false)) return;
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404() || !(await cfg.isVisible().catch(() => false))) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置页 ' + page.url());
+        }
+      };
+      const pickIndustry = async () => {
+        const ind = page.locator('main .arco-select-view').first();
+        await expect(ind).toBeVisible({ timeout: 10000 });
+        await ind.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: industrySample }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await expect(ind).toContainText(industrySample);
+      };
+      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      const setTechUnchecked = async () => {
+        await expect(page.getByText('发展目标').first()).toBeVisible({ timeout: 8000 });
+        const tech = goalEl('技术');
+        await expect(tech).toBeVisible({ timeout: 8000 });
+        if (await isChecked(tech)) {
+          await tech.click({ timeout: 8000 });
+          await page.waitForTimeout(350);
+        }
+        if (await isChecked(tech)) throw new Error('未能取消勾选「技术」');
+      };
+      await ensureConfigPage();
+      await pickIndustry();
+      await setTechUnchecked();
+      const devTab = page.getByRole('tab', { name: '深圳产业发展分析' });
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(devTab).toBeVisible({ timeout: 8000 });
+      await expect(recTab).toBeVisible({ timeout: 8000 });
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main input[placeholder="请选择产业"]')).toHaveCount(0);
+      await expect(page.getByText('分析配置').first()).toHaveCount(0);
+      await devTab.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await expect(devTab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('任务状态').first()).toHaveCount(0);
+  - note: 切回后已选产业等配置条件保持
+    assert: |-
+      const industrySample = '新一代信息技术';
+      const ind = page.locator('main .arco-select-view').first();
+      await expect(ind).toContainText(industrySample);
+      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      if (await isChecked(goalEl('技术'))) throw new Error('切回后「技术」应仍为未选');
+      for (const g of ['政策', '人才']) {
+        if (!(await isChecked(goalEl(g)))) throw new Error('切回后「' + g + '」选中态丢失');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: Tab 记录用 data-tab-key=records；互斥=记录见任务状态且 main 无产业 placeholder/分析配置，发展 Tab 见分析配置且无任务状态。记录表构成归 03404/00773。深链 404→侧栏回落 ENV-EDU-TTS-SVCZ-404-001。

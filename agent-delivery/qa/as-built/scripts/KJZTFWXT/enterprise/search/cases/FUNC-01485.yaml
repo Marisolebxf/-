@@ -1,0 +1,64 @@
+id: FUNC-01485
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01485
+priority: P1
+title: 对比篮浮层内清空无确认框并立刻变为空篮
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 对比篮浮层已打开且篮内有企业（页内 CompareBasketDrawer；本条 assert 自含）
+locators:
+  page_basket_open: 推荐企业区 button aria-label 精确「打开对比篮」
+  page_drawer: .arco-drawer:visible 含底栏「清空」
+  footer_clear: 抽屉底栏 button「清空」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 环境闸门、入篮、打开抽屉、点清空与三项预期见 expect
+expect:
+  - note: 标题变为「对比篮（0/50）」
+    assert: |-
+      const pageBasketOpen = page.locator('main section').filter({ hasText: '推荐企业' }).getByRole('button', { name: '打开对比篮', exact: true });
+      if (await pageBasketOpen.count() < 1) {
+        throw new Error('ENV-GATE-01485: 30888 推荐区无页内对比篮入口（仅 system-compare-dock）；无法验收用例标题「对比篮（0/50）」');
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const closeSys = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeSys.count() && await closeSys.first().isVisible().catch(() => false)) {
+        await closeSys.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const clearRecent = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+      if (await clearRecent.isVisible().catch(() => false)) {
+        await clearRecent.click({ timeout: 4000 });
+        await page.waitForTimeout(600);
+      }
+      const recSection = page.locator('main section').filter({ hasText: '推荐企业' }).first();
+      await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+      const addBtn = recSection.getByRole('button', { name: '加入对比篮', exact: true }).first();
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      await addBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await pageBasketOpen.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByText(/对比篮（[1-9]\d*\/50）/)).toBeVisible({ timeout: 8000 });
+      await drawer.getByRole('button', { name: '清空', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      if (await page.locator('.arco-modal:visible').filter({ hasText: /清空对比篮|确认清空/ }).count()) {
+        throw new Error('点击清空后出现确认框，与用例「无确认框」不符');
+      }
+      await expect(drawer.getByText('对比篮（0/50）', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 出现「对比篮为空」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer.getByText(/对比篮为空/).first()).toBeVisible({ timeout: 8000 });
+  - note: 可见「去检索」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer.getByRole('button', { name: '去检索', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D3·30888 企业查询已切系统级 system-compare-panel（dock aria-label「打开对比篮，共 N 项」；篮内「清空对比篮」+ Modal 确定，空态「对比篮暂无企业」+「新增」）。用例册 01485 针对 SearchScaffold 页内 CompareBasketDrawer（标题「对比篮（N/50）」、底栏「清空」无确认、空态「对比篮为空」+「去检索」），源码仍在 lumen-ui-topic CompareBasketDrawer.vue 但推荐区 CompareBasketEntry 未出现在本环境 DOM。机检须待产品恢复页内抽屉或修订用例预期后再绿。

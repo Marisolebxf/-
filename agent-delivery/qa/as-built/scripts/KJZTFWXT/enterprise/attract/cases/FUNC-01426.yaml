@@ -1,0 +1,171 @@
+id: FUNC-01426
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01426
+priority: P0
+title: 主流程-详情抽屉对应当前企业
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；已打开一条条件筛选的成功结果（assert 自含条件筛选发起）
+locators:
+  detail_btn: 操作列 button「详情」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 条件筛选到达成功结果→点某行详情；抽屉标题在 expect
+expect:
+  - note: 1、抽屉标题含该企业名与「招引推荐详情」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parseCounts = (text) => {
+        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
+        if (!analyzedM) return null;
+        return { analyzed: parseInt(analyzedM[1], 10) };
+      };
+      const isSuccessResult = async () => {
+        const st = stack();
+        const t = await st.innerText().catch(() => '');
+        const url = page.url();
+        const counts = parseCounts(t);
+        return (
+          counts &&
+          counts.analyzed >= 1 &&
+          ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
+        );
+      };
+      const tryRestoreCompletedFilter = async () => {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
+        const tab = (await byKey.count()) ? byKey.first() : byName.first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+            await btn.click({ timeout: 15000 });
+            for (let j = 0; j < 20; j++) {
+              await page.waitForTimeout(500);
+              if (await isSuccessResult()) return true;
+            }
+            return false;
+          }
+        }
+        return false;
+      };
+      const reachFilterSuccess = async () => {
+        if (await isSuccessResult()) return;
+        if (await tryRestoreCompletedFilter()) return;
+        const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+        const openPh = async (ph) => {
+          await page.keyboard.press('Escape').catch(() => {});
+          const i = page.locator(`input[placeholder="${ph}"]`).first();
+          await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        };
+        const pickOption = async (text) => {
+          const opt = page.locator(optSel).filter({ hasText: text }).first();
+          await opt.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        };
+        await openPh('全部企业标签');
+        await pickOption('高新技术企业');
+        await openPh('全部行业领域');
+        const ai = page.locator(optSel).filter({ hasText: '人工智能' });
+        if (await ai.count()) await ai.first().click({ timeout: 8000 });
+        else await page.locator(optSel).filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        const st = stack();
+        let ok = false;
+        let last = '';
+        for (let i = 0; i < 48; i++) {
+          await page.waitForTimeout(2500);
+          last = await st.innerText().catch(() => '');
+          const url = page.url();
+          if ((/招引推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
+            if (parseCounts(last)?.analyzed >= 1) {
+              ok = true;
+              break;
+            }
+          }
+          if (/任务失败|分析失败|推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
+            throw new Error('推荐分析进入失败态: ' + last.slice(0, 240));
+          }
+        }
+        if (!ok) {
+          const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+          if (stuck) {
+            throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：条件筛选发起后长期停留在可视化分析过程，无法在超时内到达「招引推荐分析结果」以测详情抽屉（30888 与 FUNC-01408/01418 同源 D4）');
+          }
+          throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
+        }
+        await expect(st.getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+      };
+      const readRowEnterpriseName = async (row) => {
+        const link = row.getByRole('link').first();
+        if (await link.count()) {
+          const raw = ((await link.innerText({ timeout: 8000 }).catch(() => '')) || '').trim();
+          if (raw.length >= 2) return raw;
+        }
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        const parts = txt.split(/\s+/).filter((p) => p.length >= 2 && !/^\d+(\.\d+)?$/.test(p));
+        const hit = parts.find((p) => /公司|集团|有限|科技/.test(p));
+        if (hit) return hit;
+        throw new Error('结果行无企业名称可读: ' + txt.slice(0, 120));
+      };
+      await dismissBasket();
+      await reachFilterSuccess();
+      const st = stack();
+      const row = st.locator('.arco-table-body .arco-table-tr').first();
+      await expect(row).toBeVisible({ timeout: 10000 });
+      const entName = await readRowEnterpriseName(row);
+      const detail = row.getByRole('button', { name: '详情' }).first();
+      await expect(detail).toBeVisible({ timeout: 8000 });
+      await detail.click({ timeout: 10000 });
+      await page.waitForTimeout(600);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = await drawer.locator('.arco-drawer-header, .arco-drawer-title').first().innerText().catch(() => '');
+      const titleText = title || (await drawer.innerText().catch(() => '')).split('\n')[0] || '';
+      if (!titleText.includes(entName)) throw new Error('抽屉标题未含企业名「' + entName + '」: ' + titleText.slice(0, 120));
+      if (!/招引推荐详情/.test(titleText)) throw new Error('抽屉标题未含「招引推荐详情」: ' + titleText.slice(0, 120));
+      globalThis.__func01426 = { entName };
+  - note: 2、可见三类综合维度、高潜挖掘依据、核心优势、关键指标、合作价值、风险信用、政策方向
+    assert: |-
+      const ctx = globalThis.__func01426;
+      if (!ctx?.entName) throw new Error('前置：未打开详情抽屉');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const sections = ['三类综合维度', '高潜挖掘依据', '核心优势', '关键指标', '合作价值', '风险信用', '政策方向'];
+      for (const s of sections) {
+        await expect(drawer.getByText(s, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const body = await drawer.innerText();
+      if (!body.includes(ctx.entName)) throw new Error('抽屉正文与所选企业不一致: ' + ctx.entName);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/attraction；详情真源 RecruitDetailDrawer（标题 `${name}·招引推荐详情`）。前置同 01418~025。D4·无异步成功→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。

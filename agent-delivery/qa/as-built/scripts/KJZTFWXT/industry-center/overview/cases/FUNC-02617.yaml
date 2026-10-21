@@ -1,0 +1,129 @@
+id: FUNC-02617
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02617
+priority: P1
+title: 区域展示切换
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 当前为「产业整体概况」
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_profile: '#industry-overview-tab-profile'
+  profile_panel: '[data-frame-id="F-OV-03"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 在「区域分布」切换地图/列表，空态文案保持不变
+expect:
+  - note: 前置：进入「产业整体概况」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业整体概况' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=profile/, { timeout: 8000 });
+      const profTab = page.locator('#industry-overview-tab-profile');
+      const aria = await profTab.getAttribute('aria-selected');
+      const cls = await profTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('点击后「产业整体概况」Tab 未选中');
+      }
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.getByRole('heading', { name: '区域分布', level: 2 })).toBeVisible({
+        timeout: 8000,
+      });
+  - note: 1、列表展示下为「暂无区域分布数据」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      const regionHeading = panel.getByRole('heading', { name: '区域分布', level: 2 });
+      await regionHeading.scrollIntoViewIfNeeded();
+      const regionBar = regionHeading.locator('xpath=..');
+      const listBtn = regionBar.locator('.arco-radio-button').filter({ hasText: /^列表$/ });
+      if ((await listBtn.count()) < 1) {
+        throw new Error('区域分布工具条未找到「列表」按钮（.arco-radio-button）');
+      }
+      await listBtn.first().click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      const emptyCopy = '暂无区域分布数据';
+      const emptyDesc = panel.getByText(emptyCopy, { exact: true });
+      await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+      const txt = (await emptyDesc.innerText()).replace(/\s+/g, ' ').trim();
+      if (txt !== emptyCopy) {
+        throw new Error('列表展示下空态应为「' + emptyCopy + '」，实际：' + txt);
+      }
+      const mapShell = panel.locator('.industry-overview-map-shell').first();
+      const mapVis = await mapShell.isVisible().catch(() => false);
+      if (mapVis) {
+        const inRegion = await mapShell.evaluate((el) => {
+          let n = el;
+          while (n) {
+            const h = n.querySelector('h2');
+            if (h && h.textContent?.trim() === '区域分布') return true;
+            n = n.parentElement;
+          }
+          return false;
+        }).catch(() => false);
+        if (inRegion) throw new Error('无区域点位时列表态不应展示区域地图区');
+      }
+      const regionTable = panel.locator('.arco-table').filter({
+        has: page.getByRole('columnheader', { name: '区域' }),
+      });
+      const tableVis = await regionTable.first().isVisible().catch(() => false);
+      if (tableVis) throw new Error('无区域点位时不应展示区域列表表格');
+  - note: 2、地图展示下仍为「暂无区域分布数据」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      const regionHeading = panel.getByRole('heading', { name: '区域分布', level: 2 });
+      await regionHeading.scrollIntoViewIfNeeded();
+      const regionBar = regionHeading.locator('xpath=..');
+      const mapBtn = regionBar.locator('.arco-radio-button').filter({ hasText: /^地图$/ });
+      if ((await mapBtn.count()) < 1) {
+        throw new Error('区域分布工具条未找到「地图」按钮（.arco-radio-button）');
+      }
+      await mapBtn.first().click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      const emptyCopy = '暂无区域分布数据';
+      const emptyDesc = panel.getByText(emptyCopy, { exact: true });
+      await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+      const txt = (await emptyDesc.innerText()).replace(/\s+/g, ' ').trim();
+      if (txt !== emptyCopy) {
+        throw new Error('地图展示下空态应为「' + emptyCopy + '」，实际：' + txt);
+      }
+      const mapShell = panel.locator('.industry-overview-map-shell');
+      const mapCount = await mapShell.count();
+      for (let i = 0; i < mapCount; i++) {
+        const el = mapShell.nth(i);
+        const vis = await el.isVisible().catch(() => false);
+        if (!vis) continue;
+        const isRegionMap = await el.evaluate((node) => {
+          let n = node.parentElement;
+          while (n) {
+            const h2s = n.querySelectorAll('h2');
+            for (const h of h2s) {
+              if (h.textContent?.trim() === '区域分布') return true;
+            }
+            n = n.parentElement;
+          }
+          return false;
+        }).catch(() => false);
+        if (isRegionMap) throw new Error('无区域点位时地图态不应展示 .industry-overview-map-shell');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；概况区 F-OV-03，Tab industry-overview-tab-profile。
+  mappablePoints 为空时 a-empty 与 regionView 无关（IndustryOverviewPage.vue v-if 先于 map/list 分支）；区域分布区
+  a-radio-group 地图/列表在 .industry-overview-section-heading 内，与深圳各区 radio 分离。
+  2026-10-14 scout-tab-概况 已观测「地图/列表 + 暂无区域分布数据」。登录与关内部评审由 runner 前置。A 档零 allow_skip。

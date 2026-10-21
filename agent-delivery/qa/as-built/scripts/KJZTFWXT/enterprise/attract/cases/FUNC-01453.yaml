@@ -1,0 +1,252 @@
+id: FUNC-01453
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01453
+priority: P1
+title: 按此配置新建带回条件筛选且不自动开始
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；最近分析中已有一条条件筛选且状态为已完成的记录
+locators:
+  recent_tab: Tab「最近分析」
+  clone_btn: button「按此配置新建」
+  filter_tab: Tab「条件筛选推荐」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
+  - action: wait
+    for: 招引页 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 最近分析→已完成条件筛选行「按此配置新建」；Tab 与条件回填、不自动起任务在 expect 判定
+expect:
+  - note: 1、进入「条件筛选推荐」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const historyDeepLink = async () => {
+        const origin = new URL(page.url()).origin;
+        await page.goto(
+          origin +
+            '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history',
+          { waitUntil: 'domcontentloaded' },
+        );
+        await page.waitForTimeout(1200);
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady().catch(() => {});
+        if (await hasHistoryTab()) {
+          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+          if ((await tab.count()) < 1) {
+            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+            await expect(legacy).toBeVisible({ timeout: 12000 });
+            await legacy.click({ timeout: 8000 });
+          } else {
+            await expect(tab).toBeVisible({ timeout: 12000 });
+            await tab.click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(900);
+          return;
+        }
+        await historyDeepLink();
+        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
+          throw new Error(
+            '环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/深链（仅条件筛选+候选工作台时不自动化本用例）',
+          );
+        }
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+      };
+      const parseCondSummary = (rowTxt) => {
+        const m = (rowTxt || '').match(/条件筛选\s*[·•]\s*([^\n\t]+?)(?:\s*\/\s*([^\n\t]+))?/);
+        return {
+          tagPart: (m?.[1] || '').trim(),
+          fieldPart: (m?.[2] || '').trim(),
+        };
+      };
+      const partMatchesView = (part, viewText) => {
+        if (!part) return true;
+        const v = (viewText || '').replace(/\s+/g, ' ').trim();
+        if (!v) return false;
+        if (v.includes(part) || part.includes(v)) return true;
+        const alias = [
+          [/high_tech/i, '高新技术'],
+          [/foreign/i, '外资'],
+          [/unicorn/i, '独角兽'],
+          [/gazelle/i, '瞪羚'],
+          [/IC001|集成电路/i, '集成电路'],
+          [/ai|人工智能/i, '人工智能'],
+        ];
+        for (const [re, zh] of alias) {
+          if (re.test(part) && v.includes(zh)) return true;
+          if (re.test(part) && zh.includes(v)) return true;
+        }
+        return false;
+      };
+      const pickCompletedFilterClone = async () => {
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '按此配置新建' });
+        const n = await buttons.count();
+        if (n < 1) throw new Error('最近分析无「按此配置新建」按钮（缺已完成条件筛选任务）');
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+            return { btn, summary: parseCondSummary(txt), rowTxt: txt };
+          }
+        }
+        throw new Error('最近分析无「已完成」的条件筛选任务可「按此配置新建」');
+      };
+      const countRecTasks = async () => {
+        const t = await stack().innerText().catch(() => '');
+        return (t.match(/REC-/g) || []).length;
+      };
+      const filterTabSelected = async () => {
+        const byKey = page.locator('.global-workbench-tabs button[data-tab-key="filter"]').first();
+        if (await byKey.count()) {
+          const aria = await byKey.getAttribute('aria-selected');
+          const cls = await byKey.getAttribute('class').catch(() => '');
+          if (aria === 'true' || /active|selected/i.test(cls || '')) return true;
+        }
+        const roleTab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+        if (await roleTab.count()) {
+          const aria = await roleTab.getAttribute('aria-selected');
+          if (aria === 'true') return true;
+        }
+        const body = await page.locator('main').innerText().catch(() => '');
+        const st = await stack().innerText().catch(() => '');
+        return (
+          (await page.locator('input[placeholder="全部企业标签"]').first().isVisible().catch(() => false)) &&
+          !/招引推荐 · 最近分析/.test(st) &&
+          /条件筛选推荐|招引推荐条件|全部企业标签/.test(body + st)
+        );
+      };
+      await dismissBasket();
+      await openRecentTab();
+      await waitHistoryShell();
+      const nBefore = await countRecTasks();
+      const { btn, summary, rowTxt } = await pickCompletedFilterClone();
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click({ timeout: 15000 });
+      await page.waitForTimeout(1200);
+      if (!(await filterTabSelected())) {
+        throw new Error('点击按此配置新建后未进入条件筛选推荐；url=' + page.url());
+      }
+      await expect(page.locator('input[placeholder="全部企业标签"]').first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func01453 = { summary, rowTxt, nBefore };
+  - note: 2、条件区带回该次筛选值
+    assert: |-
+      const ctx = globalThis.__func01453;
+      if (!ctx?.summary) throw new Error('前置：未点击按此配置新建');
+      const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+      const readSelectView = async (ph) => {
+        const i = page.locator(`input[placeholder="${ph}"]`).first();
+        const wrap = i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        return norm(await wrap.innerText());
+      };
+      const partMatchesView = (part, viewText) => {
+        if (!part) return true;
+        const v = (viewText || '').replace(/\s+/g, ' ').trim();
+        if (!v) return false;
+        if (v.includes(part) || part.includes(v)) return true;
+        const alias = [
+          [/high_tech/i, '高新技术企业'],
+          [/high_tech/i, '高新技术'],
+          [/foreign/i, '外资'],
+          [/IC001|集成电路/i, '集成电路'],
+          [/ai|人工智能/i, '人工智能'],
+        ];
+        for (const [re, zh] of alias) {
+          if (re.test(part) && v.includes(zh)) return true;
+        }
+        return false;
+      };
+      const tagAfter = await readSelectView('全部企业标签');
+      const fieldAfter = await readSelectView('全部行业领域');
+      if (!tagAfter || tagAfter === '全部企业标签') {
+        throw new Error('企业标签未回填，实际=' + (tagAfter || '(空)') + '；行摘要=' + ctx.summary.tagPart);
+      }
+      if (!fieldAfter || fieldAfter === '全部行业领域') {
+        throw new Error('行业领域未回填，实际=' + (fieldAfter || '(空)') + '；行摘要=' + ctx.summary.fieldPart);
+      }
+      if (!partMatchesView(ctx.summary.tagPart, tagAfter)) {
+        throw new Error('企业标签与历史条件摘要不一致：摘要=' + ctx.summary.tagPart + ' 现场=' + tagAfter);
+      }
+      if (ctx.summary.fieldPart && !partMatchesView(ctx.summary.fieldPart, fieldAfter)) {
+        throw new Error('行业领域与历史条件摘要不一致：摘要=' + ctx.summary.fieldPart + ' 现场=' + fieldAfter);
+      }
+  - note: 3、不自动开始分析
+    assert: |-
+      const ctx = globalThis.__func01453;
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const stText = await stack().innerText().catch(() => '');
+      if (/可视化分析过程/.test(stText)) {
+        throw new Error('按此配置新建后不应自动出现「可视化分析过程」');
+      }
+      const url = page.url();
+      if (url.includes('analysis_view=processing')) {
+        throw new Error('URL 仍带 analysis_view=processing，疑似已自动起任务：' + url);
+      }
+      if (/招引推荐分析结果/.test(stText) && !/请设置条件/.test(stText)) {
+        throw new Error('不应自动进入成功结果页主文案');
+      }
+      await expect(stack().getByText('请设置条件并执行推荐分析').first()).toBeVisible({ timeout: 8000 });
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(2000);
+      const stAfter = await stack().innerText().catch(() => '');
+      if (/可视化分析过程/.test(stAfter)) {
+        throw new Error('等待 2s 后仍出现「可视化分析过程」，疑似自动开始分析');
+      }
+      if (ctx?.nBefore != null) {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        if ((await byKey.count()) || (await byName.count())) {
+          const tab = (await byKey.count()) ? byKey.first() : byName.first();
+          await tab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(900);
+          const nAfter = ((await stack().innerText().catch(() => '')).match(/REC-/g) || []).length;
+          if (nAfter > ctx.nBefore) {
+            throw new Error('最近分析 REC- 条数增加：' + ctx.nBefore + ' -> ' + nAfter + '，疑似自动新建任务');
+          }
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 entry=history；步骤=最近分析点已完成「条件筛选」行「按此配置新建」。机检=切到条件筛选推荐+条件区标签/行业与行内条件摘要一致+空态「请设置条件并执行推荐分析」且 2s 内无过程/结果、REC 条数不增。D4·2026-10-20 机跑 rewrite-FUNC-01453 仍为 demo 两 Tab 无最近分析→交卷 blocked·ENV-ATTRACT-NO-HISTORY-TAB-001（runner 记 fail/C6，同 01435~01441）。登录与关评审由 runner 前置。B 档零 allow_skip。

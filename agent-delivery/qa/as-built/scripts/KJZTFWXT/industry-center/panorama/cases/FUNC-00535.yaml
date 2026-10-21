@@ -1,0 +1,63 @@
+id: FUNC-00535
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00535
+priority: P0
+title: 默认快照图谱以节点与上游连线展示指定环节
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱页；筛选为默认已选（半导体与集成电路最新快照）
+locators:
+  view_graph: .arco-radio-button「图谱」
+  view_list: .arco-radio-button「结构列表」
+  canvas: canvas 图谱画布
+  summary: 当前产业链图谱包含 N 个链位环节和 M 条关系…
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 点击「图谱」；画布与环节节点在 expect 判定
+expect:
+  - note: 1、画布以节点和「上游」连线展示环节（图谱选中且画布可用；摘要按上游组织）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
+      await graphRadio.click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      await expect(graphRadio).toBeVisible({ timeout: 8000 });
+      const cls = (await graphRadio.getAttribute('class')) || '';
+      if (!cls.includes('arco-radio-checked')) throw new Error('图谱视图未选中: ' + cls);
+      const canvas = page.locator('canvas').first();
+      await expect(canvas).toBeVisible({ timeout: 10000 });
+      const box = await canvas.boundingBox();
+      if (!box || box.width < 200 || box.height < 100) throw new Error('画布尺寸异常: ' + JSON.stringify(box));
+      await expect(page.getByText(/当前产业链图谱包含 \d+ 个链位环节和 \d+ 条关系，按上游、中游、下游展示/)).toBeVisible({ timeout: 8000 });
+  - note: 2、节点含「集成电路设计」和「光刻胶配套（空节点）」；关系区含「上游」与环节箭头（canvas 内难直读，借结构列表对照后回到图谱）
+    assert: |-
+      const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
+      await listRadio.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByText('集成电路设计').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('光刻胶配套（空节点）').first()).toBeVisible({ timeout: 8000 });
+      const listText = await page.locator('main').innerText();
+      if (!listText.includes('上游')) throw new Error('结构列表无「上游」关系标签');
+      if (!(listText.includes('→') || /→/.test(listText))) throw new Error('结构列表无环节连线箭头');
+      await page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first().click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      await expect(page.locator('canvas').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  金样 P0-04；路由 catalog_path /industry-center/panorama。用例步骤仅点「图谱」；节点名与「上游」连线在 G6 canvas 内不可稳定 OCR，
+  第二预期借同页「结构列表」核对环节名与上游→箭头后切回图谱（与 scout-deep 同屏结构一致，非发明路由）。
+  对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。

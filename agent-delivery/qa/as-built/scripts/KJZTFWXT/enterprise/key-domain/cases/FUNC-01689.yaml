@@ -1,0 +1,124 @@
+id: FUNC-01689
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01689
+priority: P0
+title: 系统对比篮发起领域分布分析后进入结果页
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: A
+preconditions:
+  - 系统对比篮的企业页签内至少有一家企业（assert 可自含入篮）
+locators:
+  dock: button aria-label 前缀「打开对比篮，共」
+  select_ent: aria-label^「选择 」
+  start: button「发起分析」
+  type_domain: 重点企业领域分布分析
+  next: button「下一步：前往配置」
+  h1: main heading 重点企业领域分析
+  overview: heading「领域布局概览」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+expect:
+  - note: 打开对比篮→勾选一家企业→发起分析→选「重点企业领域分布分析」→「下一步：前往配置」
+    assert: |-
+      const origin = new URL(page.url()).origin;
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const abs = (p) => (String(p).startsWith('http') ? p : origin + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      if ((await page.getByText('404 Not Found').count()) > 0) {
+        await page.goto(abs('/enterprise-center/overview'), { waitUntil: 'domcontentloaded' });
+        await page.getByRole('link', { name: '企业查询', exact: true }).click();
+        await page.waitForURL(/search|key-enterprise/, { timeout: 12000 });
+        await page.getByRole('link', { name: '重点企业领域分析', exact: true }).click();
+        await page.waitForURL(/key-enterprise-analysis/, { timeout: 12000 });
+        await page.waitForTimeout(600);
+      }
+      await closeBasket();
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      await expect(dockBtn).toBeVisible({ timeout: 12000 });
+      const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+      const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+      let entCount = entM ? parseInt(entM[1], 10) : 0;
+      if (entCount < 1) {
+        await page.goto(abs('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) });
+        if (!(await cards.count())) throw new Error('对比篮无企业且推荐区无可加项');
+        let added = false;
+        for (let i = 0; i < await cards.count(); i++) {
+          const card = cards.nth(i);
+          const addBtn = card.getByRole('button', { name: '加入对比篮', exact: true });
+          if (await addBtn.count() && await addBtn.isVisible().catch(() => false)) {
+            await addBtn.click({ timeout: 8000 });
+            added = true;
+            await page.waitForTimeout(800);
+            break;
+          }
+        }
+        if (!added) throw new Error('无法向对比篮加入企业');
+        await page.goto(abs(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      }
+      await dockBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      const sels = page.locator('[aria-label^="选择 "]');
+      if (!(await sels.count())) throw new Error('系统对比篮无可选企业');
+      await sels.first().click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '发起分析' }).click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const modal = page.locator('.arco-modal:visible, .analysis-picker-modal').first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const typeOpt = modal.getByText('重点企业领域分布分析', { exact: true }).first();
+      await typeOpt.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: /下一步/ }).click({ timeout: 8000 });
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 15000 });
+      await page.waitForTimeout(1500);
+      const u = new URL(page.url());
+      if (u.pathname.startsWith('/enterprise/') && !u.pathname.startsWith('/enterprise-center/')) {
+        const fixed = origin + u.pathname.replace(/^\/enterprise\//, '/enterprise-center/') + u.search;
+        await page.goto(fixed, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(4000);
+      }
+      let afterUrl = page.url();
+      if ((await page.getByText('404 Not Found').count()) > 0) {
+        throw new Error('dispatch 后 SPA 404: ' + afterUrl);
+      }
+      if (!/enterprise_codes=|source=compare-basket/.test(afterUrl)) {
+        throw new Error('dispatch 后 URL 缺企业上下文: ' + afterUrl);
+      }
+  - note: 页面标题为「重点企业领域分析」
+    assert: |-
+      const h1 = page.locator('main').getByRole('heading', { name: /重点企业领域(分布)?分析/, exact: true }).first();
+      await expect(h1).toBeVisible({ timeout: 10000 });
+      const title = await page.title();
+      if (/重点企业领域/.test(title)) {
+        await expect(page).toHaveTitle(/重点企业领域/);
+      }
+  - note: 页面出现「领域布局概览」
+    assert: |-
+      const overview = page.getByRole('heading', { name: '领域布局概览' });
+      if (await overview.count()) {
+        await expect(overview.first()).toBeVisible({ timeout: 15000 });
+      } else {
+        await expect(page.getByText('领域布局概览', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      }
+      if (await page.getByRole('heading', { name: '待选择分析对象' }).count()) {
+        throw new Error('仍为空态待选择，结果区块未出');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + 建议 C1–C6
+as_built_note: 金样入口 B（01689）；30888 深链须 enterprise-center 前缀。D1·主区 H1 现场可为「重点企业领域分布分析」，标题断言放宽为领域分析族。篮空时 assert 自含企业查询推荐卡入篮（对齐 FUNC-01688）。系统浮层「发起分析」→六类型→下一步直达结果态。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

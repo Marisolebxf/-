@@ -1,0 +1,96 @@
+id: FUNC-03900
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03900
+priority: P0
+tier: B
+title: 技术力榜前三名次标识互异与第四名起一致
+story: US-SVC-PT-04
+entry_id: svc-portal
+allow_skip: true
+allow_skip_target: '.svc-portal-rank'
+skip_reason: >-
+  技术力榜诚实空时无 .svc-portal-rank，无法验前三/第四名次标识（与 03898、P0-12 同 ENV 闸门）。
+ticket: ENV-SVC-PORTAL-TECH-RANK-EMPTY
+preconditions:
+  - 已进入门户（runner 会话前置 + 概况默认 Tab）
+locators:
+  tab_cap: tab「服务机构技术能力」
+  rank_badge: main .svc-portal-rank
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「服务机构技术能力」页签
+expect:
+  - note: 1、前三名名次标识彼此不同
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：门户深链 404，无法验技术力名次标识');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const medals = page.locator('main .svc-portal-rank');
+      await medals.first().waitFor({ state: 'visible', timeout: 8000 });
+      const n = await medals.count();
+      if (n < 3) {
+        throw new Error('需至少 3 家入榜才能验前三标识互异；当前行数=' + n);
+      }
+      async function rankClassAt(i) {
+        const cls = ((await medals.nth(i).getAttribute('class')) || '').trim();
+        const m = cls.match(/svc-portal-rank--(\d+)/);
+        return m ? m[1] : null;
+      }
+      const t1 = await rankClassAt(0);
+      const t2 = await rankClassAt(1);
+      const t3 = await rankClassAt(2);
+      if (t1 !== '1' || t2 !== '2' || t3 !== '3') {
+        throw new Error('前三应依次为 rank--1/2/3；现场=' + JSON.stringify({ t1, t2, t3 }));
+      }
+      async function bgAt(i) {
+        return medals.nth(i).evaluate((node) => getComputedStyle(node).backgroundColor);
+      }
+      const bg1 = await bgAt(0);
+      const bg2 = await bgAt(1);
+      const bg3 = await bgAt(2);
+      if (bg1 === bg2 || bg2 === bg3 || bg1 === bg3) {
+        throw new Error('前三名次标识视觉未两两区分；bg=' + JSON.stringify({ bg1, bg2, bg3 }));
+      }
+  - note: 2、第4名起名次标识一致
+    assert: |-
+      if (!/service-portal\/capability-rank/.test(page.url())) {
+        throw new Error('已离开技术能力页：' + page.url());
+      }
+      const medals = page.locator('main .svc-portal-rank');
+      const n = await medals.count();
+      if (n < 4) {
+        return;
+      }
+      const restClasses = [];
+      const restBgs = [];
+      for (let i = 3; i < n; i++) {
+        const cls = ((await medals.nth(i).getAttribute('class')) || '').trim();
+        if (!/svc-portal-rank--4\b/.test(cls)) {
+          throw new Error('第' + (i + 1) + '名未使用 svc-portal-rank--4 普通标识；class=' + cls);
+        }
+        restClasses.push(cls);
+        restBgs.push(await medals.nth(i).evaluate((node) => getComputedStyle(node).backgroundColor));
+      }
+      const bg4 = restBgs[0];
+      for (let j = 1; j < restBgs.length; j++) {
+        if (restBgs[j] !== bg4) {
+          throw new Error('第4名起背景色不一致；bg=' + JSON.stringify(restBgs));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6；.svc-portal-rank 5s 不可见 → allow_skip n/a（ENV-SVC-PORTAL-TECH-RANK-EMPTY）
+as_built_note: >-
+  用例只要求「前三标识互异、第4起一致」，不断言金银铜文案（与作废 01317/P0-12 的配色条区分）。源码 rankTone：1–3 映射 --1|--2|--3，其余 --4（ServicePortalCapabilityRankPage.vue）。
+  Tab 切换进 capability-rank，与 03898/03899 同路径。榜诚实空时 allow_skip n/a，有榜且 n≥3 机检 class+背景色。

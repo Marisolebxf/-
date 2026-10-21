@@ -1,0 +1,154 @@
+id: FUNC-01909
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01909
+priority: P1
+title: 移除篮内一家企业后该行消失
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 「选择分析企业」浮层已打开（脚本自含入篮≥2 与开浮层）
+  - 篮内至少有两家企业
+locators:
+  picker_title: text「选择分析企业」
+  remove_btn: button「移除」或 [aria-label="移除"]
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 开浮层→点其中一家「移除」→若有确认框点「确定」；名单在 expect 判定
+expect:
+  - note: 1、该企业不再出现在篮内列表
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const openSelectOverlay = async () => {
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (!(await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false))) {
+          const main = page.locator('main');
+          const cta = main.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+          if (await cta.isVisible().catch(() => false)) {
+            await cta.click({ timeout: 8000 });
+            await page.waitForTimeout(1200);
+          }
+        }
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseNames = async (scope) => {
+        const names = [];
+        const basketSection = scope.locator('[data-testid="compare-basket-list"], .ent-compare-basket-list, .compare-basket-enterprise-list').first();
+        const useScope = (await basketSection.count()) ? basketSection : scope;
+        const cards = useScope.locator('.ent-compare-item-card');
+        const cardN = await cards.count();
+        for (let i = 0; i < cardN; i++) {
+          const card = cards.nth(i);
+          const nameEl = card.locator('.ent-compare-item-card__name');
+          const name = (await nameEl.count())
+            ? (await nameEl.first().innerText()).trim()
+            : (await card.innerText()).split('\n')[0].trim();
+          if (name) names.push(name);
+        }
+        if (names.length) return names;
+        const sels = useScope.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        for (let i = 0; i < selN; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      await ensureBasketEnterprises(2);
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const scope = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+      const beforeNames = await listEnterpriseNames(scope);
+      if (beforeNames.length < 2) throw new Error('篮内应有至少 2 家企业，实际 ' + beforeNames.length);
+      const emptyFilter = scope.getByText('当前篮内无匹配企业', { exact: false });
+      if (await emptyFilter.isVisible().catch(() => false)) {
+        const resetBtn = scope.getByRole('button', { name: '重置', exact: true });
+        if (await resetBtn.count()) await resetBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      const selRows = scope.locator('[aria-label^="选择 "]');
+      const selN = await selRows.count();
+      if (selN < 2) throw new Error('篮内应有至少 2 家企业，勾选行数 ' + selN);
+      const firstAria = ((await selRows.first().getAttribute('aria-label')) || '').replace(/^选择\s*/, '').trim();
+      const removedName = firstAria || beforeNames[0];
+      if (!removedName) throw new Error('无法读取待移除企业名称');
+      const listRoot = scope.locator('[data-testid="compare-basket-list"]').first();
+      const rmScope = (await listRoot.count()) ? listRoot : scope;
+      const removeBtns = rmScope.locator('[aria-label="移除"]');
+      if (await removeBtns.count() < 1) {
+        const roleRm = rmScope.getByRole('button', { name: '移除', exact: true });
+        if (await roleRm.count() < 1) throw new Error('篮内未见移除按钮');
+      }
+      const removeBtn = (await removeBtns.count()) ? removeBtns.first() : rmScope.getByRole('button', { name: '移除', exact: true }).first();
+      await removeBtn.scrollIntoViewIfNeeded({ timeout: 10000 });
+      await expect(removeBtn).toBeVisible({ timeout: 10000 });
+      await removeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const confirmModal = page.locator('.arco-modal:visible').filter({ hasText: /移除|移出/ }).last();
+      if (await confirmModal.count() && await confirmModal.first().isVisible().catch(() => false)) {
+        const okBtn = confirmModal.getByRole('button', { name: '确定', exact: true });
+        if (await okBtn.count()) {
+          await okBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(600);
+        }
+      }
+      await page.waitForTimeout(600);
+      const afterScope = (await pickerRoot().count()) ? pickerRoot() : scope;
+      const afterNames = await listEnterpriseNames(afterScope);
+      if (afterNames.length !== beforeNames.length - 1) {
+        throw new Error(`移除后篮内企业数应为 ${beforeNames.length - 1}，实际 ${afterNames.length}`);
+      }
+      const stillThere = afterNames.some((n) => n.includes(removedName) || removedName.includes(n));
+      if (stillThere) {
+        throw new Error('该企业仍出现在篮内列表：' + removedName);
+      }
+      const leakCard = afterScope.locator('.ent-compare-item-card').filter({ hasText: removedName });
+      if (await leakCard.count() && await leakCard.first().isVisible().catch(() => false)) {
+        throw new Error('篮内卡片仍含该企业：' + removedName);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01909（重写作废 00952/P1-07）。移除在「选择分析企业」浮层篮内企业卡片上（aria-label=移除 或按钮「移除」），不在已回填对象区。现场 removeItem 多为即时移出+Message「已移出对比篮」、无二次确认；用例步骤 2 保留「若出现提示框则确定」分支。30888 路由 /enterprise-center/evaluation?workspace=business&mode=business；前置 ensure≥2 家（检索入篮）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

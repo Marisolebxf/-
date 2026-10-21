@@ -1,0 +1,199 @@
+id: FUNC-03319
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03319
+priority: P1
+title: 分析记录删除时点确定任务消失
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 分析记录里有一条可删除的已完成任务
+locators:
+  records_tab: tab「分析记录」
+  delete_button: button「删除」
+  modal_ok: 弹框 button「确定」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 分析记录→优先末行已完成「删除」→Modal「确定」；验任务消失且其余仍在
+expect:
+  - note: 1、该任务不再出现在分析记录中
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const enterSzCompare = async () => {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404() || !onTarget()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03319 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=comparison/);
+        await expect(page).toHaveURL(/tab=comparison/);
+      };
+      const scrollRecordActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const listDoneRows = async () => {
+        await scrollRecordActions();
+        return main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业情况分析对比' })
+          .filter({ hasText: /已完成|成功/ });
+      };
+      const collectTids = async (rows) => {
+        const n = await rows.count();
+        const tids = [];
+        for (let i = 0; i < n; i++) {
+          const rowText = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          const m = rowText.match(TID_RE);
+          if (m) tids.push(m[0]);
+        }
+        return tids;
+      };
+      const pickLastCompletedDelete = async () => {
+        const rows = await listDoneRows();
+        const n = await rows.count();
+        let picked = null;
+        for (let i = 0; i < Math.min(n, 15); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          let del = row.getByRole('button', { name: '删除', exact: true }).first();
+          if (!(await del.count())) {
+            del = row.locator('button, .arco-btn').filter({ hasText: /^删除$/ }).first();
+          }
+          if (!(await del.count()) || (await del.isDisabled().catch(() => true))) continue;
+          const tidM = rowText.match(TID_RE);
+          const tid = tidM ? tidM[0] : rowText.slice(0, 80);
+          picked = { del, tid, rowText, rowIndex: i };
+        }
+        return picked;
+      };
+      await enterSzCompare();
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      await expect(main().getByText('分析记录').first()).toBeVisible({ timeout: 8000 });
+      const rowsBefore = await listDoneRows();
+      const countBefore = await rowsBefore.count();
+      const tidsBefore = await collectTids(rowsBefore);
+      const picked = await pickLastCompletedDelete();
+      if (!picked) {
+        const mainText = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/已完成|成功/.test(mainText) || !/深圳产业情况分析对比/.test(mainText)) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03319：分析记录无已完成深圳对比任务');
+        }
+        const delTotal = await main().getByRole('button', { name: '删除', exact: true }).count();
+        if (delTotal === 0) {
+          throw new Error('DEF-CHAIN-SZ-COMPARE-DELETE-UI-001: 有已完成行但操作列无「删除」');
+        }
+        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DELETABLE-03319：无可点「删除」的已完成行');
+      }
+      const { del, tid } = picked;
+      const otherTids = tidsBefore.filter((t) => t !== tid);
+      await del.scrollIntoViewIfNeeded().catch(() => {});
+      await scrollRecordActions();
+      await del.click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const okBtn = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(okBtn).toBeVisible({ timeout: 5000 });
+      await okBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(modal).toBeHidden({ timeout: 15000 });
+      const msgDeleted = page.locator('.arco-message-content').filter({ hasText: /已删除|删除成功/ });
+      if (await msgDeleted.count()) {
+        await expect(msgDeleted.first()).toBeVisible({ timeout: 8000 }).catch(() => {});
+      }
+      await page.waitForTimeout(600);
+      const mainAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (TID_RE.test(tid)) {
+        await expect(main().locator('tr, .arco-table-tr').filter({ hasText: tid })).toHaveCount(0, { timeout: 12000 });
+        if (mainAfter.includes(tid)) {
+          throw new Error('确定删除后任务仍在分析记录：' + tid);
+        }
+      } else if (countBefore > 0) {
+        const rowsAfter = await listDoneRows();
+        const countAfter = await rowsAfter.count();
+        if (countAfter >= countBefore) {
+          throw new Error('确定删除后已完成行数未减少（前' + countBefore + '后' + countAfter + '）');
+        }
+      }
+      page.__sz03319_otherTids = otherTids;
+      page.__sz03319_deletedTid = tid;
+  - note: 2、其他任务仍在
+    assert: |-
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const otherTids = page.__sz03319_otherTids || [];
+      const deletedTid = page.__sz03319_deletedTid || '';
+      if (otherTids.length === 0) {
+        const mainText = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (deletedTid && TID_RE.test(deletedTid) && mainText.includes(deletedTid)) {
+          throw new Error('删除后仍见已删任务：' + deletedTid);
+        }
+        return;
+      }
+      let seen = 0;
+      for (const t of otherTids) {
+        const row = main().locator('tr, .arco-table-tr').filter({ hasText: t }).first();
+        if (await row.count() && (await row.isVisible().catch(() => false))) seen++;
+      }
+      if (seen === 0) {
+        throw new Error('其他任务未保留：删前另有 ' + otherTids.join('、') + '，删后均不可见');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed；用例=分析记录已完成行「删除」→Modal「确定」→该任务消失、其余仍在。优先末条可删行（贴近「本轮新任务」）。
+  无已完成/无删→ENV-CHAIN-SZ-COMPARE-NO-*-03319；SPA404→ENV-EDU-TTS-SVCZ-404-001。破坏性用例，勿与 03318 同跑同一条。

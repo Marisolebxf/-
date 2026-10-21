@@ -1,0 +1,48 @@
+id: FUNC-00932
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00932
+priority: P0
+title: 未选评估对象时对象区显示空态引导且开始分析禁用
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已进入商业力评估页且未选择任何评估对象（URL 无 enterprise_codes）
+locators:
+  empty_hint: 尚未选择评估对象；请在系统对比篮中选择企业
+  open_basket_cta: button「商业竞争力对标分析」
+  start_analysis: button「开始分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 30888 评估路由 enterprise-center/evaluation；浏览评估对象区空态与开始分析
+expect:
+  - note: 对象区显示前往对比篮选择企业的空态引导
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      if (/enterprise_codes/.test(page.url())) {
+        const origin = new URL(page.url()).origin;
+        await page.goto(origin + '/enterprise-center/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const objSection = page.locator('div').filter({ has: page.getByText('评估对象', { exact: true }) }).first();
+      await expect(objSection.getByText(/暂未选择评估对象|尚未选择评估对象|请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 });
+      await expect(objSection.getByText(/对比篮/).first()).toBeVisible({ timeout: 8000 });
+      await expect(objSection.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 「开始分析」为禁用态
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/evaluation（/enterprise/evaluation 404）。对象空态文案 as-built「尚未选择评估对象」+ 对比篮引导；CTA 为「商业竞争力对标分析」（用例册「前往对比篮选择企业」为 lumen 组件口径）。登录与关内部评审由 runner 会话前置。接旧 P0-08 / 用例册 00932。

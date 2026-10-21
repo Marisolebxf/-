@@ -1,0 +1,32 @@
+id: FUNC-01617
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01617
+priority: P1
+title: 页头展示数据更新至提示
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  page_header: main 内页头区（H1「重点企业类型分析」邻近）
+  data_update_hint: main 内文案「数据更新至」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入重点企业类型分析；页头数据更新提示在 expect 内断言
+expect:
+  - note: 页头含「数据更新至」（不钉死时点后半文案）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.locator('main').getByRole('heading', { name: '重点企业类型分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText('数据更新至').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: D1·30888 复勘 env-gate/scout 页头为「数据更新至 暂无时点」，仅断言前缀「数据更新至」。侧栏路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type。登录与关内部评审由 runner 会话前置。

@@ -1,0 +1,208 @@
+id: FUNC-03301
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03301
+priority: P0
+title: 结果页投融资总额诚实空态
+story: US-CHAIN-SZ-01
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开成功结果页
+locators:
+  summary_invest: text「投融资总额」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 进入成功结果页后读取 KPI「投融资总额」（判定在 expect）
+expect:
+  - note: 前置：已打开「深圳产业情况分析对比结果」页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比 SPA404 @' + where + ' ' + page.url());
+        }
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03301：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const benchmarkView = () => {
+        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      };
+      const pickBenchmark = async (cityRe) => {
+        const view = benchmarkView();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+        }
+        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03301：标杆无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const isResultPage = async () => {
+        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
+        const t = await main().innerText().catch(() => '');
+        return new RegExp(RESULT_TITLE).test(t);
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(2000);
+        }
+        const view = page.getByRole('button', { name: '查看结果' }).first();
+        if (await view.isVisible().catch(() => false)) {
+          await view.click({ timeout: 10000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const waitForResult = async () => {
+        let last = '';
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i < 6 ? 800 : 1500);
+          if (await isResultPage()) return;
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析结果已生成|已打开结果|今日已分析过相同条件/.test(last)) {
+            await openViewResultIfShown();
+            if (await isResultPage()) return;
+          }
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 8) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03301：开始分析后任务失败');
+          }
+          await openViewResultIfShown();
+        }
+        throw new Error('开始分析后未在超时内到达结果页：' + last.slice(0, 240));
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const openResultFromRecords = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const rows = page.locator('tr').filter({ hasText: '深圳产业情况分析对比' }).filter({ hasText: /已完成|成功/ });
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 8); i++) {
+          const row = rows.nth(i);
+          const view = row.getByRole('button', { name: '查看结果' }).first();
+          if (!(await view.count())) continue;
+          await view.click({ timeout: 12000, force: true });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isResultPage()) return true;
+          }
+        }
+        return false;
+      };
+      const runAnalysisAndOpenResult = async () => {
+        const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+        const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!/新一代信息技术/.test(clusterText)) {
+          await pickSelectOption('集群', /^新一代信息技术$/);
+        }
+        await pickSelectOption('产业', /^人工智能与应用$/);
+        await pickBenchmark(/^上海市$/);
+        await pickBenchmark(/^北京市$/);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：选齐后「开始分析」仍 disabled');
+        }
+        await start.click({ timeout: 15000 });
+        await waitForResult();
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法执行 03301 ' + page.url());
+      }
+      await assertNotSpa404('landing');
+      if (!(await isResultPage())) {
+        if (!(await openResultFromRecords())) {
+          await runAnalysisAndOpenResult();
+        }
+      }
+      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+      globalThis.__func03301 = {
+        body: ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' '),
+      };
+  - note: 1、该格显示「数据筹备中」
+    assert: |-
+      const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+      let body = norm(globalThis.__func03301?.body || (await page.locator('main').first().innerText().catch(() => '')));
+      await expect(page.getByText('投融资总额', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const idx = body.indexOf('投融资总额');
+      const slice = idx >= 0 ? body.slice(idx, idx + 48) : body.slice(0, 200);
+      if (!/投融资总额[\s\S]{0,40}数据筹备中/.test(body)) {
+        throw new Error('投融资总额未显示「数据筹备中」，摘要片段: ' + slice);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  03301 专验结果页 KPI 区 IndustryMetricCard「投融资总额」空态文案「数据筹备中」（与 lumen IndustryShenzhenResultBoard empty-hint / QC07 一致）；
+  前置路径对齐 03288/03299（人工智能与应用+沪京标杆→开始分析，或分析记录查看结果）。入口 route=entry-seed catalog_path。B 档零 allow_skip。

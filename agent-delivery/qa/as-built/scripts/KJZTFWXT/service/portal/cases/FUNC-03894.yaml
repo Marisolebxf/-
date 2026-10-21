@@ -1,0 +1,82 @@
+id: FUNC-03894
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03894
+priority: P0
+tier: A
+title: 产业分布三卡与六环节
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + goto 概况）
+locators:
+  tab_ind: tab「服务机构产业分布」
+  kpi_grid: .svc-portal-kpi-grid
+  stage_card: .svc-portal-stage-card
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「服务机构产业分布」页签
+expect:
+  - note: 1、三张卡标题为六类合计、覆盖环节数、最厚环节
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：门户深链 404，无法验产业分布页');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构产业分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const kpiLabels = ['六类合计', '覆盖环节数', '最厚环节'];
+      for (const label of kpiLabels) {
+        const el = page.locator('.svc-portal-kpi__label').filter({ hasText: label }).first();
+        await expect(el).toBeVisible({ timeout: 8000 });
+      }
+  - note: 2、六个环节名称与附录 D 一致
+    assert: |-
+      const expected = [
+        '知识产权与标准',
+        '市场化服务',
+        '中试熟化',
+        '研发与科研合作',
+        '检测认证',
+        '技术转移与孵化',
+      ];
+      const cards = page.locator('.svc-portal-stage-card');
+      const n = await cards.count();
+      if (n === 0) {
+        const empty = page.getByText('暂无环节分布').first();
+        if (await empty.isVisible().catch(() => false)) {
+          throw new Error('ENV-SVC-PORTAL-STAGE-EMPTY: Java stages[] 为空，未渲染六张环节卡');
+        }
+        throw new Error('环节卡数量为 0');
+      }
+      if (n !== 6) throw new Error('环节卡数量 ' + n + ' ≠ 6');
+      const names = [];
+      for (let i = 0; i < n; i++) {
+        const card = cards.nth(i);
+        const nameEl = card.locator('.svc-portal-stage-card__name');
+        const raw = (await nameEl.innerText()).replace(/\s+/g, ' ').trim();
+        const name = raw.replace(/^\d+\s*/, '').trim();
+        names.push(name);
+      }
+      for (const name of expected) {
+        if (!names.includes(name)) throw new Error('环节卡缺少：' + name + '；现场=' + names.join('|'));
+      }
+  - note: 3、「中试熟化」显示暂无覆盖
+    assert: |-
+      const pilot = page.locator('.svc-portal-stage-card').filter({ hasText: '中试熟化' }).first();
+      await expect(pilot).toBeVisible({ timeout: 8000 });
+      await expect(pilot.locator('.svc-portal-stage-card__empty').filter({ hasText: '暂无覆盖' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链落点 /service-portal/industry-distribution（Tab 切换）。三 KPI 在 .svc-portal-kpi-grid；
+  六环节在 .svc-portal-stage-card（Java stages[] 有行才渲染，空则诚实空「暂无环节分布」→ 环境债 ENV-SVC-PORTAL-STAGE-EMPTY）。
+  附录 D 环节顺序与 UI 枚举一致。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

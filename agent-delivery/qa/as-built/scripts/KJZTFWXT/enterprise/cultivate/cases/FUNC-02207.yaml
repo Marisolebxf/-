@@ -1,0 +1,272 @@
+id: FUNC-02207
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02207
+priority: P0
+title: 主流程-候选搜索只缩小名单
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 名单中有名称含「华为」的企业（assert 自含对比篮/企业查询加入培育候选兜底）
+locators:
+  cand_tab: tab「候选工作台」
+  name_search: placeholder「按企业名称搜索」
+  cand_table: recruit-tab-stack 内 .arco-table-body .arco-table-tr
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates
+  - action: evaluate
+    note: 候选工作台→确保名单含华为→按企业名称搜索「华为」→校验只缩小名单
+expect:
+  - note: 1、列表只剩名称匹配的行
+    assert: |-
+      const dismissBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (!(await close.count())) break;
+          const vis = await close.first().isVisible().catch(() => false);
+          if (!vis) break;
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+        const modalClose = page.locator('.arco-modal-close-btn, [aria-label="Close"]');
+        if (await modalClose.count()) {
+          const vis = await modalClose.first().isVisible().catch(() => false);
+          if (vis) await modalClose.first().click({ timeout: 3000 }).catch(() => {});
+        }
+      };
+      const visibleNameSearch = async () => {
+        const all = page.getByPlaceholder('按企业名称搜索');
+        const c = await all.count();
+        for (let i = 0; i < c; i++) {
+          const el = all.nth(i);
+          if (await el.isVisible().catch(() => false)) return el;
+        }
+        throw new Error('无可见「按企业名称搜索」（对比篮/弹层可能仍遮挡）');
+      };
+      const origin = new URL(page.url()).origin;
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const candidatePanel = () =>
+        page.locator('.ent-section-panel').filter({ hasText: '人工线索候选工作台' }).first();
+      const candRoute =
+        '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates';
+      const searchRoute = '/enterprise/enterprise-search';
+      const fragment = '华为';
+      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
+      const isCandidateWorkspace = async () => {
+        if (!(await candTab().count())) return false;
+        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
+      };
+      const openCandidateTab = async () => {
+        if (await isCandidateWorkspace()) return;
+        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        await candTab().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        if (!(await isCandidateWorkspace())) {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) {
+            await byKey.click({ timeout: 8000, force: true });
+            await page.waitForTimeout(900);
+          }
+        }
+        if (!(await isCandidateWorkspace())) {
+          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
+        }
+      };
+      const readRowName = async (row) => {
+        const link = row.getByRole('link').first();
+        if (await link.count()) {
+          const raw = ((await link.innerText({ timeout: 8000 }).catch(() => '')) || '').trim();
+          if (raw.length >= 2) return raw;
+        }
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        const parts = txt.split(/\s+/).filter((p) => p.length >= 2 && !/^\d+(\.\d+)?$/.test(p));
+        const hit = parts.find((p) => /公司|集团|有限|科技|股份|企业/.test(p));
+        if (hit) return hit;
+        if (parts[0]) return parts[0];
+        throw new Error('候选行无企业名称: ' + txt.slice(0, 100));
+      };
+      const readAllNames = async () => {
+        const rows = stack().locator('.arco-table-tr');
+        const n = await rows.count();
+        const names = [];
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          const flat = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/企业名称.*所属产业/.test(flat)) continue;
+          if (!(await row.getByRole('button', { name: '删除' }).count())) continue;
+          names.push(await readRowName(row));
+        }
+        return names;
+      };
+      const tryBasketHuawei = async () => {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (!(await dock.count())) return false;
+        await dock.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const panel = page.locator('.system-compare-panel');
+        const huaweiCard = panel.locator('.ent-compare-item-card').filter({ hasText: fragment }).first();
+        if (!(await huaweiCard.count())) {
+          await dismissBasket();
+          return false;
+        }
+        const pick = huaweiCard.locator('[aria-label^="选择 "]').first();
+        if (await pick.count()) await pick.click({ force: true });
+        else await huaweiCard.locator('.arco-checkbox').first().click({ force: true });
+        await page.waitForTimeout(400);
+        const addC = page.getByRole('button', { name: '加入培育候选' });
+        if (!(await addC.count()) || !(await addC.first().isEnabled())) {
+          await dismissBasket();
+          return false;
+        }
+        await addC.first().click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        return true;
+      };
+      const addHuaweiFromSearch = async () => {
+        await page.goto(origin + searchRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        const companyTab = page.getByRole('tab', { name: '查企业' });
+        if (await companyTab.count()) {
+          await companyTab.first().click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+        }
+        const hotSection = page.locator('.enterprise-search-hot-enterprises');
+        let clicked = false;
+        if (await hotSection.count()) {
+          const hotBtn = hotSection.getByRole('button', { name: fragment });
+          if (await hotBtn.count()) {
+            await hotBtn.first().click({ timeout: 8000 });
+            clicked = true;
+          } else {
+            const chip = hotSection.locator('.enterprise-search-hot-button').filter({ hasText: fragment });
+            if (await chip.count()) {
+              await chip.first().click({ timeout: 8000 });
+              clicked = true;
+            }
+          }
+        }
+        if (!clicked) {
+          const box = page.getByRole('textbox', { name: /输入企业名/ });
+          await expect(box).toBeVisible({ timeout: 10000 });
+          await box.fill(fragment, { force: true });
+          await page.getByRole('button', { name: '搜索' }).click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(5000);
+        await page.getByText('查企业结果').first().waitFor({ timeout: 15000 }).catch(() => {});
+        await page.evaluate(() => {
+          const b = [...document.querySelectorAll('button')].find((x) =>
+            /引育候选/.test((x.textContent || '').trim()),
+          );
+          if (b) b.click();
+        });
+        await page.waitForTimeout(800);
+        const menuItem = page
+          .locator('.arco-trigger-popup:visible li, .arco-dropdown-popup:visible li')
+          .filter({ hasText: '加入培育候选' });
+        if (await menuItem.count()) await menuItem.first().click({ force: true });
+        else if (await page.getByText('加入培育候选', { exact: true }).count()) {
+          await page.getByText('加入培育候选', { exact: true }).last().click({ force: true });
+        } else {
+          throw new Error('查企业结果卡片「引育候选」未展开「加入培育候选」');
+        }
+        await page.waitForTimeout(1500);
+      };
+      const ensureHuaweiInList = async () => {
+        await dismissBasket();
+        await openCandidateTab();
+        let names = await readAllNames();
+        if (names.some((n) => n.includes(fragment))) return;
+        if (await tryBasketHuawei()) {
+          await openCandidateTab();
+          names = await readAllNames();
+          if (names.some((n) => n.includes(fragment))) return;
+        }
+        await addHuaweiFromSearch();
+        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        await openCandidateTab();
+        names = await readAllNames();
+        if (!names.some((n) => n.includes(fragment))) {
+          const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+          throw new Error(
+            '环境闸门 ENV-CULTIVATE-HUAWEI-PRECOND：名单无含「华为」企业（企业查询加入后仍无）: ' +
+              txt.slice(0, 160),
+          );
+        }
+      };
+      const parsePendingReview = (text) => {
+        const m = (text || '').match(/待复核\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      await dismissBasket();
+      await ensureHuaweiInList();
+      await dismissBasket();
+      await expect(page.getByText('人工线索候选工作台').first()).toBeVisible({ timeout: 10000 });
+      const bodyBeforeSearch = await page.locator('body').innerText().catch(() => '');
+      const pendingBefore = parsePendingReview(bodyBeforeSearch);
+      if (pendingBefore === null) throw new Error('搜索前未见「待复核 N 家」');
+      await page.evaluate((v) => {
+        window.__func02207PendingBefore = v;
+      }, pendingBefore);
+      const namesBefore = await readAllNames();
+      const expectedBefore = namesBefore.filter((n) => n.includes(fragment));
+      if (expectedBefore.length < 1) {
+        throw new Error('前置不满足：过滤前应至少 1 家含华为，实际=' + namesBefore.join('；'));
+      }
+      const search = await visibleNameSearch();
+      await search.click({ timeout: 8000, force: true });
+      await search.fill(fragment, { force: true });
+      await page.waitForTimeout(800);
+      const namesAfter = await readAllNames();
+      if (namesAfter.length < 1) {
+        throw new Error('搜索「华为」后名单为空，预期至少 ' + expectedBefore.length + ' 家');
+      }
+      for (const n of namesAfter) {
+        if (!n.includes(fragment)) {
+          throw new Error('过滤后仍见不匹配企业「' + n + '」');
+        }
+      }
+      if (namesBefore.length > expectedBefore.length && namesAfter.length >= namesBefore.length) {
+        throw new Error(
+          '多企业名单搜索后未缩小：全量 ' +
+            namesBefore.length +
+            ' 含华为 ' +
+            expectedBefore.length +
+            ' 过滤后 ' +
+            namesAfter.length,
+        );
+      }
+  - note: 2、「待复核」总数不变
+    assert: |-
+      const parsePendingReview = (text) => {
+        const m = (text || '').match(/待复核\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const pendingBefore = await page.evaluate(() => window.__func02207PendingBefore);
+      if (pendingBefore === undefined || pendingBefore === null) {
+        throw new Error('缺少搜索前待复核快照（expect① 未写入）');
+      }
+      const body = await page.locator('body').innerText().catch(() => '');
+      const pendingAfter = parsePendingReview(body);
+      if (pendingAfter === null) throw new Error('搜索后未见「待复核 N 家」');
+      if (pendingAfter !== pendingBefore) {
+        throw new Error('「待复核」总数应不变：前 ' + pendingBefore + ' 后 ' + pendingAfter);
+      }
+  - note: 3、不出现可视化分析过程
+    assert: |-
+      const candidatePanel = () =>
+        page.locator('.ent-section-panel').filter({ hasText: '人工线索候选工作台' }).first();
+      const body = await page.locator('body').innerText().catch(() => '');
+      if (/可视化分析过程/.test(body) && !/人工线索候选工作台/.test(body)) {
+        throw new Error('名称搜索后误入「可视化分析过程」');
+      }
+      await expect(page.getByText('人工线索候选工作台').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: '执行指定对象复核' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation&entry=candidates。候选表行=recruit-tab-stack 内 .arco-table-tr（跳过表头/无「删除」行）。D2·查企业结果卡「引育候选」按钮 DOM 常不可见，前置加华为用 evaluate 点首枚 + popup li「加入培育候选」force（禁 forbidden_paths）。步骤=固定搜「华为」。待复核总数搜索前后不变。D4·仍无含华为行→ ENV-CULTIVATE-HUAWEI-PRECOND。登录与关评审由 runner 前置。B 档零 allow_skip。

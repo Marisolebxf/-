@@ -1,23 +1,23 @@
 {
   "entry_id": "chain-search",
-  "surveyed_at": "2026-10-14T15:19:17.554Z",
+  "surveyed_at": "2026-10-20T11:59:32.249Z",
   "base_url": "http://111.198.38.90:50892/",
   "route": "/industry-center/search",
-  "overall": "pass",
+  "overall": "fail",
   "method": "headless chromium via survey-page.mjs + _env-gate-probe.mjs (no IDE browser)",
   "gates": [
     {
       "id": "G1-login-deeplink",
-      "pass": true,
+      "pass": false,
       "detail": {
         "url": "http://111.198.38.90:50892/industry-center/search",
         "title": "产业查询 - 科技专题服务系统",
-        "h1Ok": true,
-        "smartSelected": true,
-        "shellOk": true,
-        "modeTabCount": 3,
-        "exampleChips": 3,
-        "hotChips": 2
+        "h1Ok": false,
+        "smartSelected": false,
+        "shellOk": false,
+        "modeTabCount": 0,
+        "exampleChips": 0,
+        "hotChips": 0
       },
       "screenshot": "fixtures/scout/env-gate-shell.png"
     },
@@ -31,10 +31,10 @@
     },
     {
       "id": "G3-leading-recommend",
-      "pass": true,
+      "pass": false,
       "detail": {
-        "regionVisible": true,
-        "recommendOk": true,
+        "regionVisible": false,
+        "recommendOk": false,
         "notHitList": true,
         "note": "初始态=推荐产业引导，非检索命中列表"
       },
@@ -42,36 +42,30 @@
     },
     {
       "id": "G4-example-chip-fill-only",
-      "pass": true,
+      "pass": false,
       "detail": {
-        "value": "人工智能",
-        "stillRecommend": true,
-        "hitTitle": false,
-        "auto_searched": false
+        "note": "chip 不可见或 disabled，未硬点"
       },
       "screenshot": "fixtures/scout/env-gate-chip-fill.png"
     },
     {
       "id": "G5-keyword-search-results",
-      "pass": true,
+      "pass": false,
       "detail": {
         "keyword": "光刻",
-        "hitTitle": true,
-        "entryCount": 2,
+        "hitTitle": false,
+        "entryCount": 0,
         "emptyAfter": false,
-        "body_hit": "产业查询 发现产业或产业链，查看可解释摘要；可进入全景图谱，或加入对比篮供其它分析分发。 智能检索 查产业 高级筛选 搜索 未命中预设字段，已按多字段关键词「光刻」检索；可改用高级筛选。 示例查询 人工智能 集成电路 生物医药 热门场景 重点产业 未来产业 最近检索 智能检索：光刻 智能检索：zzz_no_hit_xyz_99881 智能检索：低空交通 清空 产业查询返回 2 条结果 检索结果 共 2 条 结果内筛选 排序 目录推荐顺序"
+        "body_hit": "智能检索 查产业 高级筛选 搜索 未命中预设字段，已按多字段关键词「光刻」检索；可改用高级筛选。 示例查询 人工智能 集成电路 生物医药 热门场景 重点产业 未来产业 最近检索 智能检索：软件与信息服务 智能检索：光刻 智能检索：低空交通 清空 产业查询加载中 产业查询 正在加载产业目录或查询结果"
       },
       "screenshot": "fixtures/scout/env-gate-search-result.png"
     },
     {
       "id": "G6-hit-entry-actions",
-      "pass": true,
+      "pass": false,
       "detail": {
-        "panorama": 2,
-        "joinBasket": 1,
-        "abstract": 4
-      },
-      "screenshot": "fixtures/scout/env-gate-entry-actions.png"
+        "note": "G5 未出结果，跳过分发入口"
+      }
     },
     {
       "id": "G7-review-off-zero-leak",
@@ -97,13 +91,10 @@
     "stable_for_gold": [
       "登录深链 /industry-center/search",
       "智能检索三 Tab + 搜索框/搜索按钮 + 示例 chip",
-      "未检索推荐产业引导态",
-      "示例 chip 回填不自动检索",
-      "关键词「光刻」可出命中+进入全景图谱",
-      "命中条目含进入全景图谱/加入对比篮",
       "main 无 GAP-/Q0xx 泄漏"
     ],
     "not_for_gold": [
+      "结果态深验（G5 未过）",
       "低空交通检索（G8 空态 / P0-08 allow_skip）",
       "空输入点搜索仍出结果（P0-11 as-built 缺陷，预期红）",
       "高级筛选 / 查产业面板深验"
@@ -120,8 +111,7 @@
         "P0-04"
       ],
       "promote_optional": [
-        "P0-07",
-        "P0-09"
+        "P0-07"
       ],
       "rationale": "现 gold=P0-01..05。P0-04 含 allow_skip（method-patch §2 金样禁 allow_skip）→ 建议移出 A 档；壳层四条可机跑。若光刻稳定命中可升 P0-09（无 allow_skip，结果态）+ P0-07（初始引导）。P0-08 低空交通空态仅 B+ticket。本闸门只建议不改 index/cases。"
     }
@@ -129,5 +119,5 @@
   "tickets": [
     "ENV-CHAIN-SEARCH-DIKONG-EMPTY-001"
   ],
-  "conclusion": "环境闸门 overall=pass（method-patch §3：登录深链✅、无异步分析✅、光刻可出结果=true、零泄漏✅）。tickets=ENV-CHAIN-SEARCH-DIKONG-EMPTY-001。建议金样 keep P0-01/P0-02/P0-03/P0-05；drop P0-04；可选升 P0-07/P0-09。"
+  "conclusion": "环境闸门失败：G1-login-deeplink, G3-leading-recommend, G4-example-chip-fill-only, G5-keyword-search-results, G6-hit-entry-actions。tickets=ENV-CHAIN-SEARCH-DIKONG-EMPTY-001"
 }

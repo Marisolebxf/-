@@ -1,0 +1,52 @@
+id: FUNC-02589
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02589
+priority: P0
+title: 默认进入专题全景时筛选区已有选中值且加入对比篮可点
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已登录
+locators:
+  cluster: span[aria-label=集群]
+  industry: span[aria-label=产业]
+  chain: .industry-overview-chain-select
+  join: button「加入对比篮」/「移出对比篮」
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 进入专题全景后读取筛选区默认已选值与加入对比篮可用态
+expect:
+  - note: 产业前集群与产业两个选框均显示「新一代信息技术」（左侧 a11y 名为集群）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 8000 });
+      const clusterTxt = await page.locator('span[aria-label="集群"]').innerText();
+      if (!/新一代信息技术/.test(clusterTxt)) throw new Error('集群默认选中不符: ' + clusterTxt);
+      await expect(page.locator('span[aria-label="产业"]')).toBeVisible({ timeout: 8000 });
+      const industryTxt = await page.locator('span[aria-label="产业"]').innerText();
+      if (!/新一代信息技术/.test(industryTxt)) throw new Error('产业默认选中不符: ' + industryTxt);
+  - note: 产业链选框显示「半导体与集成电路」
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainTxt = await chain.innerText();
+      if (!/半导体与集成电路/.test(chainTxt)) throw new Error('产业链默认选中不符: ' + chainTxt);
+  - note: 「加入对比篮」可点击（已加入时文案为「移出对比篮」，仍须 enabled）
+    assert: |-
+      const join = page.getByRole('button', { name: /加入对比篮|移出对比篮/ }).first();
+      await expect(join).toBeVisible({ timeout: 8000 });
+      await expect(join).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/overview；深链进入。edu 现场集群+产业两级默认均为「新一代信息技术」（旧 50892 探针产业为 INB1701，D1 以 edu 为准对齐用例册「两个选框均显示新一代信息技术」）。产业链 .industry-overview-chain-select 默认「半导体与集成电路」。加入对比篮 role 可能匹配多枚，取 .first()；已入篮时文案「移出对比篮」仍计可点。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

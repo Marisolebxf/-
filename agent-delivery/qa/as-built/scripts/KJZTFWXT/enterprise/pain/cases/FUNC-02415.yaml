@@ -1,0 +1,197 @@
+id: FUNC-02415
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02415
+priority: P1
+title: 新增企业加入对比篮后按钮变移出且计数增加
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 新增企业名单已打开（assert 自含 picker→新增）
+  - 目标企业尚未在篮内（assert 优先选篮外「加入对比篮」行）
+locators:
+  add_modal: .arco-modal-title「新增企业」
+  join_basket: button「加入对比篮」
+  row_remove_basket: button「移出对比篮」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 打开选择分析企业→新增企业→点击一行「加入对比篮」；按钮态与计数在 expect
+expect:
+  - note: 1、该行按钮变为「移出对比篮」
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const readEnterpriseCount = async (scope) => {
+        const txt = ((await scope.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+          const dm = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+          if (dm) return parseInt(dm[1], 10);
+        }
+        return null;
+      };
+      const listBasketEnterpriseNames = async (scope) => {
+        const names = [];
+        const cards = scope.locator('.ent-compare-item-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const nameEl = card.locator('.ent-compare-item-card__name');
+          const name = (await nameEl.count())
+            ? (await nameEl.first().innerText()).trim()
+            : (await card.innerText()).split('\n')[0].trim();
+          if (name) names.push(name);
+        }
+        if (names.length) return names;
+        const sels = scope.locator('[aria-label^="选择 "]');
+        for (let i = 0; i < (await sels.count()); i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const openPicker = async () => {
+        const main = page.locator('main.content-shell-layout, main').first();
+        const adjustBtn = main.getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await adjustBtn.isVisible().catch(() => false)) {
+          await adjustBtn.click({ timeout: 8000 });
+        } else {
+          await expect(emptyCta).toBeVisible({ timeout: 8000 });
+          await emptyCta.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible').last();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await openPicker();
+      const panel = pickerRoot();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const beforeBasket = await listBasketEnterpriseNames(panel);
+      const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
+      const addBtn = (await workspace.count())
+        ? workspace.getByRole('button', { name: '新增', exact: true })
+        : panel.getByRole('button', { name: '新增', exact: true });
+      await expect(addBtn.first()).toBeVisible({ timeout: 8000 });
+      await addBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const modalRoot = page
+        .locator('[data-testid="compare-basket-add-modal"], .arco-modal:visible')
+        .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
+        .last();
+      await expect(modalRoot).toBeVisible({ timeout: 15000 });
+      await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+      const loadFail = modalRoot.getByText('名单读取失败', { exact: false });
+      if (await loadFail.count() && (await loadFail.first().isVisible().catch(() => false))) {
+        throw new Error('新增企业推荐接口失败（名单读取失败）');
+      }
+      const findJoinButtons = () => modalRoot.getByRole('button', { name: '加入对比篮', exact: true });
+      const refreshJoinList = async () => {
+        for (const kw of ['股份', '科技', '有限', '深圳']) {
+          const search = modalRoot.getByPlaceholder('输入企业名称');
+          if (!(await search.count())) break;
+          await search.click({ timeout: 5000 }).catch(() => {});
+          await search.fill('');
+          await search.pressSequentially(kw, { delay: 40 });
+          await page.waitForTimeout(1300);
+          await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+          if (await findJoinButtons().count()) return;
+        }
+      };
+      if (!(await findJoinButtons().count())) {
+        await refreshJoinList();
+      }
+      let joinBtns = findJoinButtons();
+      if (!(await joinBtns.count())) {
+        throw new Error('ENV-PAIN-ADD-MODAL-NO-JOIN-001：新增企业弹层无「加入对比篮」行');
+      }
+      const countBefore = await readEnterpriseCount(modalRoot);
+      if (countBefore === null) {
+        const cPanel = await readEnterpriseCount(panel);
+        if (cPanel !== null) globalThis.__func02415 = { countBefore: cPanel };
+      } else {
+        globalThis.__func02415 = { countBefore };
+      }
+      let targetName = '';
+      const joinN = await joinBtns.count();
+      for (let i = 0; i < joinN; i++) {
+        const btn = joinBtns.nth(i);
+        const row = btn.locator('xpath=ancestor::tr[1]');
+        const nm = ((await row.locator('td').first().innerText()) || '').trim();
+        if (!nm) continue;
+        const alreadyIn = beforeBasket.some((b) => b.includes(nm) || nm.includes(b));
+        if (!alreadyIn) {
+          targetName = nm;
+          await btn.click({ timeout: 8000 });
+          break;
+        }
+      }
+      if (!targetName) {
+        const firstJoin = joinBtns.first();
+        const row = firstJoin.locator('xpath=ancestor::tr[1]');
+        targetName = ((await row.locator('td').first().innerText()) || '').trim();
+        if (!targetName) throw new Error('无法读取待加入企业名称');
+        await firstJoin.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(800);
+      globalThis.__func02415 = { ...(globalThis.__func02415 || {}), target: targetName };
+      const rowAfter = modalRoot.locator('.arco-table-tr').filter({ hasText: targetName });
+      await expect(rowAfter.getByRole('button', { name: '移出对比篮', exact: true }).first()).toBeVisible({
+        timeout: 10000,
+      });
+  - note: 2、企业计数增加 1 家
+    assert: |-
+      const st = globalThis.__func02415 || {};
+      if (!st.target) throw new Error('前置：未完成加入对比篮');
+      const modalRoot = page
+        .locator('[data-testid="compare-basket-add-modal"], .arco-modal:visible')
+        .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
+        .last();
+      const panel = page.locator('.system-compare-panel:visible').last();
+      const readCount = async (scope) => {
+        const txt = ((await scope.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+          const dm = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+          if (dm) return parseInt(dm[1], 10);
+        }
+        return null;
+      };
+      let after =
+        (await modalRoot.isVisible().catch(() => false)) ? await readCount(modalRoot) : null;
+      if (after === null) after = await readCount(panel);
+      if (typeof st.countBefore !== 'number' || after === null) {
+        throw new Error('无法解析企业计数（前=' + st.countBefore + ' 后=' + after + '）');
+      }
+      if (after !== st.countBefore + 1) {
+        throw new Error('企业计数应增加 1 家：前 ' + st.countBefore + ' 后 ' + after);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=picker「新增」→新增企业 Modal 行内「加入对比篮」（对齐 SUPPLY FUNC-02317 / 用例 02429 前置）。机检=同行「移出对比篮」+「企业 N/50」+1。无加入行→ENV-PAIN-ADD-MODAL-NO-JOIN-001。登录与关评审由 runner 前置。B 档零 allow_skip。

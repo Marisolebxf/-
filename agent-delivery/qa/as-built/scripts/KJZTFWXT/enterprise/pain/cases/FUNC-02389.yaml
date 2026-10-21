@@ -1,0 +1,50 @@
+id: FUNC-02389
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02389
+priority: P0
+title: 未选企业时对象区空态引导且开始分析不可用
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 痛难点当前分析已打开；分析对象区无企业（URL 无 enterprise_codes 回填）
+locators:
+  guide: 请先在对比篮选择企业，再进入风险洞察配置。
+  precheck: 选择企业后显示数据与权限预检
+  start: 开始分析
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+  - note: 1、对象区显示「请先在对比篮选择企业，再进入风险洞察配置。」
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      await expect(page.getByText('请先在对比篮选择企业，再进入风险洞察配置。').first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func02389_empty = true;
+  - note: 2、预检区显示「选择企业后显示数据与权限预检」
+    assert: |-
+      if (!globalThis.__func02389_empty) throw new Error('前置：对象区空态未确认');
+      await expect(page.getByText('选择企业后显示数据与权限预检').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、「开始分析」不可点击
+    assert: |-
+      if (!globalThis.__func02389_empty) throw new Error('前置：对象区空态未确认');
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。脏 URL 带 enterprise_codes 时清参重进。对象空态文案与 testdata.object_empty 一致。登录与关评审由 runner 前置。金样 A 档零 allow_skip。

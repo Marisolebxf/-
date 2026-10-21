@@ -1,0 +1,82 @@
+id: FUNC-02621
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02621
+priority: P1
+title: 类型选政策且无事件时列表空态
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 当前为「产业资讯」
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_news: '#industry-overview-tab-news'
+  news_type: '[aria-label="资讯类型"]'
+  news_panel: '[data-frame-id="F-OV-02"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 进入「产业资讯」、展开类型选框并选「政策」，校验筛选空态
+expect:
+  - note: 前置：当前为「产业资讯」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业资讯' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=news/, { timeout: 8000 });
+      const newsTab = page.locator('#industry-overview-tab-news');
+      const aria = await newsTab.getAttribute('aria-selected');
+      const cls = await newsTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('前置：「产业资讯」Tab 未选中');
+      }
+      await expect(page.locator('[data-frame-id="F-OV-02"]')).toBeVisible({ timeout: 10000 });
+  - note: 步骤：展开类型选框并选择「政策」
+    assert: |-
+      const typeSel = page.locator('[aria-label="资讯类型"]');
+      await expect(typeSel).toBeVisible({ timeout: 8000 });
+      await typeSel.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const policyOpt = popup.locator('.arco-select-option').filter({ hasText: /^政策$/ });
+      await expect(policyOpt.first()).toBeVisible({ timeout: 8000 });
+      await policyOpt.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const typeTxt = (await typeSel.innerText()).replace(/\s+/g, ' ').trim();
+      if (!typeTxt.includes('政策')) {
+        throw new Error('类型选框应显示「政策」，实际：' + typeTxt);
+      }
+  - note: 1、列表区显示「当前筛选无事件」
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await expect(newsPanel).toBeVisible({ timeout: 8000 });
+      const empty = newsPanel.getByText('当前筛选无事件', { exact: true });
+      await expect(empty).toBeVisible({ timeout: 10000 });
+  - note: 2、不出现「查看详情」
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      const detailBtn = newsPanel.getByRole('button', { name: '查看详情' });
+      const n = await detailBtn.count();
+      if (n > 0) {
+        const vis = await detailBtn.first().isVisible().catch(() => false);
+        if (vis) {
+          throw new Error('政策筛选空态下不应出现「查看详情」，实际可见 count≥1');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；资讯区 F-OV-02，类型筛选 aria-label=资讯类型，选项值「政策」与
+  IndustryOverviewPage NEWS_TYPE_OPTIONS 一致；空态 a-empty description=「当前筛选无事件」。现场 demo 资讯 type 多为「产业」等，
+  非字面「政策」时筛选为空符合用例「类型无事件」。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

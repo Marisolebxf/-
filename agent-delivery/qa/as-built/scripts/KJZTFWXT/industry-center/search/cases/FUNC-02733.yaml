@@ -1,0 +1,72 @@
+id: FUNC-02733
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02733
+priority: P1
+title: 检索框为空时点击搜索仍进入检索结果
+entry_id: chain-search
+tier: A
+preconditions:
+  - 当前为「智能检索」Tab
+  - 检索框为空
+locators:
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  search_btn: button「搜索」（class 含 arco-input-search-btn）
+  result_region: region aria-label「产业查询结果」
+  degrade_hint: 未命中预设字段降级提示（搜索栏下方）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 检索框保持空并点「搜索」；两条预期在 expect 分步判定
+expect:
+  - note: 前置：智能检索 Tab 且检索框为空
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const smart = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(0);
+      await expect(smart).toBeVisible({ timeout: 10000 });
+      const aria = await smart.getAttribute('aria-selected');
+      const cls = (await smart.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('前置应为智能检索 Tab');
+      }
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('');
+      await expect(input).toHaveValue('', { timeout: 5000 });
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+  - note: 1、出现「检索结果」
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.getByRole('heading', { level: 2, name: '检索结果' })).toBeVisible({
+        timeout: 12000,
+      });
+      const guide = await region.getByText('推荐产业').count();
+      if (guide > 0) {
+        throw new Error('空词搜索后不应仍停在推荐产业引导态');
+      }
+  - note: 2、提示含「未命中预设字段」
+    assert: |-
+      await expect(page.getByText(/未命中预设字段/)).toBeVisible({ timeout: 8000 });
+      const hint = page.getByText(/未命中预设字段[\s\S]*「」[\s\S]*检索/);
+      await expect(hint).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  空词仍发起多字段检索（scout-empty-search：提示「未命中预设字段…关键词「」…」+ 检索结果 h2 + 产业查询返回 N 条）。
+  条数不钉死。路由 catalog_path /industry-center/search。对比篮遮挡 dismiss。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout-empty-search+02692 降级提示口径。

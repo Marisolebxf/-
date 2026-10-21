@@ -1,0 +1,81 @@
+id: FUNC-02989
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02989
+priority: P0
+title: 成功结果页综合指数、四力表与优短板
+entry_id: chain-regional-index
+tier: A
+preconditions:
+  - 分析记录中至少一条「已完成」任务可「查看结果」
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 分析记录→已完成行→查看结果（机检在 expect）
+expect:
+  - note: 前置：打开已完成任务的结果页且壳标题含「区域产业指数评价结果」
+    assert: |-
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const openCompletedResult = async () => {
+        await gate404();
+        await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).first();
+        if (!(await doneRow.count())) {
+          throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK: 分析记录无已完成行');
+        }
+        const viewBtn = doneRow.getByRole('button', { name: '查看结果' }).first();
+        await expect(viewBtn).toBeVisible({ timeout: 8000 });
+        await viewBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(2500);
+        const body = await main().innerText().catch(() => '');
+        const title = await page.title();
+        if (!/区域产业指数评价结果/.test(body) && !/区域产业指数评价结果/.test(title)) {
+          throw new Error('打开结果页后未见「区域产业指数评价结果」: ' + body.slice(0, 280));
+        }
+        await expect(main().getByText('区域产业指数评价结果').first()).toBeVisible({ timeout: 20000 });
+        globalThis.__func02989 = { body };
+      };
+      await openCompletedResult();
+  - note: 1、可见「区域产业综合指数」
+    assert: |-
+      if (!globalThis.__func02989) throw new Error('前置：未打开结果页');
+      await expect(page.locator('main').getByText('区域产业综合指数').first()).toBeVisible({ timeout: 15000 });
+  - note: 2、四力表列为「维度」「得分」，维度为支撑力、学术力、产业力、创新力
+    assert: |-
+      if (!globalThis.__func02989) throw new Error('前置：未打开结果页');
+      const main = await page.locator('main').innerText().catch(() => '');
+      for (const h of ['维度', '得分']) {
+        if (!main.includes(h)) throw new Error('四力表缺列「' + h + '」');
+      }
+      for (const d of ['支撑力', '学术力', '产业力', '创新力']) {
+        if (!main.includes(d)) throw new Error('四力表缺维度「' + d + '」（结果页与配置区分组名不同）');
+      }
+  - note: 3、同时有「优势」和「短板」
+    assert: |-
+      if (!globalThis.__func02989) throw new Error('前置：未打开结果页');
+      const main = await page.locator('main').innerText().catch(() => '');
+      if (!/优势/.test(main)) throw new Error('结果页未见「优势」区块');
+      if (!/短板/.test(main)) throw new Error('结果页未见「短板」区块');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index；步骤=分析记录首条「已完成」→「查看结果」。用例四力=支撑力/学术力/产业力/创新力（≠配置页商业力/技术力/学术力/支撑力）。不钉死分值。无已完成→ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK。edu 深链 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。A 档零 allow_skip。

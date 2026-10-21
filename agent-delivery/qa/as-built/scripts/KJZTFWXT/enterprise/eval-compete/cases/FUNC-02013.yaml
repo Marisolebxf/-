@@ -1,0 +1,76 @@
+id: FUNC-02013
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02013
+priority: P0
+title: 最近评估新建评估回到当前分析配置
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已打开最近评估 Tab
+locators:
+  hist_tab: Tab「最近评估」
+  new_eval_btn: button「新建评估」
+  cur_tab: Tab「当前分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 打开最近评估→点「新建评估」；Tab 与配置区判定在 expect
+expect:
+  - note: 1、回到当前分析（当前分析 Tab 选中且非历史结果/过程深链占屏）
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await dismissBasket();
+      const histTab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(histTab).toBeVisible({ timeout: 12000 });
+      await histTab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const histTable = main().locator('.arco-table').first();
+      await expect(histTable).toBeVisible({ timeout: 10000 });
+      const newBtn = main().getByRole('button', { name: '新建评估', exact: true });
+      if (!(await newBtn.count())) {
+        const alt = page.getByRole('button', { name: '新建评估', exact: true });
+        await expect(alt.first()).toBeVisible({ timeout: 8000 });
+        globalThis.__func02013_newBtn = alt.first();
+      } else {
+        await expect(newBtn.first()).toBeVisible({ timeout: 8000 });
+        globalThis.__func02013_newBtn = newBtn.first();
+      }
+      await globalThis.__func02013_newBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const u = page.url();
+      if (/view=(processing|result|report)/.test(u)) {
+        throw new Error('仍停留在历史过程/结果/报告深链：' + u);
+      }
+      const tabScope = main().locator('.arco-tabs').filter({ hasText: '最近评估' }).first();
+      const curTab = tabScope.getByRole('tab', { name: '当前分析' }).first();
+      if (await curTab.count()) {
+        const sel = await curTab.getAttribute('aria-selected');
+        if (sel !== 'true') {
+          throw new Error('工作区 Tab「当前分析」未选中；aria-selected=' + sel);
+        }
+      }
+      await expect(main().getByText('评估模板').first()).toBeVisible({ timeout: 10000 });
+      const histHeader = main().locator('th').filter({ hasText: '任务名称' });
+      if (await histHeader.count() && await histHeader.first().isVisible().catch(() => false)) {
+        throw new Error('仍显示最近评估任务表，未离开历史视图');
+      }
+  - note: 2、页上出现评估对象与开始分析（D1·30888 主按钮常为「个性化竞争力评价与输出」）
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      await expect(main().getByText('评估对象').first()).toBeVisible({ timeout: 10000 });
+      const startCandidates = main().locator('button').filter({ hasText: /开始分析|发起分析|个性化竞争力评价与输出/ });
+      if (!(await startCandidates.count())) {
+        throw new Error('未见开始分析同族主按钮（开始分析/发起分析/个性化竞争力评价与输出）');
+      }
+      await expect(startCandidates.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  02013 主流程-离开历史：最近评估 Tab 内点「新建评估」→回到当前分析配置（非 view=processing|result|report）。评估对象区含空态引导或已回填「来自对比篮」；开始分析同族含 D1「发起分析」。30888 路由 /enterprise-center/evaluation。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

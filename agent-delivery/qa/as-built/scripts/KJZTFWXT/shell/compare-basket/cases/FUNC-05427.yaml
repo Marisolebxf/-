@@ -1,0 +1,129 @@
+id: FUNC-05427
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05427
+priority: P1
+title: 恢复默认位置回到右下
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  layer: .system-compare-layer[data-panel-open="true"]
+  drag_handle: '[data-system-compare-drag-handle="panel"]'
+  more_ops: button aria-label「更多操作」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 拖标题栏→更多操作→恢复默认位置；位置在 expect 判定
+expect:
+  - note: 1、对比篮 workbench 已打开
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const pickerTitle = panel.getByText('选择分析企业', { exact: true });
+      if (await pickerTitle.count() && (await pickerTitle.first().isVisible().catch(() => false))) {
+        throw new Error('对比篮为 picker 模式，无「更多操作」（需系统浮层 workbench 态）');
+      }
+      const layer = page.locator('.system-compare-layer[data-panel-open="true"]');
+      await expect(layer).toBeVisible({ timeout: 8000 });
+      globalThis.__func05427_panelReady = true;
+  - note: 2、拖动浮层标题栏后位置偏离原位置
+    assert: |-
+      if (!globalThis.__func05427_panelReady) throw new Error('前置未打开对比篮');
+      const layer = page.locator('.system-compare-layer[data-panel-open="true"]');
+      const readAnchor = async () => {
+        const v = await layer.evaluate((el) => ({
+          right: parseFloat(el.style.right) || 0,
+          top: parseFloat(el.style.top) || 0,
+        }));
+        return v;
+      };
+      const before = await readAnchor();
+      const handle = layer.locator('[data-system-compare-drag-handle="panel"]');
+      await expect(handle).toBeVisible({ timeout: 8000 });
+      const box = await handle.boundingBox();
+      if (!box) throw new Error('拖动把手无 boundingBox');
+      const cx = box.x + box.width / 2;
+      const cy = box.y + Math.min(24, box.height / 2);
+      await page.mouse.move(cx, cy);
+      await page.mouse.down();
+      await page.mouse.move(cx - 280, cy - 220, { steps: 12 });
+      await page.mouse.up();
+      await page.waitForTimeout(400);
+      const afterDrag = await readAnchor();
+      const moved = Math.hypot(afterDrag.right - before.right, afterDrag.top - before.top);
+      if (moved < 16) throw new Error('拖动标题栏后浮层位置未明显变化: before=' + JSON.stringify(before) + ' after=' + JSON.stringify(afterDrag));
+      globalThis.__func05427_dragged = true;
+  - note: 3、点击「更多操作」→「恢复默认位置」
+    assert: |-
+      if (!globalThis.__func05427_dragged) throw new Error('前置未完成拖动');
+      const panel = page.locator('.system-compare-panel');
+      const moreBtn = panel.getByRole('button', { name: '更多操作' });
+      await expect(moreBtn).toBeVisible({ timeout: 8000 });
+      await moreBtn.click({ timeout: 10000, force: true });
+      await page.waitForTimeout(400);
+      const candidates = [
+        page.getByRole('menuitem', { name: '恢复默认位置', exact: true }),
+        page.locator('.arco-dropdown-option').filter({ hasText: '恢复默认位置' }),
+        page.locator('.arco-trigger-popup:visible').getByText('恢复默认位置', { exact: true }),
+      ];
+      let resetItem = null;
+      for (const loc of candidates) {
+        if (await loc.count() && (await loc.first().isVisible().catch(() => false))) {
+          resetItem = loc.first();
+          break;
+        }
+      }
+      if (!resetItem) throw new Error('更多操作菜单中未见「恢复默认位置」');
+      await resetItem.click({ timeout: 10000, force: true });
+      await page.waitForTimeout(500);
+      globalThis.__func05427_resetClicked = true;
+  - note: 1、浮层移回视口右下角
+    assert: |-
+      if (!globalThis.__func05427_resetClicked) throw new Error('前置未点击恢复默认位置');
+      const layer = page.locator('.system-compare-layer[data-panel-open="true"]');
+      await expect(layer).toBeVisible({ timeout: 8000 });
+      const pos = await layer.evaluate((el) => {
+        const right = parseFloat(el.style.right) || 0;
+        const top = parseFloat(el.style.top) || 0;
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
+        const margin = 16;
+        const rawDefaultTop = Math.max(72, vh - 40 - 24);
+        const rawDefaultRight = 24;
+        const maxTop = Math.max(margin, vh - rect.height - margin);
+        const maxRight = Math.max(margin, vw - rect.width - margin);
+        const expectTop = Math.min(Math.max(rawDefaultTop, margin), maxTop);
+        const expectRight = Math.min(Math.max(rawDefaultRight, margin), maxRight);
+        return {
+          right,
+          top,
+          expectTop,
+          expectRight,
+          rectRightGap: vw - rect.right,
+          rectBottomGap: vh - rect.bottom,
+        };
+      });
+      if (Math.abs(pos.right - pos.expectRight) > 8 || Math.abs(pos.top - pos.expectTop) > 8) {
+        throw new Error('恢复后锚点未回到 clamp 默认右下: ' + JSON.stringify(pos));
+      }
+      if (pos.rectRightGap < 8 || pos.rectRightGap > 56) {
+        throw new Error('恢复后浮层未贴近视口右缘: ' + JSON.stringify(pos));
+      }
+      if (pos.rectBottomGap < 8 || pos.rectBottomGap > 96) {
+        throw new Error('恢复后浮层未贴近视口下缘: ' + JSON.stringify(pos));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。拖动 system-compare-panel__drag-handle（aria-label 拖动对比篮）后点「更多操作」→「恢复默认位置」；锚点对齐 SystemCompareBasketLayer defaultAnchor+clamp（right≈24）。与 05410 分开（05410 只验菜单项可见）。登录与关评审由 runner 前置。B 档零 allow_skip。

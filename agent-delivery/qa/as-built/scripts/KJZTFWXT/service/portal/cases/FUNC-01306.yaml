@@ -1,0 +1,79 @@
+id: FUNC-01306
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01306
+priority: P0
+tier: A
+title: 门户路由默认落概况且页头与五页签构成正确
+entry_id: svc-portal
+story: US-SVC-PT-01
+preconditions:
+  - 系统正常；已登录 admin（runner 会话前置）
+locators:
+  menu_selected: .arco-menu-item.arco-menu-selected（文案「专题服务」）
+  sz_header_btn: header 区 button「深圳产业服务介绍」（非 Tab）
+  tablist: '[aria-label="专题服务子导航"]'
+  tabs: role=tab（五页签，顺序见附录 A）
+steps:
+  - action: goto
+    target: /service-portal
+expect:
+  - note: 地址栏 URL 自动变为 /service-portal/overview（IA 默认落点）
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal 深链 SPA404，无法验 IA 重定向 url=' + page.url());
+      }
+      await page.waitForURL(/\/service-portal\/overview/, { timeout: 30000 }).catch(() => {});
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 重定向后仍 SPA404 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/\/service-portal\/overview/, { timeout: 5000 });
+  - note: 页标题为「专题服务」、顶部侧栏「专题服务」呈当前高亮态且页头右侧有「深圳产业服务介绍」按钮
+    assert: |-
+      await expect(page).toHaveTitle(/专题服务/);
+      const menuSel = page.locator('.arco-menu-item.arco-menu-selected').filter({ hasText: /^专题服务$/ });
+      await expect(menuSel.first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '深圳产业服务介绍', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('navigation', { name: '面包屑' })).toContainText('专题服务');
+  - note: 五个页签构成与顺序与附录 A 一致、默认选中「全球服务机构概况」
+    assert: |-
+      const expected = [
+        '全球服务机构概况',
+        '服务机构产业分布',
+        '服务机构区域分布',
+        '服务机构技术能力',
+        '深圳产业服务介绍',
+      ];
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await expect(tablist).toBeVisible({ timeout: 8000 });
+      const tabs = tablist.getByRole('tab');
+      await expect(tabs).toHaveCount(5);
+      for (let i = 0; i < expected.length; i++) {
+        await expect(tabs.nth(i)).toHaveText(expected[i], { timeout: 8000 });
+      }
+      const overviewTab = tablist.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      const aria = await overviewTab.getAttribute('aria-selected');
+      const cls = (await overviewTab.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('概况 Tab 未选中（aria-selected=' + aria + '）');
+      }
+      await expect(page.getByRole('heading', { name: '全球服务机构概况', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  深链 goto catalog_path /service-portal，IA 重定向 /service-portal/overview（entry-seed.default_landing；menu.ts redirect svc-portal-overview）。
+  五 Tab 在 aria-label=专题服务子导航 的 tablist；侧栏高亮 .arco-menu-item.arco-menu-selected 文案「专题服务」。
+  页头「深圳产业服务介绍」为 primary button（role=button），与同名 Tab（role=tab）区分；点击分流归 03888。面包屑顺带可见。
+  edu.itic-sci.com/tts/svcz 2026-10-21 实跑：/service-portal 与 /service-portal/overview 均 SPA404 → ENV-EDU-TTS-SVCZ-404-001（同 REGCOMP 波）。
+  对比篮默认展开时先关再断言。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

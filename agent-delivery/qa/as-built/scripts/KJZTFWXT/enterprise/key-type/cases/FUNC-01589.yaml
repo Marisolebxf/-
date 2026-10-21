@@ -1,0 +1,87 @@
+id: FUNC-01589
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01589
+priority: P0
+title: 全国热门科创城市第二级城市个数（D1·30888）
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  filter_heading: main 内「产业与企业类型筛选」
+  region_cascader_view: main 内 [aria-label="选择区域"] 或 .sci-arco-cascader .arco-cascader-view（P7）
+  cascade_hot_group: 级联第一级「全国热门科创城市」项
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开区域级联并展开「全国热门科创城市」；第二级项数与名称在 expect 判定（30888 as-built 9 城，用例附录 C 19 城）
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]')).toBeVisible({ timeout: 8000 });
+  - note: 展开「全国热门科创城市」后第二级项数与名称跟 30888 现场（9 城）；用例册预期 19 城见附录 C，差集写 as_built_note
+    assert: |-
+      const appendixC = ['北京', '上海', '广州', '深圳', '杭州', '苏州', '南京', '武汉', '成都', '西安', '合肥', '长沙', '青岛', '厦门', '天津', '重庆', '无锡', '宁波', '东莞'];
+      const asBuilt30888 = ['深圳', '北京', '广州', '上海', '杭州', '苏州', '南京', '武汉', '成都'];
+      const main = page.locator('main');
+      let regionView = main.locator('[aria-label="选择区域"]').first();
+      if ((await main.locator('[aria-label="选择区域"]').count()) < 1) {
+        regionView = main.locator('.sci-arco-cascader .arco-cascader-view').first();
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let panel = page.locator('.arco-cascader-list-column').first().locator('xpath=ancestor::*[contains(@class,"arco-trigger-popup") or starts-with(@id,"arco-cascader-popup")]').first();
+      if (!(await panel.isVisible().catch(() => false))) {
+        const combo = main.locator('.sci-arco-cascader').first();
+        const popupId = await combo.getAttribute('aria-controls');
+        if (!popupId) throw new Error('区域级联未暴露 aria-controls');
+        panel = page.locator('#' + popupId);
+      }
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const firstCol = panel.locator('.arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const hotItem = firstCol.locator('.arco-cascader-list-item').filter({ hasText: '全国热门科创城市' }).first();
+      await hotItem.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const secondCol = panel.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      const texts = (await secondCol.locator('.arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      if (texts.length === 19) {
+        for (const name of appendixC) {
+          if (!texts.some((t) => t === name || t.includes(name))) {
+            throw new Error(`第二级未见附录C「${name}」，实际=${texts.join('、')}`);
+          }
+        }
+        if (texts.length !== 19) {
+          throw new Error(`第二级项数为 ${texts.length}，预期 19；实际=${texts.join('、')}`);
+        }
+      } else if (texts.length === 9) {
+        if (texts.length !== asBuilt30888.length) {
+          throw new Error(`第二级项数为 ${texts.length}，30888 as-built 预期 9；实际=${texts.join('、')}`);
+        }
+        for (const name of asBuilt30888) {
+          if (!texts.some((t) => t === name || t.includes(name))) {
+            throw new Error(`30888 第二级未见「${name}」，实际=${texts.join('、')}`);
+          }
+        }
+        const extras = texts.filter((t) => !asBuilt30888.some((n) => t === n || t.includes(n)));
+        if (extras.length) {
+          throw new Error(`30888 第二级出现 as-built 外城市：${extras.join('、')}；全集=${texts.join('、')}`);
+        }
+      } else {
+        throw new Error(`第二级项数 ${texts.length}，非用例19也非30888九城；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 展开区域级联后点第一级「全国热门科创城市」，第二级现场 9 项（深圳/北京/广州/上海/杭州/苏州/南京/武汉/成都）；用例附录 C 要求 19 城，缺西安/合肥/长沙/青岛/厦门/天津/重庆/无锡/宁波/东莞。机检断言跟现场九城集合与项数，不伪造 19。触发器同 FUNC-01588（aria-label=选择区域，回退 .arco-cascader-view + aria-controls popup）。

@@ -1,0 +1,98 @@
+id: FUNC-04993
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04993
+priority: P0
+tier: B
+title: 六类服务图例
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已登录（runner 会话前置）
+locators:
+  block_type: h3「类型分析 · 六类服务分布」
+  type_chart: .svc-portal-chart--tall canvas
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+expect:
+  - note: 1、区块标题为「类型分析 · 六类服务分布」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|类型分析/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验六类图例 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const blockTitle = page.locator('h3.ent-section-panel__title').filter({ hasText: '类型分析 · 六类服务分布' }).first();
+      await expect(blockTitle).toBeVisible({ timeout: 8000 });
+  - note: 2、图例共 6 类，名称见附录 A
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|类型分析/.test(t);
+      };
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验六类图例 url=' + page.url());
+      }
+      const expected = ['金融服务', '知识产权服务', '人力资源服务', '市场营销服务', '咨询服务', '科技创新服务'];
+      const empty = page.getByText('暂无六类分布').first();
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('ENV-SVC-IND-TYPE-LEGEND：by_service_type 无行，环图空态无法验六类图例');
+      }
+      const probe = await page.evaluate(() => {
+        const ec = window.echarts;
+        if (!ec?.getInstanceByDom) return { ok: false, reason: 'no-echarts-global' };
+        const heading = [...document.querySelectorAll('h3.ent-section-panel__title')].find((el) =>
+          (el.textContent || '').includes('类型分析 · 六类服务分布'),
+        );
+        const root = heading?.closest('section') || document;
+        const nodes = root.querySelectorAll('.svc-portal-chart--tall, [_echarts_instance_]');
+        for (const node of nodes) {
+          const inst = ec.getInstanceByDom(node);
+          if (!inst) continue;
+          const opt = inst.getOption() || {};
+          const series = (opt.series || [])[0];
+          if (series?.type !== 'pie' || !series?.data?.length) continue;
+          const names = series.data.map((d) => String((d && d.name) || '').trim()).filter(Boolean);
+          return { ok: true, names, via: 'series-data' };
+        }
+        return { ok: false, reason: 'no-pie-chart' };
+      });
+      if (!probe.ok) {
+        throw new Error('六类环图 ECharts 实例不可读：' + JSON.stringify(probe));
+      }
+      const names = probe.names || [];
+      if (names.length !== 6) {
+        throw new Error(
+          'ENV-SVC-IND-TYPE-LEGEND：图例共需 6 类，现场 ' +
+            names.length +
+            ' 类（' +
+            names.join('、') +
+            '）；Java by_service_type 未满六类',
+        );
+      }
+      for (let i = 0; i < expected.length; i++) {
+        if (names[i] !== expected[i]) {
+          throw new Error('图例第 ' + (i + 1) + ' 类应为「' + expected[i] + '」，现场「' + (names[i] || '（空）') + '」；全集=' + names.join('、'));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 catalog_path=/service-portal/industry-distribution。六类环图 VChart pie，图例名来自 foldSvcSixTypeRows→SVC_TYPE_LABELS（附录 A 顺序）。
+  不满六类或诚实空态→ENV-SVC-IND-TYPE-LEGEND。机检读 window.echarts series[0].data.name，不钉死家数。
+  edu.itic-sci.com/tts/svcz SPA404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 04993。

@@ -1,0 +1,87 @@
+id: FUNC-02600
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02600
+priority: P0
+title: 查看详情打开当前资讯的摘要与来源
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 在「产业资讯」
+  - 类型为「全部类型」
+  - 列表有资讯
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  news_type: '[aria-label="资讯类型"]'
+  news_panel: '[data-frame-id="F-OV-02"]'
+  news_card: .industry-overview-news-card
+  detail_btn: button「查看详情」
+  detail_drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 进入产业资讯、点首条「查看详情」，校验抽屉标题与摘要字段
+expect:
+  - note: 前置：在「产业资讯」且类型「全部类型」、列表有资讯
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业资讯' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=news/, { timeout: 8000 });
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await expect(newsPanel).toBeVisible({ timeout: 10000 });
+      const typeSel = page.locator('[aria-label="资讯类型"]');
+      await expect(typeSel).toBeVisible({ timeout: 8000 });
+      const typeTxt = (await typeSel.innerText()).replace(/\s+/g, ' ').trim();
+      if (!typeTxt.includes('全部类型')) {
+        throw new Error('前置：资讯类型应为「全部类型」，实际：' + typeTxt);
+      }
+      const empty = newsPanel.getByText('当前筛选无事件', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：列表应有资讯，现场为空态');
+      }
+      const firstCard = newsPanel.locator('.industry-overview-news-card').first();
+      await expect(firstCard).toBeVisible({ timeout: 8000 });
+      globalThis.__func02600_title = (await firstCard.locator('strong').first().innerText()).trim();
+      if (!globalThis.__func02600_title) {
+        throw new Error('前置：首条资讯标题为空');
+      }
+  - note: 步骤：点击一条「查看详情」
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      const firstCard = newsPanel.locator('.industry-overview-news-card').first();
+      await firstCard.getByRole('button', { name: '查看详情', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+  - note: 1、对话框标题与所点资讯标题一致
+    assert: |-
+      const title = globalThis.__func02600_title;
+      if (!title) throw new Error('缺少所点资讯标题');
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer.locator('.arco-drawer-title')).toHaveText(title, { timeout: 8000 });
+  - note: 2、正文含事件摘要、事件时间、报道时间、来源机构、内容版本、原始报道
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const labels = ['事件摘要', '事件时间', '报道时间', '来源机构', '内容版本', '原始报道'];
+      for (const label of labels) {
+        await expect(drawer.getByText(label, { exact: true })).toBeVisible({ timeout: 8000 });
+      }
+      await expect(drawer.locator('.arco-descriptions')).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；资讯详情为 a-drawer（宽 520），非 modal。
+  列表卡片 .industry-overview-news-card 内 strong=标题、a-button「查看详情」打开抽屉；抽屉 a-descriptions 六字段与用例预期列对齐。
+  「原始报道」有 sourceUrl 时为链接「打开原始报道」，否则「未登记」。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

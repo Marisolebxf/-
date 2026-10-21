@@ -1,0 +1,130 @@
+id: FUNC-00970
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00970
+priority: P0
+title: 对标视图展示平均技术力平均商业力与企业密度
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已选定产业链且定位结果已加载；脚本自含选链并切多城市横向对标 Tab
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  metrics: 平均技术力 / 平均商业力 / 企业密度
+  form: 同口径多指标雷达对比 / 城市 × 指标对比表
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链后切对标 Tab；三项指标与同口径对比形态在 expect 判定
+expect:
+  - note: 对标 Tab 视图加载完成（对标城市或城市×指标对比表可见）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      await expect(page.getByText('对标城市').or(page.getByText('城市 × 指标对比表')).first()).toBeVisible({ timeout: 12000 });
+  - note: 指标区含平均技术力、平均商业力与企业密度三项
+    assert: |-
+      for (const m of ['平均技术力', '平均商业力', '企业密度']) {
+        await expect(page.locator('main').getByText(m, { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      }
+  - note: 对比呈现为深圳与对标城市同口径形态（城市表或雷达）
+    assert: |-
+      await expect(
+        page.getByText('同口径多指标雷达对比').or(page.getByText('城市 × 指标对比表')).first(),
+      ).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('main').getByText('深圳', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  接旧 P0-11 重写为 FUNC-00970。30888 深链 enterprise-center 前缀；对标 Tab 文案「多城市横向对标分析」。
+  指标区与对比表/雷达同屏；表内另有产业链完整度等列（多列不判 Fail）。算法数值正确性归算法库。
+  登录与关内部评审由 runner 会话前置。B 档 coverage。

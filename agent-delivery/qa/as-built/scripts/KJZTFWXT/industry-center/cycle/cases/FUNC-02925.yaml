@@ -1,0 +1,203 @@
+id: FUNC-02925
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02925
+priority: P1
+title: 已完成任务行点下载报告得到可打开文件
+story: US-CHAIN-DIAG-02
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 诊断记录有一条已完成任务；该行「下载报告」可以点
+locators:
+  records_tab: tab「诊断记录」
+  download_report: button「下载报告」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 侧栏进产业周期分析→诊断记录→已完成行点「下载报告」；文件在 expect
+expect:
+  - note: 1、得到一份可打开的报告文件
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const recordsSection = () => main().locator('.diagnosis-records, [data-frame-id="F-DIAG-05"]').first();
+      const recordsTable = () => recordsSection().locator('.arco-table').first();
+      const recordsPagination = () => recordsSection().locator('.arco-pagination').first();
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉/.test(t) && !/产业周期分析/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await assertNotSpa404('goto-catalog');
+        if (!/产业周期分析/.test(await page.locator('body').innerText().catch(() => ''))) {
+          await expandChainGroup();
+          const leaf = leafItem();
+          await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+          await leaf.first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          await assertNotSpa404('sidebar');
+        }
+        await expect(page).toHaveURL(/workspace=cycle/);
+      };
+      const scrollRecordActions = async () => {
+        const bodies = recordsSection().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const statusTrigger = async () => {
+        const statusLabel = page.getByText('任务状态', { exact: false }).first();
+        await expect(statusLabel).toBeVisible({ timeout: 8000 });
+        let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+        if ((await trigger.count()) < 1) {
+          trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+        }
+        await expect(trigger).toBeVisible({ timeout: 8000 });
+        return trigger;
+      };
+      const pickStatus = async (text) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = await statusTrigger();
+        const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown.includes(text)) return trigger;
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: new RegExp('^' + text + '$') }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        return trigger;
+      };
+      const pickCompletedDownload = async () => {
+        await scrollRecordActions();
+        const rows = recordsTable().locator('tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (!TID_RE.test(rowText)) continue;
+          if (!/已完成/.test(rowText)) continue;
+          if (!/产业周期分析/.test(rowText)) continue;
+          let dl = row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
+          if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
+          if (!(await dl.count())) continue;
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          await scrollRecordActions();
+          if (!(await dl.isVisible().catch(() => false))) continue;
+          if (await dl.isDisabled().catch(() => true)) continue;
+          const tidM = rowText.match(TID_RE);
+          if (!tidM) continue;
+          return { dl, tid: tidM[0] };
+        }
+        return null;
+      };
+      const pickCompletedWithPagination = async () => {
+        for (let guard = 0; guard < 20; guard++) {
+          const hit = await pickCompletedDownload();
+          if (hit) return hit;
+          const pag = recordsPagination();
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        return null;
+      };
+      await dismissBasket();
+      if (!/\/industry-center\/search/.test(page.url())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await enterCyclePage();
+      await page.waitForTimeout(800);
+      await assertNotSpa404('pre-records');
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await expect(recordsSection()).toBeVisible({ timeout: 8000 });
+      const recBody = await recordsSection().innerText().catch(() => '');
+      if (!TID_RE.test(recBody) && !/暂无|无记录/.test(recBody)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-RECORDS-001：诊断记录未见 CHAIN 任务行');
+      }
+      try {
+        await pickStatus('已完成');
+        await page.waitForTimeout(600);
+      } catch (_) {
+        /* 筛选用失败时仍从全量列表找「已完成」行 */
+      }
+      const picked = await pickCompletedWithPagination();
+      if (!picked) {
+        const filtered = (await recordsSection().innerText().catch(() => '')).replace(/\s+/g, ' ');
+        if (!/已完成/.test(filtered)) {
+          throw new Error('环境闸门 ENV-CHAIN-CYCLE-NO-COMPLETED-001：诊断记录无已完成任务（前置 1 不满足）');
+        }
+        throw new Error('环境闸门 ENV-CHAIN-CYCLE-NO-DOWNLOAD-001：有已完成行但「下载报告」不可点或不可见');
+      }
+      const assetRespPromise = page.waitForResponse(
+        (r) => /\/tasks\/[^/]+\/asset/.test(r.url()) && r.request().method() === 'GET',
+        { timeout: 20000 },
+      ).catch(() => null);
+      const downloadPromise = page.waitForEvent('download', { timeout: 20000 }).catch(() => null);
+      await picked.dl.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      const resp = await assetRespPromise;
+      const dl = await downloadPromise;
+      let fileOk = false;
+      let detail = 'tid=' + picked.tid;
+      if (resp) {
+        detail += ' assetStatus=' + resp.status();
+        if (resp.ok()) {
+          const buf = await resp.body().catch(() => null);
+          if (buf && buf.length > 0) fileOk = true;
+          detail += ' assetBytes=' + (buf ? buf.length : 0);
+        }
+      }
+      if (dl) {
+        const name = dl.suggestedFilename();
+        const path = await dl.path().catch(() => null);
+        if (name || path) {
+          fileOk = true;
+          detail += ' download=' + (name || path);
+        }
+      }
+      if (!fileOk) {
+        const msg = ((await page.locator('.arco-message').innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (msg) detail += ' message=' + msg.slice(0, 120);
+        throw new Error('点「下载报告」后未得到可打开文件（无 download、无 /asset 成功响应或无有效字节）；' + detail + '。2026-10-18 现场：按钮可点但无请求无文件无提示');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；诊断记录 Tab→筛「已完成」→首条可点「下载报告」→
+  机检=Playwright download 或 GET …/tasks/{taskId}/asset 200 且 body 非空（前端 analysisTaskAssetDownload 锚点下载）。
+  无已完成→ENV-CHAIN-CYCLE-NO-COMPLETED-001；钮 disabled→ENV-CHAIN-CYCLE-NO-DOWNLOAD-001。用例册备注 2026-10-18 缺陷：可点无文件。
+  登录关评审 runner 前置。B 档零 allow_skip。

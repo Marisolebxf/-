@@ -1,0 +1,43 @@
+id: FUNC-00474
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00474
+priority: P1
+title: 清空最近检索后当前模式记录消失
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: B
+preconditions:
+  - 「最近检索」区已有至少一条记录
+locators:
+  history_row: .enterprise-search-history-row
+  clear_recent: .enterprise-search-history-row button「清空」
+  empty_smart: 暂无「智能搜索」最近记录
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 前置造一条智能搜索最近记录；点最近检索行「清空」与空态断言见 expect
+expect:
+  - note: 出现当前检索模式无最近记录的空文案
+    assert: |-
+      const kw = '人工智能';
+      const recentLabel = `智能搜索：${kw}`;
+      const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ });
+      await input.fill(kw);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 15000 });
+      const origin = new URL(page.url()).origin;
+      await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await expect(page.getByText(recentLabel, { exact: true })).toBeVisible({ timeout: 8000 });
+      const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const confirmModal = page.locator('.arco-modal:visible').filter({ hasText: /确认|确定清空/ });
+      if (await confirmModal.count()) {
+        throw new Error('点击最近检索清空后出现确认框，与用例「无确认框」不符');
+      }
+      await expect(page.getByText('暂无「智能搜索」最近记录', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(recentLabel, { exact: true })).toHaveCount(0);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。清空按钮仅限 .enterprise-search-history-row 内「清空」，勿点高级筛选底栏「清空条件」。空态原文「暂无「智能搜索」最近记录」（用例册 00474 观测）。

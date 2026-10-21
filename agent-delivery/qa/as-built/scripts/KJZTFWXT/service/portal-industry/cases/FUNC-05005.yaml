@@ -1,0 +1,46 @@
+id: FUNC-05005
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05005
+priority: P1
+tier: B
+title: 页头进入深圳介绍
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布
+locators:
+  sz_header_btn: header 区 button「深圳产业服务介绍」（非 Tab）
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+expect:
+  - note: 1、主标题为「深圳产业服务介绍」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验页头分流 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      await page.getByRole('button', { name: '深圳产业服务介绍', exact: true }).first().click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 页头分流后 /service-portal/shenzhen SPA404，主标题断言未触达 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  前置深链 catalog_path=/service-portal/industry-distribution。点页头 primary button（role=button），勿点同名 Tab（role=tab）。
+  落点 /service-portal/shenzhen（门户 catalog）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

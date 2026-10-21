@@ -1,0 +1,184 @@
+id: FUNC-01430
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01430
+priority: P0
+title: 主流程-全部规模
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；候选工作台已有企业（assert 自含企业查询加入招引候选兜底）
+locators:
+  cand_tab: tab「候选工作台」
+  scale_select: placeholder「全部规模」
+  scale_column: 候选表列「企业规模」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+  - action: evaluate
+    note: 候选工作台→翻页采集名单企业规模去重→展开「全部规模」下拉；个数在 expect 判定
+expect:
+  - note: 1、选项个数等于当前名单企业规模的去重个数
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const origin = new URL(page.url()).origin;
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const candRoute = '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
+      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
+      const isCandidateWorkspace = async () => {
+        if (!(await candTab().count())) return false;
+        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
+      };
+      const openCandidateTab = async () => {
+        if (await isCandidateWorkspace()) return;
+        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        await candTab().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        if (!(await isCandidateWorkspace())) {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) {
+            await byKey.click({ timeout: 8000, force: true });
+            await page.waitForTimeout(900);
+          }
+        }
+        if (!(await isCandidateWorkspace())) {
+          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
+        }
+      };
+      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
+      const ensureOneCandidate = async () => {
+        await openCandidateTab();
+        let rows = await rowCount();
+        if (rows > 0) return;
+        const tryBasket = async () => {
+          const dock = page.getByRole('button', { name: /打开对比篮/ });
+          if (!(await dock.count())) return false;
+          await dock.first().click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          const addA = page.getByRole('button', { name: '加入招引候选' });
+          if (!(await addA.count())) return false;
+          const sels = page.locator('[aria-label^="选择 "]');
+          if (await sels.count()) await sels.first().click();
+          await page.waitForTimeout(400);
+          if (!(await addA.first().isEnabled())) return false;
+          await addA.first().click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+          await page.keyboard.press('Escape').catch(() => {});
+          return true;
+        };
+        if (await tryBasket()) {
+          await openCandidateTab();
+          rows = await rowCount();
+          if (rows > 0) return;
+        }
+        await page.goto(origin + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+        await page.getByRole('button', { name: '搜索' }).click();
+        await page.waitForTimeout(5000);
+        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addOpt = page.getByText('加入招引候选', { exact: true }).first();
+        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        await openCandidateTab();
+        rows = await rowCount();
+        if (rows < 1) {
+          const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
+          throw new Error('环境闸门 ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业（对比篮/企业查询加入后仍为空）: ' + txt.slice(0, 160));
+        }
+      };
+      const resolveScaleColIndex = async (st) => {
+        const ths = st.locator('.arco-table thead .arco-table-th');
+        const nTh = await ths.count();
+        for (let i = 0; i < nTh; i++) {
+          const t = ((await ths.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (t === '企业规模') return i;
+        }
+        throw new Error('候选表未见「企业规模」列头');
+      };
+      const collectDistinctScalesFromTable = async () => {
+        const st = stack();
+        const colIdx = await resolveScaleColIndex(st);
+        const uniq = new Set();
+        for (let round = 0; round < 40; round++) {
+          const trs = st.locator('.arco-table-body .arco-table-tr');
+          const rn = await trs.count();
+          for (let r = 0; r < rn; r++) {
+            const td = trs.nth(r).locator('.arco-table-td').nth(colIdx);
+            const v = ((await td.innerText()) || '').replace(/\s+/g, ' ').trim();
+            if (v && v !== '—' && v !== '-') uniq.add(v);
+          }
+          const pag = st.locator('[data-testid="candidate-pagination-bar"] .arco-pagination').first();
+          if ((await pag.count()) < 1 || !(await pag.isVisible().catch(() => false))) {
+            const pag2 = st.locator('.arco-pagination').filter({ has: page.locator('.arco-pagination-item') }).last();
+            if ((await pag2.count()) < 1) break;
+            const next2 = pag2.locator('.arco-pagination-item-next');
+            if ((await next2.count()) < 1) break;
+            const cls2 = (await next2.first().getAttribute('class')) || '';
+            if (/disabled/.test(cls2)) break;
+            await next2.first().click({ timeout: 5000 });
+            await page.waitForTimeout(600);
+            continue;
+          }
+          const next = pag.locator('.arco-pagination-item-next');
+          if ((await next.count()) < 1) break;
+          const cls = (await next.first().getAttribute('class')) || '';
+          if (/disabled/.test(cls)) break;
+          await next.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        if (!uniq.size) throw new Error('候选表「企业规模」列无有效单元格');
+        return uniq;
+      };
+      const readScaleDropdownLabels = async () => {
+        const st = stack();
+        await page.keyboard.press('Escape').catch(() => {});
+        const inp = st.locator('input[placeholder="全部规模"]').first();
+        await expect(inp).toBeVisible({ timeout: 10000 });
+        await inp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opts = pop.locator('.arco-select-option');
+        const on = await opts.count();
+        const labels = [];
+        for (let i = 0; i < on; i++) {
+          const t = ((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (t && t !== '全部规模') labels.push(t);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        return labels;
+      };
+      await dismissBasket();
+      await ensureOneCandidate();
+      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
+      const expected = await collectDistinctScalesFromTable();
+      const dropdownLabels = await readScaleDropdownLabels();
+      const dropdownSet = new Set(dropdownLabels);
+      if (dropdownSet.size !== expected.size) {
+        throw new Error(
+          '「全部规模」下拉选项数 ' + dropdownSet.size + ' 与名单规模去重个数 ' + expected.size + ' 不一致；下拉=[' +
+            [...dropdownSet].join('、') + '] 表内=[' + [...expected].join('、') + ']',
+        );
+      }
+      for (const v of expected) {
+        if (!dropdownSet.has(v)) {
+          throw new Error('下拉缺少名单规模「' + v + '」；下拉=[' + [...dropdownSet].join('、') + ']');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 /enterprise-center/attraction&entry=candidates；CandidatePanel placeholder「全部规模」、选项源=scaleOptions（allRecords 规模去重）。机检翻页扫「企业规模」列去重与下拉 option 个数及集合一致。前置同 FUNC-01428（对比篮/企业查询加入）。D4·候选空→ ENV-ATTRACT-CANDIDATE-EMPTY。登录与关评审由 runner 前置。B 档零 allow_skip。

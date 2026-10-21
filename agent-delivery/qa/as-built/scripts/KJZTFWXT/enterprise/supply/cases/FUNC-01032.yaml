@@ -1,0 +1,55 @@
+id: FUNC-01032
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01032
+priority: P0
+title: 路由直达供应链关系分析页且页头与 Tab 正确
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  catalog_route: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  h1: heading「企业供应链关系分析」
+  tab_current: tab「当前分析」
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: assert_url
+    expect_contains: workspace=supply-chain
+  - action: assert_visible
+    target: heading 企业供应链关系分析
+expect:
+  - note: 路由为 /enterprise/risk 且 query 含 workspace=supply-chain 与 tab=supply-chain
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/risk/);
+      await expect(page).toHaveURL(/workspace=supply-chain/);
+      await expect(page).toHaveURL(/tab=supply-chain/);
+  - note: 页标题为「企业供应链关系分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      await expect(page).toHaveTitle(/企业供应链关系分析 - 科技专题服务系统/);
+      await expect(page.getByRole('heading', { name: '企业供应链关系分析' })).toBeVisible({ timeout: 8000 });
+  - note: 页签为「当前分析」「最近分析」且默认停留「当前分析」
+    assert: |-
+      const cur = page.getByRole('tab', { name: '当前分析' }).first();
+      const recent = page.getByRole('tab', { name: '最近分析' }).first();
+      await expect(cur).toBeVisible({ timeout: 8000 });
+      await expect(recent).toBeVisible({ timeout: 8000 });
+      const cls = (await cur.getAttribute('class')) || '';
+      const aria = await cur.getAttribute('aria-selected');
+      if (aria !== 'true' && !/\bactive\b/.test(cls)) {
+        throw new Error('默认 Tab 非当前分析 aria=' + aria + ' class=' + cls);
+      }
+      if (/view=history/.test(page.url())) {
+        throw new Error('默认不应停在最近分析: ' + page.url());
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。与痛难点同壳 /enterprise/risk，靠 query 隔离。对比篮关闭钮可见再点。登录与关评审由 runner ensureBusinessSession。A 档零 allow_skip。

@@ -1,0 +1,86 @@
+id: FUNC-02618
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02618
+priority: P1
+title: 点击全屏后工具变为退出全屏
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 当前为「产业链全景」
+locators:
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  fullscreen_btn: button aria-label「全屏」
+  exit_fullscreen_btn: button aria-label「退出全屏」
+  panorama_h2: F-OV-01 内 h2 产业链全景标题
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 确认「产业链全景」Tab 后点击图谱工具「全屏」；预期在 expect 判定
+expect:
+  - note: 前置：当前为「产业链全景」且图谱已加载
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：当前链无快照，无法验图谱全屏');
+      }
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+  - note: 步骤：点击图谱工具「全屏」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const fsBtn = panel.locator('[aria-label="全屏"]').first();
+      await expect(fsBtn).toBeVisible({ timeout: 8000 });
+      await expect(fsBtn).toBeEnabled();
+      await fsBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+  - note: 1、该按钮变为「退出全屏」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const exitBtn = panel.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      await expect(exitBtn).toBeEnabled();
+      const fsCount = await panel.locator('[aria-label="全屏"]').count();
+      if (fsCount > 0) {
+        const vis = await panel.locator('[aria-label="全屏"]').first().isVisible().catch(() => false);
+        if (vis) throw new Error('全屏后仍可见「全屏」按钮');
+      }
+      const workbench = panel.locator('.industry-overview-panorama-workbench.is-fullscreen');
+      await expect(workbench).toBeVisible({ timeout: 8000 });
+  - note: 2、全景标题仍可见
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const t = ((await h2.innerText()) || '').trim();
+      if (!/产业链全景$/.test(t)) {
+        throw new Error('全景标题应仍以「产业链全景」结尾，实际：' + t);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；图谱工具 SharedMapChrome（aria 全屏/退出全屏），全屏态为 .industry-overview-panorama-workbench.is-fullscreen（CSS 工作台全屏，非浏览器 requestFullscreen）。
+  工具条作用域 F-OV-01 内 .industry-overview-canvas；默认 boot 链「半导体与集成电路」时 H2 为「半导体与集成电路产业链全景」。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

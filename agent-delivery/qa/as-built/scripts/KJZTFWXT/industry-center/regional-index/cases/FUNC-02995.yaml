@@ -1,0 +1,109 @@
+id: FUNC-02995
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02995
+priority: P0
+title: 当前未保存配置下一键均分使权重相等且合计校验通过
+story: US-CHAIN-REG-01
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已切到「当前未保存配置」
+  - 已计入指标不少于 1 项（着陆默认 6 项）
+locators:
+  template: 选择模板 → 当前未保存配置
+  avg: button「一键均分」
+  spins: main [role=spinbutton]
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 切未保存配置→一键均分（判定在 expect）
+expect:
+  - note: 1、已计入各项权重变为相等
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const html = (await page.content().catch(() => '')) || '';
+        if (/404|页面不存在|抱歉/.test(html)) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(500);
+        await dismissBasket();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 12000 });
+      await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup .arco-select-option', { hasText: '集成电路' }).first().click({ force: true });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click();
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true });
+      await page.waitForTimeout(900);
+      await expect(page.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('main [role=spinbutton]');
+      const n = await spins.count();
+      if (n < 1) throw new Error('无已计入权重 spin');
+      const before = [];
+      for (let i = 0; i < Math.min(n, 6); i++) before.push(Number(await spins.nth(i).inputValue()));
+      await page.getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const vals = [];
+      for (let i = 0; i < Math.min(n, 6); i++) vals.push(Number(await spins.nth(i).inputValue()));
+      const sum = vals.reduce((a, b) => a + b, 0);
+      if (Math.abs(sum - 100) > 1.5) throw new Error('均分后合计 ' + sum + ' vals=' + vals.join('/'));
+      const max = Math.max(...vals);
+      const min = Math.min(...vals);
+      if (max - min > 1.2) throw new Error('均分后权重不相等: before=' + before.join('/') + ' after=' + vals.join('/'));
+      globalThis.__func02995 = { avgDone: true };
+  - note: 2、出现「权重合计：100% · 校验通过」
+    assert: |-
+      if (!globalThis.__func02995?.avgDone) throw new Error('前置：未执行一键均分');
+      if (await (async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t);
+      })()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      await expect(page.getByText('权重合计：100% · 校验通过').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  替换作废 00573 之一键均分终态。catalog_path=entry-seed 深链 steps；404 时 sibling 侧栏进入（同 FUNC-02994/02993）。
+  须切「当前未保存配置」后点「一键均分」；官方默认 16×5+20 非均分。选产业「集成电路」后汇总才出「权重合计：100% · 校验通过」。
+  edu 深链+侧栏均 404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked。登录关评审 runner 前置。B 档零 allow_skip。

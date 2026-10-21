@@ -1,0 +1,68 @@
+id: FUNC-01588
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01588
+priority: P0
+title: 区域级联第一级选项个数与名称正确
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  filter_heading: main 内「产业与企业类型筛选」
+  region_cascader: main 内 span.sci-arco-cascader（区域级联触发器）
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开区域级联；第一级项数与四项名称在 expect 内分步判定
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]')).toBeVisible({ timeout: 8000 });
+  - note: 展开区域级联后第一级共 4 项
+    assert: |-
+      const main = page.locator('main');
+      const regionView = main.locator('[aria-label="选择区域"]').first();
+      if ((await main.locator('[aria-label="选择区域"]').count()) < 1) {
+        throw new Error('筛选区未见 aria-label=选择区域，url=' + page.url());
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const firstCol = page.locator('.arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const items = firstCol.locator('.arco-cascader-list-item');
+      const count = await items.count();
+      if (count !== 4) {
+        const sample = await items.allTextContents();
+        throw new Error(`区域级联第一级项数为 ${count}，预期 4；样本=${sample.join('|')}`);
+      }
+  - note: 第一级四项为全球、全国、区域、全国热门科创城市
+    assert: |-
+      const firstCol = page.locator('.arco-cascader-list-column').first();
+      if (!(await firstCol.isVisible().catch(() => false))) {
+        throw new Error('区域级联第一列未展开');
+      }
+      const expected = ['全球', '全国', '区域', '全国热门科创城市'];
+      const texts = (await firstCol.locator('.arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`第一级未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 4) {
+        throw new Error(`第一级去重后项数 ${texts.length}，预期 4；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；区域级联触发器 span.sci-arco-cascader + placeholder「全国热门科创城市 / 深圳 / 全部」。第一级选项与企业查询结果区口径一致（全球/全国/区域/全国热门科创城市×4）。

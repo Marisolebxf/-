@@ -1,0 +1,58 @@
+id: FUNC-01998
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01998
+priority: P1
+title: 保存为个人模板打开名称框且字数上限为 30
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已进入综合竞争力评估配置（as-built：当前分析工作区，非结果态）
+locators:
+  save_button: button「保存为个人模板」
+  save_modal: dialog 标题保存为个人模板
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 配置页点「保存为个人模板」；弹层输入与 /30 计数在 expect
+expect:
+  - note: 1、出现模板名称输入框
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      if (/view=result/.test(page.url())) {
+        const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+        await page.goto(origin + '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      await expect(page.getByRole('heading', { name: /企业.*竞争力/ }).first()).toBeVisible({ timeout: 12000 });
+      const saveBtn = main().getByRole('button', { name: '保存为个人模板' });
+      await saveBtn.scrollIntoViewIfNeeded();
+      await expect(saveBtn).toBeVisible({ timeout: 10000 });
+      await saveBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const modal = page.getByRole('dialog').filter({ hasText: '保存为个人模板' }).last();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      const nameInput = modal.getByPlaceholder(/便于识别|模板名称/);
+      await expect(nameInput).toBeVisible({ timeout: 8000 });
+      globalThis.__func01998_modal = modal;
+  - note: 2、字数计数以 /30 结尾
+    assert: |-
+      const modal = globalThis.__func01998_modal || page.getByRole('dialog').filter({ hasText: '保存为个人模板' }).last();
+      await expect(modal).toBeVisible({ timeout: 5000 });
+      const txt = (await modal.innerText()).replace(/\s+/g, ' ');
+      if (!/\d+\s*\/\s*30/.test(txt)) {
+        throw new Error('保存弹层字数计数未见 n/30；实见：' + txt.slice(0, 160));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  由作废 00427 重写；仅断言打开保存弹层后的名称输入与 n/30 计数，不断言保存成功。30888 /enterprise-center/evaluation；空态配置页亦可点保存（EvalConfigPanel）。弹层为 a-modal/dialog，placeholder「请输入便于识别的模板名称」，Arco show-word-limit 为 n/30。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,70 @@
+id: FUNC-02296
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02296
+priority: P0
+title: 结果页任务摘要回显展开方式
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析恢复一条成功结果后阅读任务摘要
+expect:
+  - note: 1、已进入成功结果页且任务摘要区可见
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const restoreFirstCompleted = async () => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (!(await restore.count())) {
+          throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+        }
+        await restore.first().click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      };
+      await restoreFirstCompleted();
+      await dismissBasket();
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 15000 });
+  - note: 2、展开方式为「重定中心逐级下钻（最多 3 级）」
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const expandLabel = '重定中心逐级下钻（最多 3 级）';
+      const inMain = main().getByText(expandLabel).first();
+      if (await inMain.isVisible().catch(() => false)) {
+        await expect(inMain).toBeVisible();
+        return;
+      }
+      const body = await main().innerText().catch(() => '');
+      if (!/展开方式/.test(body)) {
+        throw new Error('任务摘要未出现「展开方式」字段');
+      }
+      if (!body.includes(expandLabel)) {
+        throw new Error('展开方式文案不符，现场摘要片段：' + body.slice(body.indexOf('展开方式'), body.indexOf('展开方式') + 80));
+      }
+      await expect(main().getByText(expandLabel).first()).toBeVisible({ timeout: 5000 });
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析首条「恢复结果」进成功结果。步骤=阅读任务摘要。机检=任务摘要可见+展开方式「重定中心逐级下钻（最多 3 级）」（与 scout-result 一致）。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

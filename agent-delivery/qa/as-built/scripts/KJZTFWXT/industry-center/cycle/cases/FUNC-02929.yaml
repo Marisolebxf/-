@@ -1,0 +1,181 @@
+id: FUNC-02929
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02929
+priority: P1
+title: 报告目录定位局限性与使用边界节
+story: US-CHAIN-DIAG-02
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 已打开报告（assert 自含：成功结果→查看报告）
+locators:
+  report_toc: nav.report-toc
+  toc_limitations: nav.report-toc a（局限性与使用边界）
+  section_limitations: '#report-section-limitations'
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 打开只读报告后点目录「局限性与使用边界」；正文节标题与说明在 expect
+expect:
+  - note: 前置：成功结果页打开只读报告（步骤 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const pickSelect = async (aria, text) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown.includes(text)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const pickTimeRange = async (label) => {
+        const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first();
+        await timeSel.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const apply02888Config = async () => {
+        await dismissBasket();
+        await pickSelect('集群', '新一代信息技术');
+        await pickSelect('产业', '半导体与集成电路');
+        await pickTimeRange('近5年');
+        await page.locator('[role=spinbutton]').nth(0).fill('88000');
+        await page.waitForTimeout(300);
+      };
+      const isSuccessResult = async () => {
+        if (!/view=result/.test(page.url()) && !new URL(page.url()).searchParams.get('task_id')) return false;
+        const t = await main().innerText().catch(() => '');
+        if (/产业周期分析生成中|可视化分析过程/.test(t) && !/产业周期分析结果/.test(t)) return false;
+        return await page.getByText('产业周期分析结果').first().isVisible().catch(() => false);
+      };
+      const openResultFromProcessing = async () => {
+        const btn = page.getByRole('button', { name: /查看分析结果/ });
+        for (let i = 0; i < 30; i++) {
+          if (await isSuccessResult()) return;
+          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
+            await btn.first().click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(800);
+            if (await isSuccessResult()) return;
+          }
+          await page.waitForTimeout(i < 6 ? 500 : 1500);
+        }
+      };
+      const waitSuccessAfterStart = async () => {
+        let last = '';
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 500 : 2000);
+          last = await main().innerText().catch(() => '');
+          if (await isSuccessResult()) return;
+          if (/分析结果已生成/.test(last)) {
+            await openResultFromProcessing();
+            if (await isSuccessResult()) return;
+          }
+          if (/分析失败|本次分析失败/.test(last) && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CHAIN-CYCLE-ANALYSIS-FAIL-001：无法到达成功结果前置');
+          }
+        }
+        if (/view=processing|可视化分析过程/.test(page.url() + last)) {
+          throw new Error('ENV-CHAIN-CYCLE-ASYNC-NO-SUCCESS-001：分析长期停留过程态');
+        }
+        throw new Error('成功结果未在超时内打开：' + last.slice(0, 220));
+      };
+      const restoreCompletedIfNeeded = async () => {
+        if (await isSuccessResult()) return true;
+        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const views = main().getByRole('button', { name: '查看结果' });
+        const n = await views.count();
+        for (let i = 0; i < Math.min(n, 8); i++) {
+          let row = views.nth(i).locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = views.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (!rt || !/已完成/.test(rt) || !/产业周期分析/.test(rt)) continue;
+          await views.nth(i).click({ timeout: 15000 });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isSuccessResult()) return true;
+          }
+        }
+        return false;
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      if (!(await restoreCompletedIfNeeded())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await apply02888Config();
+        const start = main().getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 20000 });
+        await start.click({ timeout: 15000 });
+        await waitSuccessAfterStart();
+      }
+      await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 15000 });
+      const reportBtn = main().getByRole('button', { name: '查看报告' }).first();
+      await expect(reportBtn).toBeVisible({ timeout: 8000 });
+      await expect(reportBtn).toBeEnabled({ timeout: 8000 });
+      await reportBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const toc = reader.locator('nav.report-toc');
+      await expect(toc).toBeVisible({ timeout: 8000 });
+      globalThis.__func02929 = { readerReady: true };
+  - note: 1、点目录「局限性与使用边界」后正文出现该节标题
+    assert: |-
+      if (!globalThis.__func02929?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      const toc = reader.locator('nav.report-toc');
+      const tocLink = toc.locator('a').filter({ hasText: '局限性与使用边界' }).first();
+      await expect(tocLink).toBeVisible({ timeout: 8000 });
+      await tocLink.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const section = reader.locator('#report-section-limitations');
+      await expect(section).toBeVisible({ timeout: 8000 });
+      await expect(
+        section.locator('.report-section-heading__title h2, h2').filter({ hasText: '局限性与使用边界' }).first()
+      ).toBeVisible({ timeout: 8000 });
+      globalThis.__func02929.sectionReady = true;
+  - note: 2、该节有说明文字（现场「空结果诚实展示，不伪造结论。」）
+    assert: |-
+      if (!globalThis.__func02929?.sectionReady) throw new Error('前置：局限节未定位');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      const section = reader.locator('#report-section-limitations');
+      await expect(section).toBeVisible({ timeout: 8000 });
+      const bodyLine = section.locator('.report-section-lines li, .report-section__body').filter({ hasText: /空结果诚实展示，不伪造结论/ }).first();
+      await expect(bodyLine).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。前置同 02905（成功结果→「查看报告」→ SystemReportReader）。
+  步骤=nav.report-toc 点「07 局限性与使用边界」锚链（#report-section-limitations）；正文 h2 与 IndustryChainReportHost limitations 文案「空结果诚实展示，不伪造结论。」对齐用例册备注。
+  目录全称见附录 E。D4·edu tts/svcz SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,119 @@
+id: FUNC-04017
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04017
+priority: P1
+tier: B
+title: 备选-搜索字段（按名称过滤字段库）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「高级筛选」
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_search: placeholder「搜索字段名称 / key」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 高级筛选 Tab、在字段库搜索框输入「城市」；只过滤字段库不检索（判定在 expect）
+expect:
+  - note: 1、字段库保留「所在城市」；2、不再显示「机构名称」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const normalizeTagLabel = (raw) =>
+        (raw || '').replace(/\s+/g, ' ').trim().replace(/\s*推荐\s*$/, '').trim();
+      const collectVisibleFieldTags = async (fieldLib) => {
+        const tags = fieldLib.locator('.fp-tags .arco-tag');
+        const n = await tags.count();
+        const labels = [];
+        for (let i = 0; i < n; i++) {
+          const tag = tags.nth(i);
+          if (!(await tag.isVisible().catch(() => false))) continue;
+          labels.push(normalizeTagLabel(await tag.innerText()));
+        }
+        return labels.filter(Boolean);
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const searchInput = fieldLib.getByPlaceholder('搜索字段名称 / key');
+      await expect(searchInput).toBeVisible({ timeout: 8000 });
+      const beforeLabels = await collectVisibleFieldTags(fieldLib);
+      if (!beforeLabels.includes('机构名称')) {
+        throw new Error('前置：字段库应含「机构名称」，实际=' + JSON.stringify(beforeLabels));
+      }
+      await searchInput.fill('城市');
+      await page.waitForTimeout(400);
+      const afterLabels = await collectVisibleFieldTags(fieldLib);
+      if (!afterLabels.includes('所在城市')) {
+        throw new Error('过滤后字段库应保留「所在城市」，实际可见 Tag=' + JSON.stringify(afterLabels));
+      }
+      if (afterLabels.includes('机构名称')) {
+        throw new Error('过滤后不应显示「机构名称」，实际可见 Tag=' + JSON.stringify(afterLabels));
+      }
+      await expect(fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' })).toBeVisible({
+        timeout: 8000,
+      });
+      await expect(fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '机构名称' })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04017；catalog_path=/service-center/search。对齐产业查询 FUNC-02719 字段搜索模式：region 内 placeholder「搜索字段名称 / key」，
+  Tag 在 .fp-tags .arco-tag（strip「推荐」后缀）。输入「城市」只过滤字段库不发起检索。进页 sibling /industry-center/search + 侧栏 menu_leaf。

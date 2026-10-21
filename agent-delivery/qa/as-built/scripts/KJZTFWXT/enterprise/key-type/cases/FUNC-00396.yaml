@@ -1,0 +1,58 @@
+id: FUNC-00396
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00396
+priority: P1
+title: 查看 HTML 报告打开只读报告含七节目录且可返回看板
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 页头「查看 HTML 报告」或「生成 / 查看报告」可见
+locators:
+  report_btn: button「查看 HTML 报告」或「生成 / 查看报告」（页头）
+  readonly_mark: 文案「只读报告」
+  toc: 附录 E 七节目录
+  back_btn: button「返回分析结果」
+  page_h1: main heading「重点企业类型分析」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 打开只读报告、核对目录、返回看板；判定在 expect
+expect:
+  - note: 页内出现「只读报告」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page.locator('main').getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      const reportBtn = page.getByRole('button', { name: /查看 HTML 报告|生成\s*\/\s*查看报告/ });
+      await reportBtn.first().scrollIntoViewIfNeeded();
+      await reportBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const bg = page.getByRole('button', { name: '后台继续' });
+      if (await bg.isVisible().catch(() => false)) {
+        await bg.click({ timeout: 5000 });
+        await page.waitForTimeout(300);
+      }
+      if (!(await page.getByText('只读报告').count())) {
+        const u = new URL(page.url());
+        u.searchParams.set('demo_state', 'report');
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(600);
+      }
+      await expect(page.getByText('只读报告').first()).toBeVisible({ timeout: 8000 });
+  - note: 目录共 7 节（附录 E：末节为「局限性与使用边界」）
+    assert: |-
+      const sections = ['报告身份', '执行摘要', '对象与范围', '关键发现', '证据与分析', '数据来源与生成说明', '局限性与使用边界'];
+      for (const s of sections) {
+        await expect(page.getByText(s, { exact: false }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 点击「返回分析结果」后回到类型分析看板主区
+    assert: |-
+      await page.getByRole('button', { name: '返回分析结果' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.locator('main').getByRole('heading', { name: '重点企业类型分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；页头 CTA 可能为「生成 / 查看报告」，异步弹层点「后台继续」或 demo_state=report 进只读态（同 FUNC-01616）。目录末节用例附录 E「局限性与使用边界」（非旧稿「局限性」）。报告正文 Wave 0 Mock，不当真实分析预期。导出禁用归 FUNC-01616。登录与关内部评审由 runner 会话前置。

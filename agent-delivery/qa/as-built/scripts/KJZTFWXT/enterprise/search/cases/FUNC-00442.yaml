@@ -1,0 +1,70 @@
+id: FUNC-00442
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00442
+priority: P0
+title: 三种检索模式可切换且各自主区正确
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入企业查询
+locators:
+  smart_tab: tab 智能搜索
+  company_tab: tab 查企业
+  adv_tab: tab 高级筛选
+  company_input: placeholder 输入企业名称关键词
+  smart_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  field_lib_title: text 高级筛选 · 字段库
+  hub_return_link: 面包屑 link「企业查询」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 查企业
+  - action: wait
+    timeout_ms: 400
+    for: 查企业主区渲染
+  - action: click
+    target: tab 高级筛选
+  - action: wait
+    timeout_ms: 600
+    for: 高级筛选字段库渲染
+  - action: evaluate
+    note: 步骤3切回智能搜索在 expect[2] 自含（全页高筛态 Hub Tab 隐藏时经面包屑「企业查询」）
+expect:
+  - note: 查企业下搜索框占位指向企业名称关键词
+    assert: |-
+      await page.goto('http://10.50.69.111:30888/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(600);
+      await page.getByRole('tab', { name: '查企业' }).click();
+      await page.waitForTimeout(400);
+      await expect(page.getByPlaceholder('输入企业名称关键词')).toBeVisible({ timeout: 8000 });
+  - note: 高级筛选下呈现字段库且无智能搜索大输入框
+    assert: |-
+      await page.goto('http://10.50.69.111:30888/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(600);
+      await page.getByRole('tab', { name: '高级筛选' }).click();
+      await page.waitForTimeout(600);
+      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('搜索字段名称 / key')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toHaveCount(0);
+  - note: 切回智能搜索后四层主视觉与引导态再现
+    assert: |-
+      await page.goto('http://10.50.69.111:30888/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(600);
+      await page.getByRole('tab', { name: '查企业' }).click();
+      await page.waitForTimeout(400);
+      await page.getByRole('tab', { name: '高级筛选' }).click();
+      await page.waitForTimeout(600);
+      const smartTab = page.getByRole('tab', { name: '智能搜索' });
+      if (await smartTab.count()) {
+        await smartTab.click();
+      } else {
+        await page.locator('nav[aria-label="面包屑"]').getByRole('link', { name: '企业查询' }).click();
+      }
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('tab', { name: '智能搜索' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('示例查询').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText('热门场景').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search。高级筛选 page 变体进入后 Hub 模式 Tab 隐藏、面包屑「企业分析/企业查询/高级筛选」出现；步骤3等价操作=点面包屑「企业查询」回到 Hub 且默认选中智能搜索（Tab 仍可见时再点 Tab）。用例文案仍写「切回智能搜索」。

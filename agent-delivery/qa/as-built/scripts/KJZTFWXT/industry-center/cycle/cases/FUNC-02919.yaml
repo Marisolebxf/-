@@ -1,0 +1,163 @@
+id: FUNC-02919
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02919
+priority: P1
+title: 诊断记录每页条数改 20
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 诊断记录总条数不少于 20
+locators:
+  records_tab: tab「诊断记录」
+  records_table: section.diagnosis-records .arco-table
+  page_size_trigger: .diagnosis-records .arco-pagination .arco-select-view
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→诊断记录→每页条数；选项与行数在 expect
+expect:
+  - note: 1、选项为「10 条/页」「20 条/页」「50 条/页」，共 3 个
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const optSel = '.arco-select-dropdown:visible .arco-select-option, .arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=cycle/);
+        await expect(page).toHaveURL(/tab=cycle/);
+      };
+      const recordsSection = () => main().locator('section.diagnosis-records, [data-frame-id="F-DIAG-05"]').first();
+      const recordsTable = () => recordsSection().locator('.arco-table').first();
+      const parseTotal = async () => {
+        const pag = recordsSection().locator('.arco-pagination').first();
+        const t = ((await pag.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        if (m) return parseInt(m[1], 10);
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m2 = body.match(/共\s*(\d+)\s*条/);
+        return m2 ? parseInt(m2[1], 10) : 0;
+      };
+      const openRecordsTab = async () => {
+        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(recordsSection()).toBeVisible({ timeout: 10000 });
+        await expect(recordsTable()).toBeVisible({ timeout: 10000 });
+      };
+      const pageSizeTrigger = () => recordsSection().locator('.arco-pagination .arco-select-view').first();
+      await dismissBasket();
+      if (!/\/industry-center\/diagnosis/.test(page.url())) {
+        await enterCyclePage();
+      } else if (!/workspace=cycle/.test(page.url())) {
+        await enterCyclePage();
+      }
+      await page.waitForTimeout(600);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await openRecordsTab();
+      const total = await parseTotal();
+      if (total < 20) {
+        throw new Error('ENV-CHAIN-CYCLE-RECORDS-LT20-001：诊断记录共 ' + total + ' 条，不足 20 无法验每页 20 行');
+      }
+      globalThis.__func02919 = { total };
+      const trigger = pageSizeTrigger();
+      if (!(await trigger.count())) {
+        const byText = recordsSection().getByText(/\d+\s*条\/页/);
+        if (!(await byText.count())) throw new Error('诊断记录分页底栏未见每页条数控件');
+        await byText.first().click({ timeout: 8000 });
+      } else {
+        await trigger.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(500);
+      const options = page.locator(optSel);
+      await expect(options.first()).toBeVisible({ timeout: 8000 });
+      const n = await options.count();
+      const labels = [];
+      for (let i = 0; i < n; i++) {
+        labels.push(((await options.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim());
+      }
+      const normalized = labels.map((t) => t.replace(/\s/g, ''));
+      const want = ['10条/页', '20条/页', '50条/页'];
+      if (normalized.length !== 3) {
+        throw new Error('每页条数选项应为 3 个，现场 ' + normalized.length + ' 个：' + labels.join(' | '));
+      }
+      for (const w of want) {
+        if (!normalized.includes(w)) {
+          throw new Error('缺少选项「' + w + '」，现场：' + labels.join('、'));
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+  - note: 2、当前页展示 20 行
+    assert: |-
+      if (!globalThis.__func02919?.total || globalThis.__func02919.total < 20) {
+        throw new Error('前置：诊断记录总数未通过 20 条闸门');
+      }
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const optSel = '.arco-select-dropdown:visible .arco-select-option, .arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const recordsSection = () => main().locator('section.diagnosis-records, [data-frame-id="F-DIAG-05"]').first();
+      const recordsTable = () => recordsSection().locator('.arco-table').first();
+      const countTaskRows = async () => {
+        const rows = recordsTable().locator('tbody .arco-table-tr').filter({ hasText: /CHAIN-/ });
+        return await rows.count();
+      };
+      const pageSizeTrigger = () => recordsSection().locator('.arco-pagination .arco-select-view').first();
+      const pickPageSize = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const trigger = pageSizeTrigger();
+        if (!(await trigger.count())) {
+          await recordsSection().getByText(/\d+\s*条\/页/).first().click({ timeout: 8000 });
+        } else {
+          await trigger.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      await expect(recordsTable()).toBeVisible({ timeout: 8000 });
+      await pickPageSize('20');
+      const triggerText = pageSizeTrigger().count()
+        ? ((await pageSizeTrigger().innerText().catch(() => '')) || '').replace(/\s/g, '')
+        : ((await recordsSection().getByText(/\d+\s*条\/页/).first().innerText().catch(() => '')) || '').replace(/\s/g, '');
+      if (!triggerText.includes('20') || !triggerText.includes('条/页')) {
+        throw new Error('每页条数未切到 20 条/页，现场「' + triggerText + '」');
+      }
+      let rows = await countTaskRows();
+      for (let i = 0; i < 8 && rows < 20; i++) {
+        await page.waitForTimeout(500);
+        rows = await countTaskRows();
+      }
+      if (rows !== 20) {
+        throw new Error('当前页应展示 20 行任务，现场 tbody 含 CHAIN- 行数=' + rows);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口对齐 entry-seed：goto sibling /industry-center/search
+  再侧栏「产业链分析」→「产业周期分析」（深链冷启动 SPA 404）。用例=诊断记录 Tab→分页每页条数（pageSizeOptions 10/20/50）→选 20→当前页 20 行（CHAIN- 任务行计数）。
+  总条数<20→ENV-CHAIN-CYCLE-RECORDS-LT20-001。SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

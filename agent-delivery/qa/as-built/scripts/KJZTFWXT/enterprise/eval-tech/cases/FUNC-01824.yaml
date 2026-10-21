@@ -1,0 +1,171 @@
+id: FUNC-01824
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01824
+priority: P1
+title: 去掉已回填企业后对象家数减少
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 评估对象区已回填至少 2 家企业（脚本内对比篮勾选并确定）
+locators:
+  object_section: 评估对象 / 来自对比篮
+  remove_btn: button[aria-label="移除"] 或 .arco-tag-close-btn（对象区内）
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 回填≥2 家后点第一家旁的关闭/移除；家数与企业名判定在 expect
+expect:
+  - note: 1、该企业离开对象区；2、「来自对比篮」的家数减少
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const main = () => page.locator('main.app-main, main').first();
+      const parseBasketCount = (text) => {
+        const m = text.match(/来自对比篮\s*[·•]\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const recSection = page.locator('main section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 15000 });
+        const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) });
+        const cardCount = await cards.count();
+        if (cardCount < min) throw new Error('推荐企业卡不足 ' + min);
+        for (let i = 0; n < min && i < cardCount; i++) {
+          const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+          if (!(await btn.count()) || !(await btn.isVisible().catch(() => false))) continue;
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const openSelectOverlay = async () => {
+        const m = main();
+        const cta = m.getByRole('button', { name: /多企业技术力对比分析|前往对比篮选择企业/ }).first();
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          return;
+        }
+        const adjust = m.getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        if (await adjust.count() && await adjust.first().isVisible().catch(() => false)) {
+          await adjust.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs = 'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(evalRoute + '&' + pickerQs), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false)) return;
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          await dockBtn.click({ timeout: 10000 });
+          await page.waitForTimeout(1000);
+        }
+      };
+      const ensureConfigWithObjects = async (min) => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        const body = await main().innerText().catch(() => '');
+        const cnt = parseBasketCount(body);
+        if (cnt !== null && cnt >= min && !/暂未选择评估对象/.test(body)) return;
+        await openSelectOverlay();
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        if (await sels.count() < min) throw new Error('浮层可选企业不足 ' + min + ' 家');
+        for (let i = 0; i < min; i++) await sels.nth(i).click();
+        await page.waitForTimeout(300);
+        const confirm = page.getByRole('button', { name: '确定', exact: true }).last();
+        await expect(confirm).toBeEnabled({ timeout: 8000 });
+        await confirm.click({ timeout: 8000 });
+        await page.waitForTimeout(3500);
+        await closeBasket();
+        const after = await main().innerText().catch(() => '');
+        if (/暂未选择评估对象/.test(after)) throw new Error('确定后对象区仍为空态');
+        const c2 = parseBasketCount(after);
+        if (c2 === null || c2 < min) throw new Error('回填后家数不足 ' + min + '（当前 ' + c2 + '）');
+      };
+      const objectArea = () => {
+        const m = main();
+        return m.locator('section, div').filter({ hasText: '评估对象' }).filter({ hasText: /来自对比篮/ }).first();
+      };
+      const listObjectRemoveControls = async () => {
+        const area = objectArea();
+        const scope = (await area.count()) ? area : main();
+        const rmAria = scope.locator('button[aria-label="移除"], button[aria-label^="移除 "]');
+        const tagClose = scope.locator('.arco-tag-close-btn');
+        const nAria = await rmAria.count();
+        const nTag = await tagClose.count();
+        if (nAria > 0) return { kind: 'aria', loc: rmAria.first(), beforeN: nAria };
+        if (nTag > 0) return { kind: 'tag', loc: tagClose.first(), beforeN: nTag };
+        const globalRm = main().locator('button[aria-label="移除"], button[aria-label^="移除 "]');
+        if (await globalRm.count()) return { kind: 'aria', loc: globalRm.first(), beforeN: await globalRm.count() };
+        throw new Error('对象区未见移除/关闭控件（aria-label=移除 或 .arco-tag-close-btn）');
+      };
+      const pickRemovedEnterpriseName = async (ctrl) => {
+        const card = ctrl.locator('xpath=ancestor::*[contains(@class,"ent-") or contains(@class,"tag")][1]');
+        if (await card.count()) {
+          const t = (await card.innerText().catch(() => '')).split('\n')[0].trim();
+          if (t && t.length > 2 && !/来自对比篮|评估对象|移除/.test(t)) return t;
+        }
+        let areaText = '';
+        try { areaText = await objectArea().innerText(); } catch { areaText = await main().innerText().catch(() => ''); }
+        const lines = areaText.split('\n').map((s) => s.trim()).filter(Boolean);
+        for (const line of lines) {
+          if (/公司|集团|有限|股份/.test(line) && !/来自对比篮|返回对比篮|评估对象/.test(line)) return line;
+        }
+        return null;
+      };
+      await ensureBasketEnterprises(2);
+      await ensureConfigWithObjects(2);
+      await closeBasket();
+      const beforeText = await main().innerText().catch(() => '');
+      const beforeCount = parseBasketCount(beforeText);
+      if (beforeCount === null || beforeCount < 2) {
+        throw new Error('前置家数不足 2：' + (beforeCount ?? '无「来自对比篮 · N 家」文案'));
+      }
+      const ctrl = await listObjectRemoveControls();
+      const removedName = await pickRemovedEnterpriseName(ctrl.loc);
+      await ctrl.loc.scrollIntoViewIfNeeded().catch(() => {});
+      await ctrl.loc.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const afterText = await main().innerText().catch(() => '');
+      const afterCount = parseBasketCount(afterText);
+      if (afterCount === null || afterCount >= beforeCount) {
+        throw new Error('「来自对比篮」家数未减少：' + beforeCount + '→' + (afterCount ?? '无文案'));
+      }
+      if (removedName && afterText.includes(removedName)) {
+        throw new Error('移除后企业名仍在对象区：' + removedName);
+      }
+      const afterRmN = await main().locator('button[aria-label="移除"], button[aria-label^="移除 "]').count();
+      const afterTagN = await main().locator('.arco-tag-close-btn').count();
+      if (ctrl.kind === 'aria' && afterRmN >= ctrl.beforeN) {
+        throw new Error('移除钮数量未减：' + ctrl.beforeN + '→' + afterRmN);
+      }
+      if (ctrl.kind === 'tag' && afterTagN >= ctrl.beforeN) {
+        throw new Error('对象 tag 关闭钮数量未减：' + ctrl.beforeN + '→' + afterTagN);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01824 验配置页评估对象区点第一家旁关闭/移除（现场 aria-label=移除，与用例「关闭图标」D1 同义）。家数读「来自对比篮 · N 家」。30888 路由 enterprise-center/evaluation；对比篮空时推荐卡入篮≥2。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

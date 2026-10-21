@@ -1,0 +1,67 @@
+id: FUNC-01615
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01615
+priority: P0
+title: 企业详情招投标页签展示公告四列
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业详情已可从清单打开
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  list_drawer: .arco-drawer:visible（企业清单）
+  profile_btn: 清单行 button「查看画像」
+  detail_drawer: .arco-drawer:visible 且含 tab「工商概况」
+  tab_bid: 企业详情抽屉 tab「招投标」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单→查看画像→招投标；列/空态与标题判定在 expect 内
+expect:
+  - note: 有数据时展示「公告标题」「角色」「对手方」「日期」四列；无数据时可见招投标空态（不作唯一判据）；抽屉标题仍为「企业详情」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const listDrawer = page.locator('.arco-drawer:visible').first();
+      await expect(listDrawer).toBeVisible({ timeout: 8000 });
+      const profiles = listDrawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      await profiles.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const detailDrawer = page.locator('.arco-drawer:visible').filter({ has: page.getByRole('tab', { name: '工商概况' }) }).last();
+      await expect(detailDrawer.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 12000 });
+      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      const bidTab = detailDrawer.getByRole('tab', { name: '招投标' });
+      await expect(bidTab).toBeVisible({ timeout: 8000 });
+      await bidTab.scrollIntoViewIfNeeded();
+      await bidTab.click({ timeout: 8000 });
+      await expect(bidTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      const titleHeader = detailDrawer.locator('th').filter({ hasText: /^公告标题$/ });
+      const hasTable = (await titleHeader.count()) > 0 && await titleHeader.first().isVisible().catch(() => false);
+      if (hasTable) {
+        for (const col of ['角色', '对手方', '日期']) {
+          await expect(detailDrawer.locator('th').filter({ hasText: new RegExp(`^${col}$`) }).first()).toBeVisible({ timeout: 8000 });
+        }
+      } else {
+        await expect(
+          detailDrawer.getByText(/暂无可展示的招投标数据|暂无数据/).first()
+        ).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D3·30888 招投标 Tab 无记录时仅「暂无可展示的招投标数据」空态、不渲染四列表头（知识产权等同页仍有表头）；脚本有表头验四列、否则验招投标空态。登录与关内部评审由 runner 会话前置。

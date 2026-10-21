@@ -1,0 +1,87 @@
+id: FUNC-01807
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01807
+priority: P1
+title: 已取消记录点继续查看后进入失败页
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 最近评估中有状态为已取消的记录（无则真红 ticket=ENV-EVAL-TECH-HISTORY-CANCELLED-001）
+locators:
+  recent_tab: tab「最近评估」
+  continue_btn: button「继续查看」
+  fail_title: 评估失败
+  retry_btn: button「重试」
+  new_from_config_btn: button「按此配置新建」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 最近评估→定位「已取消」行→点「继续查看」；失败页断言在 expect
+expect:
+  - note: 1、页面出现「评估失败」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const main = () => page.locator('main.app-main').first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const pickCancelledContinueOnPage = async () => {
+        const rows = main().locator('table tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = await row.innerText().catch(() => '');
+          if (!/已取消/.test(rowText)) continue;
+          const cont = row.getByRole('button', { name: '继续查看' }).first();
+          if (!(await cont.count()) || !(await cont.isVisible().catch(() => false))) continue;
+          return cont;
+        }
+        return null;
+      };
+      const pickCancelledContinue = async () => {
+        const pag = main().locator('.arco-pagination').first();
+        for (let guard = 0; guard < 12; guard++) {
+          const btn = await pickCancelledContinueOnPage();
+          if (btn) return btn;
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        return null;
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const continueBtn = await pickCancelledContinue();
+      if (!continueBtn) {
+        throw new Error('最近评估无状态为已取消的记录（ticket=ENV-EVAL-TECH-HISTORY-CANCELLED-001）');
+      }
+      await continueBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await continueBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const tNav = Date.now();
+      while (Date.now() - tNav < 30000 && !/view=result/.test(page.url())) {
+        await page.waitForTimeout(400);
+      }
+      await expect(main().getByText('评估失败', { exact: true }).first()).toBeVisible({ timeout: 20000 });
+  - note: 2、出现「重试」与「按此配置新建」
+    assert: |-
+      const main = () => page.locator('main.app-main').first();
+      await expect(main().getByRole('button', { name: '重试' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main().getByRole('button', { name: '按此配置新建' }).first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01807 验「最近评估」已取消行「继续查看」→结果区标题「评估失败」+「重试」「按此配置新建」（30888 路由 enterprise-center/evaluation?workspace=technology&mode=technology；与 failed 行同按钮文案，须行内「已取消」锚定）。2026-10-19 复勘：关评审后最近评估仅 DEMO 已完成 1 条，无已取消 → 真红 ENV-EVAL-TECH-HISTORY-CANCELLED-001。B 档零 allow_skip。

@@ -1,0 +1,211 @@
+id: FUNC-02423
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02423
+priority: P1
+title: 侧栏进入供应链页不带出痛难点已选企业
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已打开痛难点分析页且已回填至少 1 家企业（assert 自含）
+locators:
+  sidebar_supply: 侧栏「企业供应链关系分析」
+  h1_supply: heading「企业供应链关系分析」
+  scope_label: 关系范围
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 痛难点回填 1 家→侧栏点「企业供应链关系分析」；三预期在 expect
+expect:
+  - note: 1、页标题为「企业供应链关系分析」
+    assert: |-
+      const painRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      const basketEntCount = async () => {
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        let m = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        m = dockLabel.match(/共\s*(\d+)\s*项/);
+        if (m) return parseInt(m[1], 10);
+        return 0;
+      };
+      const seedBasketFromSearchPage = async (min) => {
+        const searchInput = page
+          .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
+          .or(page.getByPlaceholder(/企业名|产业|资质/))
+          .first();
+        if (await searchInput.isVisible().catch(() => false)) {
+          await searchInput.fill('科技');
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
+          if (await searchBtn.isVisible().catch(() => false)) {
+            await searchBtn.click({ timeout: 8000 });
+            await page.waitForTimeout(1500);
+          }
+        }
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        let n = await basketEntCount();
+        for (let round = 0; round < 5 && n < min; round++) {
+          const btnN = await addBtns.count();
+          let clicked = 0;
+          for (let i = 0; i < btnN && n < min; i++) {
+            const btn = addBtns.nth(i);
+            if (!(await btn.isVisible().catch(() => false))) continue;
+            await btn.click({ timeout: 8000 });
+            await page.waitForTimeout(700);
+            clicked++;
+            n = await basketEntCount();
+          }
+          if (!clicked) break;
+        }
+        return (await basketEntCount()) >= min;
+      };
+      const ensureBasketEnterprises = async (min) => {
+        if ((await basketEntCount()) >= min) return;
+        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        if (await seedBasketFromSearchPage(min)) return;
+        throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseNames = async (panel) => {
+        const names = [];
+        const cards = panel.locator('.ent-compare-item-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const nameEl = card.locator('.ent-compare-item-card__name');
+          const name = (await nameEl.count())
+            ? (await nameEl.first().innerText()).trim()
+            : (await card.innerText()).split('\n')[0].trim();
+          if (name) names.push(name);
+        }
+        if (names.length) return names;
+        const sels = panel.locator('[aria-label^="选择 "]');
+        for (let i = 0; i < (await sels.count()); i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const fillOneOnPain = async () => {
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        const m = main();
+        const adjustBtn = m.getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        const emptyCta = m.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await adjustBtn.isVisible().catch(() => false)) {
+          await adjustBtn.click({ timeout: 8000 });
+        } else if (await emptyCta.isVisible().catch(() => false)) {
+          await emptyCta.click({ timeout: 8000 });
+        } else {
+          const pickerQs =
+            'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+          await page.goto(toUrl(`${painRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1200);
+        }
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 10000 });
+        const panel = pickerRoot();
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        let names = await listEnterpriseNames(panel);
+        if (!names.length) throw new Error('ENV-PAIN-BASKET-EMPTY-001：浮层内无企业');
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count()) {
+          const firstSel = sels.first();
+          const aria = (await firstSel.getAttribute('aria-label')) || '';
+          const nameMatch = aria.match(/^选择\s+(.+)$/);
+          if (nameMatch && nameMatch[1]) names = [nameMatch[1].trim()];
+          if ((await firstSel.getAttribute('aria-checked')) !== 'true') {
+            await firstSel.click({ timeout: 8000 });
+          }
+        } else {
+          await panel.locator('.ent-compare-item-card').first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(400);
+        const okBtn = panel.getByRole('button', { name: '确定', exact: true }).first();
+        await expect(okBtn).toBeEnabled({ timeout: 8000 });
+        await okBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+        const painBody = await m.innerText().catch(() => '');
+        const entName =
+          names[0] ||
+          (painBody.match(/分析对象[：:]\s*([^\n]+)/) || [])[1]?.trim().split(/[、，,]/)[0] ||
+          '';
+        if (!entName) throw new Error('前置：痛难点回填后未记录企业名');
+        if (!painBody.includes(entName.split(/[、，,]/)[0].slice(0, 4))) {
+          throw new Error('前置：痛难点主区未显示已选企业：' + entName.slice(0, 40));
+        }
+        globalThis.__func02423_painEnt = entName.split(/[、，,]/)[0].trim();
+        globalThis.__func02423_ready = true;
+      };
+      const clickSidebarSupply = async () => {
+        const label = '企业供应链关系分析';
+        const link = page.getByRole('link', { name: label, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 10000 });
+        } else {
+          const item = page.locator('.arco-menu-item').filter({ hasText: new RegExp('^' + label + '$') });
+          await expect(item.first()).toBeVisible({ timeout: 10000 });
+          await item.first().click({ timeout: 10000 });
+        }
+        await page.waitForURL(/workspace=supply-chain/, { timeout: 15000 });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      await fillOneOnPain();
+      await expect(page.getByRole('heading', { name: '企业发展痛难点分析' }).first()).toBeVisible({ timeout: 8000 });
+      await clickSidebarSupply();
+      await expect(page).toHaveURL(/workspace=supply-chain/);
+      await expect(page).toHaveURL(/tab=supply-chain/);
+      await expect(page.getByRole('heading', { name: '企业供应链关系分析' }).first()).toBeVisible({ timeout: 10000 });
+      const title = await page.title();
+      if (!/企业供应链关系分析/.test(title)) {
+        throw new Error('document.title 非供应链页：' + title);
+      }
+  - note: 2、页面出现「关系范围」
+    assert: |-
+      if (!globalThis.__func02423_ready) throw new Error('前置：未完成痛难点回填与侧栏切换');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      await expect(main().getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      if (/企业发展痛难点分析/.test(await main().innerText().catch(() => ''))) {
+        throw new Error('供应链页 main 仍含痛难点页标题文案');
+      }
+  - note: 3、页面不显示痛难点已选企业
+    assert: |-
+      if (!globalThis.__func02423_ready) throw new Error('前置：未完成痛难点回填与侧栏切换');
+      const ent = globalThis.__func02423_painEnt || '';
+      if (!ent) throw new Error('前置：未记录痛难点已选企业');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const body = await main().innerText().catch(() => '');
+      if (body.includes(ent)) {
+        throw new Error('供应链页仍显示痛难点已选企业「' + ent + '」');
+      }
+      if (/诊断范围/.test(body) && /技术研发/.test(body) && /市场拓展/.test(body)) {
+        throw new Error('供应链页仍呈现痛难点「诊断范围」四维配置');
+      }
+      await expect(page.getByRole('heading', { name: '企业供应链关系分析' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path=/enterprise/risk；痛难点 workspace=pain-points 回填 1 家→侧栏「企业供应链关系分析」（非改 URL）。机检=供应链 H1+关系范围+main 不含痛难点企业名与诊断范围四维。替代作废 01071。篮空→ENV-PAIN-BASKET-EMPTY-001。登录与关评审由 runner 前置。A 档零 allow_skip。

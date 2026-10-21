@@ -1,0 +1,142 @@
+id: FUNC-03521
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03521
+priority: P1
+title: 打开指数评价再回来本页仍是竞争力维度而不是指数模板
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已在区域产业竞争力评价（assert 自含 catalog 着陆）
+locators:
+  menu_index: 侧栏项「区域产业指数评价」
+  menu_compete: 侧栏项「区域产业竞争力评价」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点侧栏「区域产业指数评价」→再点「区域产业竞争力评价」（判定在 expect）
+expect:
+  - note: 1、指数页标题为「区域产业指数评价」，分组含商业力、技术力、学术力、支撑力
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/三大一级维度权重/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const competeLeaf = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+      const expandChainGroup = async () => {
+        if (
+          (await competeLeaf().first().isVisible().catch(() => false)) ||
+          (await page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ }).first().isVisible().catch(() => false))
+        ) {
+          return;
+        }
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCompeteViaSidebar = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) await recover404Shell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳 ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(competeLeaf().first()).toBeVisible({ timeout: 10000 });
+        await competeLeaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const onCompete = () =>
+        /\/industry-center\/regional/.test(page.url()) &&
+        /workspace=competitiveness/.test(page.url()) &&
+        /tab=competitiveness/.test(page.url());
+      await dismissBasket();
+      if (!(await onCompete()) || (await bodyIs404())) {
+        await enterCompeteViaSidebar();
+      } else {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (await bodyIs404()) await enterCompeteViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 竞争力工作区着陆失败 ' + page.url());
+      }
+      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      await expandChainGroup();
+      const indexItem = page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+      await expect(indexItem.first()).toBeVisible({ timeout: 10000 });
+      await indexItem.first().click({ timeout: 10000 });
+      await page.waitForURL(/workspace=index/, { timeout: 20000 });
+      const u = new URL(page.url());
+      if (!/\/industry-center\/regional/.test(u.pathname)) {
+        throw new Error('指数页 URL 非 regional 路由: ' + page.url());
+      }
+      await expect(page).toHaveTitle(/区域产业指数评价/);
+      for (const g of ['商业力', '技术力', '学术力', '支撑力']) {
+        await expect(page.getByText(g, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 2、回到本页后仍见「三大一级维度权重」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const expandChainGroup = async () => {
+        const competeLeaf = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        if (await competeLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      await dismissBasket();
+      await expandChainGroup();
+      const competeItem = page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+      await expect(competeItem.first()).toBeVisible({ timeout: 10000 });
+      await competeItem.first().click({ timeout: 10000 });
+      await page.waitForURL(/workspace=competitiveness/, { timeout: 20000 });
+      await page.waitForURL(/tab=competitiveness/, { timeout: 10000 });
+      const href = page.url();
+      if (!href.includes('workspace=competitiveness') || !href.includes('tab=competitiveness')) {
+        throw new Error('未回到竞争力 catalog 落点: ' + href);
+      }
+      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('商业力', { exact: true })).toHaveCount(0);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  重写 01121/P1-05；步骤改侧栏点选（非双 goto）。指数页另有「一键均分」，本条不要求其消失；
+  隔离以指数四力分组 + 回切后「三大一级维度权重」为准。document.title 承载页标题（无独立 h1）。

@@ -1,0 +1,135 @@
+id: FUNC-01466
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01466
+priority: P1
+title: 备选-清空名单
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；候选工作台至少有一家企业（assert 自含企业查询加入招引候选兜底）
+locators:
+  cand_tab: tab「候选工作台」
+  clear_btn: button「清空名单」
+  modal_title: 弹窗标题「清空候选名单」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+  - action: evaluate
+    note: 候选工作台→清空名单→确定（三条 expect 机检）
+expect:
+  - note: 1、弹窗标题为「清空候选名单」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const origin = new URL(page.url()).origin;
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const candRoute = '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
+      const searchRoute = '/enterprise/enterprise-search';
+      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
+      const openCandidateTab = async () => {
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) === 'true') return;
+        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        await candTab().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) {
+            await byKey.click({ timeout: 8000, force: true });
+            await page.waitForTimeout(900);
+          }
+        }
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
+        }
+      };
+      const dataRows = () => stack().locator('.arco-table-tr:has(.arco-table-td)');
+      const dataRowCount = async () => {
+        const rows = dataRows();
+        const n = await rows.count();
+        let c = 0;
+        for (let i = 0; i < n; i++) {
+          const t = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/^企业名称/.test(t)) continue;
+          if (!/公司|集团|有限|科技|股份|企业/.test(t)) continue;
+          c++;
+        }
+        return c;
+      };
+      const hasCandidatePanel = async () => {
+        const bar = stack().getByTestId('candidate-action-bar');
+        return (await bar.count()) > 0 && (await bar.first().isVisible().catch(() => false));
+      };
+      const ensureOneCandidate = async () => {
+        await openCandidateTab();
+        if (await hasCandidatePanel() && (await dataRowCount()) > 0) return;
+        await page.goto(origin + searchRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+        await page.getByRole('button', { name: '搜索' }).click();
+        await page.waitForTimeout(5000);
+        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addOpt = page.getByText('加入招引候选', { exact: true }).first();
+        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        await openCandidateTab();
+        if (!(await hasCandidatePanel()) || (await dataRowCount()) < 1) {
+          throw new Error('环境闸门 ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业');
+        }
+      };
+      const visibleModal = () => page.locator('.arco-modal-wrapper:visible .arco-modal, .arco-modal:visible').last();
+      await dismissBasket();
+      await ensureOneCandidate();
+      const clearBtn = stack().getByRole('button', { name: '清空名单' }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await expect(clearBtn).toBeEnabled({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = visibleModal();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const title = modal.locator('.arco-modal-title').first();
+      await expect(title).toContainText('清空候选名单', { timeout: 5000 });
+  - note: 2、出现「暂无人工线索」或名单无数据行
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const visibleModal = () => page.locator('.arco-modal-wrapper:visible .arco-modal, .arco-modal:visible').last();
+      const modal = visibleModal();
+      if ((await modal.count()) && (await modal.isVisible().catch(() => false))) {
+        const ok = modal.getByRole('button', { name: '确定' });
+        await expect(ok.first()).toBeVisible({ timeout: 5000 });
+        await ok.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      }
+      const emptyHint = stack().getByText('暂无人工线索', { exact: false });
+      const dataRows = () => stack().locator('.arco-table-tr:has(.arco-table-td)');
+      let rowCount = 0;
+      const n = await dataRows().count();
+      for (let i = 0; i < n; i++) {
+        const t = ((await dataRows().nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/^企业名称/.test(t)) continue;
+        if (/公司|集团|有限|科技|股份|企业/.test(t)) rowCount++;
+      }
+      const emptyVisible = (await emptyHint.count()) && (await emptyHint.first().isVisible().catch(() => false));
+      if (!emptyVisible && rowCount > 0) {
+        throw new Error('清空后仍有数据行=' + rowCount + '，且未见「暂无人工线索」');
+      }
+  - note: 3、「待复核」为 0 家
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const tag = stack().getByText(/待复核\s*0\s*家/);
+      await expect(tag.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·svcz 深链 /enterprise/attraction&entry=candidates。步骤=候选工作台→清空名单→确定。机检 modal 标题、空态（暂无人工线索或表体无企业行）、待复核 0 家。前置兜底走 /enterprise/enterprise-search 加入招引候选。D4·候选空→ ENV-ATTRACT-CANDIDATE-EMPTY。登录与关评审由 runner 前置。B 档零 allow_skip。

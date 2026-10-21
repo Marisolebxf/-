@@ -1,0 +1,144 @@
+id: FUNC-01898
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01898
+priority: P0
+title: 经营诊断表列出维度分、综合得分和结论
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开评估结果且经营诊断为当前页签（as-built：最近评估→恢复结果，默认经营诊断 Tab）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  diag_block: 文本「商业诊断与明细」
+  diag_tab_ops: Tab「经营诊断」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 停留在「商业诊断与明细」经营诊断表；判定在 expect
+expect:
+  - note: 1、列含企业与六个维度分
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const scrollDiagIntoView = async () => {
+        const h = page.getByText('商业诊断与明细', { exact: true }).first();
+        if (await h.count()) {
+          await h.scrollIntoViewIfNeeded().catch(() => {});
+          await page.waitForTimeout(600);
+        }
+      };
+      const diagTableReady = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        await scrollDiagIntoView();
+        const t = await main().innerText().catch(() => '');
+        return t.includes('商业诊断与明细') && t.includes('商业力综合得分') && t.includes('诊断结论');
+      };
+      const ensureDiagOpsTab = async () => {
+        const ops = page.getByText('经营诊断', { exact: true });
+        if (await ops.count()) {
+          await ops.first().click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const openResultViaHistory = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 });
+        let restore = page.getByRole('button', { name: '恢复结果' });
+        if ((await restore.count()) < 1) restore = page.getByText('恢复结果', { exact: true });
+        await restore.first().waitFor({ state: 'visible', timeout: 10000 });
+        if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」');
+        await restore.first().click({ timeout: 8000 });
+        const t0 = Date.now();
+        while (Date.now() - t0 < 30000) {
+          if (await diagTableReady()) break;
+          await page.waitForTimeout(500);
+        }
+        if (!(await diagTableReady())) throw new Error('恢复结果后未见经营诊断表：' + page.url());
+      };
+      if (!(await diagTableReady())) {
+        if (globalThis.__func01896_onResult || globalThis.__func01894_onResult) {
+          await page.waitForTimeout(500);
+        }
+        if (!(await diagTableReady())) await openResultViaHistory();
+      }
+      await expect(page).toHaveURL(/view=result/);
+      await ensureDiagOpsTab();
+      await scrollDiagIntoView();
+      await expect(main().getByText('商业诊断与明细', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      const full = await main().innerText().catch(() => '');
+      const i = full.indexOf('商业诊断与明细');
+      if (i < 0) throw new Error('未见商业诊断与明细');
+      const end = full.indexOf('评估报告', i);
+      const chunk = end > i ? full.slice(i, end) : full.slice(i, i + 3200);
+      if (!chunk.includes('企业')) throw new Error('经营诊断表头缺「企业」');
+      const sixDimHeaders = ['市场', '产品', '品牌', '技术合作', '产业链覆盖', '关键环节参与'];
+      const hasSixInTable = sixDimHeaders.every((h) => chunk.includes(h));
+      const hasRevenueProfit = chunk.includes('年营收') && chunk.includes('利润率');
+      if (!hasSixInTable && !hasRevenueProfit) {
+        const kpiStart = full.indexOf('关键经营指标对比');
+        if (kpiStart >= 0 && kpiStart < i) {
+          const kpiBlock = full.slice(kpiStart, i);
+          const dimScoreOk = [/市场\s*\d+\s*分/, /产品\s*\d+\s*分/, /品牌\s*\d+\s*分/, /技术合作\s*\d+\s*分/, /产业链覆盖\w*\s*\d+\s*分/, /关键环节参与\w*\s*\d+\s*分/].every((re) => re.test(kpiBlock));
+          if (!dimScoreOk) throw new Error('经营诊断表未见六维/营收列且 KPI 区亦无六维分');
+        } else {
+          throw new Error('经营诊断表未见六维列或 as-built 年营收/利润率列');
+        }
+      }
+      const firmRe = /[\u4e00-\u9fffA-Za-z0-9（）()·]+(?:有限公司|股份有限公司|公司)/g;
+      const firms = [...new Set([...chunk.matchAll(firmRe)].map((m) => m[0]))].filter((n) => !/企业$/.test(n) || n.length > 4);
+      const dataFirms = firms.filter((name) => {
+        const idx = chunk.indexOf(name);
+        if (idx < 0) return false;
+        const row = chunk.slice(idx, idx + 200);
+        return /\d+/.test(row);
+      });
+      if (dataFirms.length < 2) {
+        throw new Error('经营诊断表企业行不足 2 家（命中 ' + dataFirms.length + '）');
+      }
+      globalThis.__func01898_onResult = true;
+      globalThis.__func01898_chunk = chunk;
+  - note: 2、列含商业力综合得分与诊断结论
+    assert: |-
+      if (!globalThis.__func01898_onResult) throw new Error('前置：经营诊断表未就绪');
+      const chunk = globalThis.__func01898_chunk || '';
+      if (!chunk.includes('商业力综合得分')) throw new Error('表头未见「商业力综合得分」');
+      if (!chunk.includes('诊断结论')) throw new Error('表头未见「诊断结论」');
+      const afterScore = chunk.slice(chunk.indexOf('商业力综合得分'));
+      const scoreHits = [...afterScore.matchAll(/\b(\d{1,3})\b/g)].map((m) => parseInt(m[1], 10)).filter((n) => n >= 0 && n <= 100);
+      if (scoreHits.length < 2) throw new Error('综合得分列可读数值不足 2 个');
+      if (!/(加强|提升|拓展|优势|差距|短板|弱项|强项|；|。|\(\s*0(?:\.0)?\s*\))/.test(afterScore)) {
+        throw new Error('诊断结论列未见可读结论文案');
+      }
+      await expect(page.locator('main.app-main').first().getByText('诊断结论').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、表底显示总条数
+    assert: |-
+      if (!globalThis.__func01898_onResult) throw new Error('前置：经营诊断表未就绪');
+      const main = () => page.locator('main.app-main').first();
+      const t = await main().innerText().catch(() => '');
+      const i = t.indexOf('商业诊断与明细');
+      const slice = i >= 0 ? t.slice(i, i + 3200) : t;
+      const m = slice.match(/共\s*(\d+)\s*条/);
+      if (!m) throw new Error('经营诊断表底未见「共 N 条」');
+      const n = parseInt(m[1], 10);
+      if (!(n >= 2)) throw new Error('表底总条数异常: ' + m[0]);
+      await expect(main().getByText(/共\s*\d+\s*条/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例前置「评估结果+经营诊断页签」：单跑经「最近评估→恢复结果」直达。D2·30888：经营诊断表列为企业+年营收（亿元）+利润率（%）+商业力综合得分+数据可信度+诊断结论；用例册六维分列在上方「关键经营指标对比」——expect1 表内六维或 as-built 列+KPI 六维分双路径。子 Tab 默认经营诊断，脚本显式点选并 scrollIntoView。诊断结论不钉死措辞。登录与关内部评审由 runner 会话前置。tier B，无 allow_skip。

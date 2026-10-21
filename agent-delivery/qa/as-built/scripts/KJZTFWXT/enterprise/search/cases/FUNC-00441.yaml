@@ -1,0 +1,36 @@
+id: FUNC-00441
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00441
+priority: P0
+title: 查企业按名称关键词检索得到长卡片结果
+story: US-E1-SCH-01
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入企业查询
+locators:
+  company_tab: tab 查企业
+  search_input: textbox（查企业模式占位指向企业名称关键词）
+  result_title: 「查企业结果 · 命中 N 家企业」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 查企业
+  - action: fill
+    target: textbox 输入企业名称关键词
+    value: 科技
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 查企业结果标题
+    timeout_ms: 1200
+expect:
+  - note: 搜索框占位提示指向企业名称关键词
+    assert: 'await expect(page.getByPlaceholder(/输入企业名称关键词|企业名称|企业名/).first()).toBeVisible({ timeout: 8000 })'
+  - note: 结果标题为查企业结果且含命中条数
+    assert: |-
+      await expect(page.getByText('查企业结果')).toBeVisible({ timeout: 8000 }); await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 8000 })
+  - note: 至少一张横向长卡片含「查看画像」动作
+    assert: 'await expect(page.getByRole(''button'', { name: ''查看画像'' }).first()).toBeVisible({ timeout: 8000 })'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 30888 企业查询路由为 /enterprise/enterprise-search（用例册 /enterprise/enterprise-search 在此环境 404，D1）。命中条数不钉死；名称不含关键词不判（允许模糊）。查企业占位「输入企业名称关键词」。

@@ -1,0 +1,92 @@
+id: FUNC-04028
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04028
+priority: P1
+tier: B
+title: 备选-改用高级筛选-切到字段库
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 当前为「暂无匹配的服务机构」
+locators:
+  search_input: textbox placeholder「用一句话描述机构需求」
+  search_btn: button「搜索」
+  empty_hint: 文案「暂无匹配的服务机构」
+  switch_adv_btn: button「改用高级筛选」（空结果区）
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib_heading: heading「高级筛选 · 字段库」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 无匹配空态 → 点「改用高级筛选」；预期在 expect
+expect:
+  - note: 前置：智能检索得到「暂无匹配的服务机构」并点击「改用高级筛选」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const assertReachable = async () => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链 /service-center/search SPA404 url=' + page.url());
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await assertReachable();
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+      if (!(await inp.isVisible().catch(() => false))) {
+        await assertReachable();
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 智能检索输入框不可见 url=' + page.url());
+      }
+      await inp.fill('知识产权 广东');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(1500);
+      await assertReachable();
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('暂无匹配的服务机构', { exact: true })).toBeVisible({ timeout: 10000 });
+      const emptyBlock = page.locator('main').filter({ hasText: '暂无匹配的服务机构' });
+      const switchAdv = emptyBlock.getByRole('button', { name: '改用高级筛选' }).first();
+      if ((await switchAdv.count()) === 0) {
+        const alt = page.getByRole('button', { name: '改用高级筛选' }).filter({ has: page.locator('xpath=ancestor::main') });
+        await expect(alt.first()).toBeVisible({ timeout: 8000 });
+        await alt.first().click({ timeout: 8000 });
+      } else {
+        await expect(switchAdv).toBeVisible({ timeout: 8000 });
+        await switchAdv.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(600);
+      globalThis.__func04028_switched = true;
+  - note: 1、「高级筛选」为选中
+    assert: |-
+      if (!globalThis.__func04028_switched) throw new Error('前置：空态点击改用高级筛选未完成');
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      const aria = await advTab.getAttribute('aria-selected');
+      const cls = (await advTab.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('「高级筛选」Tab 未处于选中态 aria-selected=' + aria);
+      }
+      await expect(page).toHaveURL(/[?&]mode=advanced/, { timeout: 8000 });
+  - note: 2、出现「高级筛选 · 字段库」
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04028；catalog_path=/service-center/search 深链进页（非侧栏进入用例）。
+  无匹配前置「知识产权 广东」（scout-hits 对齐 04026/04027）。
+  空态区「改用高级筛选」限定 main 含暂无匹配文案；openAdvanced → mode=advanced + 字段库 h2。

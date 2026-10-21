@@ -1,0 +1,41 @@
+id: FUNC-01070
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01070
+priority: P0
+title: 路由直达痛难点分析页且页头与默认页签正确
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已登录且可访问企业分析侧栏
+locators:
+  h1: heading「企业发展痛难点分析」
+  tab_current: tab「当前分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+  - note: 地址含 workspace=pain-points 与 tab=pain-points
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page).toHaveURL(/workspace=pain-points/);
+      await expect(page).toHaveURL(/tab=pain-points/);
+  - note: 页标题为「企业发展痛难点分析」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '企业发展痛难点分析' })).toBeVisible({ timeout: 8000 });
+  - note: 默认页签为「当前分析」
+    assert: |-
+      const cur = page.getByRole('tab', { name: '当前分析' }).first();
+      await expect(cur).toBeVisible({ timeout: 8000 });
+      const cls = (await cur.getAttribute('class')) || '';
+      const sel = await cur.getAttribute('aria-selected');
+      if (!/\bactive\b/.test(cls) && sel !== 'true') throw new Error('默认 Tab 非当前分析 class=' + cls + ' aria-selected=' + sel);
+      if (/view=history/.test(page.url())) throw new Error('默认不应停在最近分析: ' + page.url());
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=浏览器直达路由。机检=URL 双 query + h1 + 当前分析 Tab 为 active。对比篮关闭钮可见再点。D4·2026-10-20 rewrite-FUNC-01070。登录与关评审由 runner 前置。A 档零 allow_skip。

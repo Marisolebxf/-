@@ -1,0 +1,75 @@
+id: FUNC-00908
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00908
+priority: P0
+title: 指标区五维技术指标默认权重和为 100
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: A
+preconditions:
+  - 已进入技术力评估页
+  - 系统模板为默认加载态
+locators:
+  metrics: 技术人才/技术创新/技术转化/技术合作/技术投入
+  spins: '[role=spinbutton]'
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 深链进入技术力评估页；指标与权重默认态断言在 expect
+expect:
+  - note: 指标区含技术人才、技术创新、技术转化、技术合作、技术投入 5 项
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalTech = async () => {
+        if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=technology')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      await gotoEvalTech();
+      for (const n of ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入']) {
+        await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 默认权重依次为 20、25、20、15、20 且和为 100
+    assert: |-
+      const metricWeightInputs = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('.arco-checkbox-checked') })
+          .locator('.arco-input-number input');
+      const spins = metricWeightInputs();
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      const vals = [];
+      for (let i = 0; i < 5; i++) vals.push(String(await spins.nth(i).inputValue()));
+      if (vals.join(',') !== '20,25,20,15,20') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 20/25/20/15/20');
+      const sum = vals.reduce((a, b) => a + Number(b), 0);
+      if (sum !== 100) throw new Error('权重和 ' + sum);
+      const sumLine = page.getByText(/权重合计：100%/);
+      await expect(sumLine.first()).toBeVisible({ timeout: 8000 });
+  - note: 每项带权重调节钮与「查看」明细入口
+    assert: |-
+      const activeRows = page.locator('table tbody tr').filter({ has: page.locator('.arco-checkbox-checked') });
+      await expect(activeRows).toHaveCount(5, { timeout: 8000 });
+      const steps = activeRows.locator('.arco-input-number-step-button');
+      if (await steps.count() < 10) throw new Error('已选指标调节钮不足: ' + await steps.count());
+      const views = activeRows.getByRole('button', { name: '查看' });
+      await expect(views.first()).toBeVisible({ timeout: 8000 });
+      if (await views.count() < 5) throw new Error('已选指标查看按钮不足 5: ' + await views.count());
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  默认权重为模板预设非均分（20/25/20/15/20）。D1·30888 深链 /enterprise-center/evaluation?workspace=technology&mode=technology（同 FUNC-00903）；指标表含 Bid 缺口未勾选行，权重断言限定 .arco-checkbox-checked 行（共 5）。由 P0-04 重写为 FUNC-00908。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

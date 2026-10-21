@@ -1,0 +1,58 @@
+id: FUNC-02794
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02794
+priority: P0
+title: 未带分析对象进入时页顶说明无需创建任务
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 未带分析对象深链进入产业链全景图谱（等价侧栏进入本页）
+locators:
+  default_hint: .industry-topic-default-hint
+  hint_copy: 未带分析对象时默认打开目录首个可用产业的最新快照，无需创建任务。
+steps:
+  - action: goto
+    target: /industry-center/panorama
+expect:
+  - note: 1、提示为「未带分析对象时默认打开目录首个可用产业的最新快照，无需创建任务。」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await page.evaluate(() => {
+        try {
+          sessionStorage.removeItem('gkx-panorama-default-hint-dismissed');
+        } catch {
+          /* ignore */
+        }
+      });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const hint = page.locator('.industry-topic-default-hint');
+      await expect(hint).toBeVisible({ timeout: 12000 });
+      const copy = '未带分析对象时默认打开目录首个可用产业的最新快照，无需创建任务。';
+      await expect(hint).toContainText(copy, { timeout: 8000 });
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 8000 });
+      const ctxBox = await ctx.boundingBox();
+      const hintBox = await hint.boundingBox();
+      if (!ctxBox || !hintBox || hintBox.y >= ctxBox.y) {
+        throw new Error('页顶说明应位于分析对象条件区之上');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；选择器 .industry-topic-default-hint（scout-start.json）。
+  文案=testdata page.default_hint。runner 前置登录+关内部评审；sessionStorage 曾关提示则 reload 前 removeItem。
+  对比篮可见才关。A 档零 allow_skip。

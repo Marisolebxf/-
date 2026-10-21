@@ -1,0 +1,193 @@
+id: FUNC-03528
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03528
+priority: P1
+title: 失败行下载报告不可用且不出现下载失败提示
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 分析记录中有失败任务
+locators:
+  tab_records: tab「分析记录」
+  download_report_fail: button「下载报告」（失败行、disabled）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 在失败行点击「下载报告」
+expect:
+  - note: 1、「下载报告」为禁用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        if (!/\/industry-center\/search/.test(page.url())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) await recover404Shell();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureRecordsTab = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        const onRecords =
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=competitiveness/.test(page.url()) &&
+          /tab=records/.test(page.url());
+        if (!onRecords || (await bodyIs404())) {
+          await enterViaSidebar();
+          if (await bodyIs404()) {
+            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏仍 SPA404 ' + page.url());
+          }
+          await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+          await page.waitForTimeout(1500);
+          await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+        }
+      };
+      const main = () => page.locator('main').first();
+      const reachRecordsOrThrow = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        if (!/\/industry-center\/regional/.test(page.url()) || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与 search 均 SPA404，无法验失败行「下载报告」 ' + page.url());
+        }
+        await ensureRecordsTab();
+      };
+      const scrollRecordActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const failRowDownloadBtn = (row) => {
+        let dl = row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
+        return dl;
+      };
+      await reachRecordsOrThrow();
+      await scrollRecordActions();
+      const mainTxt0 = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/失败/.test(mainTxt0)) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-FAIL-TASK: 前置要求分析记录中有失败任务');
+      }
+      const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr').filter({ hasText: '区域产业竞争力评价' });
+      const n = await rows.count();
+      let failRow = null;
+      for (let i = 0; i < Math.min(n, 20); i++) {
+        const row = rows.nth(i);
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/失败/.test(txt)) continue;
+        let dl = failRowDownloadBtn(row);
+        if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
+        if (!(await dl.count())) continue;
+        failRow = row;
+        break;
+      }
+      if (!failRow) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-FAIL-TASK-03528：无失败行或失败行无「下载报告」按钮');
+      }
+      await failRow.scrollIntoViewIfNeeded().catch(() => {});
+      await scrollRecordActions();
+      let dlBtn = failRowDownloadBtn(failRow);
+      if (!(await dlBtn.count())) dlBtn = failRow.getByRole('button', { name: '下载报告', exact: true }).last();
+      await expect(dlBtn).toBeVisible({ timeout: 8000 });
+      await expect(dlBtn).toBeDisabled({ timeout: 5000 });
+      globalThis.__func03528 = { urlBefore: page.url() };
+  - note: 2、不出现下载失败提示
+    assert: |-
+      const snap = globalThis.__func03528;
+      if (!snap) throw new Error('前置：未完成失败行「下载报告」disabled 校验');
+      const main = () => page.locator('main').first();
+      const scrollRecordActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const failRowDownloadBtn = (row) =>
+        row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
+      const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr').filter({ hasText: '区域产业竞争力评价' });
+      let failRow = null;
+      const n = await rows.count();
+      for (let i = 0; i < Math.min(n, 20); i++) {
+        const row = rows.nth(i);
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/失败/.test(txt)) continue;
+        let dl = failRowDownloadBtn(row);
+        if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
+        if (!(await dl.count())) continue;
+        failRow = row;
+        break;
+      }
+      if (!failRow) throw new Error('前置：失败行丢失');
+      await scrollRecordActions();
+      let dlBtn = failRowDownloadBtn(failRow);
+      if (!(await dlBtn.count())) dlBtn = failRow.getByRole('button', { name: '下载报告', exact: true }).last();
+      await dlBtn.click({ timeout: 3000, force: true }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const toast = page.locator('.arco-message, .arco-notification');
+      const toastTxt = ((await toast.allInnerTexts().catch(() => [])) || []).join(' ').replace(/\s+/g, ' ');
+      const bodyTxt = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const failHint = /资产下载失败|下载失败|HTTP\s*404/.test(toastTxt + ' ' + bodyTxt.slice(-400));
+      if (failHint) {
+        throw new Error('失败行 force 点击不应出现下载失败提示：' + (toastTxt || bodyTxt.slice(-200)));
+      }
+      await expect(page.getByRole('tab', { name: '分析记录' }).first()).toHaveAttribute('aria-selected', 'true');
+      await expect(page).toHaveURL(/tab=records/, { timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed /industry-center/regional?workspace=competitiveness&tab=competitiveness；goto sibling search 再侧栏进入（edu 深链常 SPA404）。
+  03528=分析记录失败行「下载报告」arco disabled；force 点击不出现资产下载失败/404 提示，tab=records 仍为分析记录。
+  无失败行→ENV-CHAIN-REGIONAL-COMPETE-NO-FAIL-TASK / NO-FAIL-TASK-03528。B 档零 allow_skip。

@@ -1,0 +1,69 @@
+id: FUNC-05007
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05007
+priority: P1
+tier: B
+title: 领域环节热力空态
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布
+locators:
+  heat_section: SectionPanel 标题「全产业总览 · 领域 × 环节热力」
+  heat_empty: a-empty description（领域×环节矩阵空态）
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 滚动到「全产业总览 · 领域 × 环节热力」
+expect:
+  - note: 1、区块写明没有领域×环节矩阵
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|领域.*环节热力/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链 industry-distribution SPA404，无法验热力空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const heatTitle = page.getByText(/全产业总览\s*·\s*领域\s*×\s*环节热力/).first();
+      await expect(heatTitle).toBeVisible({ timeout: 12000 });
+      await heatTitle.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+      const emptyDesc = page.locator('.arco-empty-description').filter({ hasText: /领域.*环节矩阵/ }).first();
+      await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+      const txt = ((await emptyDesc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/领域.*环节矩阵|无领域×环节矩阵/.test(txt)) {
+        throw new Error('热力区块未写明无领域×环节矩阵: ' + txt.slice(0, 200));
+      }
+  - note: 2、区块写明不画演示热力填数
+    assert: |-
+      const emptyDesc = page.locator('.arco-empty-description').filter({ hasText: /不画演示热力/ }).first();
+      await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+      const txt = ((await emptyDesc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/不画演示热力填数/.test(txt)) {
+        throw new Error('热力区块未写明不画演示热力填数: ' + txt.slice(0, 200));
+      }
+      const heatTitle = page.getByText(/全产业总览\s*·\s*领域\s*×\s*环节热力/).first();
+      const panel = heatTitle.locator('xpath=ancestor::div[contains(@class,"svc-portal") or contains(@class,"section")][1]');
+      const panelRoot = (await panel.count()) ? panel : heatTitle.locator('xpath=ancestor::section[1]');
+      const canvasInHeat = await panelRoot.locator('canvas').count();
+      if (canvasInHeat > 0) {
+        throw new Error('热力区块不应渲染演示热力图 canvas，现场 canvas 数=' + canvasInHeat);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 catalog_path=/service-portal/industry-distribution。热力区标题「全产业总览 · 领域 × 环节热力」；
+  空态 a-empty description 对齐 lumen-ui-topic ServicePortalIndustryDistributionPage：
+  「Java 产业分布包络无领域×环节矩阵。不画演示热力填数。」（REQ-SVC-PT-HEAT-OMIT）。edu tts/svcz SPA404→ENV-EDU-TTS-SVCZ-404-001。

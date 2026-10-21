@@ -1,0 +1,184 @@
+id: FUNC-02124
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02124
+priority: P1
+title: 关掉苏州对标城市标签后标签与对比表同步移除
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入「多城市横向对标」且对标城市标签含「苏州」（脚本自含选链并切对标 Tab）
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  city_select: '[data-testid="szstatus-city-select"]'
+  city_table: '[data-testid="szstatus-city-table"]'
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链、切对标 Tab；点「苏州」标签关闭（判定在 expect）
+expect:
+  - note: 1、对标城市标签里不再有苏州；2、对比表里不再有苏州一行
+    assert: |-
+      const SUZHOU_LABELS = ['苏州', '苏州市', '320500'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      const readCitySelectTagTexts = () =>
+        page.evaluate(() => {
+          const root = document.querySelector('[data-testid="szstatus-city-select"]');
+          if (!root) return [];
+          const tags = root.querySelectorAll('.arco-select-view-tag, .arco-tag');
+          return [...tags]
+            .map((el) => (el.textContent || '').replace(/\s+/g, ' ').trim())
+            .filter((t) => t && !/^\+/.test(t));
+        });
+      const tableHasSuzhou = async () => {
+        const table = page.locator('[data-testid="szstatus-city-table"]');
+        await expect(table).toBeVisible({ timeout: 12000 });
+        const rows = await table.locator('tbody tr').allInnerTexts();
+        const blob = rows.join('\n');
+        for (const label of SUZHOU_LABELS) {
+          if (blob.includes(label)) return true;
+        }
+        return false;
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      await expect(page.locator('[data-testid="szstatus-city-benchmark"]')).toBeVisible({ timeout: 15000 });
+      const citySelect = page.locator('[data-testid="szstatus-city-select"]');
+      await expect(citySelect).toBeVisible({ timeout: 8000 });
+      let tagTexts = await readCitySelectTagTexts();
+      const hasSuzhouTag = tagTexts.some((t) => /^苏州$/.test(t) || t.includes('苏州'));
+      if (!hasSuzhouTag) {
+        const trigger = citySelect.locator('.arco-select-view').first();
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const popup = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+        const suzhouOpt = popup.locator('.arco-select-option').filter({ hasText: /^苏州$/ }).first();
+        if (await suzhouOpt.count()) {
+          await suzhouOpt.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+        tagTexts = await readCitySelectTagTexts();
+        if (!tagTexts.some((t) => /苏州/.test(t))) {
+          throw new Error('前置不满足：对标城市标签中未见「苏州」，当前标签：' + tagTexts.join('、'));
+        }
+      }
+      if (!(await tableHasSuzhou())) {
+        throw new Error('移除前对比表应含苏州行，当前未检出（可能默认未纳入苏州）');
+      }
+      const suzhouTag = citySelect
+        .locator('.arco-select-view-tag, .arco-tag')
+        .filter({ hasText: /^苏州(\s|$)/ })
+        .first();
+      await expect(suzhouTag).toBeVisible({ timeout: 8000 });
+      const closeIcon = suzhouTag.locator('.arco-tag-icon-hover, .arco-icon-hover').first();
+      if (await closeIcon.count()) {
+        await closeIcon.click({ timeout: 8000 });
+      } else {
+        const closeBtn = suzhouTag.locator('[class*="close"], button').first();
+        if (await closeBtn.count()) await closeBtn.click({ timeout: 8000 });
+        else await suzhouTag.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(600);
+      tagTexts = await readCitySelectTagTexts();
+      if (tagTexts.some((t) => /苏州/.test(t))) {
+        throw new Error('关闭后对标城市标签仍含苏州：' + tagTexts.join('、'));
+      }
+      if (await tableHasSuzhou()) {
+        throw new Error('关闭苏州标签后对比表仍含苏州行');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例步骤为点「苏州」标签关闭（无二次确认，D1 对齐 Arco 多选 tag 的 icon-hover 关闭）。
+  默认 benchmarkCities 含 320500/苏州（DEFAULT_SZ_BENCHMARK_CITIES）；若标签被 +N 收起则先展开下拉勾选苏州再关 tag。
+  表行对象列可能为「苏州市」或区划码 320500，断言三者任一即视为苏州行。选链/对标 Tab 同 FUNC-02123；须关对比篮。禁止 50892。

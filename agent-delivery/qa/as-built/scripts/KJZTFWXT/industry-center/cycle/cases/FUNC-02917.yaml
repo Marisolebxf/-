@@ -1,0 +1,155 @@
+id: FUNC-02917
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02917
+priority: P1
+title: 诊断记录重置收回任务状态至全部
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 任务状态当前是「已完成」（assert 自含：先筛已完成）
+locators:
+  records_tab: tab「诊断记录」
+  status_filter: 任务状态
+  reset_filter: button「重置」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→诊断记录→筛已完成→点「重置」；回显与条数在 expect
+expect:
+  - note: 前置：诊断记录 Tab；「全部状态」下采样基线条数并筛至「已完成」
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const chainRows = () => main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+      const countVisibleChainRows = async () => {
+        const rows = chainRows();
+        const n = await rows.count();
+        let c = 0;
+        for (let i = 0; i < n; i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) c++;
+        }
+        return c;
+      };
+      const statusTrigger = async () => {
+        const statusLabel = page.getByText('任务状态', { exact: false }).first();
+        await expect(statusLabel).toBeVisible({ timeout: 8000 });
+        let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+        if ((await trigger.count()) < 1) {
+          trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+        }
+        await expect(trigger).toBeVisible({ timeout: 8000 });
+        return trigger;
+      };
+      const pickStatus = async (text) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = await statusTrigger();
+        const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown.includes(text)) return trigger;
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: new RegExp('^' + text + '$') }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const after = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!after.includes(text)) {
+          throw new Error('任务状态筛选未回显「' + text + '」：' + after);
+        }
+        return trigger;
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=cycle/);
+        await expect(page).toHaveURL(/tab=cycle/);
+      };
+      await enterCyclePage();
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(body)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-RECORDS-001：诊断记录未见 CHAIN 任务行');
+      }
+      if (!/已完成/.test(body)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001：前置需存在已完成任务行');
+      }
+      let trigger = await statusTrigger();
+      const shownAll = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/全部状态/.test(shownAll)) {
+        trigger = await pickStatus('全部状态');
+      }
+      const nAll = await countVisibleChainRows();
+      if (nAll < 1) throw new Error('全部状态可见 CHAIN 行数为 0');
+      trigger = await pickStatus('已完成');
+      const nDone = await countVisibleChainRows();
+      if (nDone < 1) throw new Error('筛「已完成」后未见 CHAIN 任务行');
+      const rows = chainRows();
+      for (let i = 0; i < await rows.count(); i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/失败/.test(rt)) throw new Error('筛已完成后仍见失败行');
+        if (!/已完成/.test(rt)) throw new Error('筛已完成后行非已完成：' + rt.slice(0, 80));
+      }
+      globalThis.__func02917 = { nAll, nDone, chainRows, countVisibleChainRows, statusTrigger, TID_RE, main };
+  - note: 1、点「重置」（步骤 1）
+    assert: |-
+      const ctx = globalThis.__func02917;
+      if (!ctx) throw new Error('前置：诊断记录筛选未就绪');
+      const resetBtn = ctx.main().getByRole('button', { name: '重置', exact: true }).first();
+      await expect(resetBtn).toBeVisible({ timeout: 8000 });
+      await resetBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+  - note: 1、任务状态回到「全部状态」；2、列表条数恢复为筛选前
+    assert: |-
+      const ctx = globalThis.__func02917;
+      if (!ctx) throw new Error('前置：诊断记录筛选未就绪');
+      const trigger = await ctx.statusTrigger();
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/全部状态/.test(shown)) {
+        throw new Error('重置后任务状态未回「全部状态」：' + shown);
+      }
+      const nAfter = await ctx.countVisibleChainRows();
+      if (nAfter !== ctx.nAll) {
+        throw new Error('重置后条数未恢复：after=' + nAfter + ' 筛选前=' + ctx.nAll + ' 筛已完成=' + ctx.nDone);
+      }
+      if (ctx.nDone < ctx.nAll) {
+        const body = ((await ctx.main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/失败/.test(body)) {
+          throw new Error('重置后应恢复含失败行在内的全量列表（未见「失败」文案）');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口对齐 entry-seed：goto sibling /industry-center/search 再侧栏「产业链分析」→「产业周期分析」（深链冷启动 SPA 404，对齐 02912/02909）。
+  步骤=诊断记录→任务状态「已完成」→点筛选区「重置」（非配置 Tab「重置参数」，对齐 scout 诊断记录区「任务状态/全部状态/重置」）。
+  前置=存在已完成 CHAIN 行；基线 nAll 采于「全部状态」可见行数。机检=重置后 select 回显「全部状态」且 nAfter===nAll；若筛后 nDone<nAll 则 main 应再含「失败」。
+  筛选控件=P7 对齐 02908/02907。无记录→ENV-CHAIN-CYCLE-NO-RECORDS-001；无已完成→ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001。登录关评审 runner 前置。B 档零 allow_skip。

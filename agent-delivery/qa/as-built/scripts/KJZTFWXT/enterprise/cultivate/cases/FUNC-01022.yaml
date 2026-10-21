@@ -1,0 +1,223 @@
+id: FUNC-01022
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01022
+priority: P1
+title: 三 Tab 可往返进入且返回后条件与状态保留
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已设置一组条件且完成一次分析（assert 自含产业类别人工智能成功结果）
+locators:
+  tab_filter: tab「条件筛选推荐」
+  tab_cand: tab「候选工作台」
+  tab_recent: tab「最近分析」
+  industry_ph: placeholder「全部产业类别」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 前置成功结果→候选工作台→最近分析→条件筛选推荐（Tab 往返与保留在 expect）
+expect:
+  - note: 1、三 Tab 均可往返进入且页面停留本路由无报错
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const tabSelected = async (name) => {
+        const t = page.getByRole('tab', { name }).first();
+        await expect(t).toBeVisible({ timeout: 8000 });
+        const aria = await t.getAttribute('aria-selected');
+        const cls = (await t.getAttribute('class')) || '';
+        return aria === 'true' || /\bactive\b/.test(cls);
+      };
+      const clickTab = async (name) => {
+        const t = page.getByRole('tab', { name }).first();
+        await t.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        if (!(await tabSelected(name))) {
+          const keyMap = { 候选工作台: 'candidates', 最近分析: 'history', 条件筛选推荐: 'filter' };
+          const key = keyMap[name];
+          if (key) {
+            const byKey = page.locator(`button[data-tab-key="${key}"]`).first();
+            if (await byKey.count()) {
+              await byKey.click({ timeout: 8000, force: true });
+              await page.waitForTimeout(800);
+            }
+          }
+        }
+        if (!(await tabSelected(name))) throw new Error('Tab 未选中：' + name);
+        await expect(page).toHaveURL(/workspace=cultivation/);
+        await expect(page).toHaveURL(/\/enterprise\/attraction/);
+      };
+      const isSuccessResult = async () => {
+        const t = await stack().innerText().catch(() => '');
+        return (
+          /培育推荐分析结果/.test(t) &&
+          !/可视化分析过程/.test(t) &&
+          !(/^[\s\S]*请设置条件并执行推荐分析[\s\S]*$/.test(t) && !/培育推荐分析结果/.test(t))
+        );
+      };
+      const openRecentTab = async () => {
+        await clickTab('最近分析');
+      };
+      const tryRestoreFromHistory = async () => {
+        await openRecentTab();
+        const st = stack();
+        const tryRowButton = async (btn) => {
+          await btn.click({ timeout: 15000 });
+          for (let j = 0; j < 36; j++) {
+            await page.waitForTimeout(500);
+            if (await isSuccessResult()) return true;
+          }
+          await clickTab('条件筛选推荐');
+          return await isSuccessResult();
+        };
+        for (const name of ['恢复结果', '继续查看']) {
+          const buttons = st.getByRole('button', { name });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            let row = btn.locator('xpath=ancestor::tr[1]');
+            if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (txt && /失败/.test(txt) && !/已完成|成功/.test(txt)) continue;
+            if (await tryRowButton(btn)) return true;
+            await openRecentTab();
+          }
+        }
+        return false;
+      };
+      const pickIndustryAi = async () => {
+        await clickTab('条件筛选推荐');
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const clickStartUntilSuccess = async () => {
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        let last = '';
+        let sawProcess = false;
+        for (let i = 0; i < 72; i++) {
+          await page.waitForTimeout(i < 6 ? 500 : 2500);
+          last = await stack().innerText().catch(() => '');
+          const url = page.url();
+          if (/可视化分析过程/.test(last) || url.includes('analysis_view=processing')) sawProcess = true;
+          if (await isSuccessResult()) return;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && (await isSuccessResult())) return;
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last) && i > 4) {
+            throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达成功结果');
+          }
+        }
+        if (await tryRestoreFromHistory()) return;
+        const stuck = sawProcess || /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：分析长期停留在过程态且无历史可恢复');
+        }
+        throw new Error('未在超时内到达培育推荐分析结果: ' + last.slice(0, 200));
+      };
+      let pickedAi = false;
+      const ensureSuccessWithConditions = async () => {
+        if (await isSuccessResult()) return;
+        if (await tryRestoreFromHistory()) return;
+        await pickIndustryAi();
+        pickedAi = true;
+        if (await isSuccessResult()) return;
+        await clickStartUntilSuccess();
+      };
+      await dismissBasket();
+      await expect(stack()).toBeVisible({ timeout: 15000 });
+      await ensureSuccessWithConditions();
+      const readIndustryView = async () => {
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        const wrap = i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        return ((await wrap.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      };
+      let industryBefore = await readIndustryView();
+      const fullBefore = await stack().innerText().catch(() => '');
+      if ((!industryBefore || industryBefore === '全部产业类别') && /人工智能/.test(fullBefore)) {
+        industryBefore = '人工智能';
+      }
+      if ((!industryBefore || industryBefore === '全部产业类别') && pickedAi) industryBefore = '人工智能';
+      globalThis.__func01022 = {
+        hadResult: await isSuccessResult(),
+        industryBefore,
+        resultSnippet: fullBefore.slice(0, 500),
+      };
+      await clickTab('候选工作台');
+      await expect(stack()).toBeVisible({ timeout: 8000 });
+      const backCand = page.getByRole('button', { name: '返回候选列表' }).first();
+      if (await backCand.isVisible().catch(() => false)) {
+        await backCand.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      }
+      const candBody = await stack().innerText().catch(() => '');
+      if (!/人工线索候选工作台|人工线索复核结果|候选名单|待复核|暂无数据/.test(candBody)) {
+        throw new Error('候选工作台 Tab 内容异常: ' + candBody.slice(0, 120));
+      }
+      await clickTab('最近分析');
+      const recentBody = await stack().innerText().catch(() => '');
+      if (!/最近分析|暂无数据|条件筛选|候选工作台/.test(recentBody)) {
+        throw new Error('最近分析 Tab 内容异常: ' + recentBody.slice(0, 120));
+      }
+      await clickTab('条件筛选推荐');
+      await expect(stack()).toBeVisible({ timeout: 8000 });
+      for (let i = 0; i < 16; i++) {
+        const ph = page.locator('input[placeholder="全部产业类别"]').first();
+        if (await ph.isVisible().catch(() => false)) break;
+        await page.waitForTimeout(500);
+      }
+      await page.waitForTimeout(600);
+      const afterTabs = await stack().innerText().catch(() => '');
+      globalThis.__func01022.afterTabsBody = afterTabs;
+      if (!/培育推荐分析结果/.test(afterTabs)) {
+        throw new Error('Tab 往返后结果态未保留: ' + afterTabs.slice(0, 200));
+      }
+  - note: 2、返回后已设条件与结果状态保留
+    assert: |-
+      const ctx = globalThis.__func01022;
+      if (!ctx?.hadResult) throw new Error('前置：未建立成功结果态');
+      await expect(page).toHaveURL(/workspace=cultivation/);
+      await expect(page.getByRole('tab', { name: '条件筛选推荐' }).first()).toBeVisible({ timeout: 8000 });
+      const stack = page.getByTestId('recruit-tab-stack');
+      const body = ctx.afterTabsBody || (await stack.innerText().catch(() => ''));
+      if (!/培育推荐分析结果/.test(body)) {
+        throw new Error('返回后结果区未保留培育推荐分析结果: ' + body.slice(0, 200));
+      }
+      const readIndustryView = async () => {
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        const wrap = i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        return ((await wrap.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      };
+      const afterView = await readIndustryView();
+      const before = ctx.industryBefore || '';
+      const snippet = ctx.resultSnippet || '';
+      const condOk =
+        (/人工智能/.test(afterView) && afterView !== '全部产业类别') ||
+        (/人工智能/.test(body) && /培育推荐分析结果|本次筛选/.test(body)) ||
+        (/人工智能/.test(before) && (/人工智能/.test(body) || /人工智能/.test(snippet))) ||
+        (/本次筛选/.test(body) && /人工智能/.test(body)) ||
+        (/本次筛选/.test(snippet) && /人工智能/.test(snippet) && /培育推荐分析结果/.test(body));
+      if (!condOk) {
+        throw new Error(
+          '返回后条件未保留：select前=' + before + ' select后=' + afterView + ' body=' + body.slice(0, 200),
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation。前置=产业类别人工智能且已完成一次条件筛选成功（历史恢复/继续查看或发起）。步骤=候选工作台→最近分析→条件筛选推荐。机检=往返 URL 含 workspace=cultivation；返回后 stack 须仍含「培育推荐分析结果」且条件可辨（select 或本次筛选/快照）。Tab 集合归 01004。D4·2026-10-20 rewrite-FUNC-01022 svcz 机跑 fail·Tab 往返后 stack 仅「培育推荐条件」、结果态丢失（C6 候选，与旧 P1-01 只验 select 不同本条按用例验结果保留）。无成功前置→ ENV-CULTIVATE-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。

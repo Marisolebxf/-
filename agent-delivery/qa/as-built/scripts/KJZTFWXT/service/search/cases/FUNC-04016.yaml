@@ -1,0 +1,114 @@
+id: FUNC-04016
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04016
+priority: P1
+tier: B
+title: 备选-收起字段库后再展开字段重新出现
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「高级筛选」且字段库展开
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_org_name: 字段库 Tag「机构名称」
+  collapse_btn: button「收起字段库」
+  expand_btn: button「展开字段库」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进服务机构查询 → 高级筛选 → 收起/展开字段库（判定在 expect）
+expect:
+  - note: 1、收起后按钮文案为「展开字段库」；2、收起后看不到「机构名称」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入侧栏壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+        await recover404Shell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏点击后 /service-center/search SPA404 url=' + page.url());
+        }
+      };
+      await enterSvcSearch();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const nameTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '机构名称' }).first();
+      await expect(nameTag).toBeVisible({ timeout: 8000 });
+      const collapseBtn = fieldLib.getByRole('button', { name: '收起字段库' }).first();
+      await expect(collapseBtn).toBeVisible({ timeout: 8000 });
+      await collapseBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(fieldLib.getByRole('button', { name: '展开字段库' }).first()).toBeVisible({ timeout: 8000 });
+      const nameVis =
+        (await nameTag.count()) > 0 && (await nameTag.isVisible().catch(() => false));
+      if (nameVis) {
+        throw new Error('收起后字段库内「机构名称」Tag 仍可见');
+      }
+  - note: 3、展开后重新看到「机构名称」
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await fieldLib.getByRole('button', { name: '展开字段库' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const nameTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '机构名称' }).first();
+      await expect(nameTag).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByRole('button', { name: '收起字段库' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04016；catalog_path=/service-center/search。前置=高级筛选 Tab + 字段库展开（见 scout-deep「收起字段库」）。
+  收起判定=字段库 region 内 Tag「机构名称」不可见；展开后 Tag 与「收起字段库」按钮恢复。steps 先 goto sibling /industry-center/search 再侧栏点 menu_leaf（entry-seed；同 03990/03988）。
+  登录与关内部评审由 runner 会话前置。

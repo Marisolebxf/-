@@ -1,0 +1,148 @@
+id: FUNC-05415
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05415
+priority: P0
+title: 产业行点移除后从篮内消失
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 对比篮已打开
+  - 产业页至少 1 个对象
+locators:
+  panel: .system-compare-panel
+  industry_tab: '#compare-basket-tab-industry'
+  industry_panel: '#compare-basket-panel-industry'
+  remove: button[aria-label="移除"]
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 打开产业页签并点行「移除」；行消失、计数与提示在 expect 判定
+expect:
+  - note: 前置开篮、产业 Tab，点「移除」；无二次确认弹框
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const parseIndCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/产业[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const openIndustryTab = async (panel) => {
+        const indTab = panel.locator('#compare-basket-tab-industry');
+        await indTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const indPanel = page.locator('#compare-basket-panel-industry');
+        await expect(indPanel).toBeVisible({ timeout: 10000 });
+        return { indTab, indPanel };
+      };
+      const seedIndustryFromAdd = async (panel) => {
+        const addBtn = panel.getByRole('button', { name: '新增' }).first();
+        await addBtn.click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        const search = modal.getByPlaceholder(/产业或产业链名称/).first();
+        if (await search.count()) {
+          await search.fill('电子');
+          await page.waitForTimeout(400);
+          const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+          if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+        const joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-IND-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const listIndustryRows = (indPanel) =>
+        indPanel.locator('.overflow-y-auto .grid > div').filter({
+          has: page.getByRole('button', { name: '查看对象', exact: true }),
+        });
+      let panel = await openPanel();
+      let { indTab, indPanel } = await openIndustryTab(panel);
+      let rows = listIndustryRows(indPanel);
+      let n = await rows.count();
+      let indCount = parseIndCount(await indTab.innerText());
+      if (n < 1 || (indCount != null && indCount < 1)) {
+        await seedIndustryFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        ({ indTab, indPanel } = await openIndustryTab(panel));
+        rows = listIndustryRows(indPanel);
+        n = await rows.count();
+        indCount = parseIndCount(await indTab.innerText());
+      }
+      if (n < 1) throw new Error('ENV-SHELL-COMPARE-IND-EMPTY-001：产业页至少 1 个对象');
+      const countBefore = parseIndCount(await indTab.innerText());
+      const firstRow = rows.first();
+      const targetName = ((await firstRow.locator('strong').first().innerText()) || '').trim();
+      if (!targetName) throw new Error('无法读取待移除产业对象名');
+      const removeBtn = firstRow.getByRole('button', { name: '移除', exact: true });
+      await expect(removeBtn).toBeVisible({ timeout: 8000 });
+      globalThis.__func05415 = { targetName, countBefore, beforeLen: n };
+      await removeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const confirmModals = page.locator('.arco-modal:visible').filter({
+        has: page.getByRole('button', { name: '确定', exact: true }),
+      });
+      for (let i = 0; i < (await confirmModals.count()); i++) {
+        const m = confirmModals.nth(i);
+        if (!(await m.isVisible().catch(() => false))) continue;
+        const t = (await m.innerText()).replace(/\s+/g, ' ');
+        if (/确认|是否|清空/.test(t)) {
+          throw new Error('产业行移除不应出现二次确认弹框：' + t.slice(0, 120));
+        }
+      }
+  - note: 该行从列表消失；产业页签计数减 1
+    assert: |-
+      const st = globalThis.__func05415 || {};
+      if (!st.targetName) throw new Error('前置：未完成移除点击');
+      const panel = page.locator('.system-compare-panel');
+      const indTab = panel.locator('#compare-basket-tab-industry');
+      const indPanel = page.locator('#compare-basket-panel-industry');
+      const parseIndCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/产业[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const listNames = async () => {
+        const names = [];
+        const rows = indPanel.locator('.overflow-y-auto .grid > div').filter({
+          has: page.getByRole('button', { name: '查看对象', exact: true }),
+        });
+        for (let i = 0; i < (await rows.count()); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const name = ((await row.locator('strong').first().innerText()) || '').trim();
+          if (name) names.push(name);
+        }
+        return names;
+      };
+      const afterNames = await listNames();
+      const stillThere = afterNames.some((n) => n === st.targetName || n.includes(st.targetName) || st.targetName.includes(n));
+      if (stillThere) throw new Error('移除后产业行仍在列表：' + st.targetName);
+      if (typeof st.beforeLen === 'number' && afterNames.length >= st.beforeLen) {
+        throw new Error(`列表条数应减 1：前 ${st.beforeLen} 后 ${afterNames.length}`);
+      }
+      const countAfter = parseIndCount(await indTab.innerText());
+      if (typeof st.countBefore === 'number' && countAfter !== null && countAfter !== st.countBefore - 1) {
+        throw new Error(`产业页签计数应减 1：前 ${st.countBefore} 后 ${countAfter}`);
+      }
+  - note: 提示「已移除」
+    assert: |-
+      await expect(page.locator('.arco-message-content').filter({ hasText: '已移除' }).first()).toBeVisible({
+        timeout: 10000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。产业 Tab #compare-basket-tab-industry；IndustryCompareBasketPanel 行内「移除」无确认框（与 05395 行按钮可见性分开）。机检=行消失+产业 N/50−1+Message「已移除」。空篮经产业 Tab「新增」入篮（改会话数据）。

@@ -1,0 +1,74 @@
+id: FUNC-03889
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03889
+priority: P0
+tier: A
+title: 概况三张指标卡标题与数值
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况；env-gate G2 pass
+locators:
+  tab_overview: tab「全球服务机构概况」
+  kpi_grid: .svc-portal-kpi-grid
+  kpi_label: .svc-portal-kpi__label
+  kpi_value: .svc-portal-kpi__value
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 打开「全球服务机构概况」页签
+expect:
+  - note: 1、三张卡标题依次为全球机构约数、本年新增机构、环节合计（可重复计）
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/overview SPA404，无法验概况 KPI url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const overviewTab = page.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      await overviewTab.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('heading', { name: '全球服务机构概况', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const grid = page.locator('.svc-portal-kpi-grid').first();
+      await expect(grid).toBeVisible({ timeout: 8000 });
+      const labels = ['全球机构约数', '本年新增机构', '环节合计（可重复计）'];
+      const cards = grid.locator('.svc-portal-kpi');
+      await expect(cards).toHaveCount(3);
+      for (let i = 0; i < labels.length; i++) {
+        const labelEl = cards.nth(i).locator('.svc-portal-kpi__label').first();
+        await expect(labelEl).toContainText(labels[i], { timeout: 8000 });
+      }
+  - note: 2、三张卡都展示家数或家次
+    assert: |-
+      const grid = page.locator('.svc-portal-kpi-grid').first();
+      const cards = grid.locator('.svc-portal-kpi');
+      for (let i = 0; i < 3; i++) {
+        const card = cards.nth(i);
+        const valueEl = card.locator('.svc-portal-kpi__value').first();
+        await expect(valueEl).toBeVisible({ timeout: 8000 });
+        const unit = card.locator('.svc-portal-kpi__unit').first();
+        const unitText = ((await unit.innerText().catch(() => '')) || '').trim();
+        const valueText = ((await valueEl.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (unitText === '家' || unitText === '家次') continue;
+        if (/[\d,]+/.test(valueText) && /(家|家次)/.test(valueText)) continue;
+        throw new Error('KPI 卡 ' + (i + 1) + ' 未展示家数或家次: ' + valueText.slice(0, 80));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  概况 KPI 在 ServicePortalOverviewPage .svc-portal-kpi-grid（三卡标签见 testdata.kpi_labels_observed）。
+  步骤点 tab「全球服务机构概况」确保页签态；数值验 .svc-portal-kpi__unit 家/家次 或 value 内带单位。
+  goto /service-portal/overview（catalog default_landing）。对比篮默认展开时先关。
+  edu.itic-sci.com/tts/svcz 2026-10-21 实跑 overview SPA404 → ENV-EDU-TTS-SVCZ-404-001（同 FUNC-01306）。

@@ -1,0 +1,85 @@
+id: FUNC-03898
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03898
+priority: P0
+tier: A
+title: 技术能力榜四列表头与在库返回
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 产业为全部产业（runner 会话前置 + 门户概况默认）
+locators:
+  tab_cap: tab「服务机构技术能力」
+  rank_section: SectionPanel 标题含「技术力 Top30」
+  rank_table: main .arco-table
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「服务机构技术能力」页签
+expect:
+  - note: 1、表头依次为排名、服务机构、综合得分、操作
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构技术能力/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验技术能力榜 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const indInput = page.locator('input[placeholder="全部产业"]').first();
+      if (await indInput.count()) {
+        const val = ((await indInput.inputValue().catch(() => '')) || '').trim();
+        if (val && !/全部产业/.test(val)) {
+          throw new Error('前置产业非全部产业：' + val);
+        }
+      }
+      const rowCount = await page.locator('.svc-portal-rank-row, main .arco-table tbody tr').count();
+      const emptyVisible = await page.getByText(/暂无覆盖机构入榜|暂无技术力入榜机构/).first().isVisible().catch(() => false);
+      if (rowCount === 0 && emptyVisible) {
+        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜诚实空，无表格与在库/返回 tag，无法验四列表头与家数（Q060）');
+      }
+      const headers = await page.locator('main .arco-table thead th').allTextContents();
+      const normalized = headers.map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      const expected = ['排名', '服务机构', '综合得分', '操作'];
+      for (let i = 0; i < expected.length; i++) {
+        const hit = normalized.find((h) => h.includes(expected[i]));
+        if (!hit) throw new Error('缺少表头「' + expected[i] + '」；现场=' + normalized.join('|'));
+      }
+      const orderIdx = expected.map((label) => normalized.findIndex((h) => h.includes(label)));
+      if (orderIdx.some((x) => x < 0) || orderIdx[0] > orderIdx[1] || orderIdx[1] > orderIdx[2] || orderIdx[2] > orderIdx[3]) {
+        throw new Error('表头顺序不符；现场=' + normalized.join('|'));
+      }
+  - note: 2、榜单标题为「全部产业 · 技术力 Top30」
+    assert: |-
+      await expect(page.getByText(/全部产业\s*·\s*技术力 Top30/).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、页面展示「在库/返回」及家数
+    assert: |-
+      const tag = page.getByText(/在库\/返回\s*\d+\s*家/);
+      await expect(tag.first()).toBeVisible({ timeout: 8000 });
+      const tagTxt = ((await tag.first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      const m = tagTxt.match(/在库\/返回\s*(\d+)\s*家/);
+      if (!m) throw new Error('未能解析在库/返回家数：' + tagTxt);
+      const stockN = Number(m[1]);
+      const rowN = await page.locator('main .arco-table tbody tr').count();
+      if (rowN > 0 && stockN !== rowN) {
+        throw new Error('在库/返回(' + stockN + ')≠表格行数(' + rowN + ')');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  Tab 深链 /service-portal/capability-rank。四列表头与「在库/返回 N 家」仅在 Java ranking TECH 有 items 时渲染（ServicePortalCapabilityRankPage v-if rows.length）；
+  诚实空仅 Section 标题「全部产业 · 技术力 Top30」+ a-empty → ENV-SVC-PORTAL-TECH-RANK-EMPTY。edu.itic-sci.com/tts/svcz 2026-10-21 机跑 /service-portal SPA404 → ENV-EDU-TTS-SVCZ-404-001→ledger blocked（同 01306/03889）。登录与关内部评审由 runner 会话前置。金样 A 档零 allow_skip。

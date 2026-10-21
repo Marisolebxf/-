@@ -1,0 +1,62 @@
+id: FUNC-01458
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01458
+priority: P1
+title: 未改筛选时开始分析不可用
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  filter_tab: tab「条件筛选推荐」
+  start: button「开始分析」
+  tag_ph: placeholder「全部企业标签」
+  field_ph: placeholder「全部行业领域」
+  region_default: 全国 / 全部
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 进入条件筛选推荐，企业标签/行业领域/地域来源三筛选保持默认
+expect:
+  - note: 1、「开始分析」处于禁用状态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/enterprise\/attraction/);
+      await expect(page).toHaveURL(/workspace=attraction/);
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) {
+        await tab.first().click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      await expect(page.locator('input[placeholder="全部企业标签"]').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('input[placeholder="全部行业领域"]').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('全国 / 全部').first()).toBeVisible({ timeout: 8000 });
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+      const cls = (await start.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('开始分析未见 arco-btn-disabled，class=' + cls);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·catalog /enterprise/attraction?workspace=attraction&recommendation_tab=attraction；步骤=条件筛选推荐 Tab+三筛选默认占位（全部企业标签/全部行业领域/全国·全部）。机检=开始分析 disabled+arco-btn-disabled。点状复勘关评审后按钮名与 P0-02/fixtures 一致。登录与关评审由 runner 前置。B 档零 allow_skip。

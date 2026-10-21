@@ -1,0 +1,94 @@
+id: FUNC-02693
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02693
+priority: P0
+title: 检索结果行展示类型、领域、更新与摘要
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已用「光刻」搜出至少一条结果
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  result_list: .industry-search-result-list
+  result_card: .industry-search-result-card
+  result_title: .industry-search-result-title
+  result_meta: .industry-search-result-meta
+  result_summary: .industry-search-result-summary
+  result_tags: .industry-search-result-tags
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索「光刻」后浏览第一条结果行字段；四预期在 expect 判定
+expect:
+  - note: 1、行首为对象类型与名称
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const list = region.locator('.industry-search-result-list');
+      await expect(list).toBeVisible({ timeout: 12000 });
+      const first = list.locator('.industry-search-result-card').first();
+      await expect(first).toBeVisible({ timeout: 8000 });
+      const title = first.locator('.industry-search-result-title');
+      const typeTag = title.locator('.arco-tag').first();
+      const typeText = (await typeTag.innerText()).replace(/\s+/g, '').trim();
+      if (typeText !== '产业' && typeText !== '产业链') {
+        throw new Error('行首类型标签应为「产业」或「产业链」，实际=' + typeText);
+      }
+      const name = (await title.locator('h3').innerText()).replace(/\s+/g, ' ').trim();
+      if (!name) throw new Error('行首缺少对象名称 h3');
+  - note: 2、行内有所属领域、目录更新和来源
+    assert: |-
+      const first = page
+        .locator('[role=region][aria-label="产业查询结果"] .industry-search-result-card')
+        .first();
+      await expect(first).toBeVisible({ timeout: 8000 });
+      const meta = first.locator('.industry-search-result-meta');
+      await expect(meta.getByText(/所属领域：/)).toBeVisible({ timeout: 8000 });
+      await expect(meta.getByText(/目录更新：/)).toBeVisible({ timeout: 8000 });
+      await expect(meta.getByText(/来源：/)).toBeVisible({ timeout: 8000 });
+  - note: 3、摘要区有正文或显示「暂无摘要」
+    assert: |-
+      const first = page
+        .locator('[role=region][aria-label="产业查询结果"] .industry-search-result-card')
+        .first();
+      const summary = first.locator('.industry-search-result-summary');
+      await expect(summary).toBeVisible({ timeout: 8000 });
+      const text = (await summary.innerText()).replace(/\s+/g, ' ').trim();
+      if (!text || text === '—') {
+        throw new Error('摘要区应有正文或「暂无摘要」，实际=' + JSON.stringify(text));
+      }
+      if (text !== '暂无摘要' && text.length < 2) {
+        throw new Error('摘要正文过短：' + text);
+      }
+  - note: 4、摘要下列出下级名称
+    assert: |-
+      const first = page
+        .locator('[role=region][aria-label="产业查询结果"] .industry-search-result-card')
+        .first();
+      const tags = first.locator('.industry-search-result-tags .arco-tag');
+      const n = await tags.count();
+      if (n < 1) throw new Error('摘要下应列出至少 1 个下级名称 tag，实际 count=' + n);
+      const firstTag = (await tags.first().innerText()).replace(/\s+/g, ' ').trim();
+      if (!firstTag) throw new Error('下级名称 tag 文案为空');
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  关键词=testdata smart_search.keyword_primary「光刻」；第一条结果行 DOM=IndustrySearchObjectCard variant=result
+  （scout-after-search-guangke：产业·新一代信息技术，meta 含所属领域/目录更新/来源，摘要暂无摘要，tags 为下级名称）。
+  路由 catalog_path /industry-center/search。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,144 @@
+id: FUNC-02096
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02096
+priority: P1
+title: 搜索不存在的企业名后清单为空态且计数归零
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已点选「人工智能」
+  - 清单已出现
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  search_input: main input[placeholder*="搜索企业"]
+  empty_text: 当前条件下暂无企业
+  batch_count: 已选 N 家 · 当前结果 M 家
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链至清单出现后搜索「不存在的企业XYZ」并回车（判定在 expect）
+expect:
+  - note: 1、清单文案为「当前条件下暂无企业」；2、已选计数与当前结果都是 0 家
+    assert: |-
+      const KEYWORD = '不存在的企业XYZ';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const collectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            const st = window.getComputedStyle(el);
+            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+            if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+            out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      const selectChainForList = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (!needPick) return;
+        await chain.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        let options = await collectOptions();
+        if (options.length === 0) {
+          await page.keyboard.press('ArrowDown');
+          await page.waitForTimeout(700);
+          options = await collectOptions();
+        }
+        if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+        const pick = prefer.find((n) => options.includes(n)) || options[0];
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+        const opt = popup.getByText(pick, { exact: true }).first();
+        if (await opt.count()) await opt.click({ timeout: 8000 });
+        else {
+          await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return; }
+            }
+          }, pick);
+        }
+        await page.waitForTimeout(800);
+      };
+      const waitList = async () => {
+        let listOk = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { listOk = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { listOk = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!listOk) throw new Error('选链后定位结果未出现（未见清单或「覆盖产业链环节」）');
+        await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      };
+      const readBatchCounts = async () => {
+        const line = page.locator('main').getByText(/已选 \d+ 家 · 当前结果 \d+ 家/).first();
+        await expect(line).toBeVisible({ timeout: 8000 });
+        const txt = ((await line.innerText()) || '').replace(/\s+/g, ' ');
+        const ms = txt.match(/已选\s*(\d+)\s*家/);
+        const mc = txt.match(/当前结果\s*(\d+)\s*家/);
+        if (!ms || !mc) throw new Error('未解析批量栏家数: ' + txt.slice(0, 120));
+        return { selected: parseInt(ms[1], 10), current: parseInt(mc[1], 10) };
+      };
+      const searchKeyword = async (inp, keyword) => {
+        const listResp = page.waitForResponse(
+          (r) => r.request().method() === 'POST' && /sz-status\/enterprise-list/.test(r.url()) && r.status() === 200,
+          { timeout: 20000 },
+        );
+        await inp.click();
+        await inp.fill(keyword);
+        await inp.press('Enter');
+        await listResp.catch(() => null);
+        await page.waitForTimeout(600);
+        for (let i = 0; i < 25; i++) {
+          if (!(await page.locator('main .arco-spin:visible').count())) break;
+          await page.waitForTimeout(120);
+        }
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainForList();
+      await waitList();
+      const searchInp = page.locator('main input[placeholder*="搜索企业"]').first();
+      await expect(searchInp).toBeVisible({ timeout: 8000 });
+      await searchKeyword(searchInp, KEYWORD);
+      await expect(page.getByText('当前条件下暂无企业', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      const counts = await readBatchCounts();
+      if (counts.selected !== 0 || counts.current !== 0) {
+        throw new Error(
+          '搜索无命中后已选与当前结果应均为 0 家；读到已选 ' + counts.selected + ' 家、当前结果 ' + counts.current + ' 家',
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例 keyword「不存在的企业XYZ」；空态文案 fixtures empty_text「当前条件下暂无企业」（EnterpriseTable）。
+  家数以批量栏「已选 N 家 · 当前结果 M 家」解析。搜索走 POST …/sz-status/enterprise-list（同 FUNC-02097）。
+  30888 深链 enterprise-center 前缀；产业集群优先人工智能。须先关对比篮。登录与关内部评审由 runner 会话前置。禁止 50892。B 档零 allow_skip。

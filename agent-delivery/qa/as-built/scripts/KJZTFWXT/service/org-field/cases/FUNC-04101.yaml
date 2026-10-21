@@ -1,0 +1,193 @@
+id: FUNC-04101
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04101
+priority: P0
+tier: B
+title: 主流程-结论口径 · 演示口径
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
+  - 已打开一次成功结果（脚本内：分析记录→已完成行「查看结果」）
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  core_conclusion: SectionPanel「核心结论」
+  demo_caliber_note: .svc-org-coverage__note
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 1、打开该次结果页（分析记录→已完成行「查看结果」）
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=field/);
+        await expect(page).toHaveURL(/tab=coverage/);
+        return !(await bodyIs404());
+      };
+      const ensureOnFieldCoverage = async () => {
+        await dismissBasket();
+        if (onTarget() && !(await bodyIs404())) return;
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          const siblings = ['/service-portal/overview/overview', '/service-portal/overview', '/industry-center/search'];
+          let ok = false;
+          for (const s of siblings) {
+            if (await enterViaSidebar(s)) {
+              ok = true;
+              break;
+            }
+          }
+          if (!ok) {
+            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均 SPA404，无法打开结果页 url=' + page.url());
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构产业领域分析入口不可用 ' + page.url());
+        }
+      };
+      const openExistingResult = async () => {
+        if (/view=result/.test(page.url())) {
+          const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          if (/核心结论|服务广度 TOP3|当前结果快照没有覆盖矩阵/.test(main0)) return;
+        }
+        const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
+        await expect(recTab).toBeVisible({ timeout: 12000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+        await page.waitForTimeout(1200);
+        const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+        if (!/SVC-\d{8}-\d+/.test(mainRec)) {
+          throw new Error('ENV-SVC-ORG-FIELD-NO-RECORDS：分析记录无历史任务，无法满足「已打开一次成功结果」');
+        }
+        if (!/已完成/.test(mainRec)) {
+          throw new Error('ENV-SVC-ORG-FIELD-NO-DONE-RECORD：分析记录无已完成行');
+        }
+        const rows = page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /已完成/ }).filter({ hasText: /SVC-\d{8}-\d+/ });
+        const rowN = await rows.count();
+        if (!rowN) throw new Error('ENV-SVC-ORG-FIELD-NO-DONE-RECORD：未定位到已完成任务行');
+        let opened = false;
+        for (let i = 0; i < Math.min(rowN, 8) && !opened; i++) {
+          const row = rows.nth(i);
+          const resBtn = row.getByRole('button', { name: /查看结果/ }).first();
+          if (!(await resBtn.count())) continue;
+          if (await resBtn.isDisabled().catch(() => false)) continue;
+          await resBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+          for (let j = 0; j < 15; j++) {
+            const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+            if (/view=result/.test(page.url()) || /核心结论|服务广度 TOP3|当前结果快照没有覆盖矩阵/.test(body)) {
+              opened = true;
+              break;
+            }
+            await page.waitForTimeout(1000);
+          }
+          if (!opened) {
+            await recTab.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1000);
+          }
+        }
+        if (!opened) {
+          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+        }
+      };
+      await ensureOnFieldCoverage();
+      await openExistingResult();
+      globalThis.__func04101 = { resultOpen: true };
+      const main = page.locator('main').first();
+      await expect(main.getByText('核心结论').first()).toBeVisible({ timeout: 10000 });
+      const board = page.locator('.svc-org-coverage, [data-testid="svc-org-coverage-board"]').first();
+      if (await board.count()) {
+        await expect(board).toBeVisible({ timeout: 8000 });
+      }
+  - note: 1、核心结论区出现「演示口径」；2、文案写明数值与上图同源
+    assert: |-
+      if (!globalThis.__func04101?.resultOpen) throw new Error('前置：未打开该次结果页');
+      const note = page.locator('.svc-org-coverage__note').first();
+      if (await note.count() && (await note.isVisible().catch(() => false))) {
+        const txt = ((await note.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/演示口径/.test(txt)) throw new Error('核心结论口径注未见「演示口径」: ' + txt);
+        if (!/数值与上图同源/.test(txt)) throw new Error('口径注未见「数值与上图同源」: ' + txt);
+        await expect(note).toContainText('演示口径');
+        await expect(note).toContainText('数值与上图同源');
+      } else {
+        const main = page.locator('main').first();
+        const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const idxCore = body.indexOf('核心结论');
+        if (idxCore < 0) throw new Error('主区未见「核心结论」标题');
+        const slice = body.slice(idxCore, idxCore + 120);
+        if (!/演示口径/.test(slice)) {
+          throw new Error('核心结论区邻域未见「演示口径」: ' + slice);
+        }
+        if (!/数值与上图同源/.test(slice)) {
+          throw new Error('核心结论区邻域未见「数值与上图同源」: ' + slice);
+        }
+        await expect(main.getByText(/演示口径/).first()).toBeVisible({ timeout: 8000 });
+        await expect(main.getByText(/数值与上图同源/).first()).toBeVisible({ timeout: 8000 });
+      }
+      const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      const chartBeforeConclusion =
+        mainTxt.indexOf('热力图') >= 0 ||
+        mainTxt.indexOf('矩阵图') >= 0 ||
+        /当前结果快照没有覆盖矩阵/.test(mainTxt);
+      if (!chartBeforeConclusion && mainTxt.indexOf('核心结论') >= 0) {
+        const iChart = Math.min(
+          ...['热力图', '矩阵图', '当前结果快照没有覆盖矩阵']
+            .map((k) => mainTxt.indexOf(k))
+            .filter((i) => i >= 0)
+        );
+        const iCore = mainTxt.indexOf('核心结论');
+        if (Number.isFinite(iChart) && iCore >= 0 && iChart > iCore) {
+          throw new Error('图区应在核心结论之上（DOM 阅读序异常）');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04101=结果态「核心结论」SectionPanel extra 固定文案「演示口径 · 规则生成，数值与上图同源」（SvcOrgCoverageBoard.vue .svc-org-coverage__note；关评审复勘与源码一致）。
+  入口=分析记录已完成「查看结果」；catalog_path=/service/institution-judgment?workspace=field&tab=coverage；edu 深链 SPA404 时 sibling 侧栏补进（对齐 FUNC-04096/04100）。

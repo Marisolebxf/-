@@ -1,0 +1,155 @@
+id: FUNC-03122
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03122
+priority: P1
+title: 诊断记录任务状态筛「失败」
+story: US-CHAIN-DIAG-07
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已打开「诊断记录」（assert 自含侧栏/catalog 进入并切 Tab）
+locators:
+  records_tab: tab「诊断记录」
+  status_filter: 任务状态
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进关键环节→诊断记录→任务状态选「失败」；行状态在 expect
+expect:
+  - note: 前置：诊断记录 Tab；全部状态下至少有一条失败任务
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const assertNotSpa404 = async (where) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            await assertNotSpa404('direct-catalog');
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const openRecordsTab = async () => {
+        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        const bodyAfter = await main().innerText().catch(() => '');
+        if (!/诊断记录|任务状态|全部状态/.test(bodyAfter)) {
+          throw new Error('点「诊断记录」后未见任务状态区，url=' + page.url());
+        }
+      };
+      const chainRows = () => main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+      await enterKeyLink();
+      await openRecordsTab();
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(body)) {
+        throw new Error('ENV-KEYLINK-NO-RECORDS-03122：诊断记录无 CHAIN 任务行');
+      }
+      if (!/失败/.test(body)) {
+        throw new Error('ENV-KEYLINK-NO-FAILED-03122：全部状态下未见失败任务，无法验证筛「失败」');
+      }
+      globalThis.__func03122 = { chainRows, TID_RE, main };
+  - note: 1、将「任务状态」选为「失败」（用例步骤 1）
+    assert: |-
+      const ctx = globalThis.__func03122;
+      if (!ctx) throw new Error('前置：诊断记录未就绪');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      const statusLabel = page.getByText('任务状态', { exact: false }).first();
+      await expect(statusLabel).toBeVisible({ timeout: 8000 });
+      let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      if ((await trigger.count()) < 1) {
+        trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+      }
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const opt = page.locator(optSel).filter({ hasText: /^失败$/ }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/失败/.test(shown)) {
+        throw new Error('任务状态筛选未回显「失败」：' + shown);
+      }
+  - note: 1、列表中每条任务的状态都是「失败」
+    assert: |-
+      const ctx = globalThis.__func03122;
+      if (!ctx) throw new Error('前置：诊断记录未就绪');
+      const rows = ctx.chainRows();
+      const n = await rows.count();
+      if (n < 1) throw new Error('ENV-KEYLINK-NO-FAILED-03122：筛「失败」后未见 CHAIN 任务行');
+      const bad = [];
+      let visible = 0;
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        visible++;
+        const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const id = (rt.match(ctx.TID_RE) || [])[0] || ('row' + i);
+        if (/已完成|分析中|成功/.test(rt)) bad.push(id + ' 含非失败状态');
+        else if (!/失败/.test(rt)) bad.push(id + ' 未见「失败」：' + rt.slice(0, 100));
+      }
+      if (visible < 1) {
+        throw new Error('ENV-KEYLINK-NO-FAILED-03122：筛「失败」后当前页无可见任务行');
+      }
+      if (bad.length) throw new Error('筛失败后行状态不符：' + bad.join('; '));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；goto sibling /industry-center/search 再侧栏进入。
+  步骤=诊断记录→任务状态选「失败」（P7 .arco-select-view，对齐 cycle FUNC-02908 / key-link FUNC-03121 导航）。
+  前置=全部状态下 main 含「失败」且筛后可见 CHAIN 行≥1，否则 ENV-KEYLINK-NO-FAILED-03122 / ENV-KEYLINK-NO-RECORDS-03122。
+  机检=每可见 CHAIN 行仅「失败」态、无已完成/分析中。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

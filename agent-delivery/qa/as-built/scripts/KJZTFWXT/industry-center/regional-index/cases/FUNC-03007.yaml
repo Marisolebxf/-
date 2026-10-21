@@ -1,0 +1,89 @@
+id: FUNC-03007
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03007
+priority: P1
+title: 未保存配置下一键均分后切回官方模板无确认框
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 当前为「当前未保存配置」
+locators:
+  template: 选择模板下拉
+  avg: button「一键均分」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 进入指数页→未保存配置→一键均分→切回官方模板（判定在 expect）
+expect:
+  - note: 1、不弹出未保存询问；2、模板显示「区域产业指数官方模板」；3、提示含「当前使用官方模板，用户调整仅对本次任务生效」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            const u = new URL('/industry-center/search', baseUrl);
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      await enterRegionalIndex();
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 15000 });
+      await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup .arco-select-option', { hasText: '集成电路' }).first().click({ force: true });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click();
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true });
+      await page.waitForTimeout(900);
+      await expect(page.locator('.arco-select-view').filter({ hasText: '当前未保存配置' }).first()).toBeVisible({ timeout: 8000 });
+      await page.getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await page.locator('.arco-select-view').filter({ hasText: /当前未保存配置|区域产业指数官方模板/ }).first().click();
+      await page.waitForTimeout(500);
+      await page.locator('.arco-trigger-popup').getByText('区域产业指数官方模板', { exact: true }).last().click({ force: true });
+      await page.waitForTimeout(1200);
+      const unsavedModal = page.locator('.arco-modal').filter({ hasText: /未保存|放弃|丢弃|确认切换/ });
+      if (await unsavedModal.count() && (await unsavedModal.first().isVisible().catch(() => false))) {
+        throw new Error('切回官方模板时不应弹出未保存询问');
+      }
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/当前使用官方模板，用户调整仅对本次任务生效/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  替换作废 00572 后半（无未保存确认框）。前置：未保存配置 + 一键均分制造改动后再切官方模板。
+  catalog_path=entry-seed；edu 侧栏 sibling 进入。登录关评审 runner 前置。B 档零 allow_skip。

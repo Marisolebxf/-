@@ -1,0 +1,62 @@
+id: FUNC-03917
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03917
+priority: P1
+tier: B
+title: 区域分布地图说明无坐标且不填演示点
+story: US-SVC-PT-03
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + Tab 切换）
+locators:
+  tab_region: tab「服务机构区域分布」
+  map_empty: a-empty 地图无坐标说明
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「服务机构区域分布」页签
+expect:
+  - note: 1、文案含「无坐标字段」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构区域分布/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal SPA404，无法验区域地图空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构区域分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构区域分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const mapSection = page.locator('.svc-portal-map').first();
+      await expect(mapSection).toBeVisible({ timeout: 8000 });
+      const noCoord = mapSection.getByText(/无坐标字段/).first();
+      await expect(noCoord).toBeVisible({ timeout: 8000 });
+  - note: 2、写明不填演示点（现场「不填 Demo 区级假点」）
+    assert: |-
+      const mapSection = page.locator('.svc-portal-map').first();
+      await expect(mapSection).toBeVisible({ timeout: 8000 });
+      const noFake = mapSection.getByText(/不填\s*(演示点|Demo\s*区级假点|Demo)/).first();
+      await expect(noFake).toBeVisible({ timeout: 8000 });
+      const markers = mapSection.locator('.leaflet-marker-icon');
+      const markerCount = await markers.count();
+      if (markerCount > 0) {
+        throw new Error('区域地图不应渲染可点圆点（leaflet-marker-icon=' + markerCount + '），应保持无坐标空态');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  地图空态完整句「Java 区域分布无坐标字段。列表见右侧排行；不填 Demo 区级假点。」（ServicePortalRegionMapPage a-empty）。
+  goto catalog_path /service-portal → Tab 区域分布 → /service-portal/region-map；断言无坐标字段 + 不填 Demo/演示点/区级假点 + 无 leaflet 圆点。
+  用例册 03917 仍写「不填演示点」，现场文案为 Demo 区级假点，regex 双口径。B 档零 allow_skip。

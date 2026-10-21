@@ -1,0 +1,83 @@
+id: FUNC-02732
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02732
+priority: P1
+title: 清空后当前 Tab 的最近检索消失
+entry_id: chain-search
+tier: B
+preconditions:
+  - 智能检索 Tab
+  - 最近检索中已有至少一条记录
+locators:
+  recent_row: .enterprise-search-history-row（含「最近检索」）
+  clear_recent: button.enterprise-search-history-action → 清空
+  empty_smart: 暂无「智能检索」最近记录
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 前置造智能检索最近记录；点「清空」与无确认框、空态断言见 expect
+expect:
+  - note: 1、不出现确认框；2、文案变为「暂无「智能检索」最近记录」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const kw = '低空交通';
+      const recentLabel = `智能检索：${kw}`;
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      const recentRow = () =>
+        page.locator('.enterprise-search-history-row').filter({ hasText: '最近检索' }).first();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
+      await expect(smartTab).toBeVisible({ timeout: 10000 });
+      const sAria = await smartTab.getAttribute('aria-selected');
+      const sCls = (await smartTab.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        await smartTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      await expect(recentRow()).toBeVisible({ timeout: 10000 });
+      const chip = () =>
+        recentRow().locator('.enterprise-search-history-tag').filter({ hasText: recentLabel }).first();
+      if ((await chip().count()) === 0) {
+        await expect(input).toBeVisible({ timeout: 8000 });
+        await input.fill(kw);
+        await page.getByRole('button', { name: '搜索', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        const origin = new URL(page.url()).origin;
+        await page.goto(origin + '/industry-center/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await dismissBasket();
+        await expect(recentRow()).toBeVisible({ timeout: 10000 });
+      }
+      if ((await chip().count()) === 0) {
+        throw new Error('前置：智能检索最近检索中应有记录，未见「' + recentLabel + '」');
+      }
+      const clearBtn = recentRow().locator('button.enterprise-search-history-action').filter({ hasText: '清空' }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const confirmModal = page.locator('.arco-modal:visible').filter({ hasText: /确认|确定清空/ });
+      if (await confirmModal.count()) {
+        throw new Error('点击最近检索清空后出现确认框，与用例「无确认框」不符');
+      }
+      await expect(page.getByText('暂无「智能检索」最近记录', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(recentRow().locator('.enterprise-search-history-tag')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；智能检索 Tab 下最近检索行 .enterprise-search-history-row +
+  清空 button.enterprise-search-history-action（scout-tab-智能检索）。只清当前 Tab 最近检索 chip，无 Modal.confirm。
+  空态原文「暂无「智能检索」最近记录」（对齐企业查询 00474 口径，模式名=智能检索）。无历史时先搜「低空交通」再 goto 回引导态造前置。
+  登录与关内部评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,130 @@
+id: FUNC-02305
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02305
+priority: P0
+title: 已完成任务可打开只读供应链分析报告
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 最近分析中有已完成的供应链任务（assert 自含）
+locators:
+  recent_tab: tab「最近分析」
+  html_report_button: button「查看 HTML 报告」或 data-risk-history-open-html-report
+  report_title: 文案「供应链分析报告」
+  back_to_result: button「返回分析结果」或 data-report-back
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析→已完成供应链行「查看 HTML 报告」；报告页在 expect 判定
+expect:
+  - note: 1、打开只读报告，标题为供应链分析报告
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      const waitHistoryTable = async () => {
+        for (let i = 0; i < 30; i++) {
+          const t = await main().innerText().catch(() => '');
+          if (/最近分析/.test(t) && (/任务名称/.test(t) || /RISK-/.test(t))) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析表未渲染，url=' + page.url());
+      };
+      const pickCompletedSupplyHtmlReport = async () => {
+        const buttons = main().locator('[data-risk-history-open-html-report], button:has-text("查看 HTML 报告")');
+        const n = await buttons.count();
+        if (n < 1) {
+          throw new Error(
+            '环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「查看 HTML 报告」按钮（缺已完成供应链任务）',
+          );
+        }
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          if (await btn.isDisabled().catch(() => true)) continue;
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /企业供应链关系分析/.test(txt)) {
+            return btn;
+          }
+        }
+        throw new Error(
+          '环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「已完成」的供应链任务可「查看 HTML 报告」（前置 1 不满足）',
+        );
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击 HTML 报告后未进入只读报告页，url=' + page.url());
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      await waitHistoryTable();
+      const reportBtn = await pickCompletedSupplyHtmlReport();
+      await reportBtn.scrollIntoViewIfNeeded();
+      await reportBtn.click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      globalThis.__func02305 = { readerReady: true };
+      await expect(reader.locator('h1').filter({ hasText: '供应链分析报告' }).first()).toBeVisible({
+        timeout: 12000,
+      });
+  - note: 2、目录共 7 节，从报告身份到局限性与使用边界
+    assert: |-
+      if (!globalThis.__func02305?.readerReady) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001（报告页未打开，目录断言跳过）');
+      }
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const toc = reader.locator('nav.report-toc');
+      await expect(toc).toBeVisible({ timeout: 8000 });
+      const tocText = await toc.innerText();
+      const required = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const missing = required.filter((label) => !tocText.includes(label));
+      if (missing.length) {
+        throw new Error('报告目录缺节：' + missing.join('、') + '；目录片段=' + tocText.slice(0, 280));
+      }
+      if (required.filter((label) => tocText.includes(label)).length !== 7) {
+        throw new Error('报告目录节数不为 7，目录=' + tocText.replace(/\s+/g, ' ').slice(0, 320));
+      }
+  - note: 3、页上有「返回分析结果」
+    assert: |-
+      if (!globalThis.__func02305?.readerReady) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001（报告页未打开，返回钮断言跳过）');
+      }
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const back = reader.locator('[data-report-back], button').filter({ hasText: '返回分析结果' }).first();
+      await expect(back).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 /enterprise/risk?workspace=supply-chain&tab=supply-chain；最近分析 view=history。步骤=已完成「企业供应链关系分析」行 data-risk-history-open-html-report「查看 HTML 报告」→ view=report。机检=SystemReportReader h1「供应链分析报告」+ nav.report-toc 附录B 七节 +「返回分析结果」。无已完成可点行→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,56 @@
+id: FUNC-01473
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01473
+priority: P0
+title: 初始推荐首张卡含企业名称推荐理由与标准动作
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已进入企业查询
+  - 未执行主查询
+locators:
+  rec_section: 「推荐企业」分区
+  rec_first_card: 推荐分区首张卡（含推荐理由行）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+expect:
+  - note: 卡上有企业名称与「推荐理由」
+    assert: |-
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+      if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click({ timeout: 4000 });
+        await page.waitForTimeout(600);
+      }
+      await expect(page.getByText('智能搜索结果')).toHaveCount(0);
+      const main = page.locator('main');
+      const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+      await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+      const firstCard = recSection.locator('div.flex.flex-col.gap-3 > div').first();
+      await expect(firstCard).toBeVisible({ timeout: 8000 });
+      const nameBtn = firstCard.locator('button').filter({ hasNotText: /查看画像|加入对比篮|已在对比篮/ }).first();
+      await expect(nameBtn).toBeVisible({ timeout: 8000 });
+      const entName = (await nameBtn.innerText()).replace(/\s+/g, ' ').trim();
+      if (!entName || entName.length < 2) throw new Error('首张推荐卡企业名称不可读: ' + entName);
+      await expect(firstCard.getByText('推荐理由：').first()).toBeVisible({ timeout: 8000 });
+      const reasonLine = (await firstCard.innerText()).replace(/\s+/g, ' ');
+      const reasonIdx = reasonLine.indexOf('推荐理由：');
+      if (reasonIdx < 0) throw new Error('首张卡未见「推荐理由：」标签');
+      const reasonTail = reasonLine.slice(reasonIdx + '推荐理由：'.length).trim();
+      if (!reasonTail || reasonTail.length < 2) throw new Error('推荐理由正文为空');
+  - note: 动作按钮为「查看画像」和「加入对比篮」
+    assert: |-
+      const main = page.locator('main');
+      const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+      const firstCard = recSection.locator('div.flex.flex-col.gap-3 > div').first();
+      await expect(firstCard.getByRole('button', { name: '查看画像', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(firstCard.getByRole('button', { name: '加入对比篮', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search。推荐卡 DOM 见 RecommendationSection.vue；按钮原文「加入对比篮」（非「加入对比」）。有最近检索时先点「清空」以回到初始推荐分区。

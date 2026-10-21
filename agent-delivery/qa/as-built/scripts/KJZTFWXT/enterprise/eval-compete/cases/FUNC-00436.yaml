@@ -1,0 +1,110 @@
+id: FUNC-00436
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00436
+priority: P0
+title: 未选评估对象时开始分析按钮禁用
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+tier: A
+preconditions:
+  - env-gate overall=pass
+  - 已进入综合竞争力评估页且评估对象区为空（无 enterprise_codes）
+locators:
+  empty_hint: text「暂未选择评估对象」/「请在系统对比篮中选择企业」
+  start: button「开始分析」/「个性化竞争力评价与输出」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 对比篮≥1、评估对象未回填；空态与开始分析门控在 expect
+expect:
+  - note: 空态对象区可见未选对象提示且 URL 无 enterprise_codes
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const ensureEmptyObjectConfig = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/view=(processing|result|report|history)/.test(page.url()) || /enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        const mainTxt = await main().innerText().catch(() => '');
+        if (/来自对比篮/.test(mainTxt) && !/暂未选择评估对象|请先在对比篮选择企业/.test(mainTxt)) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await expect(page.getByRole('heading', { name: /企业.*竞争力/ }).first()).toBeVisible({ timeout: 15000 });
+      };
+      await ensureBasketEnterprises(1);
+      await ensureEmptyObjectConfig();
+      await expect(page).not.toHaveURL(/enterprise_codes/);
+      const hints = [
+        page.getByText('暂未选择评估对象', { exact: true }),
+        page.getByText(/请在系统对比篮中选择企业/),
+        page.getByText(/请先在对比篮选择企业/),
+        main().getByRole('button', { name: '前往对比篮选择企业' }),
+      ];
+      let ok = false;
+      for (const h of hints) {
+        if (await h.first().isVisible().catch(() => false)) { ok = true; break; }
+      }
+      if (!ok) throw new Error('空态未见未选对象提示或前往对比篮 CTA');
+  - note: 「开始分析」为禁用态且点击后不进入过程/结果态（D1·30888 主按钮常为「个性化竞争力评价与输出」）
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const resolveStartBtn = async () => {
+        const m = main();
+        const classic = m.getByRole('button', { name: '开始分析' });
+        if (await classic.count() && await classic.first().isVisible().catch(() => false)) return classic.first();
+        const alt = m.getByRole('button', { name: '个性化竞争力评价与输出' }).last();
+        if (await alt.count() && await alt.isVisible().catch(() => false)) return alt;
+        return m.locator('button.arco-btn-primary').filter({ hasText: /开始分析|发起分析|个性化竞争力评价与输出/ }).last();
+      };
+      const start = await resolveStartBtn();
+      await start.scrollIntoViewIfNeeded().catch(() => {});
+      await expect(start).toBeVisible({ timeout: 10000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+      await start.click({ force: true }).catch(() => {});
+      await page.waitForTimeout(900);
+      if (/view=processing|view=result/.test(page.url())) throw new Error('空态强制点击后仍进入过程/结果态');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 由 P0-20 重写。30888 /enterprise-center/evaluation；D1·空态文案「暂未选择评估对象/请在系统对比篮中选择企业」（scout 旧稿「前往对比篮选择企业」仍兼容）。D1·主按钮「个性化竞争力评价与输出」=用例「开始分析」（取 last 避开页头同名 enabled 钮）。对比篮≥1 为环境前置，评估对象仍可无 enterprise_codes。带回对象后恢复可用由 FUNC-00406 承载。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

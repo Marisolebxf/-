@@ -1,0 +1,83 @@
+id: FUNC-02795
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02795
+priority: P0
+title: 结构列表点环节后详情标题与三项字段及路径
+story: US-CHAIN-PANORAMA-03
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱本页
+locators:
+  view_list: .arco-radio-button「结构列表」
+  node_ic_design: 结构列表环节「集成电路设计」
+  detail_aside: '[data-testid="panorama-inline-detail"]'
+  drill_path: '.industry-panorama-drill-path[aria-label="节点深度下钻路径"]'
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 点击「结构列表」后点击环节「集成电路设计」（操作在 expect assert 内）
+expect:
+  - note: 前置进入本页并完成步骤 1～2
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      await page.getByText('结构列表', { exact: true }).click();
+      await page.waitForTimeout(600);
+      const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
+      const listCls = (await listRadio.getAttribute('class')) || '';
+      if (!listCls.includes('arco-radio-checked')) {
+        throw new Error('步骤：结构列表未选中');
+      }
+      await page.getByText('集成电路设计', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail).toBeVisible({ timeout: 10000 });
+      globalThis.__func02795_onPage = true;
+  - note: 1、详情标题为「集成电路设计」
+    assert: |-
+      if (!globalThis.__func02795_onPage) throw new Error('前置：未完成结构列表点环节');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail).toBeVisible({ timeout: 8000 });
+      const h3 = detail.locator('h3').first();
+      await expect(h3).toHaveText('集成电路设计', { timeout: 8000 });
+  - note: 2、详情含「产业阶段」「主要投入」「主要产出」
+    assert: |-
+      if (!globalThis.__func02795_onPage) throw new Error('前置：未完成结构列表点环节');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      for (const label of ['产业阶段', '主要投入', '主要产出']) {
+        const row = detail.locator('.arco-descriptions-item-label').filter({ hasText: label }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+      }
+  - note: 3、路径含「半导体与集成电路」和「关联企业」
+    assert: |-
+      if (!globalThis.__func02795_onPage) throw new Error('前置：未完成结构列表点环节');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      const path = detail.locator('.industry-panorama-drill-path[aria-label="节点深度下钻路径"]');
+      await expect(path).toBeVisible({ timeout: 8000 });
+      const pathText = ((await path.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/半导体与集成电路/.test(pathText)) {
+        throw new Error('下钻路径缺少「半导体与集成电路」，现场: ' + pathText);
+      }
+      if (!/关联企业/.test(pathText)) {
+        throw new Error('下钻路径缺少「关联企业」，现场: ' + pathText);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；结构列表点环节打开内联详情 data-testid=panorama-inline-detail（viewport≥1280，runner 1920）。
+  标题 h3=node.name；三项字段 a-descriptions-item；路径 industry-panorama-drill-path 含 chainName 与默认 subjectTab 关联企业（IndustryPanoramaDetail.vue panorama 变体，scout-deep3 同口径）。
+  图谱 canvas 点击不稳定，本条仅结构列表。对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。

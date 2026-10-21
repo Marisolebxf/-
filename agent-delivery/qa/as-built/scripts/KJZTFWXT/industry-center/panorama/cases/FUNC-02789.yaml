@@ -1,0 +1,86 @@
+id: FUNC-02789
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02789
+priority: P0
+title: 分析对象左侧下拉给出全部产业集群选项
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱页
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 展开分析对象左侧（aria「集群」）下拉，选项个数与名称在 expect 判定
+expect:
+  - note: 前置：已进入本页且分析对象左侧下拉可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      globalThis.__func02789_onPage = true;
+  - note: 1、展开「分析对象」左侧下拉后选项共 15 个（名称见用例附录 A）
+    assert: |-
+      if (!globalThis.__func02789_onPage) throw new Error('前置：未进入产业链全景图谱页');
+      const want = [
+        '新一代信息技术',
+        '生物产业',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意产业',
+        '海洋产业',
+        '未来制造（智能机器人）',
+        '未来信息（光载信息、AI 底层生态）',
+        '未来能源',
+        '未来空间',
+        '未来健康（合成生物、细胞基因、脑机工程）',
+      ];
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await cluster.scrollIntoViewIfNeeded();
+      await cluster.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 15) {
+        throw new Error('分析对象左侧选项应为 15 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '分析对象左侧选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；用例「分析对象左侧下拉」= 现场 aria-label「集群」（testdata filters.cluster）。
+  15 项名称对齐用例册附录 A（02789）与 scout-deep optionCount；括号补充项按 DOM 全文精确匹配。
+  点法对齐 P0-06/scout（.arco-select-view[aria-label="集群"] + .arco-trigger-popup .arco-select-option）。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；选项断言仍依 scout-deep optionCount+附录 A。

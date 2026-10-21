@@ -1,0 +1,95 @@
+id: FUNC-00446
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00446
+priority: P0
+title: 高级筛选条件可逐项叠加并应用出结果
+story: US-E1-SCH-04
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入高级筛选字段库
+locators:
+  adv_tab: tab 高级筛选
+  field_lib: region 高级筛选字段库
+  field_region: 字段「企业所属地区」
+  region_trigger: 「请选择所属地区」
+  field_status: 字段「经营状态」
+  apply_btn: button 应用筛选
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: click
+    target: tab 高级筛选
+  - action: wait
+    for: 高级筛选字段库渲染
+    timeout_ms: 800
+  - action: evaluate
+    note: 叠加条件、应用前计数与应用结果由 expect assert 自含（须先完成地区省级取值再点应用筛选）
+expect:
+  - note: 应用前可见已选条件计数
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      const regionField = fieldLib.getByText('企业所属地区', { exact: true });
+      if ((await regionField.count()) === 0) {
+        throw new Error('30888 字段库无「企业所属地区」（现场为「注册区县推荐」），用例步骤 1 不可达，无法叠加省级节点');
+      }
+      await regionField.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const regionTrigger = page.getByText('请选择所属地区');
+      if ((await regionTrigger.count()) === 0) {
+        throw new Error('点击「企业所属地区」后未见「请选择所属地区」');
+      }
+      await regionTrigger.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const col = page.locator('.arco-cascader-list-column').first();
+      await expect(col).toBeVisible({ timeout: 8000 });
+      await col.locator('.arco-cascader-list-item').filter({ hasText: /广东省|北京市/ }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await fieldLib.getByText('经营状态', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const statusRow = page.locator('main').filter({ hasText: '经营状态' }).filter({ has: page.getByRole('button', { name: '删除条件' }) }).last();
+      await statusRow.getByRole('textbox', { name: '可多选' }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const statusPop = page.locator('.arco-trigger-popup:visible');
+      await expect(statusPop).toBeVisible({ timeout: 8000 });
+      await statusPop.getByText('在营', { exact: true }).first().click({ timeout: 8000 });
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      const applyLabel = await applyBtn.innerText();
+      const mainText = await page.locator('main').innerText();
+      const hasCount = /应用筛选\s*[（(]\s*[1-9]\d*\s*[）)]/.test(applyLabel) || /已选\s*[1-9]\d*\s*个条件/.test(mainText);
+      if (!hasCount) {
+        throw new Error('应用前未见已选条件计数，apply=' + applyLabel);
+      }
+      if (await applyBtn.isDisabled()) {
+        throw new Error('应用筛选仍禁用，条件取值未完成');
+      }
+  - note: 应用后结果标题为高级筛选结果且含命中条数或明确空态
+    assert: |-
+      const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+      await applyBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const hasAdvResult = await page.getByText('高级筛选结果').count() > 0;
+      if (hasAdvResult) {
+        await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 12000 });
+      } else {
+        await expect(page.getByText('未命中结果，可调整条件或切换高级筛选')).toBeVisible({ timeout: 12000 });
+      }
+  - note: 当前条件区含所设条件之一
+    assert: |-
+      await expect(page.getByText('当前条件').first()).toBeVisible({ timeout: 8000 });
+      const condText = await page.locator('main').innerText();
+      if (!condText.includes('企业所属地区') && !condText.includes('经营状态') && !/在营/.test(condText)) {
+        throw new Error('当前条件区未见企业所属地区或经营状态');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D2·30888 /enterprise/enterprise-search 高级筛选字段库已无「企业所属地区」/「请选择所属地区」（仅有「注册区县推荐」+「请填写注册区县」且「可多选」下拉 headless 无选项），与用例 00446 步骤不可达；机跑预期 fail，交卷 blocked。路由 D1 同 FUNC-00445/00447。

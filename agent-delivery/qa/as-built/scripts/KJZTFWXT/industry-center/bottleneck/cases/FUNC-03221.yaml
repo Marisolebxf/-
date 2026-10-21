@@ -1,0 +1,157 @@
+id: FUNC-03221
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03221
+priority: P1
+title: 报告页「导出」不可用
+story: US-CHAIN-DIAG-06
+entry_id: chain-bottleneck
+tier: B
+preconditions:
+  - 已打开报告页
+locators:
+  records_tab: tab「诊断记录」
+  view_report: button「查看报告」
+  export_btn: button「导出」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 诊断记录已完成行「查看报告」→报告页右上角「导出」；禁用与无下载在 expect
+expect:
+  - note: 前置：已打开产业瓶颈堵点识别报告页（用例前置）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
+      };
+      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
+      const enterBottleneck = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=bottleneck/.test(page.url()) &&
+          /tab=bottleneck/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=bottleneck/);
+        await expect(page).toHaveURL(/tab=bottleneck/);
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      const reportReady = async () => {
+        if (!/view=report/.test(page.url())) return false;
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        return await reader.isVisible().catch(() => false);
+      };
+      await enterBottleneck();
+      if (await reportReady()) {
+        globalThis.__func03221 = { readerReady: true };
+        return;
+      }
+      const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' }).filter({ hasText: /已完成|成功/ });
+      const n = await rows.count();
+      if (n < 1) throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03221：诊断记录无已完成瓶颈任务');
+      let clicked = false;
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        const row = rows.nth(i);
+        const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
+        if (!(await reportBtn.count()) || (await reportBtn.isDisabled().catch(() => true))) continue;
+        await reportBtn.click({ timeout: 15000, force: true });
+        clicked = true;
+        for (let j = 0; j < 28; j++) {
+          await page.waitForTimeout(500);
+          if (await reportReady()) break;
+        }
+        if (await reportReady()) break;
+        clicked = false;
+      }
+      if (!clicked || !(await reportReady())) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-REPORT-03221：无已完成瓶颈任务可打开报告页');
+      }
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      await expect(page.getByText('产业瓶颈堵点识别报告').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func03221 = { readerReady: true, urlBefore: page.url() };
+  - note: 1、「导出」为禁用，不能点出文件
+    assert: |-
+      if (!globalThis.__func03221?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const locked = reader.locator('[data-report-export-locked]').first();
+      const exportByRole = reader.getByRole('button', { name: '导出' }).first();
+      let exportBtn = exportByRole;
+      if (await locked.count() && (await locked.first().isVisible().catch(() => false))) {
+        exportBtn = locked.locator('button[data-report-download]').first();
+        await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      } else {
+        await expect(exportByRole).toBeVisible({ timeout: 8000 });
+      }
+      await expect(exportBtn).toBeDisabled();
+      const cls = (await exportBtn.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('「导出」未见 arco-btn-disabled，class=' + cls);
+      }
+      const unlocked = page.locator('[data-report-export-unlocked]');
+      if (await unlocked.count() && (await unlocked.first().isVisible().catch(() => false))) {
+        throw new Error('未付费 admin 环境出现可导出按钮（data-report-export-unlocked）');
+      }
+      let downloadFired = false;
+      page.once('download', () => {
+        downloadFired = true;
+      });
+      await exportBtn.click({ timeout: 5000, force: true }).catch(() => {});
+      await page.waitForTimeout(600);
+      if (downloadFired) throw new Error('禁用态「导出」仍触发了 download 事件');
+      const urlAfter = page.url();
+      if (globalThis.__func03221.urlBefore && urlAfter !== globalThis.__func03221.urlBefore) {
+        throw new Error('点击「导出」后离开报告页：' + urlAfter);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例=报告页右上角「导出」禁用且 force 点击无 download（admin 未付费；对齐 key-link 03135 / cycle 02916 导出锁定）。
+  前置=诊断记录已完成「查看报告」或已在 view=report（现场备注：已完成任务报告同样锁定，旁有「付费」角标，本条主判 disabled）。
+  catalog_path entry-seed；机检=ReportExportButton data-report-export-locked + disabled。无已完成→ENV-CHAIN-BOTTLENECK-NO-DONE-03221；
+  无报告→ENV-CHAIN-BOTTLENECK-NO-REPORT-03221。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

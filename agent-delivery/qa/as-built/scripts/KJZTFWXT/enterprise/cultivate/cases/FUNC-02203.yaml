@@ -1,0 +1,270 @@
+id: FUNC-02203
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02203
+priority: P0
+title: 结果页重新分析进入过程并回到成功结果且最近分析新增已完成任务
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 已登录；当前已打开培育推荐分析成功结果（assert 自含恢复/发起成功结果）
+locators:
+  reanalyze: button「重新分析」
+  process_title: 可视化分析过程
+  result_title: 培育推荐分析结果
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 成功结果→重新分析→过程结束→最近分析；分 expect 机检
+expect:
+  - note: 1、点「重新分析」后进入「可视化分析过程」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部产业类别"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const isSuccessResult = async () => {
+        const t = await stack().innerText().catch(() => '');
+        const url = page.url();
+        return /培育推荐分析结果/.test(t) && !/可视化分析过程/.test(t) && (url.includes('analysis_view=result') || /共分析\s*\d+\s*家/.test(t) || /本次筛选/.test(t));
+      };
+      const waitResultShell = async (timeoutMs = 120000) => {
+        const title = () => stack().getByText('培育推荐分析结果').first();
+        const t0 = Date.now();
+        let last = '';
+        while (Date.now() - t0 < timeoutMs) {
+          await page.waitForTimeout(500);
+          last = await stack().innerText().catch(() => '');
+          const titleVis = await title().isVisible().catch(() => false);
+          if (titleVis && !/可视化分析过程/.test(last)) return last;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && titleVis) return last;
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CULTIVATE-ANALYSIS-FAIL-001');
+          }
+        }
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) throw new Error('ENV-CULTIVATE-ASYNC-NO-SUCCESS-001');
+        throw new Error('未在超时内到达培育推荐分析结果: ' + last.slice(0, 200));
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady();
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const tab = (await byKey.count()) ? byKey.first() : page.getByRole('tab', { name: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const countCompletedFilterRows = async () => {
+        const t = await stack().innerText().catch(() => '');
+        if (/暂无数据|还没有/.test(t) && !/REC-/.test(t)) return 0;
+        const chunks = t.split(/REC-/).slice(1);
+        return chunks.filter((c) => /已完成/.test(c) && /条件筛选/.test(c)).length;
+      };
+      const pickCompletedFilterRestore = async () => {
+        await openRecentTab();
+        const st = stack();
+        await expect(st.getByText('培育推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) return btn;
+        }
+        return null;
+      };
+      const runFilterAnalysis = async () => {
+        await page.getByRole('tab', { name: '条件筛选推荐' }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        return await waitResultShell();
+      };
+      const ensureSuccessResult = async () => {
+        await dismissBasket();
+        await expect(stack()).toBeVisible({ timeout: 15000 });
+        if (await isSuccessResult()) return;
+        const restore = await pickCompletedFilterRestore().catch(() => null);
+        if (restore) {
+          await restore.scrollIntoViewIfNeeded();
+          await restore.click({ timeout: 15000 });
+          await waitResultShell(60000);
+          if (await isSuccessResult()) return;
+        }
+        await runFilterAnalysis();
+      };
+      const pickReanalyze = async () => {
+        const st = stack();
+        const inStack = st.getByRole('button', { name: '重新分析', exact: true });
+        if (await inStack.count() && (await inStack.first().isVisible().catch(() => false))) return inStack.first();
+        const pageBtn = page.getByRole('button', { name: '重新分析', exact: true });
+        if (await pageBtn.count() && (await pageBtn.first().isVisible().catch(() => false))) return pageBtn.first();
+        return null;
+      };
+      const confirmRerunModalIfVisible = async () => {
+        for (let i = 0; i < 8; i++) {
+          const modal = page.locator('.arco-modal:visible').last();
+          const wrap = page.locator('.arco-modal-wrapper:visible .arco-modal').last();
+          const box = (await modal.count()) ? modal : wrap;
+          if ((await box.count()) && (await box.isVisible().catch(() => false))) {
+            const ok = box.getByRole('button', { name: '确定' });
+            if (await ok.count()) {
+              await ok.first().click({ timeout: 8000 });
+              await page.waitForTimeout(600);
+              return;
+            }
+          }
+          await page.waitForTimeout(400);
+        }
+      };
+      try {
+        await ensureSuccessResult();
+      } catch (e) {
+        const msg = String(e.message || e);
+        if (msg.includes('ENV-CULTIVATE-ANALYSIS-FAIL-001')) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达成功结果以测重新分析（与 02188/02196 同源 D4）');
+        }
+        if (msg.includes('ENV-CULTIVATE-ASYNC-NO-SUCCESS-001')) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：无法在超时内到达成功结果以测重新分析');
+        }
+        throw e;
+      }
+      await expect(stack().getByText('培育推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+      const tidBefore = (page.url().match(/task_id=([^&]+)/) || [])[1] || '';
+      await openRecentTab();
+      const nBefore = await countCompletedFilterRows();
+      const restore = await pickCompletedFilterRestore();
+      if (!restore) {
+        throw new Error('ENV-CULTIVATE-NO-SUCCESS-FILTER-001：最近分析无已完成条件筛选可恢复，无法回到结果页点重新分析');
+      }
+      await restore.scrollIntoViewIfNeeded();
+      await restore.click({ timeout: 15000 });
+      await waitResultShell(60000);
+      const reBtn = await pickReanalyze();
+      if (!reBtn) {
+        throw new Error('ENV-CULTIVATE-REANALYZE-001：结果区无「重新分析」按钮');
+      }
+      await expect(reBtn).toBeEnabled({ timeout: 8000 });
+      await reBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      await confirmRerunModalIfVisible();
+      let sawProcess = false;
+      let last = '';
+      for (let i = 0; i < 20; i++) {
+        await page.waitForTimeout(i === 0 ? 600 : 1500);
+        last = await stack().innerText().catch(() => '');
+        const url = page.url();
+        if (/可视化分析过程/.test(last) || url.includes('analysis_view=processing')) {
+          sawProcess = true;
+          break;
+        }
+        if (/已打开今天相同条件的推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) {
+          throw new Error('点重新分析却走当天复用已有结果，未进入新的可视化分析过程（与 02202 冲突）');
+        }
+        const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+        if (failVis && !/可视化分析过程/.test(last)) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：重新分析进入推荐分析失败');
+        }
+      }
+      globalThis.__func02203 = { nBefore, tidBefore, sawProcess, lastBody: last };
+      if (!sawProcess) {
+        throw new Error('点重新分析后未出现「可视化分析过程」: ' + last.slice(0, 240));
+      }
+      await expect(stack().getByText('可视化分析过程').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、过程结束后再次出现「培育推荐分析结果」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const ctx = globalThis.__func02203;
+      if (!ctx?.sawProcess) throw new Error('前置：未见可视化分析过程');
+      const title = () => stack().getByText('培育推荐分析结果').first();
+      let last = ctx.lastBody || '';
+      let ok = false;
+      for (let i = 0; i < 60; i++) {
+        await page.waitForTimeout(i === 0 ? 500 : 2500);
+        last = await stack().innerText().catch(() => '');
+        const titleVis = await title().isVisible().catch(() => false);
+        if (titleVis && !/可视化分析过程/.test(last)) {
+          ok = true;
+          break;
+        }
+        const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+        if (failVis && !/可视化分析过程/.test(last)) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：重新分析终态推荐分析失败');
+        }
+      }
+      if (!ok) {
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：重新分析后长期停留在可视化分析过程');
+        }
+        throw new Error('重新分析结束后未回到培育推荐分析结果: ' + last.slice(0, 240));
+      }
+      await expect(title()).toBeVisible({ timeout: 8000 });
+      const tidAfter = (page.url().match(/task_id=([^&]+)/) || [])[1] || '';
+      ctx.tidAfter = tidAfter;
+      ctx.lastBody = last;
+      globalThis.__func02203 = ctx;
+  - note: 3、最近分析新增一条已完成任务
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const ctx = globalThis.__func02203;
+      if (!ctx?.sawProcess) throw new Error('前置：重新分析流程未完成');
+      const openRecentTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const tab = (await byKey.count()) ? byKey.first() : page.getByRole('tab', { name: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const countCompletedFilterRows = async () => {
+        const t = await stack().innerText().catch(() => '');
+        if (/暂无数据|还没有/.test(t) && !/REC-/.test(t)) return 0;
+        const chunks = t.split(/REC-/).slice(1);
+        return chunks.filter((c) => /已完成/.test(c) && /条件筛选/.test(c)).length;
+      };
+      await openRecentTab();
+      await expect(stack().getByText('培育推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
+      const nAfter = await countCompletedFilterRows();
+      const nBefore = ctx.nBefore ?? 0;
+      if (nAfter < nBefore + 1) {
+        throw new Error('最近分析已完成条件筛选条数未增加：' + nBefore + ' -> ' + nAfter + '（用例要求重新分析新增已完成任务）');
+      }
+      const body = await stack().innerText().catch(() => '');
+      const firstRec = (body.match(/REC-[^\s\t\n]+/) || [])[0] || '';
+      if (!firstRec) throw new Error('最近分析未见 REC- 任务行');
+      const headChunk = body.split(firstRec)[1]?.slice(0, 120) || '';
+      if (!/已完成/.test(headChunk)) {
+        throw new Error('最近分析首条 REC 行状态非「已完成」: ' + firstRec + ' | ' + headChunk);
+      }
+      if (ctx.tidBefore && ctx.tidAfter && ctx.tidBefore === ctx.tidAfter) {
+        throw new Error('重新分析后 task_id 未变化（' + ctx.tidBefore + '），疑似未新建任务');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation。步骤=成功结果→最近分析记已完成条数→恢复结果→「重新分析」（弹窗确定兜底）→过程→结果→最近分析条数+1且首行已完成。D4·2026-10-20 rewrite-FUNC-02203 svcz 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（无可恢复已完成+人工智能新发起终态失败，expect① 未触达重新分析；与 02188/02196 同源）。无重新分析→ ENV-CULTIVATE-REANALYZE-001；过程不结束→ ENV-CULTIVATE-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,205 @@
+id: FUNC-01709
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01709
+priority: P0
+title: 结果页 HTML 报告目录七节且报告身份对象对应当前企业
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 已从带对象的结果页打开 HTML 报告（assert 可自含回填并打开报告）
+locators:
+  report_legacy: button「查看 HTML 报告」（页头，50892/旧壳）
+  report_trigger: data-system-report-trigger「生成 / 查看报告」（30888 结果底栏）
+  object_bar: aria-label「领域分析对象」
+  toc: 报告目录七节（附录 A）
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 进入结果态→记录分析对象→打开 HTML 报告；目录与对象一致性在 expect
+expect:
+  - note: 1、目录共 7 节（名称见附录 A）
+    assert: |-
+      const tocSections = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?view=domain',
+      ];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
+        }
+        if ((await page.getByText('404 Not Found').count()) > 0) {
+          await page.goto(origin() + '/enterprise-center/overview', { waitUntil: 'domcontentloaded' });
+          await page.getByRole('link', { name: '企业查询', exact: true }).click();
+          await page.waitForURL(/search|key-enterprise/, { timeout: 12000 });
+          await page.getByRole('link', { name: '重点企业领域分析', exact: true }).click();
+          await page.waitForURL(/key-enterprise-analysis/, { timeout: 12000 });
+          await page.waitForTimeout(600);
+          return page.url();
+        }
+        throw new Error('深链均不可达');
+      };
+      const ensureBasketEnterprise = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        const entCount = entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+        if (entCount >= 1) return;
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await gotoRoute();
+      };
+      const clickPageOpenBasket = async () => {
+        const main = page.locator('main');
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到打开对比篮/选择分析企业入口');
+        }
+      };
+      const inResult = async () => (await page.getByText(/来自对比篮\s*·\s*\d+\s*家/).count()) > 0;
+      const ensureResult = async () => {
+        await gotoRoute();
+        await closeBasket();
+        if (/enterprise_codes=/.test(page.url()) && !(await inResult())) {
+          await gotoRoute();
+          await closeBasket();
+        }
+        if (await inResult()) return;
+        await ensureBasketEnterprise();
+        await closeBasket();
+        await clickPageOpenBasket();
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        const pickerSels = page.locator('[aria-label^="选择 "]');
+        if (!(await pickerSels.count())) throw new Error('选择分析企业弹层无可勾选企业');
+        await pickerSels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+        if (!(await inResult())) throw new Error('确定后未进入带对象结果态');
+      };
+      const readResultEnterpriseNames = async () => {
+        const bar = page.locator('[aria-label="领域分析对象"]');
+        let txt = (await bar.first().innerText().catch(() => '')) || '';
+        if (!txt) txt = (await page.locator('main').innerText().catch(() => '')) || '';
+        const names = [];
+        const re = /([\u4e00-\u9fa5（）()A-Za-z0-9·、]{4,48}?(?:有限公司|股份有限公司|有限责任公司|集团))/g;
+        let hit;
+        while ((hit = re.exec(txt)) !== null) {
+          const n = hit[1].replace(/\s+/g, '');
+          if (!names.includes(n)) names.push(n);
+        }
+        if (!names.length) throw new Error('结果页未解析到企业名；样本=' + txt.slice(0, 220));
+        return names;
+      };
+      const openHtmlReport = async () => {
+        const legacy = page.getByRole('button', { name: '查看 HTML 报告', exact: true });
+        if (await legacy.count() && await legacy.first().isVisible().catch(() => false)) {
+          await legacy.first().click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        const trig = page.locator('[data-system-report-trigger]').first();
+        await expect(trig).toBeVisible({ timeout: 10000 });
+        const viewRoute = (await trig.getAttribute('data-report-view-route')) || '';
+        await trig.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const modalOpenReader = page.locator('.arco-modal').getByRole('button', { name: '查看 HTML 报告', exact: true });
+        for (let i = 0; i < 40; i++) {
+          if (await modalOpenReader.count() && await modalOpenReader.first().isVisible().catch(() => false)) {
+            await modalOpenReader.first().click({ timeout: 8000 });
+            await page.waitForTimeout(1500);
+            return;
+          }
+          await page.waitForTimeout(1000);
+        }
+        if (viewRoute) {
+          const url = viewRoute.startsWith('http') ? viewRoute : origin() + (viewRoute.startsWith('/') ? viewRoute : '/' + viewRoute);
+          await page.goto(url, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+          return;
+        }
+        throw new Error('30888 报告任务未完成且无可回落 view-route');
+      };
+      await ensureResult();
+      const entNames = await readResultEnterpriseNames();
+      await page.evaluate((names) => {
+        sessionStorage.setItem('__gkxFunc01709Ent', JSON.stringify(names));
+      }, entNames);
+      await openHtmlReport();
+      const reportBody = (await page.locator('body').innerText().catch(() => '')) || '';
+      if (!/报告目录|只读/.test(reportBody)) throw new Error('报告未打开或目录区不可读');
+      for (const s of tocSections) {
+        if (s === '局限性与使用边界') {
+          if (!/局限性与使用边界|局限性/.test(reportBody)) throw new Error('目录缺节: ' + s);
+        } else if (!reportBody.includes(s)) {
+          throw new Error('目录缺节: ' + s);
+        }
+      }
+  - note: 2、报告身份中的对象为当前分析企业
+    assert: |-
+      const entNames = JSON.parse(await page.evaluate(() => sessionStorage.getItem('__gkxFunc01709Ent') || '[]'));
+      if (!entNames.length) throw new Error('缺少结果页企业名缓存');
+      const body = (await page.locator('body').innerText().catch(() => '')) || '';
+      const identityIdx = body.indexOf('报告身份');
+      const slice = identityIdx >= 0 ? body.slice(identityIdx, identityIdx + 1500) : body;
+      for (const n of entNames) {
+        if (body.includes(n) || slice.includes(n)) continue;
+        const short = n.length > 10 ? n.slice(0, 8) : n.slice(0, 4);
+        if (!body.includes(short) && !slice.includes(short)) {
+          throw new Error('报告身份未含企业「' + n + '」；样本=' + slice.slice(0, 320));
+        }
+      }
+      if (!/对象[：:]/.test(slice) && !entNames.some((n) => body.includes(n))) {
+        throw new Error('报告身份区未见对象企业名');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 结果底栏为「生成/查看报告」+ 系统任务弹层再开 HTML（非页头「查看 HTML 报告」）；50892/旧壳仍走页头按钮。七节目录与附录 A 一致。对象名从结果页领域分析对象条解析，与报告正文交叉校验。回填对齐 FUNC-01688。登录与关内部评审由 runner 会话前置。B 档。

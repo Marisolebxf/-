@@ -1,0 +1,104 @@
+id: FUNC-02714
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02714
+priority: P0
+title: 勾选一行后出现已选条
+entry_id: chain-search
+tier: B
+preconditions:
+  - 检索结果已显示
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  selection_toolbar: .industry-search-selection-toolbar
+  row_check: .industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 光刻检索出结果后勾选首行；已选条在 expect 判定
+expect:
+  - note: 前置：智能检索「光刻」后结果区已显示且至少一行可勾选
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const clearSelection = async () => {
+        const toolbar = page.locator('.industry-search-selection-toolbar');
+        if ((await toolbar.count()) && (await toolbar.first().isVisible().catch(() => false))) {
+          const cancel = toolbar.getByRole('button', { name: '取消选择', exact: true });
+          if ((await cancel.count()) && (await cancel.first().isVisible().catch(() => false))) {
+            await cancel.first().click({ timeout: 5000 });
+            await page.waitForTimeout(400);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
+        throw new Error('前置：光刻检索为空，无法验勾选已选条');
+      }
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'result' && state !== 'permission') {
+        throw new Error('前置应为检索结果态 result/permission，实际 data-search-state=' + state);
+      }
+      await clearSelection();
+      const cards = region.locator('.industry-search-result-card');
+      const cardCount = await cards.count();
+      let pickIdx = -1;
+      for (let i = 0; i < cardCount; i++) {
+        const card = cards.nth(i);
+        if (!(await card.isVisible().catch(() => false))) continue;
+        const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+        if ((await chk.count()) > 0) {
+          pickIdx = i;
+          break;
+        }
+      }
+      if (pickIdx < 0) {
+        throw new Error('前置：结果区无可勾选行（可能均在对比篮或禁用）');
+      }
+      globalThis.__func02714_pickIdx = pickIdx;
+      globalThis.__func02714_ready = true;
+  - note: 步骤：勾选一行
+    assert: |-
+      if (!globalThis.__func02714_ready) throw new Error('前置：检索结果未就绪');
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const card = region.locator('.industry-search-result-card').nth(globalThis.__func02714_pickIdx);
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+      await chk.scrollIntoViewIfNeeded().catch(() => {});
+      const cls = (await chk.getAttribute('class')) || '';
+      if (!cls.includes('arco-checkbox-checked')) {
+        await chk.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+  - note: 1、出现「已选 1」；2、出现「加入对比篮」；3、出现「取消选择」
+    assert: |-
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      await expect(toolbar.getByText(/已选\s*1/)).toBeVisible({ timeout: 5000 });
+      await expect(toolbar.getByRole('button', { name: '加入对比篮', exact: true })).toBeVisible({ timeout: 5000 });
+      await expect(toolbar.getByRole('button', { name: '取消选择', exact: true })).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索「光刻」出检索结果（同 FUNC-01147）。
+  行勾选=.industry-search-result-select 内非 disabled Arco Checkbox；选择条 .industry-search-selection-toolbar。
+  现场文案「已选 N」可带类型后缀（如「已选 1 · 产业」），用 /已选\s*1/ 判定。登录与关内部评审由 runner 前置。B 档 coverage。

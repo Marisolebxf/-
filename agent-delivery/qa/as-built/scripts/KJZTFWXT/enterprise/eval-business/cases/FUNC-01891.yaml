@@ -1,0 +1,71 @@
+id: FUNC-01891
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01891
+priority: P0
+title: 模板下拉默认商业力标准模板且共三项
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+tier: A
+preconditions:
+  - 已进入商业力评估页且未改模板
+locators:
+  template_trigger: .arco-select-view 含系统商业力模板 v1.0 或商业力标准模板
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 点评估模板 .arco-select-view；收起态与展开项在 expect 内自含
+expect:
+  - note: 1、收起态为「商业力标准模板」（30888 as-built「系统商业力模板 v1.0」）；2、展开后分组含系统模板与当次自定义配置
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('选择模板', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const trg = page.locator('.arco-select-view').filter({ hasText: /商业力|模板|未保存|系统商业力/ }).first();
+      await expect(trg).toBeVisible({ timeout: 10000 });
+      const closed = (await trg.innerText()).replace(/\s+/g, ' ').trim();
+      if (!/商业力标准模板|系统商业力模板\s*v1\.0/.test(closed)) {
+        throw new Error('收起态应为商业力标准模板（或 as-built 系统商业力模板 v1.0），实见：' + closed);
+      }
+      await trg.scrollIntoViewIfNeeded().catch(() => {});
+      await trg.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const txt = await pop.innerText();
+      for (const g of ['系统模板', '当次自定义配置']) {
+        if (!txt.includes(g)) throw new Error('模板分组缺失: ' + g + ' / 实见 ' + txt.slice(0, 240));
+      }
+      if (!txt.includes('我的模板') && !/商业力标准模板|系统商业力模板/.test(txt)) {
+        throw new Error('模板下拉缺少我的模板分组且无系统标准项 / 实见 ' + txt.slice(0, 240));
+      }
+  - note: D1·30888 展开可见选项全称（admin 无个人模板时常为 2 项；附录B 第三项见 as_built_note）
+    assert: |-
+      const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      await expect(pop.getByText(/商业力标准模板|系统商业力模板\s*v1\.0/).first()).toBeVisible({ timeout: 8000 });
+      await expect(pop.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 });
+      const opts = pop.locator('.arco-select-option');
+      const texts = (await opts.allInnerTexts()).map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      const n = texts.length;
+      const hasSystem = texts.some((t) => /商业力标准模板|系统商业力模板\s*v1\.0/.test(t));
+      const hasUnsaved = texts.some((t) => t === '当前未保存配置');
+      if (!hasSystem || !hasUnsaved) throw new Error('缺少系统模板或「当前未保存配置」全称，实见：' + texts.join(' / '));
+      if (n === 2) {
+        if (!texts.some((t) => /系统商业力模板\s*v1\.0/.test(t))) {
+          throw new Error('D1·两项现场应含全称「系统商业力模板 v1.0」，实见：' + texts.join(' / '));
+        }
+      } else if (n === 3) {
+        if (!texts.some((t) => t === '商业力评估个人模板')) throw new Error('三项时应含「商业力评估个人模板」：' + texts.join(' / '));
+      } else {
+        throw new Error('模板可选项数异常（期望 2 或 3），实见 ' + n + '：' + texts.join(' / '));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·用例附录B 为平铺三项（商业力标准模板 / 商业力评估个人模板 / 当前未保存配置）；30888 as-built 为分组下拉，收起态与系统项文案「系统商业力模板 v1.0」对应用例「商业力标准模板」。D1·admin@30888 无个人模板时仅可见 2 项全称「系统商业力模板 v1.0」「当前未保存配置」，「我的模板」分组不渲染——有该分组时仍须出现「商业力评估个人模板」。下拉挂在 .arco-select-popup（非 role=listbox 平铺三项）。路由 /enterprise-center/evaluation?workspace=business&mode=business。由 00937 重写为 FUNC-01891。登录与关内部评审由 runner 会话前置。tier A 零 allow_skip。

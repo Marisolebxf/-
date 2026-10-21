@@ -1,0 +1,72 @@
+id: FUNC-00387
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00387
+priority: P0
+title: 勾选产业后筛选栏回显且看板仍展示指标卡
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 产业筛选为「全部产业」（30888 现场为产业集群未选、L0 产业未选）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  cluster_select: placeholder「选择产业集群」
+  industry_select: placeholder 含「选择产业」
+  industry_option: 下拉「生物医药」
+  kpi_section: section 含三卡 KPI
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析页，选产业集群与 L0 产业「生物医药」；回显与三卡在 expect 内判定
+expect:
+  - note: 前置为全部产业态，勾选「生物医药」后筛选栏回显「生物医药」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const clusterInp = main.getByPlaceholder('选择产业集群').first();
+      await expect(clusterInp).toBeVisible({ timeout: 8000 });
+      if (await clusterInp.inputValue()) throw new Error('产业集群非默认空态');
+      const clusterView = clusterInp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await clusterView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await page.locator('.arco-select-option').filter({ hasText: '生物产业' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const indInp = main.getByPlaceholder(/选择产业/).first();
+      await expect(indInp).toBeVisible({ timeout: 8000 });
+      const indView = indInp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await indView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await page.locator('.arco-select-option').filter({ hasText: /^生物医药$/ }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const filterEcho = main.locator('div').filter({ hasText: '生物产业' }).filter({ hasText: '生物医药' }).first();
+      await expect(filterEcho).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText('生物医药', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 勾选后类型与区域分析三卡（匹配企业数、覆盖企业类型数、覆盖区域数）仍在
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      await expect(kpiSection).toBeVisible({ timeout: 8000 });
+      const names = ['匹配企业数', '覆盖企业类型数', '覆盖区域数'];
+      for (const n of names) {
+        await expect(kpiSection.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const txt = ((await kpiSection.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/匹配企业数[\s\S]*?\d+[\s\S]*?家/.test(txt)) {
+        throw new Error('匹配企业数卡缺数值或单位「家」');
+      }
+      if (!/覆盖企业类型数[\s\S]*?\d+[\s\S]*?类/.test(txt)) {
+        throw new Error('覆盖企业类型数卡缺数值或单位「类」');
+      }
+      if (!/覆盖区域数[\s\S]*?\d+[\s\S]*?个/.test(txt)) {
+        throw new Error('覆盖区域数卡缺数值或单位「个」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；catalog 深链 /enterprise/... 404。产业为「产业集群 + L0 产业」两级：须先选集群「生物产业」后 L0 下拉才出现「生物医药」（用例单步勾选语义跟现场）。回显为 select-view 文案非独立 tag。三卡区 H2「产业与企业类型筛选」。登录与关内部评审由 runner 会话前置。

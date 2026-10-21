@@ -1,0 +1,105 @@
+id: FUNC-03097
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03097
+priority: P0
+title: 市场集中度行查看打开指标说明抽屉
+story: US-CHAIN-DIAG-04
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入产业关键环节识别页
+locators:
+  metric_row: 市场集中度行
+  view_btn: 市场集中度行「查看」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入关键环节页→市场集中度行「查看」（判定在 expect）
+expect:
+  - note: 1、抽屉标题为「市场集中度 · 指标说明」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/产业关键环节识别/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 ' + page.url());
+        }
+      };
+      await enterKeyLink();
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('注册识别因子').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('市场集中度', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const row = page.getByRole('row').filter({ hasText: '市场集中度' }).first();
+      await expect(row).toBeVisible({ timeout: 8000 });
+      const view = row.getByRole('button', { name: '查看' }).first();
+      await view.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = drawer.locator('.arco-drawer-title, .arco-drawer-header').first();
+      const titleText = ((await title.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!titleText.includes('市场集中度')) throw new Error('抽屉标题缺指标名：' + titleText);
+      if (!titleText.includes('指标说明')) throw new Error('抽屉标题缺「指标说明」：' + titleText);
+      globalThis.__func03097 = { drawerOpened: true };
+  - note: 2、可见「说明」和「支撑指标」；3、支撑指标含头部企业份额、主体数量、竞争强度
+    assert: |-
+      if (!globalThis.__func03097?.drawerOpened) throw new Error('前置：未打开市场集中度指标说明抽屉');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      if (!t.includes('说明')) throw new Error('抽屉缺「说明」；片段: ' + t.slice(0, 400));
+      if (!t.includes('支撑指标')) throw new Error('抽屉缺「支撑指标」；片段: ' + t.slice(0, 400));
+      for (const k of ['头部企业份额', '主体数量', '竞争强度']) {
+        if (!t.includes(k)) throw new Error('支撑指标缺「' + k + '」；片段: ' + t.slice(0, 480));
+      }
+      const closeBtn = drawer.locator('.arco-drawer-close-btn').first();
+      if (await closeBtn.count()) {
+        await closeBtn.click({ timeout: 5000 });
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await page.waitForTimeout(500);
+      await expect(page.locator('.arco-drawer:visible')).toHaveCount(0, { timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link（entry-seed）；goto sibling /industry-center/search
+  再侧栏「产业链分析」→「产业关键环节识别」。用例=注册识别因子表「市场集中度」行「查看」→ IndustryMetricSpecDrawer
+  标题「市场集中度 · 指标说明」；抽屉 .arco-drawer 含说明/支撑指标及头部企业份额、主体数量、竞争强度。登录关评审 runner 前置。B 档零 allow_skip。

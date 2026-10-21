@@ -1,0 +1,94 @@
+id: FUNC-02614
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02614
+priority: P1
+title: 页签内无第二套产业选框
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_news: '#industry-overview-tab-news'
+  tab_rule: .industry-overview-tab-rule
+  news_panel: '[data-frame-id="F-OV-02"]'
+  news_type: '[aria-label="资讯类型"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 点击「产业资讯」，校验 Tab 规则文案与资讯区内无产业选框
+expect:
+  - note: 步骤：点击「产业资讯」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业资讯' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=news/, { timeout: 8000 });
+      const newsTab = page.locator('#industry-overview-tab-news');
+      const aria = await newsTab.getAttribute('aria-selected');
+      const cls = await newsTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('点击后「产业资讯」Tab 未选中');
+      }
+      await expect(page.locator('[data-frame-id="F-OV-02"]')).toBeVisible({ timeout: 10000 });
+  - note: 1、出现「Tab 内不再提供产业切换」
+    assert: |-
+      const rule = page.locator('.industry-overview-tab-rule');
+      await expect(rule).toBeVisible({ timeout: 8000 });
+      await expect(rule).toHaveText('Tab 内不再提供产业切换');
+  - note: 2、资讯区内没有新的产业选框（仅保留资讯类型，不含集群/产业/产业链级联）
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await expect(newsPanel).toBeVisible({ timeout: 8000 });
+      const forbidden = [
+        newsPanel.locator('span[aria-label="集群"]'),
+        newsPanel.locator('span[aria-label="产业"]'),
+        newsPanel.locator('.industry-overview-industry-select'),
+        newsPanel.locator('.industry-overview-chain-select'),
+        newsPanel.getByText('请选择产业', { exact: true }),
+        newsPanel.getByText('可选产业链', { exact: true }),
+      ];
+      for (const loc of forbidden) {
+        const n = await loc.count();
+        if (n > 0) {
+          const vis = await loc.first().isVisible().catch(() => false);
+          if (vis) {
+            throw new Error('资讯区内不应出现第二套产业/产业链选框');
+          }
+        }
+      }
+      const typeSel = newsPanel.locator('[aria-label="资讯类型"]');
+      await expect(typeSel).toBeVisible({ timeout: 8000 });
+      const selects = newsPanel.locator('.arco-select');
+      const selCount = await selects.count();
+      let visibleSelects = 0;
+      for (let i = 0; i < selCount; i++) {
+        const el = selects.nth(i);
+        const vis = await el.isVisible().catch(() => false);
+        if (!vis) continue;
+        visibleSelects += 1;
+        const label = (await el.getAttribute('aria-label')) || '';
+        if (label !== '资讯类型') {
+          throw new Error('资讯区内存在除「资讯类型」外的下拉选框');
+        }
+      }
+      if (visibleSelects !== 1) {
+        throw new Error('资讯区可见下拉应为 1 个（资讯类型），实际 ' + visibleSelects);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；Tab 规则文案 .industry-overview-tab-rule 位于主区 Tab 下方（全 Tab 可见，scout-tab-资讯 已含该句）。
+  页头筛选区集群/产业/产业链为共用条件（01132），本条只验 F-OV-02 内无第二套产业切换控件；资讯区仅 aria-label=资讯类型。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

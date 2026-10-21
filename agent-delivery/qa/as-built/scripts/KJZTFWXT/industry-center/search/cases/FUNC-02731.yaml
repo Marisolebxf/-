@@ -1,0 +1,99 @@
+id: FUNC-02731
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02731
+priority: P1
+title: 高级筛选清空条件无确认框且已选归零
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选已选 1 个条件
+  - 仍在字段库编辑态
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_object_type: 字段库 Tag「对象类型」
+  clear_btn: button 清空条件
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 高级筛选置入 1 条件后点「清空条件」；两条预期在 expect 分步判定
+expect:
+  - note: 前置：高级筛选已选 1 个条件且仍在字段库
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      const objTypeTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '对象类型' }).first();
+      await expect(objTypeTag).toBeVisible({ timeout: 8000 });
+      await objTypeTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(fieldLib.getByText('已选 1 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const condRow = page.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      globalThis.__func02731_ready = true;
+  - note: 1、点击「清空条件」不出现确认框
+    assert: |-
+      if (!globalThis.__func02731_ready) throw new Error('前置：已选 1 条件未就绪');
+      const clearBtn = page.getByRole('button', { name: '清空条件' }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const confirmModal = page.locator('.arco-modal:visible').filter({ hasText: /确认|是否.*清空/ });
+      const modalCount = await confirmModal.count();
+      if (modalCount > 0) {
+        const vis = await confirmModal.first().isVisible().catch(() => false);
+        if (vis) {
+          throw new Error('清空条件不应弹出确认框，实际可见确认 Modal');
+        }
+      }
+      const okInModal = page.locator('.arco-modal:visible').getByRole('button', { name: /^确定$/ });
+      if ((await okInModal.count()) > 0 && (await okInModal.first().isVisible().catch(() => false))) {
+        throw new Error('清空条件后不应出现带「确定」的确认弹层');
+      }
+  - note: 2、已选回到 0 个条件
+    assert: |-
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib.getByText('已选 0 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const objRow = page.locator('.condition-builder').filter({ hasText: '对象类型' });
+      const rowCount = await objRow.count();
+      if (rowCount > 0) {
+        const vis = await objRow.first().isVisible().catch(() => false);
+        if (vis) {
+          throw new Error('清空后不应保留「对象类型」条件行');
+        }
+      }
+      const applyBtn = page.getByRole('button', { name: /应用筛选/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      const disabled = await applyBtn.isDisabled().catch(() => false);
+      if (!disabled) {
+        const applyName = ((await applyBtn.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/应用筛选[（(]\s*0\s*[）)]/.test(applyName)) {
+          throw new Error('已选 0 时「应用筛选」应 disabled 或计数为 0，实际=' + applyName + ' disabled=' + disabled);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=高级筛选 Tab + 字段库点「对象类型」（对齐 FUNC-02718）。
+  清空=FilterPanel handleReset 直清 conditions 无 Modal.confirm（lumen-ui-topic FilterPanel.vue）。
+  Footer button「清空条件」；已选 Tag 与 应用筛选(N) 同步归零。登录与关内部评审由 runner 前置。B 档零 allow_skip。

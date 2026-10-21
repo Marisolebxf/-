@@ -1,0 +1,77 @@
+id: FUNC-01817
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01817
+priority: P0
+title: 技术人才行查看打开指标说明抽屉并展示业务字段
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 指标与权重表已显示
+locators:
+  metric_row: 技术人才行
+  view_btn: 技术人才行「查看」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 深链进入配置页；技术人才行查看与抽屉断言在 expect
+expect:
+  - note: 1、标题为「技术人才 · 指标说明」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalTech = async () => {
+        if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=technology')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        await expect(page.getByText('指标名称').first()).toBeVisible({ timeout: 8000 });
+      };
+      const openTalentDrawer = async () => {
+        const table = page.locator('.arco-table').filter({ has: page.getByText('指标名称') }).first();
+        const row = table.locator('tbody tr').filter({ hasText: '技术人才' }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        const view = row.locator('button').filter({ hasText: '查看' });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      await gotoEvalTech();
+      await openTalentDrawer();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = drawer.locator('.arco-drawer-title, .arco-drawer-header').first();
+      await expect(title).toContainText('技术人才', { timeout: 5000 });
+      await expect(title).toContainText('指标说明', { timeout: 5000 });
+  - note: 2、含衡量目的、所属维度、业务口径、单位与指标方向
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block2 = ['衡量目的', '所属维度', '业务口径', '单位', '指标方向'];
+      const miss2 = block2.filter((k) => !t.includes(k));
+      if (miss2.length) throw new Error('抽屉缺字段: ' + miss2.join('、') + '；片段: ' + t.slice(0, 280));
+  - note: 3、含适用范围、数据状态与缺失影响
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block3 = ['适用范围', '数据状态', '缺失影响'];
+      const miss3 = block3.filter((k) => !t.includes(k));
+      if (miss3.length) throw new Error('抽屉缺字段: ' + miss3.join('、') + '；片段: ' + t.slice(0, 280));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 FUNC-01817 主流程-指标说明；深链 /enterprise-center/evaluation?workspace=technology&mode=technology。D1·30888 区块标题为「技术力模型构建与参数自定义」，前置用表头「指标名称」代替用例册「指标与权重」文案。抽屉 .arco-drawer:visible。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,124 @@
+id: FUNC-02307
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02307
+priority: P0
+title: 最近分析已完成任务按此配置新建回到配置且回填一致
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 最近分析中有已完成的供应链任务（assert 自含恢复读基准后点列表「按此配置新建」）
+locators:
+  recent_tab: 最近分析
+  clone_row: button「按此配置新建」
+  restore: button「恢复结果」
+  start: 开始分析
+  return_basket: 返回对比篮
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析首条已完成→恢复读对象与关系范围→回列表点该行「按此配置新建」
+expect:
+  - note: 1、进入配置页 2、对象与关系范围与该任务一致 3、「开始分析」可点
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const scopeOpts = ['供应商', '客户', '合作伙伴'];
+      const norm = (arr) => [...arr].sort().join('|');
+      const parseObjects = (text) => {
+        const m = text.match(/分析对象[：:]\s*([^\n]+)/);
+        if (!m) return [];
+        return m[1]
+          .split(/[、,，]/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+      };
+      const parseScopeLine = (text) => {
+        const m = text.match(/关系范围[：:]\s*([^\n]+)/);
+        if (!m) return [];
+        return m[1]
+          .split(/[、,，/\s]+/)
+          .map((s) => s.trim())
+          .filter((s) => scopeOpts.includes(s));
+      };
+      const readCheckedOnConfig = async () => {
+        const picked = [];
+        for (const n of scopeOpts) {
+          const box = main().locator('.arco-checkbox').filter({ hasText: n }).first();
+          await expect(box).toBeVisible({ timeout: 8000 });
+          const cls = (await box.getAttribute('class')) || '';
+          if (/arco-checkbox-checked/.test(cls)) picked.push(n);
+        }
+        return picked;
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      const restore = page.getByRole('button', { name: '恢复结果' });
+      if (!(await restore.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+      }
+      const restoreBtn = restore.first();
+      const row = restoreBtn.locator('xpath=ancestor::tr[1]');
+      if (!(await row.count())) throw new Error('无法定位已完成任务行');
+      const rowText = (await row.innerText()).replace(/\s+/g, ' ').trim();
+      const taskId = (rowText.match(/RISK-\d{8}-\d{3}/) || [])[0];
+      if (!taskId) throw new Error('最近分析行无法解析任务号：' + rowText.slice(0, 120));
+      await restoreBtn.click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 25000 });
+      await dismissBasket();
+      const summaryText = await main().innerText();
+      const expectedObjects = parseObjects(summaryText);
+      const expectedScope = parseScopeLine(summaryText);
+      if (expectedObjects.length < 1) throw new Error('任务摘要无法解析分析对象');
+      if (expectedScope.length < 1) throw new Error('任务摘要无法解析关系范围');
+      await openRecentTab();
+      const targetRow = page.locator('tr').filter({ hasText: taskId }).first();
+      await expect(targetRow).toBeVisible({ timeout: 12000 });
+      const cloneBtn = targetRow.getByRole('button', { name: '按此配置新建' });
+      if (!(await cloneBtn.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-CLONE-ROW-001：该行无「按此配置新建」');
+      }
+      await cloneBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(1200);
+      if (/view=result/.test(page.url())) {
+        throw new Error('按此配置新建应停在配置页，不应直接进入结果（view=result）');
+      }
+      await expect(page.getByText('分析对象', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: /返回对比篮/ }).first()).toBeVisible({ timeout: 8000 });
+      const configText = await main().innerText();
+      for (const ent of expectedObjects) {
+        if (!configText.includes(ent)) {
+          throw new Error('配置页对象与任务不一致，缺少：' + ent);
+        }
+      }
+      const fromConfig = await readCheckedOnConfig();
+      if (fromConfig.length < 1) throw new Error('配置页关系范围无勾选项');
+      if (norm(expectedScope) !== norm(fromConfig)) {
+        throw new Error(
+          '关系范围与任务不一致: 任务=' + expectedScope.join('、') + ' 配置=' + fromConfig.join('、')
+        );
+      }
+      const start = page.getByRole('button', { name: '开始分析' });
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=最近分析已完成行「按此配置新建」（非结果页「按此配置新建分析」）。机检=非 view=result 配置态+对象名与任务摘要一致+三复选关系范围一致+「开始分析」enabled+「返回对比篮」。基准=同任务先「恢复结果」读摘要（同 assert 内，最终点击来自列表行）。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

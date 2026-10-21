@@ -1,0 +1,89 @@
+id: FUNC-04995
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04995
+priority: P0
+tier: B
+title: 六个环节卡名称覆盖态与环节详情
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已登录（runner 会话前置）
+locators:
+  stage_grid: .svc-portal-stage-grid
+  stage_card: .svc-portal-stage-card
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 进入服务机构产业分布页，核对环节卡区
+expect:
+  - note: 1、六个环节名称与附录 B 一致
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|环节服务分布/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验六个环节卡 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const grid = page.locator('.svc-portal-stage-grid');
+      await expect(grid).toBeVisible({ timeout: 15000 });
+      const cards = grid.locator('.svc-portal-stage-card');
+      const n = await cards.count();
+      if (n === 0) {
+        throw new Error('ENV-SVC-PORTAL-STAGES-EMPTY：Java stages 无行，环节卡区未渲染');
+      }
+      await expect(cards).toHaveCount(6, { timeout: 8000 });
+      const expected = [
+        '知识产权与标准',
+        '市场化服务',
+        '中试熟化',
+        '研发与科研合作',
+        '检测认证',
+        '技术转移与孵化',
+      ];
+      const names = [];
+      for (let i = 0; i < 6; i++) {
+        const nameEl = cards.nth(i).locator('.svc-portal-stage-card__name').first();
+        await expect(nameEl).toBeVisible({ timeout: 8000 });
+        const raw = ((await nameEl.innerText()) || '').replace(/\s+/g, ' ').trim();
+        const cleaned = raw.replace(/^\d+\s*/, '').trim();
+        names.push(cleaned);
+        if (cleaned !== expected[i]) {
+          throw new Error('环节卡第' + (i + 1) + '张名称不符：期望「' + expected[i] + '」实际「' + cleaned + '」；顺序=' + names.join('|'));
+        }
+      }
+  - note: 2、「中试熟化」显示暂无覆盖
+    assert: |-
+      const grid = page.locator('.svc-portal-stage-grid');
+      const pilot = grid.locator('.svc-portal-stage-card').filter({
+        has: page.locator('.svc-portal-stage-card__name').filter({ hasText: '中试熟化' }),
+      }).first();
+      await expect(pilot).toBeVisible({ timeout: 8000 });
+      await expect(pilot.locator('.svc-portal-stage-card__empty').filter({ hasText: '暂无覆盖' })).toBeVisible({ timeout: 8000 });
+  - note: 3、每张卡都有「环节详情」
+    assert: |-
+      const grid = page.locator('.svc-portal-stage-grid');
+      const cards = grid.locator('.svc-portal-stage-card');
+      await expect(cards).toHaveCount(6, { timeout: 8000 });
+      for (let i = 0; i < 6; i++) {
+        const link = cards.nth(i).locator('.svc-portal-stage-card__link').first();
+        await expect(link).toBeVisible({ timeout: 8000 });
+        await expect(link).toContainText('环节详情', { timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 entry-seed catalog_path /service-portal/industry-distribution。环节区 .svc-portal-stage-grid / .svc-portal-stage-card；
+  名称顺序对齐用例附录 B（Java stages 顺序）；count<=0 显示 .svc-portal-stage-card__empty「暂无覆盖」（中试熟化预期暂无覆盖）。
+  stages 空 → ENV-SVC-PORTAL-STAGES-EMPTY。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

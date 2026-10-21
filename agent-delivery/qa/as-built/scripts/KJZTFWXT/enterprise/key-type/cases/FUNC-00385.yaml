@@ -1,0 +1,46 @@
+id: FUNC-00385
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00385
+priority: P0
+title: 区域洞察展示当前区域家数结构区块与清单入口
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  insight_block: 含「当前区域」「当前区域企业类型结构」与清单入口的主区
+  current_region: 「当前区域」+ 区域名 + 家数
+  structure: 文案「当前区域企业类型结构」
+  list_entry: button 文案含「查看企业清单」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析页；区域洞察三项预期在 expect 内判定
+expect:
+  - note: 从侧栏进入重点企业类型分析后，区域洞察展示当前区域名称与企业家数（单位家，不钉死具体数值）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      const main = page.locator('main').first();
+      await expect(main.getByText('当前区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const txt = ((await main.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/当前区域[\s\S]*?[\u4e00-\u9fff]{2,}[\s\S]*?\d+\s*家/.test(txt)) {
+        throw new Error('区域洞察区缺当前区域名或企业家数（家）: ' + txt.slice(0, 280));
+      }
+  - note: 有「当前区域企业类型结构」区块
+    assert: |-
+      await expect(page.locator('main').getByText('当前区域企业类型结构', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 清单入口文案含「查看企业清单」
+    assert: |-
+      await expect(page.locator('main').getByRole('button', { name: /查看企业清单/ }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1 现场侧栏深链为 /enterprise-center/key-enterprise-analysis；洞察区标题 as-built 为「三级地理透视与可视化呈现」，无 h3「区域洞察」但「当前区域/结构/清单」同区呈现。家数不钉死。

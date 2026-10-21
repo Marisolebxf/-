@@ -1,0 +1,99 @@
+id: FUNC-00960
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00960
+priority: P0
+title: 侧栏进入深圳企业现状分析路由标题与默认 Tab
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  menu_parent: 侧栏「企业分析」
+  menu_entry: link「深圳企业现状分析」
+  h1: heading「深圳企业现状分析」（level 1）
+  subtitle: 副标题含产业链位置与竞争力语义
+steps:
+  - action: goto
+    target: /development/search
+  - action: evaluate
+    note: 侧栏「企业分析」→「深圳企业现状分析」；路由/页头/默认 Tab 断言在 expect
+expect:
+  - note: 路由为 shenzhen-enterprise-status-analysis（30888 为 enterprise-center 前缀）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      await dismissBasket();
+      const entryName = '深圳企业现状分析';
+      const parentName = '企业分析';
+      const clickEntry = async () => {
+        const sideLink = page.locator('aside a, .layout-sider a, nav a').filter({ hasText: entryName }).first();
+        if (await sideLink.count()) {
+          await sideLink.click({ timeout: 10000 });
+          return true;
+        }
+        const link = page.getByRole('link', { name: entryName, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 10000 });
+          return true;
+        }
+        return false;
+      };
+      let ok = await clickEntry();
+      if (!ok) {
+        const parent = page.getByRole('menuitem', { name: parentName }).or(page.locator('.arco-menu-item, .layout-menu').filter({ hasText: parentName }).first());
+        if (await parent.count()) {
+          await parent.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        ok = await clickEntry();
+      }
+      if (!ok) throw new Error('侧栏未找到「深圳企业现状分析」入口');
+      await page.waitForURL(/\/enterprise(-center)?\/shenzhen-enterprise-status-analysis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/\/enterprise(-center)?\/shenzhen-enterprise-status-analysis/);
+  - note: 页标题为「深圳企业现状分析」且副标题含产业链位置与竞争力语义
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page.getByRole('heading', { name: '深圳企业现状分析', level: 1 })).toBeVisible({ timeout: 8000 });
+      const docTitle = await page.title();
+      if (/深圳企业现状分析/.test(docTitle)) {
+        await expect(page).toHaveTitle(/深圳企业现状分析/);
+      }
+      const mainTxt = await page.locator('main').innerText().catch(() => '');
+      if (!/产业链/.test(mainTxt) || !/(竞争力|位置)/.test(mainTxt)) {
+        throw new Error('副标题未含产业链位置/竞争力语义: ' + mainTxt.slice(0, 120));
+      }
+  - note: 默认选中「产业链定位」Tab（30888 文案为深圳企业产业链定位）
+    assert: |-
+      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+      const posNames = ['深圳企业产业链定位', '产业链定位'];
+      let tab = page.locator('main [role=tab]').first();
+      for (const name of posNames) {
+        const cand = page.locator('main [role=tab]').filter({ hasText: name }).first();
+        if (await cand.count()) { tab = cand; break; }
+      }
+      await expect(tab).toBeVisible({ timeout: 12000 });
+      const cls = (await tab.getAttribute('class')) || '';
+      const selected = (await tab.getAttribute('aria-selected')) || '';
+      if (!/active/.test(cls) && selected !== 'true') {
+        throw new Error('产业链定位 Tab 非默认选中: class=' + cls + ' aria-selected=' + selected);
+      }
+      const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+      for (const bn of benchNames) {
+        const bench = page.locator('main [role=tab]').filter({ hasText: bn }).first();
+        if (await bench.count()) {
+          const bcls = (await bench.getAttribute('class')) || '';
+          const bsel = (await bench.getAttribute('aria-selected')) || '';
+          if (/active/.test(bcls) || bsel === 'true') throw new Error('默认 Tab 误为对标 Tab: ' + bn);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 路由 enterprise-center/…；Tab 文案「深圳企业产业链定位」「多城市横向对标分析」（用例册简称产业链定位/多城市横向对标）。document.title 常为科技专题服务系统，页标题以 H1 为准。接旧 P0-01。A 档零 allow_skip。

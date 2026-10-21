@@ -1,0 +1,76 @@
+id: FUNC-03918
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03918
+priority: P1
+tier: B
+title: 深圳历年趋势空态
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + goto catalog_path）
+locators:
+  tab_sz: tab「深圳产业服务介绍」
+  trend_section: 产业服务机构数量 · 历年趋势
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「深圳产业服务介绍」页签
+expect:
+  - note: 说明暂无独立序列且不展示折线
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验深圳历年趋势空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const trendTitle = page.getByText('产业服务机构数量 · 历年趋势').first();
+      await trendTitle.scrollIntoViewIfNeeded();
+      await expect(trendTitle).toBeVisible({ timeout: 8000 });
+      const trendPanel = page.locator('.svc-portal-chart-grid').locator('.arco-card, section, div').filter({
+        has: page.getByText('产业服务机构数量 · 历年趋势'),
+      }).first();
+      const panel = (await trendPanel.count()) > 0
+        ? trendPanel
+        : page.locator('body');
+      const emptyDesc = panel.locator('.arco-empty-description, .arco-empty').filter({
+        hasText: /暂无深圳历年独立 series|独立 series/,
+      }).first();
+      await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+      const emptyTxt = ((await emptyDesc.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/独立\s*series|独立series/.test(emptyTxt)) {
+        throw new Error('空态未说明暂无独立序列；现场=' + emptyTxt);
+      }
+      if (!/不展示折线/.test(emptyTxt)) {
+        throw new Error('空态未说明不展示折线；现场=' + emptyTxt);
+      }
+      const chartInPanel = panel.locator('.svc-portal-chart canvas, .svc-portal-chart .echarts-for-react canvas');
+      const chartCount = await chartInPanel.count();
+      if (chartCount > 0) {
+        let anyVisible = false;
+        for (let i = 0; i < chartCount; i++) {
+          if (await chartInPanel.nth(i).isVisible().catch(() => false)) anyVisible = true;
+        }
+        if (anyVisible) throw new Error('历年趋势空态仍展示折线图 canvas');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深圳页 SectionPanel「产业服务机构数量 · 历年趋势」：trendOption 为空时 a-empty description=
+  「暂无深圳历年独立 series。不展示折线，不用全球新增序列乘比例冒充。」（ServicePortalShenzhenPage.vue）。
+  goto /service-portal → Tab 进 shenzhen（同 03904）；catalog_path=/service-portal。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

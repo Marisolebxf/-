@@ -1,0 +1,71 @@
+id: FUNC-05001
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05001
+priority: P1
+tier: B
+title: 选定产业链后结论条
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布
+locators:
+  conclusion: .ent-judgment-strip
+  industry: .svc-portal-filter input[placeholder="全部产业"]
+  chain: .svc-portal-filter input[placeholder="全部产业链"]
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 选择产业「生物」；选择产业链「生物医药与生命健康」
+expect:
+  - note: 1、结论条以「生物医药与生命健康」起头
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|全部产业/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链 industry-distribution SPA404，无法验产业链回显结论条 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const filter = page.locator('.svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 8000 });
+      const ind = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await expect(ind).toBeVisible({ timeout: 8000 });
+      await ind.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物' }).first().click();
+      await page.waitForTimeout(800);
+      const chainSel = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      await expect(chainSel).toBeVisible({ timeout: 8000 });
+      await chainSel.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物医药与生命健康' }).first().click();
+      await page.waitForTimeout(800);
+      const strip = page.locator('.ent-judgment-strip').first();
+      await expect(strip).toBeVisible({ timeout: 15000 });
+      const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/^「生物医药与生命健康」/.test(txt)) {
+        throw new Error('结论条未以「生物医药与生命健康」起头: ' + txt.slice(0, 160));
+      }
+  - note: 2、结论条仍写明本包络不按产业切片
+    assert: |-
+      const strip = page.locator('.ent-judgment-strip').first();
+      const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/本包络不按产业切片/.test(txt)) {
+        throw new Error('结论条未写明本包络不按产业切片: ' + txt.slice(0, 160));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 catalog_path=/service-portal/industry-distribution。选产业「生物」+产业链「生物医药与生命健康」后
+  JudgmentStrip 起头为产业链名，仍含「本包络不按产业切片」。edu tts/svcz SPA404→ENV-EDU-TTS-SVCZ-404-001。

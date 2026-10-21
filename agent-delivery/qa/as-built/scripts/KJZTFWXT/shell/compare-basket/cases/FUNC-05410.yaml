@@ -1,0 +1,59 @@
+id: FUNC-05410
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05410
+priority: P1
+title: 打开更多操作见恢复默认位置
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  more_ops: button aria-label「更多操作」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 点击「更多操作」；菜单项在 expect 判定
+expect:
+  - note: 对比篮已打开并点击「更多操作」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const pickerTitle = panel.getByText('选择分析企业', { exact: true });
+      if (await pickerTitle.count() && (await pickerTitle.first().isVisible().catch(() => false))) {
+        throw new Error('对比篮为 picker 模式，无「更多操作」（需系统浮层 workbench 态）');
+      }
+      const moreBtn = panel.getByRole('button', { name: '更多操作' });
+      await expect(moreBtn).toBeVisible({ timeout: 8000 });
+      await moreBtn.click({ timeout: 10000, force: true });
+      await page.waitForTimeout(400);
+      globalThis.__func05410_menuOpen = true;
+  - note: 1、菜单出现「恢复默认位置」
+    assert: |-
+      if (!globalThis.__func05410_menuOpen) throw new Error('前置未点击「更多操作」');
+      const candidates = [
+        page.getByRole('menuitem', { name: '恢复默认位置', exact: true }),
+        page.locator('.arco-dropdown-option').filter({ hasText: '恢复默认位置' }),
+        page.locator('.arco-trigger-popup:visible').getByText('恢复默认位置', { exact: true }),
+      ];
+      let found = null;
+      for (const loc of candidates) {
+        if (await loc.count() && (await loc.first().isVisible().catch(() => false))) {
+          found = loc.first();
+          break;
+        }
+      }
+      if (!found) throw new Error('更多操作菜单中未见「恢复默认位置」');
+      await expect(found).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。EnterpriseCompareBasketView 标题区 a-dropdown「更多操作」→ a-doption「恢复默认位置」（2026-10-20）。本条只验菜单项可见，不点击恢复位置（05427）。登录与关评审由 runner 前置。B 档零 allow_skip。

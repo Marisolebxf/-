@@ -1,0 +1,68 @@
+id: FUNC-02689
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02689
+priority: P0
+title: 查产业输入集成电路搜索后进入检索结果且有条目
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页（深链 catalog_path /industry-center/search）
+locators:
+  tab_industry: '.enterprise-search-mode-tabs [role=tab]「查产业」'
+  industry_input: textbox placeholder 含「输入产业或产业链名称」
+  search_btn: button「搜索」（class 含 arco-input-search-btn）
+  result_region: region aria-label「产业查询结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点「查产业」、输入「集成电路」、点「搜索」；检索结果与条数在 expect 判定
+expect:
+  - note: 出现「检索结果」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const mode = page.locator('.enterprise-search-mode-tabs');
+      await mode.getByRole('tab', { name: '查产业' }).click();
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=industry/);
+      const box = page.getByPlaceholder(/输入产业或产业链名称/);
+      await expect(box).toBeVisible({ timeout: 8000 });
+      await box.fill('集成电路');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.getByRole('heading', { level: 2, name: '检索结果' })).toBeVisible({ timeout: 12000 });
+  - note: 结果条数大于 0
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const text = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(text) && /共\s*0\s*条/.test(text)) {
+        throw new Error('查产业「集成电路」为空结果：' + text.slice(0, 120));
+      }
+      let n = null;
+      const m1 = text.match(/共\s*(\d+)\s*条/);
+      const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
+      if (m1) n = parseInt(m1[1], 10);
+      else if (m2) n = parseInt(m2[1], 10);
+      if (n === null || Number.isNaN(n) || n < 1) {
+        throw new Error('未能解析大于 0 的结果条数；片段=' + text.slice(0, 160));
+      }
+      const hitEntry =
+        (await region.getByRole('button', { name: '进入全景图谱' }).count()) > 0 ||
+        (await region.getByRole('button', { name: '查看摘要' }).count()) > 0;
+      if (!hitEntry) {
+        throw new Error('条数=' + n + ' 但未见命中条目操作（进入全景图谱/查看摘要）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 查产业 Tab placeholder=testdata industry_tab；检索模式作用域 .enterprise-search-mode-tabs。条数不钉死具体值，只验 >0。路由 catalog_path /industry-center/search；登录与关内部评审由 runner 前置。A 档零 allow_skip。

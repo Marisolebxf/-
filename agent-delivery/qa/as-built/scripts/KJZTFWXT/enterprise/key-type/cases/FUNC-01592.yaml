@@ -1,0 +1,68 @@
+id: FUNC-01592
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01592
+priority: P0
+title: 企业类型下拉选项共 7 个且名称正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  filter_heading: main 内「产业与企业类型筛选」
+  type_trigger: main 内 placeholder「全部」的企业类型 .arco-select-view
+  type_popup_options: .arco-select-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开企业类型下拉；项数与名称在 expect 内判定
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText('企业类型', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 展开企业类型下拉后共 7 个类型
+    assert: |-
+      const main = page.locator('main');
+      const typeInp = main.getByPlaceholder('全部').last();
+      await expect(typeInp).toBeVisible({ timeout: 8000 });
+      const typeView = typeInp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await typeView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const opts = page.locator('.arco-select-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const count = await opts.count();
+      if (count !== 7) {
+        const sample = await opts.allTextContents();
+        throw new Error(`企业类型选项数为 ${count}，预期 7；样本=${sample.join('|')}`);
+      }
+  - note: 7 项名称与用例附录 B 一致（30888 现场为简称：外企/高企/小微/上市/专精特新/小巨人/链主龙头）
+    assert: |-
+      const opts = page.locator('.arco-select-popup:visible .arco-select-option');
+      if (!(await opts.first().isVisible().catch(() => false))) {
+        const main = page.locator('main');
+        const typeInp = main.getByPlaceholder('全部').last();
+        const typeView = typeInp.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+        await typeView.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      }
+      const expected = ['外企', '高企', '小微', '上市', '专精特新', '小巨人', '链主龙头'];
+      const texts = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`下拉未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 7) {
+        throw new Error(`去重后项数 ${texts.length}，预期 7；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise-center/key-enterprise-analysis?workspace=type&view=type。用例附录 B 全称（外资企业、高新技术企业、小微企业、上市企业、专精特新、小巨人、链主龙头）；现场下拉文案为外企/高企/小微/上市/专精特新/小巨人/链主龙头×7。选项容器 .arco-select-popup:visible（非 .arco-trigger-popup）。登录与关内部评审由 runner 会话前置。

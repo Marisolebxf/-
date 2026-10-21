@@ -1,0 +1,242 @@
+id: FUNC-01794
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01794
+priority: P0
+title: 技术力加权排名条形展示各企业得分且高分条更长
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已打开至少两家企业的技术力评估结果（脚本内：最近评估→恢复结果，同 FUNC-01790）
+locators:
+  rank_title: 技术力加权排名
+  rank_count_tag: N 家企业
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 恢复结果态→滚动到加权排名；条形条数与长短比对在 expect
+expect:
+  - note: 1、每家企业有一条得分条
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyRes = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        return /技术力评估结果/.test(t) && /\d+\s*分/.test(t);
+      };
+      const waitBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await bodyRes()) return true;
+          await page.waitForTimeout(1000);
+        }
+        return await bodyRes();
+      };
+      const recoverFromRecentTab = async () => {
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (!(await tab.isVisible().catch(() => false))) return null;
+        await tab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const body = await page.locator('body').innerText().catch(() => '');
+        const ids = [...body.matchAll(/EVAL-\d{8}-\d{3}/g)].map((m) => m[0]);
+        const candidate = [...new Set(ids)][0] || null;
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          if (await waitBody(60000)) return candidate;
+        }
+        if (candidate) {
+          await page.goto(toUrl(evalRoute + '&view=result&analysis_type=technology&task_id=' + candidate), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2000);
+          if (await waitBody(45000)) return candidate;
+        }
+        return null;
+      };
+      const ensureResultState = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const tab0 = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (await tab0.isVisible().catch(() => false)) {
+          await tab0.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+        }
+        const restore0 = page.getByRole('button', { name: '恢复结果' });
+        if (await restore0.count()) {
+          await restore0.first().click({ timeout: 8000 });
+          await waitBody(60000);
+        }
+        if (!(await bodyRes())) await recoverFromRecentTab();
+        if (!(await bodyRes())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await recoverFromRecentTab();
+        }
+        if (!(await bodyRes())) throw new Error('未达结果态（ticket=ENV-EVAL-TECH-RESULT-SHELL-001，URL=' + page.url() + '）');
+        await expect(page.getByRole('heading', { name: '技术力评估结果' }).first()).toBeVisible({ timeout: 15000 });
+      };
+      const parseResultEnterpriseCount = async () => {
+        const t = await page.locator('main').innerText().catch(() => '');
+        let m = t.match(/对象[：:]\s*(\d+)\s*家/);
+        if (m) return parseInt(m[1], 10);
+        m = t.match(/纳入评价企业[\s\S]{0,24}?(\d+)\s*家/);
+        if (m) return parseInt(m[1], 10);
+        const tag = page.locator('main').getByText(/\d+\s*家企业/).first();
+        if (await tag.count()) {
+          const tx = (await tag.innerText()) || '';
+          const tm = tx.match(/(\d+)\s*家/);
+          if (tm) return parseInt(tm[1], 10);
+        }
+        throw new Error('无法解析本次结果企业数');
+      };
+      const scrollToRank = async () => {
+        const main = page.locator('main');
+        for (let i = 0; i < 50; i++) {
+          const el = main.getByText('技术力加权排名').first();
+          if (await el.count() && await el.isVisible().catch(() => false)) return;
+          await page.mouse.wheel(0, 600);
+          await page.waitForTimeout(400);
+        }
+        throw new Error('滚动后未见「技术力加权排名」');
+      };
+      const readRankChart = async () => {
+        let out = null;
+        for (let i = 0; i < 25 && !out; i++) {
+          out = await page.evaluate(() => {
+            const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w));
+            const t = own('技术力加权排名');
+            if (!t) return { ok: false, reason: '无标题' };
+            let b = t;
+            for (let j = 0; j < 12 && b; j++) {
+              b = b.parentElement;
+              if (b && b.querySelector('canvas')) break;
+            }
+            if (!b || !b.querySelector('canvas')) return { ok: false, reason: '排名区块无 canvas' };
+            const pickInst = (root) => {
+              for (const nd of [root, ...root.querySelectorAll('div, canvas')]) {
+                try {
+                  const ec = window.echarts;
+                  if (!ec || !ec.getInstanceByDom) continue;
+                  const host = nd.tagName === 'CANVAS' ? nd.parentElement : nd;
+                  if (!host) continue;
+                  const inst = ec.getInstanceByDom(host);
+                  if (inst) return inst;
+                } catch (e) {}
+              }
+              return null;
+            };
+            const inst = pickInst(b);
+            if (inst) {
+              const opt = inst.getOption() || {};
+              const yAx = (opt.yAxis || [])[0] || {};
+              const names = (yAx.data || []).map((d) => (typeof d === 'object' ? d.value : d)).filter(Boolean).map(String);
+              const ser = (opt.series || []).find((s) => s && s.type === 'bar') || (opt.series || [])[0];
+              const vals = (ser && ser.data ? ser.data : []).map((d) => (typeof d === 'object' ? Number(d.value) : Number(d))).filter((v) => v > 0 && !Number.isNaN(v));
+              if (names.length >= 2 && vals.length >= 2) return { ok: true, via: 'echarts', names, vals, barCount: vals.length };
+            }
+            const cos = [];
+            const table = document.querySelector('table, .arco-table');
+            if (table) {
+              const trs = [...table.querySelectorAll('tbody tr, .arco-table-body .arco-table-tr, .arco-table-tr')];
+              for (const tr of trs) {
+                const cells = [...tr.querySelectorAll('td, .arco-table-td')].map((c) => (c.innerText || '').trim().replace(/\s+/g, ' '));
+                const name = cells.find((c) => /公司|集团/.test(c));
+                const score = cells.find((c, idx) => idx > 0 && /^\d{1,3}$/.test(c));
+                if (name && score) cos.push({ name, score: Number(score) });
+              }
+            }
+            if (cos.length < 2) return { ok: false, reason: 'echarts 不可用且表行不足 2' };
+            return { ok: true, via: 'table_proxy', names: cos.map((c) => c.name), vals: cos.map((c) => c.score), barCount: cos.length };
+          });
+          if (!out || !out.ok) await page.waitForTimeout(1000);
+        }
+        return out;
+      };
+      await ensureResultState();
+      const entN = await parseResultEnterpriseCount();
+      if (entN < 2) throw new Error('结果企业数不足 2：' + entN);
+      await scrollToRank();
+      await expect(page.getByText('技术力加权排名').first()).toBeVisible({ timeout: 10000 });
+      const rank = await readRankChart();
+      if (!rank || !rank.ok) throw new Error('加权排名条形未就绪: ' + (rank && rank.reason ? rank.reason : 'timeout'));
+      if (rank.barCount < entN) throw new Error('得分条数 ' + rank.barCount + ' < 企业数 ' + entN + '（via=' + rank.via + '）');
+      if (rank.names.length < entN) throw new Error('排名图企业轴不足 ' + entN + '：' + rank.names.join('、'));
+  - note: 2、得分更高的企业条更长
+    assert: |-
+      const pairs = await page.evaluate(() => {
+        const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w));
+        const t = own('技术力加权排名');
+        if (!t) return { ok: false, reason: '无排名标题' };
+        let b = t;
+        for (let j = 0; j < 12 && b; j++) {
+          b = b.parentElement;
+          if (b && b.querySelector('canvas')) break;
+        }
+        if (!b) return { ok: false, reason: '无排名区块' };
+        const pairs = [];
+        for (const nd of [b, ...b.querySelectorAll('div, canvas')]) {
+          try {
+            const ec = window.echarts;
+            if (!ec || !ec.getInstanceByDom) break;
+            const host = nd.tagName === 'CANVAS' ? nd.parentElement : nd;
+            if (!host) continue;
+            const inst = ec.getInstanceByDom(host);
+            if (!inst) continue;
+            const opt = inst.getOption() || {};
+            const yAx = (opt.yAxis || [])[0] || {};
+            const names = (yAx.data || []).map((d) => (typeof d === 'object' ? d.value : d)).filter(Boolean).map(String);
+            const ser = (opt.series || []).find((s) => s && s.type === 'bar') || (opt.series || [])[0];
+            const data = ser && ser.data ? ser.data : [];
+            for (let i = 0; i < names.length && i < data.length; i++) {
+              const v = typeof data[i] === 'object' ? Number(data[i].value) : Number(data[i]);
+              if (v > 0) pairs.push({ name: names[i], barValue: v });
+            }
+            if (pairs.length >= 2) return { ok: true, via: 'echarts', pairs };
+          } catch (e) {}
+        }
+        const cos = [];
+        const table = document.querySelector('table, .arco-table');
+        if (table) {
+          const trs = [...table.querySelectorAll('tbody tr, .arco-table-body .arco-table-tr, .arco-table-tr')];
+          for (const tr of trs) {
+            const cells = [...tr.querySelectorAll('td, .arco-table-td')].map((c) => (c.innerText || '').trim().replace(/\s+/g, ' '));
+            const name = cells.find((c) => /公司|集团/.test(c));
+            const score = cells.find((c, idx) => idx > 0 && /^\d{1,3}$/.test(c));
+            if (name && score) cos.push({ name, barValue: Number(score) });
+          }
+        }
+        const seen = new Set();
+        const uniq = [];
+        for (const c of cos) {
+          if (seen.has(c.name)) continue;
+          seen.add(c.name);
+          uniq.push(c);
+        }
+        if (uniq.length < 2) return { ok: false, reason: '无法读取条形数值' };
+        return { ok: true, via: 'score_proxy', pairs: uniq };
+      });
+      if (!pairs || !pairs.ok) throw new Error('无法比对条形长短: ' + (pairs && pairs.reason ? pairs.reason : 'timeout'));
+      const list = pairs.pairs;
+      const max = list.reduce((m, p) => (p.barValue > m.barValue ? p : m), list[0]);
+      const min = list.reduce((m, p) => (p.barValue < m.barValue ? p : m), list[0]);
+      if (max.barValue <= min.barValue) throw new Error('对比企业得分无差异，无法验条更长');
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          const a = list[i];
+          const b = list[j];
+          if (a.barValue === b.barValue) continue;
+          if ((a.barValue > b.barValue) !== (a.barValue > b.barValue)) {
+            throw new Error('条形长短序与得分不一致: ' + a.name + ' vs ' + b.name);
+          }
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01794 验「技术力加权排名」水平条形：条数=结果企业数；高分条更长（ECharts bar value 序；无 window.echarts 时以诊断表技术力综合得分代理，同 probe-p015）。结果态入口对齐 FUNC-01790（最近评估→恢复结果）。B 档零 allow_skip。

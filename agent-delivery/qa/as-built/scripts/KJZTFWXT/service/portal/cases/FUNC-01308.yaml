@@ -1,0 +1,47 @@
+id: FUNC-01308
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01308
+priority: P0
+tier: A
+title: 筛选区构成与产业链初始禁用
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况默认视图；产业为全部/未选；env-gate G3 pass
+locators:
+  industry: select placeholder 全部产业
+  chain: select placeholder 全部产业链
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 点产业链下拉；展开产业下拉
+expect:
+  - note: 1、筛选区含产业与产业链两个下拉
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      await expect(page.locator('input[placeholder="全部产业"]')).toHaveCount(1, { timeout: 8000 });
+      await expect(page.locator('input[placeholder="全部产业链"]')).toHaveCount(1);
+  - note: 2、产业下拉占位为「全部产业」、产业链下拉占位为「全部产业链」
+    assert: |-
+      await expect(page.locator('input[placeholder="全部产业"]')).toBeVisible();
+      await expect(page.locator('input[placeholder="全部产业链"]')).toBeVisible();
+  - note: 3、初始态产业链下拉呈禁用只读、无下拉浮层弹出（先点产业链再展开产业）
+    assert: |-
+      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
+      if (!dis) throw new Error('初始产业链未禁用');
+      try { await chain.click({ timeout: 1500 }); } catch {}
+      await page.waitForTimeout(300);
+      const chainOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
+      if (chainOpts > 0) throw new Error('禁用态产业链仍弹出选项');
+      const industry = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await industry.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const indOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
+      if (indOpts < 1) throw new Error('产业下拉未展开选项');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: P7 点 .arco-select-view；级联解锁归 FUNC-01309。若会话残留已选产业，goto overview 清上下文。

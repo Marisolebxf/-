@@ -1,0 +1,63 @@
+id: FUNC-01601
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01601
+priority: P1
+title: 地图全屏进入与退出后筛选区仍可见
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 空间分布为地图视图（默认态）
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  fullscreen_btn: button aria-label「全屏」
+  exit_fullscreen_btn: button aria-label「退出全屏」
+  filter_section: main「产业与企业类型筛选」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 地图全屏进入与退出；终态断言在 expect 内
+expect:
+  - note: 1、点击「全屏」后地图进入全屏（工具钮为「退出全屏」且地图容器呈全屏态）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      const fsBtn = panel.locator('[aria-label="全屏"]').first();
+      await expect(fsBtn).toBeVisible({ timeout: 8000 });
+      await fsBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const exitBtn = panel.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      const fsState = await page.evaluate(() => {
+        const mapRoot = document.querySelector('.key-region-map');
+        const el = document.fullscreenElement;
+        const onFs = Boolean(mapRoot && (mapRoot.classList.contains('key-region-map--fullscreen') || el === mapRoot || (el && mapRoot.contains(el))));
+        return { onFs, hasFsEl: Boolean(el) };
+      });
+      if (!fsState.onFs && !fsState.hasFsEl) {
+        throw new Error('点击全屏后未进入全屏态: ' + JSON.stringify(fsState));
+      }
+  - note: 2、退出全屏后回到看板，筛选区「产业与企业类型筛选」仍可见
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const exitBtn = panel.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      await exitBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(panel.locator('[aria-label="全屏"]').first()).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main');
+      await expect(main.getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；全屏走 KeyRegionMap requestFullscreen + key-region-map--fullscreen 回退类名。第三枚工具钮现场 aria「复位」非「刷新」（00383 已记）。登录与关内部评审由 runner 会话前置。

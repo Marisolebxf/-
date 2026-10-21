@@ -1,0 +1,141 @@
+id: FUNC-03491
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03491
+priority: P0
+title: 结果页展示三维得分热力图区块及色阶说明
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已打开一条成功结果
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」（已完成行、非 disabled）
+  heatmap_heading: 区块标题「三维得分热力图」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 经分析记录打开已完成结果，或深链种子任务；热力图标题与色阶说明在 expect
+expect:
+  - note: 1、区块标题为「三维得分热力图」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const resultDeep =
+        '/industry-center/regional?view=result&task_id=CHAIN-20260911-010&tab=competitiveness&workspace=competitiveness';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const root = () => page.locator('main.diagnosis-main').first();
+      const isResultShell = async () => {
+        const t = await root().innerText().catch(() => '');
+        return /区域产业竞争力评价结果/.test(t) || (await page.getByText('区域产业竞争力评价结果').first().isVisible().catch(() => false));
+      };
+      const openFromRecords = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const rows = page.locator('tr').filter({ hasText: '区域产业竞争力评价' }).filter({ hasText: /已完成|成功/ });
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 8); i++) {
+          const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
+          if (!(await view.count())) continue;
+          const disabled = await view.isDisabled().catch(() => true);
+          if (disabled) continue;
+          await view.click({ timeout: 12000, force: true });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isResultShell()) return true;
+          }
+        }
+        return false;
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        if (!/\/industry-center\/search/.test(page.url())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) await recover404Shell();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const openResult = async () => {
+        await dismissBasket();
+        if (!(await isResultShell())) {
+          await page.goto(toUrl(resultDeep), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(3500);
+        }
+        if (!(await isResultShell())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (!(await isResultShell()) && (await bodyIs404())) {
+          await enterViaSidebar();
+        }
+        if (!(await isResultShell()) && (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1000);
+        }
+        if (!(await isResultShell())) {
+          if (!(await openFromRecords())) {
+            await page.goto(toUrl(resultDeep), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(3500);
+          }
+        }
+        if (!(await isResultShell()) && (await bodyIs404())) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与结果深链均 SPA404 ' + page.url());
+        }
+        if (!(await isResultShell())) {
+          throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-DONE-TASK: 无法打开结果页（分析记录无可用查看结果）');
+        }
+        await expect(root()).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText('区域产业竞争力评价结果').first()).toBeVisible({ timeout: 8000 });
+      };
+      await openResult();
+      await expect(root().getByText('三维得分热力图').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、说明含「色阶表示相对强弱，非地理分布」
+    assert: |-
+      const root = page.locator('main.diagnosis-main').first();
+      const main = await root.innerText();
+      if (!/色阶表示相对强弱，非地理分布/.test(main)) {
+        throw new Error('未见三维得分热力图色阶说明原文');
+      }
+      await expect(root().getByText(/色阶表示相对强弱，非地理分布/).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  03491=结果页热力图区块标题+色阶说明（不要求矩阵 canvas 齐备；地理 GIS 归 03492）。
+  打开结果=深链种子 CHAIN-20260911-010（env-gate g5 已完成）或分析记录「查看结果」。
+  catalog_path=entry-seed；goto 相对路径；404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

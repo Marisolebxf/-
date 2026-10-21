@@ -1,0 +1,178 @@
+id: FUNC-02123
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02123
+priority: P0
+title: 对标城市下拉六个附录选项
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入「多城市横向对标」（脚本自含选链并切对标 Tab）
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  city_select: '[data-testid="szstatus-city-select"]'
+  city_select_trigger: '[data-testid="szstatus-city-select"] .arco-select-view'
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链后切对标 Tab；展开对标城市下拉（判定在 expect）
+expect:
+  - note: 控件标题为「对标城市」；下拉选项共 6 个且名称与附录 D 一致（北京、上海、苏州、广州、杭州、成都）
+    assert: |-
+      const APPENDIX_D = ['北京', '上海', '苏州', '广州', '杭州', '成都'];
+      const toCanonical = (raw) => {
+        const t = String(raw || '').trim().replace(/\s+/g, ' ');
+        if (!t) return '';
+        const alias = {
+          北京市: '北京',
+          上海市: '上海',
+          苏州市: '苏州',
+          广州市: '广州',
+          杭州市: '杭州',
+          成都市: '成都',
+          '110000': '北京',
+          '310000': '上海',
+          '320500': '苏州',
+          '440100': '广州',
+          '330100': '杭州',
+          '510100': '成都',
+        };
+        if (alias[t]) return alias[t];
+        if (APPENDIX_D.includes(t)) return t;
+        return t;
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      const collectSelectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            const st = window.getComputedStyle(el);
+            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+            if (el.offsetParent === null && !el.closest('.arco-select-dropdown, .arco-trigger-popup')) continue;
+            out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      await expect(page.getByText('对标城市', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      const trigger = page.locator('[data-testid="szstatus-city-select"] .arco-select-view').first();
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      let rawOpts = await collectSelectOptions();
+      if (rawOpts.length < 6) {
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(400);
+        rawOpts = await collectSelectOptions();
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const canonical = [...new Set(rawOpts.map(toCanonical).filter(Boolean))];
+      if (canonical.length !== 6) {
+        throw new Error('对标城市选项应为 6 个，读到 ' + canonical.length + '：' + rawOpts.join('、'));
+      }
+      const missing = APPENDIX_D.filter((e) => !canonical.includes(e));
+      const extra = canonical.filter((c) => !APPENDIX_D.includes(c));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '选项与附录D不一致；缺：' + (missing.join('、') || '无') +
+          '；多/未映射：' + (extra.join('、') || '无') +
+          '；原始：' + rawOpts.join('、'),
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  附录D 六项：北京、上海、苏州、广州、杭州、成都（SZ_STATUS_BENCHMARK_CITY_OPTIONS）。
+  30888 多选下拉 max-tag-count=3 收起时可见「+1…」，展开后读 popup 选项。简称/区划码经 toCanonical 对齐附录D（D1）。
+  选链/对标 Tab 同 FUNC-02120；须关对比篮。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

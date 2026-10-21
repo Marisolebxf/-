@@ -1,0 +1,103 @@
+id: FUNC-02410
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02410
+priority: P1
+title: 最近分析新建分析进入未带企业的当前分析
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已打开最近分析（assert 自含 goto view=history）
+locators:
+  tab_recent: tab「最近分析」
+  tab_current: tab「当前分析」
+  new_analysis: button「新建分析」
+  guide: 请先在对比篮选择企业，再进入风险洞察配置。
+  precheck: 选择企业后显示数据与权限预检
+  start: 开始分析
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: evaluate
+    note: 最近分析点「新建分析」；三条预期在 expect
+expect:
+  - note: 1、进入当前分析
+    assert: |-
+      const historyRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points&view=history';
+      const configRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await closeBasket();
+      const tabRecent = page.getByRole('tab', { name: '最近分析' }).first();
+      await expect(tabRecent).toBeVisible({ timeout: 10000 });
+      const histBody = await main().innerText().catch(() => '');
+      if (!/任务名称|分析类型|企业摘要/.test(histBody)) {
+        throw new Error('ENV-PAIN-HISTORY-SHELL-001：最近分析列表区未加载');
+      }
+      const newBtn = main().getByRole('button', { name: '新建分析', exact: true }).first();
+      if (!(await newBtn.count())) {
+        throw new Error('ENV-PAIN-NO-NEW-ANALYSIS-001：最近分析页无「新建分析」按钮');
+      }
+      await newBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await newBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const url = page.url();
+      if (/view=processing|view=result/.test(url)) {
+        throw new Error('新建分析后不应进入过程/结果页：' + url);
+      }
+      if (/view=history/.test(url)) {
+        const tabCurrent = page.getByRole('tab', { name: '当前分析' }).first();
+        if (await tabCurrent.count()) {
+          await tabCurrent.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(800);
+        }
+      }
+      await expect(page.getByRole('tab', { name: '当前分析' }).first()).toBeVisible({ timeout: 10000 });
+      const cfgBody = await main().innerText().catch(() => '');
+      if (!/诊断范围|开始分析/.test(cfgBody)) {
+        throw new Error('新建分析后未进入当前分析配置区');
+      }
+      if (/任务名称[\s\S]*分析类型[\s\S]*企业摘要/.test(cfgBody) && /view=history/.test(page.url())) {
+        throw new Error('点击新建分析后仍停留在最近分析列表');
+      }
+      globalThis.__func02410_ready = true;
+  - note: 2、对象区为未选择企业的空态
+    assert: |-
+      if (!globalThis.__func02410_ready) throw new Error('前置：未进入当前分析');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      await expect(page.getByText('请先在对比篮选择企业，再进入风险洞察配置。').first()).toBeVisible({
+        timeout: 10000,
+      });
+      const body = await main().innerText().catch(() => '');
+      if (/来自对比篮\s*[·•]\s*\d+\s*家/.test(body)) {
+        throw new Error('新建分析后对象区仍显示来自对比篮回填');
+      }
+      if (/返回对比篮调整对象/.test(body) && !/请先在对比篮选择企业/.test(body)) {
+        throw new Error('新建分析后对象区仍显示已回填企业');
+      }
+      const companyLike = body.match(/有限公司|股份有限公司|集团[^\n]{0,20}/);
+      const objSection = body.split('诊断范围')[0] || body;
+      if (companyLike && objSection.includes(companyLike[0]) && !/企业摘要/.test(objSection.slice(0, 800))) {
+        throw new Error('对象区仍出现企业名称：' + companyLike[0]);
+      }
+      globalThis.__func02410_empty = true;
+  - note: 3、「开始分析」不可点击
+    assert: |-
+      if (!globalThis.__func02410_empty) throw new Error('前置：对象空态未确认');
+      await expect(page.getByText('选择企业后显示数据与权限预检').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path=/enterprise/risk；goto view=history→点列表区「新建分析」（非「按此配置新建」）→当前分析配置+对象空态（testdata.object_empty）+开始分析 disabled。无按钮→ENV-PAIN-NO-NEW-ANALYSIS-001。登录关评审 runner 前置。A 档零 allow_skip。

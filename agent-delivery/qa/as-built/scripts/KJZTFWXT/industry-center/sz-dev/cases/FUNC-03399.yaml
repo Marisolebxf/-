@@ -1,0 +1,122 @@
+id: FUNC-03399
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03399
+priority: P0
+title: 完整对比抽屉写出可见区块标题
+entry_id: chain-sz-dev
+tier: A
+preconditions:
+  - 已打开一条成功的深圳产业发展分析结果
+locators:
+  expand_compare: button「展开完整对比结果」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 经分析记录打开成功结果；点击「展开完整对比结果」
+expect:
+  - note: 抽屉标题为「来源对比结果（只读）」；可见对比结果、对标研判、产业化潜力与发展阶段综合判断；对比结果表含维度与深圳，行有企业、专利、政策、人才
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const openSuccessResult = async () => {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            await enterViaSidebar();
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search 与深圳发展分析深链均 SPA404，无法打开成功结果 ' + page.url());
+        }
+        await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+        await expect(page).toHaveURL(/workspace=development/);
+        const recTab = page.getByRole('tab', { name: '分析记录' });
+        await expect(recTab).toBeVisible({ timeout: 10000 });
+        await recTab.click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(recTab).toHaveAttribute('aria-selected', 'true');
+        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无已完成记录可点「查看结果」');
+        }
+        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
+        const doneCount = await doneRow.count();
+        let viewBtn = doneCount
+          ? doneRow.first().getByRole('button', { name: '查看结果' })
+          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await viewBtn.count())) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
+        }
+        if (await viewBtn.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 已完成记录存在但「查看结果」仍为 disabled');
+        }
+        await viewBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(2000);
+        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+      };
+      await openSuccessResult();
+      const expandBtn = page.getByRole('button', { name: '展开完整对比结果' });
+      await expect(expandBtn).toBeVisible({ timeout: 10000 });
+      await expandBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.getByText('来源对比结果（只读）').first()).toBeVisible({ timeout: 8000 });
+      for (const heading of ['对比结果', '对标研判', '产业化潜力与发展阶段综合判断']) {
+        await expect(drawer.getByRole('heading', { name: heading })).toBeVisible({ timeout: 8000 });
+      }
+      const drawerText = ((await drawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/维度/.test(drawerText) || !/深圳/.test(drawerText)) {
+        throw new Error('对比结果表缺少「维度」或「深圳」列标题');
+      }
+      for (const dim of ['企业', '专利', '政策', '人才']) {
+        if (!drawerText.includes(dim)) {
+          throw new Error('对比结果表缺少维度行：' + dim);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03399 只验抽屉区块标题与对比表四维行；入口按钮文案「展开完整对比结果」；抽屉限定 .arco-drawer:visible（规约 P0-11/03399 附录）。A 档零 allow_skip。

@@ -1,0 +1,172 @@
+id: FUNC-03321
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03321
+priority: P1
+title: 只改产业不点开始分析时不新增任务
+story: US-CHAIN-SZ-01
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入分析配置
+locators:
+  tab_config: tab「深圳产业情况分析对比」
+  tab_records: tab「分析记录」
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 分析记录记条数→回配置只切产业→再开分析记录（条数判定在 expect）
+expect:
+  - note: 前置：分析配置可见；步骤 1～2 记条数并只切换产业（不点开始分析）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const landConfig = async () => {
+        await dismissBasket();
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1000);
+        if (await bodyIs404() || !onTarget()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404 ' + page.url());
+        }
+        await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 12000 });
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (re.test(cur)) return cur;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03321：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        return ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      };
+      const readSelect = async (ariaLabel) => {
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      };
+      const readRecordCount = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
+        const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        if (m) return Number(m[1]);
+        const empty = page.getByText('暂无数据').first();
+        if (await empty.isVisible().catch(() => false)) return 0;
+        const rows = page.locator('.arco-table-body tr.arco-table-tr');
+        const n = await rows.count();
+        return n;
+      };
+      const goConfigTab = async () => {
+        await page.getByRole('tab', { name: '深圳产业情况分析对比' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(700);
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      };
+      const switchIndustryOnly = async () => {
+        const clusterText = await readSelect('集群');
+        if (!/新一代信息技术/.test(clusterText)) {
+          await pickSelectOption('集群', /^新一代信息技术$/);
+        }
+        const before = await readSelect('产业');
+        const alts = [
+          /^半导体与集成电路$/,
+          /^人工智能与应用$/,
+          /^智能终端$/,
+          /^软件与信息服务$/,
+        ];
+        let picked = null;
+        for (const re of alts) {
+          if (re.test(before)) continue;
+          try {
+            await pickSelectOption('产业', re);
+            picked = await readSelect('产业');
+            if (re.test(picked)) break;
+          } catch (_) {
+            /* try next */
+          }
+        }
+        if (!picked || picked === before) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03321：无法切换到不同产业，当前=' + before);
+        }
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeVisible({ timeout: 8000 });
+      };
+      await landConfig();
+      const nBefore = await readRecordCount();
+      await goConfigTab();
+      await switchIndustryOnly();
+      globalThis.__szcmp03321_nBefore = nBefore;
+  - note: 1、任务条数与切换产业前相同
+    assert: |-
+      const nBefore = globalThis.__szcmp03321_nBefore;
+      if (typeof nBefore !== 'number') throw new Error('前置：未记录切换前条数');
+      const main = () => page.locator('main').first();
+      const nAfter = await (async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
+        const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        if (m) return Number(m[1]);
+        const empty = page.getByText('暂无数据').first();
+        if (await empty.isVisible().catch(() => false)) return 0;
+        return await page.locator('.arco-table-body tr.arco-table-tr').count();
+      })();
+      if (nAfter !== nBefore) {
+        throw new Error('只改产业未点开始分析后条数变化：前=' + nBefore + ' 后=' + nAfter);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  03321 不自动发起：分析记录记条数→Tab 回分析配置→仅切换「产业」Select（不点「开始分析」）→再开分析记录验条数不变。
+  入口 route=entry-seed catalog_path；条数读「共 N 条」或 tbody 行数，空表=0。

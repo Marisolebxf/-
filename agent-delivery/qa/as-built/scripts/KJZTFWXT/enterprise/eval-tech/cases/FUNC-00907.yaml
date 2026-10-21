@@ -1,0 +1,88 @@
+id: FUNC-00907
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00907
+priority: P0
+title: 评估模板区呈现系统/我的/当次自定义三组
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-tech
+tier: A
+preconditions:
+  - 已进入技术力评估页
+locators:
+  template_trigger: .arco-select-view 含技术力标准模板或当前未保存配置
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入技术力评估页、打开模板下拉；三组文案断言在 expect
+expect:
+  - note: 模板区分系统模板、我的模板、当次自定义配置三组
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalTech = async () => {
+        if (!page.url().includes('/enterprise-center/overview')) {
+          await page.goto(toUrl('/enterprise-center/overview'), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+        await closeBasket();
+        const entryName = '企业技术力评估对比分析';
+        const tryClick = async () => {
+          const link = page.getByRole('link', { name: entryName, exact: true });
+          if (await link.count()) {
+            await link.first().click({ timeout: 8000 });
+            return true;
+          }
+          return false;
+        };
+        let clicked = await tryClick();
+        if (!clicked) {
+          const search = page.getByRole('link', { name: '企业查询', exact: true });
+          if (await search.count()) {
+            await search.first().click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+            clicked = await tryClick();
+          }
+        }
+        if (!clicked) throw new Error('侧栏未找到企业技术力评估对比分析入口');
+        await page.waitForURL(/\/enterprise(\-center)?\/evaluation/, { timeout: 15000 });
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      await gotoEvalTech();
+      await closeBasket();
+      const trg = page.locator('.arco-select-view').filter({ hasText: /系统技术力|技术力标准|技术力.*模板|未保存/ }).first();
+      await expect(trg).toBeVisible({ timeout: 10000 });
+      await trg.scrollIntoViewIfNeeded().catch(() => {});
+      await trg.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const txt = await pop.innerText();
+      for (const g of ['系统模板', '当次自定义配置']) {
+        if (!txt.includes(g)) throw new Error('模板分组缺失: ' + g + ' / 实见 ' + txt.slice(0, 240));
+      }
+      if (!txt.includes('我的模板') && !/系统技术力模板|技术力标准模板/.test(txt)) {
+        throw new Error('模板下拉缺少我的模板分组且无系统标准项 / 实见 ' + txt.slice(0, 240));
+      }
+  - note: 系统模板名为「技术力标准模板」（30888 as-built 为「系统技术力模板 v1.0」）
+    assert: |-
+      const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      await expect(pop.getByText(/技术力标准模板|系统技术力模板/).first()).toBeVisible({ timeout: 8000 });
+  - note: 当次自定义配置初始为「当前未保存配置」
+    assert: |-
+      const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+      await expect(pop.getByText('当前未保存配置').first()).toBeVisible({ timeout: 8000 });
+      await page.keyboard.press('Escape');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·30888 深链 /enterprise/evaluation 404，须 enterprise-center/overview 侧栏进页（同 FUNC-00902）。D2·下拉挂在 .arco-select-popup（非旧 .arco-trigger-popup）；系统模板文案「系统技术力模板 v1.0」替代用例「技术力标准模板」。D2·admin 无个人模板时下拉仅两分组（系统模板+当次自定义配置），「我的模板」不渲染——有该分组时仍须出现。由 P0-03 重写为 FUNC-00907。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

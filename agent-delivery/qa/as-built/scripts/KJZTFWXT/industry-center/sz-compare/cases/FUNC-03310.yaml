@@ -1,0 +1,140 @@
+id: FUNC-03310
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03310
+priority: P0
+title: 分析记录「查看结果」打开历史结果
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 分析记录里有已完成任务
+locators:
+  records_tab: tab「分析记录」
+  view_result: button「查看结果」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 分析记录对已完成行点「查看结果」；结果页标题与任务号在 expect
+expect:
+  - note: 1、页面标题为「深圳产业情况分析对比结果」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const enterSzCompare = async () => {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404() || !onTarget()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏(/industry-center/search)均 SPA404，无法执行 03310 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=comparison/);
+        await expect(page).toHaveURL(/tab=comparison/);
+      };
+      const extractTaskId = (rowText) => {
+        const m = rowText.match(/CHAIN-\d{8}-\d{3}/);
+        return m ? m[0] : null;
+      };
+      const isResultPage = async () => {
+        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
+        const t = await main().innerText().catch(() => '');
+        return new RegExp(RESULT_TITLE).test(t);
+      };
+      await enterSzCompare();
+      const tab = page.getByRole('tab', { name: '分析记录' }).first();
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      const rows = main()
+        .locator('tbody tr, .arco-table-tr')
+        .filter({ hasText: '深圳产业情况分析对比' })
+        .filter({ hasText: /已完成|成功/ });
+      const n = await rows.count();
+      if (n < 1) {
+        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03310：分析记录无已完成深圳对比任务');
+      }
+      let opened = false;
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        const row = rows.nth(i);
+        const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const taskId = extractTaskId(rowText);
+        if (!taskId) continue;
+        const view = row.getByRole('button', { name: '查看结果' }).first();
+        if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
+        await view.click({ timeout: 12000, force: true });
+        for (let j = 0; j < 28; j++) {
+          await page.waitForTimeout(500);
+          if (await isResultPage()) {
+            globalThis.__func03310 = { taskId, rowText: rowText.slice(0, 140) };
+            opened = true;
+            break;
+          }
+        }
+        if (opened) break;
+      }
+      if (!opened) {
+        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-RESULT-03310：已完成行「查看结果」不可用或未进入结果页');
+      }
+      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+  - note: 2、地址中的任务号与所点行一致
+    assert: |-
+      const taskId = globalThis.__func03310?.taskId;
+      if (!taskId) throw new Error('前置：未记录所点行任务号');
+      const href = page.url();
+      const decoded = decodeURIComponent(href);
+      const esc = taskId.replace(/-/g, '\\-');
+      if (!new RegExp('task_id=' + esc).test(decoded) && !new RegExp('task_id=' + encodeURIComponent(taskId)).test(href)) {
+        throw new Error('地址未含所点任务号 task_id=' + taskId + '；当前 URL=' + href);
+      }
+      const main = page.locator('main').first();
+      const body = await main.innerText().catch(() => '');
+      if (!new RegExp(esc).test(body) && !decoded.includes(taskId)) {
+        throw new Error('结果页正文与 URL 均未确认任务号「' + taskId + '」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed /industry-center/shenzhen?workspace=comparison&tab=comparison；用例=分析记录已完成行「查看结果」→「深圳产业情况分析对比结果」+ URL query task_id 与行内 CHAIN-* 一致（useIndustryAnalysisJob.viewResult patchQuery）。
+  无已完成或查看结果 disabled→ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03310 / NO-RESULT-03310。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。B 档零 allow_skip。

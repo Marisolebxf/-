@@ -1,0 +1,56 @@
+id: FUNC-02697
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02697
+priority: P0
+title: 推荐产业行进入全景图谱打开对应对象全景页
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 推荐产业或检索结果中能看到「进入全景图谱」
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+  panorama_btn: button「进入全景图谱」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 在「新一代信息技术」推荐行点击「进入全景图谱」；路由与页标题在 expect 判定
+expect:
+  - note: 1、页标题含「产业链全景图谱」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const list = page.locator('.industry-search-recommendation-list');
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '新一代信息技术' }).first();
+      if (!(await card.isVisible().catch(() => false))) {
+        throw new Error('前置：推荐列表未见「新一代信息技术」行（可改用检索命中态再跑）');
+      }
+      await card.getByRole('button', { name: '进入全景图谱', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      await expect(page).toHaveTitle(/产业链全景图谱/, { timeout: 12000 });
+  - note: 2、页面标题含「新一代信息技术全景图谱」
+    assert: |-
+      await expect(page.getByRole('heading', { level: 1, name: /新一代信息技术全景图谱/ })).toBeVisible({
+        timeout: 12000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；推荐行 .industry-search-recommendation-card 点「进入全景图谱」
+  → buildPanoramaEntryUrl(..., source=search) 落点 /industry-center/panorama（查询串不钉死）。
+  document.title 含「产业链全景图谱」；主区 H1「新一代信息技术全景图谱」。全景页内部操作不在本册。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

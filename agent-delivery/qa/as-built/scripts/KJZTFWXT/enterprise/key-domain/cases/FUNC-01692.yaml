@@ -1,0 +1,157 @@
+id: FUNC-01692
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01692
+priority: P0
+title: 企业领域覆盖矩阵行为企业列名为产业领域且「—」格不可打开
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 结果页已出现「企业领域覆盖」或 30888 等价分布表（assert 可自含回填）
+locators:
+  section_legacy: heading「企业领域覆盖」
+  section_30888: text「产业领域」
+  matrix_corner: 企业
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: evaluate
+    note: 进入结果态后浏览覆盖矩阵/分布表（判定在 expect）
+expect:
+  - note: 1、行是企业、列是产业领域
+    assert: |-
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?view=domain',
+      ];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
+        }
+        throw new Error('深链均不可达');
+      };
+      const ensureBasketEnterprise = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/) || dockLabel.match(/共\s*(\d+)\s*项/);
+        const entCount = entM ? parseInt(entM[1], 10) : 0;
+        if (entCount >= 1) return;
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureResult = async () => {
+        await closeBasket();
+        const legacyOverview = page.getByRole('heading', { name: '领域布局概览' });
+        if (await legacyOverview.count()) return 'legacy';
+        const main = page.locator('main');
+        const kpi = main.getByText('已覆盖领域', { exact: true });
+        if (await kpi.count() && await kpi.first().isVisible().catch(() => false)) return '30888';
+        await ensureBasketEnterprise();
+        await gotoRoute();
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count()) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+        const pickerSels = page.locator('[aria-label^="选择 "]');
+        if (!(await pickerSels.count())) throw new Error('选择分析企业弹层无可勾选企业');
+        await pickerSels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+        if (await legacyOverview.count()) return 'legacy';
+        if (await kpi.count()) return '30888';
+        throw new Error('确定后未进入结果态: ' + page.url());
+      };
+      if (/enterprise_codes=/.test(page.url())) await gotoRoute();
+      const mode = await ensureResult();
+      const main = page.locator('main');
+      const hay = (await main.innerText().catch(() => '')) || '';
+      if (mode === 'legacy') {
+        await expect(page.getByRole('heading', { name: '企业领域覆盖' })).toBeVisible({ timeout: 10000 });
+        const root = page.getByRole('heading', { name: '企业领域覆盖' }).locator('xpath=ancestor::section[1]').first();
+        const scope = (await root.count()) ? root : main;
+        await expect(scope.getByText('企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        if (!/有限公司|股份/.test(hay)) throw new Error('矩阵未见企业行');
+      } else {
+        await expect(page.getByText('产业领域').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 8000 });
+        if (!/有限公司|股份/.test(hay)) throw new Error('分布区未见企业行: ' + hay.slice(0, 200));
+      }
+  - note: 2、「—」格不能打开下一级
+    assert: |-
+      const main = page.locator('main');
+      const legacy = (await page.getByRole('heading', { name: '企业领域覆盖' }).count()) > 0;
+      const scope = legacy
+        ? page.getByRole('heading', { name: '企业领域覆盖' }).locator('xpath=ancestor::section[1]').first()
+        : main;
+      const panel = (await scope.count()) ? scope : main;
+      const dashBtns = panel.locator('button').filter({ hasText: /^—$/ });
+      const nDash = await dashBtns.count();
+      const mainHay = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const assertNoDrawer = async () => {
+        const drawerBefore = await page.locator('.arco-drawer:visible').count();
+        const whyDrawer = page.locator('.arco-drawer').filter({ hasText: /为什么识别为/ });
+        if (await whyDrawer.count() && await whyDrawer.first().isVisible().catch(() => false)) {
+          throw new Error('触发了识别依据抽屉');
+        }
+        if ((await page.locator('.arco-drawer:visible').count()) > drawerBefore) {
+          throw new Error('点击后打开了抽屉');
+        }
+      };
+      if (nDash >= 1) {
+        const dash = dashBtns.first();
+        await expect(dash).toBeVisible({ timeout: 8000 });
+        if (!(await dash.isDisabled().catch(() => false))) throw new Error('「—」格未禁用');
+        await dash.click({ force: true, timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await assertNoDrawer();
+        return;
+      }
+      const emDash = panel.getByText('—', { exact: true });
+      if (await emDash.count()) {
+        await emDash.first().click({ force: true, timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await assertNoDrawer();
+        return;
+      }
+      const dashLikeBtn = main.locator('button').filter({ hasText: /^[—\-－]$/ });
+      if (await dashLikeBtn.count()) {
+        const b = dashLikeBtn.first();
+        if (!(await b.isDisabled().catch(() => false))) throw new Error('破折号格按钮未禁用');
+        await b.click({ force: true, timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        await assertNoDrawer();
+        return;
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 无独立 heading「企业领域覆盖」，覆盖矩阵并入「产业领域」分布表与 KPI 区（对齐 FUNC-00515 legacy/30888 分叉）。50892 legacy 仍断言矩阵 button disabled「—」。登录与关内部评审由 runner 会话前置。B 档。

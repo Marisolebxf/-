@@ -1,0 +1,149 @@
+id: FUNC-05423
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05423
+priority: P1
+title: 服务机构页全选当前筛选结果已选等于列出全部
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 服务机构页至少 1 家
+locators:
+  panel: .system-compare-panel
+  service_tab: '#compare-basket-tab-service_org'
+  service_panel: '#compare-basket-panel-service_org'
+  workspace: '[data-testid="service-org-compare-basket-workspace"]'
+  select_all: checkbox aria-label「全选当前筛选结果」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 服务机构页签点「全选当前筛选结果」；已选计数在 expect 判定
+expect:
+  - note: 前置开篮、服务机构 Tab，清筛选与取消选择后点击全选
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const parseSvcCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/服务机构[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedServiceFromAdd = async (panel) => {
+        const svcTab = panel.locator('#compare-basket-tab-service_org');
+        await svcTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addBtn = panel.getByRole('button', { name: '新增' }).first();
+        await addBtn.click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder('输入机构名称').first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(600);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-SVC-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const openServiceTab = async (panel) => {
+        const svcTab = panel.locator('#compare-basket-tab-service_org');
+        if (!(await svcTab.count())) {
+          await panel.getByRole('tab', { name: /^服务机构/ }).first().click({ timeout: 10000 });
+        } else {
+          await svcTab.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(500);
+        const activeCls = (await panel.locator('#compare-basket-tab-service_org').getAttribute('class')) || '';
+        if (!/active/.test(activeCls)) throw new Error('服务机构 Tab 未激活: ' + activeCls);
+        const svcPanel = page.locator('#compare-basket-panel-service_org');
+        await expect(svcPanel).toBeVisible({ timeout: 10000 });
+        return { svcTab: panel.locator('#compare-basket-tab-service_org'), svcPanel };
+      };
+      const countListedSvcRows = async (svcPanel) => {
+        const rows = svcPanel.locator('.overflow-y-auto .grid > div').filter({
+          has: page.getByRole('button', { name: '查看画像', exact: true }),
+        });
+        let n = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) n += 1;
+        }
+        return n;
+      };
+      let panel = await openPanel();
+      let { svcTab, svcPanel } = await openServiceTab(panel);
+      let listN = await countListedSvcRows(svcPanel);
+      let svcCount = parseSvcCount(await svcTab.innerText());
+      if (listN < 1 || (svcCount != null && svcCount < 1)) {
+        await seedServiceFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        ({ svcTab, svcPanel } = await openServiceTab(panel));
+        listN = await countListedSvcRows(svcPanel);
+        svcCount = parseSvcCount(await svcTab.innerText());
+      }
+      if (listN < 1) throw new Error('ENV-SHELL-COMPARE-SVC-EMPTY-001：服务机构页至少 1 家');
+      const search = svcPanel.getByPlaceholder('按机构名称搜索');
+      if (await search.count()) {
+        await search.fill('');
+        await page.waitForTimeout(400);
+      }
+      const resetBtn = svcPanel.getByRole('button', { name: '重置', exact: true });
+      if (await resetBtn.count() && !(await resetBtn.isDisabled())) {
+        await resetBtn.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(500);
+      }
+      listN = await countListedSvcRows(svcPanel);
+      if (listN < 1) throw new Error('重置筛选后服务机构列表为空');
+      const bar = svcPanel.locator('[data-testid="compare-basket-action-bar"]');
+      await bar.scrollIntoViewIfNeeded().catch(() => {});
+      const cancel = bar.getByRole('button', { name: '取消选择', exact: true });
+      if (await cancel.count() && !(await cancel.isDisabled())) {
+        await cancel.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const selectAll = bar
+        .getByRole('checkbox', { name: '全选当前筛选结果' })
+        .or(bar.locator('[aria-label="全选当前筛选结果"]'));
+      await expect(selectAll.first()).toBeVisible({ timeout: 8000 });
+      // ponytail: 服务机构底栏在 headless 视口外时常规 click 会 outside viewport
+      await selectAll.first().evaluate((el) => {
+        const input = el instanceof HTMLElement ? el : el;
+        if (input && typeof input.click === 'function') input.click();
+      });
+      await page.waitForTimeout(500);
+      globalThis.__func05423 = { listN };
+  - note: 底栏「已选」家数等于当前列出的服务机构行数，且带「家机构」
+    assert: |-
+      const st = globalThis.__func05423 || {};
+      if (typeof st.listN !== 'number') throw new Error('前置：未完成全选点击');
+      const svcPanel = page.locator('#compare-basket-panel-service_org');
+      const bar = svcPanel.locator('[data-testid="compare-basket-action-bar"]');
+      await expect(bar).toBeVisible({ timeout: 8000 });
+      const selLine = bar.getByText(/已选\s*\d+\s*家机构/).first();
+      await expect(selLine).toBeVisible({ timeout: 8000 });
+      const selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      const m = selTxt.match(/已选\s*(\d+)\s*家机构/);
+      if (!m) throw new Error('底栏未见「已选 N 家机构」: ' + selTxt);
+      const selected = parseInt(m[1], 10);
+      if (selected !== st.listN) {
+        throw new Error(`底栏已选应为 ${st.listN} 家机构，实际 ${selected} 家（列出 ${st.listN} 行）`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。服务机构 Tab #compare-basket-tab-service_org；底栏 CompareBasketActionBar selectedLabel「已选 N 家机构」。机检=无筛选下列出行数 N → 全选后底栏「已选 N 家机构」。空篮经服务机构 Tab「新增」入篮（改会话数据）。登录与关评审由 runner 前置。A 档零 allow_skip。

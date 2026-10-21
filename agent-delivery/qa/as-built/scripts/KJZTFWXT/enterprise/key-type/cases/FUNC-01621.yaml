@@ -1,0 +1,71 @@
+id: FUNC-01621
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01621
+priority: P1
+title: 关闭企业详情后企业清单仍在
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已从清单打开企业详情
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  list_drawer: .arco-drawer:visible（企业清单，非企业详情标题）
+  profile_btn: 清单行 button「查看画像」
+  detail_drawer: .arco-drawer:visible 且标题「企业详情」
+  detail_close: 企业详情抽屉 .arco-drawer-close-btn
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单→查看画像→关企业详情；清单仍在 expect 内
+expect:
+  - note: 1、企业详情关闭
+    assert: |-
+      const closeBasket = page.locator('[aria-label="关闭对比篮"]');
+      if (await closeBasket.count()) {
+        const vis = await closeBasket.first().isVisible().catch(() => false);
+        if (vis) { await closeBasket.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const listDrawer = page.locator('.arco-drawer:visible').first();
+      await expect(listDrawer).toBeVisible({ timeout: 8000 });
+      const profiles = listDrawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      await profiles.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const detailDrawer = page.locator('.arco-drawer:visible').filter({
+        has: page.getByRole('tab', { name: '工商概况' }),
+      }).last();
+      await expect(detailDrawer.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 12000 });
+      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      const closeBtn = page.locator('.arco-drawer:visible').last().locator('.arco-drawer-close-btn, .arco-icon-close').first();
+      await closeBtn.scrollIntoViewIfNeeded();
+      await closeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(
+        page.locator('.arco-drawer:visible').filter({ has: page.getByRole('tab', { name: '工商概况' }) }),
+      ).toHaveCount(0, { timeout: 8000 });
+  - note: 2、企业清单抽屉仍打开
+    assert: |-
+      await page.waitForFunction(() => {
+        const drawers = [...document.querySelectorAll('.arco-drawer')];
+        return drawers.some((d) => {
+          const r = d.getBoundingClientRect();
+          const t = d.innerText || '';
+          return r.width > 0 && r.height > 0 && t.includes('企业清单来源') && t.includes('查看画像');
+        });
+      }, { timeout: 12000 });
+      const listDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业清单来源' }).first();
+      await expect(listDrawer).toBeVisible({ timeout: 8000 });
+      await expect(listDrawer.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 打开详情时 Playwright 仅见 1 个 :visible 抽屉（详情置顶）；关详情用最上层 .arco-drawer-close-btn。清单应在关详情后重新露出（企业清单来源+查看画像）。登录与关内部评审由 runner 会话前置。

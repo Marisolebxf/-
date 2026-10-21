@@ -1,0 +1,78 @@
+id: FUNC-02704
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02704
+priority: P0
+title: 查产业输入区占位与示例词与智能检索不同
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页（深链 catalog_path /industry-center/search）
+locators:
+  tab_industry: .enterprise-search-mode-tabs [role=tab]「查产业」
+  industry_input: textbox placeholder 含「输入产业或产业链名称」
+  example_chip: button.enterprise-search-example-button
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点击「查产业」后核对占位与示例 chip（附录 A）
+expect:
+  - note: 选中「查产业」Tab 且 URL 含 mode=industry
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const ind = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(1);
+      await expect(ind).toBeVisible({ timeout: 10000 });
+      await ind.click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/[?&]mode=industry/);
+      const iAria = await ind.getAttribute('aria-selected');
+      const iCls = (await ind.getAttribute('class')) || '';
+      if (iAria !== 'true' && !iCls.includes('active')) {
+        throw new Error('点击后未选中查产业 Tab');
+      }
+  - note: 占位见附录 A（产业/产业链名称 + 示例「生命健康」「集成电路产业链」），且与智能检索占位不同
+    assert: |-
+      const smartPh = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(smartPh).toHaveCount(0, { timeout: 3000 });
+      const input = page.getByPlaceholder(/输入产业或产业链名称/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      const ph = (await input.getAttribute('placeholder')) || '';
+      const need = ['输入产业或产业链名称', '生命健康', '集成电路产业链'];
+      const miss = need.filter((k) => !ph.includes(k));
+      if (miss.length) {
+        throw new Error('查产业占位缺关键词 ' + miss.join(',') + '；实际=' + ph);
+      }
+      const smartOnly = ['链位方向', '同义词', '光刻', '低空交通'];
+      const leak = smartOnly.filter((k) => ph.includes(k));
+      if (leak.length) {
+        throw new Error('查产业占位混入智能检索文案: ' + leak.join(',') + '；实际=' + ph);
+      }
+  - note: 示例 chip 为「人工智能」「新能源汽车」「高端装备」
+    assert: |-
+      const chips = page.locator('button.enterprise-search-example-button');
+      await expect(chips).toHaveCount(3, { timeout: 8000 });
+      const texts = [];
+      for (let i = 0; i < 3; i++) {
+        texts.push((await chips.nth(i).innerText()).trim());
+      }
+      const want = ['人工智能', '新能源汽车', '高端装备'];
+      if (JSON.stringify(texts) !== JSON.stringify(want)) {
+        throw new Error('查产业示例 chip 不符: ' + texts.join('|'));
+      }
+      const smartExamples = ['集成电路', '生物医药'];
+      for (const bad of smartExamples) {
+        if (texts.includes(bad)) {
+          throw new Error('仍见智能检索示例 chip: ' + bad);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 附录 A 查产业占位=testdata industry_tab.placeholder；示例=testdata industry_tab.example_chips_observed。智能检索占位/示例见 01145 附录，本用例只验互斥面板文案。检索 Tab 作用域 .enterprise-search-mode-tabs。路由 catalog_path /industry-center/search。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,140 @@
+id: FUNC-02712
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02712
+priority: P0
+title: 结果内对象类型选产业后只留产业行且条数减少
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已用「光刻」搜出产业和产业链两类结果
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  result_tools: .industry-search-result-tools
+  refine_object_type: 结果内筛选区 placeholder「对象类型」的 Arco Select
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索「光刻」后选对象类型「产业」；类型与条数在 expect 判定
+expect:
+  - note: 前置：光刻检索命中且同时含产业与产业链
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parseTotal = (text) => {
+        const m1 = text.match(/共\s*(\d+)\s*条/);
+        const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
+        if (m1) return parseInt(m1[1], 10);
+        if (m2) return parseInt(m2[1], 10);
+        return null;
+      };
+      const listTypeTags = async (region) => {
+        const cards = region.locator('.industry-search-result-card');
+        const n = await cards.count();
+        const types = [];
+        for (let i = 0; i < n; i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const tag = card.locator('.industry-search-result-title .arco-tag').first();
+          const label = ((await tag.innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (label) types.push(label);
+        }
+        return types;
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
+        throw new Error('前置：光刻检索为空，无法验对象类型筛选');
+      }
+      const beforeTotal = parseTotal(regionText);
+      if (beforeTotal === null || Number.isNaN(beforeTotal) || beforeTotal < 2) {
+        throw new Error('前置：光刻结果条数应≥2 以便验筛选收窄；片段=' + regionText.slice(0, 180));
+      }
+      const typesBefore = await listTypeTags(region);
+      const hasIndustry = typesBefore.includes('产业');
+      const hasChain = typesBefore.includes('产业链');
+      if (!hasIndustry || !hasChain) {
+        throw new Error(
+          '前置：光刻结果应同时含产业与产业链（当前页类型标签=' + JSON.stringify(typesBefore) + '）',
+        );
+      }
+      globalThis.__func02712_beforeTotal = beforeTotal;
+      globalThis.__func02712_ready = true;
+  - note: 1、选「产业」后剩余行类型均为产业；2、条数少于选择前
+    assert: |-
+      if (!globalThis.__func02712_ready) throw new Error('前置：光刻混合结果未就绪');
+      const beforeTotal = globalThis.__func02712_beforeTotal;
+      const parseTotal = (text) => {
+        const m1 = text.match(/共\s*(\d+)\s*条/);
+        if (m1) return parseInt(m1[1], 10);
+        return null;
+      };
+      const listTypeTags = async (region) => {
+        const cards = region.locator('.industry-search-result-card');
+        const n = await cards.count();
+        const types = [];
+        for (let i = 0; i < n; i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const tag = card.locator('.industry-search-result-title .arco-tag').first();
+          const label = ((await tag.innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (label) types.push(label);
+        }
+        return types;
+      };
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const tools = region.locator('.industry-search-result-tools');
+      await expect(tools).toBeVisible({ timeout: 8000 });
+      const objSelect = tools.locator('.arco-select:has(input[placeholder="对象类型"])').first();
+      await expect(objSelect).toBeVisible({ timeout: 8000 });
+      await objSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const industryOpt = pop.locator('.arco-select-option').filter({ hasText: /^产业$/ });
+      await expect(industryOpt.first()).toBeVisible({ timeout: 8000 });
+      await industryOpt.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(400);
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      const afterTotal = parseTotal(regionText);
+      if (afterTotal === null || Number.isNaN(afterTotal)) {
+        throw new Error('筛选后未能解析条数；片段=' + regionText.slice(0, 180));
+      }
+      if (afterTotal >= beforeTotal) {
+        throw new Error('筛选后条数应少于选择前（前 ' + beforeTotal + ' 后 ' + afterTotal + '）');
+      }
+      const typesAfter = await listTypeTags(region);
+      if (!typesAfter.length) {
+        throw new Error('筛选后当前页无可见结果卡片（总条数=' + afterTotal + '）');
+      }
+      const bad = typesAfter.filter((t) => t !== '产业');
+      if (bad.length) {
+        throw new Error('剩余行类型应均为产业，实际类型标签=' + JSON.stringify(typesAfter));
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索「光刻」（testdata smart_search.keyword_primary）。
+  结果内对象类型=ResultToolbar refine objectType（placeholder「对象类型」）；选「产业」value=industry。
+  行类型=IndustrySearchObjectCard 标题首枚 Arco Tag（产业/产业链）。总条数读结果区「共 N 条」（refinedMatches）。
+  选择器 scoped 在 region 内 .industry-search-result-tools。登录与关内部评审由 runner 前置。A 档零 allow_skip。

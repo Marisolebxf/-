@@ -1,0 +1,100 @@
+id: FUNC-02723
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02723
+priority: P1
+title: 点击最近检索后回填关键词并进入结果
+entry_id: chain-search
+tier: B
+preconditions:
+  - 智能检索 Tab
+  - 最近检索中有「智能检索：低空交通」
+locators:
+  recent_row: .enterprise-search-history-row（含「最近检索」）
+  recent_chip: .enterprise-search-history-tag → 智能检索：低空交通
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  result_region: '[role=region][aria-label="产业查询结果"]'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 前置补最近检索（若无）→ 点「智能检索：低空交通」；预期在 expect
+expect:
+  - note: 前置：智能检索 Tab 且最近检索可见「智能检索：低空交通」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const kw = '低空交通';
+      const recentLabel = `智能检索：${kw}`;
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      const recentRow = () =>
+        page.locator('.enterprise-search-history-row').filter({ hasText: '最近检索' }).first();
+      const recentChip = () =>
+        recentRow().locator('.enterprise-search-history-tag').filter({ hasText: recentLabel }).first();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
+      await expect(smartTab).toBeVisible({ timeout: 10000 });
+      const sAria = await smartTab.getAttribute('aria-selected');
+      const sCls = (await smartTab.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        await smartTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      await expect(recentRow()).toBeVisible({ timeout: 10000 });
+      if ((await recentChip().count()) === 0) {
+        await expect(input).toBeVisible({ timeout: 8000 });
+        await input.fill(kw);
+        await page.getByRole('button', { name: '搜索', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        const origin = new URL(page.url()).origin;
+        await page.goto(origin + '/industry-center/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await dismissBasket();
+        await expect(recentRow()).toBeVisible({ timeout: 10000 });
+      }
+      if ((await recentChip().count()) === 0) {
+        throw new Error('前置：最近检索中应有「' + recentLabel + '」');
+      }
+      await expect(recentChip()).toBeVisible({ timeout: 8000 });
+      globalThis.__func02723_ready = true;
+  - note: 步骤：点击「智能检索：低空交通」
+    assert: |-
+      if (!globalThis.__func02723_ready) throw new Error('前置未完成');
+      const kw = '低空交通';
+      const recentLabel = `智能检索：${kw}`;
+      const recentRow = page.locator('.enterprise-search-history-row').filter({ hasText: '最近检索' }).first();
+      const chip = recentRow.locator('.enterprise-search-history-tag').filter({ hasText: recentLabel }).first();
+      await chip.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+  - note: 1、检索框为「低空交通」
+    assert: |-
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await expect(input).toHaveValue('低空交通', { timeout: 8000 });
+  - note: 2、出现「检索结果」
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.getByText('检索结果').first()).toBeVisible({ timeout: 15000 });
+      const state = await region.getAttribute('data-search-state');
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (state !== 'result' && state !== 'permission' && !/检索结果/.test(regionText)) {
+        throw new Error('点击最近检索后应进入结果态，data-search-state=' + state);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；最近检索 Hub 行 .enterprise-search-history-row + chip .enterprise-search-history-tag，
+  文案「智能检索：{词}」（scout-tab-智能检索 / env-gate 含「智能检索：低空交通」）。回放自动检索进结果区标题「检索结果」；
+  该条历史现场 0 命中（空态细节归 FUNC-02735，本条不验条数）。无历史时脚本先搜一次再 goto 回到引导态以造前置。
+  登录与关内部评审由 runner 前置。B 档零 allow_skip。

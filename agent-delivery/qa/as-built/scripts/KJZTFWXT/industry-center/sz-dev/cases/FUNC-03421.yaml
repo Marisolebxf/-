@@ -1,0 +1,120 @@
+id: FUNC-03421
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03421
+priority: P0
+title: 成功结果页全球案例匹配未宣称交付提示
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 系统可访问；已登录 admin
+  - 分析记录里有一条状态为「已完成」的记录且可查看结果
+locators:
+  tab_rec: tab「分析记录」
+  view_result: button「查看结果」（已完成行）
+  result_case_gap: alert「全球案例匹配本轮未宣称交付。」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 经分析记录打开成功结果页；阅读页底全球案例匹配提示
+expect:
+  - note: 页底有「全球案例匹配本轮未宣称交付」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const resultHint = '全球案例匹配本轮未宣称交付';
+      const configHint = '全球案例匹配本轮未纳入交付宣称。';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const openSuccessResult = async () => {
+        const recTab = page.getByRole('tab', { name: '分析记录' });
+        await expect(recTab).toBeVisible({ timeout: 10000 });
+        await recTab.click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(recTab).toHaveAttribute('aria-selected', 'true');
+        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无已完成记录可点「查看结果」');
+        }
+        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
+        const doneCount = await doneRow.count();
+        let viewBtn = doneCount
+          ? doneRow.first().getByRole('button', { name: '查看结果' })
+          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await viewBtn.count())) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
+        }
+        if (await viewBtn.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 已完成记录存在但「查看结果」仍为 disabled');
+        }
+        await viewBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(2000);
+        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+      };
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: search 与深圳发展分析深链均 SPA404，无法验结果页底提示 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+      await expect(page).toHaveURL(/workspace=development/);
+      const alreadyResult = await page.getByRole('heading', { name: '深圳产业发展分析结果' }).isVisible().catch(() => false);
+      if (!alreadyResult) {
+        await openSuccessResult();
+      }
+      const resultAlert = page.locator('.arco-alert').filter({ hasText: resultHint });
+      await expect(resultAlert.first()).toBeVisible({ timeout: 8000 });
+      const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!body.includes(resultHint)) {
+        throw new Error('结果页未检出结果句：' + resultHint);
+      }
+      const configOnly = body.includes(configHint) && !body.includes(resultHint);
+      if (configOnly) {
+        throw new Error('当前仍在配置区提示，非成功结果页底');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 结果页 IndustryShenzhenResultBoard 底部 a-alert「全球案例匹配本轮未宣称交付。」（与配置区 03420 句不同）；前置打开结果同 FUNC-03388。

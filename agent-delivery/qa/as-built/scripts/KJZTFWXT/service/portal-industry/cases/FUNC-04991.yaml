@@ -1,0 +1,46 @@
+id: FUNC-04991
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04991
+priority: P0
+tier: B
+title: 指标卡说明口径文案
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已登录（runner 会话前置）
+locators:
+  kpi_grid: .svc-portal-kpi-grid
+  hint_total: .svc-portal-kpi__hint（六类合计卡下）
+  hint_cover: .svc-portal-kpi__hint（覆盖环节数卡下）
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+expect:
+  - note: 1、六类合计说明为「只加总 Java 已给类别，不补缺类 0」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：/service-portal/industry-distribution SPA404，无法验指标卡说明');
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const grid = page.locator('.svc-portal-kpi-grid');
+      await expect(grid).toBeVisible({ timeout: 8000 });
+      const totalKpi = grid.locator('.svc-portal-kpi').filter({ hasText: '六类合计' }).first();
+      await expect(totalKpi).toBeVisible({ timeout: 8000 });
+      await expect(totalKpi.locator('.svc-portal-kpi__hint').filter({ hasText: '只加总 Java 已给类别，不补缺类 0' })).toBeVisible({ timeout: 8000 });
+  - note: 2、覆盖环节数说明为「分母=Java 已给环节，不是固定六卡」
+    assert: |-
+      const grid = page.locator('.svc-portal-kpi-grid');
+      const coverKpi = grid.locator('.svc-portal-kpi').filter({ hasText: '覆盖环节数' }).first();
+      await expect(coverKpi).toBeVisible({ timeout: 8000 });
+      await expect(coverKpi.locator('.svc-portal-kpi__hint').filter({ hasText: '分母=Java 已给环节，不是固定六卡' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 /service-portal/industry-distribution。KPI 说明在 .svc-portal-kpi__hint，与 Vue 模板静态文案一致；
+  不依赖 Java 返回条数。登录与关内部评审由 runner 会话前置。

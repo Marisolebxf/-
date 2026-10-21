@@ -1,0 +1,138 @@
+id: FUNC-00529
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00529
+priority: P1
+title: 结果态刷新后分析对象与四大区块恢复
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 结果态已渲染完成（assert 可自含对比篮回填）
+locators:
+  empty_heading: heading「待选择分析对象」
+  blocks_legacy: 四大区块标题
+  object_bar: 来自对比篮 / 当前对象
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: evaluate
+    note: 进入结果态→刷新；空态与区块恢复在 expect 判定
+expect:
+  - note: 1、页面不回落至待选择空态
+    assert: |-
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?view=domain',
+      ];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return r;
+        }
+        throw new Error('深链均不可达');
+      };
+      const ensureBasketEnterprise = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const entCount = entM ? parseInt(entM[1], 10) : 0;
+        if (entCount >= 1) return;
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureResult = async () => {
+        await closeBasket();
+        const legacyOverview = page.getByRole('heading', { name: '领域布局概览' });
+        if (await legacyOverview.count()) return 'legacy';
+        const main = page.locator('main');
+        const kpi = main.getByText('已覆盖领域', { exact: true });
+        if (await kpi.count() && await kpi.first().isVisible().catch(() => false)) return '30888';
+        await ensureBasketEnterprise();
+        await gotoRoute();
+        const main2 = page.locator('main');
+        const pickBtn = main2.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main2.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main2.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count()) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+        const pickerSels = page.locator('[aria-label^="选择 "]');
+        if (await pickerSels.count() < 1) throw new Error('选择分析企业弹层无可勾选企业');
+        await pickerSels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+        if (await legacyOverview.count()) return 'legacy';
+        if (await kpi.count()) return '30888';
+        throw new Error('确定后未进入结果态: ' + page.url());
+      };
+      if (/enterprise_codes=/.test(page.url())) {
+        await gotoRoute();
+      }
+      const mode = await ensureResult();
+      const urlBefore = page.url();
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2800);
+      const emptyHead = page.getByRole('heading', { name: '待选择分析对象' });
+      const emptyVisible = (await emptyHead.count()) > 0 && await emptyHead.first().isVisible().catch(() => false);
+      const mainHay = (await page.locator('main').innerText().catch(() => '')) || '';
+      const looksEmpty = emptyVisible || /尚未选择企业/.test(mainHay);
+      if (looksEmpty) {
+        const persisted = /enterprise_codes|return_context_id|source=compare-basket|workspace=domain/.test(urlBefore);
+        if (!persisted) throw new Error('刷新前 URL 无持久化上下文，无法验收恢复: ' + urlBefore);
+        throw new Error('有持久化上下文但刷新回落空态: ' + page.url());
+      }
+      await page.evaluate((m) => { window.__keydomReloadMode = m; }, mode);
+  - note: 2、分析对象与四大区块恢复呈现
+    assert: |-
+      const mode = await page.evaluate(() => window.__keydomReloadMode || '30888');
+      if (mode === 'legacy') {
+        const names = ['领域布局概览', '企业领域覆盖', '跨领域布局', '重点领域分布'];
+        for (const t of names) await expect(page.getByRole('heading', { name: t })).toBeVisible({ timeout: 12000 });
+        await expect(page.getByText(/来自对比篮|当前对象/).first()).toBeVisible({ timeout: 8000 });
+      } else {
+        const kpis = ['已覆盖领域', '涉及企业', '跨领域企业', '识别依据'];
+        for (const k of kpis) await expect(page.getByText(k, { exact: true }).first()).toBeVisible({ timeout: 12000 });
+        const calcHeads = page.getByRole('heading', { name: '企业业务关联与领域覆盖计算' });
+        const nCalc = await calcHeads.count();
+        if (nCalc < 3) throw new Error('刷新后结果分析区块不足 3 段: ' + nCalc);
+        const objectBar = page.getByText(/(来自对比篮|当前对象)\s*·\s*\d+\s*家/);
+        if (await objectBar.count()) {
+          await expect(objectBar.first()).toBeVisible({ timeout: 8000 });
+        } else {
+          await expect(page.getByText('代表企业').first()).toBeVisible({ timeout: 8000 });
+        }
+        await expect(page.getByText('产业领域').first()).toBeVisible({ timeout: 10000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 前置进入结果态与 FUNC-00515 同源；30888 四大区块以 KPI 四指标 + ≥3 段「企业业务关联与领域覆盖计算」+ 分布表代理（用例册四 heading 为 50892）。刷新后 URL 常带 workspace=domain；指标数值逐项一致性 observed 不机检。B 档。

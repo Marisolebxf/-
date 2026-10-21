@@ -1,0 +1,115 @@
+id: FUNC-01918
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01918
+priority: P0
+title: 保存个人模板后模板下拉可再次选用
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已进入商业力评估配置页（保存模板对话框由脚本打开）
+locators:
+  save_entry: button「保存为个人模板」
+  modal_title: 保存为个人模板
+  name_input: placeholder 请输入便于识别的模板名称
+  modal_ok: button「保存模板」
+  template_select: .arco-select-view 含模板文案
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开保存模板对话框→输入名称→保存→展开选择模板；判定在 expect
+expect:
+  - note: 1、保存模板对话框关闭；2、展开「选择模板」后选项中出现「商业力抽查」
+    assert: |-
+      const TEMPLATE_NAME = '商业力抽查';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalBusiness = async () => {
+        if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=business')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      const templateTrigger = () =>
+        page.locator('.arco-select-view').filter({ hasText: /商业力|模板|未保存|系统商业力/ }).first();
+      const openTemplateDropdown = async () => {
+        await templateTrigger().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        return pop;
+      };
+      const closeTemplateDropdown = async () => {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(300);
+      };
+      const templateOptionVisible = async (name) => {
+        const pop = await openTemplateDropdown();
+        const txt = await pop.innerText();
+        const ok = txt.includes(name);
+        await closeTemplateDropdown();
+        return ok;
+      };
+      const openSaveTemplateModal = async () => {
+        await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' }).first();
+        await expect(modal).toBeVisible({ timeout: 8000 });
+        return modal;
+      };
+      await gotoEvalBusiness();
+      const stepBtn = page.locator('main .arco-input-number-step-button').first();
+      if (await stepBtn.count()) {
+        await stepBtn.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+      const dismissSaveModalIfOpen = async () => {
+        const m = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' });
+        if (!(await m.count())) return;
+        const cancel = m.getByRole('button', { name: '取消' });
+        if (await cancel.count()) await cancel.first().click({ timeout: 3000 }).catch(() => {});
+        else await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+      };
+      if (!(await templateOptionVisible(TEMPLATE_NAME))) {
+        const modal = await openSaveTemplateModal();
+        const input = modal.getByPlaceholder('请输入便于识别的模板名称');
+        await input.fill(TEMPLATE_NAME);
+        await page.waitForTimeout(200);
+        await modal.locator('.arco-modal-footer').getByRole('button', { name: '保存模板' }).click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        const stillOpen = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' });
+        if (await stillOpen.count()) {
+          const msgs = await page.locator('.arco-message').allTextContents();
+          throw new Error('保存模板后对话框未关闭（D3/环境）；提示：' + (msgs.join(' / ') || '无'));
+        }
+      }
+      await dismissSaveModalIfOpen();
+      const pop = await openTemplateDropdown();
+      const afterTxt = await pop.innerText();
+      if (!afterTxt.includes(TEMPLATE_NAME)) {
+        throw new Error('模板下拉未见「' + TEMPLATE_NAME + '」，实见：' + afterTxt.replace(/\s+/g, ' ').slice(0, 360));
+      }
+      const opts = pop.locator('.arco-select-option');
+      const names = (await opts.allInnerTexts()).map((t) => t.replace(/\s+/g, ' ').trim()).filter(Boolean);
+      if (!names.some((t) => t === TEMPLATE_NAME || t.includes(TEMPLATE_NAME))) {
+        throw new Error('我的模板选项中未见「' + TEMPLATE_NAME + '」，选项：' + names.join(' / '));
+      }
+      await closeTemplateDropdown();
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01918 重写 00950 成功路径：页脚「保存为个人模板」打开 Arco 弹层，确认钮文案「保存模板」（EvalConfigPanel ok-text）。展开「选择模板」= 评估模板区 .arco-select-view 触发器（同 FUNC-01891）。名称固定「商业力抽查」；若下拉已含该名则跳过重复保存（避开已有项/重复跑）。路由 /enterprise-center/evaluation?workspace=business&mode=business。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

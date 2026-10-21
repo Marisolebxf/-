@@ -1,0 +1,72 @@
+id: FUNC-05006
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05006
+priority: P1
+tier: B
+title: 暂无覆盖环节仍可进入短板分析
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布；产业为全部产业（默认占位）
+locators:
+  stage_pilot: button.svc-portal-stage-card（含「中试熟化」）
+  stage_link: .svc-portal-stage-card__link「环节详情」
+  chain_tab: tab「服务链短板分析」
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 点击「中试熟化」上的「环节详情」
+expect:
+  - note: 1、页面标题为「服务链短板分析」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|中试熟化/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法点环节详情 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const pilotCard = page.locator('.svc-portal-stage-card').filter({ hasText: '中试熟化' }).first();
+      const cards = page.locator('.svc-portal-stage-card');
+      if ((await cards.count()) === 0) {
+        const noStages = page.getByText('暂无环节分布').first();
+        if (await noStages.isVisible().catch(() => false)) {
+          throw new Error('ENV-SVC-PORTAL-STAGE-EMPTY：stages[] 为空，无环节卡');
+        }
+        throw new Error('环节卡数量为 0');
+      }
+      await expect(pilotCard).toBeVisible({ timeout: 8000 });
+      const emptyPilot = pilotCard.locator('.svc-portal-stage-card__empty').filter({ hasText: '暂无覆盖' });
+      if (!(await emptyPilot.isVisible().catch(() => false))) {
+        const valueEl = pilotCard.locator('.svc-portal-stage-card__value');
+        if (await valueEl.isVisible().catch(() => false)) {
+          throw new Error('ENV-SVC-PORTAL-PILOT-HAS-COVER：中试熟化已有家数覆盖，本条需暂无覆盖态');
+        }
+        throw new Error('中试熟化未显示「暂无覆盖」，无法验备选路径');
+      }
+      const link = pilotCard.locator('.svc-portal-stage-card__link').filter({ hasText: '环节详情' });
+      await expect(link).toBeVisible({ timeout: 5000 });
+      await link.click({ timeout: 8000 });
+      await expect(page).toHaveURL(/service\/chain-analysis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=chain/, { timeout: 5000 });
+      const chainTablist = page.locator('[role="tablist"]').filter({ has: page.getByRole('tab', { name: '服务链短板分析' }) }).first();
+      const titleTab = chainTablist.getByRole('tab', { name: '服务链短板分析', exact: true });
+      await expect(titleTab).toBeVisible({ timeout: 10000 });
+      await expect(titleTab).toHaveAttribute('aria-selected', 'true');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 goto entry-seed catalog_path /service-portal/industry-distribution。
+  中试熟化 count<=0 显示「暂无覆盖」，整卡 @click openStage 仍带 segment=stage_code 进 /service/chain-analysis?workspace=chain。
+  用例写点「环节详情」故点 .svc-portal-stage-card__link。只验 WorkbenchTabs 选中「服务链短板分析」，不点「开始分析」。

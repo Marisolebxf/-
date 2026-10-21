@@ -1,0 +1,135 @@
+id: FUNC-01124
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01124
+priority: P0
+title: 门禁未满足时开始分析任何触发方式均不发起任务
+entry_id: chain-regional-compete
+tier: A
+preconditions:
+  - 已进入区域产业竞争力评价工作区
+  - 门禁未满足（产业未选，重置参数后空态）
+locators:
+  industry_placeholder: input[placeholder="请选择产业"]
+  hint: 文案「单产业模式请选择 1 个产业」
+  start: button「开始分析」
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 重置至门禁未满足；禁用态点击与回车；回读配置页与分析记录（判定在 expect）
+expect:
+  - note: 1、禁用态下点击与回车均不创建任务、不跳转结果态
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价|三大一级维度权重/.test(t);
+      };
+      const onConfigReady = async () => {
+        if (await bodyIs404()) return false;
+        return await page.getByText('三大一级维度权重').first().isVisible().catch(() => false);
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        if (!(await onConfigReady())) {
+          if (await bodyIs404() || !/\/industry-center\/search/.test(page.url())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与 catalog 深链均 SPA404 ' + page.url());
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      const countChainRows = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        const main = page.locator('main');
+        const txt = (await main.innerText().catch(() => '')) || '';
+        const ids = txt.match(/CHAIN-\d{8}-\d{3}/g) || [];
+        return new Set(ids).size;
+      };
+      await ensureLand();
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(300);
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(800);
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeDisabled({ timeout: 10000 });
+      const rowsBefore = await countChainRows();
+      const cfgTab = page.getByRole('tab', { name: /区域产业竞争力评价/ });
+      await cfgTab.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(start).toBeDisabled({ timeout: 8000 });
+      await start.click({ force: true }).catch(() => {});
+      await page.waitForTimeout(600);
+      await start.focus().catch(() => {});
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(800);
+      if (/view=processing|view=result/.test(page.url())) {
+        throw new Error('禁用态仍进入过程/结果态: ' + page.url());
+      }
+      const rowsAfter = await countChainRows();
+      if (rowsAfter > rowsBefore) {
+        throw new Error('禁用态触发后分析记录条数增加: before=' + rowsBefore + ' after=' + rowsAfter);
+      }
+  - note: 2、页面不静默代选对象或维度发起任务
+    assert: |-
+      await page.getByRole('tab', { name: /区域产业竞争力评价/ }).first().click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await expect(page.locator('input[placeholder="请选择产业"]').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible({ timeout: 8000 });
+      const indView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      const viewText = ((await indView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (viewText && !/请选择产业/.test(viewText)) {
+        throw new Error('静默代选产业: ' + viewText);
+      }
+      if (/view=processing/.test(page.url())) {
+        throw new Error('静默起任务: ' + page.url());
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  01124=重置参数后门禁未满足（未选产业）；「开始分析」disabled 下 force click + Enter 均不起任务；
+  回读分析记录 CHAIN 行数不增；产业仍空占位+提示。catalog_path=entry-seed；SPA404→ENV-EDU-TTS-SVCZ-404-001。A 档零 allow_skip。

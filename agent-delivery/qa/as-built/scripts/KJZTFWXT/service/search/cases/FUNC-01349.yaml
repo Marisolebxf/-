@@ -1,0 +1,117 @@
+id: FUNC-01349
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01349
+priority: P2
+tier: B
+title: 本页操作不落到企业查询或其他兄弟路由
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入 /service-center/search（catalog_path 深链）
+locators:
+  tablist: '.enterprise-search-mode-tabs [role=tab]'
+  tab_smart: 智能检索
+  tab_org: 查机构
+  tab_adv: 高级筛选
+  smart_input: placeholder「用一句话描述机构需求」
+  search_btn: button「搜索」（exact）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 进 catalog_path 后依次切换三 Tab 并智能检索「深圳」（判定在 expect）
+expect:
+  - note: 页面全程保持在本路由内
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (/sso\/user\/login/i.test(page.url())) {
+          throw new Error('ENV-EDU-TTS-SVCZ-AUTH-001: 会话失效跳转 SSO url=' + page.url());
+        }
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        if (!page.url().includes('/service-center/search')) {
+          const searchItem = () =>
+            page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+          if (!(await searchItem().first().isVisible().catch(() => false))) {
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          }
+          await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+          await searchItem().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+        }
+        await expect(page).toHaveURL(/\/service-center\/search/);
+      };
+      await enterSvcSearch();
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      await tabs.nth(1).click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/\/service-center\/search/);
+      await tabs.nth(2).click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/\/service-center\/search/);
+      await tabs.nth(0).click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/\/service-center\/search/);
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      await inp.fill('深圳');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(1500);
+      await expect(page).toHaveURL(/\/service-center\/search/);
+  - note: 地址栏不切换为企业查询或其他兄弟模块路由
+    assert: |-
+      const u = page.url();
+      let path = u;
+      try {
+        path = new URL(u).pathname;
+      } catch (_) {}
+      const forbidden = /enterprise-center\/search|enterprise-search|institution-judgment|service-portal|development\/search/i;
+      if (forbidden.test(path)) throw new Error('落到兄弟路由 pathname: ' + path + ' url=' + u);
+      if (!/\/service-center\/search/.test(path)) throw new Error('已离开服务机构查询路由 pathname: ' + path + ' url=' + u);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  P2-01 重写 id=FUNC-01349；catalog_path=/service-center/search。机跑 goto sibling /industry-center/search 再侧栏 menu_leaf（edu 深链 SPA404 惯例，落点仍验 catalog）。
+  三 Tab 在 .enterprise-search-mode-tabs；轮切后于智能检索用「深圳」发起一次检索。不把 /service/institution-judgment 三入口写入 steps。
+  兄弟路由禁 enterprise-center/search、enterprise-search、institution-judgment、service-portal、development/search。

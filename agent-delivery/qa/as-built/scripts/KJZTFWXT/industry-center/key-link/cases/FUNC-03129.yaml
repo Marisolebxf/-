@@ -1,0 +1,137 @@
+id: FUNC-03129
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03129
+priority: P1
+title: 进入页未点选对象直接开始分析被拦截
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 刚进入产业关键环节识别，尚未在下拉里点选过分析对象
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+  start: button「开始分析」
+  config_tab: tab「产业关键环节识别」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入关键环节页，不点选三级下拉，直接开始分析（判定在 expect）
+expect:
+  - note: 前置：分析配置可见；配置 Tab 选中；未对下拉做点选
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          if (await bodyIs404()) {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            if (await bodyIs404()) {
+              throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @search-and-direct ' + page.url());
+            }
+          } else {
+            await assertNotSpa404('sibling-search');
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            if (await leaf().first().isVisible().catch(() => false)) {
+              await leaf().first().click({ timeout: 10000 });
+              await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+              await assertNotSpa404('sidebar');
+            } else {
+              await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+                waitUntil: 'domcontentloaded',
+                timeout: 60000,
+              });
+              await page.waitForTimeout(1000);
+              await assertNotSpa404('direct-catalog');
+            }
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      await enterKeyLink();
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const cfgTab = page.getByRole('tab', { name: '产业关键环节识别' }).first();
+      await expect(cfgTab).toHaveAttribute('aria-selected', 'true');
+      globalThis.__func03129 = { ready: true };
+  - note: 1、提示「尚未选择分析对象」
+    assert: |-
+      if (!globalThis.__func03129?.ready) throw new Error('前置：未进入分析配置');
+      const TOAST = '尚未选择分析对象';
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await start.scrollIntoViewIfNeeded();
+      await start.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: TOAST });
+      await expect(toast.first()).toBeVisible({ timeout: 8000 });
+      const badCreate = page.locator('.arco-message-content, .arco-message').filter({ hasText: /任务已创建/ });
+      if (await badCreate.count()) {
+        throw new Error('未选对象却出现任务已创建 toast');
+      }
+      globalThis.__func03129.clicked = true;
+  - note: 2、仍停留在「分析配置」
+    assert: |-
+      if (!globalThis.__func03129?.clicked) throw new Error('前置：未点开始分析');
+      const url = page.url();
+      if (/view=result/.test(url) || /view=processing/.test(url)) {
+        throw new Error('拦截后进入结果/过程态: ' + url);
+      }
+      const main = page.locator('main.content-shell-layout, main').first();
+      const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/分析结果已生成|可视化分析过程|生成中/.test(body)) {
+        throw new Error('拦截后仍见分析过程/结果引导: ' + body.slice(0, 200));
+      }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('tab', { name: '产业关键环节识别' }).first()).toHaveAttribute('aria-selected', 'true');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例=刚进入页、下拉仅展示默认/占位（未在下拉里点选确认）→直接「开始分析」。拦截 toast「尚未选择分析对象」；
+  按钮仍 enabled（对齐 cycle 02926/P1-07）。catalog_path=entry-seed workspace=key_link&tab=key-link；
+  edu 深链 SPA 404→侧栏 /industry-center/search→产业链分析→产业关键环节识别。登录关评审 runner 前置。B 档零 allow_skip。

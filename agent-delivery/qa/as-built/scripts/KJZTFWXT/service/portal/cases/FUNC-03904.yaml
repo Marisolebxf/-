@@ -1,0 +1,81 @@
+id: FUNC-03904
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03904
+priority: P0
+tier: A
+title: 深圳三张指标卡
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + goto 概况）
+locators:
+  tab_sz: tab「深圳产业服务介绍」
+  kpi_grid: .svc-portal-kpi-grid
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「深圳产业服务介绍」页签
+expect:
+  - note: 1、「深圳机构约数」展示家数
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const kpiBlock = (label) =>
+        page.locator('.svc-portal-kpi').filter({
+          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
+        }).first();
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验深圳三张指标卡 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const totalKpi = kpiBlock('深圳机构约数');
+      await expect(totalKpi).toBeVisible({ timeout: 8000 });
+      const valEl = totalKpi.locator('.svc-portal-kpi__value');
+      await expect(valEl).toBeVisible({ timeout: 8000 });
+      const valTxt = ((await valEl.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/\d/.test(valTxt)) {
+        throw new Error('深圳机构约数未展示家数（无数字）：' + valTxt);
+      }
+      if (!/家/.test(valTxt)) {
+        throw new Error('深圳机构约数缺「家」单位：' + valTxt);
+      }
+  - note: 2、「本年新增」为暂无
+    assert: |-
+      const kpiBlock = (label) =>
+        page.locator('.svc-portal-kpi').filter({
+          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
+        }).first();
+      const newKpi = kpiBlock('本年新增');
+      await expect(newKpi).toBeVisible({ timeout: 8000 });
+      const valTxt = ((await newKpi.locator('.svc-portal-kpi__value').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (valTxt !== '暂无') throw new Error('本年新增应为暂无；现场=' + valTxt);
+  - note: 3、「覆盖领域数」为暂无
+    assert: |-
+      const kpiBlock = (label) =>
+        page.locator('.svc-portal-kpi').filter({
+          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
+        }).first();
+      const covKpi = kpiBlock('覆盖领域数');
+      await expect(covKpi).toBeVisible({ timeout: 8000 });
+      const valTxt = ((await covKpi.locator('.svc-portal-kpi__value').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (valTxt !== '暂无') throw new Error('覆盖领域数应为暂无；现场=' + valTxt);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  Tab 深链 /service-portal/shenzhen。三 KPI 在 .svc-portal-kpi-grid（深圳机构约数取 Java sz_total+「家」；
+  本年新增/覆盖领域数固定诚实「暂无」）。不钉死约数家数。登录与关内部评审由 runner 会话前置。金样 A 档零 allow_skip。

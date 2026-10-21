@@ -1,0 +1,109 @@
+id: FUNC-03090
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03090
+priority: P0
+title: 分析对象第一个下拉共 15 个选项（附录A）
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入产业关键环节识别
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  popup: .arco-trigger-popup:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 进入关键环节识别页→展开分析对象第一个下拉（判定在 expect）
+expect:
+  - note: 1、选项共 15 个（名称见附录A）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=key_link&tab=key-link';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          await assertNotSpa404('sidebar');
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+      };
+      await enterKeyLink();
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(clusterView).toBeVisible({ timeout: 8000 });
+      await clusterView.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const expected = [
+        '新一代信息技术',
+        '生物产业',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意产业',
+        '海洋产业',
+        '未来制造（智能机器人）',
+        '未来信息（光载信息、AI 底层生态）',
+        '未来能源',
+        '未来空间',
+        '未来健康（合成生物、细胞基因、脑机工程）',
+      ];
+      const opts = pop.locator('.arco-select-option');
+      const n = await opts.count();
+      if (n !== 15) throw new Error('分析对象第一个下拉可选项数 ' + n + ' ≠ 15（附录A）');
+      const names = [];
+      for (let i = 0; i < n; i++) {
+        names.push(((await opts.nth(i).innerText()).trim().split('\n')[0] || '').trim());
+      }
+      for (const e of expected) {
+        if (!names.includes(e)) throw new Error('缺选项「' + e + '」，实际=' + names.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例口语「分析对象第一个下拉」= 现场 .arco-select-view[aria-label=集群]（P7 点可见 view）。catalog_path=entry-seed；
+  edu 深链 SPA 404（D1），仅 sibling /industry-center/search + 侧栏「产业关键环节识别」；落点 URL 仍验 catalog_path。15 项名对齐用例附录A。
+  登录关评审 runner 前置。B 档零 allow_skip。

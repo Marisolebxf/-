@@ -1,0 +1,165 @@
+id: FUNC-03493
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03493
+priority: P0
+title: 排名明细表头含六列且至少一行区域与竞争力指数
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已打开一条成功结果
+locators:
+  rank_detail_heading: h3「排名明细」
+  rank_table: 竞争力指数列表格
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=records
+  - action: evaluate
+    note: 打开成功结果并定位排名明细表（用例步骤 1.打开排名明细）
+expect:
+  - note: 前置：打开成功结果并可见排名明细表（非 empty）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const root = () => page.locator('main.diagnosis-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const rankTable = () =>
+        root()
+          .locator('.arco-table')
+          .filter({ has: root().locator('th').filter({ hasText: '竞争力指数' }) })
+          .first();
+      const hasRankRows = async () => {
+        const tbl = rankTable();
+        if (!(await tbl.count())) return false;
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/排名明细[\s\S]{0,48}未返回/.test(body)) return false;
+        const rows = tbl.locator('.arco-table-tbody .arco-table-tr');
+        return (await rows.count()) > 0;
+      };
+      const openResultDeep = async (taskId) => {
+        await page.goto(
+          toUrl('/industry-center/regional?view=result&task_id=' + taskId + '&tab=competitiveness&workspace=competitiveness'),
+          { waitUntil: 'domcontentloaded', timeout: 60000 }
+        );
+        await page.waitForTimeout(3500);
+        await dismissBasket();
+      };
+      const openFromRecords = async () => {
+        await page.goto(toUrl('/industry-center/regional?workspace=competitiveness&tab=records'), {
+          waitUntil: 'domcontentloaded',
+          timeout: 60000,
+        });
+        await page.waitForTimeout(3000);
+        await dismissBasket();
+        const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/已完成/.test(txt)) continue;
+          const m = txt.match(TID_RE);
+          const viewBtn = rows.nth(i).getByRole('button', { name: /查看结果/ });
+          if (!(await viewBtn.count())) continue;
+          await viewBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(3500);
+          await dismissBasket();
+          if (!/view=result/.test(page.url()) && m) await openResultDeep(m[0]);
+          if (await hasRankRows()) return true;
+          await page.goto(toUrl('/industry-center/regional?workspace=competitiveness&tab=records'), {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.waitForTimeout(2000);
+        }
+        return false;
+      };
+      let ok = false;
+      if (/view=result/.test(page.url())) {
+        await dismissBasket();
+        ok = await hasRankRows();
+      }
+      if (!ok) ok = await openFromRecords();
+      if (!ok) {
+        for (const tid of ['CHAIN-20260911-010', 'CHAIN-20260907-001']) {
+          await openResultDeep(tid);
+          if (await hasRankRows()) {
+            ok = true;
+            break;
+          }
+        }
+      }
+      if (!ok) {
+        throw new Error(
+          'ENV-GAP-CHAIN-REG-METRICS: 已完成任务结果无排名明细表行（排名明细未返回或诚实降级）'
+        );
+      }
+      await expect(root().getByText('排名明细').first()).toBeVisible({ timeout: 8000 });
+      const heading = root().locator('h3').filter({ hasText: /^排名明细$/ }).first();
+      await heading.scrollIntoViewIfNeeded().catch(() => {});
+      await expect(rankTable()).toBeVisible({ timeout: 8000 });
+      globalThis.__func03493RankTable = true;
+  - note: 1、表头为排名、区域、竞争力指数、企业能力、学术生态、配套生态力
+    assert: |-
+      if (!globalThis.__func03493RankTable) throw new Error('前置：排名明细表未就绪');
+      const root = page.locator('main.diagnosis-main').first();
+      const tbl = root
+        .locator('.arco-table')
+        .filter({ has: root.locator('th').filter({ hasText: '竞争力指数' }) })
+        .first();
+      const ths = tbl.locator('thead .arco-table-th, thead th');
+      const n = await ths.count();
+      const headers = [];
+      for (let i = 0; i < n; i++) {
+        headers.push(((await ths.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '').trim());
+      }
+      const need = ['排名', '竞争力指数', '企业能力', '学术生态', '配套生态力'];
+      for (const h of need) {
+        if (!headers.some((x) => x.includes(h.replace(/\s+/g, '')))) {
+          throw new Error('表头缺列「' + h + '」，实际：' + headers.join('|'));
+        }
+      }
+      const axisCol = headers.find((x) => x === '区域' || x === '产业') || '';
+      if (!axisCol) {
+        throw new Error('表头第二列应为区域或产业，实际：' + headers.join('|'));
+      }
+      if (!headers[0]?.includes('排名')) throw new Error('首列非排名：' + headers.join('|'));
+      await expect(tbl.locator('th').filter({ hasText: '竞争力指数' }).first()).toBeVisible();
+      await expect(tbl.locator('th').filter({ hasText: '企业能力' }).first()).toBeVisible();
+      await expect(tbl.locator('th').filter({ hasText: '学术生态' }).first()).toBeVisible();
+      await expect(tbl.locator('th').filter({ hasText: '配套生态力' }).first()).toBeVisible();
+      await expect(tbl.locator('th').filter({ hasText: /^区域$|^产业$/ }).first()).toBeVisible();
+  - note: 2、至少有一行区域与指数
+    assert: |-
+      if (!globalThis.__func03493RankTable) throw new Error('前置：排名明细表未就绪');
+      const root = page.locator('main.diagnosis-main').first();
+      const tbl = root
+        .locator('.arco-table')
+        .filter({ has: root.locator('th').filter({ hasText: '竞争力指数' }) })
+        .first();
+      const rows = tbl.locator('.arco-table-tbody .arco-table-tr');
+      const n = await rows.count();
+      let hit = false;
+      for (let i = 0; i < Math.min(n, 15); i++) {
+        const cells = rows.nth(i).locator('td, .arco-table-td');
+        const c = await cells.count();
+        if (c < 3) continue;
+        const subject = ((await cells.nth(1).innerText().catch(() => '')) || '').trim();
+        const idxText = ((await cells.nth(2).innerText().catch(() => '')) || '').trim();
+        const num = parseFloat(idxText.replace(/[^\d.]/g, ''));
+        if (subject.length >= 2 && Number.isFinite(num) && num > 0) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) {
+        throw new Error('排名明细无有效行（区域/产业名 + 竞争力指数）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03493=结果页「排名明细」Arco 表六列（排名/区域或产业/竞争力指数/企业能力/学术生态/配套生态力）+≥1 行主体与指数。
+  单产业×多区域第二列表头为「区域」（IndustryRegionalResultBoard axisLabel）；多产业×单区域为「产业」，表头断言兼容二者、行数据仍验主体列+指数。
+  打开结果=分析记录已完成「查看结果」或深链 task_id，跳过排名明细 empty/未返回；种子 CHAIN-20260911-010 等诚实降级→ ENV-GAP-CHAIN-REG-METRICS blocked。
+  勘察备注：三维度列可无分值，本脚本只验表头存在不验维度单元格数值。

@@ -1,0 +1,69 @@
+id: FUNC-03923
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03923
+priority: P1
+tier: B
+title: 面包屑末级随页签
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置）
+locators:
+  tab_ind: tab「服务机构产业分布」
+  tab_region: tab「服务机构区域分布」
+  breadcrumb: navigation aria-label=面包屑
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「服务机构产业分布」页签；点击「服务机构区域分布」页签
+expect:
+  - note: 1、产业分布页面包屑末级为「服务机构产业分布」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const assertCrumbLast = async (label) => {
+        const nav = page.getByRole('navigation', { name: '面包屑' });
+        await expect(nav).toBeVisible({ timeout: 8000 });
+        const current = nav.locator('.svc-portal-breadcrumb__current');
+        await expect(current).toHaveText(label, { exact: true });
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal SPA404，无法验面包屑随页签 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await expect(tablist).toBeVisible({ timeout: 8000 });
+      await tablist.getByRole('tab', { name: '服务机构产业分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      await assertCrumbLast('服务机构产业分布');
+  - note: 2、区域分布页面包屑末级为「服务机构区域分布」
+    assert: |-
+      const assertCrumbLast = async (label) => {
+        const nav = page.getByRole('navigation', { name: '面包屑' });
+        await expect(nav).toBeVisible({ timeout: 8000 });
+        const current = nav.locator('.svc-portal-breadcrumb__current');
+        await expect(current).toHaveText(label, { exact: true });
+      };
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构区域分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构区域分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      await assertCrumbLast('服务机构区域分布');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  面包屑 nav.svc-portal-breadcrumb（aria-label=面包屑）；末级 .svc-portal-breadcrumb__current 与 Tab label 同源（ServicePortalShell 各子页 breadcrumb prop）。
+  goto catalog_path /service-portal → IA 落 overview；步骤顺序与用例册一致：产业分布 Tab → 区域分布 Tab。
+  edu.itic-sci.com/tts/svcz 与同入口波次一致，深链 SPA404 时抛 ENV-EDU-TTS-SVCZ-404-001。

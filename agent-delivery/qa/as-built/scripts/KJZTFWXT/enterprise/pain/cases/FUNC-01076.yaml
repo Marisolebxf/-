@@ -1,0 +1,93 @@
+id: FUNC-01076
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01076
+priority: P0
+title: 诊断范围区含四维度复选项且可自由组合勾选
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已进入痛难点分析页（对象回填见 02391；本脚本只验诊断范围区）
+locators:
+  scope_label: text「诊断范围」
+  dims: [技术研发, 市场拓展, 融资, 管理]
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 浏览诊断范围→仅技术研发→技术研发+融资→四项全勾
+expect:
+  - note: 1、诊断范围区含技术研发、市场拓展、融资、管理四个复选项
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const dims = ['技术研发', '市场拓展', '融资', '管理'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const dimBox = (name) =>
+        page.locator('main .arco-checkbox-group .arco-checkbox').filter({ hasText: name }).first();
+      globalThis.__func01076_dimBox = dimBox;
+      globalThis.__func01076_isChecked = async (name) => {
+        const box = dimBox(name);
+        const cls = (await box.getAttribute('class')) || '';
+        return /arco-checkbox-checked/.test(cls);
+      };
+      globalThis.__func01076_setChecked = async (name, want) => {
+        const box = dimBox(name);
+        await expect(box).toBeVisible({ timeout: 8000 });
+        const cur = await globalThis.__func01076_isChecked(name);
+        if (cur !== want) {
+          await box.click({ timeout: 8000 });
+          await page.waitForTimeout(280);
+        }
+        const after = await globalThis.__func01076_isChecked(name);
+        if (after !== want) throw new Error('维度「' + name + '」未能设为 ' + want);
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await expect(page.getByRole('heading', { name: '企业发展痛难点分析' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('诊断范围', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      for (const d of dims) {
+        await expect(dimBox(d)).toBeVisible({ timeout: 8000 });
+      }
+      globalThis.__func01076_ready = true;
+  - note: 2、各复选项可自由勾选与取消且互不排斥
+    assert: |-
+      if (!globalThis.__func01076_ready) throw new Error('前置：诊断范围四选项未就绪');
+      const dims = ['技术研发', '市场拓展', '融资', '管理'];
+      const setChecked = globalThis.__func01076_setChecked;
+      const isChecked = globalThis.__func01076_isChecked;
+      const assertPattern = async (wantOn) => {
+        for (const d of dims) {
+          const on = await isChecked(d);
+          const expectOn = wantOn.includes(d);
+          if (on !== expectOn) {
+            throw new Error('维度「' + d + '」应为' + (expectOn ? '勾选' : '未勾') + '，实际=' + on);
+          }
+        }
+      };
+      await setChecked('市场拓展', false);
+      await setChecked('融资', false);
+      await setChecked('管理', false);
+      await setChecked('技术研发', true);
+      await assertPattern(['技术研发']);
+      await setChecked('融资', true);
+      await assertPattern(['技术研发', '融资']);
+      await setChecked('市场拓展', true);
+      await setChecked('管理', true);
+      await assertPattern(dims);
+      await setChecked('融资', false);
+      await assertPattern(['技术研发', '市场拓展', '管理']);
+      if (!(await isChecked('技术研发'))) throw new Error('取消融资后技术研发不应被连带取消');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=浏览诊断范围→仅技术研发→+融资→四维全勾；机检=诊断范围标题+四 Arco 复选可见+组合勾选/取消互不排斥（用例步骤2–4）。用例前置「已带入≥1家」由 02391 覆盖；本页空态下维度区仍可操作（2026-10-20 实勘）。登录与关评审由 runner 前置。A 档零 allow_skip。D4·2026-10-20 rewrite-FUNC-01076。

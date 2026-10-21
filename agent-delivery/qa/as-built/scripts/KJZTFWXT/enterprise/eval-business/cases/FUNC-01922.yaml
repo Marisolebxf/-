@@ -1,0 +1,164 @@
+id: FUNC-01922
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01922
+priority: P1
+title: 按此配置新建评估回到配置并带回企业
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 最近评估有已完成任务
+locators:
+  recent_tab: tab「最近评估」
+  clone_btn: button「按此配置新建评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 最近评估→已完成行点「按此配置新建评估」；配置态与企业回填断言在 expect
+expect:
+  - note: 1、回到当前分析配置；2、对象区带回该任务的企业；3、不自动进入结果页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const extractCodes = (text) => {
+        const hits = [...(text || '').matchAll(/[a-f0-9]{32}/gi)].map((m) => m[0].toLowerCase());
+        return [...new Set(hits)];
+      };
+      const extractEnterpriseNames = (text) => {
+        const re = /[\u4e00-\u9fa5A-Za-z0-9（）()·&]+(?:股份有限公司|有限责任公司|有限公司)/g;
+        const hits = [...(text || '').matchAll(re)].map((m) => m[0].trim());
+        const noise = /评估|分析|商业力|已完成|恢复|删除|新建|报告|系统|模板|对比篮/;
+        return [...new Set(hits)].filter((n) => n.length >= 6 && !noise.test(n));
+      };
+      const saveSnap = async (snap) => {
+        await page.evaluate((d) => { window.__gkx_qa_01922 = d; }, snap);
+      };
+      const waitConfigFilled = async (maxMs) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < maxMs) {
+          const body = await main().innerText().catch(() => '');
+          const u = page.url();
+          if (/view=result/.test(u) || /商业力评估结果/.test(body)) return 'result';
+          const removeN = await main().locator('button[aria-label^="移除"]').count();
+          if (removeN > 0) return 'objects';
+          if (/来自对比篮/.test(body) && !/暂未选择评估对象/.test(body)) return 'objects';
+          if ((u.match(/enterprise_codes/g) || []).length > 0) return 'url';
+          if (/指标与权重/.test(body) && /评估模板/.test(body) && !/view=history/.test(u)) {
+            if (!/暂未选择评估对象/.test(body)) return 'config';
+          }
+          await page.waitForTimeout(600);
+        }
+        return 'timeout';
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      const recentTab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(recentTab).toBeVisible({ timeout: 12000 });
+      await recentTab.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const cloneBtns = page.getByRole('button', { name: '按此配置新建评估' });
+      const nClone = await cloneBtns.count();
+      if (nClone < 1) {
+        throw new Error('最近评估无「按此配置新建评估」按钮（ticket=ENV-EVAL-BUSINESS-HISTORY-001）');
+      }
+      let picked = null;
+      let bestNames = [];
+      for (let i = 0; i < nClone; i++) {
+        const btn = cloneBtns.nth(i);
+        if (!(await btn.isVisible().catch(() => false))) continue;
+        const row = btn.locator('xpath=ancestor::tr[1]');
+        const rowText = (await row.count() ? await row.innerText().catch(() => '') : '') || (await btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]').innerText().catch(() => ''));
+        if (!/已完成/.test(rowText) && !/success/i.test(rowText)) continue;
+        const names = extractEnterpriseNames(rowText);
+        if (!picked || names.length > bestNames.length) {
+          picked = { btn, rowText };
+          bestNames = names;
+        }
+        if (names.length > 0 && picked.btn === btn) break;
+      }
+      if (!picked) picked = { btn: cloneBtns.first(), rowText: await cloneBtns.first().locator('xpath=ancestor::tr[1]').innerText().catch(() => '') };
+      const rowText = picked.rowText;
+      const rowCodes = extractCodes(rowText);
+      const rowNames = extractEnterpriseNames(rowText);
+      await expect(picked.btn).toBeEnabled({ timeout: 8000 });
+      await picked.btn.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      const fillState = await waitConfigFilled(20000);
+      await closeBasket();
+      const url = page.url();
+      const body = await main().innerText().catch(() => '');
+      if (fillState === 'result' || /view=result/.test(url) || (/商业力评估结果/.test(body) && !/指标与权重/.test(body))) {
+        throw new Error('点击后进入结果页（用例要求停在配置页）：' + url);
+      }
+      if (!/评估模板/.test(body) && !/指标与权重/.test(body) && !/评估对象/.test(body)) {
+        throw new Error('未见当前分析配置区（评估模板/指标与权重/评估对象）：' + url);
+      }
+      const removeN = await main().locator('button[aria-label^="移除"]').count();
+      const urlCodeN = (url.match(/enterprise_codes/g) || []).length;
+      const emptyObj = /暂未选择评估对象/.test(body);
+      const fromBasket = /来自对比篮/.test(body) && !emptyObj;
+      const nameHit = rowNames.filter((n) => body.includes(n));
+      const snap = { rowCodes, rowNames, url, removeN, emptyObj, fromBasket, fillState, nameHit };
+      await saveSnap(snap);
+      const objectsOk = removeN > 0 || urlCodeN > 0 || fromBasket || nameHit.length > 0;
+      if (!objectsOk) {
+        const hint = rowNames.length ? ('行企业=' + rowNames.slice(0, 3).join('、')) : ('行编码=' + rowCodes.join(','));
+        throw new Error('配置页对象区仍为空（ticket=ENV-EVAL-BUSINESS-HISTORY-002；' + hint + '）');
+      }
+      const fromUrl = extractCodes(url);
+      const fromBody = extractCodes(body);
+      const filledCodes = [...new Set([...fromUrl, ...fromBody])];
+      if (rowCodes.length > 0 && removeN < 1) {
+        const hit = rowCodes.filter((c) => filledCodes.includes(c));
+        if (hit.length < 1 && nameHit.length < 1) {
+          throw new Error('对象区未含该行企业编码（行=' + rowCodes.join(',') + ' 页=' + filledCodes.slice(0, 6).join(',') + '）');
+        }
+      }
+      if (rowNames.length > 0 && removeN < 1 && nameHit.length < 1 && !fromBasket) {
+        throw new Error('对象区未匹配行内企业名：行=' + rowNames.slice(0, 3).join('、'));
+      }
+  - note: 2、对象区带回该任务的企业
+    assert: |-
+      const s = await page.evaluate(() => window.__gkx_qa_01922 || null);
+      if (!s) throw new Error('缺 expect1 落盘');
+      if (s.removeN > 0) return;
+      const url = page.url();
+      const body = await page.locator('main.app-main').first().innerText().catch(() => '');
+      const fromUrl = (url.match(/[a-f0-9]{32}/gi) || []).map((c) => c.toLowerCase());
+      const fromBody = (body.match(/[a-f0-9]{32}/gi) || []).map((c) => c.toLowerCase());
+      const codes = [...new Set(fromUrl.concat(fromBody))];
+      if (s.removeN > 0 || s.fromBasket) return;
+      if (s.rowNames && s.rowNames.length) {
+        if (!s.rowNames.some((n) => body.includes(n))) {
+          throw new Error('对象区未匹配行内企业名：行=' + s.rowNames.slice(0, 3).join('、'));
+        }
+        return;
+      }
+      if (s.rowCodes && s.rowCodes.length) {
+        if (!s.rowCodes.some((c) => codes.includes(c))) {
+          throw new Error('对象区未匹配行内企业编码：行=' + s.rowCodes.join(',') + ' 页=' + codes.slice(0, 8).join(','));
+        }
+        return;
+      }
+      throw new Error('行内无企业编码/公司名可核对（ticket=ENV-EVAL-BUSINESS-HISTORY-002）');
+  - note: 3、不自动进入结果页
+    assert: |-
+      const u = page.url();
+      const t = await page.locator('main.app-main').first().innerText().catch(() => '');
+      if (/view=result/.test(u)) throw new Error('URL 仍为结果 view=result：' + u);
+      if (/商业力评估结果/.test(t) && !/指标与权重/.test(t)) {
+        throw new Error('主区仍为商业力评估结果态');
+      }
+      await expect(page.getByText('评估模板', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01922 最近评估「按此配置新建评估」→配置页（评估模板/指标与权重/评估对象）。对象断言：移除钮 / URL enterprise_codes / 来自对比篮 / 行内公司名；hydrate wait 20s。30888 路由 /enterprise-center/evaluation（用例 TRACE 写 /enterprise/evaluation 为 D1）。无历史 ENV-EVAL-BUSINESS-HISTORY-001；克隆后对象仍空且行有企业名 ENV-EVAL-BUSINESS-HISTORY-002（D3·C1 产品，与 01804 同族；2026-10-19 机跑行=深芯微集成电路股份有限公司 主区仍「暂未选择评估对象」）。expect3 已证未进结果页。B 档零 allow_skip。

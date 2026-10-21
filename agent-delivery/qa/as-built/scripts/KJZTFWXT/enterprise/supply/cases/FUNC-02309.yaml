@@ -1,0 +1,66 @@
+id: FUNC-02309
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02309
+priority: P0
+title: 对象回填后预检展示四项状态
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已进入供应链关系分析页；对比篮至少有 1 家合格企业（机检：勾选 1 家→确定回填）
+locators:
+  cta: 前往对比篮选择企业
+  overlay_title: 选择分析企业
+  confirm: 确定
+  precheck_section: 数据与权限预检
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 对比篮回填 1 家→阅读数据与权限预检；四项断言在 expect
+expect:
+  - note: 展示对象有效、数据覆盖、模型状态、权限范围四项
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const keys = ['对象有效', '数据覆盖', '模型状态', '权限范围'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      const n = await sels.count();
+      if (n < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      await sels.first().click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await closeBasket();
+      await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      const main = page.locator('main.content-shell-layout, main').first();
+      await expect(main.getByText('数据与权限预检').first()).toBeVisible({ timeout: 8000 });
+      const body = await main.innerText();
+      if (/选择企业后显示数据与权限预检/.test(body) && !keys.every((k) => body.includes(k))) {
+        throw new Error('预检仍为未回填空态提示');
+      }
+      for (const k of keys) {
+        if (!body.includes(k)) throw new Error('预检区缺少字段：' + k);
+        await expect(main.getByText(k, { exact: false }).first()).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=前往对比篮选择企业→勾选 1 家→确定→阅读「数据与权限预检」。四项标签=对象有效/数据覆盖/模型状态/权限范围（值文案随演示态，不钉死 n/n）。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

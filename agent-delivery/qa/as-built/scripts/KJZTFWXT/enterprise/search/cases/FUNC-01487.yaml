@@ -1,0 +1,49 @@
+id: FUNC-01487
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01487
+priority: P1
+title: 画像快览「引育候选」展开两个加入动作
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 「企业画像快览」已打开（本条 assert 自含智能搜索出结果并点「查看画像」）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  view_profile: main button「查看画像」
+  quick_drawer: .arco-drawer:visible 标题含「企业画像快览」
+  yinyu_btn: 快览底栏 button「引育候选」
+  menu_attract: menuitem「加入招引候选」
+  menu_cultivate: menuitem「加入培育候选」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+expect:
+  - note: 菜单含「加入招引候选」
+    assert: |-
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ }).first();
+      await input.fill('人工智能');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/).first()).toBeVisible({ timeout: 20000 });
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 15000 });
+      await profileBtn.click({ timeout: 8000 });
+      const quickDrawer = page.locator('.arco-drawer:visible').first();
+      await quickDrawer.waitFor({ state: 'visible', timeout: 12000 });
+      await expect(quickDrawer.locator('.arco-drawer-header')).toContainText('企业画像快览');
+      const yqBtn = quickDrawer.getByRole('button', { name: /引育候选/ });
+      await expect(yqBtn).toBeVisible({ timeout: 8000 });
+      await yqBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('menuitem', { name: '加入招引候选', exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 菜单含「加入培育候选」
+    assert: |-
+      await expect(page.getByRole('menuitem', { name: '加入培育候选', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。快览底栏「引育候选」为 Arco Dropdown；菜单项原文「加入招引候选」「加入培育候选」（结果卡无此按钮，仅快览 footer）。

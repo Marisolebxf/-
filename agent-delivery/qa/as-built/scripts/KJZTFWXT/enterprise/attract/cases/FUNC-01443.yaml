@@ -1,0 +1,96 @@
+id: FUNC-01443
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01443
+priority: P1
+title: 地域来源选全球后第二列 G20 国家
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  stack: recruit-tab-stack
+  region_cascader: .sci-arco-cascader[aria-label="地域来源"]
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 展开地域来源、点选全球；第二列项数与文案在 expect 判定
+expect:
+  - note: 条件区地域来源级联可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
+      };
+      await dismissBasket();
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let region = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
+      if ((await region.count()) < 1) {
+        region = page.locator('[aria-label="选择区域"]').first();
+      }
+      if ((await region.count()) < 1) {
+        throw new Error('条件区未见地域来源级联，url=' + page.url());
+      }
+      await expect(region).toBeVisible({ timeout: 8000 });
+  - note: 点选全球后第二列共 1 项「G20 国家」
+    assert: |-
+      const EXPECTED_SECOND = 'G20 国家';
+      await page.keyboard.press('Escape').catch(() => {});
+      let regionView = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
+      if ((await regionView.count()) < 1) {
+        regionView = page.locator('[aria-label="选择区域"]').first();
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const firstCol = page.locator('.arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const globalItem = firstCol.locator('.arco-cascader-list-item').filter({ hasText: /^全球$/ });
+      const globalLoose = firstCol.locator('.arco-cascader-list-item').filter({ hasText: '全球' });
+      const pick = (await globalItem.count()) ? globalItem.first() : globalLoose.first();
+      if ((await pick.count()) < 1) {
+        const sample = await firstCol.locator('.arco-cascader-list-item').allTextContents();
+        throw new Error('第一列未见「全球」，实际=' + sample.join('|'));
+      }
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const secondCol = page.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      const items = secondCol.locator('.arco-cascader-list-item');
+      const count = await items.count();
+      const texts = (await items.allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      if (count !== 1 || texts.length !== 1) {
+        throw new Error(
+          `全球第二列项数为 ${count}（去重后 ${texts.length}），预期 1 项「${EXPECTED_SECOND}」；实际=${texts.join('、') || '(空)'}`,
+        );
+      }
+      const label = texts[0];
+      if (label !== EXPECTED_SECOND && !label.includes(EXPECTED_SECOND)) {
+        throw new Error(`全球第二列应为「${EXPECTED_SECOND}」，实际=${label}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/attraction；步骤=条件区展开地域来源→第一列点「全球」→第二列 1 项「G20 国家」。D4·2026-10-20 二轮机跑 rewrite-FUNC-01443（05:28Z+8）：第一列仍无「全球」（现场=全国|区域|深圳），连两次 fail 同因 D3（demo 旧地域树，非 region-scopes 目标态）→交卷 blocked·C1 产品偏差（同 FUNC-01412/01442）。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,80 @@
+id: FUNC-01915
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01915
+priority: P1
+title: 对比篮区域页签为开发中且不发起商业力分析
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开对比篮（脚本自含打开系统对比篮面板）
+locators:
+  dock: button aria-label 含「打开对比篮」
+  panel: .system-compare-panel
+  region_tab: '#compare-basket-tab-region'
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开对比篮→点击「区域 · 开发中」；未发起分析与开发中标识在 expect
+expect:
+  - note: 1、不出现「商业力评估结果」；2、页签仍标明开发中
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openCompareBasket = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        await dockBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      if (/view=result/.test(page.url())) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const urlBefore = page.url();
+      const panel = await openCompareBasket();
+      const regionTab = panel.locator('#compare-basket-tab-region');
+      await expect(regionTab).toBeVisible({ timeout: 8000 });
+      const regionLabelBefore = (await regionTab.innerText()).replace(/\s+/g, ' ').trim();
+      if (!/区域/.test(regionLabelBefore) || !/开发中/.test(regionLabelBefore)) {
+        throw new Error('点击前区域页签文案异常：' + regionLabelBefore);
+      }
+      await regionTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const regionLabelAfter = (await regionTab.innerText()).replace(/\s+/g, ' ').trim();
+      if (!/开发中/.test(regionLabelAfter)) {
+        throw new Error('点击后区域页签未仍标明开发中：' + regionLabelAfter);
+      }
+      const panelText = await panel.innerText();
+      if (!/开发中/.test(panelText)) {
+        throw new Error('对比篮面板未见「开发中」标识');
+      }
+      const mainText = await main().innerText().catch(() => '');
+      if (/商业力评估结果/.test(mainText)) throw new Error('主区出现「商业力评估结果」，疑似误发起分析');
+      if (/view=result/.test(page.url()) && !/view=result/.test(urlBefore)) {
+        throw new Error('点区域页签后 URL 进入结果视图：' + page.url());
+      }
+      await expect(main().getByRole('heading', { name: '商业力评估结果' })).toHaveCount(0);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01915：对比篮 #compare-basket-tab-region（文案「区域 · 开发中」）。点击后页签与面板仍含「开发中」，不得出现主区「商业力评估结果」或误入 view=result。30888 路由 /enterprise-center/evaluation；打开对比篮用 dock aria-label。区域为占位 Tab，不要求 active 类或篮内区域名单（对照 shell compare-basket P0-13）。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

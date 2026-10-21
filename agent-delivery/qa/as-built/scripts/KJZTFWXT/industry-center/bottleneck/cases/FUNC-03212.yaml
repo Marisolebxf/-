@@ -1,0 +1,129 @@
+id: FUNC-03212
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03212
+priority: P1
+title: 改集群后页签往返不发起分析
+story: US-CHAIN-DIAG-05
+entry_id: chain-bottleneck
+tier: B
+preconditions:
+  - 已打开分析配置
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  tab_bottleneck: tab「产业瓶颈堵点识别」
+  tab_records: tab「诊断记录」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 左侧改「生物产业」→诊断记录→产业瓶颈堵点识别（判定在 expect）
+expect:
+  - note: 前置：分析配置可见；左侧改为「生物产业」；切诊断记录再切回
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
+      };
+      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
+      const enterBottleneck = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=bottleneck/.test(page.url()) &&
+          /tab=bottleneck/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=bottleneck/);
+        await expect(page).toHaveURL(/tab=bottleneck/);
+      };
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const pickCluster = async (label) => {
+        const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+        await cluster.scrollIntoViewIfNeeded();
+        await cluster.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        await pop.locator('.arco-select-option').filter({ hasText: new RegExp('^' + label + '$') }).first().click();
+        await page.waitForTimeout(900);
+      };
+      await enterBottleneck();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+      await pickCluster('生物产业');
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const left = await read(cluster);
+      if (!/生物产业/.test(left)) {
+        throw new Error('左侧应为「生物产业」，现场=' + left);
+      }
+      const tabRecords = page.getByRole('tab', { name: '诊断记录' }).first();
+      await expect(tabRecords).toBeVisible({ timeout: 8000 });
+      await tabRecords.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await expect(tabRecords).toHaveAttribute('aria-selected', 'true');
+      const tabBottleneck = page.getByRole('tab', { name: '产业瓶颈堵点识别' }).first();
+      await expect(tabBottleneck).toBeVisible({ timeout: 8000 });
+      await tabBottleneck.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await expect(tabBottleneck).toHaveAttribute('aria-selected', 'true');
+      globalThis.__func03212_ready = true;
+  - note: 1、切回后仍可见「分析配置」
+    assert: |-
+      if (!globalThis.__func03212_ready) throw new Error('前置：未完成页签往返');
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByRole('tab', { name: '产业瓶颈堵点识别' }).first()).toHaveAttribute('aria-selected', 'true');
+      const url = page.url();
+      if (/view=processing/.test(url) || /view=result/.test(url)) {
+        throw new Error('页签往返后 URL 进入过程/结果态: ' + url);
+      }
+  - note: 2、不出现「产业瓶颈堵点识别生成中」
+    assert: |-
+      if (!globalThis.__func03212_ready) throw new Error('前置：未完成页签往返');
+      const main = page.locator('main').first();
+      const t = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/产业瓶颈堵点识别生成中/.test(t)) {
+        throw new Error('页签往返后不应进入生成中过程页');
+      }
+      if (/可视化分析过程/.test(t) && /取消任务|稍后查看/.test(t)) {
+        throw new Error('页签往返后出现分析过程面板，疑自动起任务');
+      }
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck（entry-seed）；深链 goto + 404 侧栏 sibling（03210/03213 同款）。
+  用例步骤=左侧 aria「集群」选生物产业→Tab「诊断记录」→Tab「产业瓶颈堵点识别」；预期=仍见「分析配置」+无「产业瓶颈堵点识别生成中」+URL 无 view=processing|result。
+  不点「开始分析」。登录关评审 runner 前置。B 档零 allow_skip。

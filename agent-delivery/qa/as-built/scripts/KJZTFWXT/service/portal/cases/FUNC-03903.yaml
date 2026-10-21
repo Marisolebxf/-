@@ -1,0 +1,59 @@
+id: FUNC-03903
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03903
+priority: P0
+tier: B
+title: 切换产业后榜单标题跟随
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + 概况默认 Tab）
+locators:
+  industry: select placeholder 全部产业
+  tab_cap: tab「服务机构技术能力」
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 选择产业「生物」；点击「服务机构技术能力」页签
+expect:
+  - note: 1、榜单标题含「生物」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal SPA404，无法验产业切换后榜单标题 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await expect(ind).toBeVisible({ timeout: 8000 });
+      await ind.click();
+      const popup = page.locator('.arco-trigger-popup:visible');
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      await popup.getByText('生物', { exact: true }).click();
+      await page.waitForTimeout(400);
+      const indVal = ((await page.locator('input[placeholder="全部产业"]').first().inputValue().catch(() => '')) || '').trim();
+      const indView = ((await ind.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/生物/.test(indVal + indView)) {
+        throw new Error('产业未选中「生物」；input=' + indVal + ' view=' + indView);
+      }
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const titlePat = /生物\s*·\s*技术力 Top30|生物.*技术力 Top30/;
+      const titleLoc = page.getByText(titlePat).first();
+      await expect(titleLoc).toBeVisible({ timeout: 8000 });
+      const titleTxt = ((await titleLoc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/生物/.test(titleTxt)) {
+        throw new Error('榜单标题未含「生物」：' + titleTxt);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例步骤先选上栏产业「生物」再进「服务机构技术能力」Tab；产业为门户全局筛选（非 Tab 内页签），与用例备注一致。
+  现场 Section 标题格式「{产业} · 技术力 Top30」（probe-p012 after_industry）；诚实空仍保留该标题，不要求有入榜行（与 03898 空榜闸门区分：本条只验标题含产业名）。
+  goto 用 catalog /service-portal；Tab 落点 /service-portal/capability-rank。edu SPA404 → ENV-EDU-TTS-SVCZ-404-001→ledger blocked。

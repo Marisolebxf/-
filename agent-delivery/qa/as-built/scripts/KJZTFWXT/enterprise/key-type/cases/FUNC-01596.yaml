@@ -1,0 +1,58 @@
+id: FUNC-01596
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01596
+priority: P0
+title: 勾选企业后加入对比篮出现已加入提示
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单中有企业行
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  row_checkbox: 抽屉企业行 .arco-checkbox
+  add_compare_btn: 抽屉 footer button「加入对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、勾选一行、点加入对比篮；提示判定在 expect 内
+expect:
+  - note: 出现已加入提示，且文案含已加入、重复与超限的家数
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      const row = profiles.first().locator('xpath=ancestor::div[contains(@class,"items-start")][1]');
+      const rowCb = row.locator('.arco-checkbox').first();
+      await expect(rowCb).toBeVisible({ timeout: 8000 });
+      await rowCb.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      const addBtn = drawer.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(addBtn).toBeEnabled({ timeout: 8000 });
+      await addBtn.click({ timeout: 8000 });
+      const msgLoc = page.locator('.arco-message-content').filter({ hasText: /已加入/ }).first();
+      await expect(msgLoc).toBeVisible({ timeout: 10000 });
+      const msg = ((await msgLoc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const fullPat = /已加入\s*\d+\s*家.*重复\s*\d+\s*家.*超限\s*\d+\s*家/;
+      if (!fullPat.test(msg)) {
+        throw new Error('入篮提示未含「已加入/重复/超限」家数完整口径，实际：「' + msg.slice(0, 120) + '」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；抽屉行首 a-checkbox 勾选，footer「加入对比篮」批量入篮。成功反馈 Arco Message 固定模板「已加入 N 家，重复 N 家，超限 N 家」（useKeyEnterpriseAnalysis.addSelectedToBasket）；不钉死 N。无确认框。对比篮浮层内部操作不在本册。登录与关内部评审由 runner 会话前置。

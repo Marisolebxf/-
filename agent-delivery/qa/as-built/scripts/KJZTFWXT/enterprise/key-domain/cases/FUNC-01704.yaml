@@ -1,0 +1,167 @@
+id: FUNC-01704
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01704
+priority: P0
+title: 企业详情风险信息页签展示两类计数
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 已打开「企业详情」（assert 自含识别依据抽屉点「企业详情」或选择器画像）
+locators:
+  section: heading「重点领域分布」
+  evidence_drawer: .arco-drawer:visible 含「为什么识别为」
+  detail_btn: 依据抽屉 footer button「企业详情」
+  detail_drawer: .arco-drawer:visible 标题「企业详情」
+  tab_risk: 企业详情抽屉 tab「风险信息」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 打开企业详情后点「风险信息」；两类计数在 expect 判定
+expect:
+  - note: 1、展示司法案件计数；2、展示失信被执行人计数
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const kpiNames = ['已覆盖领域', '涉及企业', '跨领域企业', '识别依据'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const ensureDomainPage = async () => {
+        if ((await page.getByText('404 Not Found').count()) > 0 || !/key-enterprise-analysis/.test(page.url())) {
+          await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/共\s*(\d+)\s*项/) || dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        return entM ? parseInt(entM[1], 10) : 0;
+      };
+      const addOneEntFromSearch = async () => {
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtn.first()).toBeVisible({ timeout: 15000 });
+        await addBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        if (await basketEntCount() < 1) throw new Error('入篮后对比篮仍为空');
+      };
+      const fillResultViaPicker = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(800);
+        const sels = page.locator('[aria-label^="选择 "]');
+        if (!(await sels.count())) throw new Error('选择器无可勾选企业');
+        await sels.first().click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+      };
+      const hasResultKpis = async () => {
+        for (const n of kpiNames) {
+          if (!(await page.getByText(n, { exact: true }).count())) return false;
+        }
+        return true;
+      };
+      const distScope = () => {
+        const label = page.locator('main').getByText('重点领域分布', { exact: true }).first();
+        return label.locator('xpath=ancestor::section[1]');
+      };
+      const openEvidenceFromDistribution = async () => {
+        const scope = distScope();
+        const scopeCount = await scope.count();
+        const main = page.locator('main');
+        const evidenceBtns = (scopeCount ? scope : main).getByRole('button', { name: '查看识别依据', exact: true });
+        if (!(await evidenceBtns.count())) throw new Error('分布表无「查看识别依据」按钮');
+        let btn = null;
+        for (let i = 0; i < await evidenceBtns.count(); i++) {
+          const b = evidenceBtns.nth(i);
+          if (!(await b.isDisabled().catch(() => true))) { btn = b; break; }
+        }
+        if (!btn) throw new Error('分布表「查看识别依据」均禁用（缺代表企业 org_id）');
+        await btn.scrollIntoViewIfNeeded().catch(() => {});
+        await btn.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const whyDrawer = page.locator('.arco-drawer:visible').filter({ hasText: /为什么识别为/ }).last();
+        await expect(whyDrawer).toBeVisible({ timeout: 10000 });
+        return whyDrawer;
+      };
+      const openEnterpriseDetail = async () => {
+        const whyDrawer = await openEvidenceFromDistribution();
+        const detailEntry = whyDrawer.getByRole('button', { name: '企业详情', exact: true });
+        await expect(detailEntry).toBeVisible({ timeout: 8000 });
+        await detailEntry.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const detail = page.locator('.arco-drawer:visible').first();
+        await expect(detail.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 15000 });
+        await expect(detail.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+        return detail;
+      };
+      await ensureDomainPage();
+      await closeBasket();
+      if (!(await hasResultKpis())) {
+        if (await basketEntCount() < 1) await addOneEntFromSearch();
+        await fillResultViaPicker();
+      }
+      await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 12000 });
+      const detail = await openEnterpriseDetail();
+      const riskTab = detail.getByRole('tab', { name: '风险信息' });
+      await expect(riskTab).toBeVisible({ timeout: 8000 });
+      await riskTab.scrollIntoViewIfNeeded();
+      await riskTab.click({ timeout: 8000 });
+      await expect(riskTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await page.waitForResponse((r) => /profile\/risk/i.test(r.url()) && r.status() < 400, { timeout: 12000 }).catch(() => {});
+      await detail.locator('.arco-spin-loading').first().waitFor({ state: 'hidden', timeout: 12000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await expect(detail.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      const panel = detail.locator('.arco-drawer-content').first();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const panelText = await panel.innerText();
+      const emptyOnly = /暂无可展示的风险信息数据|暂无风险事件/.test(panelText)
+        && !panelText.includes('司法案件');
+      if (emptyOnly) {
+        throw new Error('D3·Q020：风险信息仅通用空态，未展示司法案件/失信被执行人计数');
+      }
+      const labels = ['司法案件', '失信被执行人'];
+      for (const label of labels) {
+        const labelEl = panel.getByText(label, { exact: true }).first();
+        await expect(labelEl).toBeVisible({ timeout: 12000 });
+        const blockText = await labelEl.evaluate((el) => {
+          const row = el.closest('div, li, tr, section, article') || el.parentElement;
+          return row ? row.innerText : el.innerText;
+        });
+        if (!/\d/.test(blockText)) {
+          throw new Error(`「${label}」附近未见数字计数，块文案：${blockText.slice(0, 120)}`);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 结果态回填与打开企业详情对齐 FUNC-01701。用例仅验司法案件+失信被执行人两类计数（不含被执行人）。D3·30888 复勘同 FUNC-01614：风险页多为通用空态则红挂 Q020。登录与关内部评审由 runner 会话前置。B 档。

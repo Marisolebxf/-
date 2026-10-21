@@ -1,0 +1,95 @@
+id: FUNC-03988
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03988
+priority: P0
+tier: A
+title: 主流程-智能检索到达结果（城市词检索）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「智能检索」Tab（默认）
+locators:
+  search_input: textbox placeholder「用一句话描述机构需求，如「深圳 检验检测」」
+  search_btn: button「搜索」（arco-input-search-btn）
+  result_heading: heading「检索结果」
+  matched_city: 已匹配条件「所在城市：深圳」
+  org_card_action: 结果卡片「加入对比篮」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入服务机构查询后输入「深圳」并搜索（判定在 expect）
+expect:
+  - note: 出现标题「检索结果」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      await inp.fill('深圳');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(1200);
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 15000 });
+  - note: 结果列表中有机构卡片（至少一条含「加入对比篮」行动点，不写死命中条数）
+    assert: |-
+      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
+      const n = await page.getByRole('button', { name: '加入对比篮' }).count();
+      if (n < 1) throw new Error('结果区未见机构卡片行动「加入对比篮」');
+      await expect(page.getByRole('button', { name: '加入对比篮' }).first()).toBeVisible({ timeout: 8000 });
+  - note: 已匹配条件为「所在城市：深圳」
+    assert: |-
+      await expect(page.getByText(/所在城市：深圳/)).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 金样 03988；edu 深链 /service-center/search 常 SPA404，侧栏经 sibling /industry-center/search 进 menu_leaf（同 FUNC-01328）。catalog_path 仍为 /service-center/search。不写死命中条数。登录与关内部评审由 runner 会话前置。

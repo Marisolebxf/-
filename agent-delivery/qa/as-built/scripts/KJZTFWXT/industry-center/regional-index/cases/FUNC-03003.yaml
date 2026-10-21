@@ -1,0 +1,118 @@
+id: FUNC-03003
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03003
+priority: P0
+title: 新一代信息技术集群下产业下拉共 6 项（附录A）
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 集群为「新一代信息技术」
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  industry: .arco-select-view[aria-label=产业]
+  popup: .arco-trigger-popup:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入指数页→确认集群为新一代信息技术→展开产业下拉（判定在 expect）
+expect:
+  - note: 1、共 6 个产业，名称见附录A
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            const u = new URL('/industry-center/search', baseUrl);
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      await enterRegionalIndex();
+      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const clusterText = ((await clusterView.innerText()).trim().split('\n')[0] || '').trim();
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelectOption('集群', /^新一代信息技术$/);
+      }
+      const clusterAfter = ((await clusterView.innerText()).trim().split('\n')[0] || '').trim();
+      if (!/^新一代信息技术$/.test(clusterAfter)) {
+        throw new Error('前置：集群未处于「新一代信息技术」，现场=' + clusterAfter);
+      }
+      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industryView).toBeVisible({ timeout: 8000 });
+      await industryView.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const expected = [
+        '半导体与集成电路',
+        '人工智能与应用',
+        '智能终端',
+        '软件与信息服务',
+        '新型网络与通信',
+        '超高清视频与显示',
+      ];
+      const opts = pop.locator('.arco-select-option');
+      const n = await opts.count();
+      if (n !== 6) throw new Error('产业可选项数 ' + n + ' ≠ 6（附录A·新一代信息技术）');
+      const names = [];
+      for (let i = 0; i < n; i++) {
+        names.push(((await opts.nth(i).innerText()).trim().split('\n')[0] || '').trim());
+      }
+      for (const e of expected) {
+        if (!names.includes(e)) throw new Error('缺产业「' + e + '」，实际=' + names.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index；入口 sibling 侧栏进页（深链 404）。前置集群=新一代信息技术（默认或点选）。
+  产业下拉 .arco-select-view[aria-label=产业]（P7）。6 项名对齐用例附录A；50892 scout-industry-options 曾为 5 项短名（集成电路等），与附录A 不一致时本条 fail 记 D1。
+  登录关评审 runner 前置。B 档零 allow_skip。

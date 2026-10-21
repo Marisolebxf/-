@@ -1,0 +1,182 @@
+id: FUNC-03515
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03515
+priority: P1
+title: 分析记录筛「分析中」无进行中任务时空列表
+story: US-CHAIN-REG-05
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 当前没有分析中的任务
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  records_frame: '[data-frame-id="F-REG-04"]'
+  status_filter: .diagnosis-records__filters .arco-select-view
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 打开「分析记录」并将任务状态选为「分析中」（空态或进行中行在 expect）
+expect:
+  - note: 前置：分析记录 Tab；全部状态下无「分析中」任务行（有则走「可见该任务」分支）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const TID_RE = /CHAIN-\d{8}-\d{3,}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/regional/.test(page.url()) &&
+        /workspace=competitiveness/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const statusSelect = () =>
+        page
+          .locator('.diagnosis-records__filters > div')
+          .filter({ hasText: '任务状态' })
+          .locator('.arco-select-view')
+          .first();
+      const pickStatus = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(150);
+        const view = statusSelect();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + label + '\\s*$') });
+        await expect(opt.first()).toBeVisible({ timeout: 8000 });
+        await opt.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const readStatusLabel = async () => {
+        const view = statusSelect();
+        const title = await view.getAttribute('title');
+        const val = view.locator('.arco-select-view-value').first();
+        const inner = val.count ? ((await val.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim() : '';
+        return (title || inner || ((await view.innerText()) || '').replace(/\s+/g, ' ').trim()).trim();
+      };
+      const rowHasAnalyzingStatus = async (row) => {
+        const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!TID_RE.test(rt)) return false;
+        if (/分析中|进行中|排队|生成中|等待调度/.test(rt) && !/已完成|失败/.test(rt)) return true;
+        if (/\t分析中\t|\s分析中\s/.test(rt)) return true;
+        return false;
+      };
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域竞争力深链与侧栏均 SPA404，无法验 03515 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      const frame = page.locator('[data-frame-id="F-REG-04"]');
+      await expect(frame).toBeVisible({ timeout: 10000 });
+      await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
+      const chainRows = () => frame.locator('.arco-table-body tr.arco-table-tr').filter({ hasText: TID_RE });
+      let hasInProgress = false;
+      const rows = chainRows();
+      const n = await rows.count();
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        if (await rowHasAnalyzingStatus(row)) hasInProgress = true;
+      }
+      await pickStatus('分析中');
+      const afterLabel = await readStatusLabel();
+      if (!/分析中/.test(afterLabel)) {
+        throw new Error('选「分析中」后任务状态未显示分析中；当前「' + afterLabel + '」');
+      }
+      globalThis.__func03515 = { branch: hasInProgress ? 'inprogress' : 'empty', ready: true };
+  - note: 1、列表为空（无进行中时）；或有进行中时列表可见该任务
+    assert: |-
+      const ctx = globalThis.__func03515;
+      if (!ctx?.ready) throw new Error('前置：未完成分析中筛选');
+      const frame = page.locator('[data-frame-id="F-REG-04"]');
+      await expect(frame).toBeVisible({ timeout: 8000 });
+      const table = frame.locator('.arco-table');
+      await expect(table).toBeVisible({ timeout: 8000 });
+      const TID_RE = /CHAIN-\d{8}-\d{3,}/;
+      const dataRows = table.locator('.arco-table-body tr.arco-table-tr').filter({ hasNotText: /暂无数据/ });
+      let visibleRows = 0;
+      for (let i = 0; i < (await dataRows.count()); i++) {
+        if (await dataRows.nth(i).isVisible().catch(() => false)) visibleRows += 1;
+      }
+      if (ctx.branch === 'inprogress') {
+        if (visibleRows < 1) {
+          throw new Error('全部状态下有分析中任务，筛「分析中」后应可见至少 1 行，当前 0 行');
+        }
+        let sawRunning = false;
+        for (let i = 0; i < (await dataRows.count()); i++) {
+          const row = dataRows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (TID_RE.test(rt) && /分析中|进行中/.test(rt)) sawRunning = true;
+        }
+        if (!sawRunning) {
+          throw new Error('筛「分析中」后未见状态为分析中的 CHAIN 行');
+        }
+        return;
+      }
+      if (visibleRows > 0) {
+        throw new Error('无进行中任务时筛「分析中」后列表仍有 ' + visibleRows + ' 行数据');
+      }
+  - note: 2、文案为「暂无数据」（无进行中时；有进行中则空文案不作为失败）
+    assert: |-
+      const ctx = globalThis.__func03515;
+      if (!ctx?.ready) throw new Error('前置：未完成分析中筛选');
+      if (ctx.branch === 'inprogress') return;
+      const frame = page.locator('[data-frame-id="F-REG-04"]');
+      const table = frame.locator('.arco-table');
+      const emptyInTable = table.locator('.arco-table-empty, .arco-empty').filter({ hasText: /暂无数据/ });
+      if (await emptyInTable.count() && (await emptyInTable.first().isVisible().catch(() => false))) {
+        return;
+      }
+      const emptyBody = table.locator('.arco-table-body').getByText('暂无数据').first();
+      if (await emptyBody.isVisible().catch(() => false)) return;
+      const fallback = frame.getByText('暂无数据').first();
+      await expect(fallback).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  F-REG-04 recordStatusFilter=running；无进行中→筛「分析中」空表 Arco「暂无数据」；现场有分析中行→同筛应见该任务（用例备注分支）。
+  入口 catalog_path=entry-seed；深链/侧栏 fallback 同批 regional-compete（03505/03524）。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。B 档零 allow_skip。

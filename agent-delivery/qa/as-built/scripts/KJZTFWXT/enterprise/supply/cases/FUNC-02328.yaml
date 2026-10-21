@@ -1,0 +1,171 @@
+id: FUNC-02328
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02328
+priority: P1
+title: 失败任务继续查看展示失败原因
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 最近分析中有状态为失败的供应链任务
+locators:
+  recent_tab: tab「最近分析」
+  continue_btn: button「继续查看」
+  fail_title: 分析失败
+  retry_btn: button「重试」
+  clone_btn: button「按此配置新建」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析→失败行点「继续查看」；失败页与按钮在 expect
+expect:
+  - note: 1、进入失败页并展示失败原因
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const scrollHistoryActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const extractTid = (rowText) => {
+        const m = rowText.match(TID_RE);
+        return m ? m[0] : null;
+      };
+      const isFailedContinueRow = (rowText) =>
+        /失败/.test(rowText) && /继续查看/.test(rowText) && TID_RE.test(rowText) && /企业供应链关系分析/.test(rowText);
+      const pickFailedContinueOnPage = async () => {
+        await scrollHistoryActions();
+        const rows = main().locator('table tbody tr, .arco-table-tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = await row.innerText().catch(() => '');
+          if (!isFailedContinueRow(rowText)) continue;
+          const cont = row.getByRole('button', { name: '继续查看' }).first();
+          if (!(await cont.count()) || !(await cont.isVisible().catch(() => false))) continue;
+          const tid = extractTid(rowText);
+          if (!tid) continue;
+          return { cont, tid, rowText };
+        }
+        return null;
+      };
+      const pickFailedContinue = async () => {
+        const pag = main().locator('.arco-pagination').first();
+        for (let guard = 0; guard < 24; guard++) {
+          const hit = await pickFailedContinueOnPage();
+          if (hit) return hit;
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        return null;
+      };
+      const readFailureReason = async () => {
+        const sub = main().locator('.arco-result-subtitle').first();
+        if (await sub.count() && (await sub.isVisible().catch(() => false))) {
+          const t = (await sub.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (t.length >= 2) return t;
+        }
+        const body = (await main().innerText().catch(() => '')).replace(/\s+/g, ' ');
+        const m = body.match(/分析失败[\s\S]{0,80}?(任务执行失败|任务失败|失败原因|error|Error|异常|超时|权限|校验)/i);
+        if (m) return m[0].slice(0, 120);
+        if (/任务执行失败|任务失败/.test(body)) return '任务执行失败';
+        const idx = body.indexOf('分析失败');
+        if (idx >= 0) {
+          const slice = body.slice(idx, idx + 400);
+          const lines = slice.split(/\s+/).filter((w) => w.length > 4 && !/^分析失败|可视化|等待中|任务提交|权限与配置|数据汇聚|算法计算|结果组装|进度|已用时间|任务 ID|分析类型|企业供应链关系分析|0%/.test(w));
+          if (lines.length) return lines.slice(0, 3).join(' ');
+        }
+        return '';
+      };
+      const isFailureResultPage = async () => {
+        const url = page.url();
+        if (!/view=result/.test(url)) return false;
+        const title = main().getByText('分析失败').first();
+        if (!(await title.count()) || !(await title.isVisible().catch(() => false))) return false;
+        const reason = await readFailureReason();
+        return reason.length >= 2;
+      };
+      if (!globalThis.__func02328_clicked) {
+        await dismissBasket();
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await openRecentTab();
+        await expect(main().getByText('任务名称').first()).toBeVisible({ timeout: 12000 });
+        const hit = await pickFailedContinue();
+        if (!hit) {
+          throw new Error('ENV-SUPPLY-NO-FAILED-001：最近分析无「失败」且可「继续查看」的供应链任务');
+        }
+        globalThis.__func02328 = { rowTid: hit.tid, rowText: hit.rowText };
+        await hit.cont.scrollIntoViewIfNeeded().catch(() => {});
+        await scrollHistoryActions();
+        await hit.cont.click({ timeout: 15000 });
+        await page.waitForTimeout(1500);
+        globalThis.__func02328_clicked = true;
+        if (!(await isFailureResultPage())) {
+          await page.goto(
+            toUrl(supplyRoute + '&view=result&task_id=' + encodeURIComponent(hit.tid)),
+            { waitUntil: 'domcontentloaded' },
+          );
+          await page.waitForTimeout(2000);
+        }
+      }
+      const deadline = Date.now() + 30000;
+      while (Date.now() < deadline && !(await isFailureResultPage())) {
+        await page.waitForTimeout(500);
+      }
+      if (/view=result/.test(page.url()) && !(await main().getByText('分析失败').count())) {
+        throw new Error('继续查看后非失败结果页（疑似打开成功结果或配置页）');
+      }
+      await expect(main().getByText('分析失败').first()).toBeVisible({ timeout: 15000 });
+      const reason = await readFailureReason();
+      if (!reason || reason.length < 2) {
+        const snap = (await main().innerText().catch(() => '')).slice(0, 320);
+        throw new Error('失败页未见可读失败原因（不钉死原文）：' + snap);
+      }
+      globalThis.__func02328_reason = reason;
+      globalThis.__func02328_onFailPage = true;
+  - note: 2、页上有「重试」与「按此配置新建」
+    assert: |-
+      if (!globalThis.__func02328_onFailPage) throw new Error('前置：失败页未就绪');
+      const mainEl = page.locator('main.content-shell-layout, main').first();
+      const retry = mainEl.getByRole('button', { name: '重试', exact: true });
+      const clone = mainEl.getByRole('button', { name: '按此配置新建', exact: true });
+      await expect(retry.first()).toBeVisible({ timeout: 10000 });
+      await expect(retry.first()).toBeEnabled({ timeout: 8000 });
+      await expect(clone.first()).toBeVisible({ timeout: 10000 });
+      await expect(clone.first()).toBeEnabled({ timeout: 8000 });
+      const rowTid = globalThis.__func02328?.rowTid;
+      if (rowTid && /view=result/.test(page.url())) {
+        let urlTid = '';
+        try {
+          urlTid = new URL(page.url()).searchParams.get('task_id') || '';
+        } catch {}
+        if (urlTid && urlTid !== rowTid) {
+          throw new Error('失败页 task_id 与所点行不一致：行=' + rowTid + ' URL=' + urlTid);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 catalog_path /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=最近分析「失败」行点「继续查看」（对齐 RiskResultArea a-result：title 分析失败+subtitle 失败原因+重试/按此配置新建）。机检=view=result+分析失败+subtitle/正文可读原因（不钉死 errorMsg 原文）+两按钮 enabled；URL task_id 与行 RISK 互证。分页检索；深链兜底。无失败行→ENV-SUPPLY-NO-FAILED-001。登录与关评审由 runner 前置。B 档零 allow_skip。

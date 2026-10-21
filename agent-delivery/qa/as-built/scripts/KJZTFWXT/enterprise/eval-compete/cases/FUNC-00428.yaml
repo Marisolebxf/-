@@ -1,0 +1,164 @@
+id: FUNC-00428
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00428
+priority: P1
+title: 重新选择系统模板后指标与权重恢复预设且对象不恢复
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - env-gate select_objects=pass（对比篮≥1 家企业；不足时脚本经企业查询补篮）
+  - 已回填至少 1 家企业且已用调节钮修改权重
+locators:
+  template_select: .arco-select-view 含综合竞争力/标准模板/未保存
+  system_template: 综合竞争力标准模板|系统综合竞争力模板 v1.0
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 补篮回填→改权重→重选系统模板；权重与对象保持分别在 expect
+expect:
+  - note: 1、指标与权重恢复为模板预设 40 / 40 / 20
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const dimNames = ['创新能力', '经营能力', '成长能力'];
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const openEnterprisePicker = async () => {
+        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+        const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const fillOneEnterprise = async () => {
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url()) && await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) return;
+        await openEnterprisePicker();
+        const panel = page.locator('.system-compare-panel, .arco-modal').filter({ hasText: '选择分析企业' }).last();
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(300);
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      const readDimWeights = async () => {
+        const vals = [];
+        for (const name of dimNames) {
+          const row = page.getByRole('row').filter({ hasText: name }).first();
+          await expect(row).toBeVisible({ timeout: 8000 });
+          const spin = row.locator('[role=spinbutton], .arco-input-number input').first();
+          vals.push(String(await spin.inputValue()));
+        }
+        return vals;
+      };
+      const pickSystemTemplate = async () => {
+        const trg = page.locator('.arco-select-view').filter({ hasText: /综合竞争力|标准模板|未保存|系统综合/ }).first();
+        await trg.click({ timeout: 10000 });
+        await page.waitForTimeout(700);
+        const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.getByText(/综合竞争力标准模板|系统综合竞争力模板 v1\.0/, { exact: false }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.keyboard.press('Escape').catch(() => {});
+      };
+      await fillOneEnterprise();
+      globalThis.__func00428_urlAfterFill = page.url();
+      await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      const row0 = page.getByRole('row').filter({ hasText: dimNames[0] }).first();
+      await row0.locator('.arco-input-number-step-button').first().click({ timeout: 5000 });
+      await page.waitForTimeout(400);
+      const tweaked = await readDimWeights();
+      if (tweaked.join(',') === '40,40,20') {
+        await row0.locator('.arco-input-number-step-button').first().click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+      const afterTweak = await readDimWeights();
+      if (afterTweak.join(',') === '40,40,20') {
+        throw new Error('调节钮未能改出非预设权重: ' + afterTweak.join('/'));
+      }
+      globalThis.__func00428_tweaked = afterTweak.join(',');
+      await pickSystemTemplate();
+      const restored = await readDimWeights();
+      if (restored.join(',') !== '40,40,20') {
+        throw new Error('重选系统模板后权重 ' + restored.join('/') + ' ≠ 40/40/20（改前 ' + globalThis.__func00428_tweaked + '）');
+      }
+      globalThis.__func00428_restored = true;
+  - note: 2、已带入的企业对象保持不恢复
+    assert: |-
+      if (!globalThis.__func00428_restored) throw new Error('前置：权重恢复断言未通过');
+      const main = page.locator('main.diagnosis-main, main.app-main').first();
+      await expect(main.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      const url = page.url();
+      if (!/enterprise_codes/i.test(url)) {
+        throw new Error('重选模板后 URL 丢失 enterprise_codes: ' + url);
+      }
+      const extractCodes = (u) => {
+        try {
+          const q = new URL(u).searchParams;
+          const arr = q.getAll('enterprise_codes[]');
+          if (arr.length) return arr.join(',');
+          const single = q.get('enterprise_codes');
+          return single || '';
+        } catch {
+          const m = u.match(/enterprise_codes(?:%5B%5D|\[\])?=([^&]+)/i);
+          return m ? decodeURIComponent(m[1]) : '';
+        }
+      };
+      const filledUrl = globalThis.__func00428_urlAfterFill || '';
+      if (filledUrl && /enterprise_codes/i.test(filledUrl)) {
+        const beforeCodes = extractCodes(filledUrl);
+        const afterCodes = extractCodes(url);
+        if (beforeCodes && afterCodes && beforeCodes !== afterCodes) {
+          throw new Error('重选模板后 enterprise_codes 变化: ' + beforeCodes + ' → ' + afterCodes);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  由 P1-07 重写。30888 /enterprise-center/evaluation（禁 50892）。系统模板现场可为「系统综合竞争力模板 v1.0」（D1·同 FUNC-00409）。权重按三指标行读取（禁全页 spin nth）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

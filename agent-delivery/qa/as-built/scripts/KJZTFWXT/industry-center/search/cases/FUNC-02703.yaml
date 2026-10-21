@@ -1,0 +1,76 @@
+id: FUNC-02703
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02703
+priority: P0
+title: 点击示例词人工智能只写入检索框不自动搜索
+entry_id: chain-search
+tier: A
+preconditions:
+  - 当前为「智能检索」Tab
+  - 尚未搜索（结果区为推荐产业引导态）
+locators:
+  example_chip: .enterprise-search-example-button「人工智能」
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  result_region: '[role=region][aria-label="产业查询结果"]'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点击示例「人工智能」；终态在 expect 判定（P2 跨 tick）
+expect:
+  - note: 前置：智能检索 Tab 且结果区仍为推荐产业（尚未搜索）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const smart = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(0);
+      await expect(smart).toBeVisible({ timeout: 10000 });
+      const aria = await smart.getAttribute('aria-selected');
+      const cls = (await smart.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('前置应为智能检索 Tab');
+      }
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state && state !== 'recommendation') {
+        throw new Error('前置应为尚未搜索 recommendation 态，实际 data-search-state=' + state);
+      }
+      await expect(region.getByText('推荐产业').first()).toBeVisible({ timeout: 8000 });
+      const hitTitle = await region.getByText(/产业查询返回 \d+ 条结果/).count();
+      if (hitTitle > 0) {
+        throw new Error('前置不应已出现检索命中列表');
+      }
+  - note: 步骤：点击示例「人工智能」
+    assert: |-
+      const chip = page.locator('.enterprise-search-example-button').filter({ hasText: '人工智能' }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await expect(chip).toBeEnabled();
+      await chip.click();
+      await page.waitForTimeout(800);
+  - note: 1、检索框内容为「人工智能」
+    assert: |-
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await expect(input).toHaveValue('人工智能', { timeout: 8000 });
+  - note: 2、仍显示「推荐产业」（未自动发起检索）
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      await expect(region.getByText('推荐产业').first()).toBeVisible({ timeout: 8000 });
+      const hitTitle = await region.getByText(/产业查询返回 \d+ 条结果/).count();
+      if (hitTitle > 0) {
+        throw new Error('点击示例词后不应自动检索，现场已出现命中列表');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  示例 chip=class enterprise-search-example-button，文案「人工智能」（testdata smart_search.example_chips[0]；scout-base 一致）。
+  只回填 inputValue，不触发搜索（env-gate G4 同口径）。路由 catalog_path /industry-center/search。
+  对比篮遮挡 dismiss。登录与关内部评审由 runner 前置。A 档零 allow_skip。

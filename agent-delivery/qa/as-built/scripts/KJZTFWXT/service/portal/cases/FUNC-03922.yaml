@@ -1,0 +1,61 @@
+id: FUNC-03922
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03922
+priority: P1
+tier: B
+title: 深圳区域地图说明无坐标且不填演示点
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已打开深圳产业服务介绍（runner goto /service-portal/shenzhen）
+locators:
+  region_heading: heading「产业机构区域分布」
+  map_sz: .svc-portal-map--sz
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 滚动到「产业机构区域分布」
+expect:
+  - note: 1、地图区文案含「无坐标字段」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/shenzhen SPA404，无法验深圳地图空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const regionHeading = page.getByRole('heading', { name: '产业机构区域分布' }).first();
+      await regionHeading.scrollIntoViewIfNeeded();
+      await expect(regionHeading).toBeVisible({ timeout: 8000 });
+      const mapSection = page.locator('.svc-portal-map--sz').first();
+      await expect(mapSection).toBeVisible({ timeout: 8000 });
+      const noCoord = mapSection.getByText(/无坐标字段/).first();
+      await expect(noCoord).toBeVisible({ timeout: 8000 });
+  - note: 2、写明不填演示点（现场「不填 Demo 区级假点」）
+    assert: |-
+      const mapSection = page.locator('.svc-portal-map--sz').first();
+      await expect(mapSection).toBeVisible({ timeout: 8000 });
+      const noFake = mapSection.getByText(/不填\s*(演示点|Demo\s*区级假点|Demo)/).first();
+      await expect(noFake).toBeVisible({ timeout: 8000 });
+      const markers = mapSection.locator('.leaflet-marker-icon');
+      const markerCount = await markers.count();
+      if (markerCount > 0) {
+        throw new Error('深圳区分布地图不应渲染可点圆点（leaflet-marker-icon=' + markerCount + '），应保持无坐标空态');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深圳页地图空态「Java 区行无坐标字段。列表见右侧排行；不填 Demo 区级假点。」（ServicePortalShenzhenPage .svc-portal-map--sz a-empty）。
+  前置 goto /service-portal/shenzhen，滚动「产业机构区域分布」；断言无坐标字段 + 不填 Demo/演示点 + 无 leaflet 圆点。用例册单条预期拆双 expect 对齐 03917。

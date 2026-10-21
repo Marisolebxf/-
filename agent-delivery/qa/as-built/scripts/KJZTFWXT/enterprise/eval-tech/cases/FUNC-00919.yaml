@@ -1,0 +1,273 @@
+id: FUNC-00919
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00919
+priority: P1
+title: 加载系统与个人模板恢复指标权重且不恢复对象
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已带入至少 2 家企业
+  - 我的模板至少 1 条（无则 ticket=ENV-EVAL-TECH-PERSONAL-TPL-001）
+locators:
+  template_trigger: .arco-select-view 含技术力/模板/未保存
+  system_tpl: 技术力标准模板|系统技术力模板
+  personal_tpl: 技术力评估个人模板
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 回填对象→调权重→系统/个人模板切换；判定在 expect
+expect:
+  - note: 1、重选系统模板后指标与权重恢复为预设 20、25、20、15、20
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const DEFAULT_W = ['20', '25', '20', '15', '20'];
+      const main = () => page.locator('main.app-main').first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const metricWeightInputs = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('.arco-checkbox-checked') })
+          .locator('.arco-input-number input');
+      const readWeights = async () => {
+        const spins = metricWeightInputs();
+        const n = await spins.count();
+        const vals = [];
+        for (let i = 0; i < n; i++) vals.push(String(await spins.nth(i).inputValue()));
+        return vals;
+      };
+      const objectFingerprint = async () => {
+        const t = await main().innerText().catch(() => '');
+        const urlNow = page.url();
+        const tagCount = await main().locator('.arco-tag').count();
+        const codes = (urlNow.match(/enterprise_codes/g) || []).length;
+        return {
+          tagCount,
+          codes,
+          fromBasket: /来自对比篮/.test(t) || /source=compare-basket/.test(urlNow),
+          empty: /暂未选择评估对象/.test(t),
+          snippet: t.slice(0, 500),
+        };
+      };
+      const openTemplateDropdown = async () => {
+        const trg = page.locator('.arco-select-view').filter({ hasText: /系统技术力|技术力标准|技术力.*模板|未保存|当前/ }).first();
+        await expect(trg).toBeVisible({ timeout: 10000 });
+        await trg.scrollIntoViewIfNeeded().catch(() => {});
+        await trg.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        return pop;
+      };
+      const pickTemplate = async (nameRe) => {
+        const pop = await openTemplateDropdown();
+        const item = pop.getByText(nameRe).first();
+        if (!(await item.count())) throw new Error('模板项不存在: ' + nameRe);
+        await item.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const openSelectOverlay = async () => {
+        const ctaNew = main().getByRole('button', { name: '多企业技术力对比分析', exact: true });
+        const ctaOld = main().getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await ctaNew.count() && await ctaNew.first().isVisible().catch(() => false)) {
+          await ctaNew.first().click({ timeout: 8000 });
+          return;
+        }
+        if (await ctaOld.count() && await ctaOld.first().isVisible().catch(() => false)) {
+          await ctaOld.first().click({ timeout: 8000 });
+          return;
+        }
+        const adjust = main().getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        if (await adjust.count() && await adjust.first().isVisible().catch(() => false)) {
+          await adjust.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs = 'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(evalRoute + '&' + pickerQs), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false)) return;
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          await dockBtn.click({ timeout: 10000 });
+          await page.waitForTimeout(1000);
+        }
+      };
+      const ensureConfigWithObjects = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) { await curTab.first().click({ timeout: 5000 }); await page.waitForTimeout(600); }
+        const body0 = await main().innerText().catch(() => '');
+        if (/技术力评估结果/.test(body0) || page.url().includes('view=result')) {
+          const adj = page.getByRole('button', { name: '调整配置' });
+          if (await adj.count()) { await adj.first().click({ timeout: 8000 }); await page.waitForTimeout(1200); }
+        }
+        let fp = await objectFingerprint();
+        if (fp.empty) {
+          await openSelectOverlay();
+          await page.waitForTimeout(1000);
+          await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+          const sels = page.locator('[aria-label^="选择 "]');
+          if (await sels.count() < 2) throw new Error('浮层可选企业不足 2 家');
+          await sels.nth(0).click();
+          await page.waitForTimeout(200);
+          await sels.nth(1).click();
+          await page.waitForTimeout(300);
+          const confirm = page.getByRole('button', { name: '确定', exact: true }).last();
+          await expect(confirm).toBeEnabled({ timeout: 8000 });
+          await confirm.click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+          await closeBasket();
+          fp = await objectFingerprint();
+        }
+        if (fp.empty) throw new Error('回填后对象区仍为空（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+        if (!fp.fromBasket && fp.tagCount < 1 && !/有限公司|股份有限公司/.test(fp.snippet)) {
+          throw new Error('对象区未见已选企业标记');
+        }
+      };
+      await ensureBasketEnterprises(2);
+      await ensureConfigWithObjects();
+      const obj0 = await objectFingerprint();
+      if (obj0.empty) throw new Error('对象区未见已回填企业');
+      const personalTplName = '技术力评估个人模板';
+      const stepUpBtn = () =>
+        page.locator('table tbody tr').filter({ has: page.locator('.arco-checkbox-checked') }).first().locator('.arco-input-number-step-button').first();
+      const ensurePersonalTemplateWeights = async () => {
+        let pop = await openTemplateDropdown();
+        let personalItem = pop.getByText(personalTplName);
+        if (await personalItem.count()) {
+          await personalItem.first().click();
+          await page.waitForTimeout(700);
+          const w = await readWeights();
+          if (w.length === 5) return w;
+        } else {
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(200);
+        }
+        await pickTemplate(/技术力标准模板|系统技术力模板/);
+        await stepUpBtn().click({ timeout: 5000 });
+        await page.waitForTimeout(350);
+        const wDraft = await readWeights();
+        if (wDraft.join(',') === DEFAULT_W.join(',')) throw new Error('调节钮未改变权重，无法造个人模板');
+        await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const input = page.getByPlaceholder(/模板名称|便于识别/).first();
+        await expect(input).toBeVisible({ timeout: 8000 });
+        await input.fill(personalTplName);
+        const saveBtn = page.getByRole('button', { name: /保存模板|确定/ }).filter({ hasText: /保存|确定/ }).last();
+        if (await saveBtn.count()) await saveBtn.click({ timeout: 8000 });
+        else await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        pop = await openTemplateDropdown();
+        personalItem = pop.getByText(personalTplName);
+        if (!(await personalItem.count())) throw new Error('保存后仍不见个人模板（ticket=ENV-EVAL-TECH-PERSONAL-TPL-001）');
+        await personalItem.first().click();
+        await page.waitForTimeout(700);
+        const wSaved = await readWeights();
+        if (wSaved.length !== 5) throw new Error('个人模板权重项数异常: ' + wSaved.join('/'));
+        return wSaved;
+      };
+      const wPersonal = await ensurePersonalTemplateWeights();
+      await pickTemplate(/技术力标准模板|系统技术力模板/);
+      const wSys0 = await readWeights();
+      await stepUpBtn().click({ timeout: 5000 });
+      await page.waitForTimeout(350);
+      const wModified = await readWeights();
+      if (wModified.join(',') === wSys0.join(',')) throw new Error('调节钮未改变权重');
+      await pickTemplate(/技术力标准模板|系统技术力模板/);
+      const wAfterSys = await readWeights();
+      if (wAfterSys.join(',') !== DEFAULT_W.join(',')) {
+        throw new Error('系统模板未恢复: ' + wAfterSys.join('/') + ' ≠ ' + DEFAULT_W.join('/'));
+      }
+      const objAfterSys = await objectFingerprint();
+      if (objAfterSys.empty && !obj0.empty) throw new Error('系统模板切换清空了对象区');
+      if (obj0.codes >= 2 && objAfterSys.codes < 2) throw new Error('系统模板切换丢失 URL enterprise_codes');
+      await page.evaluate((s) => { window.__FUNC00919 = s; }, { wPersonal, obj0, wModified });
+  - note: 2、点选个人模板后恢复其保存的指标与权重
+    assert: |-
+      const s = await page.evaluate(() => window.__FUNC00919);
+      if (!s || !s.wPersonal) throw new Error('前置状态缺失');
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const metricWeightInputs = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('.arco-checkbox-checked') })
+          .locator('.arco-input-number input');
+      const readWeights = async () => {
+        const spins = metricWeightInputs();
+        const n = await spins.count();
+        const vals = [];
+        for (let i = 0; i < n; i++) vals.push(String(await spins.nth(i).inputValue()));
+        return vals;
+      };
+      const openTemplateDropdown = async () => {
+        const trg = page.locator('.arco-select-view').filter({ hasText: /系统技术力|技术力标准|技术力.*模板|未保存|当前/ }).first();
+        await trg.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        return pop;
+      };
+      const pop = await openTemplateDropdown();
+      const personal = pop.getByText('技术力评估个人模板');
+      if (!(await personal.count())) throw new Error('未见技术力评估个人模板（ticket=ENV-EVAL-TECH-PERSONAL-TPL-001）');
+      await personal.first().click();
+      await page.waitForTimeout(700);
+      const wNow = await readWeights();
+      if (wNow.join(',') !== s.wPersonal.join(',')) {
+        throw new Error('个人模板未恢复: ' + wNow.join('/') + ' ≠ ' + s.wPersonal.join('/'));
+      }
+  - note: 3、模板加载不恢复企业对象
+    assert: |-
+      const s = await page.evaluate(() => window.__FUNC00919);
+      if (!s || !s.obj0) throw new Error('前置状态缺失');
+      const main = () => page.locator('main.app-main').first();
+      const t = await main().innerText().catch(() => '');
+      const urlNow = page.url();
+      const tagCount = await main().locator('.arco-tag').count();
+      const codes = (urlNow.match(/enterprise_codes/g) || []).length;
+      if (/暂未选择评估对象|请先在对比篮/.test(t)) throw new Error('模板切换后对象区被清空');
+      if (s.obj0.fromBasket && !/来自对比篮/.test(t) && !/source=compare-basket/.test(urlNow)) {
+        throw new Error('模板切换后丢失对比篮来源标记');
+      }
+      if (s.obj0.tagCount >= 1 && tagCount < 1 && !/有限公司|股份有限公司/.test(t)) {
+        throw new Error('模板切换后企业标签消失');
+      }
+      if (s.obj0.codes >= 2 && codes < 2) throw new Error('模板切换后 URL 企业参数减少');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·30888 路由 enterprise-center/evaluation?workspace=technology&mode=technology；对象回填同 FUNC-00904（picker 深链回退）。D2·系统模板文案「系统技术力模板 v1.0」兼匹配用例「技术力标准模板」。D2·个人模板名「技术力评估个人模板」；环境无则脚本自含调权+「保存为个人模板」造数。权重读已勾选指标行 .arco-input-number input（同 FUNC-00908）。由 P1-04 重写为 FUNC-00919。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

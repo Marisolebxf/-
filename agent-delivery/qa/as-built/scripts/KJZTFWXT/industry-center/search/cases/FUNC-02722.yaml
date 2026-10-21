@@ -1,0 +1,80 @@
+id: FUNC-02722
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02722
+priority: P0
+title: 我的方案进入管理后取消恢复管理按钮
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选已打开
+  - 我的方案中有「集成电路」
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  plans_row: .enterprise-search-history-row（含「我的方案」）
+  scheme_chip: .enterprise-search-history-tag → 集成电路
+  btn_manage: button.enterprise-search-history-action → 管理
+  btn_cancel_manage: button.enterprise-search-history-action → 取消
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 高级筛选 Tab、点管理/取消；三条预期在 expect 分步判定
+expect:
+  - note: 1、管理态下「集成电路」方案出现移除按钮
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const plansRow = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
+      await expect(plansRow).toBeVisible({ timeout: 10000 });
+      const chip = plansRow.locator('.enterprise-search-history-tag').filter({ hasText: '集成电路' }).first();
+      if ((await chip.count()) === 0) {
+        throw new Error('前置：我的方案中应有「集成电路」，当前未见该方案 chip');
+      }
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      const manageBtn = plansRow.getByRole('button', { name: '管理', exact: true });
+      await expect(manageBtn).toBeVisible({ timeout: 8000 });
+      await manageBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const dangerBtn = chip.locator('button.arco-btn-status-danger');
+      if ((await dangerBtn.count()) === 0) {
+        throw new Error('管理态下「集成电路」方案 chip 内应出现移除（删除）按钮');
+      }
+      await expect(dangerBtn.first()).toBeVisible({ timeout: 8000 });
+  - note: 2、出现「取消」
+    assert: |-
+      const plansRow = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
+      await expect(plansRow.getByRole('button', { name: '取消', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(plansRow.getByRole('button', { name: '管理', exact: true })).toHaveCount(0);
+  - note: 3、取消后按钮恢复为「管理」
+    assert: |-
+      const plansRow = page.locator('.enterprise-search-history-row').filter({ hasText: '我的方案' }).first();
+      await plansRow.getByRole('button', { name: '取消', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      await expect(plansRow.getByRole('button', { name: '管理', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(plansRow.getByRole('button', { name: '取消', exact: true })).toHaveCount(0);
+      const chip = plansRow.locator('.enterprise-search-history-tag').filter({ hasText: '集成电路' }).first();
+      await expect(chip.locator('button.arco-btn-status-danger')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab 后 Hub「我的方案」行 .enterprise-search-history-row。
+  管理/取消为 .enterprise-search-history-action 文案按钮；管理态 chip 内删除为 arco danger text + IconDelete（非 aria-label 移除）。
+  前置方案名「集成电路」与 scout-tab-高级筛选 探针一致。2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout+SearchHub 源码。
+  登录与关内部评审由 runner 前置。B 档零 allow_skip。

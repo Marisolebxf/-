@@ -1,0 +1,175 @@
+id: FUNC-02212
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02212
+priority: P0
+title: 创建 PDF 报告到达可下载
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已登录；已打开培育推荐分析成功结果（assert 自含恢复/发起）
+locators:
+  pdf_cta: button「创建 / 查看 PDF 报告」或 data-recruit-open-pdf-report
+  output_modal: 弹窗标题「推荐结果输出任务」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 成功结果→点 PDF 报告 CTA；输出任务弹层四阶段与就绪按钮在 expect
+expect:
+  - note: 1、弹窗标题「推荐结果输出任务」 2、四阶段步骤条 3、就绪后「下载产物」「查看 PDF」
+    assert: |-
+      const REPORT_STAGES = ['提交输出任务', '组装结果快照', '生成报告产物', '可下载归档'];
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const isSuccessResult = async () => {
+        const t = await stack().innerText().catch(() => '');
+        const url = page.url();
+        const titleVis = await stack().getByText('培育推荐分析结果').first().isVisible().catch(() => false);
+        return (
+          titleVis &&
+          !/可视化分析过程/.test(t) &&
+          (url.includes('analysis_view=result') || /培育推荐分析结果/.test(t))
+        );
+      };
+      const waitResultShell = async (timeoutMs = 120000) => {
+        const title = () => stack().getByText('培育推荐分析结果').first();
+        const t0 = Date.now();
+        let last = '';
+        while (Date.now() - t0 < timeoutMs) {
+          await page.waitForTimeout(500);
+          last = await stack().innerText().catch(() => '');
+          const titleVis = await title().isVisible().catch(() => false);
+          if (titleVis && !/可视化分析过程/.test(last)) return last;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && titleVis) return last;
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CULTIVATE-ANALYSIS-FAIL-001');
+          }
+        }
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) throw new Error('ENV-CULTIVATE-ASYNC-NO-SUCCESS-001');
+        throw new Error('未在超时内到达培育推荐分析结果: ' + last.slice(0, 200));
+      };
+      const tryRestoreCompletedFilter = async () => {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
+        const tab = (await byKey.count()) ? byKey.first() : byName.first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+            await btn.click({ timeout: 15000 });
+            try {
+              await waitResultShell(60000);
+              return await isSuccessResult();
+            } catch (e) {
+              if (String(e.message || e).includes('ENV-CULTIVATE-ANALYSIS-FAIL-001')) throw e;
+              return false;
+            }
+          }
+        }
+        return false;
+      };
+      const runFilterAnalysis = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.getByRole('tab', { name: '条件筛选推荐' }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        await waitResultShell();
+      };
+      const reachSuccessResult = async () => {
+        if (await isSuccessResult()) return;
+        if (await tryRestoreCompletedFilter()) return;
+        await runFilterAnalysis();
+        if (!(await isSuccessResult())) {
+          throw new Error('发起/恢复后仍未在培育推荐分析成功结果页');
+        }
+      };
+      const pickPdfCta = async () => {
+        const st = stack();
+        const dataBtn = st.locator('[data-recruit-open-pdf-report]').first();
+        if (await dataBtn.count() && await dataBtn.isVisible().catch(() => false)) return dataBtn;
+        const named = st.getByRole('button', { name: /创建\s*\/\s*查看\s*PDF\s*报告/ }).first();
+        if (await named.count() && await named.isVisible().catch(() => false)) return named;
+        const pageBtn = page.locator('[data-recruit-open-pdf-report], button').filter({ hasText: /PDF\s*报告/ }).first();
+        if (await pageBtn.count() && await pageBtn.isVisible().catch(() => false)) return pageBtn;
+        return null;
+      };
+      const outputModal = () =>
+        page.locator('.arco-modal:visible, .arco-modal-wrapper:visible .arco-modal').filter({ hasText: '推荐结果输出任务' }).last();
+      const waitPdfTaskReady = async (rounds = 36) => {
+        const modal = outputModal();
+        for (let i = 0; i < rounds; i++) {
+          const body = await modal.innerText().catch(() => '');
+          if (/报告生成失败|创建报告任务失败/.test(body) && !/报告产物已就绪/.test(body)) {
+            throw new Error('PDF 输出任务进入失败态: ' + body.slice(0, 220));
+          }
+          const dl = modal.getByRole('button', { name: '下载产物' });
+          const pdf = modal.getByRole('button', { name: '查看 PDF' });
+          if ((await dl.count()) && (await pdf.count())) {
+            const okDl = await dl.first().isVisible().catch(() => false);
+            const okPdf = await pdf.first().isVisible().catch(() => false);
+            if (okDl && okPdf) return modal;
+          }
+          await page.waitForTimeout(2500);
+        }
+        throw new Error('环境闸门 ENV-CULTIVATE-PDF-TASK-NO-SUCCESS-001：推荐结果输出任务超时未就绪（未见「下载产物」「查看 PDF」）');
+      };
+      await dismissBasket();
+      await expect(stack()).toBeVisible({ timeout: 15000 });
+      try {
+        await reachSuccessResult();
+      } catch (e) {
+        const msg = String(e.message || e);
+        if (msg.includes('ENV-CULTIVATE-ANALYSIS-FAIL-001')) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达培育推荐分析成功结果以测 PDF 报告（与 FUNC-02188/02196 同源 D4）');
+        }
+        if (msg.includes('ENV-CULTIVATE-ASYNC-NO-SUCCESS-001')) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：无法在超时内到达条件筛选「培育推荐分析结果」以测 PDF 报告（edu svcz 与 02188/02196 同源 D4）');
+        }
+        throw e;
+      }
+      const pdfBtn = await pickPdfCta();
+      if (!pdfBtn) {
+        throw new Error('结果区无「创建 / 查看 PDF 报告」入口（D3·ticket=ENV-CULTIVATE-NO-PDF-CTA-001）');
+      }
+      await expect(pdfBtn).toBeEnabled({ timeout: 8000 });
+      await pdfBtn.click({ timeout: 10000 });
+      const modal = outputModal();
+      await expect(modal).toBeVisible({ timeout: 15000 });
+      await expect(modal).toContainText('推荐结果输出任务', { timeout: 8000 });
+      for (const stage of REPORT_STAGES) {
+        await expect(modal.getByText(stage, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const readyModal = await waitPdfTaskReady();
+      await expect(readyModal.getByRole('button', { name: '下载产物' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(readyModal.getByRole('button', { name: '查看 PDF' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation。CTA=data-recruit-open-pdf-report /「创建 / 查看 PDF 报告」→ RecruitOutputTaskModal 四阶段与 lumen REPORT_STAGES 一致；完成态「下载产物」「查看 PDF」。前置=成功态直读→最近分析已完成条件筛选恢复→产业类别人工智能发起。D4·2026-10-20 rewrite-FUNC-02212 svcz 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（无可恢复已完成+新发起终态推荐分析失败，PDF 弹窗断言未触达；与 02188/02196/01424 同源）。主分析无异步成功→ ENV-CULTIVATE-ASYNC-NO-SUCCESS-001；输出任务超时→ ENV-CULTIVATE-PDF-TASK-NO-SUCCESS-001；无 CTA→ ENV-CULTIVATE-NO-PDF-CTA-001。登录与关评审由 runner 前置。B 档零 allow_skip。

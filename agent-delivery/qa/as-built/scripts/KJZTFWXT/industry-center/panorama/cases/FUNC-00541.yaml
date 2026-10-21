@@ -1,0 +1,106 @@
+id: FUNC-00541
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00541
+priority: P1
+title: 图控放大缩小刷新全屏来回切换不改变已选筛选
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+tier: B
+preconditions:
+  - 当前为「图谱」视图；筛选为默认已选
+locators:
+  zoom_in: aria-label「放大」
+  zoom_out: aria-label「缩小」
+  refresh: aria-label「刷新」
+  fullscreen: aria-label「全屏」
+  exit_fullscreen: aria-label「退出全屏」
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 依次点击放大、缩小、刷新、全屏、退出全屏；全屏态与筛选保持由 expect 判定
+expect:
+  - note: 前置：图谱视图且默认筛选；记录分析对象与所属产业链进入前已选值
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
+      await expect(graphRadio).toBeVisible({ timeout: 15000 });
+      const cls0 = (await graphRadio.getAttribute('class')) || '';
+      if (!cls0.includes('arco-radio-checked')) {
+        await graphRadio.click({ timeout: 10000 });
+        await page.waitForTimeout(400);
+      }
+      const cls = (await graphRadio.getAttribute('class')) || '';
+      if (!cls.includes('arco-radio-checked')) throw new Error('图谱视图未选中: ' + cls);
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      await expect(objectSelects.first()).toBeVisible({ timeout: 8000 });
+      if ((await objectSelects.count()) < 2) throw new Error('分析对象下拉不足 2 个');
+      globalThis.__func00541_objectLeft = await read(objectSelects.nth(0));
+      globalThis.__func00541_objectRight = await read(objectSelects.nth(1));
+      const chain = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      globalThis.__func00541_chain = await read(chain);
+      if (!globalThis.__func00541_objectLeft || !globalThis.__func00541_chain) {
+        throw new Error('进入前筛选未齐选 object=' + globalThis.__func00541_objectLeft + ' chain=' + globalThis.__func00541_chain);
+      }
+      for (const a of ['放大', '缩小', '刷新', '全屏']) {
+        const b = page.locator(`[aria-label="${a}"]`).first();
+        await expect(b).toBeVisible({ timeout: 8000 });
+        await expect(b).toBeEnabled();
+      }
+  - note: 1、按步骤点击放大、缩小、刷新后画布仍可用
+    assert: |-
+      await page.locator('[aria-label="放大"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('[aria-label="缩小"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('[aria-label="刷新"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.locator('canvas').first()).toBeVisible({ timeout: 10000 });
+  - note: 2、进入全屏后按钮为「退出全屏」；3、退出后主标题与筛选仍为进入前已选值
+    assert: |-
+      await page.locator('[aria-label="全屏"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const exitBtn = page.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      await expect(exitBtn).toBeEnabled();
+      await exitBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const h1 = page.locator('#panorama-workspace-title');
+      await expect(h1).toHaveText('半导体与集成电路全景图谱', { timeout: 8000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      const left = await read(objectSelects.nth(0));
+      const right = await read(objectSelects.nth(1));
+      const chain = await read(ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first());
+      if (left !== globalThis.__func00541_objectLeft || right !== globalThis.__func00541_objectRight) {
+        throw new Error('退出全屏后分析对象变化: before=' + globalThis.__func00541_objectLeft + '/' + globalThis.__func00541_objectRight + ' after=' + left + '/' + right);
+      }
+      if (chain !== globalThis.__func00541_chain) {
+        throw new Error('退出全屏后所属产业链变化: before=' + globalThis.__func00541_chain + ' after=' + chain);
+      }
+      await expect(page.locator('[aria-label="全屏"]').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；用例步骤含点「退出全屏」非 Escape。
+  分析对象两级与所属产业链在 panorama-analysis-context 内读取；进入前快照与退出后逐字比对。
+  对比篮可见才关。登录与关内部评审由 runner 前置。B 档。

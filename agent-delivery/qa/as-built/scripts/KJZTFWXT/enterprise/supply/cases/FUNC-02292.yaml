@@ -1,0 +1,179 @@
+id: FUNC-02292
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02292
+priority: P0
+title: 结果页重新分析后到达新的成功结果
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条已完成的供应链结果（assert 自含最近分析恢复）
+locators:
+  reanalyze: button「重新分析」
+  restore: button「恢复结果」
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 结果态点重新分析→等待新成功结果；任务 ID 变化在 expect
+expect:
+  - note: 1、不停留在过程页 2、出现新的成功结果页 3、新结果任务标识与点击前不同
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const extractTaskId = () => {
+        try {
+          return new URL(page.url()).searchParams.get('task_id');
+        } catch {
+          return null;
+        }
+      };
+      const bodyText = async () => main().innerText().catch(() => '');
+      const isProcessPage = async () => {
+        if (/view=processing/.test(page.url())) return true;
+        const gen = page.getByText('企业供应链关系分析生成中').first();
+        if (await gen.isVisible().catch(() => false)) return true;
+        const proc = page.getByText('可视化分析过程').first();
+        const sum = page.getByText('任务摘要').first();
+        if ((await proc.isVisible().catch(() => false)) && !(await sum.isVisible().catch(() => false))) {
+          return true;
+        }
+        return false;
+      };
+      const isSuccessResult = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        if (await isProcessPage()) return false;
+        const summary = page.getByText('任务摘要').first();
+        const graph = page.getByText('供应链图谱').first();
+        return (
+          (await summary.isVisible().catch(() => false)) &&
+          (await graph.isVisible().catch(() => false))
+        );
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const restoreFirstCompleted = async () => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (!(await restore.count())) {
+          throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+        }
+        await restore.first().click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+        await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 25000 });
+        await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 25000 });
+      };
+      const reanalyzeBtn = async () => {
+        const scopes = [main(), page];
+        for (const scope of scopes) {
+          const b = scope.getByRole('button', { name: '重新分析', exact: true });
+          if (await b.count() && (await b.first().isVisible().catch(() => false))) return b.first();
+        }
+        return null;
+      };
+      const waitForNewSuccess = async (oldTid) => {
+        let reloadedFor = null;
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(2000);
+          await dismissBasket();
+          const cur = extractTaskId();
+          const u = page.url();
+          const t = await bodyText();
+          if (cur && oldTid && cur !== oldTid) {
+            if (/分析失败|本次分析失败/.test(t) && !(await isProcessPage())) {
+              throw new Error('环境闸门 ENV-SUPPLY-NEWTASK-FAIL-001：重新分析终态失败 ' + u);
+            }
+            if (await isSuccessResult()) return cur;
+            if (/任务摘要/.test(t) && /分析对象/.test(t) && /供应链图谱/.test(t) && !(await isProcessPage())) {
+              return cur;
+            }
+            if (reloadedFor !== cur && /view=result/.test(u)) {
+              reloadedFor = cur;
+              await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
+              await page.waitForTimeout(2500);
+              continue;
+            }
+            if (i === 25 || i === 50) {
+              await openRecentTab();
+              const rows = page.getByRole('button', { name: '恢复结果' });
+              const n = await rows.count();
+              for (let r = 0; r < Math.min(n, 5); r++) {
+                let row = rows.nth(r).locator('xpath=ancestor::tr[1]');
+                if ((await row.count()) < 1) {
+                  row = rows.nth(r).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+                }
+                const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+                if (rt.includes(cur) && /已完成/.test(rt)) {
+                  await rows.nth(r).click({ timeout: 12000 });
+                  await page.waitForTimeout(2000);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        throw new Error(
+          '环境闸门 ENV-SUPPLY-ASYNC-NO-SUCCESS-001：180s 内重新分析未到新成功结果，旧=' +
+            oldTid +
+            ' 当前=' +
+            page.url()
+        );
+      };
+      await restoreFirstCompleted();
+      const beforeTid = extractTaskId();
+      if (!beforeTid || !/^RISK-\d{8}-\d{3}$/.test(beforeTid)) {
+        const t = await bodyText();
+        const m = t.match(/RISK-\d{8}-\d{3}/);
+        if (!m) throw new Error('结果页未见 RISK 任务标识：' + page.url());
+      }
+      const tidBefore = beforeTid || (await bodyText()).match(/RISK-\d{8}-\d{3}/)?.[0];
+      if (!tidBefore) throw new Error('无法读取点击前任务 ID');
+      await dismissBasket();
+      const reBtn = await reanalyzeBtn();
+      if (!reBtn) throw new Error('环境闸门 ENV-SUPPLY-REANALYZE-001：结果区无「重新分析」');
+      await expect(reBtn).toBeEnabled({ timeout: 8000 });
+      await reBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      const tidAfter = await waitForNewSuccess(tidBefore);
+      globalThis.__func02292_before = tidBefore;
+      globalThis.__func02292_after = tidAfter;
+      globalThis.__func02292_done = true;
+      if (tidBefore === tidAfter) throw new Error('重新分析后任务 ID 未变化：' + tidBefore);
+      if (await isProcessPage()) throw new Error('终态仍停留在过程页');
+      await expect(page).toHaveURL(/view=result/);
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 10000 });
+  - note: 2、成功结果页任务摘要与图谱区可见（与用例「新的成功结果」一致）
+    assert: |-
+      if (!globalThis.__func02292_done) throw new Error('前置：重新分析流程未完成');
+      await expect(page).toHaveURL(/view=result/);
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 8000 });
+      const t = await page.locator('main').first().innerText().catch(() => '');
+      if (/企业供应链关系分析生成中|可视化分析过程/.test(t) && !/任务摘要/.test(t)) {
+        throw new Error('仍停留在过程页文案');
+      }
+  - note: 3、URL 中 task_id 与点击前不同
+    assert: |-
+      if (!globalThis.__func02292_done) throw new Error('前置：重新分析流程未完成');
+      const after = new URL(page.url()).searchParams.get('task_id') || globalThis.__func02292_after;
+      const before = globalThis.__func02292_before;
+      if (!after || !before) throw new Error('缺少 task_id 比对');
+      if (after === before) throw new Error('新结果 task_id 与点击前相同：' + before);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析首条「恢复结果」进成功结果（任务摘要+供应链图谱）。步骤=点「重新分析」无确认框（用例册）→轮询至新 task_id+结果区。新结果 URL 空壳时 reload/最近分析按 task_id 恢复。D4·2026-10-20 rewrite-FUNC-02292 svcz 3/3 expect 绿。无已完成→ENV-SUPPLY-NO-COMPLETED-001；无重新分析→ENV-SUPPLY-REANALYZE-001；终态失败→ENV-SUPPLY-NEWTASK-FAIL-001；过程不结束→ENV-SUPPLY-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。A 档零 allow_skip。

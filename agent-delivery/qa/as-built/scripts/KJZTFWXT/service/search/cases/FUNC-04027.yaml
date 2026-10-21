@@ -1,0 +1,117 @@
+id: FUNC-04027
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04027
+priority: P1
+tier: B
+title: 备选-结果页清空条件-回到检索壳
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 当前为「暂无匹配的服务机构」空结果态
+locators:
+  search_input: textbox placeholder「用一句话描述机构需求」
+  search_btn: button「搜索」
+  empty_hint: 文案「暂无匹配的服务机构」
+  clear_result_btn: button「清空条件」（结果空态区，非高级筛选编辑区）
+  leading_section: heading「技术力领先机构」
+  result_heading: heading「检索结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进页 → 智能检索搜出无匹配 → 点结果区「清空条件」；预期在 expect
+expect:
+  - note: 前置：智能检索得到「暂无匹配的服务机构」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2500);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1500);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 15000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 20000 });
+      };
+      await enterSvcSearch();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏进页后仍为 SPA404 url=' + page.url());
+      }
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      await inp.fill('契约卡面');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(1500);
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('暂无匹配的服务机构')).toBeVisible({ timeout: 10000 });
+      const emptyBlock = page.locator('main').filter({ hasText: '暂无匹配的服务机构' });
+      const clearInResult = emptyBlock.getByRole('button', { name: '清空条件' }).first();
+      if ((await clearInResult.count()) === 0) {
+        const alt = page.getByRole('button', { name: '清空条件' }).last();
+        await expect(alt).toBeVisible({ timeout: 8000 });
+        await alt.click({ timeout: 8000 });
+      } else {
+        await expect(clearInResult).toBeVisible({ timeout: 8000 });
+        await clearInResult.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(800);
+      globalThis.__func04027_cleared = true;
+  - note: 1、检索结果区消失
+    assert: |-
+      if (!globalThis.__func04027_cleared) throw new Error('前置：结果页清空条件未完成');
+      const resultH = page.getByRole('heading', { name: '检索结果', exact: true });
+      const vis = await resultH.isVisible().catch(() => false);
+      if (vis) throw new Error('清空后仍显示「检索结果」标题');
+      const emptyStill = page.getByText('暂无匹配的服务机构');
+      if (await emptyStill.isVisible().catch(() => false)) {
+        throw new Error('清空后仍显示「暂无匹配的服务机构」');
+      }
+  - note: 2、重新出现「技术力领先机构」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '技术力领先机构', exact: true })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('示例查询')).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04027；无匹配前置词「契约卡面」（对齐 04035 无法解析词空态）。
+  结果空态「清空条件」与高级筛选编辑区同名按钮区分：限定 main 且含暂无匹配文案区块内点击。
+  清空后壳页复现「技术力领先机构」+「示例查询」，检索结果 heading 与空态文案均消失。无确认框。

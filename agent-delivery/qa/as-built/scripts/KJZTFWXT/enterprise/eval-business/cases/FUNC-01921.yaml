@@ -1,0 +1,97 @@
+id: FUNC-01921
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01921
+priority: P0
+title: 恢复结果打开该任务的商业力评估结果
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 「最近评估」中有状态为已完成的任务
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  result_heading: 文本「商业力评估结果」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 最近评估→已完成行「恢复结果」；进入结果与页眉一致性判定在 expect
+expect:
+  - note: 1、进入「商业力评估结果」；2、任务 ID 与该行一致；3、能看到对象家数与生成时间
+    assert: |-
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const TASK_RE = /(DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const taskKey = (id) => String(id || '').replace(/^DEMO-/, '');
+      const sameTaskId = (a, b) => !!a && !!b && (a === b || taskKey(a) === taskKey(b));
+      const pickCompletedRowRestore = async () => {
+        const buttons = page.getByRole('button', { name: '恢复结果' });
+        await buttons.first().waitFor({ state: 'visible', timeout: 10000 });
+        const n = await buttons.count();
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && !/已完成/.test(txt)) continue;
+          const m = txt.match(TASK_RE);
+          if (m) return { btn, tid: m[1] };
+        }
+        const fallback = buttons.first();
+        const body = await main().innerText().catch(() => '');
+        const fm = body.match(TASK_RE);
+        if (!fm) throw new Error('最近评估无已完成任务可「恢复结果」');
+        return { btn: fallback, tid: fm[1] };
+      };
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 });
+      const { btn, tid } = await pickCompletedRowRestore();
+      globalThis.__func01921_rowTaskId = tid;
+      await btn.click({ timeout: 8000 });
+      const t0 = Date.now();
+      while (Date.now() - t0 < 30000) {
+        if (/view=result/.test(page.url())) break;
+        await page.waitForTimeout(500);
+      }
+      await expect(page).toHaveURL(/view=result/);
+      await expect(page.getByText('商业力评估结果').first()).toBeVisible({ timeout: 15000 });
+      const rowTid = globalThis.__func01921_rowTaskId;
+      const url = page.url();
+      let urlTid = null;
+      try {
+        urlTid = new URL(url).searchParams.get('task_id');
+      } catch {
+        urlTid = (url.match(/task_id=([^&]+)/) || [])[1];
+      }
+      const mainText = await main().innerText().catch(() => '');
+      const pageTid = urlTid || (mainText.match(TASK_RE) || [])[0];
+      if (!sameTaskId(pageTid, rowTid)) {
+        throw new Error('结果页任务 ID 与历史行不一致：行=' + rowTid + ' 页=' + pageTid + ' url=' + url);
+      }
+      const tidVisible = rowTid.includes('DEMO-') ? taskKey(rowTid) : rowTid;
+      await expect(main().getByText(new RegExp(tidVisible.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).first()).toBeVisible({ timeout: 10000 });
+      let om = mainText.match(/对象[：:]\s*(\d+)\s*家/);
+      if (!om) om = mainText.match(/纳入评价企业[\s\S]{0,24}?(\d+)\s*家/);
+      if (!om) throw new Error('结果页未见对象家数');
+      const objN = parseInt(om[1], 10);
+      if (!(objN >= 1)) throw new Error('对象家数无效：' + objN);
+      await expect(main().getByText(new RegExp('对象[：:]\\s*' + objN + '\\s*家')).first()).toBeVisible({ timeout: 8000 });
+      let tm = mainText.match(/生成时间[：:]\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})/);
+      if (!tm) tm = mainText.match(/生成时间[：:]\s*(\d{4}\/\d{1,2}\/\d{1,2}\s+\d{2}:\d{2}:\d{2})/);
+      if (!tm) throw new Error('结果页未见生成时间');
+      await expect(main().getByText(new RegExp('生成时间[：:]\\s*' + tm[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01921 主流程「恢复结果」：最近评估选首条含「已完成」+ (DEMO-)EVAL-* 的行点同行「恢复结果」，断言 view=result、「商业力评估结果」、URL task_id 与历史行同族（30888 常见 DEMO-EVAL 前缀、页眉可省略 DEMO-）。对象家数与生成时间可见。30888 路由 /enterprise-center/evaluation（用例 TRACE 写 /enterprise/evaluation 为 D1）。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

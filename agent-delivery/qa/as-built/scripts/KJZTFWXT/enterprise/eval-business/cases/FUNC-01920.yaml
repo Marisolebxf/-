@@ -1,0 +1,118 @@
+id: FUNC-01920
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01920
+priority: P0
+title: 行业对标页签切换诊断区
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开评估结果（as-built：最近评估→恢复结果）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  diag_block: 文本「商业诊断与明细」
+  benchmark_tab: tab「行业对标」（tablist「商业诊断与明细分段」）
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 结果态→点「行业对标」；判定在 expect
+expect:
+  - note: 1、「行业对标」处于选中
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const scrollDiagIntoView = async () => {
+        const h = page.getByText('商业诊断与明细', { exact: true }).first();
+        if (await h.count()) {
+          await h.scrollIntoViewIfNeeded().catch(() => {});
+          await page.waitForTimeout(500);
+        }
+      };
+      const resultReady = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        const t = await main().innerText().catch(() => '');
+        return t.includes('商业诊断与明细') && t.includes('经营诊断');
+      };
+      const openResultViaHistory = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 });
+        let restore = page.getByRole('button', { name: '恢复结果' });
+        if ((await restore.count()) < 1) restore = page.getByText('恢复结果', { exact: true });
+        await restore.first().waitFor({ state: 'visible', timeout: 10000 });
+        if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」');
+        await restore.first().click({ timeout: 8000 });
+        const t0 = Date.now();
+        while (Date.now() - t0 < 30000) {
+          if (await resultReady()) break;
+          await page.waitForTimeout(500);
+        }
+        if (!(await resultReady())) throw new Error('恢复结果后未见商业诊断与明细：' + page.url());
+      };
+      if (!(await resultReady())) {
+        if (globalThis.__func01896_onResult || globalThis.__func01898_onResult || globalThis.__func01919_onResult) {
+          await page.waitForTimeout(500);
+        }
+        if (!(await resultReady())) await openResultViaHistory();
+      }
+      await expect(page).toHaveURL(/view=result/);
+      await scrollDiagIntoView();
+      const tablist = page.getByRole('tablist', { name: '商业诊断与明细分段' });
+      await expect(tablist).toBeVisible({ timeout: 12000 });
+      const benchmarkTab = tablist.getByRole('tab', { name: '行业对标', exact: true });
+      await benchmarkTab.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(benchmarkTab).toHaveAttribute('aria-selected', 'true');
+      globalThis.__func01920_onResult = true;
+  - note: 2、诊断区展示行业对标内容
+    assert: |-
+      if (!globalThis.__func01920_onResult) throw new Error('前置：未切换到行业对标页签');
+      const main = () => page.locator('main.app-main').first();
+      await expect(main().getByText('商业诊断与明细', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const tablist = page.getByRole('tablist', { name: '商业诊断与明细分段' });
+      const benchmarkTab = tablist.getByRole('tab', { name: '行业对标', exact: true });
+      await expect(benchmarkTab).toHaveAttribute('aria-selected', 'true');
+      const diagSection = await page.evaluate(() => {
+        const headings = [...document.querySelectorAll('main *')].filter((el) => (el.textContent || '').trim() === '商业诊断与明细');
+        let root = headings[0]?.closest('section, [class*="SectionPanel"], .arco-card') || headings[0]?.parentElement;
+        for (let i = 0; i < 8 && root; i++) {
+          if (root.querySelector('[role="tablist"]')) break;
+          root = root.parentElement;
+        }
+        const panel = root || document.querySelector('main');
+        const text = panel?.innerText || '';
+        const hasBenchmarkEmpty = /行业对标规则|暂不生成行业对标|行业对标结论/.test(text);
+        const hasBenchmarkTable = /行业对标/.test(text) && /对标|百分位|行业均值|行业中位/.test(text);
+        const hasCanvas = !!panel?.querySelector('canvas');
+        const benchmarkTabSelected = panel?.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.includes('行业对标');
+        const diagnosisTableHidden = !panel?.querySelector('.arco-table');
+        return { hasBenchmarkEmpty, hasBenchmarkTable, hasCanvas, benchmarkTabSelected, diagnosisTableHidden, snippet: text.slice(0, 900) };
+      });
+      if (!diagSection.benchmarkTabSelected) throw new Error('行业对标 tab 未处于选中态');
+      const benchmarkContentOk = diagSection.hasBenchmarkEmpty || diagSection.hasBenchmarkTable || diagSection.hasCanvas;
+      if (!benchmarkContentOk) {
+        throw new Error('诊断区未见行业对标内容（空态/图表/对标文案）：' + JSON.stringify(diagSection));
+      }
+      const emptyDesc = main().locator('.arco-empty').filter({ hasText: /行业对标/ });
+      const emptyVis = (await emptyDesc.count()) > 0 && (await emptyDesc.first().isVisible().catch(() => false));
+      if (!emptyVis && !diagSection.hasBenchmarkTable && !diagSection.hasCanvas) {
+        await expect(main().getByText(/行业对标规则|暂不生成行业对标/).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例前置「已打开评估结果」：单跑经「最近评估→恢复结果」。30888 as-built 行业对标页签当前多为 Arco Empty（当前缺少可靠的行业对标规则，暂不生成行业对标结论）；未来有规则数据时可为图表/表——expect2 多路径。子 Tab 为 role=tab + tablist aria-label「商业诊断与明细分段」。登录与关内部评审由 runner 会话前置。tier B，无 allow_skip。

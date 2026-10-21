@@ -1,0 +1,54 @@
+id: FUNC-05409
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05409
+priority: P1
+title: 打开查看引育名单见招引与培育两项
+story: US-ENT-CMP-04
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  view_lists: button「查看引育名单」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 点击「查看引育名单」；菜单项在 expect 判定
+expect:
+  - note: 对比篮已打开并点击「查看引育名单」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const viewLists = panel.getByRole('button', { name: /查看引育名单/ }).first();
+      await expect(viewLists).toBeVisible({ timeout: 8000 });
+      await viewLists.scrollIntoViewIfNeeded().catch(() => {});
+      const dis = await viewLists.isDisabled();
+      const cls = (await viewLists.getAttribute('class')) || '';
+      if (dis || /arco-btn-disabled/.test(cls)) {
+        throw new Error('对比篮已打开时「查看引育名单」应可点击');
+      }
+      await viewLists.click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      globalThis.__func05409_menuOpen = true;
+  - note: 1、出现「查看招引候选名单」
+    assert: |-
+      if (!globalThis.__func05409_menuOpen) throw new Error('前置未点击「查看引育名单」');
+      const item = page.getByText('查看招引候选名单', { exact: true }).first();
+      await expect(item).toBeVisible({ timeout: 8000 });
+  - note: 2、出现「查看培育候选名单」
+    assert: |-
+      if (!globalThis.__func05409_menuOpen) throw new Error('前置未点击「查看引育名单」');
+      const item = page.getByText('查看培育候选名单', { exact: true }).first();
+      await expect(item).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。下拉项文案与 EnterpriseCompareBasketView a-doption 一致（2026-10-20）。本条只验菜单两项可见，不点击进名单页（05425/05426）。登录与关评审由 runner 前置。B 档零 allow_skip。

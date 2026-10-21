@@ -1,0 +1,203 @@
+id: FUNC-00948
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00948
+priority: P1
+title: 两Tab可往返且返回当前分析后当次配置保留
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已带入对象并调整过权重
+  - 至少存在 1 条历史评估任务
+locators:
+  tab_current: tab「当前分析」
+  tab_recent: tab「最近评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 回填对象并调权重→最近评估→当前分析；列表与配置保留、不新增任务判定在 expect
+expect:
+  - note: 「最近评估」以列表呈现历史评估任务
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const openAndFillObjects = async () => {
+        await ensureBasketEnterprises(2);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        if (!/enterprise_codes/.test(page.url())) {
+          const openCta = page.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+          await expect(openCta).toBeVisible({ timeout: 10000 });
+          await openCta.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+          const sels = page.locator('[aria-label^="选择 "]');
+          if (await sels.count() < 2) throw new Error('对比篮可选企业不足 2 家');
+          await sels.nth(0).click({ force: true });
+          await page.waitForTimeout(200);
+          await sels.nth(1).click({ force: true });
+          await page.waitForTimeout(200);
+          await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+          await page.waitForTimeout(1500);
+        }
+        await dismissBasket();
+        const overlay = page.getByText('选择分析企业', { exact: true });
+        if (await overlay.isVisible().catch(() => false)) {
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(400);
+        }
+        await expect(page).toHaveURL(/enterprise_codes/, { timeout: 10000 });
+      };
+      const bumpMarketWeight = async () => {
+        const marketRow = () => page.locator('main [aria-label="选择指标：市场"]').locator('xpath=ancestor::tr[1]');
+        const marketWeight = () => marketRow().locator('[aria-label="市场权重"]');
+        await expect(marketRow()).toBeVisible({ timeout: 8000 });
+        const v0 = Number(await marketWeight().inputValue());
+        const btns = marketRow().locator('.arco-input-number-step-button');
+        if (await btns.count() < 1) throw new Error('市场权重调节钮缺失');
+        await btns.nth(0).click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        let v1 = Number(await marketWeight().inputValue());
+        if (!(v1 > v0) && (await btns.count()) >= 2) {
+          await btns.nth(1).click({ timeout: 8000 });
+          await page.waitForTimeout(450);
+          v1 = Number(await marketWeight().inputValue());
+        }
+        if (!(v1 > v0)) throw new Error('未能调高市场权重: ' + v0 + '→' + v1);
+        return String(v1);
+      };
+      const clickRecentTab = async () => {
+        let recent = page.locator('.enterprise-center-primary-tabs button[role=tab][data-tab-key="history"]');
+        if (!(await recent.count())) {
+          recent = page.locator('.global-workbench-tabs button[role=tab]').filter({ hasText: /^最近评估$/ });
+        }
+        if (!(await recent.count())) {
+          recent = page.getByRole('tab', { name: '最近评估', exact: true });
+        }
+        await recent.first().click({ timeout: 8000, force: true });
+        await page.waitForTimeout(800);
+        await expect(page).toHaveURL(/view=history/);
+      };
+      const countHistoryRows = async () => {
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        const cont = page.getByRole('button', { name: '继续查看' });
+        const rn = await restore.count();
+        const cn = await cont.count();
+        const tr = page.locator('main .arco-table-tr');
+        const tn = await tr.count();
+        if (rn + cn > 0) return rn + cn;
+        if (tn > 0) return tn;
+        const body = await page.locator('main').innerText().catch(() => '');
+        const taskM = body.match(/(DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/g);
+        return taskM ? taskM.length : 0;
+      };
+      await dismissBasket();
+      await openAndFillObjects();
+      const weightBefore = await bumpMarketWeight();
+      const configUrl = page.url();
+      globalThis.__func00948_snap = { w: weightBefore, configUrl };
+      await clickRecentTab();
+      const histN = await countHistoryRows();
+      if (histN < 1) throw new Error('前置不满足：最近评估无历史任务行（observed=' + histN + '）');
+      globalThis.__func00948_snap.h = histN;
+      await expect(page.locator('main .arco-table, main [class*="table"]').first()).toBeVisible({ timeout: 10000 });
+      const clickCurrentTab = async () => {
+        await dismissBasket();
+        const viaTab = await page.evaluate(() => {
+          const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+          const pool = [
+            ...document.querySelectorAll('button[role=tab][data-tab-key="current"]'),
+            ...document.querySelectorAll('.global-workbench-tabs button[role=tab]'),
+          ];
+          let btn = pool.find((el) => el.getAttribute('data-tab-key') === 'current');
+          if (!btn) btn = pool.find((el) => norm(el.textContent).includes('当前分析'));
+          if (btn) {
+            btn.click();
+            return 'tab';
+          }
+          return '';
+        });
+        if (!viaTab) {
+          await page.evaluate(() => {
+            const u = new URL(window.location.href);
+            u.searchParams.delete('view');
+            window.history.pushState({}, '', u.toString());
+            window.dispatchEvent(new PopStateEvent('popstate'));
+          });
+        }
+        await page.waitForTimeout(800);
+        if (/view=history/.test(page.url())) throw new Error('切回当前分析后仍停留在 view=history');
+        await expect(page.getByText('评估对象', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      };
+      await clickCurrentTab();
+      const snap = globalThis.__func00948_snap || {};
+      const marketWeight = () => page.locator('main [aria-label="市场权重"]').first();
+      await expect(marketWeight()).toBeVisible({ timeout: 8000 });
+      const wNow = String(await marketWeight().inputValue());
+      if (wNow !== snap.w) throw new Error('返回后市场权重变化: 期望 ' + snap.w + ' 实际 ' + wNow);
+      await expect(page).toHaveURL(/enterprise_codes/);
+      await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 });
+      snap._p2 = true;
+      const histBefore = snap.h;
+      await clickRecentTab();
+      await clickCurrentTab();
+      await clickRecentTab();
+      const histAfter = await countHistoryRows();
+      if (histAfter !== histBefore) throw new Error('Tab 往返后历史任务数变化: ' + histBefore + '→' + histAfter);
+      if (/view=processing/.test(page.url())) throw new Error('Tab 往返意外进入过程态');
+      if (/view=result/.test(page.url())) throw new Error('Tab 往返意外进入结果态');
+      snap._p3 = true;
+      globalThis.__func00948_snap = snap;
+  - note: 返回后对象与权重保持原值
+    assert: |-
+      const snap = globalThis.__func00948_snap || {};
+      if (!snap._p2) throw new Error('主流程未完成配置保留核对');
+  - note: 往返切换不产生新任务
+    assert: |-
+      const snap = globalThis.__func00948_snap || {};
+      if (!snap._p3) throw new Error('主流程未完成往返任务数核对');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/evaluation。view=history 时页内 Tab 池未见「当前分析」文案（仅「最近评估」等），回配置优先 data-tab-key=current，否则 popstate 去掉 view 等价 showCurrentAnalysis。主流程三条断言同段执行；跨 expect 用 globalThis.__func00948_snap。对比篮补种+浮层回填+市场权重上调。历史不足 1 条 Fail。接旧 P1-03 / 用例册 00948。tier B，无 allow_skip。

@@ -1,0 +1,111 @@
+id: FUNC-00903
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00903
+priority: P0
+title: 空态按钮打开选择分析企业浮层且构成正确
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+tier: A
+preconditions:
+  - 已进入技术力评估页
+  - 对比篮至少有企业（env-gate 实勘 basket_count≥2；本环境可绿）
+locators:
+  cta: button「多企业技术力对比分析」（30888 as-built；旧文案「前往对比篮选择企业」作回退）
+  overlay_title: 选择分析企业
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 对比篮入篮、点空态 CTA 开浮层；构成断言在 expect
+expect:
+  - note: 浮层打开且标题为「选择分析企业」、副标题含从对比篮勾选与确定回填不发起分析的语义
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const gotoEvalTech = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const ctaNew = main.getByRole('button', { name: '多企业技术力对比分析', exact: true });
+        const ctaOld = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await ctaNew.count() && await ctaNew.first().isVisible().catch(() => false)) {
+          await ctaNew.first().click({ timeout: 8000 });
+        } else if (await ctaOld.count()) {
+          await ctaOld.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到打开选择分析企业浮层的空态 CTA');
+        }
+      };
+      await ensureBasketEnterprises(1);
+      await gotoEvalTech();
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(1000);
+      const title = page.getByText('选择分析企业', { exact: true }).and(page.locator(':visible'));
+      await expect(title.first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/从对比篮勾选/).and(page.locator(':visible')).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/不会发起分析任务/).and(page.locator(':visible')).first()).toBeVisible({ timeout: 8000 });
+  - note: 浮层含企业 Tab、名称搜索框与企业类型筛选
+    assert: |-
+      await expect(page.getByRole('tab', { name: /企业/ }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('按企业名称搜索')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('全部企业类型')).toBeVisible({ timeout: 8000 });
+  - note: 企业列表含勾选框、查看画像与移除动作
+    assert: |-
+      const n = await page.locator('[aria-label^="选择 "]').count();
+      if (n < 1) throw new Error('对比篮无可选企业（aria-label^=选择）');
+      const profileBtns = page.getByRole('button', { name: '查看画像' });
+      let profileVis = false;
+      for (let i = 0, c = await profileBtns.count(); i < c; i++) {
+        if (await profileBtns.nth(i).isVisible().catch(() => false)) { profileVis = true; break; }
+      }
+      if (!profileVis) throw new Error('未见可见的「查看画像」按钮');
+      const removeBtns = page.getByRole('button', { name: '移除', exact: true });
+      let removeVis = false;
+      for (let i = 0, c = await removeBtns.count(); i < c; i++) {
+        if (await removeBtns.nth(i).isVisible().catch(() => false)) { removeVis = true; break; }
+      }
+      if (!removeVis) {
+        const ariaRemove = page.locator('[aria-label="移除"], [aria-label^="移除 "]');
+        for (let i = 0, c = await ariaRemove.count(); i < c; i++) {
+          if (await ariaRemove.nth(i).isVisible().catch(() => false)) { removeVis = true; break; }
+        }
+      }
+      if (!removeVis) throw new Error('未见可见的「移除」动作');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·30888 路由 enterprise-center/evaluation（/enterprise/evaluation 深链 404）；空态 CTA「多企业技术力对比分析」、文案「暂未选择评估对象/请在系统对比篮中选择企业」（用例「前往对比篮选择企业」作旧环境回退）。对比篮空时自含 /development/search 入篮。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。由 P0-02 重写为 FUNC-00903。

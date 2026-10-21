@@ -1,0 +1,139 @@
+id: FUNC-03116
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03116
+priority: P1
+title: 重置参数只恢复推荐配置不改已选对象
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入产业关键环节识别页
+  - 已把第一个下拉改为「生物产业」
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  reset: button「重置参数」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 改选生物产业→点重置参数（判定在 expect）
+expect:
+  - note: 1、提示「已恢复该分析类型的推荐配置」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const TOAST = /已恢复该分析类型的推荐配置/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            await assertNotSpa404('direct-catalog');
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const pickSelect = async (trigger, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      await enterKeyLink();
+      await assertNotSpa404('landing');
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      await pickSelect(cluster, '生物产业');
+      await expect(cluster).toContainText('生物产业', { timeout: 8000 });
+      globalThis.__func03116_cluster = '生物产业';
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: TOAST });
+      await expect(toast.first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func03116_reset = true;
+  - note: 2、第一个下拉仍为「生物产业」
+    assert: |-
+      if (!globalThis.__func03116_reset) throw new Error('前置：未点击重置参数或未看到恢复提示');
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toContainText('生物产业', { timeout: 8000 });
+      const txt = ((await cluster.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (/新一代信息技术/.test(txt)) {
+        throw new Error('重置后第一个下拉被改回默认集群，实际=' + txt);
+      }
+  - note: 3、仍停留在「分析配置」；权重仍为 34%、33%、33%
+    assert: |-
+      if (!globalThis.__func03116_reset) throw new Error('前置：未完成重置参数步骤');
+      if (/view=result|view=processing/.test(page.url())) {
+        throw new Error('重置后不应进入结果/生成中，当前 URL=' + page.url());
+      }
+      await expect(page.getByRole('tab', { name: '产业关键环节识别' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(3, { timeout: 8000 });
+      const vals = [
+        await spins.nth(0).inputValue(),
+        await spins.nth(1).inputValue(),
+        await spins.nth(2).inputValue(),
+      ];
+      if (vals.join(',') !== '34,33,33') {
+        throw new Error('重置后演示权重应为 34/33/33，实际=' + vals.join('/'));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例 03116 替代作废 00590：重置只恢复推荐配置（toast），不把集群改回「新一代信息技术」。
+  第一个下拉=aria-label「集群」。catalog_path=entry-seed；edu 深链 SPA 404 时 sibling 进入。
+  登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,166 @@
+id: FUNC-03402
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03402
+priority: P1
+title: 报告页「导出」不可用且点击不产生文件
+story: US-CHAIN-SZ-04
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已打开一条发展分析报告（assert 自含）
+  - 当前账号未开通报告导出付费权益（edu admin 默认未付费）
+locators:
+  tab_rec: tab「分析记录」
+  view_report: button「查看报告」
+  export_locked: '[data-report-export-locked]'
+  export_btn: '[data-report-export-locked] button[data-report-download]'
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 分析记录→查看报告→校验导出禁用与无 download
+expect:
+  - note: 前置：已打开「深圳产业发展分析报告」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const REPORT_TITLE = '深圳产业发展分析报告';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      const openReportFromRecords = async () => {
+        const recordsTab = page.getByRole('tab', { name: '分析记录' }).first();
+        await expect(recordsTab).toBeVisible({ timeout: 10000 });
+        await recordsTab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        await expect(recordsTab).toHaveAttribute('aria-selected', 'true');
+        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '深圳产业发展分析' }).filter({ hasText: /已完成|成功/ });
+        const n = await rows.count();
+        if (n < 1) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无已完成深圳发展分析任务');
+        }
+        let clicked = false;
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const row = rows.nth(i);
+          const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
+          if (!(await reportBtn.count()) || (await reportBtn.isDisabled().catch(() => true))) continue;
+          await reportBtn.click({ timeout: 15000, force: true });
+          clicked = true;
+          for (let j = 0; j < 28; j++) {
+            await page.waitForTimeout(500);
+            if (/view=report/.test(page.url()) && (await page.locator('.system-report-reader[data-report-readonly="true"]').isVisible().catch(() => false))) break;
+          }
+          if (/view=report/.test(page.url())) break;
+          clicked = false;
+        }
+        if (!clicked) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-REPORT: 无已完成任务可点「查看报告」');
+        }
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法打开报告 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=development/);
+      await openReportFromRecords();
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      await expect(reader.locator('h1').filter({ hasText: REPORT_TITLE }).first()).toBeVisible({ timeout: 15000 });
+      globalThis.__func03402 = { readerReady: true, urlBefore: page.url() };
+  - note: 1、「导出」不可点击
+    assert: |-
+      if (!globalThis.__func03402?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const locked = reader.locator('[data-report-export-locked]').first();
+      await expect(locked).toBeVisible({ timeout: 8000 });
+      const exportBtn = locked.locator('button[data-report-download]').first();
+      await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      await expect(exportBtn).toBeDisabled();
+      const cls = (await exportBtn.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('「导出」未见 arco-btn-disabled，class=' + cls);
+      }
+      const unlocked = page.locator('[data-report-export-unlocked]');
+      if (await unlocked.count() && (await unlocked.first().isVisible().catch(() => false))) {
+        throw new Error('未付费 admin 环境出现可导出按钮（data-report-export-unlocked）');
+      }
+      globalThis.__func03402.exportBtn = exportBtn;
+  - note: 2、不产生报告文件（force 点「导出」无 download、仍 view=report）
+    assert: |-
+      const ctx = globalThis.__func03402;
+      if (!ctx?.exportBtn) throw new Error('前置：未定位导出按钮');
+      const urlBefore = ctx.urlBefore || page.url();
+      let downloadFired = false;
+      page.once('download', () => { downloadFired = true; });
+      try {
+        await ctx.exportBtn.click({ timeout: 5000, force: true });
+      } catch {}
+      await page.waitForTimeout(1500);
+      if (downloadFired) throw new Error('未付费点击「导出」仍触发了 download 事件');
+      if (page.url() !== urlBefore) {
+        throw new Error('强制点「导出」后地址变化：before=' + urlBefore + ' after=' + page.url());
+      }
+      await expect(page).toHaveURL(/view=report/);
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      await expect(reader.locator('h1').filter({ hasText: '深圳产业发展分析报告' }).first()).toBeVisible({ timeout: 8000 });
+      const successMsg = page.locator('.arco-message-success, .arco-message').filter({ hasText: /报告已导出|导出成功/ });
+      if (await successMsg.count()) {
+        const vis = await successMsg.first().isVisible().catch(() => false);
+        if (vis) throw new Error('未付费点击「导出」仍出现导出成功提示');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03402=报告页 ReportExportButton data-report-export-locked 内 button[data-report-download] disabled（arco-btn-disabled），force 点击无 download/无「报告已导出」且仍 view=report+h1「深圳产业发展分析报告」。
+  前置=分析记录已完成→「查看报告」（同 03403/03411）。03403 专验「付费」点击落点；本条不验付费 Tag 文案。
+  无已完成→ENV-CHAIN-SZ-DEV-NO-DONE-TASK；报告不可用→ENV-CHAIN-SZ-DEV-NO-REPORT。catalog_path=entry-seed。edu 404→ENV-EDU-TTS-SVCZ-404-001。admin 默认未付费。登录关评审 runner 前置。B 档零 allow_skip。

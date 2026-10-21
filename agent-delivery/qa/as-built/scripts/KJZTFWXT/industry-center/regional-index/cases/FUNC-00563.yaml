@@ -1,0 +1,100 @@
+id: FUNC-00563
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00563
+priority: P0
+title: 评价模式两种互斥且对象区域控件随模式联动
+entry_id: chain-regional-index
+tier: A
+preconditions:
+  - 已进入区域产业指数评价页
+locators:
+  mode_single: .arco-radio-button 文案「单产业 × 多区域」
+  mode_multi: .arco-radio-button 文案「多产业 × 单区域」
+  industry_select: .arco-select-view[aria-label=产业]
+  region_select: .arco-select-view 含深圳市回显
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 评价模式或已计入 6 项
+    timeout_ms: 12000
+expect:
+  - note: 1、评价模式提供两种且单选互斥、同一时刻仅一态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) await close.first().click({ timeout: 3000 }).catch(() => {});
+        }
+      };
+      await dismissBasket();
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('多产业 × 单区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const btn = (t) => page.locator('.arco-radio-button').filter({ hasText: t }).first();
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      const multiChecked = await btn('多产业 × 单区域').evaluate((el) => el.className.includes('arco-radio-checked'));
+      const singleStill = await btn('单产业 × 多区域').evaluate((el) => el.className.includes('arco-radio-checked'));
+      if (!multiChecked || singleStill) throw new Error('点多产业后未互斥');
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      const singleChecked = await btn('单产业 × 多区域').evaluate((el) => el.className.includes('arco-radio-checked'));
+      const multiStill = await btn('多产业 × 单区域').evaluate((el) => el.className.includes('arco-radio-checked'));
+      if (!singleChecked || multiStill) throw new Error('点单产业后未互斥');
+  - note: 2、模式变更后对象与区域控件随模式联动（多产业态产业多选+区域单选；单产业态产业单选+区域 1–5 多选）
+    assert: |-
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      const ind = () => page.locator('.arco-select-view[aria-label="产业"]');
+      const region = () => page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first();
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('分析对象（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('评价区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (!(await ind().evaluate((el) => el.className.includes('mult')))) throw new Error('多产业态产业未呈多选');
+      if (await region().evaluate((el) => el.className.includes('mult'))) throw new Error('多产业态区域仍为多选');
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('分析对象', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('评价区域（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (await ind().evaluate((el) => el.className.includes('mult'))) throw new Error('单产业态产业仍为多选');
+      if (!(await region().evaluate((el) => el.className.includes('mult')))) throw new Error('单产业态区域未呈多选');
+  - note: 3、多产业态下区域单选不可多 tag；多产业×多区域双多选组合不存在
+    assert: |-
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      const ind = () => page.locator('.arco-select-view[aria-label="产业"]');
+      const region = () => page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first();
+      await page.getByText('多产业 × 单区域', { exact: true }).first().click();
+      await page.waitForTimeout(600);
+      if (await region().evaluate((el) => el.className.includes('mult'))) {
+        throw new Error('多产业态区域不应为多选');
+      }
+      const regionView = region();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-trigger-popup:visible');
+      await expect(popup.first()).toBeVisible({ timeout: 5000 });
+      const optBeijing = popup.locator('.arco-select-option').filter({ hasText: '北京市' }).first();
+      if (await optBeijing.count()) {
+        await optBeijing.click({ timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        const tagCount = await regionView.locator('.arco-tag').count();
+        if (tagCount > 1) throw new Error('多产业态区域出现多 tag，可多选区域');
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+      if ((await ind().evaluate((el) => el.className.includes('mult'))) && (await region().evaluate((el) => el.className.includes('mult')))) {
+        throw new Error('多产业×多区域双多选组合存在');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=entry-seed 深链；edu tts/svcz industry-center 路由 SPA 404 时首条抛 ENV-EDU-TTS-SVCZ-404-001（与 00562/00564 同根因）。评价模式 .arco-radio-button + arco-radio-checked。A 档零 allow_skip。

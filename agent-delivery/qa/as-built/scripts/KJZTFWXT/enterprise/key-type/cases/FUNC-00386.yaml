@@ -1,0 +1,62 @@
+id: FUNC-00386
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00386
+priority: P0
+title: 企业清单抽屉打开后标题来源摘要与搜索框构成正确
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 系统正常；已进入重点企业类型分析页
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单（N）」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析页、点清单入口并核对抽屉构成；判定在 expect 内
+expect:
+  - note: 区域洞察区「查看企业清单」入口可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await expect(listBtn).toBeVisible({ timeout: 10000 });
+  - note: 点击「查看企业清单」后抽屉标题含当前区域与「企业清单」
+    assert: |-
+      const lb = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await lb.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const titleArea = drawer.locator('.arco-drawer-header').first();
+      await expect(titleArea.getByText('企业清单').first()).toBeVisible({ timeout: 8000 });
+      const headerTxt = ((await titleArea.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/[\u4e00-\u9fff]{2,}.*企业清单|企业清单.*[\u4e00-\u9fff]{2,}/.test(headerTxt)) {
+        throw new Error('抽屉标题未同时含区域名与「企业清单」: ' + headerTxt.slice(0, 120));
+      }
+  - note: 来源摘要含地图当前区域与数据更新信息
+    assert: |-
+      const d = page.locator('.arco-drawer:visible').first();
+      await expect(d.getByText('地图当前区域').first()).toBeVisible({ timeout: 8000 });
+      await expect(d.getByText('数据更新至').first()).toBeVisible({ timeout: 8000 });
+  - note: 搜索框占位为「搜索企业名称、统一社会信用代码、产业或区域」
+    assert: |-
+      const dd = page.locator('.arco-drawer:visible').first();
+      const inp = dd.locator('input[placeholder*="企业名称"]').first();
+      await expect(inp).toBeVisible({ timeout: 8000 });
+      const ph = await inp.getAttribute('placeholder');
+      const expected = '搜索企业名称、统一社会信用代码、产业或区域';
+      if (ph !== expected) {
+        throw new Error('抽屉搜索框 placeholder 不符，期望「' + expected + '」，实际「' + ph + '」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏 link 进入 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；catalog 深链 /enterprise/... 404。实勘标题如「深圳市企业清单」；不钉死公司名。登录与关内部评审由 runner 会话前置。

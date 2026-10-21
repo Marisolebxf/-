@@ -1,0 +1,57 @@
+id: FUNC-03916
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03916
+priority: P1
+tier: B
+title: 产业分布页热力区块说明没有矩阵且不画演示热力
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已打开服务机构产业分布（runner 会话前置 + Tab 切换）
+locators:
+  tab_ind: tab「服务机构产业分布」
+  heat_heading: heading「全产业总览 · 领域 × 环节热力」
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 滚动到「全产业总览 · 领域 × 环节热力」
+expect:
+  - note: 1、区块文案含「不画演示热力填数」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal 深链 SPA404，无法验领域×环节热力空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构产业分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const heatTitle = page.getByText('全产业总览 · 领域 × 环节热力', { exact: true }).first();
+      await heatTitle.scrollIntoViewIfNeeded({ timeout: 8000 });
+      await expect(heatTitle).toBeVisible({ timeout: 8000 });
+      const emptyCopy = page.getByText(/不画演示热力填数/).first();
+      await expect(emptyCopy).toBeVisible({ timeout: 8000 });
+      const section = heatTitle.locator('xpath=ancestor::*[contains(@class,"arco-card") or self::section][1]');
+      const sectionRoot = (await section.count()) ? section.first() : heatTitle.locator('xpath=ancestor::div[1]');
+      const heatCanvas = sectionRoot.locator('canvas').first();
+      if (await heatCanvas.isVisible().catch(() => false)) {
+        throw new Error('领域×环节热力区不应渲染演示热力 canvas，应保持空态文案');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  热力为 Java 实包诚实空（无领域×环节矩阵）；完整句「Java 产业分布包络无领域×环节矩阵。不画演示热力填数。」（scout-tabs + ServicePortalIndustryDistributionPage）。
+  Tab 切至 /service-portal/industry-distribution 后 scroll 至 section title；断言含「不画演示热力填数」且无 canvas。登录与关内部评审由 runner 前置。B 档零 allow_skip。

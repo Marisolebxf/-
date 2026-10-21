@@ -1,0 +1,66 @@
+id: FUNC-00641
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00641
+priority: P0
+tier: A
+title: 主流程-直达路由与页头双 Tab
+story: US-SVC-ORG-01
+entry_id: svc-org-field
+preconditions:
+  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
+locators:
+  tab_main: '[role=tab][data-tab-key="coverage"]'
+  tab_records: '[role=tab][data-tab-key="records"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+  - action: assert_url
+    expect_contains: workspace=field&tab=coverage
+expect:
+  - note: 1、页标题为「服务机构产业领域分析」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog 深链 SPA404 url=' + page.url());
+      }
+      await expect(page).toHaveTitle(/服务机构产业领域分析/, { timeout: 12000 });
+  - note: 2、顶部页签为「服务机构产业领域分析」与「分析记录」
+    assert: |-
+      const mainTab = page.locator('[role=tab][data-tab-key="coverage"]');
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(mainTab.first()).toBeVisible({ timeout: 8000 });
+      await expect(recTab.first()).toBeVisible({ timeout: 8000 });
+  - note: 3、当前落在「服务机构产业领域分析」页签
+    assert: |-
+      const mainTab = page.locator('[role=tab][data-tab-key="coverage"]').first();
+      const aria = await mainTab.getAttribute('aria-selected');
+      const cls = (await mainTab.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('coverage Tab 未选中 aria-selected=' + aria);
+      }
+  - note: 路由为 field 工作区直达态（workspace=field、tab=coverage）
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/institution-judgment/);
+      await expect(page).toHaveURL(/workspace=field/);
+      await expect(page).toHaveURL(/tab=coverage/);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/service/institution-judgment?workspace=field&tab=coverage（entry-seed）。
+  页头 Tab 用 data-tab-key=coverage|records，勿裸 getByRole(tab)（对比篮污染，P0-11 NOTE-SVC-ORG-FIELD-TAB-KEY）。
+  2026-10-21 edu/tts/svcz 机跑：登录 OK 但 SPA 壳 404（含 / 与 catalog 深链），首条 expect 抛 ENV-EDU-TTS-SVCZ-404-001 → 环境 blocked，非脚本逻辑红。

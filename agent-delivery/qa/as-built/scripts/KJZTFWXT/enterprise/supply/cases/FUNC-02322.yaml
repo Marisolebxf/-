@@ -1,0 +1,138 @@
+id: FUNC-02322
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02322
+priority: P1
+title: 当前分析与最近分析页签往返后条件保留
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 配置页已回填对象并勾选关系范围（assert 自含对比篮勾选并确定回填）
+locators:
+  tab_recent: tab「最近分析」
+  tab_current: tab「当前分析」
+  scope_opts: [供应商, 客户, 合作伙伴]
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 回填对象后读对象/关系范围/预检→点「最近分析」→点「当前分析」；保留态在 expect
+expect:
+  - note: 1、对象仍在 2、三复选仍在 3、预检对象有效计数不变
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const scopeOpts = ['供应商', '客户', '合作伙伴'];
+      const norm = (arr) => [...arr].sort().join('|');
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parseBasketCount = (text) => {
+        const m = text.match(/来自对比篮\s*[·•]\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const parseObjectValid = (text) => {
+        const m = text.match(/对象有效[：:]\s*(\d+)\s*\/\s*(\d+)/);
+        return m ? m[1] + '/' + m[2] : null;
+      };
+      const readCheckedScope = async () => {
+        const picked = [];
+        for (const n of scopeOpts) {
+          const box = main().locator('.arco-checkbox').filter({ hasText: n }).first();
+          await expect(box).toBeVisible({ timeout: 8000 });
+          const cls = (await box.getAttribute('class')) || '';
+          if (/arco-checkbox-checked/.test(cls)) picked.push(n);
+        }
+        return picked;
+      };
+      const listObjectEnterpriseLines = async () => {
+        const area = main()
+          .locator('section, div')
+          .filter({ hasText: '分析对象' })
+          .filter({ hasText: /来自对比篮/ })
+          .first();
+        const scope = (await area.count()) ? area : main();
+        const t = (await scope.innerText().catch(() => '')).split('\n').map((s) => s.trim()).filter(Boolean);
+        const out = [];
+        for (const line of t) {
+          if (/来自对比篮|分析对象|返回对比篮|移除|Close|选择分析企业/.test(line)) continue;
+          if (/公司|集团|有限|股份|科技/.test(line)) out.push(line);
+        }
+        return [...new Set(out)];
+      };
+      const ensureFilled = async () => {
+        let body = await main().innerText().catch(() => '');
+        if (parseBasketCount(body) >= 1 && /来自对比篮/.test(body)) return;
+        await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+        await sels.first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.getByRole('button', { name: '确定', exact: true }).last().click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+        body = await main().innerText().catch(() => '');
+        if (!parseBasketCount(body)) throw new Error('回填后对象区仍为空');
+      };
+      const clickTab = async (label) => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: label }).first();
+        await expect(tab).toBeVisible({ timeout: 8000 });
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await ensureFilled();
+      const beforeText = await main().innerText().catch(() => '');
+      const beforeBasket = parseBasketCount(beforeText);
+      const beforeValid = parseObjectValid(beforeText);
+      if (!beforeValid) throw new Error('预检区未见「对象有效」计数');
+      const beforeNames = await listObjectEnterpriseLines();
+      if (beforeNames.length < 1) throw new Error('对象区应至少 1 家企业名');
+      const beforeScope = await readCheckedScope();
+      if (beforeScope.length < 1) throw new Error('前置：关系范围应至少勾选一类');
+      await clickTab('最近分析');
+      await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      await expect(page.getByText('任务名称').first()).toBeVisible({ timeout: 12000 });
+      await clickTab('当前分析');
+      if (/view=history/.test(page.url())) {
+        throw new Error('点「当前分析」后仍停在 view=history');
+      }
+      await expect(page.getByText('分析对象', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const afterText = await main().innerText().catch(() => '');
+      const afterBasket = parseBasketCount(afterText);
+      if (afterBasket !== beforeBasket) {
+        throw new Error('对象家数变化：前 ' + beforeBasket + ' 后 ' + afterBasket);
+      }
+      for (const ent of beforeNames) {
+        if (!afterText.includes(ent)) throw new Error('往返后对象丢失：' + ent);
+      }
+      const afterScope = await readCheckedScope();
+      if (norm(beforeScope) !== norm(afterScope)) {
+        throw new Error(
+          '关系范围勾选变化: 前=' + beforeScope.join('、') + ' 后=' + afterScope.join('、')
+        );
+      }
+      const afterValid = parseObjectValid(afterText);
+      if (afterValid !== beforeValid) {
+        throw new Error('预检对象有效计数变化：前 ' + beforeValid + ' 后 ' + afterValid);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=配置回填 1 家→读对象/三复选/对象有效→「最近分析」(view=history)→「当前分析」。机检=对象名仍在+三复选集合不变+「对象有效」n/n 字符串不变。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

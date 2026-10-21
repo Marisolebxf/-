@@ -1,0 +1,50 @@
+id: FUNC-01477
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01477
+priority: P0
+title: 导出当前结果创建任务后出现完成提示
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空检索结果（本条 steps 自含智能搜索「人工智能」出结果）
+locators:
+  export_btn: button「导出当前结果」
+  export_modal: 弹层「确认导出查询清单」
+  create_task: button「创建导出任务」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与非空命中
+    timeout_ms: 2000
+expect:
+  - note: 弹层标题为「确认导出查询清单」
+    assert: |-
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/).first()).toBeVisible({ timeout: 12000 });
+      const exportBtn = page.getByRole('button', { name: '导出当前结果' }).first();
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
+      await exportBtn.click();
+      const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first();
+      await expect(modal).toBeVisible({ timeout: 12000 });
+      await expect(modal.locator('.arco-modal-title, .arco-modal-header')).toContainText('确认导出查询清单');
+  - note: 出现「查询清单导出已完成，可在导出记录中查看」
+    assert: |-
+      const modal = page.locator('.arco-modal').filter({ hasText: '确认导出查询清单' }).first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const createBtn = modal.getByRole('button', { name: /创建导出任务/ });
+      await expect(createBtn).toBeVisible({ timeout: 8000 });
+      await createBtn.click();
+      await expect(page.getByText('查询清单导出已完成，可在导出记录中查看').first()).toBeVisible({ timeout: 30000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。作废 00478 后重写；用例仅断言完成提示，不验当页下载文件（US-E1-SCH-05 / 用例册 01477）。

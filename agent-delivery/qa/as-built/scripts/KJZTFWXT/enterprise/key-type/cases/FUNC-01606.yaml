@@ -1,0 +1,61 @@
+id: FUNC-01606
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01606
+priority: P1
+title: 从企业清单打开对比篮面板
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单已打开
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  open_basket_btn: 抽屉 footer button「打开对比篮」
+  basket_panel: .system-compare-panel[aria-label="对比篮"]
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、点「打开对比篮」；面板与篮内企业区在 expect 内
+expect:
+  - note: 1、对比篮面板打开；2、面板中可见篮内企业区域
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const openBasket = drawer.getByRole('button', { name: '打开对比篮', exact: true });
+      await expect(openBasket).toBeVisible({ timeout: 8000 });
+      await openBasket.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const panel = page.locator('.system-compare-panel[aria-label="对比篮"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.system-compare-panel__header').getByText(/对比篮/).first()).toBeVisible({ timeout: 8000 });
+      const entTab = panel.getByRole('tab', { name: /^企业/ }).first();
+      await expect(entTab).toBeVisible({ timeout: 8000 });
+      const hasBasketList = await panel.getByText('篮内企业', { exact: true }).count();
+      const hasEmptyCollect = await panel.getByText('开始收集企业', { exact: true }).count();
+      const hasEmptyHint = await panel.getByText('对比篮暂无企业').count();
+      if (hasBasketList < 1 && hasEmptyCollect < 1 && hasEmptyHint < 1) {
+        throw new Error('对比篮面板已开但未见篮内企业区域（无「篮内企业」/「开始收集企业」/空态文案）');
+      }
+      if (hasBasketList > 0) {
+        await expect(panel.getByText('篮内企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
+        if (await workspace.count()) {
+          await expect(workspace.first()).toBeVisible({ timeout: 8000 });
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；企业清单抽屉 footer「打开对比篮」经 openSystemCompareBasket 打开系统浮层 .system-compare-panel。有企业时 SectionPanel 标题「篮内企业」+ data-testid=compare-basket-workspace；空篮为「开始收集企业」+「对比篮暂无企业」。篮内移除/清空不在本册。登录与关内部评审由 runner 会话前置。

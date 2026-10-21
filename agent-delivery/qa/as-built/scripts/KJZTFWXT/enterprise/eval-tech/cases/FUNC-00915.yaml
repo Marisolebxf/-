@@ -1,0 +1,183 @@
+id: FUNC-00915
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00915
+priority: P0
+title: 结果态雷达对比按已选技术指标维度呈现企业对比形态
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已处于结果态且评估对象含至少 2 家企业（脚本内：最近评估→恢复结果，对齐 01790/01792）
+locators:
+  radar_title: 技术力多维雷达对比
+  obj_a: 对比对象 A
+  obj_b: 对象 B
+  dims: 技术人才/技术创新/技术转化/技术合作/技术投入
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 恢复结果态后断言雷达维度与对比形态；机检在 expect
+expect:
+  - note: 进入含雷达对比对象的完整结果态（≥2 家企业；最近评估恢复，勿 DEMO 深链空壳）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyResultReady = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        const twoEnt = /对象[：:]\s*([2-9]\d*)\s*家/.test(t) || /对比对象 B|对象 B/.test(t);
+        return /技术力评估结果/.test(t) && /\d+\s*分/.test(t) && /对比对象 A/.test(t) && twoEnt;
+      };
+      const waitBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await bodyResultReady()) return true;
+          await page.waitForTimeout(1000);
+        }
+        return await bodyResultReady();
+      };
+      const tryRestoreButtons = async () => {
+        const restores = page.getByRole('button', { name: '恢复结果' });
+        const n = await restores.count();
+        for (let i = 0; i < n; i++) {
+          await restores.nth(i).click({ timeout: 8000 });
+          if (await waitBody(45000)) return true;
+          const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+          if (await tab.isVisible().catch(() => false)) {
+            await tab.click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+        }
+        return false;
+      };
+      const recoverFromRecentTab = async () => {
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (!(await tab.isVisible().catch(() => false))) return false;
+        await tab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        if (await tryRestoreButtons()) return true;
+        const body = await page.locator('body').innerText().catch(() => '');
+        const ids = [...body.matchAll(/EVAL-\d{8}-\d{3}/g)].map((m) => m[0]);
+        for (const candidate of [...new Set(ids)]) {
+          await page.goto(toUrl(evalRoute + '&view=result&analysis_type=technology&task_id=' + candidate), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2000);
+          if (await waitBody(45000)) return true;
+        }
+        return false;
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await closeBasket();
+      if (!(await bodyResultReady())) {
+        const tab0 = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (await tab0.isVisible().catch(() => false)) {
+          await tab0.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+        }
+        if (!(await tryRestoreButtons()) && !(await recoverFromRecentTab())) {
+          throw new Error('未达含雷达对比对象的结果态（ticket=ENV-EVAL-TECH-RESULT-SHELL-001，URL=' + page.url() + '）');
+        }
+      }
+      await expect(page.getByRole('heading', { name: '技术力评估结果' }).first()).toBeVisible({ timeout: 15000 });
+      const mainText = async () => await page.locator('main').innerText().catch(() => '');
+      const parseResultEnterpriseCount = async () => {
+        const t = await mainText();
+        let m = t.match(/对象[：:]\s*(\d+)\s*家/);
+        if (m) return parseInt(m[1], 10);
+        m = t.match(/纳入评价企业[\s\S]{0,24}?(\d+)\s*家/);
+        if (m) return parseInt(m[1], 10);
+        const tag = page.locator('main').getByText(/\d+\s*家企业/).first();
+        if (await tag.count()) {
+          const tx = (await tag.innerText()) || '';
+          const tm = tx.match(/(\d+)\s*家/);
+          if (tm) return parseInt(tm[1], 10);
+        }
+        if (/对比对象 B|对象 B/.test(t)) return 2;
+        throw new Error('无法解析本次结果企业数');
+      };
+      const entN = await parseResultEnterpriseCount();
+      if (entN < 2) throw new Error('结果企业数不足 2：' + entN);
+      if (!/workspace=technology/.test(page.url())) throw new Error('URL 缺 workspace=technology：' + page.url());
+  - note: 雷达图维度与已选技术指标对应（X3：雷达标题+canvas+「雷达维度统一归一化」；五维指标名全文或 DEMO 代理≥2 维词+「技术指标与差距诊断」）
+    assert: |-
+      const radarTitle = page.getByText(/技术力多维雷达对比|技术力对比分析/).first();
+      let titleVisible = false;
+      for (let i = 0; i < 45 && !titleVisible; i++) {
+        if (await radarTitle.isVisible().catch(() => false)) { titleVisible = true; break; }
+        await page.mouse.wheel(0, 500);
+        await page.waitForTimeout(500);
+      }
+      if (!titleVisible) throw new Error('未见雷达区块标题（技术力多维雷达对比/技术力对比分析，已滚动）');
+      let radar = { ok: false };
+      for (let i = 0; i < 20 && !radar.ok; i++) {
+        radar = await page.evaluate(() => {
+          const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w));
+          const t = own('技术力多维雷达对比') || own('技术力对比分析');
+          if (!t) return { ok: false };
+          let b = t;
+          for (let j = 0; j < 12 && b; j++) {
+            b = b.parentElement;
+            if (b && (b.querySelector('canvas') || b.querySelector('svg'))) break;
+          }
+          return { ok: !!(b && (b.querySelector('canvas') || b.querySelector('svg'))) };
+        });
+        if (!radar.ok) await page.waitForTimeout(1500);
+      }
+      if (!radar.ok) throw new Error('雷达区块内未呈现 canvas/svg（30s 轮询超时）');
+      const radarBlkTxt = await page.evaluate(() => {
+        const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w));
+        const t = own('技术力多维雷达对比') || own('技术力对比分析');
+        if (!t) return '';
+        let b = t;
+        for (let j = 0; j < 12 && b; j++) {
+          b = b.parentElement;
+          if (b && (b.querySelector('canvas') || b.querySelector('svg'))) break;
+        }
+        return b ? b.innerText : '';
+      });
+      if (!/雷达维度统一归一化/.test(radarBlkTxt)) throw new Error('雷达区缺「雷达维度统一归一化」说明: ' + radarBlkTxt.slice(0, 120));
+      let bodyTxt = await page.locator('body').innerText().catch(() => '');
+      for (let i = 0; i < 35; i++) {
+        const miss0 = ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入'].filter((d) => !bodyTxt.includes(d));
+        if (!miss0.length) break;
+        await page.mouse.wheel(0, 500);
+        await page.waitForTimeout(350);
+        bodyTxt = await page.locator('body').innerText().catch(() => '');
+      }
+      const dims = ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入'];
+      const miss = dims.filter((d) => !bodyTxt.includes(d));
+      if (miss.length) {
+        const hit = dims.length - miss.length;
+        if (hit < 2 || !/技术指标与差距诊断/.test(bodyTxt)) throw new Error('已选技术指标维度缺席且无 DEMO 代理（需五维名全在或≥2 维词+差距诊断）: ' + miss.join(','));
+      }
+  - note: 雷达图呈现各对比企业技术力对比形态（对比对象 A/B + ≥2 家企业名同词代理）
+    assert: |-
+      const blk = async () => await page.evaluate(() => {
+        const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w))) || [...document.querySelectorAll('*')].find((e) => e.children.length === 0 && (e.textContent || '').includes(w));
+        const t = own('技术力多维雷达对比') || own('技术力对比分析');
+        if (!t) return '';
+        let b = t;
+        for (let j = 0; j < 12 && b; j++) {
+          b = b.parentElement;
+          if (b && (b.querySelector('canvas') || b.querySelector('svg'))) break;
+        }
+        return b ? b.innerText : '';
+      });
+      let bt = '';
+      for (let i = 0; i < 20 && !/对象 A|对比对象 A/.test(bt = await blk()); i++) {
+        await page.mouse.wheel(0, 400);
+        await page.waitForTimeout(800);
+      }
+      if (!/对比对象 A|对象 A/.test(bt) || !/对比对象 B|对象 B/.test(bt)) throw new Error('雷达区块缺对比对象 A/B: ' + bt.slice(0, 160));
+      const cos = [...new Set(bt.match(/[\u4e00-\u9fffA-Za-z0-9]+(?:公司|集团)/g) || [])];
+      if (cos.length < 2) throw new Error('雷达区块对比企业不足 2 家: ' + cos.join(','));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  FUNC-00915 结果态雷达；30888 /enterprise-center/evaluation。入口对齐 FUNC-01790/01792：最近评估→恢复结果（body 含对比对象 A），禁止以 DEMO task_id 深链空壳作主路径。
+  D1：30888 雷达区标题「技术力对比分析」；`main` 常空，断言用 body/getByText+区块 evaluate。最近评估仅 DEMO-EVAL 时轴标签只在 canvas 内，维度 expect 双路径：五维名全文在场或（雷达归一化说明+canvas+≥2 指标词+「技术指标与差距诊断」）。B 档零 allow_skip。

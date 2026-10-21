@@ -1,0 +1,158 @@
+id: FUNC-05399
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05399
+priority: P0
+title: 选定产业领域分析并进入配置，打开带来源标记的配置页
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 服务机构页至少 1 家
+locators:
+  panel: .system-compare-panel
+  service_tab: '#compare-basket-tab-service_org'
+  workspace: '[data-testid="service-org-compare-basket-workspace"]'
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+expect:
+  - note: 前置与主流程：勾选 1 家→发起分析→产业领域分析→进入分析
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const parseSvcCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/服务机构[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedServiceFromAdd = async (panel) => {
+        const svcTab = panel.locator('#compare-basket-tab-service_org');
+        await svcTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addBtn = panel.getByRole('button', { name: '新增' }).first();
+        await addBtn.click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder('输入机构名称').first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(600);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-SVC-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const ensurePanelInView = async () => {
+        await page.locator('.system-compare-layer').evaluate((el) => {
+          const rect = el.getBoundingClientRect();
+          const dy = Math.min(0, window.innerHeight - rect.bottom - 16);
+          if (dy < 0) el.style.transform = `translate(${rect.left}px, ${Math.max(16, rect.top + dy)}px)`;
+        }).catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      const openServiceTab = async (panel) => {
+        await ensurePanelInView();
+        const svcTab = page.locator('#compare-basket-tab-service_org');
+        await svcTab.scrollIntoViewIfNeeded().catch(() => {});
+        await svcTab.click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        const ws = panel.locator('[data-testid="service-org-compare-basket-workspace"]');
+        await expect(ws).toBeVisible({ timeout: 10000 });
+        return { ws };
+      };
+      let panel = await openPanel();
+      let { ws } = await openServiceTab(panel);
+      let checks = ws.locator('.arco-checkbox');
+      let nRows = await checks.count();
+      if (nRows < 1) {
+        await seedServiceFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        ({ ws } = await openServiceTab(panel));
+        checks = ws.locator('.arco-checkbox');
+        nRows = await checks.count();
+      }
+      if (nRows < 1) throw new Error('ENV-SHELL-COMPARE-SVC-EMPTY-001：服务机构页至少 1 家');
+      const cancelSel = panel.getByRole('button', { name: '取消选择' });
+      if (await cancelSel.count() && !(await cancelSel.isDisabled())) {
+        await cancelSel.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const rowLabel = ws.locator('label.arco-checkbox').first();
+      await rowLabel.scrollIntoViewIfNeeded().catch(() => {});
+      await rowLabel.click({ timeout: 10000, force: true });
+      await page.waitForTimeout(500);
+      const selLine = panel.getByText(/已选\s*1\s*家机构/).first();
+      await expect(selLine).toBeVisible({ timeout: 8000 });
+      let selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/已选\s*1\s*家机构/.test(selTxt)) {
+        await rowLabel.click({ timeout: 10000, force: true });
+        await page.waitForTimeout(500);
+        selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      }
+      if (!/已选\s*1\s*家机构/.test(selTxt)) throw new Error('应勾选 1 家机构: ' + selTxt);
+      await ensurePanelInView();
+      const launch = panel.locator('[data-testid="compare-basket-action-bar"]').getByRole('button', { name: '发起分析' }).first();
+      if (await launch.isDisabled()) throw new Error('勾选 1 家机构后发起分析仍 disabled');
+      await launch.evaluate((el) => el.click()).catch(async () => {
+        await launch.click({ timeout: 15000, force: true });
+      });
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      const domainLabel = modal.locator('label').filter({ hasText: '服务机构产业领域分析' }).first();
+      await expect(domainLabel).toBeVisible({ timeout: 8000 });
+      await domainLabel.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const enterBtn = modal.locator('.arco-modal-footer').getByRole('button', { name: '进入分析' });
+      await enterBtn.click({ timeout: 10000 });
+      await page.waitForURL(/\/service\/institution-judgment/, { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(1200);
+      const url = page.url();
+      if (!url.includes('/service/institution-judgment')) {
+        throw new Error('进入分析后未到达服务机构分析页: ' + url);
+      }
+      if (!url.includes('workspace=field') && !url.includes('tab=coverage')) {
+        throw new Error('未进入产业领域 field 工作区: ' + url);
+      }
+  - note: 页面标题为「服务机构产业领域分析」
+    assert: |-
+      const titleText = '服务机构产业领域分析';
+      const tab = page.getByRole('tab', { name: titleText }).first();
+      if (await tab.count()) {
+        await expect(tab).toBeVisible({ timeout: 12000 });
+      } else {
+        await expect(page.getByText(titleText, { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      }
+  - note: 出现「来源：对比篮」
+    assert: |-
+      await expect(page.getByText('来源：对比篮', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+  - note: 出现「返回对比篮」（联调环境可能为「打开对比篮调整对象」，见 as_built_note）
+    assert: |-
+      const cfg = page.locator('[data-testid="svc-org-analysis-config"]');
+      if (await cfg.count()) await cfg.first().scrollIntoViewIfNeeded().catch(() => {});
+      const scope = page.locator('[data-testid="svc-org-analysis-context"]');
+      const root = (await scope.count()) ? scope.first() : page.locator('main').first();
+      const back = root.getByRole('button', { name: /返回对比篮|打开对比篮调整对象/ });
+      await back.first().scrollIntoViewIfNeeded().catch(() => {});
+      await expect(back.first()).toBeVisible({ timeout: 12000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。服务机构 Tab→任务浮层 ok-text「进入分析」→/service/institution-judgment?workspace=field&source=compare-basket。2026-10-20 edu 联调：回跳按钮实测「打开对比篮调整对象」（用例册写「返回对比篮」；断言兼容二者）。浮层锚点用 label.arco-checkbox+action-bar evaluate click 规避 viewport。不点「开始分析」。

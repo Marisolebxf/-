@@ -1,0 +1,96 @@
+id: FUNC-03588
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03588
+priority: P0
+title: 打开维护管理地址后被拒绝并回到专题全景
+entry_id: chain-maintenance
+tier: A
+preconditions:
+  - 系统可访问；已使用业务账号 admin 登录
+locators:
+  warn_toast: .arco-message-content, .arco-message
+steps:
+  - action: goto
+    target: /industry-center/maintenance
+expect:
+  - note: 出现警告提示，文案以「当前账号无权访问该页面」起头
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/维护管理|专题全景|产业链/.test(t);
+      };
+      const warmSpaShell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(1500);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/overview'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+      };
+      const openMaintenanceDeepLink = async () => {
+        await dismissBasket();
+        await warmSpaShell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法预热 SPA，维护管理深链前仍 404 ' + page.url());
+        }
+        let sawWarn = false;
+        const warnPromise = page
+          .waitForFunction(() => {
+            for (const el of document.querySelectorAll('.arco-message-content, .arco-message')) {
+              const t = (el.textContent || '').trim();
+              if (t.startsWith('当前账号无权访问该页面')) return true;
+            }
+            return false;
+          }, { timeout: 15000 })
+          .then(() => {
+            sawWarn = true;
+          })
+          .catch(() => {});
+        await page.goto(toUrl('/industry-center/maintenance'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await warnPromise;
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/maintenance 深链 SPA 404 ' + page.url());
+        }
+        if (!sawWarn) {
+          const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: /^当前账号无权访问该页面/ });
+          if (await toast.count()) {
+            await expect(toast.first()).toBeVisible({ timeout: 3000 });
+            sawWarn = true;
+          }
+        }
+        if (!sawWarn) throw new Error('未出现以「当前账号无权访问该页面」起头的警告提示');
+      };
+      await openMaintenanceDeepLink();
+  - note: 地址为 /industry-center/overview
+    assert: |-
+      await page.waitForURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await page.waitForFunction(() => !/[?&]upgrade=/.test(location.search), { timeout: 8000 }).catch(() => {});
+      const pathOnly = new URL(page.url()).pathname.replace(/\/$/, '');
+      if (pathOnly !== '/industry-center/overview') throw new Error('地址非 /industry-center/overview: ' + page.url());
+  - note: 页标题为「专题全景 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle('专题全景 - 科技专题服务系统', { timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: |-
+  goto catalog_path /industry-center/maintenance；admin 无产业链维护权限时 guard 落回 /industry-center/overview 并 Message.warning（起头「当前账号无权访问该页面」）。
+  edu 冷深链可能 SPA404：assert 内先经「返回首页」或 /industry-center/overview 预热再二次深链；仍 404 抛 ENV-EDU-TTS-SVCZ-404-001。
+  勿与 svc-maintenance 混淆。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

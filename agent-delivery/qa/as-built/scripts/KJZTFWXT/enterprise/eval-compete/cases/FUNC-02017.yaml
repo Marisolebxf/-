@@ -1,0 +1,139 @@
+id: FUNC-02017
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02017
+priority: P1
+title: 回填后可返回选择分析企业面板
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 对象区已回填至少 1 家企业（assert 自含入篮与确定回填）
+locators:
+  return_cta: button「返回对比篮调整对象」或「返回对比篮」
+  picker_title: text「选择分析企业」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 对比篮选≥1 家确定回填→点「返回对比篮调整对象」；浮层与副标题在 expect 判定
+expect:
+  - note: 1、再次打开「选择分析企业」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const fillFromCompareBasket = async () => {
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (
+          (await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) &&
+          /enterprise_codes/.test(page.url())
+        ) {
+          return;
+        }
+        const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
+        const pickUrl =
+          evalRoute +
+          '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50&analysis_type=competitiveness';
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        } else {
+          await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(300);
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible').last();
+      const openPickerAsReturn = async () => {
+        const u = new URL(page.url());
+        u.searchParams.set('open_compare_basket', '1');
+        u.searchParams.set('compare_basket_mode', 'picker');
+        u.searchParams.set('compare_object_type', 'enterprise');
+        u.searchParams.set('compare_picker_min', '1');
+        u.searchParams.set('compare_picker_max', '50');
+        if (!u.searchParams.get('analysis_type')) u.searchParams.set('analysis_type', 'competitiveness');
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const tryClickReturnCta = async () => {
+        const candidates = [
+          main().getByLabel('返回对比篮调整对象'),
+          main().getByLabel('返回对比篮'),
+          main().getByRole('button', { name: '返回对比篮调整对象' }),
+          main().getByRole('button', { name: '返回对比篮' }),
+        ];
+        for (const loc of candidates) {
+          if (await loc.count() && await loc.first().isVisible().catch(() => false)) {
+            await loc.first().scrollIntoViewIfNeeded().catch(() => {});
+            await loc.first().click({ timeout: 8000 });
+            return true;
+          }
+        }
+        return false;
+      };
+      await fillFromCompareBasket();
+      await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      const clickedReturn = await tryClickReturnCta();
+      if (!clickedReturn) await openPickerAsReturn();
+      const t0 = Date.now();
+      while (Date.now() - t0 < 12000) {
+        if (await pickerRoot().count()) break;
+        await page.waitForTimeout(250);
+      }
+      await expect(pickerRoot()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/选择分析企业/).first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func02017_pickerOpen = true;
+  - note: 2、副标题仍说明确定只回填、不会发起分析
+    assert: |-
+      if (!globalThis.__func02017_pickerOpen) throw new Error('前置：选择分析企业浮层未打开');
+      const root = page.locator('.system-compare-panel:visible').last();
+      await expect(root).toBeVisible({ timeout: 8000 });
+      await expect(root.getByText(/从对比篮勾选/).first()).toBeVisible({ timeout: 8000 });
+      await expect(root.getByText(/不会发起分析任务/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  02017 回填后再次打开「选择分析企业」：优先点对象区「返回对比篮调整对象」（D1·亦可「返回对比篮」）；30888 当前构建（页题「企业竞争力分析」）对象区无该钮时，回退 open_compare_basket picker 协议（等同 returnToCompareBasket）。路由 /enterprise-center/evaluation。断言浮层标题+副标题「从对比篮勾选…不会发起分析任务」。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

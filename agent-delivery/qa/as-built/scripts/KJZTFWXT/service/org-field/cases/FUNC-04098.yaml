@@ -1,0 +1,167 @@
+id: FUNC-04098
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04098
+priority: P0
+tier: B
+title: 主流程-广度摘要空态
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
+  - 已有一次没有覆盖矩阵的成功结果
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+  breadth_block: .svc-org-coverage-block（标题「服务广度 TOP3」）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 1、打开该次结果页（分析记录→已完成行「查看结果」）
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=field/);
+        await expect(page).toHaveURL(/tab=coverage/);
+        return !(await bodyIs404());
+      };
+      const ensureOnFieldCoverage = async () => {
+        await dismissBasket();
+        if (onTarget() && !(await bodyIs404())) return;
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          const siblings = ['/service-portal/overview/overview', '/service-portal/overview', '/industry-center/search'];
+          let ok = false;
+          for (const s of siblings) {
+            if (await enterViaSidebar(s)) {
+              ok = true;
+              break;
+            }
+          }
+          if (!ok) {
+            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均 SPA404，无法打开结果页 url=' + page.url());
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构产业领域分析入口不可用 ' + page.url());
+        }
+      };
+      const openExistingResult = async () => {
+        if (/view=result/.test(page.url())) {
+          const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          if (/服务广度 TOP3|当前结果快照没有覆盖矩阵|服务机构产业领域服务广度/.test(main0)) return;
+        }
+        const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
+        await expect(recTab).toBeVisible({ timeout: 12000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+        await page.waitForTimeout(1200);
+        const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+        if (!/SVC-\d{8}-\d+/.test(mainRec)) {
+          throw new Error('ENV-SVC-ORG-FIELD-NO-RECORDS：分析记录无历史任务，无法满足「已有一次没有覆盖矩阵的成功结果」');
+        }
+        if (!/已完成/.test(mainRec)) {
+          throw new Error('ENV-SVC-ORG-FIELD-NO-DONE-RECORD：分析记录无已完成行');
+        }
+        const rows = page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /已完成/ }).filter({ hasText: /SVC-\d{8}-\d+/ });
+        const rowN = await rows.count();
+        if (!rowN) throw new Error('ENV-SVC-ORG-FIELD-NO-DONE-RECORD：未定位到已完成任务行');
+        let opened = false;
+        for (let i = 0; i < Math.min(rowN, 8) && !opened; i++) {
+          const row = rows.nth(i);
+          const resBtn = row.getByRole('button', { name: /查看结果/ }).first();
+          if (!(await resBtn.count())) continue;
+          if (await resBtn.isDisabled().catch(() => false)) continue;
+          await resBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+          for (let j = 0; j < 15; j++) {
+            const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+            if (/view=result/.test(page.url()) || /服务广度 TOP3|当前结果快照没有覆盖矩阵/.test(body)) {
+              opened = true;
+              break;
+            }
+            await page.waitForTimeout(1000);
+          }
+          if (!opened) {
+            await recTab.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1000);
+          }
+        }
+        if (!opened) {
+          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+        }
+      };
+      await ensureOnFieldCoverage();
+      await openExistingResult();
+      globalThis.__func04098 = { resultOpen: true };
+      const main = page.locator('main').first();
+      await expect(main.getByText('服务广度 TOP3').first()).toBeVisible({ timeout: 10000 });
+  - note: 1、「服务广度 TOP3」显示「暂无可排名机构」
+    assert: |-
+      if (!globalThis.__func04098?.resultOpen) throw new Error('前置：未打开该次结果页');
+      const blocks = page.locator('.svc-org-coverage-block');
+      const breadth = blocks.filter({ has: page.locator('h4').filter({ hasText: /^服务广度 TOP3$/ }) }).first();
+      if (await breadth.count()) {
+        await expect(breadth.getByText('暂无可排名机构').first()).toBeVisible({ timeout: 8000 });
+        const txt = ((await breadth.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/服务广度 TOP3/.test(txt) || !/暂无可排名机构/.test(txt)) {
+          throw new Error('广度摘要区块文案不符: ' + txt.slice(0, 200));
+        }
+      } else {
+        const main = page.locator('main').first();
+        const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = body.match(/服务广度 TOP3[\s\S]{0,80}暂无可排名机构/);
+        if (!m) {
+          throw new Error('主区未见「服务广度 TOP3」邻接「暂无可排名机构」: ' + body.slice(0, 320));
+        }
+        await expect(main.getByText('暂无可排名机构').first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04098=无覆盖矩阵成功结果下，核心结论「服务广度 TOP3」诚实空文案「暂无可排名机构」（scout-p008/p014/env-gate 关评审复勘）。
+  入口=分析记录已完成行「查看结果」；catalog_path=/service/institution-judgment?workspace=field&tab=coverage；edu 深链 SPA404 时 sibling 侧栏补进（对齐 FUNC-04096）。

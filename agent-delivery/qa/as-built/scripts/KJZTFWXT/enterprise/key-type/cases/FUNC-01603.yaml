@@ -1,0 +1,76 @@
+id: FUNC-01603
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01603
+priority: P1
+title: 取消已勾选的一行后已选归零且不能加入
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单已打开且有企业行
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  row_checkbox: 抽屉企业行 .arco-checkbox
+  selected_count: 抽屉 footer「已选 N 家」
+  add_compare_btn: 抽屉 footer button「加入对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、勾选一行再取消；已选归零与加入禁用态在 expect 内
+expect:
+  - note: 1、勾选一行后已选家数大于 0，「加入对比篮」可点
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      const row = profiles.first().locator('xpath=ancestor::div[contains(@class,"items-start")][1]');
+      const rowCb = row.locator('.arco-checkbox').first();
+      await expect(rowCb).toBeVisible({ timeout: 8000 });
+      await rowCb.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      const selAfter = drawer.getByText(/已选\s+\d+\s*家/).first();
+      await expect(selAfter).toBeVisible({ timeout: 8000 });
+      const selTxt = ((await selAfter.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const m = selTxt.match(/已选\s+(\d+)\s*家/);
+      const n = m ? parseInt(m[1], 10) : -1;
+      if (n < 1) throw new Error('勾选一行后已选家数未大于 0，实际：「' + selTxt + '」');
+      const addBtn = drawer.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(addBtn).toBeEnabled({ timeout: 8000 });
+  - note: 2、再次点击该行勾选框后已选家数回到 0
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const row = profiles.first().locator('xpath=ancestor::div[contains(@class,"items-start")][1]');
+      const rowCb = row.locator('.arco-checkbox').first();
+      await rowCb.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      await expect(drawer.getByText('已选 0 家').first()).toBeVisible({ timeout: 8000 });
+      const checked = rowCb.locator('.arco-checkbox-checked');
+      if (await checked.count()) {
+        throw new Error('取消勾选后行 checkbox 仍为 checked');
+      }
+  - note: 3、「加入对比篮」为禁用
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      const addBtn = drawer.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(addBtn).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；企业清单抽屉 footer 文案「已选 N 家」（EnterpriseListDrawer selectedIds.length）。行首 a-checkbox 二次点击取消勾选。登录与关内部评审由 runner 会话前置。

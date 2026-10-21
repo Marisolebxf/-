@@ -1,0 +1,223 @@
+id: FUNC-02024
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02024
+priority: P0
+title: 删除分析记录确定后任务从最近评估消失
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 最近评估至少有一条记录（锚定首条可见「删除」行）
+locators:
+  recent_tab: tab「最近评估」
+  delete_button: button「删除」
+  modal_ok: 弹框 button「确定」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 最近评估→记录任务 ID 与总条数→点「删除」→弹框点「确定」；提示与列表断言在 expect
+expect:
+  - note: 1、出现「已删除」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const rowFromAnchor = (anchor) =>
+        anchor.locator('xpath=ancestor::tr[1] | ancestor::*[contains(@class,"arco-table-tr")][1]').first();
+      const deleteInRow = (row) => row.locator('button, .arco-btn').filter({ hasText: /^删除$/ }).last();
+      const parseTotalCount = (text) => {
+        const m = text.match(/共\s*(\d+)\s*条/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const pickHistoryDelete = async () => {
+        const rowAnchors = async (name) => {
+          const btns = main().getByRole('button', { name, exact: true });
+          const n = await btns.count();
+          const out = [];
+          for (let i = 0; i < n; i++) out.push(btns.nth(i));
+          return out;
+        };
+        const anchors = [
+          ...(await rowAnchors('恢复结果')),
+          ...(await rowAnchors('继续查看')),
+        ];
+        for (const anchor of anchors) {
+          if (!(await anchor.isVisible().catch(() => false))) continue;
+          const row = rowFromAnchor(anchor);
+          const del = deleteInRow(row);
+          if (!(await del.count())) continue;
+          await del.scrollIntoViewIfNeeded().catch(() => {});
+          if (!(await del.isVisible().catch(() => false))) continue;
+          return { del, row };
+        }
+        const dels = main().locator('button, .arco-btn').filter({ hasText: /^删除$/ });
+        const dn = await dels.count();
+        for (let i = 0; i < dn; i++) {
+          const del = dels.nth(i);
+          await del.scrollIntoViewIfNeeded().catch(() => {});
+          if (!(await del.isVisible().catch(() => false))) continue;
+          const inMain = await del.evaluate((el) => !!el.closest('main'));
+          if (!inMain) continue;
+          return { del, row: rowFromAnchor(del) };
+        }
+        return null;
+      };
+      const waitRecentList = async () => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < 20000) {
+          const t = await main().innerText().catch(() => '');
+          if (/删除/.test(t) || /恢复结果/.test(t) || /继续查看/.test(t)) return;
+          if (/共\s*\d+\s*条/.test(t) && !/加载/.test(t)) return;
+          if (/暂无|没有.*记录|空/.test(t)) return;
+          await page.waitForTimeout(400);
+        }
+      };
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const tableTaskIds = async () => {
+        const rows = main().locator('table tbody tr');
+        const n = await rows.count();
+        const ids = [];
+        for (let i = 0; i < n; i++) {
+          const txt = await rows.nth(i).innerText().catch(() => '');
+          const m = txt.match(TID_RE);
+          if (m) ids.push(m[0]);
+        }
+        if (ids.length) return ids;
+        const body = await main().innerText().catch(() => '');
+        const all = body.match(new RegExp(TID_RE.source, 'g')) || [];
+        return [...new Set(all)];
+      };
+      const scrollHistoryActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const histTable = main().locator('.arco-table').first();
+      await expect(histTable).toBeVisible({ timeout: 10000 });
+      await waitRecentList();
+      await scrollHistoryActions();
+      let picked = await pickHistoryDelete();
+      if (!picked) {
+        await scrollHistoryActions();
+        picked = await pickHistoryDelete();
+      }
+      const hasHistoryRow = (await main().getByRole('button', { name: '恢复结果' }).count()) > 0
+        || (await main().getByRole('button', { name: '继续查看' }).count()) > 0
+        || TID_RE.test(await main().innerText().catch(() => ''));
+      if (!picked) {
+        if (hasHistoryRow) {
+          throw new Error('最近评估有历史行但操作列无「删除」按钮（ticket=DEF-ENT-EVAL-HISTORY-DELETE-UI-001）');
+        }
+        throw new Error('最近评估无可删除记录（ticket=ENV-EVAL-COMPETE-HISTORY-001）');
+      }
+      const { del: delBtn, row } = picked;
+      let rowText = (await row.count()) ? await row.innerText().catch(() => '') : '';
+      if (!rowText || !TID_RE.test(rowText)) {
+        rowText = await main().innerText().catch(() => '');
+      }
+      const tidM = rowText.match(TID_RE);
+      if (!tidM) throw new Error('删除前行未见任务 ID（ticket=ENV-EVAL-COMPETE-HISTORY-001）');
+      const expectedTid = tidM[0];
+      const mainTextBefore = await main().innerText().catch(() => '');
+      const totalBefore = parseTotalCount(mainTextBefore);
+      const idsBefore = await tableTaskIds();
+      if (!idsBefore.includes(expectedTid)) {
+        throw new Error('锚定任务 ID 不在表格行内：' + expectedTid);
+      }
+      globalThis.__func02024_tid = expectedTid;
+      globalThis.__func02024_totalBefore = totalBefore;
+      globalThis.__func02024_idsBeforeLen = idsBefore.length;
+      await delBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '删除分析记录' });
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const ok = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(ok).toBeVisible({ timeout: 5000 });
+      await ok.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(modal).toBeHidden({ timeout: 10000 });
+      const msg = page.locator('.arco-message-content').filter({ hasText: '已删除' }).first();
+      await expect(msg).toBeVisible({ timeout: 10000 });
+      globalThis.__func02024_deleted = true;
+  - note: 2、该任务不再出现在最近评估
+    assert: |-
+      if (!globalThis.__func02024_deleted) throw new Error('前置：未完成删除确定');
+      const expectedTid = globalThis.__func02024_tid;
+      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const tableTaskIds = async () => {
+        const rows = main().locator('table tbody tr');
+        const n = await rows.count();
+        const ids = [];
+        for (let i = 0; i < n; i++) {
+          const txt = await rows.nth(i).innerText().catch(() => '');
+          const m = txt.match(TID_RE);
+          if (m) ids.push(m[0]);
+        }
+        if (ids.length) return ids;
+        const body = await main().innerText().catch(() => '');
+        const all = body.match(new RegExp(TID_RE.source, 'g')) || [];
+        return [...new Set(all)];
+      };
+      const t0 = Date.now();
+      while (Date.now() - t0 < 15000) {
+        const idsAfter = await tableTaskIds();
+        if (!idsAfter.includes(expectedTid)) break;
+        await page.waitForTimeout(500);
+      }
+      const idsFinal = await tableTaskIds();
+      if (idsFinal.includes(expectedTid)) {
+        throw new Error('确定删除后任务仍在最近评估列表：' + expectedTid);
+      }
+      const rowStill = main().locator('table tbody tr').filter({ hasText: expectedTid });
+      await expect(rowStill).toHaveCount(0, { timeout: 3000 });
+  - note: 3、列表总条数减少 1
+    assert: |-
+      if (!globalThis.__func02024_deleted) throw new Error('前置：未完成删除确定');
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const parseTotalCount = (text) => {
+        const m = text.match(/共\s*(\d+)\s*条/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const totalBefore = globalThis.__func02024_totalBefore;
+      const idsBeforeLen = globalThis.__func02024_idsBeforeLen;
+      const mainText = await main().innerText().catch(() => '');
+      const totalAfter = parseTotalCount(mainText);
+      if (totalBefore != null && totalAfter != null) {
+        if (totalAfter !== totalBefore - 1) {
+          throw new Error(`总条数应减 1：删除前共 ${totalBefore} 条，删除后共 ${totalAfter} 条`);
+        }
+        return;
+      }
+      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const rows = main().locator('table tbody tr');
+      const n = await rows.count();
+      let idRows = 0;
+      for (let i = 0; i < n; i++) {
+        const txt = await rows.nth(i).innerText().catch(() => '');
+        if (TID_RE.test(txt)) idRows++;
+      }
+      const expectedAfter = typeof idsBeforeLen === 'number' ? idsBeforeLen - 1 : null;
+      if (expectedAfter != null && idRows !== expectedAfter) {
+        throw new Error(`任务行数应减 1：删除前 ${idsBeforeLen} 行，删除后 ${idRows} 行`);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  FUNC-02024 主流程-删除记录确定（取消路径见 02011）。最近评估行内「删除」→Modal「删除分析记录」→「确定」→Message「已删除」且任务 ID 消失、总条数减 1。30888 /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness。对齐 01925/01806 软删链；无「删除」钮→DEF-ENT-EVAL-HISTORY-DELETE-UI-001。破坏性：会真删一条记录。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,85 @@
+id: FUNC-04026
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04026
+priority: P1
+tier: B
+title: 示例填入后再点搜索会解析成两个条件标签
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「智能检索」Tab
+locators:
+  example_chip: button「知识产权 广东」（enterprise-search-example-button）
+  search_btn: button「搜索」
+  search_input: textbox placeholder 含「用一句话描述机构需求」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 点示例「知识产权 广东」再点搜索（判定在 expect）
+expect:
+  - note: 1、已匹配条件含「所在城市：广东」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const hideCompareBasket = async () => {
+        const x = page.locator('[aria-label="关闭对比篮"]');
+        if (!(await x.count())) return;
+        if (await x.first().isVisible().catch(() => false)) {
+          await x.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterSvcSearch = async () => {
+        await hideCompareBasket();
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await page.getByRole('button', { name: '知识产权 广东', exact: true }).click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(1200);
+      await expect(page.getByText(/所在城市：广东/)).toBeVisible({ timeout: 15000 });
+  - note: 2、已匹配条件含「行业：知识产权」
+    assert: |-
+      await expect(page.getByText(/行业：知识产权/)).toBeVisible({ timeout: 8000 });
+  - note: 3、结果文案为「暂无匹配的服务机构」
+    assert: |-
+      await expect(page.getByText('暂无匹配的服务机构', { exact: true })).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 示例 chip「知识产权 广东」仅填充见 01331；再点搜索解析双条件标签 + 空结果文案。catalog_path=/service-center/search；侧栏经 sibling /industry-center/search 进 menu_leaf（同 03988）。2026-10-20 机跑 C6 SPA404（ENV-EDU-TTS-SVCZ-404-001），待 svcz 恢复复跑。对比篮浮层可见才关。

@@ -1,0 +1,98 @@
+id: FUNC-01444
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01444
+priority: P1
+title: 地域来源选区域后第二列三大经济圈
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  stack: recruit-tab-stack
+  region_cascader: .sci-arco-cascader[aria-label="地域来源"]
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 展开地域来源、点选区域；第二列项数与文案在 expect 判定
+expect:
+  - note: 条件区地域来源级联可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
+      };
+      await dismissBasket();
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let region = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
+      if ((await region.count()) < 1) {
+        region = page.locator('[aria-label="选择区域"]').first();
+      }
+      if ((await region.count()) < 1) {
+        throw new Error('条件区未见地域来源级联，url=' + page.url());
+      }
+      await expect(region).toBeVisible({ timeout: 8000 });
+  - note: 点选区域后第二列共 3 项京津冀、长三角、大湾区
+    assert: |-
+      const EXPECTED = ['京津冀', '长三角', '大湾区'];
+      await page.keyboard.press('Escape').catch(() => {});
+      let regionView = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
+      if ((await regionView.count()) < 1) {
+        regionView = page.locator('[aria-label="选择区域"]').first();
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const firstCol = page.locator('.arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const regionItem = firstCol.locator('.arco-cascader-list-item').filter({ hasText: /^区域$/ });
+      const regionLoose = firstCol.locator('.arco-cascader-list-item').filter({ hasText: '区域' });
+      const pick = (await regionItem.count()) ? regionItem.first() : regionLoose.first();
+      if ((await pick.count()) < 1) {
+        const sample = await firstCol.locator('.arco-cascader-list-item').allTextContents();
+        throw new Error('第一列未见「区域」，实际=' + sample.join('|'));
+      }
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const secondCol = page.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      const items = secondCol.locator('.arco-cascader-list-item');
+      const count = await items.count();
+      const texts = (await items.allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      if (count !== EXPECTED.length || texts.length !== EXPECTED.length) {
+        throw new Error(
+          `区域第二列项数为 ${count}（去重后 ${texts.length}），预期 ${EXPECTED.length} 项；实际=${texts.join('、') || '(空)'}；期望=${EXPECTED.join('、')}`,
+        );
+      }
+      for (const name of EXPECTED) {
+        const hit = texts.some((t) => t === name || t.includes(name));
+        if (!hit) {
+          throw new Error(`区域第二列缺少「${name}」；实际=${texts.join('、')}`);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/attraction；步骤=条件区展开地域来源→第一列点「区域」→第二列 3 项京津冀/长三角/大湾区。D4·2026-10-20 机跑 rewrite-FUNC-01444（21:29Z+8）2 项 expect 全绿（与 01412/01442/01443 全国全球树偏差不同，现场「区域」子项已对齐用例册）。登录与关评审由 runner 前置。B 档零 allow_skip。

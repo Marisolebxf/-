@@ -1,0 +1,42 @@
+id: FUNC-01605
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01605
+priority: P1
+title: 未勾选企业时加入对比篮不可用
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单尚未勾选任何行
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  selected_count: 抽屉 footer「已选 N 家」
+  add_compare_btn: 抽屉 footer button「加入对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 点击「查看企业清单」；未选态与加入禁用态在 expect 内
+expect:
+  - note: 1、「加入对比篮」为禁用；2、已选家数为 0
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByText('已选 0 家').first()).toBeVisible({ timeout: 8000 });
+      const addBtn = drawer.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(addBtn).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；用例步骤为点「查看企业清单」后验抽屉默认未选态（已选 0 家、加入对比篮 disabled），不要求先打开清单。登录与关内部评审由 runner 会话前置。

@@ -1,0 +1,79 @@
+id: FUNC-02238
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02238
+priority: P1
+title: 备选-侧栏隔离-招引与培育标题各自正确
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已在培育企业推荐分析
+locators:
+  sidebar_attract: 侧栏「招引企业推荐分析」
+  sidebar_cultivate: 侧栏「培育企业推荐分析」
+  h1_attract: heading「招引企业推荐分析」
+  h1_cultivate: heading「培育企业推荐分析」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 侧栏招引→侧栏培育；两页标题在 expect 判定（不写招引筛选器）
+expect:
+  - note: 1、招引页标题为「招引企业推荐分析」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const clickSidebar = async (label) => {
+        const link = page.getByRole('link', { name: label, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 10000 });
+        } else {
+          const item = page.locator('.arco-menu-item').filter({ hasText: new RegExp('^' + label + '$') });
+          await expect(item.first()).toBeVisible({ timeout: 10000 });
+          await item.first().click({ timeout: 10000 });
+        }
+        await page.waitForURL(/attraction/, { timeout: 15000 });
+        await page.waitForTimeout(600);
+      };
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '培育企业推荐分析' }).first()).toBeVisible({ timeout: 8000 });
+      await clickSidebar('招引企业推荐分析');
+      await expect(page).toHaveURL(/workspace=attraction/);
+      await expect(page).not.toHaveURL(/workspace=cultivation/);
+      await expect(page.getByRole('heading', { name: '招引企业推荐分析' }).first()).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main').first();
+      const text = (await main.innerText()).replace(/\s+/g, ' ');
+      if (/培育企业推荐分析/.test(text) && !/招引企业推荐分析/.test(text.slice(0, 120))) {
+        throw new Error('侧栏进入招引后仍停在培育页，main 前段=' + text.slice(0, 160));
+      }
+  - note: 2、回到后标题为「培育企业推荐分析」
+    assert: |-
+      const clickSidebar = async (label) => {
+        const link = page.getByRole('link', { name: label, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 10000 });
+        } else {
+          const item = page.locator('.arco-menu-item').filter({ hasText: new RegExp('^' + label + '$') });
+          await expect(item.first()).toBeVisible({ timeout: 10000 });
+          await item.first().click({ timeout: 10000 });
+        }
+        await page.waitForURL(/attraction/, { timeout: 15000 });
+        await page.waitForTimeout(600);
+      };
+      await clickSidebar('培育企业推荐分析');
+      await expect(page).toHaveURL(/workspace=cultivation/);
+      await expect(page.getByRole('heading', { name: '培育企业推荐分析' }).first()).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main').first();
+      const text = (await main.innerText()).replace(/\s+/g, ' ');
+      if (/招引企业推荐分析/.test(text.slice(0, 120)) && !/培育企业推荐分析/.test(text.slice(0, 120))) {
+        throw new Error('侧栏回到培育后仍停在招引页，main 前段=' + text.slice(0, 160));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction + workspace=cultivation&recommendation_tab=cultivation 前置。步骤=侧栏「招引企业推荐分析」→侧栏「培育企业推荐分析」（替代作废 01005 改地址隔离）。机检=两页 main H1 各自正确且 workspace query 互斥。不写招引筛选器断言。登录与关评审由 runner 前置。B 档零 allow_skip。

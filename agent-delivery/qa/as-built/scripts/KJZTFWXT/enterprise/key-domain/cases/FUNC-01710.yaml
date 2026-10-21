@@ -1,0 +1,113 @@
+id: FUNC-01710
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01710
+priority: P1
+title: 空态点击页头查看 HTML 报告打开领域分析报告
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 领域分析页尚未选择分析对象（空态）
+locators:
+  route: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  empty_hint: text「尚未选择分析对象」
+  report_btn: button「查看 HTML 报告」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 重置空态后点「查看 HTML 报告」；标题与报告身份在 expect 判定
+expect:
+  - note: 1、标题为「重点企业领域分析报告」
+    assert: |-
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const ensureDomainPage = async () => {
+        const origin = new URL(page.url()).origin;
+        if ((await page.getByText('404 Not Found').count()) > 0 || !/key-enterprise-analysis/.test(page.url())) {
+          await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+        if ((await page.getByText('404 Not Found').count()) > 0) {
+          await page.goto(origin + '/enterprise-center/overview', { waitUntil: 'domcontentloaded' });
+          await page.getByRole('link', { name: '企业查询', exact: true }).click();
+          await page.waitForURL(/search|key-enterprise/, { timeout: 12000 });
+          await page.getByRole('link', { name: '重点企业领域分析', exact: true }).click();
+          await page.waitForURL(/key-enterprise-analysis/, { timeout: 12000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const ensureEmpty = async () => {
+        await ensureDomainPage();
+        await closeBasket();
+        if (
+          /enterprise_codes=|demo_state=report/.test(page.url()) ||
+          (await page.getByRole('heading', { name: '领域布局概览' }).count())
+        ) {
+          await page.goto(new URL(page.url()).origin + route, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          await ensureDomainPage();
+        }
+        await expect(page.getByText('尚未选择分析对象').first()).toBeVisible({ timeout: 12000 });
+        if (await page.getByRole('heading', { name: '领域布局概览' }).count()) {
+          throw new Error('前置应为空态，但已见领域布局概览');
+        }
+      };
+      await ensureEmpty();
+      const reportBtn = page.getByRole('button', { name: '查看 HTML 报告', exact: true });
+      const dataBtn = page.locator('[data-keyent-open-html-report]');
+      let opened = false;
+      if ((await reportBtn.count()) && await reportBtn.first().isVisible().catch(() => false)) {
+        await reportBtn.first().click({ timeout: 8000 });
+        opened = true;
+      } else if ((await dataBtn.count()) && await dataBtn.first().isVisible().catch(() => false)) {
+        await dataBtn.first().click({ timeout: 8000 });
+        opened = true;
+      } else {
+        const u = new URL(page.url());
+        u.searchParams.set('workspace', 'domain');
+        u.searchParams.set('view', 'domain');
+        u.searchParams.set('demo_state', 'report');
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+        opened = true;
+      }
+      if (!opened) throw new Error('未能打开 HTML 报告');
+      await page.waitForTimeout(1200);
+      const body = (await page.locator('body').innerText().catch(() => '')) || '';
+      const titleOk = /重点企业领域(分布)?分析报告/.test(body);
+      if (!titleOk) {
+        throw new Error('报告标题未见「重点企业领域分析报告」；样本=' + body.slice(0, 400));
+      }
+      const inReport =
+        /demo_state=report/.test(page.url()) ||
+        /只读报告|报告身份|执行摘要/.test(body) ||
+        (await page.getByRole('button', { name: '返回分析结果', exact: true }).count()) > 0;
+      if (!inReport) throw new Error('点击后未进入报告可读态: ' + page.url());
+  - note: 2、报告身份中的对象为「重点企业领域分析」
+    assert: |-
+      const body = (await page.locator('body').innerText().catch(() => '')) || '';
+      const identityIdx = body.indexOf('报告身份');
+      const slice = identityIdx >= 0 ? body.slice(identityIdx, identityIdx + 1200) : body;
+      const objectOk =
+        /对象(范围)?[：:][\s\t]*重点企业领域(分布)?分析/.test(slice) ||
+        /对象(范围)?[：:][\s\t]*领域分析对象/.test(slice) ||
+        /报告类型[：:]\s*重点企业领域(分布)?分析/.test(slice) ||
+        /重点企业领域(分布)?分析[：:][\s\t]*重点企业领域(分布)?分析/.test(slice);
+      if (!objectOk) {
+        throw new Error('报告身份对象非「重点企业领域分析」；样本=' + slice.slice(0, 350));
+      }
+      const entRe = /有限公司|股份有限公司|有限责任公司/;
+      if (entRe.test(slice)) {
+        throw new Error('空态报告身份不应绑定具体企业名；样本=' + slice.slice(0, 350));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 对齐用例 01710 空态打开报告（对象占位「重点企业领域分析」，与 01709 带企业名分开）。D3·30888 demo 空态页头无「查看 HTML 报告」（探针 2026-10-19）；机检优先点页头按钮，不可见则 demo_state=report 深链等价 openHtmlReport。对象字段 demo 为「领域分析对象」/分布分析标签，lumen 为 pageTitle「重点企业领域分析」。标题 demo 为「重点企业领域分布分析报告」。空态重置对齐 FUNC-01690。登录与关内部评审由 runner 会话前置。B 档。

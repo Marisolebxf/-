@@ -1,0 +1,80 @@
+id: FUNC-03006
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03006
+priority: P1
+title: 切到当次自定义配置后显示未保存模板与提示文案
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 选择模板为「区域产业指数官方模板」
+locators:
+  template: .arco-select-view（官方模板/未保存）
+  popup: .arco-trigger-popup:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入指数页→官方模板→点「当前未保存配置」（判定在 expect）
+expect:
+  - note: 1、模板显示「当前未保存配置」；2、提示为「当前为未保存的自定义配置；可保存为个人模板。」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            const u = new URL('/industry-center/search', baseUrl);
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      await enterRegionalIndex();
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 15000 });
+      const tplView = page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first();
+      await tplView.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      await expect(pop.getByText('系统模板', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      await expect(pop.getByText('当次自定义配置', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      await pop.getByText('当前未保存配置', { exact: true }).last().click({ force: true });
+      await page.waitForTimeout(900);
+      await expect(page.locator('.arco-select-view').filter({ hasText: '当前未保存配置' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('当前为未保存的自定义配置；可保存为个人模板。').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  替换作废 00572 前半。catalog_path=entry-seed；edu 深链 404 时 sibling 侧栏进页（同 FUNC-03003）。
+  模板下拉三组：系统模板 / 我的模板 / 当次自定义配置（scout-template-options）。P7 点 .arco-select-view 触发器。
+  登录关评审由 runner 前置。B 档零 allow_skip。

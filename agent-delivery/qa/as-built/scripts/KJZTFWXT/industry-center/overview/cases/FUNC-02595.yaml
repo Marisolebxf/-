@@ -1,0 +1,43 @@
+id: FUNC-02595
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02595
+priority: P0
+title: 未点图谱环节时右侧给出选择引导
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 当前为「产业链全景」
+  - 尚未点选图谱环节
+locators:
+  right_panel: .industry-overview-object-panel
+  empty_heading: .industry-overview-object-panel h3
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 确认「产业链全景」Tab 与右侧未选环节空引导；判定在 expect
+expect:
+  - note: 1、右侧出现「选择细分产业」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      const panTab = page.getByRole('tab', { name: '产业链全景' });
+      await expect(panTab).toHaveAttribute('aria-selected', 'true', { timeout: 10000 });
+      const panel = page.locator('.industry-overview-object-panel');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('h3')).toHaveText('选择细分产业', { timeout: 8000 });
+  - note: 2、引导含「点击左侧图谱中的细分产业查看简介与企业列表」
+    assert: |-
+      const panel = page.locator('.industry-overview-object-panel');
+      await expect(
+        panel.getByText('点击左侧图谱中的细分产业查看简介与企业列表')
+      ).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  右侧对象面板 .industry-overview-object-panel；空态标题 h3「选择细分产业」、Empty 描述与用例册一致（对照 lumen-ui-topic IndustryPanoramaDetail）。
+  深链 /industry-center/overview 默认「产业链全景」Tab 且未点环节即空引导。路由 catalog_path 同 entry-seed。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

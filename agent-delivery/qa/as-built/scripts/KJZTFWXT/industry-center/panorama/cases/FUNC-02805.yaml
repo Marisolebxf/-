@@ -1,0 +1,130 @@
+id: FUNC-02805
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02805
+priority: P1
+title: 分析对象左侧切生物产业后下级联动
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱页
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .industry-catalog-select
+  h1: '#panorama-workspace-title'
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 展开分析对象左侧并选择「生物产业」
+expect:
+  - note: 前置：已进入本页
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      await cluster.scrollIntoViewIfNeeded();
+      await cluster.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const bioOpt = pop.locator('.arco-select-option').filter({ hasText: /^生物产业$/ }).first();
+      await expect(bioOpt).toBeVisible({ timeout: 5000 });
+      await bioOpt.click();
+      await page.waitForTimeout(600);
+      globalThis.__func02805_bioSelected = true;
+  - note: 1、右侧下拉当前为空，选项共 3 个（附录 D）
+    assert: |-
+      if (!globalThis.__func02805_bioSelected) throw new Error('前置：未选择生物产业');
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 8000 });
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      const left = await read(objectSelects.nth(0));
+      if (!/^生物产业$/.test(left)) {
+        throw new Error('分析对象左侧应为「生物产业」，现场=' + left);
+      }
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industry).toBeVisible({ timeout: 8000 });
+      const rightVal = await read(industry);
+      if (rightVal && !/^请选择/.test(rightVal)) {
+        throw new Error('分析对象右侧应为空/占位，现场=' + rightVal);
+      }
+      const want = ['生物', '生物医药与生命健康', '高端医疗器械'];
+      await industry.scrollIntoViewIfNeeded();
+      await industry.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 3) {
+        throw new Error('生物产业下右侧选项应为 3 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '生物产业下右侧选项不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+  - note: 2、所属产业链无可选项；3、主标题为「产业链全景图谱」；此态不出现「开始分析」
+    assert: |-
+      if (!globalThis.__func02805_bioSelected) throw new Error('前置：未选择生物产业');
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const seg = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      await expect(seg).toBeVisible({ timeout: 8000 });
+      const segVal = await read(seg);
+      if (/半导体|集成电路|人工智能|软件与信息|新型网络|超高清|智能终端/.test(segVal)) {
+        throw new Error('所属产业链应无可选已应用链，现场=' + segVal);
+      }
+      await seg.scrollIntoViewIfNeeded();
+      await seg.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      const optCount = pop.locator('.arco-select-option');
+      const n = await optCount.count();
+      if (n > 0) {
+        const labels = [];
+        for (let i = 0; i < n; i++) {
+          labels.push(((await optCount.nth(i).innerText()) || '').trim());
+        }
+        throw new Error('所属产业链下拉应无可选项，实际 count=' + n + ' labels=' + JSON.stringify(labels));
+      }
+      await page.keyboard.press('Escape');
+      const h1 = page.locator('#panorama-workspace-title');
+      await expect(h1).toHaveText('产业链全景图谱', { timeout: 8000 });
+      const startBtn = page.getByRole('button', { name: '开始分析' });
+      const startVis = await startBtn.isVisible().catch(() => false);
+      if (startVis) {
+        throw new Error('此态不应出现「开始分析」按钮');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；步骤对齐用例 02805：aria「集群」选生物产业后 aria「产业」清空且附录 D 三项
+  （生物、生物医药与生命健康、高端医疗器械）；所属产业链 industry-catalog-select 展开 optionCount=0，H1=testdata page.h1_page。
+  用例备注此态无「开始分析」（与仅改数据截至的 02806 区分）。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；联动断言仍依 scout-deep2 附录 D。

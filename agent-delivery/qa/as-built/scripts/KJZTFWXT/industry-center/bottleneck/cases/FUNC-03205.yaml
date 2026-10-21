@@ -1,0 +1,158 @@
+id: FUNC-03205
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03205
+priority: P0
+title: 结果页「查看报告」打开报告与七节目录
+story: US-CHAIN-DIAG-06
+entry_id: chain-bottleneck
+tier: B
+preconditions:
+  - 已打开一条产业瓶颈堵点识别成功结果
+locators:
+  view_report: button「查看报告」
+  report_toc: nav.report-toc
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 成功结果页点「查看报告」；报告标题与附录C 七节目录在 expect
+expect:
+  - note: 前置：打开成功结果并点「查看报告」（用例步骤 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
+      };
+      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
+      const enterBottleneck = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=bottleneck/.test(page.url()) &&
+          /tab=bottleneck/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=bottleneck/);
+        await expect(page).toHaveURL(/tab=bottleneck/);
+      };
+      const isBottleneckResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        return /产业瓶颈堵点识别结果/.test(t) || (await page.getByText('产业瓶颈堵点识别结果').first().isVisible().catch(() => false));
+      };
+      const openFromRecords = async () => {
+        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' }).filter({ hasText: /已完成|成功/ });
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
+          if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
+          await view.click({ timeout: 12000, force: true });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isBottleneckResult()) return true;
+          }
+        }
+        return false;
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      await enterBottleneck();
+      if (!(await isBottleneckResult())) {
+        if (!(await openFromRecords())) {
+          throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03205：诊断记录无已完成瓶颈任务可打开结果');
+        }
+      }
+      await expect(page.getByText('产业瓶颈堵点识别结果').first()).toBeVisible({ timeout: 20000 });
+      const reportBtn = main().getByRole('button', { name: '查看报告' }).first();
+      await expect(reportBtn).toBeVisible({ timeout: 8000 });
+      await expect(reportBtn).toBeEnabled({ timeout: 8000 });
+      await reportBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      globalThis.__func03205 = { readerReady: true };
+      await expect(reader).toBeVisible({ timeout: 8000 });
+  - note: 1、可见「产业瓶颈堵点识别报告」
+    assert: |-
+      if (!globalThis.__func03205?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const body = ((await reader.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const h1 = reader.locator('h1').first();
+      const hasTitle =
+        (await h1.isVisible().catch(() => false) && /产业瓶颈堵点识别报告/.test(await h1.innerText().catch(() => ''))) ||
+        /产业瓶颈堵点识别报告/.test(body);
+      if (!hasTitle) {
+        throw new Error('报告页未见「产业瓶颈堵点识别报告」，片段=' + body.slice(0, 200));
+      }
+      await expect(page.getByText('产业瓶颈堵点识别报告').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、报告目录 7 项名称见附录C
+    assert: |-
+      if (!globalThis.__func03205?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader.getByText('报告目录').first()).toBeVisible({ timeout: 8000 });
+      const toc = reader.locator('nav.report-toc, nav[aria-label="报告目录"]').first();
+      await expect(toc).toBeVisible({ timeout: 8000 });
+      const tocText = await toc.innerText();
+      const required = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const missing = required.filter((label) => !tocText.includes(label));
+      if (missing.length) {
+        throw new Error('报告目录缺节：' + missing.join('、') + '；目录片段=' + tocText.slice(0, 280));
+      }
+      if (required.filter((label) => tocText.includes(label)).length !== 7) {
+        throw new Error('报告目录节数不为 7，目录=' + tocText.replace(/\s+/g, ' ').slice(0, 320));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例=结果页「查看报告」→「产业瓶颈堵点识别报告」+附录C 七节目录（对齐 key-link FUNC-03109 / industryAnalysisReportShared）。
+  前置=诊断记录已完成「查看结果」；无记录 ENV-CHAIN-BOTTLENECK-NO-RESULT-03205。catalog_path entry-seed；页眉 eyebrow 可能仍为「产业链分析报告」+版本号，本用例主判 h1/正文含瓶颈报告标题。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。

@@ -1,0 +1,84 @@
+id: FUNC-00758
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00758
+priority: P0
+title: 主体区域深圳只读锁定不可更改
+entry_id: chain-sz-dev
+tier: A
+preconditions:
+  - 系统可访问；已登录 admin
+  - 已进入深圳产业发展分析配置面（development 工作区）
+locators:
+  subject_label: label「主体区域」
+  subject_row: '[data-testid="shenzhen-development-context-row"]'
+  subject_input: 主体区域下 readonly input value=深圳
+  subject_hint: alert「主体区域固定为「深圳」，不可更换。」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 点击主体「深圳」；尝试输入其他区域名与清空
+expect:
+  - note: 主体区域固定显示「深圳」，呈只读锁定态
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳产业发展分析深链 SPA404，无法验主体只读 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+      await expect(page).toHaveURL(/workspace=development/);
+      await expect(page).toHaveURL(/tab=development/);
+      await expect(page.getByText('主体区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('主体区域固定为「深圳」，不可更换。').first()).toBeVisible({ timeout: 8000 });
+      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
+      await expect(row.first()).toBeVisible({ timeout: 8000 });
+      const subject = row.locator('input.arco-input').first();
+      await expect(subject).toBeVisible({ timeout: 8000 });
+      await expect(subject).toHaveValue('深圳');
+      const ro = await subject.getAttribute('readonly');
+      const roProp = await subject.evaluate((el) => el.readOnly);
+      if (ro === null && !roProp) throw new Error('主体 input 无 readonly');
+      if (await subject.isEditable()) throw new Error('主体 input 可编辑');
+      await subject.click({ timeout: 5000 });
+      await expect(subject).toHaveValue('深圳');
+  - note: 输入与清空均无法更改该值
+    assert: |-
+      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
+      const subject = row.locator('input.arco-input').first();
+      await expect(subject).toBeVisible({ timeout: 8000 });
+      await subject.click({ force: true }).catch(() => {});
+      await subject.fill('北京').catch(() => {});
+      await page.waitForTimeout(300);
+      if ((await subject.inputValue()) !== '深圳') {
+        throw new Error('主体被改写为 ' + (await subject.inputValue()));
+      }
+      await subject.fill('').catch(() => {});
+      await page.waitForTimeout(300);
+      if ((await subject.inputValue()) !== '深圳') {
+        throw new Error('主体可被清空，当前值=' + (await subject.inputValue()));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: development 配置行 data-testid=shenzhen-development-context-row；主体 readonly input=深圳；页内 info alert「主体区域固定为「深圳」，不可更换。」route=catalog_path（entry-seed）。env-gate overall=partial（本条仅配置只读）。A 档零 allow_skip。

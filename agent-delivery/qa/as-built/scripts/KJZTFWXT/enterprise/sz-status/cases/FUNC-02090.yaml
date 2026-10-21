@@ -1,0 +1,43 @@
+id: FUNC-02090
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02090
+priority: P0
+title: 页头展示数据更新时点
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: A
+preconditions:
+  - 已进入深圳企业现状分析页
+locators:
+  data_update: 页头「数据更新至」与时点文案
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 阅读页头右侧时点（判定在 expect）
+expect:
+  - note: 页头有「数据更新至」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.getByText(/数据更新至/).first()).toBeVisible({ timeout: 12000 });
+  - note: 时点文字可见（可为「暂无时点」或具体日期）
+    assert: |-
+      const mainText = await page.locator('main').innerText();
+      const m = mainText.match(/数据更新至\s*([^\n查看]+)/);
+      if (!m || !m[1].trim()) {
+        throw new Error('「数据更新至」后未见时点文案；main 摘要：' + mainText.slice(0, 280));
+      }
+      const point = m[1].trim().replace(/\s+/g, ' ');
+      if (!point.length) throw new Error('时点文案为空');
+      await expect(page.locator('main').getByText(point, { exact: false }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例附录：时点可为「暂无时点」；30888 observed「数据更新至 暂无时点」。深链 enterprise-center 前缀（/enterprise/… 404）。
+  须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

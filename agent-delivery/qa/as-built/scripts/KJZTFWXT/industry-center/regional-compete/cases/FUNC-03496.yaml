@@ -1,0 +1,259 @@
+id: FUNC-03496
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03496
+priority: P0
+title: 结果页查看报告含标题七节目录与付费标记
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已打开一条成功结果
+locators:
+  view_report_btn: 结果顶栏「查看报告」
+  report_reader: .system-report-reader
+  report_toc: nav.report-toc
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 打开成功结果并点击「查看报告」（用例步骤 1）
+expect:
+  - note: 前置：从已完成任务进入结果页并打开报告（view=report）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const root = () => page.locator('main.diagnosis-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        if (!/\/industry-center\/search/.test(page.url())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) await recover404Shell();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await page.waitForTimeout(800);
+      };
+      const ensureRecordsTab = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) await recover404Shell();
+        const onRecords =
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=competitiveness/.test(page.url()) &&
+          /tab=records/.test(page.url()) &&
+          (await page.getByRole('tab', { name: '分析记录' }).isVisible().catch(() => false));
+        if (!onRecords || (await bodyIs404())) {
+          await enterViaSidebar();
+          if (await bodyIs404()) {
+            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏仍 SPA404 ' + page.url());
+          }
+          await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+          await page.waitForTimeout(1500);
+          await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+        }
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"], .system-report-reader').first();
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('未进入只读报告页，url=' + page.url());
+      };
+      const openReportFromResult = async () => {
+        await dismissBasket();
+        const r = root();
+        await expect(r).toBeVisible({ timeout: 8000 });
+        const reportBtn = r.getByRole('button', { name: /^查看报告$/ });
+        if (!(await reportBtn.count())) {
+          throw new Error('结果页无「查看报告」按钮');
+        }
+        await reportBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        await dismissBasket();
+        await expect(page).toHaveURL(/view=report/, { timeout: 10000 });
+        globalThis.__func03496ReportOpen = true;
+        return await waitReportReader();
+      };
+      const openResultDeep = async (taskId) => {
+        await page.goto(
+          toUrl('/industry-center/regional?view=result&task_id=' + taskId + '&tab=competitiveness&workspace=competitiveness'),
+          { waitUntil: 'domcontentloaded', timeout: 60000 }
+        );
+        await page.waitForTimeout(3500);
+        if (await bodyIs404()) {
+          await enterViaSidebar();
+          await page.goto(
+            toUrl('/industry-center/regional?view=result&task_id=' + taskId + '&tab=competitiveness&workspace=competitiveness'),
+            { waitUntil: 'domcontentloaded', timeout: 60000 }
+          );
+          await page.waitForTimeout(3500);
+        }
+        const body = ((await root().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/失败|不存在/.test(body) && !/查看报告/.test(body)) return null;
+        return await openReportFromResult();
+      };
+      const openReportFromRecordsRow = async () => {
+        await ensureRecordsTab();
+        const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/已完成/.test(txt)) continue;
+          const reportBtn = rows.nth(i).getByRole('button', { name: /^查看报告$/ });
+          if (!(await reportBtn.count())) continue;
+          if (await reportBtn.first().isDisabled().catch(() => true)) continue;
+          await reportBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2500);
+          await dismissBasket();
+          if (/view=report/.test(page.url())) {
+            globalThis.__func03496ReportOpen = true;
+            return await waitReportReader();
+          }
+        }
+        return null;
+      };
+      const openFromRecords = async () => {
+        await ensureRecordsTab();
+        let reader = await openReportFromRecordsRow();
+        if (reader) return reader;
+        const rows = page.locator('.arco-table-tbody .arco-table-tr, table tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 12); i++) {
+          const txt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/已完成/.test(txt)) continue;
+          const m = txt.match(TID_RE);
+          const viewBtn = rows.nth(i).getByRole('button', { name: /查看结果/ });
+          if (!(await viewBtn.count())) continue;
+          await viewBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(3500);
+          await dismissBasket();
+          if (await bodyIs404()) {
+            await ensureRecordsTab();
+            continue;
+          }
+          if (!/view=result/.test(page.url()) && m) {
+            await page.goto(
+              toUrl('/industry-center/regional?view=result&task_id=' + m[0] + '&tab=competitiveness&workspace=competitiveness'),
+              { waitUntil: 'domcontentloaded' }
+            );
+            await page.waitForTimeout(3500);
+          }
+          try {
+            return await openReportFromResult();
+          } catch {
+            await ensureRecordsTab();
+          }
+        }
+        return null;
+      };
+      let reader = null;
+      if (/view=report/.test(page.url())) {
+        reader = await waitReportReader();
+        globalThis.__func03496ReportOpen = true;
+      } else if (/view=result/.test(page.url())) {
+        try {
+          reader = await openReportFromResult();
+        } catch {
+          reader = null;
+        }
+      }
+      if (!reader) reader = await openFromRecords();
+      if (!reader) {
+        for (const tid of ['CHAIN-20260911-010', 'CHAIN-20260907-001']) {
+          reader = await openResultDeep(tid);
+          if (reader) break;
+        }
+      }
+      if (!reader || !globalThis.__func03496ReportOpen) {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法经侧栏进入区域产业竞争力评价 ' + page.url());
+        }
+        throw new Error('ENV-GAP-CHAIN-REG-REPORT: 无法从已完成任务打开分析报告 view=report');
+      }
+      globalThis.__func03496Reader = reader;
+  - note: 1、标题为「区域产业竞争力评价报告」
+    assert: |-
+      if (!globalThis.__func03496ReportOpen) throw new Error('前置：报告未打开');
+      const reader = globalThis.__func03496Reader || page.locator('.system-report-reader').first();
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const h1 = reader.locator('h1').first();
+      await expect(h1).toBeVisible({ timeout: 8000 });
+      await expect(h1).toHaveText('区域产业竞争力评价报告');
+  - note: 2、目录共 7 节（附录 A：报告身份、执行摘要、对象与范围、关键发现、证据与分析、数据来源与生成说明、局限性与使用边界）
+    assert: |-
+      if (!globalThis.__func03496ReportOpen) throw new Error('前置：报告未打开');
+      const reader = globalThis.__func03496Reader || page.locator('.system-report-reader').first();
+      const tocLinks = reader.locator('nav.report-toc a');
+      await expect(tocLinks.first()).toBeVisible({ timeout: 8000 });
+      const count = await tocLinks.count();
+      if (count !== 7) {
+        throw new Error('报告目录应为 7 节，实际链接数=' + count);
+      }
+      const need = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const tocText = ((await reader.locator('nav.report-toc').innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      for (const title of need) {
+        if (!tocText.includes(title.replace(/\s+/g, ''))) {
+          throw new Error('目录缺节「' + title + '」，目录文本=' + tocText.slice(0, 200));
+        }
+      }
+      for (const title of need) {
+        await expect(reader.locator('nav.report-toc').getByText(title, { exact: false }).first()).toBeVisible();
+      }
+  - note: 3、页上有「付费」标记（导出闸门角标，非按钮）
+    assert: |-
+      if (!globalThis.__func03496ReportOpen) throw new Error('前置：报告未打开');
+      const reader = globalThis.__func03496Reader || page.locator('.system-report-reader').first();
+      const paid = reader.locator('[data-paid-badge="required"]');
+      await expect(paid.first()).toBeVisible({ timeout: 8000 });
+      await expect(paid.filter({ hasText: '付费' }).first()).toBeVisible();
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03496=结果页「查看报告」→ SystemReportReader（view=report）；标题 h1=区域产业竞争力评价报告；
+  nav.report-toc 七节与用例附录 A 一致；ReportExportButton 未付费态 data-paid-badge=required 展示「付费」标记（非可点付费按钮）。
+  edu 直链 SPA404→goto search 侧栏「产业链分析→区域产业竞争力评价」；分析记录已完成行「查看报告」优先，fallback 查看结果→查看报告；种子 CHAIN-20260911-010/001。
+  catalog_path 仍 entry-seed competitiveness；无报告→ENV-GAP-CHAIN-REG-REPORT；双路 404→ENV-EDU-TTS-SVCZ-404-001。

@@ -1,0 +1,192 @@
+id: FUNC-02900
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02900
+priority: P0
+title: 成功结果页回溯时间线折线图与年份轴
+story: US-CHAIN-DIAG-02
+entry_id: chain-cycle
+tier: A
+preconditions:
+  - 已打开成功结果（assert 自含：诊断记录恢复或 02888 指纹首次成功）
+locators:
+  trend_block: .diagnosis-cycle-chart[aria-label="产业周期趋势预测折线图"]
+  trend_heading: heading「回溯时间线与趋势预测」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 打开成功结果页；趋势区块在 expect
+expect:
+  - note: 前置：打开成功结果页（步骤 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const pickSelect = async (aria, text) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown.includes(text)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const pickTimeRange = async (label) => {
+        const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first();
+        await timeSel.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const apply02888Config = async () => {
+        await dismissBasket();
+        await pickSelect('集群', '新一代信息技术');
+        await pickSelect('产业', '半导体与集成电路');
+        await pickTimeRange('近5年');
+        await page.locator('[role=spinbutton]').nth(0).fill('88000');
+        await page.waitForTimeout(300);
+      };
+      const isSuccessResult = async () => {
+        if (!/view=result/.test(page.url()) && !new URL(page.url()).searchParams.get('task_id')) return false;
+        const t = await main().innerText().catch(() => '');
+        if (/产业周期分析生成中|可视化分析过程/.test(t) && !/产业周期分析结果/.test(t)) return false;
+        return await page.getByText('产业周期分析结果').first().isVisible().catch(() => false);
+      };
+      const openResultFromProcessing = async () => {
+        const btn = page.getByRole('button', { name: /查看分析结果/ });
+        for (let i = 0; i < 30; i++) {
+          if (await isSuccessResult()) return;
+          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
+            await btn.first().click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(800);
+            if (await isSuccessResult()) return;
+          }
+          await page.waitForTimeout(i < 6 ? 500 : 1500);
+        }
+      };
+      const waitSuccessAfterStart = async () => {
+        let last = '';
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 500 : 2000);
+          last = await main().innerText().catch(() => '');
+          if (await isSuccessResult()) return;
+          if (/分析结果已生成/.test(last)) {
+            await openResultFromProcessing();
+            if (await isSuccessResult()) return;
+          }
+          if (/分析失败|本次分析失败/.test(last) && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CHAIN-CYCLE-ANALYSIS-FAIL-001：无法到达成功结果前置');
+          }
+        }
+        if (/view=processing|可视化分析过程/.test(page.url() + last)) {
+          throw new Error('ENV-CHAIN-CYCLE-ASYNC-NO-SUCCESS-001：分析长期停留过程态');
+        }
+        throw new Error('成功结果未在超时内打开：' + last.slice(0, 220));
+      };
+      const restoreCompletedIfNeeded = async () => {
+        if (await isSuccessResult()) return true;
+        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const views = main().getByRole('button', { name: '查看结果' });
+        const n = await views.count();
+        for (let i = 0; i < Math.min(n, 8); i++) {
+          let row = views.nth(i).locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = views.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (!rt || !/已完成/.test(rt) || !/产业周期分析/.test(rt)) continue;
+          await views.nth(i).click({ timeout: 15000 });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            if (await isSuccessResult()) return true;
+          }
+        }
+        return false;
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      if (!(await restoreCompletedIfNeeded())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await apply02888Config();
+        const start = main().getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 20000 });
+        await start.click({ timeout: 15000 });
+        await waitSuccessAfterStart();
+      }
+      await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 15000 });
+  - note: 1、该区块标题「回溯时间线与趋势预测」可见
+    assert: |-
+      const h = page.getByRole('heading', { name: '回溯时间线与趋势预测', level: 3 });
+      await expect(h.first()).toBeVisible({ timeout: 10000 });
+  - note: 2、区块内有按年份展开的折线（年份轴不写死某一年）
+    assert: |-
+      const chartWrap = page.locator('.diagnosis-cycle-chart[aria-label="产业周期趋势预测折线图"]');
+      await expect(chartWrap.first()).toBeVisible({ timeout: 12000 });
+      await expect(chartWrap.first().locator('canvas').first()).toBeVisible({ timeout: 10000 });
+      const probe = await page.evaluate(() => {
+        const wrap = document.querySelector('.diagnosis-cycle-chart[aria-label="产业周期趋势预测折线图"]');
+        if (!wrap) return { ok: false, reason: '趋势图容器缺失' };
+        const panel = wrap.closest('.diagnosis-panel--main') || wrap.parentElement;
+        const emptyDesc = panel?.querySelector('.arco-empty-description, .arco-empty');
+        if (emptyDesc && /无连续时序|不生成趋势折线/.test(emptyDesc.textContent || '')) {
+          return { ok: false, reason: '后端未返回连续时序，页面空态' };
+        }
+        const ec = window.echarts;
+        const nodes = wrap.querySelectorAll('div, canvas');
+        for (const el of nodes) {
+          const inst = ec?.getInstanceByDom?.(el);
+          if (!inst) continue;
+          const opt = inst.getOption();
+          const xs = (opt?.xAxis?.[0]?.data || []).map(String);
+          const years = xs.filter((y) => /^(19|20)\d{2}$/.test(y.trim()));
+          const series = opt?.series || [];
+          const line = series.find((s) => s.type === 'line');
+          const pts = line?.data?.length || 0;
+          if (line && years.length >= 2 && pts >= 2) {
+            return { ok: true, via: 'echarts', years, pts };
+          }
+          if (line && pts >= 2 && xs.length >= 2) {
+            return { ok: true, via: 'echarts-x', labels: xs.slice(0, 6), pts };
+          }
+        }
+        const canvases = [...wrap.querySelectorAll('canvas')].filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.width > 40 && r.height > 40;
+        });
+        if (canvases.length) {
+          return { ok: true, via: 'canvas-proxy', canvasCount: canvases.length };
+        }
+        return { ok: false, reason: '未见 ECharts 折线或有效 canvas' };
+      });
+      if (!probe.ok) {
+        if (probe.reason === '后端未返回连续时序，页面空态') {
+          throw new Error('ENV-CHAIN-CYCLE-NO-SERIES-001：成功结果无趋势折线数据');
+        }
+        throw new Error(probe.reason || '趋势折线探测失败');
+      }
+      if (probe.via === 'echarts' && probe.years) {
+        const uniq = [...new Set(probe.years)];
+        if (uniq.length < 2) throw new Error('年份轴少于 2 个刻度：' + uniq.join(','));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·edu tts/svcz catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。DOM=IndustryCycleResultBoard
+  h3「回溯时间线与趋势预测」+ .diagnosis-cycle-chart aria-label 产业周期趋势预测折线图（VChart line，xAxis=series.year，不写死年份）。
+  无 series 时空态「无连续时序，不生成趋势折线」→ ENV-CHAIN-CYCLE-NO-SERIES-001。前置同 02897。登录关评审 runner 前置。A 档零 allow_skip。

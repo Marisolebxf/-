@@ -1,0 +1,106 @@
+id: FUNC-01412
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01412
+priority: P0
+title: 条件区地域来源级联第一列共 4 项
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  stack: recruit-tab-stack
+  region_label: 条件区文案「地域来源」
+  region_cascader: span.sci-arco-cascader / aria-label=选择区域（catalog svcz；30888 曾为地域来源）
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 展开地域来源级联；第一列项数与四项名称在 expect 判定
+expect:
+  - note: 条件区含「地域来源」且区域级联触发器可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
+      };
+      await dismissBasket();
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const regionTrig = page
+        .locator('#recruit-condition-panel .flex.flex-col')
+        .filter({ has: page.locator('span', { hasText: '地域来源' }) })
+        .locator('.sci-arco-cascader')
+        .first();
+      if ((await regionTrig.count()) < 1) {
+        throw new Error('条件区未见地域来源级联（#recruit-condition-panel），url=' + page.url());
+      }
+      await expect(regionTrig).toBeVisible({ timeout: 8000 });
+  - note: 展开地域来源后第一列共 4 项
+    assert: |-
+      await page.keyboard.press('Escape').catch(() => {});
+      const regionView = page
+        .locator('#recruit-condition-panel .flex.flex-col')
+        .filter({ has: page.locator('span', { hasText: '地域来源' }) })
+        .locator('.sci-arco-cascader')
+        .first();
+      if ((await regionView.count()) < 1) {
+        throw new Error('条件区未见地域来源级联，url=' + page.url());
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const regionPopup = page
+        .locator('.arco-trigger-popup:visible')
+        .filter({ has: page.locator('.arco-cascader-option, .arco-cascader-list-item') })
+        .first();
+      const firstCol = regionPopup.locator('.arco-cascader-panel-column, .arco-cascader-list-column').first();
+      await expect(firstCol).toBeVisible({ timeout: 8000 });
+      const items = firstCol.locator('.arco-cascader-option, .arco-cascader-list-item');
+      const count = await items.count();
+      if (count !== 4) {
+        const sample = await items.allTextContents();
+        throw new Error(`地域来源第一列项数为 ${count}，预期 4；样本=${sample.join('|')}`);
+      }
+  - note: 第一列四项为全球、全国、区域、全国热门科创城市
+    assert: |-
+      const regionPopup2 = page
+        .locator('.arco-trigger-popup:visible')
+        .filter({ has: page.locator('.arco-cascader-option, .arco-cascader-list-item') })
+        .first();
+      const firstCol = regionPopup2.locator('.arco-cascader-panel-column, .arco-cascader-list-column').first();
+      if (!(await firstCol.isVisible().catch(() => false))) {
+        throw new Error('地域来源级联第一列未展开');
+      }
+      const expected = ['全球', '全国', '区域', '全国热门科创城市'];
+      const texts = (await firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`第一列未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 4) {
+        throw new Error(`第一列去重后项数 ${texts.length}，预期 4；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·entry-seed catalog /enterprise/attraction?workspace=attraction&recommendation_tab=attraction（edu svcz）；步骤=#recruit-condition-panel 地域来源→点 .sci-arco-cascader（aria-label=选择区域）→第一列 4 项。D2·svcz Arco 级联 DOM 为 arco-cascader-panel-column / arco-cascader-option（非 list-column/list-item）；弹层须 filter 含 cascader 项的 trigger-popup。D4·2026-10-20 二轮机跑 rewrite-FUNC-01412-r2（11:37Z+8）3 项 expect 全绿；region-scopes 第一级与用例册一致（首轮回炉 30888 仅 3 项为全国/区域/深圳 属环境 D3 偏差）。登录与关评审由 runner 前置。B 档零 allow_skip。

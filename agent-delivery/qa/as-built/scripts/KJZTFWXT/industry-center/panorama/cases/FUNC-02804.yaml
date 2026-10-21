@@ -1,0 +1,59 @@
+id: FUNC-02804
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02804
+priority: P0
+title: 图谱视图演进图例列出五项变化名称
+story: US-CHAIN-PANORAMA-04
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱，当前视图为「图谱」
+locators:
+  view_graph: .arco-radio-button「图谱」
+  evolution_legend: '[aria-label="产业链演进图例"]'
+  legend_labels: [新增, 退出, 关系变化, 主体变化, 技术替代]
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 确认「图谱」选中并读取演进图例五项文案
+expect:
+  - note: 1、图例为新增、退出、关系变化、主体变化、技术替代
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
+      await expect(graphRadio).toBeVisible({ timeout: 10000 });
+      const graphCls = (await graphRadio.getAttribute('class')) || '';
+      if (!graphCls.includes('arco-radio-checked')) {
+        await page.getByText('图谱', { exact: true }).click();
+        await page.waitForTimeout(500);
+      }
+      const legend = page.locator('[aria-label="产业链演进图例"]');
+      await expect(legend).toBeVisible({ timeout: 10000 });
+      await expect(legend).toContainText('演进图例', { timeout: 5000 });
+      const labels = ['新增', '退出', '关系变化', '主体变化', '技术替代'];
+      const legendText = ((await legend.innerText()) || '').replace(/\s+/g, ' ').trim();
+      for (const label of labels) {
+        if (!legendText.includes(label)) {
+          throw new Error('演进图例缺少「' + label + '」，现场: ' + legendText);
+        }
+        await expect(legend.getByText(label, { exact: true })).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 /industry-center/panorama；演进图例仅 canvasMode=graph 时渲染（IndustryPanoramaPage role=group aria-label=产业链演进图例）。
+  五项文案=testdata evolution.legend；scout.json 实勘一致。对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。

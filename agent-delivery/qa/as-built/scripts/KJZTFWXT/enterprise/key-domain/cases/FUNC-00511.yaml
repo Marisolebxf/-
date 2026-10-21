@@ -1,0 +1,69 @@
+id: FUNC-00511
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00511
+priority: P0
+title: 侧栏进入重点企业领域分析路由与标题正确
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  sidebar_entry: 侧栏 link「重点企业领域分析」或「重点企业领域分布分析」（D1·30888）
+  h1: main 内 heading「重点企业领域分析」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏「企业分析」下点领域分析入口；导航与路由断言在 expect 内自含
+expect:
+  - note: 路由为重点企业领域分析页且地址携带领域参数（view=domain 或 workspace=domain）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const entryNames = ['重点企业领域分析', '重点企业领域分布分析'];
+      let clicked = false;
+      for (const name of entryNames) {
+        const link = page.getByRole('link', { name, exact: true });
+        if (await link.count()) {
+          await link.first().click({ timeout: 8000 });
+          clicked = true;
+          break;
+        }
+      }
+      if (!clicked) {
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForURL(/\/development\/search|key-enterprise/, { timeout: 10000 });
+          for (const name of entryNames) {
+            const link = page.getByRole('link', { name, exact: true });
+            if (await link.count()) {
+              await link.first().click({ timeout: 8000 });
+              clicked = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!clicked) throw new Error('侧栏未找到重点企业领域分析入口');
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 15000 });
+      const u = page.url();
+      if (!/(?:view=domain|workspace=domain)/.test(u)) throw new Error('URL 缺 domain 参数: ' + u);
+  - note: 页面标题为「重点企业领域分析」（D1·30888 主区 H1 常为「重点企业领域分布分析」；document.title 恒为系统名时以 H1 覆盖标题意图）
+    assert: |-
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      const pageTitle = page.getByRole('heading', { name: /重点企业领域/ }).first();
+      await expect(pageTitle).toBeVisible({ timeout: 10000 });
+      const t = (await pageTitle.innerText()).trim();
+      if (!/重点企业领域分析|重点企业领域分布分析/.test(t)) {
+        throw new Error('页头标题不符合领域分析口径: ' + t);
+      }
+      const docTitle = await page.title();
+      if (/重点企业领域分析/.test(docTitle)) {
+        await expect(page).toHaveTitle(/重点企业领域分析/);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: D1·30888 overview 侧栏文案为「重点企业领域分布分析」（页内 H1 仍为「重点企业领域分析」）；部分环境需先点「企业查询」才露出二级链。侧栏路由 /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain 或 /enterprise/key-enterprise-analysis?view=domain（深链 FUNC-01688 可用）。同壳类型页隔离归 FUNC-00528。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

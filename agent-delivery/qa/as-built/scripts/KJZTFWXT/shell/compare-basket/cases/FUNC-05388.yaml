@@ -1,0 +1,60 @@
+id: FUNC-05388
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05388
+priority: P0
+title: 从右下角打开对比篮，见总项数与四个页签
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 已登录并停留在业务页（宿主页 /enterprise/search）
+locators:
+  dock_entry: button aria 前缀「打开对比篮，共」(.system-compare-dock)
+  panel: .system-compare-panel
+  tabs: '#compare-basket-tab-enterprise 等'
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: wait
+    for: 右下角对比篮入口或页头对比篮按钮
+    timeout_ms: 15000
+expect:
+  - note: 点击右下角入口后浮层可见且标题为「对比篮」并带总项数
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const dock = page.getByRole('button', { name: /打开对比篮/ });
+      if (await dock.count() === 0) throw new Error('未找到右下角对比篮入口');
+      await dock.first().click({ timeout: 10000 });
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(
+        page.getByRole('heading', { name: /对比篮 · 共\s*\d+\s*项/ })
+          .or(panel.locator('.system-compare-panel__header').filter({ hasText: /对比篮/ }).filter({ hasText: /共\s*\d+\s*项/ }))
+          .first()
+      ).toBeVisible({ timeout: 8000 });
+      if (!page.url().includes(hostPath)) throw new Error('打开浮层后路由被跳走: ' + page.url());
+  - note: 页签为企业、产业、服务机构、区域
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      for (const id of ['enterprise', 'industry', 'service_org', 'region']) {
+        await expect(panel.locator('#compare-basket-tab-' + id)).toBeVisible({ timeout: 8000 });
+      }
+      await expect(panel.getByRole('tab', { name: /^企业/ })).toBeVisible({ timeout: 5000 });
+      await expect(panel.getByRole('tab', { name: /^产业/ })).toBeVisible({ timeout: 5000 });
+      await expect(panel.getByRole('tab', { name: /^服务机构/ })).toBeVisible({ timeout: 5000 });
+  - note: 区域页签带「开发中」
+    assert: |-
+      const regionTab = page.locator('.system-compare-panel #compare-basket-tab-region');
+      await expect(regionTab).toBeVisible({ timeout: 8000 });
+      await expect(regionTab).toContainText('开发中');
+  - note: 企业页签默认在前（激活态）
+    assert: |-
+      const entTab = page.locator('.system-compare-panel #compare-basket-tab-enterprise');
+      const cls = await entTab.getAttribute('class');
+      if (!/active/.test(cls || '')) throw new Error('企业页签未默认激活: class=' + cls);
+  - note: 侧栏没有「对比篮」菜单项
+    assert: |-
+      const menuHit = await page.locator('[role=menuitem], .arco-menu-item, .layout-sidebar button, aside button').filter({ hasText: /^对比篮$/ }).count();
+      if (menuHit) throw new Error('侧栏出现对比篮菜单项');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由 catalog=app-shell#system-compare-basket；goto 宿主页 /enterprise/search。入口以右下角 dock「打开对比篮」为准（用例步骤）。政策 Tab 现场缺失，按四 Tab as-built。

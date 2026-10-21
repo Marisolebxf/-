@@ -1,0 +1,195 @@
+id: FUNC-00975
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00975
+priority: P1
+title: 下拉改选产业链后区块与清单按新链刷新
+story: US-SZSTATUS-04
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已在「人工智能」下加载定位结果
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群 / 选择产业链条）
+  option_from: .arco-trigger-popup:visible 首链（人工智能 / 新一代信息技术）
+  option_to: .arco-trigger-popup:visible 次链（生物医药 / 生物产业）
+  blocks: 覆盖产业链环节 / 重点环节企业 / 产业链完整度 / 产业链环节分布 / 链中角色分布 / 深圳相关企业清单
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 先选首链至结果态，再改选次链（判定在 expect）
+expect:
+  - note: 前置：首链（用例「人工智能」/ 现场「新一代信息技术」）已加载定位结果
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const ensurePosTab = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const collectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            const st = window.getComputedStyle(el);
+            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+            if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+            out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      const resolveOnSite = (aliases, options) => aliases.find((n) => options.includes(n)) || '';
+      const pickChain = async (aliases) => {
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"], input[placeholder="选择产业链条"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        for (const name of aliases) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            return name;
+          }
+        }
+        await chain.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        let options = await collectOptions();
+        if (options.length === 0) {
+          await page.keyboard.press('ArrowDown');
+          await page.waitForTimeout(700);
+          options = await collectOptions();
+        }
+        if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+        const pick = resolveOnSite(aliases, options);
+        if (!pick) throw new Error('下拉无「' + aliases.join('」/「') + '」；现场：' + options.join('、'));
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+        const opt = popup.getByText(pick, { exact: true }).first();
+        if (await opt.count()) await opt.click({ timeout: 8000 });
+        else {
+          await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return; }
+            }
+          }, pick);
+        }
+        await page.waitForTimeout(800);
+        return pick;
+      };
+      const waitResultShell = async () => {
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const fromAliases = ['人工智能', '新一代信息技术'];
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await ensurePosTab();
+      const fromChain = await pickChain(fromAliases);
+      await waitResultShell();
+      await page.evaluate((n) => { window.__szstatus_chain_from = n; }, fromChain);
+      await expect(page.locator('main .arco-select-view').filter({ hasText: fromChain }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 改选次链（用例「生物医药」/ 现场「生物产业」）后六区块与企业清单区刷新呈现
+    assert: |-
+      const fromChain = await page.evaluate(() => window.__szstatus_chain_from || '新一代信息技术');
+      const collectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            if (t) out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      const resolveOnSite = (aliases, options) => aliases.find((n) => options.includes(n)) || '';
+      const toAliases = ['生物医药', '生物产业'];
+      const openClusterSelect = async () => {
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(200);
+        const byFrom = page.locator('main .arco-select-view').filter({ hasText: fromChain }).first();
+        if (await byFrom.count()) {
+          await byFrom.click({ timeout: 12000 });
+          return;
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"], input[placeholder="选择产业链条"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        await chain.click({ timeout: 12000 });
+      };
+      const pickChain = async (aliases) => {
+        await openClusterSelect();
+        await page.waitForTimeout(500);
+        const options = await collectOptions();
+        const pick = resolveOnSite(aliases, options);
+        if (!pick) throw new Error('改选无「' + aliases.join('」/「') + '」；现场：' + (options.join('、') || '(空)'));
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+        const opt = popup.locator('.arco-select-option, li[role=option]').filter({ hasText: new RegExp('^' + pick + '$') }).first();
+        if (await opt.count()) await opt.click({ timeout: 8000 });
+        else {
+          const clicked = await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return true; }
+            }
+            return false;
+          }, pick);
+          if (!clicked) throw new Error('改选点击失败：' + pick);
+        }
+        await page.waitForTimeout(800);
+        return pick;
+      };
+      const waitResultShell = async () => {
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('改选后结果区未刷新（未见「覆盖产业链环节」）');
+      };
+      const toChain = await pickChain(toAliases);
+      if (toChain === fromChain) throw new Error('改选后与改选前为同一产业集群：' + toChain);
+      await waitResultShell();
+      await page.evaluate((n) => { window.__szstatus_chain_to = n; }, toChain);
+      for (const t of ['覆盖产业链环节','重点环节企业','产业链完整度','产业链环节分布','链中角色分布','深圳相关企业清单']) {
+        await expect(page.getByText(t, { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      }
+  - note: 产业链下拉回显更新为次链（现场「生物产业」；用例文案「生物医药」）
+    assert: |-
+      const fromChain = await page.evaluate(() => window.__szstatus_chain_from || '');
+      const toChain = await page.evaluate(() => window.__szstatus_chain_to || '生物产业');
+      await expect(page.locator('main .arco-select-view').filter({ hasText: toChain }).first()).toBeVisible({ timeout: 8000 });
+      if (fromChain && (await page.locator('main .arco-select-view').filter({ hasText: fromChain }).first().count())) {
+        const view = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"], input[placeholder="选择产业链条"]'),
+        }).first();
+        const txt = (await view.innerText()).replace(/\s+/g, ' ');
+        if (txt.includes(fromChain) && !txt.includes(toChain)) {
+          throw new Error('改选后下拉仍回显首链「' + fromChain + '」');
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  D2·30888 产业集群 15 项：用例「人工智能/生物医药」映射现场「新一代信息技术/生物产业」（对齐 FUNC-02089、02093）。
+  深链 enterprise-center/shenzhen-enterprise-status-analysis。空数据下六区块壳+清单空态联动 observed（ENV-SZSTATUS-ZERO-ENTERPRISE-001）。
+  不核后台查询条件。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。禁止 50892。登录与关内部评审由 runner 会话前置。B 档。

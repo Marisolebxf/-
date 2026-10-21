@@ -1,0 +1,184 @@
+id: FUNC-00977
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00977
+priority: P1
+title: 查看报告可打开且返回后筛选态保留
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入页面
+  - 已选定一条产业链
+locators:
+  report_btn: button「生成 / 查看报告」或「查看 HTML 报告」
+  report_reader: .system-report-reader[data-report-readonly="true"]
+  back_btn: button「返回分析结果」
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链后打开 HTML 报告；关闭返回后核对产业链与 Tab（判定在 expect）
+expect:
+  - note: 1、报告以浮层或新页打开且内容可读不报错
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const readActiveTabLabel = async () => {
+        const tabs = page.locator('main [role=tab]');
+        const n = await tabs.count();
+        for (let i = 0; i < n; i++) {
+          const t = tabs.nth(i);
+          const sel = (await t.getAttribute('aria-selected')) || '';
+          const cls = (await t.getAttribute('class')) || '';
+          if (sel === 'true' || /active/.test(cls)) {
+            return ((await t.innerText()) || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+          }
+        }
+        return '';
+      };
+      const CHAIN_NAMES = ['新一代信息技术', '人工智能', '生物医药'];
+      const readChainLabel = async () => {
+        const views = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        if (await views.count()) {
+          const txt = ((await views.innerText()) || '').replace(/\s+/g, ' ').trim();
+          const hit = CHAIN_NAMES.find((n) => txt.includes(n));
+          if (hit) return hit;
+          const val = ((await views.locator('.arco-select-view-value').first().innerText().catch(() => '')) || '').trim();
+          if (val && !/请选择|选择产业集群|无相关产业/.test(val)) return val.slice(0, 80);
+        }
+        const mainHay = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+        const mainHit = CHAIN_NAMES.find((n) => mainHay.includes(n));
+        return mainHit || '';
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = CHAIN_NAMES;
+        let needPick = !(await readChainLabel());
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 55; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后未见分析结果区（清单或 KPI 区块）');
+      };
+      const openReportReader = async () => {
+        const reportBtn = page.getByRole('button', { name: /生成\s*\/\s*查看报告|查看\s*HTML\s*报告/ });
+        await expect(reportBtn).toBeVisible({ timeout: 8000 });
+        await reportBtn.scrollIntoViewIfNeeded();
+        await reportBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        let reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        if (!(await reader.isVisible().catch(() => false))) {
+          const modal = page.locator('.arco-modal:visible').filter({ hasText: /报告/ }).last();
+          const viewHtml = modal.getByRole('button', { name: '查看 HTML 报告' });
+          for (let i = 0; i < 90; i++) {
+            if (await viewHtml.isVisible().catch(() => false)) {
+              await viewHtml.click({ timeout: 8000 });
+              break;
+            }
+            await page.waitForTimeout(1000);
+          }
+        }
+        reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        await expect(reader).toBeVisible({ timeout: 15000 });
+        const body = ((await reader.innerText()) || '').replace(/\s+/g, ' ');
+        if (/请求失败|加载失败|系统异常/.test(body) && !/报告身份|执行摘要/.test(body)) {
+          throw new Error('报告正文报错不可读：' + body.slice(0, 160));
+        }
+        if (!/报告身份|执行摘要|只读/.test(body) && !page.url().includes('report')) {
+          throw new Error('报告已开但未识别可读正文');
+        }
+        return reader;
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      const chainBefore = await readChainLabel();
+      const tabBefore = await readActiveTabLabel();
+      if (!chainBefore) throw new Error('选链后未读到产业链展示文案');
+      if (!tabBefore) throw new Error('未读到当前激活 Tab');
+      await openReportReader();
+      await expect(page.getByRole('button', { name: '返回分析结果' }).first()).toBeVisible({ timeout: 8000 });
+      const back = page.getByRole('button', { name: '返回分析结果' }).first();
+      await back.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByRole('heading', { name: '深圳企业现状分析' }).first()).toBeVisible({ timeout: 12000 });
+      const mainAfter = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+      if (!mainAfter.includes(chainBefore)) {
+        throw new Error('返回后产业链未保留：开报告前=' + chainBefore + '；main 摘要=' + mainAfter.slice(0, 200));
+      }
+      if (/请先选择产业链|请选择产业链后/.test(mainAfter)) throw new Error('返回后主区回到未选链空态');
+      const tabs = page.locator('main [role=tab]');
+      const n = await tabs.count();
+      let tabOk = false;
+      for (let i = 0; i < n; i++) {
+        const t = tabs.nth(i);
+        const sel = (await t.getAttribute('aria-selected')) || '';
+        const cls = (await t.getAttribute('class')) || '';
+        if (sel !== 'true' && !/active/.test(cls)) continue;
+        const label = ((await t.innerText()) || '').trim().replace(/\s+/g, ' ');
+        if (label && (label.includes(tabBefore) || tabBefore.includes(label))) tabOk = true;
+      }
+      if (!tabOk) throw new Error('返回后 Tab 未保留：期望含「' + tabBefore + '」');
+  - note: 2、返回后产业链、Tab 与筛选态保留
+    assert: |-
+      await expect(page.getByText('覆盖产业链环节', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.locator('.system-report-reader[data-report-readonly="true"]')).toHaveCount(0, { timeout: 3000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  对齐用例 00977：打开 SystemReportReader 后点「返回分析结果」核对产业链与 Tab（同条 expect 内 before/after，第二条复核 KPI 区与报告层关闭）。
+  30888 报告入口常为「生成 / 查看报告」→ 任务弹层「查看 HTML 报告」（同 02114）。D1 产业集群占位「选择产业集群」、优先新一代信息技术/人工智能。
+  深链 enterprise-center 前缀。须先关对比篮。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

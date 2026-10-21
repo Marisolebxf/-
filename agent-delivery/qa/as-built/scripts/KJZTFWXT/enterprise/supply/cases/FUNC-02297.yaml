@@ -1,0 +1,62 @@
+id: FUNC-02297
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02297
+priority: P0
+title: 结果页任务摘要给出数据时间
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  tab_recent: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析恢复成功结果后阅读任务摘要中的数据时间
+expect:
+  - note: 1、任务摘要含「数据时间」，且为 YYYY-MM-DD 格式的结果日期
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const restoreFirstCompleted = async () => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (!(await restore.count())) {
+          throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+        }
+        await restore.first().click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+        await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 25000 });
+      };
+      await restoreFirstCompleted();
+      await dismissBasket();
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 8000 });
+      const t = await main().innerText().catch(() => '');
+      if (!/数据时间/.test(t)) throw new Error('任务摘要区未见「数据时间」标签');
+      const m = t.match(/数据时间[：:\s]*(\d{4}-\d{2}-\d{2})/);
+      if (!m) throw new Error('任务摘要未见 YYYY-MM-DD 格式的数据时间，片段：' + t.slice(0, 800));
+      const [, dateStr] = m;
+      const d = new Date(dateStr + 'T12:00:00');
+      if (Number.isNaN(d.getTime())) throw new Error('数据时间日期无效：' + dateStr);
+      globalThis.__func02297_dataTime = dateStr;
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析首条「恢复结果」进成功结果。预期=任务摘要含「数据时间：YYYY-MM-DD」（现场 scout 曾为 2026-09-10，脚本按格式断言不钉死具体日）。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

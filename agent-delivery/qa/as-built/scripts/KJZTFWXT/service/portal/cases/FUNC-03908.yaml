@@ -1,0 +1,64 @@
+id: FUNC-03908
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03908
+priority: P0
+tier: B
+title: 全球产业分布对照回到服务机构产业分布
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已打开深圳产业服务介绍（runner 会话前置 + goto shenzhen）
+locators:
+  btn_global_compare: button「全球产业分布对照」（SectionPanel extra，非 Tab）
+  tab_ind: tab「服务机构产业分布」
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 点「深圳产业服务介绍」页签后点击「全球产业分布对照」
+expect:
+  - note: 1、主标题为「服务机构产业分布」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍|全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验全球产业分布对照 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const goBtn = page.getByRole('button', { name: '全球产业分布对照', exact: true }).first();
+      await goBtn.scrollIntoViewIfNeeded();
+      await expect(goBtn).toBeVisible({ timeout: 8000 });
+      await goBtn.click();
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、「服务机构产业分布」页签呈选中
+    assert: |-
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      const sel = tablist.getByRole('tab', { name: '服务机构产业分布', exact: true });
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      const aria = await sel.getAttribute('aria-selected');
+      const cls = (await sel.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('arco-tabs-tab-active') && !cls.includes('active')) {
+        throw new Error('服务机构产业分布 Tab 未选中（aria-selected=' + aria + '）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深圳页 SectionPanel「· 深圳产业链环节分布」extra 内 a-button text=全球产业分布对照（goIndustry → /service-portal/industry-distribution）。
+  edu 环境 /service-portal/shenzhen 深链 SPA404，前置 Tab 进深圳（同 03904）。goto /service-portal/overview；catalog_path=/service-portal。
+  edu.itic-sci.com/tts/svcz 2026-10-21 实跑：/service-portal/overview 亦 SPA404 → ENV-EDU-TTS-SVCZ-404-001（同 01306/REGCOMP 波）。
+  Tab 在 aria-label=专题服务子导航。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,168 @@
+id: FUNC-02115
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02115
+priority: P1
+title: HTML 报告未付费点击导出只提示且不下载
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已打开 HTML 报告（assert 自含选链并进入 SystemReportReader）
+  - 当前账号未开通报告导出付费权益（30888 admin 默认未付费）
+locators:
+  report_btn: button「生成 / 查看报告」或「查看 HTML 报告」
+  report_reader: .system-report-reader[data-report-readonly="true"]
+  export_btn: button「导出」
+  paid_badge: '[data-paid-badge="required"]'
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 进入 HTML 报告后点击「导出」；付费说明与无下载在 expect 判定
+expect:
+  - note: 1、提示「付费用户可导出报告 PDF」；2、没有文件被下载
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['新一代信息技术', '人工智能', '生物医药'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const clicked = await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return true; }
+            }
+            return false;
+          }, pick);
+          if (!clicked) {
+            const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+            await popup.getByText(pick, { exact: true }).first().click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 55; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后未见分析结果区（清单或 KPI 区块）');
+      };
+      const openHtmlReport = async () => {
+        await dismissBasket();
+        await page.waitForLoadState('domcontentloaded');
+        await selectChainToResult();
+        const reportBtn = page.getByRole('button', { name: /生成\s*\/\s*查看报告|查看\s*HTML\s*报告/ });
+        await expect(reportBtn).toBeVisible({ timeout: 8000 });
+        await reportBtn.scrollIntoViewIfNeeded();
+        await reportBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        let reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        if (!(await reader.isVisible().catch(() => false))) {
+          const modal = page.locator('.arco-modal:visible').filter({ hasText: /报告/ }).last();
+          const viewHtml = modal.getByRole('button', { name: '查看 HTML 报告' });
+          for (let i = 0; i < 90; i++) {
+            if (await viewHtml.isVisible().catch(() => false)) {
+              await viewHtml.click({ timeout: 8000 });
+              break;
+            }
+            await page.waitForTimeout(1000);
+          }
+        }
+        reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        await expect(reader).toBeVisible({ timeout: 15000 });
+      };
+      await openHtmlReport();
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      const reportUrlBefore = page.url();
+      const exportBtn = reader.getByRole('button', { name: '导出', exact: true });
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
+      const paidHintRe = /付费用户可导出报告\s*PDF/;
+      const downloadPromise = page.waitForEvent('download', { timeout: 2500 }).catch(() => null);
+      await exportBtn.hover({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let tipText = '';
+      const tips = page.locator('.arco-tooltip-content:visible, .arco-trigger-popup:visible .arco-tooltip-content');
+      const tipN = await tips.count();
+      for (let i = 0; i < tipN; i++) {
+        const t = (await tips.nth(i).innerText().catch(() => '')) || '';
+        if (paidHintRe.test(t)) { tipText = t; break; }
+      }
+      await exportBtn.click({ timeout: 8000, force: true }).catch(() => {});
+      await page.waitForTimeout(600);
+      if (!tipText) {
+        const tipN2 = await tips.count();
+        for (let i = 0; i < tipN2; i++) {
+          const t = (await tips.nth(i).innerText().catch(() => '')) || '';
+          if (paidHintRe.test(t)) { tipText = t; break; }
+        }
+      }
+      const bodyAfter = (await page.locator('body').innerText().catch(() => '')) || '';
+      if (!tipText && paidHintRe.test(bodyAfter)) {
+        tipText = bodyAfter.match(paidHintRe)[0];
+      }
+      const dl = await downloadPromise;
+      if (dl) throw new Error('未付费点击导出触发了下载：' + (await dl.suggestedFilename().catch(() => 'unknown')));
+      const isDisabled = await exportBtn.isDisabled().catch(() => false);
+      const toastPaid = paidHintRe.test(bodyAfter) || /需付费|开通.*权益/.test(bodyAfter);
+      if (!tipText && !isDisabled && !toastPaid) {
+        throw new Error('点击导出后未见「付费用户可导出报告 PDF」类提示（tooltip/disabled/toast 均无）');
+      }
+      if (tipText && !paidHintRe.test(tipText)) {
+        throw new Error('付费提示文案不符：' + tipText.slice(0, 120));
+      }
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const stillReport = await reader.locator('nav.report-toc, h1').first().isVisible().catch(() => false);
+      if (!stillReport) throw new Error('点击导出后报告阅读器不可见');
+      if (reportUrlBefore && page.url() !== reportUrlBefore && !/report|shenzhen-enterprise-status/.test(page.url())) {
+        throw new Error('点击导出后离开报告相关页：' + page.url());
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·30888：前置同 FUNC-02114（选产业集群→「生成/查看报告」→「查看 HTML 报告」→ .system-report-reader）。
+  未付费点击报告内「导出」：ReportExportButton 锁定，Tooltip/文案含「付费用户可导出报告 PDF」（后半句可指顶栏「付费权益」，本条不打开该开关）。
+  用例不要求点橙色「付费」Tag，只点「导出」。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

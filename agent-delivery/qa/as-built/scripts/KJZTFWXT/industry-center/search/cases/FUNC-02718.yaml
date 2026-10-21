@@ -1,0 +1,98 @@
+id: FUNC-02718
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02718
+priority: P0
+title: 高级筛选点击对象类型后出现条件行和取值选项
+entry_id: chain-search
+tier: A
+preconditions:
+  - 高级筛选已打开且已选 0 个条件
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_object_type: 字段库 Tag「对象类型」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 打开高级筛选、点对象类型、展开取值；三条预期在 expect 判定
+expect:
+  - note: 前置：高级筛选已打开且「已选 0 个条件」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(2);
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText('已选 0 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const objTypeTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '对象类型' }).first();
+      await expect(objTypeTag).toBeVisible({ timeout: 8000 });
+      await objTypeTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      globalThis.__func02718_ready = true;
+  - note: 1、已选变为 1 个条件；2、条件行含「对象类型」和「等于」
+    assert: |-
+      if (!globalThis.__func02718_ready) throw new Error('前置：高级筛选 0 条件态未就绪');
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib.getByText('已选 1 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const condRow = page.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      await expect(condRow.locator('.condition-builder__label')).toContainText('对象类型', { timeout: 8000 });
+      const opSelect = condRow.locator('.condition-builder__op');
+      await expect(opSelect).toBeVisible({ timeout: 8000 });
+      const opText = ((await opSelect.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!opText.includes('等于')) {
+        throw new Error('比较符应为「等于」，实际 op 区文案=' + opText);
+      }
+  - note: 3、取值含「全部」「产业」「产业链」，共 3 个
+    assert: |-
+      const condRow = page.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      await condRow.locator('.condition-builder__value .arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const opts = pop.locator('.arco-select-option');
+      const count = await opts.count();
+      if (count !== 3) {
+        const labels = [];
+        for (let i = 0; i < count; i++) {
+          labels.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        throw new Error('对象类型取值应为 3 个，实际 count=' + count + ' labels=' + JSON.stringify(labels));
+      }
+      const want = ['全部', '产业', '产业链'];
+      const got = [];
+      for (let i = 0; i < 3; i++) {
+        got.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      for (const w of want) {
+        if (!got.some((g) => g === w || g.includes(w))) {
+          throw new Error('对象类型取值缺少「' + w + '」；实际 ' + JSON.stringify(got));
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab index=2，URL 含 mode=advanced。
+  已选计数文案在字段库 region 内「已选 N 个条件」。字段 Tag 点 .fp-tags .arco-tag filter(hasText 对象类型)。
+  条件行 .condition-builder；算子 .condition-builder__op 默认 eq=等于；取值 .condition-builder__value .arco-select-view。
+  对象类型选项与结果内筛选一致（全部/产业/产业链）。登录与关内部评审由 runner 前置。A 档零 allow_skip。

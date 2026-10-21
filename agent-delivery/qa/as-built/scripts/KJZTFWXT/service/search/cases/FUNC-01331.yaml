@@ -1,0 +1,66 @@
+id: FUNC-01331
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01331
+priority: P0
+tier: A
+title: 示例查询三枚文案正确且点击只填充检索词
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入 /service-center/search；当前为「智能检索」Tab
+locators:
+  example_section: 文案「示例查询」
+  example_btns: button.enterprise-search-example-button ×3（附录 A）
+  search_input: textbox placeholder 含「用一句话描述机构需求」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 读示例查询三枚 chip；点选回填与覆盖（判定在 expect）
+expect:
+  - note: 「示例查询」下 3 枚按钮文案与附录 A 一致
+    assert: |-
+      const hideCompareBasket = async () => {
+        const x = page.locator('[aria-label="关闭对比篮"]');
+        if (!(await x.count())) return;
+        if (await x.first().isVisible().catch(() => false)) {
+          await x.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await hideCompareBasket();
+      await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await expect(page.getByText('示例查询', { exact: true })).toBeVisible({ timeout: 8000 });
+      const chips = ['深圳 检验检测', '科技创新服务 南山', '知识产权 广东'];
+      const btns = page.locator('button.enterprise-search-example-button');
+      await expect(btns).toHaveCount(3, { timeout: 8000 });
+      for (const t of chips) {
+        await expect(page.getByRole('button', { name: t, exact: true })).toBeVisible({ timeout: 8000 });
+      }
+  - note: 点击「深圳 检验检测」后输入框填入该词且不自动进入检索结果
+    assert: |-
+      const ph = '用一句话描述机构需求，如「深圳 检验检测」';
+      const inp = page.getByPlaceholder(ph);
+      await page.getByRole('button', { name: '深圳 检验检测', exact: true }).click();
+      await page.waitForTimeout(400);
+      await expect(inp).toHaveValue('深圳 检验检测');
+      if ((await page.getByRole('heading', { name: '检索结果' }).count()) > 0) {
+        throw new Error('点击示例 chip 后不应出现「检索结果」标题');
+      }
+      if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) {
+        throw new Error('点击示例 chip 后不应出现匹配机构计数');
+      }
+  - note: 再点「知识产权 广东」覆盖输入框且仍不自动检索
+    assert: |-
+      const ph = '用一句话描述机构需求，如「深圳 检验检测」';
+      const inp = page.getByPlaceholder(ph);
+      await page.getByRole('button', { name: '知识产权 广东', exact: true }).click();
+      await page.waitForTimeout(400);
+      await expect(inp).toHaveValue('知识产权 广东');
+      if ((await page.getByRole('heading', { name: '检索结果' }).count()) > 0) {
+        throw new Error('覆盖示例 chip 后不应出现「检索结果」标题');
+      }
+      if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) {
+        throw new Error('覆盖示例 chip 后不应出现匹配机构计数');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 区名「示例查询」；三 chip class=enterprise-search-example-button，文案见附录 A。点击仅回填输入框，不自动出「检索结果」/匹配计数（再点搜索见 04026）。catalog_path=/service-center/search。对比篮浮层可见才关。2026-10-20 机跑 goto 后 SPA 404（ENV-EDU-TTS-SVCZ-404-001），待 svcz 恢复复跑。对照重写 id=FUNC-01331，不沿用 P0-04 金样文件。

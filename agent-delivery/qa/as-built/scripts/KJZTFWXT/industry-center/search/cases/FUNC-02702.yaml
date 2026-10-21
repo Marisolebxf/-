@@ -1,0 +1,143 @@
+id: FUNC-02702
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02702
+priority: P0
+title: 勾选结果后从选择条加入对比篮
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已打开「重点产业」的检索结果
+  - 第 2 页有「软件与信息服务」
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  hot_key_industry: button.enterprise-search-hot-button「重点产业」
+  selection_toolbar: .industry-search-selection-toolbar
+  row_check: checkbox aria-label「选择 软件与信息服务」
+  toolbar_add: .industry-search-selection-toolbar button「加入对比篮」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 重点产业结果→第 2 页→勾选→选择条加入对比篮；预期在 expect
+expect:
+  - note: 前置：重点产业检索结果且第 2 页含「软件与信息服务」
+    assert: |-
+      const TARGET = '软件与信息服务';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const region = () => page.locator('[role=region][aria-label="产业查询结果"]');
+      const resultPagination = () => region().locator('.industry-search-pagination .arco-pagination').first();
+      const clickPageNum = async (num) => {
+        const pag = resultPagination();
+        await expect(pag).toBeVisible({ timeout: 10000 });
+        const btn = pag.locator('.arco-pagination-item').filter({ hasText: new RegExp('^\\s*' + num + '\\s*$') }).first();
+        if ((await btn.count()) > 0 && (await btn.isVisible().catch(() => false))) {
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          return;
+        }
+        if (num === 2) {
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if ((await next.count()) && (await next.isVisible().catch(() => false))) {
+            await next.click({ timeout: 8000 });
+            await page.waitForTimeout(800);
+            return;
+          }
+        }
+        throw new Error('分页「' + num + '」不可点');
+      };
+      const rowCard = () =>
+        region()
+          .locator('.industry-search-result-card')
+          .filter({ has: page.getByRole('heading', { name: TARGET, exact: true }) })
+          .first();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
+      await expect(smartTab).toBeVisible({ timeout: 10000 });
+      const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^重点产业$/ }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.click();
+      await page.waitForTimeout(2000);
+      await expect(region()).toBeVisible({ timeout: 15000 });
+      await expect(region().getByText(/共\s+\d+\s+条/)).toBeVisible({ timeout: 15000 });
+      const state = await region().getAttribute('data-search-state');
+      if (state !== 'result' && state !== 'permission') {
+        throw new Error('前置应为检索结果态 result/permission，实际 data-search-state=' + state);
+      }
+      const pag = resultPagination();
+      const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      const hasPage2 =
+        ((await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false))) ||
+        (await pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').count()) > 0;
+      if (!hasPage2) {
+        throw new Error('数据闸门：重点产业结果未超过一页，无法打开第 2 页');
+      }
+      await clickPageNum(2);
+      const active2 = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+      if (active2 !== '2') {
+        throw new Error('翻页后当前页应为 2，现场 active=' + (active2 || '(空)'));
+      }
+      const card = rowCard();
+      await expect(card).toBeVisible({ timeout: 10000 });
+      const removeBtn = card.getByRole('button', { name: '将' + TARGET + '移出对比篮', exact: true });
+      if (await removeBtn.count()) {
+        const vis = await removeBtn.first().isVisible().catch(() => false);
+        if (vis) {
+          await removeBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(600);
+        }
+      }
+      await expect(card.getByRole('button', { name: '将' + TARGET + '加入对比篮', exact: true })).toBeVisible({
+        timeout: 8000,
+      });
+      globalThis.__func02702_ready = true;
+  - note: 步骤：勾选「软件与信息服务」并点选择条「加入对比篮」
+    assert: |-
+      if (!globalThis.__func02702_ready) throw new Error('前置未完成');
+      const TARGET = '软件与信息服务';
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const card = region
+        .locator('.industry-search-result-card')
+        .filter({ has: page.getByRole('heading', { name: TARGET, exact: true }) })
+        .first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const chk =
+        card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+      if ((await chk.count()) < 1) {
+        throw new Error('行内无可点勾选框（可能已在对比篮或不可用）');
+      }
+      await chk.scrollIntoViewIfNeeded().catch(() => {});
+      const checkedCls = await chk.getAttribute('class').catch(() => '');
+      if (!checkedCls || !checkedCls.includes('arco-checkbox-checked')) {
+        await chk.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      await expect(toolbar.getByRole('button', { name: '加入对比篮', exact: true })).toBeVisible({ timeout: 5000 });
+      await toolbar.getByRole('button', { name: '加入对比篮', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+  - note: 1、该行按钮变为「将软件与信息服务移出对比篮」
+    assert: |-
+      const TARGET = '软件与信息服务';
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const card = region
+        .locator('.industry-search-result-card')
+        .filter({ has: page.getByRole('heading', { name: TARGET, exact: true }) })
+        .first();
+      const removeBtn = card.getByRole('button', { name: '将' + TARGET + '移出对比篮', exact: true });
+      await expect(removeBtn).toBeVisible({ timeout: 10000 });
+      await expect(card.getByRole('button', { name: '将' + TARGET + '加入对比篮', exact: true })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索热门「重点产业」出检索结果（同 FUNC-02691）。
+  分页 .industry-search-pagination PAGE_SIZE=6；勾选 aria-label「选择 软件与信息服务」；选择条 .industry-search-selection-toolbar 可见文案「加入对比篮」。
+  行内对比篮为 icon 按钮 aria-label「将软件与信息服务加入/移出对比篮」。前置已入篮先点移出还原。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,61 @@
+id: FUNC-02692
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02692
+priority: P0
+title: 搜索命中后结果区标题与返回提示正确
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 当前为「智能检索」
+locators:
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  search_btn: button「搜索」
+  result_region: region aria-label「产业查询结果」
+  degrade_hint: 未命中预设字段降级提示（搜索栏下方）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索输入「光刻」、点「搜索」；结果区标题与返回提示在 expect 判定
+expect:
+  - note: 1、标题为「检索结果」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.getByRole('heading', { level: 2, name: '检索结果' })).toBeVisible({
+        timeout: 12000,
+      });
+  - note: 2、出现「产业查询返回」
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      await expect(region.getByText(/产业查询返回/)).toBeVisible({ timeout: 8000 });
+  - note: 3、提示含「未命中预设字段」
+    assert: |-
+      await expect(page.getByText(/未命中预设字段/)).toBeVisible({ timeout: 8000 });
+  - note: 4、提示中的关键词为「光刻」
+    assert: |-
+      const hint = page.getByText(/未命中预设字段[\s\S]*「光刻」[\s\S]*检索/);
+      await expect(hint).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  关键词=testdata smart_search.keyword_primary「光刻」；降级提示在结果区外搜索栏下方（scout-after-search-guangke）。
+  返回文案「产业查询返回 N 条结果」在 region 内；条数不钉死。路由 catalog_path /industry-center/search。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

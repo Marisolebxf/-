@@ -1,0 +1,134 @@
+id: FUNC-04032
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04032
+priority: P1
+tier: B
+title: 备选-打开对比篮（面板开合）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已在服务机构查询页
+locators:
+  open_btn: button「打开对比篮」
+  close_btn: '[aria-label="关闭对比篮"]'
+  basket_panel: '[aria-label="对比篮"]'
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 前置进入服务机构查询壳；开合对比篮在 expect 判定
+expect:
+  - note: 前置：已在服务机构查询页（catalog_path）
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(400);
+          }
+        }
+      };
+      const assertNot404 = async (label) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: ' + label + ' url=' + page.url());
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1500);
+          await recover404Shell();
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await bodyIs404()) && (await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (!(await searchItem().first().isVisible().catch(() => false)) && (await sub.count())) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+          }
+          await searchItem().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/service-center\/search/, { timeout: 20000 });
+          await assertNot404('侧栏进入服务机构查询');
+        } else {
+          await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await assertNot404('深链 catalog_path /service-center/search');
+        }
+        if (/sso\/user\/login|itic-sci\.com\/sso/.test(page.url())) {
+          throw new Error('ENV-SSO-REDIRECT-001: 会话未保持，跳转 SSO url=' + page.url());
+        }
+        await expect(page).toHaveURL(/\/service-center\/search/);
+        await expect(page.getByRole('tab', { name: '智能检索' })).toBeVisible({ timeout: 15000 });
+      };
+      await enterSvcSearch();
+      globalThis.__func04032 = {};
+  - note: 1.点击「打开对比篮」
+    assert: |-
+      const open = page.getByRole('button', { name: /打开对比篮/ }).first();
+      await expect(open).toBeVisible({ timeout: 10000 });
+      await open.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+  - note: 1、面板标题含「对比篮」
+    assert: |-
+      const panel = page.locator('[aria-label="对比篮"]').first();
+      const heading = page.getByRole('heading').filter({ hasText: /对比篮/ }).first();
+      const titleVis =
+        (await panel.isVisible().catch(() => false)) ||
+        (await heading.isVisible().catch(() => false)) ||
+        /对比篮/.test(((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' '));
+      if (!titleVis) throw new Error('打开对比篮后面板标题未见「对比篮」');
+  - note: 2、面板含「服务机构」页签
+    assert: |-
+      const orgTab = page.getByRole('tab', { name: '服务机构' });
+      await expect(orgTab.first()).toBeVisible({ timeout: 8000 });
+  - note: 2.点击「关闭对比篮」
+    assert: |-
+      const closeAria = page.locator('[aria-label="关闭对比篮"]').first();
+      const closeRole = page.getByRole('button', { name: '关闭对比篮' }).first();
+      if (await closeAria.isVisible().catch(() => false)) {
+        await closeAria.click({ timeout: 8000 });
+      } else {
+        await expect(closeRole).toBeVisible({ timeout: 8000 });
+        await closeRole.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(400);
+  - note: 3、关闭后仍停留在服务机构查询
+    assert: |-
+      await expect(page).toHaveURL(/\/service-center\/search/);
+      await expect(page.getByRole('tab', { name: '智能检索' })).toBeVisible({ timeout: 10000 });
+      const closeStill = page.locator('[aria-label="关闭对比篮"]');
+      const closeVis = await closeStill.count() ? await closeStill.first().isVisible().catch(() => false) : false;
+      if (closeVis) {
+        const box = await closeStill.first().boundingBox().catch(() => null);
+        if (box && box.width > 0 && box.height > 0) {
+          throw new Error('关闭对比篮后面板仍可见');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04032；catalog_path=/service-center/search。页底「打开对比篮」开合系统浮层；面板标题含对比篮、含「服务机构」Tab。
+  关闭用 aria-label=关闭对比篮（文案「关闭对比篮」同 scout）。篮内移除/发起不在本册。页底「篮内已有服务机构」计数不写死。

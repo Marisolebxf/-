@@ -1,0 +1,104 @@
+id: FUNC-01483
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01483
+priority: P0
+title: 检索结果首张长卡片展示固定业务字段
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空检索结果（本条 steps 自含智能搜索示例词出结果）
+locators:
+  route: /enterprise/enterprise-search（30888 侧栏企业查询）
+  example_chip: .enterprise-search-example-button
+  search_btn: button「搜索」（exact）
+  first_card: main 首张含「查看画像」且含字段标签的长卡片（evaluate 标记 data-qa-first-card）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 示例词检索与首张结果卡字段浏览由 expect assert 自含
+expect:
+  - note: 首张结果卡上有企业名称与经营状态
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const chip = page.locator('.enterprise-search-example-button').first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(600);
+      await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/).first()).toBeVisible({ timeout: 12000 });
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 15000 });
+      await profileBtn.evaluate((node) => {
+        let el = node;
+        for (let i = 0; i < 16; i++) {
+          if (!el) break;
+          const t = el.innerText || '';
+          if (t.includes('法定代表人') && t.includes('查看画像') && t.includes('有效专利数')) {
+            document.querySelectorAll('[data-qa-first-card]').forEach((n) => n.removeAttribute('data-qa-first-card'));
+            el.setAttribute('data-qa-first-card', '1');
+            return;
+          }
+          el = el.parentElement;
+        }
+        throw new Error('未定位到首张结果长卡片容器');
+      });
+      const card = page.locator('main [data-qa-first-card="1"]');
+      await expect(card).toBeVisible({ timeout: 8000 });
+      await expect(card.getByRole('button').filter({ hasText: /有限公司|股份|集团|有限责任公司/ }).first()).toBeVisible({ timeout: 8000 });
+      await expect(card.getByText(/在营|吊销|注销|停业|迁出/).first()).toBeVisible({ timeout: 8000 });
+  - note: 首张卡可见法定代表人、成立、注册资本(万)、区县
+    assert: |-
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 8000 });
+      await profileBtn.evaluate((node) => {
+        let el = node;
+        for (let i = 0; i < 16; i++) {
+          if (!el) break;
+          const t = el.innerText || '';
+          if (t.includes('法定代表人') && t.includes('查看画像') && t.includes('有效专利数')) {
+            document.querySelectorAll('[data-qa-first-card]').forEach((n) => n.removeAttribute('data-qa-first-card'));
+            el.setAttribute('data-qa-first-card', '1');
+            return;
+          }
+          el = el.parentElement;
+        }
+        throw new Error('未定位到首张结果长卡片容器');
+      });
+      const card = page.locator('main [data-qa-first-card="1"]');
+      await expect(card).toBeVisible({ timeout: 8000 });
+      for (const label of ['法定代表人', '成立', '注册资本(万)', '区县']) {
+        await expect(card.getByText(new RegExp('^' + label.replace(/[()]/g, '\\$&'))).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 首张卡可见有效专利数、最新营收(亿)、链位、竞争力
+    assert: |-
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 8000 });
+      await profileBtn.evaluate((node) => {
+        let el = node;
+        for (let i = 0; i < 16; i++) {
+          if (!el) break;
+          const t = el.innerText || '';
+          if (t.includes('法定代表人') && t.includes('查看画像') && t.includes('有效专利数')) {
+            document.querySelectorAll('[data-qa-first-card]').forEach((n) => n.removeAttribute('data-qa-first-card'));
+            el.setAttribute('data-qa-first-card', '1');
+            return;
+          }
+          el = el.parentElement;
+        }
+        throw new Error('未定位到首张结果长卡片容器');
+      });
+      const card = page.locator('main [data-qa-first-card="1"]');
+      await expect(card).toBeVisible({ timeout: 8000 });
+      for (const label of ['有效专利数', '最新营收(亿)', '链位', '竞争力']) {
+        await expect(card.getByText(new RegExp('^' + label.replace(/[()]/g, '\\$&'))).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise/enterprise-search；字段标签以 cardSchema 与 p0-03 实勘原文为准。首张卡容器由「查看画像」向上爬 DOM 标记，避免 class*=card 误匹配浅层节点。

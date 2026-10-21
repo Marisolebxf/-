@@ -1,0 +1,113 @@
+id: FUNC-01791
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01791
+priority: P0
+title: 数据覆盖区可信度下拉五个固定选项
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 评估对象已回填（脚本内对比篮勾选至少 2 家并确定）
+locators:
+  section_title: 数据覆盖与可信度
+  filter_combobox: combobox「筛选数据可信度」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 回填对象后展开可信度下拉；判定在 expect
+expect:
+  - note: 1、展开可信度下拉后选项共 5 个（附录A：全部可信度、高可信、中可信、低可信、不可生成）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const tabs = ['全部可信度', '高可信', '中可信', '低可信', '不可生成'];
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 15000 });
+        const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) });
+        const cardCount = await cards.count();
+        if (cardCount < min) throw new Error('推荐企业卡不足 ' + min);
+        for (let i = 0; n < min && i < cardCount; i++) {
+          const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+          if (!(await btn.count()) || !(await btn.isVisible().catch(() => false))) continue;
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await emptyCta.count() && await emptyCta.first().isVisible().catch(() => false)) {
+          await emptyCta.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs = 'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(evalRoute + '&' + pickerQs), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false)) return;
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          await dockBtn.click({ timeout: 10000 });
+          await page.waitForTimeout(1000);
+        }
+      };
+      await ensureBasketEnterprises(2);
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      if (await sels.count() < 2) throw new Error('浮层可选企业不足 2 家');
+      await sels.nth(0).click();
+      await sels.nth(1).click();
+      await page.waitForTimeout(300);
+      const confirm = page.getByRole('button', { name: '确定', exact: true }).last();
+      await expect(confirm).toBeEnabled({ timeout: 8000 });
+      await confirm.click({ timeout: 8000 });
+      await page.waitForTimeout(3500);
+      await closeBasket();
+      const bodyAfter = await page.locator('body').innerText().catch(() => '');
+      if (/预检未返回企业明细/.test(bodyAfter)) throw new Error('回填后预检阻塞（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+      await expect(page.getByText('数据覆盖与可信度', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      const combo = page.getByRole('combobox', { name: '筛选数据可信度' });
+      await combo.scrollIntoViewIfNeeded();
+      await expect(combo).toBeVisible({ timeout: 10000 });
+      await combo.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(combo).toHaveAttribute('aria-expanded', 'true', { timeout: 8000 });
+      const options = page.getByRole('option');
+      await expect(options).toHaveCount(5, { timeout: 8000 });
+      const texts = (await options.allTextContents()).map((s) => s.trim());
+      for (const t of tabs) {
+        if (!texts.includes(t)) throw new Error('缺少选项「' + t + '」，实际：' + texts.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01791 仅验可信度下拉五档（附录A）。D1·30888 触发器为 role=combobox、aria-label=筛选数据可信度（非 .arco-select-view 上的 label）；展开前关对比篮并 scrollIntoView。对比篮计数 aria「共 N 项」。词单 fixtures/testdata.yaml coverage.tabs。预检 ticket=ENV-EVAL-TECH-PRECHECK-001。B 档零 allow_skip。

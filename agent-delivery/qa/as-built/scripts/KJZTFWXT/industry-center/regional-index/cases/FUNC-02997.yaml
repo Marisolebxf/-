@@ -1,0 +1,68 @@
+id: FUNC-02997
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02997
+priority: P0
+title: 分析记录表列名与行操作按钮
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已进入区域产业指数评价
+locators:
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 点「分析记录」Tab（机检在 expect）
+expect:
+  - note: 1、列名为任务、类型、状态、创建时间、操作
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      await gate404();
+      await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+      const main = page.locator('main').first();
+      await expect(main.getByText('分析记录').first()).toBeVisible({ timeout: 8000 });
+      const headerText = await main.innerText().catch(() => '');
+      for (const col of ['任务', '类型', '状态', '创建时间', '操作']) {
+        if (!headerText.includes(col)) {
+          throw new Error('分析记录表缺列「' + col + '」');
+        }
+      }
+      globalThis.__func02997 = { headerText };
+  - note: 2、行按钮为查看结果、复制配置、查看报告、下载报告、删除；类型列值为「区域产业指数评价」
+    assert: |-
+      const dataRow = page.locator('tr').filter({ hasText: /CHAIN-\d{8}-\d{3}/ }).first();
+      if (!(await dataRow.count())) {
+        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-RECORDS: 分析记录无任务行，无法验行按钮');
+      }
+      await expect(dataRow).toBeVisible({ timeout: 8000 });
+      const rowText = (await dataRow.innerText().catch(() => '')).replace(/\s+/g, ' ');
+      if (!/区域产业指数评价/.test(rowText)) {
+        throw new Error('类型列未见「区域产业指数评价」，行文案: ' + rowText.slice(0, 200));
+      }
+      for (const btn of ['查看结果', '复制配置', '查看报告', '下载报告', '删除']) {
+        const b = dataRow.getByRole('button', { name: btn }).first();
+        if (!(await b.count())) {
+          throw new Error('行上缺按钮「' + btn + '」');
+        }
+        await expect(b).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index；步骤=点「分析记录」Tab（非改 query 深链）。表头/行按钮口径来自 scout-records.json。类型列固定「区域产业指数评价」。无任务行→ENV-CHAIN-REGIONAL-INDEX-NO-RECORDS。edu 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。

@@ -1,0 +1,107 @@
+id: FUNC-00755
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00755
+priority: P0
+title: 顶部双 Tab 构成与默认选中态正确
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已进入深圳产业发展分析页
+locators:
+  tab_dev: '[role=tab][data-tab-key=development]'
+  tab_rec: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 必要时经侧栏进入发展页；读取顶部双 Tab 名称与默认选中（data-tab-key）
+expect:
+  - note: 顶部含「深圳产业发展分析」与「分析记录」两枚 Tab，顺序一致
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析页，无法验双 Tab ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+      await expect(page).toHaveURL(/workspace=development/);
+      await expect(page).toHaveURL(/tab=development/);
+      const dev = page.locator('[role=tab][data-tab-key="development"]');
+      const rec = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(dev).toBeVisible({ timeout: 8000 });
+      await expect(rec).toBeVisible({ timeout: 8000 });
+      const devTxt = (await dev.innerText()).trim().replace(/\s+/g, ' ');
+      const recTxt = (await rec.innerText()).trim().replace(/\s+/g, ' ');
+      if (!/深圳产业发展分析/.test(devTxt)) throw new Error('主 Tab 文案不符: ' + devTxt);
+      if (!/^分析记录/.test(recTxt)) throw new Error('记录 Tab 文案不符: ' + recTxt);
+      const boxD = await dev.boundingBox();
+      const boxR = await rec.boundingBox();
+      if (boxD && boxR && boxD.x >= boxR.x) throw new Error('Tab 顺序非发展→记录');
+  - note: 默认选中「深圳产业发展分析」，「分析记录」未选中
+    assert: |-
+      const dev = page.locator('[role=tab][data-tab-key="development"]');
+      const rec = page.locator('[role=tab][data-tab-key="records"]');
+      const aria = await dev.getAttribute('aria-selected');
+      const cls = await dev.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('深圳产业发展分析 Tab 未选中');
+      }
+      const recAria = await rec.getAttribute('aria-selected');
+      const recCls = await rec.getAttribute('class');
+      if (recAria === 'true' || (recCls || '').includes('active')) {
+        throw new Error('分析记录 Tab 不应选中');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 页头 Tab 用 data-tab-key=development/records（勿与对比篮系统级 tab 混淆）；内嵌追溯按钮污染 getByRole exact 名。catalog_path=entry-seed development 深链；enter 回落同 FUNC-03423/00733。

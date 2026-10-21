@@ -1,0 +1,82 @@
+id: FUNC-05419
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05419
+priority: P0
+title: 企业为 0 时点开始收集企业仍停在空态
+story: US-ENT-CMP-05
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 对比篮已打开
+  - 企业页签为 0/50
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 前置空态与步骤「开始收集企业」点击在 expect 内执行
+expect:
+  - note: 前置：对比篮已打开且企业页签 0/50，可见「开始收集企业」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const entTabText = ((await entTab.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/0\s*\/\s*50/.test(entTabText) || (await panel.locator('.ent-compare-item-card').count())) {
+        const clearBtn = panel.getByRole('button', { name: '清空对比篮' });
+        if (!(await clearBtn.count())) throw new Error('企业非空且无法清空: tab=' + entTabText);
+        await clearBtn.click({ timeout: 8000 });
+        const m = page.locator('.arco-modal:visible');
+        await m.getByRole('button', { name: /确定|确认|清空/ }).last().click({ timeout: 8000 }).catch(async () => {
+          await m.locator('button.arco-btn-primary').last().click({ timeout: 8000 });
+        });
+        await page.waitForTimeout(1000);
+      }
+      const entTabText2 = ((await entTab.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/0\s*\/\s*50/.test(entTabText2)) throw new Error('企业页签非 0/50: ' + entTabText2);
+      await expect(panel.getByText('对比篮暂无企业').first()).toBeVisible({ timeout: 8000 });
+      const collectTitle = panel.getByText('开始收集企业').first();
+      await expect(collectTitle).toBeVisible({ timeout: 8000 });
+      await page.evaluate((u) => sessionStorage.setItem('qa_func05419_host', u), page.url());
+      await collectTitle.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.evaluate(() => sessionStorage.setItem('qa_func05419_clicked', '1'));
+  - note: 浮层仍显示「对比篮暂无企业」
+    assert: |-
+      if (await page.evaluate(() => sessionStorage.getItem('qa_func05419_clicked')) !== '1') {
+        throw new Error('未执行「开始收集企业」点击');
+      }
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      await expect(panel.getByText('对比篮暂无企业').first()).toBeVisible({ timeout: 8000 });
+      if (await panel.locator('.ent-compare-item-card').count()) {
+        throw new Error('点击后出现了企业卡片，非空态');
+      }
+  - note: 区块标题仍为「开始收集企业」
+    assert: |-
+      if (await page.evaluate(() => sessionStorage.getItem('qa_func05419_clicked')) !== '1') {
+        throw new Error('未执行「开始收集企业」点击');
+      }
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('开始收集企业').first()).toBeVisible({ timeout: 8000 });
+  - note: 宿主页 URL 保持进入浮层前业务页（用例备注）
+    assert: |-
+      if (await page.evaluate(() => sessionStorage.getItem('qa_func05419_clicked')) !== '1') {
+        throw new Error('未执行「开始收集企业」点击');
+      }
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('点击后离开宿主页: ' + page.url());
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。「开始收集企业」为区块标题可点，点击后不导航、仍空态（与 05389 空态展示分开）。清空篮会改会话数据。

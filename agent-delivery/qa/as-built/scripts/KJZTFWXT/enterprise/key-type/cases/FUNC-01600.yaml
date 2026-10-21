@@ -1,0 +1,101 @@
+id: FUNC-01600
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01600
+priority: P1
+title: 移除已选产业标签后回到全部产业
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已勾选「生物医药」（30888 须先选产业集群「生物产业」再选 L0）
+locators:
+  cluster_combo: combobox「选择产业集群」
+  industry_combo: combobox「选择产业」exact
+  industry_clear: L0 .arco-select-clear-icon
+  flat_industry: placeholder「全部产业」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 前置勾选「生物医药」后点击移除（tag 或 L0 clear）；回显与全部产业语义在 expect 判定
+expect:
+  - note: 1、点击产业标签移除后，该标签从筛选栏消失
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const filterRoot = main.locator('[data-testid="keyent-v2-type-inputs"]').first();
+      const flatInp = main.getByPlaceholder('全部产业');
+      if (await flatInp.count()) {
+        let tag = filterRoot.locator('.arco-tag').filter({ hasText: /^生物医药$/ }).first();
+        if (!(await tag.isVisible().catch(() => false))) {
+          const industryView = flatInp.first().locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+          await industryView.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          await page.locator('.arco-select-option').filter({ hasText: /^生物医药$/ }).first().click({ timeout: 8000 });
+          await page.waitForTimeout(900);
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(400);
+          tag = filterRoot.locator('.arco-tag').filter({ hasText: /^生物医药$/ }).first();
+          await expect(tag).toBeVisible({ timeout: 8000 });
+        }
+        await tag.locator('.arco-tag-close-btn, [aria-label="Close"], [aria-label="close"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const remain = await filterRoot.locator('.arco-tag').filter({ hasText: /^生物医药$/ }).count();
+        if (remain) throw new Error('移除后筛选栏仍见生物医药 tag');
+        return;
+      }
+      const clusterCombo = main.getByRole('combobox', { name: '选择产业集群' });
+      const indCombo = main.getByRole('combobox', { name: '选择产业', exact: true });
+      await expect(clusterCombo).toBeVisible({ timeout: 8000 });
+      await expect(indCombo).toBeVisible({ timeout: 8000 });
+      const indView = indCombo.locator('.arco-select-view').first();
+      const hasBio = async () => {
+        const t = ((await indView.innerText()) || '').replace(/\s+/g, '');
+        return t.includes('生物医药');
+      };
+      if (!(await hasBio())) {
+        await clusterCombo.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await page.locator('.arco-select-option').filter({ hasText: '生物产业' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await indCombo.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await page.locator('.arco-select-option').filter({ hasText: /^生物医药$/ }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+        if (!(await hasBio())) throw new Error('前置未能勾选 L0 生物医药');
+      }
+      await indView.hover();
+      await page.waitForTimeout(350);
+      const clearBtn = indCombo.locator('.arco-select-clear-icon').first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      if (await hasBio()) throw new Error('点击移除后 L0 仍显示生物医药');
+      const echoTag = await filterRoot.locator('.arco-tag').filter({ hasText: /^生物医药$/ }).count();
+      if (echoTag) throw new Error('移除后筛选栏仍见生物医药 tag');
+  - note: 2、产业回到「全部产业」语义（未选具体 L0 产业；集群+L0 现场 L0 回到 placeholder）
+    assert: |-
+      const main = page.locator('main');
+      const flatInp = main.getByPlaceholder('全部产业');
+      if (await flatInp.count()) {
+        const val = await flatInp.first().inputValue();
+        if (val) throw new Error('移除后产业下拉仍非空: ' + val);
+        return;
+      }
+      const indCombo = main.getByRole('combobox', { name: '选择产业', exact: true });
+      await expect(indCombo).toBeVisible({ timeout: 8000 });
+      const txt = ((await indCombo.innerText()) || '').replace(/\s+/g, '');
+      if (txt.includes('生物医药')) throw new Error('移除后 L0 仍含生物医药: ' + txt);
+      if (!/选择产业/.test(txt)) throw new Error('L0 未回到未选产业 placeholder 态: ' + txt);
+      const filterRoot = main.locator('[data-testid="keyent-v2-type-inputs"]');
+      const bioEcho = await filterRoot.getByText('生物医药', { exact: true }).count();
+      if (bioEcho) throw new Error('筛选区仍回显生物医药');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 产业为集群+L0；用例「产业标签移除」= L0 已选值旁 .arco-select-clear-icon（非独立 .arco-tag；企业类型多选仍用 tag close，见 FUNC-00392）。「全部产业」此处对齐未选 L0（placeholder 含「选择产业」）；集群空态见 FUNC-00380。combobox 须 exact 区分集群/产业。登录与关内部评审由 runner 会话前置。

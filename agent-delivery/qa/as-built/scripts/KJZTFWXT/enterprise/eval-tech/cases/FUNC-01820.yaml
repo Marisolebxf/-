@@ -1,0 +1,142 @@
+id: FUNC-01820
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01820
+priority: P1
+title: 全选当前筛选结果后可取消选择且确定禁用
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 「选择分析企业」浮层已打开（脚本自含入篮≥1 与开浮层）
+  - 当前列表至少有 1 家企业
+locators:
+  picker_title: text「选择分析企业」
+  select_all_chk: checkbox aria-label「全选当前筛选结果」（CompareBasketActionBar，非 button）
+  clear_selection_btn: button「取消选择」
+  confirm_btn: button「确定」
+  selected_count_hint: 已选 N 家
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 开浮层后点「全选当前筛选结果」再点「取消选择」；已选计数与确定门控在 expect 判定
+expect:
+  - note: 1、全选后已选家数等于当前列表企业数；2、取消选择后已选为 0；3、「确定」变为禁用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const gotoEvalTech = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const ctaNew = main.getByRole('button', { name: '多企业技术力对比分析', exact: true });
+        const ctaOld = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await ctaNew.count() && await ctaNew.first().isVisible().catch(() => false)) {
+          await ctaNew.first().click({ timeout: 8000 });
+          return;
+        }
+        if (await ctaOld.count() && await ctaOld.first().isVisible().catch(() => false)) {
+          await ctaOld.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const pickerRoot = () =>
+        page
+          .locator('.system-compare-panel:visible, .arco-modal:visible, .arco-drawer:visible, [role="dialog"]')
+          .filter({ hasText: '选择分析企业' })
+          .last();
+      const listEnterpriseCount = async (scope) => {
+        const cards = scope.locator('.ent-compare-item-card');
+        const cardN = await cards.count();
+        if (cardN > 0) return cardN;
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        if (selN > 0) return selN;
+        const boxes = scope.locator('.arco-checkbox');
+        return await boxes.count();
+      };
+      const parseSelectedCount = async (scope) => {
+        const text = (await scope.innerText()).replace(/\s+/g, ' ');
+        const m = text.match(/已选\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      await ensureBasketEnterprises(1);
+      await gotoEvalTech();
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const scope = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+      const listN = await listEnterpriseCount(scope);
+      if (listN < 1) throw new Error('当前列表应有至少 1 家企业，实际 ' + listN);
+      const beforeSelected = await parseSelectedCount(scope);
+      if (beforeSelected !== null && beforeSelected !== 0) {
+        const clearPre = scope.getByRole('button', { name: '取消选择', exact: true });
+        if (await clearPre.count() && !(await clearPre.first().isDisabled())) {
+          await clearPre.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      const selectAll =
+        scope.getByRole('checkbox', { name: '全选当前筛选结果' }).or(scope.locator('[aria-label="全选当前筛选结果"]'));
+      await expect(selectAll.first()).toBeVisible({ timeout: 8000 });
+      await selectAll.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const afterAll = await parseSelectedCount(scope);
+      if (afterAll === null) throw new Error('全选后未见「已选 N 家」文案');
+      if (afterAll !== listN) {
+        throw new Error(`全选后已选应为 ${listN} 家，实际 ${afterAll} 家（列表 ${listN} 家）`);
+      }
+      const okAfterAll = scope.getByRole('button', { name: '确定', exact: true });
+      if (await okAfterAll.isDisabled()) throw new Error('全选后确定应可用');
+      const clearBtn = scope.getByRole('button', { name: '取消选择', exact: true });
+      await expect(clearBtn.first()).toBeVisible({ timeout: 8000 });
+      if (await clearBtn.first().isDisabled()) throw new Error('全选后取消选择应可用');
+      await clearBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const afterClear = await parseSelectedCount(scope);
+      if (afterClear === null) throw new Error('取消选择后未见「已选 N 家」文案');
+      if (afterClear !== 0) throw new Error(`取消选择后已选应为 0，实际 ${afterClear}`);
+      const okAfterClear = scope.getByRole('button', { name: '确定', exact: true });
+      if (!(await okAfterClear.isDisabled())) throw new Error('取消选择后确定应禁用');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01820；底栏「全选当前筛选结果」为 a-checkbox（aria-label，CompareBasketActionBar），非 button。已选文案「已选 N 家」。30888 路由 enterprise-center/evaluation；开浮层同 FUNC-00903/01811。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

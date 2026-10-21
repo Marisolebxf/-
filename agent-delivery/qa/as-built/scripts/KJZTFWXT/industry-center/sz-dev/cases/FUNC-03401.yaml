@@ -1,0 +1,143 @@
+id: FUNC-03401
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03401
+priority: P0
+title: 报告页「返回分析结果」回到深圳产业发展分析结果页
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已打开一条发展分析报告
+locators:
+  tab_rec: tab「分析记录」
+  view_result: button「查看结果」（已完成行、非 disabled）
+  view_report: button「查看报告」
+  back_to_result: button「返回分析结果」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 打开报告→点「返回分析结果」；预期在 expect
+expect:
+  - note: 1、回到「深圳产业发展分析结果」页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      const openDevelopmentReport = async () => {
+        const recTab = page.getByRole('tab', { name: '分析记录' });
+        await expect(recTab).toBeVisible({ timeout: 10000 });
+        await recTab.click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        await expect(recTab).toHaveAttribute('aria-selected', 'true');
+        const mainText = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无成功结果可打开');
+        }
+        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
+        const doneCount = await doneRow.count();
+        let viewBtn = doneCount
+          ? doneRow.first().getByRole('button', { name: '查看结果' })
+          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        if (!(await viewBtn.count())) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
+        }
+        if (await viewBtn.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 已完成记录存在但「查看结果」仍为 disabled');
+        }
+        await viewBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(2000);
+        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+        const reportBtn = page.getByRole('button', { name: '查看报告' }).first();
+        await expect(reportBtn).toBeVisible({ timeout: 8000 });
+        if (await reportBtn.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-REPORT: 成功结果存在但「查看报告」disabled，无报告资源');
+        }
+        await reportBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page).toHaveURL(/view=report|demo_state=report/, { timeout: 20000 });
+        return waitReportReader();
+      };
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法打开报告 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=development/);
+      const reader = await openDevelopmentReport();
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析报告', level: 1 })).toBeVisible({ timeout: 15000 });
+      const back = reader.locator('[data-report-back], button').filter({ hasText: '返回分析结果' }).first();
+      await expect(back).toBeVisible({ timeout: 8000 });
+      await back.click({ timeout: 15000 });
+      await page.waitForTimeout(900);
+      for (let k = 0; k < 24; k++) {
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/深圳产业发展分析结果/.test(body)) break;
+        if (k === 23) {
+          throw new Error('点击「返回分析结果」后未回到结果页，url=' + page.url() + ' body=' + body.slice(0, 320));
+        }
+        await page.waitForTimeout(500);
+      }
+      const readerGone = await page.locator('.system-report-reader[data-report-readonly="true"]').isVisible().catch(() => false);
+      if (readerGone) {
+        throw new Error('仍停留在只读报告壳，未离开 view=report');
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例=报告页点「返回分析结果」→「深圳产业发展分析结果」（前置同 FUNC-03400：分析记录已完成→查看结果→查看报告）。
+  data-report-back + 离开 system-report-reader。无已完成→ENV-CHAIN-SZ-DEV-NO-DONE-TASK；无报告→ENV-CHAIN-SZ-DEV-NO-REPORT。edu 404→ENV-EDU-TTS-SVCZ-404-001。B 档零 allow_skip。

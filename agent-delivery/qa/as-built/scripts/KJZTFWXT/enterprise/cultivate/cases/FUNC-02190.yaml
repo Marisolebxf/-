@@ -1,0 +1,66 @@
+id: FUNC-02190
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02190
+priority: P0
+title: 主流程-产业类别选项个数
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已登录；停在条件筛选推荐 Tab
+locators:
+  industry_select: placeholder「全部产业类别」
+  condition_stack: data-testid recruit-tab-stack
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 展开「全部产业类别」下拉（点 .arco-select-view，勿点隐藏 input）
+expect:
+  - note: 前置：条件筛选推荐 Tab 选中且条件区可见「培育推荐条件」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const filterTab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+      await expect(filterTab).toBeVisible({ timeout: 10000 });
+      const aria = (await filterTab.getAttribute('aria-selected')) || '';
+      const cls = (await filterTab.getAttribute('class')) || '';
+      if (aria !== 'true' && !/\bactive\b/.test(cls)) {
+        await filterTab.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      }
+      const stack = page.getByTestId('recruit-tab-stack');
+      await expect(stack.getByText('培育推荐条件', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(stack.locator('input[placeholder="全部产业类别"]').first()).toBeVisible({ timeout: 8000 });
+  - note: 1、展开「全部产业类别」后选项共 8 项，名称为附录 A 八产业链（页内无独立快捷 chip）
+    assert: |-
+      const expected = ['集成电路', '生物医药', '人工智能', '新能源', '低空经济', '量子信息', '海洋经济', '智能机器人'];
+      const stack = page.getByTestId('recruit-tab-stack');
+      await page.keyboard.press('Escape').catch(() => {});
+      const ph = stack.locator('input[placeholder="全部产业类别"]').first();
+      await expect(ph).toBeVisible({ timeout: 8000 });
+      await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const raw = (await pop.locator('.arco-select-option').allTextContents())
+        .map((t) => t.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const labels = [...new Set(raw)];
+      if (labels.length !== 8) {
+        throw new Error('产业类别下拉选项数为 ' + labels.length + '，预期 8；实际=' + labels.join('、'));
+      }
+      const missing = expected.filter((n) => !labels.some((t) => t === n || t.includes(n)));
+      const extra = labels.filter((t) => !expected.some((n) => t === n || t.includes(n)));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '选项与附录 A 不一致；缺失=' + (missing.join('、') || '无') +
+          '；多余=' + (extra.join('、') || '无') +
+          '；现场=' + labels.join('、'),
+        );
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·catalog /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation（edu svcz）；条件区 placeholder「全部产业类别」，8 项为 ent.chains 扁平下拉（同招引行业领域/sz-status 产业链口径）。页内无 8 快捷 chip。登录与关内部评审由 runner 前置。B 档零 allow_skip。

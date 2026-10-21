@@ -1,0 +1,92 @@
+id: FUNC-00743
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00743
+priority: P1
+title: 重置参数后产业下拉恢复未选占位态
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入深圳产业情况分析对比配置页
+  - 产业已选择一项
+locators:
+  reset: button「重置参数」
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 选产业一项→点「重置参数」→读产业下拉占位
+expect:
+  - note: 「重置参数」按钮可用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比 SPA404 @' + where + ' ' + page.url());
+        }
+      };
+      await dismissBasket();
+      if (!page.url().includes('/industry-center/shenzhen')) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      await assertNotSpa404('pre-reset-btn');
+      await expect(page.getByRole('button', { name: '重置参数' })).toBeEnabled({ timeout: 8000 });
+  - note: 重置后产业下拉回到「请选择产业」占位
+    assert: |-
+      const pickIndustryFirst = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-00743：产业下拉无选项');
+        }
+        const picked = ((await opt.innerText().catch(() => '')) || '').trim();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        return picked;
+      };
+      const readIndustryState = async () => {
+        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+        const ph = await view.locator('input').first().getAttribute('placeholder').catch(() => '');
+        const txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        return { ph: ph || '', txt };
+      };
+      const picked = await pickIndustryFirst();
+      const before = await readIndustryState();
+      if (before.ph.includes('请选择产业') && !before.txt) {
+        throw new Error('前置失败：产业未选中（picked=' + picked + '）');
+      }
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const after = await readIndustryState();
+      const phOk = after.ph.includes('请选择产业');
+      const txtOk = !after.txt || after.ph.includes(after.txt);
+      if (!phOk || !txtOk) {
+        throw new Error(
+          'ASBUILT-DEVIATION: 重置后产业未回占位（期望 placeholder 含「请选择产业」；before=' +
+            JSON.stringify(before) +
+            ' after=' +
+            JSON.stringify(after) +
+            ' picked=' +
+            picked +
+            '）'
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例期望重置清产业占位；历史实勘重置可能仍留集群/产业脏值（与 P1-01 同偏差）。route=entry-seed catalog_path。

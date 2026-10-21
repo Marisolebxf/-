@@ -1,0 +1,77 @@
+id: FUNC-04018
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04018
+priority: P1
+tier: B
+title: 备选-添加条件组（空组）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「高级筛选」
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  add_group_btn: .group-node__toolbar button「添加条件组」
+  condition_group: .group-node__group
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 深链进服务机构查询 → 高级筛选 → 点击「添加条件组」；两条预期在 expect 判定
+expect:
+  - note: 前置：高级筛选已打开
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/智能检索|查机构|高级筛选/.test(t);
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/service-center\/search/, { timeout: 15000 });
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: goto /service-center/search 仍 SPA404 url=' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const groupNode = page.locator('.group-node').first();
+      await expect(groupNode).toBeVisible({ timeout: 8000 });
+      await expect(groupNode.getByRole('button', { name: '添加条件组' })).toBeVisible({ timeout: 8000 });
+      globalThis.__func04018_ready = true;
+  - note: 1、出现「条件组」与「子组」；2、组内文案为「组内暂无条件」
+    assert: |-
+      if (!globalThis.__func04018_ready) throw new Error('前置：高级筛选未打开');
+      const groupNode = page.locator('.group-node').first();
+      const addBtn = groupNode.getByRole('button', { name: '添加条件组' });
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      const beforeGroups = await page.locator('.group-node__group').count();
+      await addBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const afterGroups = await page.locator('.group-node__group').count();
+      if (afterGroups !== beforeGroups + 1) {
+        throw new Error('添加条件组后 .group-node__group 数量应 +1，before=' + beforeGroups + ' after=' + afterGroups);
+      }
+      const group = page.locator('.group-node__group').last();
+      await expect(group).toBeVisible({ timeout: 8000 });
+      await expect(group.locator('.group-node__label').filter({ hasText: '条件组' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      await expect(group.getByRole('button', { name: '子组' }).first()).toBeVisible({ timeout: 8000 });
+      const emptyHint = group.locator('.group-node__empty').filter({ hasText: '组内暂无条件' });
+      await expect(emptyHint.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04018；catalog_path=/service-center/search。高级筛选 Tab + GroupNode「添加条件组」→ 新组头「条件组」+「子组」按钮 + 空态「组内暂无条件」（对齐 lumen-ui-topic GroupNode.vue）。
+  深链 catalog_path=/service-center/search + mode=advanced（对齐 FUNC-01329/02727 GroupNode 断言）。登录与关内部评审由 runner 会话前置。

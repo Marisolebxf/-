@@ -1,0 +1,54 @@
+id: FUNC-01147
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01147
+priority: P0
+title: 智能检索输入光刻点击搜索后结果区加载命中条目
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页；当前为「智能检索」Tab
+locators:
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  search_btn: button「搜索」（class 含 arco-input-search-btn）
+  result_region: region aria-label「产业查询结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 检索框输入「光刻」并点「搜索」；终态在 expect 判定（P2 跨 tick）
+expect:
+  - note: 提交后结果区可见且呈现检索结果态（非初始「推荐产业」引导）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      const btn = page.getByRole('button', { name: '搜索', exact: true });
+      await expect(btn).toBeEnabled();
+      await btn.click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 12000 });
+      const summary = region.getByText(/产业查询返回 \d+ 条结果|检索结果/);
+      await expect(summary.first()).toBeVisible({ timeout: 12000 });
+  - note: 结果区至少一条命中条目（「进入全景图谱」入口可见）
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const panorama = region.getByRole('button', { name: '进入全景图谱' });
+      const n = await panorama.count();
+      if (n < 1) {
+        throw new Error('光刻检索后结果区未见命中条目（缺进入全景图谱）');
+      }
+      await expect(panorama.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 关键词=testdata smart_search.keyword_primary「光刻」；条数不钉死（observed 记录）。条目构成归 FUNC-01149。加载过程反馈=observed-执行时记录。路由 catalog_path /industry-center/search。对比篮遮挡 dismiss。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,125 @@
+id: FUNC-05396
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05396
+priority: P0
+title: 勾选产业对象后任务浮层可见产业周期分析
+story: US-ENT-CMP-03
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 产业页至少 1 个对象
+locators:
+  panel: .system-compare-panel
+  industry_tab: '#compare-basket-tab-industry'
+  launch: 发起分析
+  modal: .arco-modal.analysis-picker-modal
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+expect:
+  - note: 前置：产业页至少 1 个对象，勾选恰好 1 个并点击「发起分析」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const parseIndCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/产业[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedIndustryFromAdd = async (panel) => {
+        const addBtn = panel.getByRole('button', { name: '新增' }).first();
+        await addBtn.click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        const search = modal.getByPlaceholder(/产业或产业链名称/).first();
+        if (await search.count()) {
+          await search.fill('电子');
+          await page.waitForTimeout(400);
+          const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+          if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-IND-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const openIndustryTab = async (panel) => {
+        const tab = panel.locator('#compare-basket-tab-industry');
+        if (await tab.count()) await tab.click({ timeout: 10000 });
+        else await panel.getByRole('tab', { name: /^产业/ }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        const indPanel = page.locator('#compare-basket-panel-industry');
+        await expect(indPanel).toBeVisible({ timeout: 10000 });
+        return { panel, indPanel, indTab: panel.locator('#compare-basket-tab-industry') };
+      };
+      let panel = await openPanel();
+      let { indPanel, indTab } = await openIndustryTab(panel);
+      const countIndustryRows = async (indPanel) =>
+        await indPanel.getByRole('button', { name: '查看对象', exact: true }).count();
+      let nRows = await countIndustryRows(indPanel);
+      let indCount = parseIndCount(await indTab.innerText());
+      if (nRows < 1 && (indCount == null || indCount < 1)) {
+        await seedIndustryFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        ({ indPanel, indTab } = await openIndustryTab(panel));
+        nRows = await countIndustryRows(indPanel);
+        indCount = parseIndCount(await indTab.innerText());
+      }
+      if (nRows < 1) throw new Error('ENV-SHELL-COMPARE-IND-EMPTY-001：产业页至少 1 个对象');
+      const cancel = panel.getByRole('button', { name: '取消选择' });
+      if (await cancel.count() && !(await cancel.isDisabled())) {
+        await cancel.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const viewBtn = indPanel.getByRole('button', { name: '查看对象', exact: true }).first();
+      const row = viewBtn.locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+      const rowLabel = row.locator('label.arco-checkbox').first();
+      await rowLabel.scrollIntoViewIfNeeded().catch(() => {});
+      await rowLabel.click({ timeout: 10000, force: true });
+      await page.waitForTimeout(500);
+      const selLine = indPanel.getByText(/已选\s*\d+\s*个对象/).first();
+      await expect(selLine).toBeVisible({ timeout: 8000 });
+      let selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/已选\s*1\s*个对象/.test(selTxt)) {
+        await rowLabel.click({ timeout: 10000, force: true });
+        await page.waitForTimeout(500);
+        selTxt = ((await selLine.innerText()) || '').replace(/\s+/g, ' ');
+      }
+      if (!/已选\s*1\s*个对象/.test(selTxt)) throw new Error('应勾选 1 个对象: ' + selTxt);
+      const launch = indPanel.getByRole('button', { name: '发起分析' }).first();
+      if (await launch.isDisabled()) throw new Error('勾选 1 个对象后发起分析仍 disabled: ' + selTxt);
+      // ponytail: 浮层底栏在 headless 视口外，Playwright 常规 click 会报 outside viewport
+      await launch.evaluate((el) => el.click());
+      await page.evaluate(() => sessionStorage.setItem('qa_func05396_modalOpened', '1'));
+  - note: 浮层标题为「选择分析任务」
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      await expect(modal.getByText('选择分析任务', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+  - note: 写明已选择的产业对象数
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      const body = ((await modal.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/已选择\s*1\s*个(产业|产业链)对象/.test(body)) {
+        throw new Error('浮层未写明已选择 1 个产业/产业链对象: ' + body.slice(0, 160));
+      }
+  - note: 出现「产业周期分析」
+    assert: |-
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' }).first();
+      await expect(modal.getByText('产业周期分析').first()).toBeVisible({ timeout: 8000 });
+      await modal.getByRole('button', { name: '取消' }).click({ timeout: 5000 }).catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。产业 Tab #compare-basket-tab-industry；任务浮层 .analysis-picker-modal，已选文案「已选择 N 个产业/产业链对象」。空篮经产业「新增」入篮（会改会话数据）。分组全名见用例附录C，本条只验「产业周期分析」可见。

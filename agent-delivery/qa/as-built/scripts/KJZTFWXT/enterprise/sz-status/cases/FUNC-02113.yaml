@@ -1,0 +1,143 @@
+id: FUNC-02113
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02113
+priority: P0
+title: 企业详情招投标页签四列表头
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 企业详情抽屉已打开（assert 自含选链至清单非空并点首行「查看详情」）
+locators:
+  list_title: 深圳相关企业清单
+  view_detail_btn: main 首行 button「查看详情」
+  detail_drawer: .arco-drawer:visible 标题「企业详情」
+  tab_bid: 企业详情抽屉 tab「招投标」
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 打开企业详情后点「招投标」；表头或空态在 expect 判定
+expect:
+  - note: 1、表头含公告标题、角色、对手方、日期；2、没有记录时文案为「暂无数据」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToList = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 55; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后未见清单或定位结果');
+        if (await page.getByText('当前条件下暂无企业').isVisible().catch(() => false)) {
+          throw new Error('清单空态「当前条件下暂无企业」，无法满足前置');
+        }
+      };
+      const clickFirstDetail = async () => {
+        const detailBtns = page.locator('main').getByRole('button', { name: '查看详情' });
+        if (await detailBtns.count() < 1) {
+          throw new Error('清单无「查看详情」按钮');
+        }
+        await detailBtns.first().click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+      };
+      const detailDrawer = async () => {
+        const detail = page.locator('.arco-drawer:visible').filter({
+          has: page.locator('.arco-drawer-header, .arco-drawer-title').filter({ hasText: '企业详情' }),
+        }).last();
+        await expect(detail).toBeVisible({ timeout: 20000 });
+        await expect(detail.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业详情');
+        return detail;
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToList();
+      await clickFirstDetail();
+      const detail = await detailDrawer();
+      const bidTab = detail.getByRole('tab', { name: '招投标' });
+      await expect(bidTab).toBeVisible({ timeout: 8000 });
+      await bidTab.scrollIntoViewIfNeeded();
+      await bidTab.click({ timeout: 8000 });
+      await expect(bidTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await page.waitForResponse((r) => /profile\/bids|\/bids/i.test(r.url()) && r.status() < 400, { timeout: 12000 }).catch(() => {});
+      const spin = detail.locator('.arco-spin-loading');
+      if (await spin.count()) {
+        await spin.first().waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
+      }
+      await page.waitForTimeout(600);
+      await expect(detail.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业详情');
+      const titleHeader = detail.locator('th').filter({ hasText: /^公告标题$/ });
+      const hasTable = (await titleHeader.count()) > 0 && await titleHeader.first().isVisible().catch(() => false);
+      if (hasTable) {
+        for (const col of ['角色', '对手方', '日期']) {
+          await expect(detail.locator('th').filter({ hasText: new RegExp(`^${col}$`) }).first()).toBeVisible({ timeout: 8000 });
+        }
+      } else {
+        await expect(
+          detail.getByText(/暂无可展示的招投标数据|暂无数据/).first()
+        ).toBeVisible({ timeout: 12000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  前置「企业详情抽屉已打开」由脚本自含选链+首行「查看详情」（对齐 FUNC-02104/02112）。点击「招投标」后有表头验四列，无记录时 D3·30888 不渲染表头，验「暂无可展示的招投标数据」或「暂无数据」（对齐 FUNC-01615/01705）。断言限定 .arco-drawer。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

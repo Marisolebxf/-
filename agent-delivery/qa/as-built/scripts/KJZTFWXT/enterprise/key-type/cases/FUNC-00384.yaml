@@ -1,0 +1,93 @@
+id: FUNC-00384
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00384
+priority: P0
+title: 地图与列表视图互斥切换且筛选保持
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 已进入类型分析页
+  - 空间分布为地图视图（默认态）
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  list_btn: button「列表视图」
+  map_btn: button「地图视图」
+  filter_section: main「产业与企业类型筛选」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 类型分析页默认地图态；列表/地图互斥与筛选保持由 expect 顺序判定
+expect:
+  - note: 列表视图下不再展示地图
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      const main = page.locator('main');
+      await expect(main.getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      const regionInp = main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]');
+      const casc = regionInp.locator('xpath=ancestor::*[contains(@class,"cascader")][1]');
+      const regionTitle = (await casc.count()) ? ((await casc.first().getAttribute('title')) || '') : '';
+      const timeBlock = await main.getByText('时间', { exact: true }).first().evaluate((el) => {
+        let n = el.parentElement;
+        for (let i = 0; i < 6 && n; i++) {
+          const t = n.innerText || '';
+          if (t.includes('近3年') || /\d{4}/.test(t)) return t.replace(/\s+/g, ' ');
+          n = n.parentElement;
+        }
+        return '';
+      });
+      const industryVal = await main.getByPlaceholder('选择产业集群').first().inputValue();
+      const typeRow = main.getByText('企业类型', { exact: true }).first().locator('xpath=ancestor::div[1]');
+      const typeVal = await typeRow.getByPlaceholder('全部').first().inputValue();
+      const snap = { regionTitle, timeBlock, industryVal, typeVal };
+      await page.evaluate((s) => { window.__qa384Filter = s; }, snap);
+      await panel.getByRole('button', { name: '列表视图', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const mapInPanel = panel.locator('.leaflet-container');
+      const mapVis = (await mapInPanel.count()) > 0 && (await mapInPanel.first().isVisible().catch(() => false));
+      if (mapVis) throw new Error('列表视图下空间分布区仍展示地图');
+  - note: 切回地图视图后地图恢复呈现
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await panel.getByRole('button', { name: '地图视图', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+  - note: 往返切换后筛选条件保持
+    assert: |-
+      const snap = await page.evaluate(() => window.__qa384Filter);
+      if (!snap) throw new Error('缺少切换前筛选快照');
+      const main = page.locator('main');
+      await expect(main.getByText('产业与企业类型筛选').first()).toBeVisible({ timeout: 8000 });
+      const regionInp = main.locator('input[placeholder="全国热门科创城市 / 深圳 / 全部"]');
+      const casc = regionInp.locator('xpath=ancestor::*[contains(@class,"cascader")][1]');
+      const regionTitle = (await casc.count()) ? ((await casc.first().getAttribute('title')) || '') : '';
+      const timeBlock = await main.getByText('时间', { exact: true }).first().evaluate((el) => {
+        let n = el.parentElement;
+        for (let i = 0; i < 6 && n; i++) {
+          const t = n.innerText || '';
+          if (t.includes('近3年') || /\d{4}/.test(t)) return t.replace(/\s+/g, ' ');
+          n = n.parentElement;
+        }
+        return '';
+      });
+      const industryVal = await main.getByPlaceholder('选择产业集群').first().inputValue();
+      const typeRow = main.getByText('企业类型', { exact: true }).first().locator('xpath=ancestor::div[1]');
+      const typeVal = await typeRow.getByPlaceholder('全部').first().inputValue();
+      const now = { regionTitle, timeBlock, industryVal, typeVal };
+      if (JSON.stringify(now) !== JSON.stringify(snap)) {
+        throw new Error('往返后筛选变化 ' + JSON.stringify(snap) + ' -> ' + JSON.stringify(now));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；空间分布区标题现场「三级地理透视与可视化呈现」（用例册「重点企业空间分布」）。容器 section.analysis-workspace-panel。列表空文案归 00402。登录与关内部评审由 runner 会话前置。

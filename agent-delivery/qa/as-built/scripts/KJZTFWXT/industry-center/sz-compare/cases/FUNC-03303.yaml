@@ -1,0 +1,218 @@
+id: FUNC-03303
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03303
+priority: P0
+title: 对标研判三块标题齐全且各有正文说明
+story: US-CHAIN-SZ-01
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开成功结果页
+locators:
+  judge_board: section[aria-label="对标研判"]
+  advantage_cards: section[aria-label="对标研判"] article.diagnosis-advantage-card
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 金样条件进入结果页→读取对标研判三块；标题与正文断言在 expect
+expect:
+  - note: 前置：成功结果页且 section[aria-label=对标研判] 三块正文已缓存
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const RESULT_TITLE = '深圳产业情况分析对比结果';
+      const LABELS = ['独特优势', '差距', '劣势'];
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03303：选项不可用 ' + ariaLabel + ' ' + String(re));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const benchmarkView = () => {
+        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      };
+      const pickBenchmark = async (cityRe) => {
+        const view = benchmarkView();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+        }
+        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
+        if (!(await opt.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03303：标杆无「' + String(cityRe) + '」');
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const isResultPage = async () => {
+        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
+        const t = await main().innerText().catch(() => '');
+        return new RegExp(RESULT_TITLE).test(t);
+      };
+      const openViewResultIfShown = async () => {
+        const btn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if (await btn.isVisible().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const waitForResult = async () => {
+        let last = '';
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i < 6 ? 800 : 1500);
+          if (await isResultPage()) return;
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析结果已生成|已打开结果|今日已分析过相同条件/.test(last)) {
+            await openViewResultIfShown();
+            if (await isResultPage()) return;
+          }
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 8) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03303：开始分析后任务失败');
+          }
+          await openViewResultIfShown();
+        }
+        throw new Error('开始分析后未在超时内到达结果页：' + last.slice(0, 240));
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const readJudgeCardBody = async (board, label) => {
+        const card = board
+          .locator('article.diagnosis-advantage-card')
+          .filter({ has: page.locator('.diagnosis-advantage-card__head strong').filter({ hasText: label }) })
+          .first();
+        await expect(card).toBeVisible({ timeout: 8000 });
+        const head = card.locator('.diagnosis-advantage-card__head strong').first();
+        await expect(head).toHaveText(label);
+        const listItems = card.locator('.diagnosis-advantage-card__list li');
+        const n = await listItems.count();
+        if (n > 0) {
+          const parts = [];
+          for (let i = 0; i < n; i++) {
+            parts.push(((await listItems.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim());
+          }
+          const body = parts.filter(Boolean).join(' ');
+          if (body.length >= 2) return body;
+        }
+        const emptyDesc = card.locator('.arco-empty-description');
+        if (await emptyDesc.count() && (await emptyDesc.first().isVisible().catch(() => false))) {
+          const d = ((await emptyDesc.first().innerText().catch(() => '')) || '').trim();
+          throw new Error('「' + label + '」为空态：' + d);
+        }
+        const raw = ((await card.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        const bodyOnly = raw.replace(label, '').trim();
+        if (/未返回|暂无/.test(bodyOnly) && bodyOnly.length < 8) {
+          throw new Error('「' + label + '」未见说明正文：' + bodyOnly.slice(0, 80));
+        }
+        if (bodyOnly.length < 2) {
+          throw new Error('「' + label + '」正文过短：' + bodyOnly);
+        }
+        return bodyOnly;
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03303 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=comparison/);
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/新一代信息技术/.test(clusterText)) {
+        await pickSelectOption('集群', /^新一代信息技术$/);
+      }
+      await pickSelectOption('产业', /^人工智能与应用$/);
+      await pickBenchmark(/^上海市$/);
+      await pickBenchmark(/^北京市$/);
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      if (await start.isDisabled()) {
+        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：选齐后「开始分析」仍 disabled');
+      }
+      await start.click({ timeout: 15000 });
+      await waitForResult();
+      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+      const judgeBoard = page.locator('section[aria-label="对标研判"]').first();
+      await expect(judgeBoard).toBeVisible({ timeout: 10000 });
+      await expect(judgeBoard.getByRole('heading', { name: '对标研判', level: 3 })).toBeVisible({ timeout: 8000 });
+      globalThis.__func03303_bodies = {};
+      for (const label of LABELS) {
+        globalThis.__func03303_bodies[label] = await readJudgeCardBody(judgeBoard, label);
+      }
+  - note: 1、三块标题为「独特优势」「差距」「劣势」
+    assert: |-
+      const bodies = globalThis.__func03303_bodies || {};
+      for (const label of ['独特优势', '差距', '劣势']) {
+        if (!(label in bodies)) throw new Error('前置：未缓存「' + label + '」卡片');
+      }
+  - note: 2、每块都有一句说明
+    assert: |-
+      const bodies = globalThis.__func03303_bodies || {};
+      for (const label of ['独特优势', '差距', '劣势']) {
+        const body = (bodies[label] || '').replace(/\s+/g, ' ').trim();
+        if (body.length < 2) {
+          throw new Error('「' + label + '」应有至少一句说明，现场=' + body);
+        }
+        if (/^(独特优势|差距|劣势)?未返回$/.test(body)) {
+          throw new Error('「' + label + '」仍为未返回空态');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03303 验 IndustryShenzhenResultBoard section[aria-label=对标研判] 三 article（独特优势/差距/劣势）标题与 list 正文；前置同 03288（人工智能与应用+沪京）。空态 a-empty「未返回」视为不通过。

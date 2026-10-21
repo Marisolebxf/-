@@ -1,0 +1,81 @@
+id: FUNC-01307
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01307
+priority: P0
+tier: A
+title: 五 Tab 互斥切换且切回概况恢复
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况默认视图；env-gate G1 pass
+locators:
+  portal_tabs: 页组五 Tab（role=tab，勿与对比篮系统 tab 混淆）
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 依次点击其余四个页签，再切回「全球服务机构概况」
+expect:
+  - note: 1、页签选中态互斥、任一时刻仅一个页签呈选中
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：/service-portal/overview 现场 404，五 Tab 不可达');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const tabs = [
+        { name: '服务机构产业分布', url: /service-portal\/industry-distribution/ },
+        { name: '服务机构区域分布', url: /service-portal\/region-map/ },
+        { name: '服务机构技术能力', url: /service-portal\/capability-rank/ },
+        { name: '深圳产业服务介绍', url: /service-portal\/shenzhen/ },
+      ];
+      const allNames = ['全球服务机构概况', ...tabs.map((t) => t.name)];
+      for (const t of tabs) {
+        await page.getByRole('tab', { name: t.name, exact: true }).click();
+        await expect(page).toHaveURL(t.url, { timeout: 12000 });
+        await page.waitForTimeout(500);
+        const selected = [];
+        for (const n of allNames) {
+          const el = page.getByRole('tab', { name: n, exact: true });
+          const aria = await el.getAttribute('aria-selected');
+          const cls = await el.getAttribute('class');
+          if (aria === 'true' || (cls || '').includes('arco-tabs-tab-active')) selected.push(n);
+        }
+        if (selected.length !== 1 || selected[0] !== t.name) {
+          throw new Error('互斥失败 @' + t.name + '：选中=' + selected.join('|'));
+        }
+      }
+  - note: 2、内容区仅呈现当前页签内容、无叠加
+    assert: |-
+      const pairs = [
+        { tab: '服务机构产业分布', heading: '服务机构产业分布', hide: '全球服务机构概况', url: /service-portal\/industry-distribution/ },
+        { tab: '服务机构区域分布', heading: '服务机构区域分布', hide: '全球服务机构概况', url: /service-portal\/region-map/ },
+        { tab: '服务机构技术能力', heading: '服务机构技术能力', hide: '全球服务机构概况', url: /service-portal\/capability-rank/ },
+      ];
+      for (const p of pairs) {
+        await page.getByRole('tab', { name: p.tab, exact: true }).click();
+        await expect(page).toHaveURL(p.url, { timeout: 12000 });
+        await page.waitForTimeout(500);
+        const main = page.locator('main');
+        await expect(main.getByRole('heading', { name: p.heading, exact: true })).toBeVisible({ timeout: 8000 });
+        await expect(main.getByRole('heading', { name: p.hide, exact: true })).toHaveCount(0);
+      }
+  - note: 3、切回概况后其内容与选中态恢复呈现
+    assert: |-
+      await page.getByRole('tab', { name: '全球服务机构概况', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 12000 });
+      await page.waitForTimeout(500);
+      const ov = page.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      const aria = await ov.getAttribute('aria-selected');
+      const cls = await ov.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('arco-tabs-tab-active')) {
+        throw new Error('切回概况后 Tab 未呈选中态');
+      }
+      await expect(page.locator('main').getByRole('heading', { name: '全球服务机构概况', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: Tab 切换改写子路由；heading 限 main+exact。2026-10-21 edu /service-portal 与 /overview 均 404（截图见 run），非脚本路由问题。

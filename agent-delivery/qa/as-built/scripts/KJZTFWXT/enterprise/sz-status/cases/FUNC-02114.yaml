@@ -1,0 +1,146 @@
+id: FUNC-02114
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02114
+priority: P0
+title: HTML 报告七节目录与末节可读
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已点选一条产业链；当前在分析结果页（assert 自含选链至定位结果区）
+locators:
+  report_btn: button「生成 / 查看报告」或「查看 HTML 报告」
+  report_reader: .system-report-reader[data-report-readonly="true"]
+  report_toc: nav.report-toc[aria-label="报告目录"]
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选产业集群后打开报告阅读页；目录与末节在 expect 判定
+expect:
+  - note: 1、页内标题为「深圳企业现状分析报告」（30888 as-built 可为产业链定位报告）；2、目录共 7 节（附录C）；3、末节标题为「局限性与使用边界」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['新一代信息技术', '人工智能', '生物医药'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const clicked = await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return true; }
+            }
+            return false;
+          }, pick);
+          if (!clicked) {
+            const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+            await popup.getByText(pick, { exact: true }).first().click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 55; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后未见分析结果区（清单或 KPI 区块）');
+      };
+      const sectionTitles = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      const reportBtn = page.getByRole('button', { name: /生成\s*\/\s*查看报告|查看\s*HTML\s*报告/ });
+      await expect(reportBtn).toBeVisible({ timeout: 8000 });
+      await reportBtn.scrollIntoViewIfNeeded();
+      await reportBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      let reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      if (!(await reader.isVisible().catch(() => false))) {
+        const modal = page.locator('.arco-modal:visible').filter({ hasText: /报告/ }).last();
+        const viewHtml = modal.getByRole('button', { name: '查看 HTML 报告' });
+        for (let i = 0; i < 90; i++) {
+          if (await viewHtml.isVisible().catch(() => false)) {
+            await viewHtml.click({ timeout: 8000 });
+            break;
+          }
+          await page.waitForTimeout(1000);
+        }
+      }
+      reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 15000 });
+      const h1txt = ((await reader.locator('h1').allTextContents())[0] || '').trim();
+      if (!/^深圳企业(现状分析|产业链定位)报告$/.test(h1txt)) {
+        throw new Error('页内 H1 不符用例/as-built：' + h1txt);
+      }
+      const toc = reader.locator('nav.report-toc[aria-label="报告目录"]');
+      await expect(toc).toBeVisible({ timeout: 8000 });
+      const tocLinks = toc.locator('a');
+      await expect(tocLinks).toHaveCount(7, { timeout: 8000 });
+      const tocText = (await toc.innerText()).replace(/\s+/g, ' ');
+      for (const title of sectionTitles) {
+        if (!tocText.includes(title)) throw new Error('目录缺少节：' + title);
+      }
+      const lastSection = reader.locator('#report-section-limitations');
+      await lastSection.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+      await expect(
+        lastSection.locator('.report-section-heading__title h2, h2').filter({ hasText: '局限性与使用边界' }).first()
+      ).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·30888：产业集群占位「选择产业集群」、首选「新一代信息技术」；报告入口「生成 / 查看报告」→ 异步任务弹层完成后点「查看 HTML 报告」进入 SystemReportReader。
+  H1 现场为「深圳企业产业链定位报告」（用例册「深圳企业现状分析报告」）。目录 nav.report-toc 七节与末节 id=report-section-limitations 对齐附录C。
+  用例不写报告版本时间，脚本不断言版本 tag。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

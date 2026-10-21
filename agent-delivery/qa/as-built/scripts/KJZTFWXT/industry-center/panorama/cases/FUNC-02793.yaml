@@ -1,0 +1,82 @@
+id: FUNC-02793
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02793
+priority: P0
+title: 默认条件下主标题与标题下说明为现场原文
+story: US-CHAIN-PANORAMA-02
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 筛选为默认已选
+locators:
+  title_section: section.industry-topic-title[data-frame-id="F-PAN-02"]
+  h1: '#panorama-workspace-title'
+  subtitle: section.industry-topic-title p
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 不改动筛选，查看主标题区 H1 与标题下说明
+expect:
+  - note: 前置：筛选为默认已选（分析对象两级新一代信息技术、所属产业链半导体与集成电路、数据截至最新快照）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      await expect(objectSelects.first()).toBeVisible({ timeout: 8000 });
+      if ((await objectSelects.count()) < 2) {
+        throw new Error('前置：分析对象下拉不足 2 个');
+      }
+      const left = await read(objectSelects.nth(0));
+      const right = await read(objectSelects.nth(1));
+      if (!/新一代信息技术/.test(left) || !/新一代信息技术/.test(right)) {
+        throw new Error('前置：分析对象非默认已选 left=' + left + ' right=' + right);
+      }
+      const chain = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      const chainVal = await read(chain);
+      if (!/半导体与集成电路/.test(chainVal)) {
+        throw new Error('前置：所属产业链非默认已选: ' + chainVal);
+      }
+      const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
+      const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      const snapVal = await read(snapView);
+      if (!/最新快照/.test(snapVal)) {
+        throw new Error('前置：数据截至非默认已选: ' + snapVal);
+      }
+      globalThis.__func02793_onPage = true;
+  - note: 1、主标题为「半导体与集成电路全景图谱」
+    assert: |-
+      if (!globalThis.__func02793_onPage) throw new Error('前置：筛选非默认已选或未进入本页');
+      const titleSec = page.locator('section.industry-topic-title[data-frame-id="F-PAN-02"]');
+      await expect(titleSec).toBeVisible({ timeout: 8000 });
+      const h1 = titleSec.locator('#panorama-workspace-title');
+      await expect(h1).toHaveText('半导体与集成电路全景图谱', { timeout: 8000 });
+  - note: 2、标题下说明为「选择分析对象后加载结构摘要」
+    assert: |-
+      if (!globalThis.__func02793_onPage) throw new Error('前置：筛选非默认已选或未进入本页');
+      const titleSec = page.locator('section.industry-topic-title[data-frame-id="F-PAN-02"]');
+      const sub = titleSec.locator('p').first();
+      await expect(sub).toHaveText('选择分析对象后加载结构摘要', { timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；主标题区 F-PAN-02 section.industry-topic-title，
+  H1#panorama-workspace-title 文案=testdata page.h1_default；标题下 p 为 structureSummary 空态占位
+  「选择分析对象后加载结构摘要」（IndustryPanoramaPage.vue，scout-deep 同口径）。前置默认筛选与 FUNC-02788 同读法。
+  对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。

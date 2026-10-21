@@ -1,0 +1,58 @@
+id: FUNC-00475
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00475
+priority: P1
+title: 清除搜索框后离开结果态回到引导形态
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: B
+preconditions:
+  - 搜索框含关键词且已出结果
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」（exact）
+  clear_input: 搜索框容器内 .arco-input-clear-icon（allow-clear）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 普通检索、点搜索框清除与两条预期见 expect（P2 跨 tick）
+expect:
+  - note: 清除后离开结果态或结果被清空
+    assert: |-
+      const kw = '人工智能';
+      const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ });
+      await input.fill(kw);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/命中 \d+ 家企业/).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('main').getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 12000 });
+      const hero = page.locator('.enterprise-search-hero-search');
+      const clearBtn = hero.locator('.arco-input-clear-icon').first();
+      await input.hover({ timeout: 8000 });
+      await page.waitForTimeout(200);
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(input).toHaveValue('', { timeout: 8000 });
+      const mainText = await page.locator('main').innerText();
+      const stillResult = mainText.includes('智能搜索结果') && /命中 \d+ 家企业/.test(mainText);
+      const profileCount = await page.locator('main').getByRole('button', { name: '查看画像' }).count();
+      if (stillResult && profileCount > 0) {
+        throw new Error('清除后仍停留在智能搜索结果态（标题+查看画像仍存在）');
+      }
+  - note: 可见示例查询或推荐企业或引导空态之一
+    assert: |-
+      const main = page.locator('main');
+      const mainText = await main.innerText();
+      const hasExample = await main.getByText('示例查询').first().isVisible().catch(() => false);
+      const hasRecommend = await main.getByText('推荐企业').first().isVisible().catch(() => false);
+      const hasGuideEmpty = mainText.includes('输入关键词或选择热门场景后开始构造企业集合');
+      const stuckEmpty = mainText.includes('未命中结果') && !hasExample && !hasRecommend && !hasGuideEmpty;
+      if (stuckEmpty) {
+        throw new Error('清除后卡在空结果且无引导形态（未命中结果且无示例/推荐/引导文案）');
+      }
+      if (!hasExample && !hasRecommend && !hasGuideEmpty) {
+        throw new Error('清除后未见任何引导形态（示例查询/推荐企业/引导空态）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search。搜索框清除为 Arco allow-clear（.arco-input-clear-icon），非「清空条件」。引导形态三选一均可判通过。

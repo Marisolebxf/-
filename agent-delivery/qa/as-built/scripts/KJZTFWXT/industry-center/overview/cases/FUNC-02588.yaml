@@ -1,0 +1,51 @@
+id: FUNC-02588
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02588
+priority: P0
+title: 侧栏菜单进入专题全景路由与浏览器标题正确
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 系统可访问；已登录
+locators:
+  menu_group: 侧栏分组「产业链分析」
+  menu_leaf: 侧栏 link「专题全景」（href /industry-center/overview）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 展开「产业链分析」并点「专题全景」；路由与标题在 expect 判定
+expect:
+  - note: 路由为 /industry-center/overview
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const overviewItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^专题全景$/ });
+      const expandChainGroup = async () => {
+        if (await overviewItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      await dismissBasket();
+      await expandChainGroup();
+      const leaf = overviewItem();
+      await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+      await leaf.first().click({ timeout: 10000 });
+      await page.waitForURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page).toHaveURL(/\/industry-center\/overview/);
+  - note: 浏览器标题以「专题全景」开头
+    assert: |-
+      await expect(page).toHaveTitle(/^专题全景/);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/overview；侧栏类先 goto sibling /industry-center/search 再点 menu_leaf。侧栏项为 div.arco-menu-item（非 link）；已展开时勿再点「产业链分析」标题以免折叠。现场 document.title 为「专题全景 - 科技专题服务系统」。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

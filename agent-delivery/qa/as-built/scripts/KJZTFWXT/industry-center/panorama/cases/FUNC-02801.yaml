@@ -1,0 +1,67 @@
+id: FUNC-02801
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02801
+priority: P0
+title: 动态演进默认当前状态且查看时间回显已发布日期
+story: US-CHAIN-PANORAMA-04
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 当前视图为「图谱」
+locators:
+  view_graph: .arco-radio-button「图谱」
+  evolution_heading: heading「动态演进」
+  sub_current: .arco-radio-button「当前状态」
+  view_time_select: .arco-select-view（查看时间）
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 确认「图谱」选中后读取动态演进子块与查看时间回显
+expect:
+  - note: 1、「当前状态」为选中；2、「查看时间」回显「YYYY-MM-DD · 当前状态」（用例册示例 2026-10-18，日期以现场为准）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
+      await expect(graphRadio).toBeVisible({ timeout: 10000 });
+      const graphCls = (await graphRadio.getAttribute('class')) || '';
+      if (!graphCls.includes('arco-radio-checked')) {
+        await page.getByText('图谱', { exact: true }).click();
+        await page.waitForTimeout(500);
+      }
+      await expect(page.getByRole('heading', { name: '动态演进' })).toBeVisible({ timeout: 10000 });
+      const cur = page.locator('.arco-radio-button').filter({ hasText: /^当前状态$/ }).first();
+      await expect(cur).toBeVisible({ timeout: 8000 });
+      const curCls = (await cur.getAttribute('class')) || '';
+      if (!curCls.includes('arco-radio-checked')) {
+        throw new Error('动态演进默认未选中「当前状态」: ' + curCls);
+      }
+      const snapRe = /\d{4}-\d{2}-\d{2} · 当前状态/;
+      await expect(page.getByText('查看时间').first()).toBeVisible({ timeout: 8000 });
+      const vt = page.locator('.arco-select-view').filter({ hasText: snapRe }).first();
+      await expect(vt).toBeVisible({ timeout: 8000 });
+      const title = ((await vt.getAttribute('title')) || '').trim();
+      const inner = ((await vt.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const shown = title || inner;
+      if (!snapRe.test(shown)) {
+        throw new Error('查看时间回显不符「YYYY-MM-DD · 当前状态」，现场: ' + shown);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 /industry-center/panorama；前置「图谱」= canvasMode graph（与 FUNC-02804 同 dismissBasket + 404 闸门）。
+  动态演进 default_sub=当前状态（arco-radio-checked）；查看时间 Select title/innerText 对齐 testdata evolution.snapshot_current_re。
+  用例册期望日期 2026-10-18，edu 实勘曾见 2026-10-13，断言只钉格式不钉死日。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,119 @@
+id: FUNC-02394
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02394
+priority: P0
+title: 单企业成功结果的摘要写出对象、方式和维度
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已打开一条单企业的成功结果（assert 自含：最近分析→恢复单企业已完成任务）
+locators:
+  summary: 对象与诊断摘要
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: evaluate
+    note: 阅读「对象与诊断摘要」（前置在 expect 自含）
+expect:
+  - note: 前置：单企业成功结果页已打开且可见「对象与诊断摘要」
+    assert: |-
+      const historyRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points&view=history';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const summarySliceFromBody = (body) => {
+        const summaryIdx = body.indexOf('对象与诊断摘要');
+        return summaryIdx >= 0 ? body.slice(summaryIdx, summaryIdx + 800) : body;
+      };
+      const pickEntFromSlice = (slice) => {
+        const m = slice.match(/分析对象[：:]\s*([^\n]+)/);
+        if (!m || !m[1]) return '';
+        const raw = m[1].trim();
+        if (/、|，|,/.test(raw)) return '';
+        return raw;
+      };
+      const isSingleEntRow = (rowText) => {
+        if (/等\s*\d+\s*家/.test(rowText)) return false;
+        if (/、/.test(rowText)) return false;
+        return /公司|集团|有限|股份|科技|服务/.test(rowText);
+      };
+      const openResultFromRow = async (row) => {
+        for (const label of ['预览结果', '恢复结果', '继续查看']) {
+          const btn = row.getByRole('button', { name: label }).first();
+          if (!(await btn.count())) continue;
+          await btn.scrollIntoViewIfNeeded().catch(() => {});
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(3500);
+          return label;
+        }
+        return '';
+      };
+      const openViaHistoryRestore = async () => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const rows = main().locator('tbody tr');
+        const n = await rows.count();
+        if (!n) throw new Error('ENV-PAIN-HISTORY-EMPTY-001：最近分析列表为空');
+        for (let i = 0; i < Math.min(n, 8); i++) {
+          const rowText = await rows.nth(i).innerText().catch(() => '');
+          if (!isSingleEntRow(rowText)) continue;
+          if (i > 0) {
+            await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(800);
+            await closeBasket();
+          }
+          const row = main().locator('tbody tr').nth(i);
+          const via = await openResultFromRow(row);
+          if (!via) continue;
+          const body = await main().innerText().catch(() => '');
+          const slice = summarySliceFromBody(body);
+          if (!/对象与诊断摘要/.test(body) || !/单企业诊断/.test(slice)) continue;
+          const ent = pickEntFromSlice(slice);
+          if (!ent) continue;
+          globalThis.__func02394_ent = ent;
+          globalThis.__func02394_slice = slice;
+          return;
+        }
+        throw new Error('ENV-PAIN-NO-SINGLE-RESULT-001：edu 最近分析无单企业已完成结果（仅集合任务或失败单企）');
+      };
+      await openViaHistoryRestore();
+      await expect(page.getByText('对象与诊断摘要').first()).toBeVisible({ timeout: 15000 });
+      globalThis.__func02394_ready = true;
+  - note: 1、摘要含分析对象、诊断方式、诊断维度、数据时间
+    assert: |-
+      if (!globalThis.__func02394_ready) throw new Error('前置：未到单企业成功结果页');
+      const slice = globalThis.__func02394_slice || '';
+      for (const label of ['分析对象', '诊断方式', '诊断维度', '数据时间']) {
+        if (!slice.includes(label)) throw new Error('对象与诊断摘要区未见字段：' + label);
+      }
+      if (!/分析对象[：:]\s*\S/.test(slice)) throw new Error('分析对象无有效取值');
+      if (!/诊断方式[：:]\s*\S/.test(slice)) throw new Error('诊断方式无有效取值');
+      if (!/诊断维度[：:]\s*\S/.test(slice)) throw new Error('诊断维度无有效取值');
+      if (!/数据时间[：:]\s*\d{4}-\d{2}-\d{2}/.test(slice)) throw new Error('数据时间未见 YYYY-MM-DD 格式');
+  - note: 2、诊断方式为「单企业诊断」
+    assert: |-
+      if (!globalThis.__func02394_ready) throw new Error('前置：未到单企业成功结果页');
+      const slice = globalThis.__func02394_slice || '';
+      if (!/单企业诊断/.test(slice)) throw new Error('对象与诊断摘要区未见「单企业诊断」');
+  - note: 3、分析对象为该次任务的企业
+    assert: |-
+      if (!globalThis.__func02394_ready) throw new Error('前置：未到单企业成功结果页');
+      const ent = globalThis.__func02394_ent || '';
+      if (!ent) throw new Error('前置：未记录单企业分析对象名');
+      const slice = globalThis.__func02394_slice || '';
+      if (!slice.includes(ent)) throw new Error('摘要分析对象区未见该次任务企业：' + ent);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz；结果态经「最近分析 view=history→恢复结果」打开单企业任务（不依赖新发起，ENV-PAIN-NEWTASK-FAIL-001）。机检摘要四字段+「单企业诊断」+分析对象名。无历史/无单企业任务→ENV-PAIN-HISTORY-EMPTY-001 / ENV-PAIN-NO-SINGLE-RESULT-001(blocked)。

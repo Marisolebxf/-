@@ -1,0 +1,128 @@
+id: FUNC-02015
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02015
+priority: P0
+title: 回填后数据覆盖区展示可信度与可见家数
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已从选择分析企业确定至少 1 家企业
+locators:
+  coverage_section: 数据覆盖与可信度
+  filter_all: 全部可信度
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 对比篮补足→选择器勾选≥1 家确定→阅读数据覆盖与可信度区；判定在 expect
+expect:
+  - note: 1、出现「全部可信度」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const fillFromCompareBasket = async () => {
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) return;
+        const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
+        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        } else {
+          await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(300);
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      await fillFromCompareBasket();
+      const mainText = await main().innerText().catch(() => '');
+      if (/预检未返回企业明细/.test(mainText)) {
+        throw new Error('预检未返回企业明细（ticket=ENV-EVAL-COMPETE-PRECHECK-001）');
+      }
+      await expect(main().getByText('数据覆盖与可信度').first()).toBeVisible({ timeout: 10000 });
+      await expect(main().getByText('全部可信度').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func02015_main = true;
+  - note: 2、出现当前可见家数
+    assert: |-
+      if (!globalThis.__func02015_main) throw new Error('前置：对象未回填');
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const t = await main().innerText().catch(() => '');
+      const m = t.match(/当前可见\s*(\d+)\s*\/\s*(\d+)\s*家/);
+      if (!m) throw new Error('未见「当前可见 N / M 家」；片段: ' + t.slice(t.indexOf('数据覆盖'), t.indexOf('数据覆盖') + 220));
+      const vis = parseInt(m[1], 10);
+      const total = parseInt(m[2], 10);
+      globalThis.__func02015_vis = vis;
+      globalThis.__func02015_total = total;
+      if (total < 1) throw new Error('当前可见分母为 0，对象未生效');
+      if (vis < 1) throw new Error('当前可见为 0/' + total + '，预检或覆盖区未返回明细');
+  - note: 3、无匹配时出现「未找到匹配企业」
+    assert: |-
+      if (!globalThis.__func02015_main) throw new Error('前置：对象未回填');
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const vis = globalThis.__func02015_vis;
+      const total = globalThis.__func02015_total;
+      if (vis === undefined || total === undefined) {
+        const t = await main().innerText().catch(() => '');
+        const m = t.match(/当前可见\s*(\d+)\s*\/\s*(\d+)\s*家/);
+        if (!m) throw new Error('未见当前可见家数');
+        globalThis.__func02015_vis = parseInt(m[1], 10);
+        globalThis.__func02015_total = parseInt(m[2], 10);
+      }
+      const v = globalThis.__func02015_vis;
+      if (v === 0) {
+        await expect(main().getByText('未找到匹配企业').first()).toBeVisible({ timeout: 8000 });
+      } else {
+        const empty = main().getByText('未找到匹配企业');
+        if (await empty.count() && await empty.first().isVisible().catch(() => false)) {
+          throw new Error('已有可见家数但仍展示「未找到匹配企业」');
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  02015 主流程数据覆盖（作废 00408 五档 Tab）。30888 路由 /enterprise-center/evaluation；对比篮选≥1 家确定回填后阅读「数据覆盖与可信度」。断言「全部可信度」+「当前可见 N/M 家」（N≥1）；无匹配分支验「未找到匹配企业」。预检失败文案「预检未返回企业明细…」记 Fail+ticket，不另写通过。登录与关内部评审由 runner 会话前置。tier B。

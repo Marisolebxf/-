@@ -1,0 +1,134 @@
+id: FUNC-01415
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01415
+priority: P0
+title: 恢复结果展示本次权重及三项取值
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；最近分析中已有一条条件筛选且状态为已完成的记录
+locators:
+  recent_tab: Tab「最近分析」
+  restore_button: button「恢复结果」
+  weight_summary_heading: 文案「本次权重」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 最近分析→已完成条件筛选行「恢复结果」；权重摘要在 expect 判定
+expect:
+  - note: 1、结果区出现「本次权重」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const assertRecentTabAvailable = async () => {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        if ((await byKey.count()) < 1 && (await byName.count()) < 1) {
+          throw new Error('ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/恢复结果入口（仅条件筛选+候选工作台时不自动化本用例）');
+        }
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady();
+        await assertRecentTabAvailable();
+        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+        if ((await tab.count()) < 1) {
+          const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+          await expect(legacy).toBeVisible({ timeout: 12000 });
+          await legacy.click({ timeout: 8000 });
+        } else {
+          await expect(tab).toBeVisible({ timeout: 12000 });
+          await tab.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(900);
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+      };
+      const pickCompletedFilterRestore = async () => {
+        await openRecentTab();
+        await waitHistoryShell();
+        const st = stack();
+        await expect(st.getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        if (n < 1) throw new Error('最近分析无已完成任务可「恢复结果」');
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+            return btn;
+          }
+        }
+        throw new Error('最近分析无「已完成」的条件筛选任务可「恢复结果」');
+      };
+      await dismissBasket();
+      const btn = await pickCompletedFilterRestore();
+      await btn.scrollIntoViewIfNeeded();
+      await btn.click({ timeout: 15000 });
+      let ok = false;
+      for (let i = 0; i < 24; i++) {
+        await page.waitForTimeout(500);
+        const t = await stack().innerText().catch(() => '');
+        if (/本次权重/.test(t) && (/招引推荐分析结果/.test(t) || /共分析/.test(t))) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) throw new Error('点击恢复结果后未见「本次权重」或结果标题，url=' + page.url());
+      await expect(stack().getByText(/本次权重/).first()).toBeVisible({ timeout: 10000 });
+  - note: 2、能看到三项权重取值
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const body = await stack().innerText();
+      const weightLine = (body.match(/本次权重[^\n]*/) || [])[0] || '';
+      if (!weightLine) throw new Error('结果区未见「本次权重」行');
+      const englishTriple =
+        /technologyMatch\s*=\s*\d+/.test(weightLine) &&
+        /growth\s*=\s*\d+/.test(weightLine) &&
+        /regionalFit\s*=\s*\d+/.test(weightLine);
+      const chineseTriple =
+        /技术匹配度/.test(weightLine) &&
+        /成长性/.test(weightLine) &&
+        /区域适配性/.test(weightLine) &&
+        (weightLine.match(/=\s*\d+/g) || []).length >= 3;
+      const slashValues = (weightLine.match(/=\s*\d+/g) || []).length >= 3 && /\//.test(weightLine);
+      if (!englishTriple && !chineseTriple && !slashValues) {
+        throw new Error('本次权重行未见三项权重取值：' + weightLine.slice(0, 200));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·深链 /enterprise-center/attraction（catalog /enterprise/attraction 404）。D4·2026-10-20 复勘 30888 为 demo 两 Tab（条件筛选推荐/候选工作台），无「最近分析/恢复结果」→ ENV-ATTRACT-NO-HISTORY-TAB-001；lumen 三 Tab 现场按 history 点「恢复结果」断言「本次权重」+三项取值（示例 technologyMatch=34 / growth=33 / regionalFit=33）。登录与关评审由 runner 会话前置。tier B，零 allow_skip。

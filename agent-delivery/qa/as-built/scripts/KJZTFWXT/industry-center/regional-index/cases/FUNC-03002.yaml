@@ -1,0 +1,113 @@
+id: FUNC-03002
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03002
+priority: P0
+title: 集群下拉给出全部 15 个产业集群选项
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 评价模式为「单产业 × 多区域」
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  mode_single: 单产业 × 多区域
+  popup: .arco-trigger-popup:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入指数页→确认单产业模式→展开集群下拉（判定在 expect）
+expect:
+  - note: 1、共 15 个选项，名称见附录A
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            const u = new URL('/industry-center/search', baseUrl);
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          }
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      await enterRegionalIndex();
+      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+      const btnSingle = () => page.locator('.arco-radio-button').filter({ hasText: '单产业 × 多区域' }).first();
+      await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (!(await btnSingle().evaluate((el) => el.className.includes('arco-radio-checked')).catch(() => false))) {
+        await page.getByText('单产业 × 多区域', { exact: true }).first().click();
+        await page.waitForTimeout(800);
+      }
+      if (!(await btnSingle().evaluate((el) => el.className.includes('arco-radio-checked')))) {
+        throw new Error('前置：评价模式未处于「单产业 × 多区域」');
+      }
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(clusterView).toBeVisible({ timeout: 8000 });
+      await clusterView.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const expected = [
+        '新一代信息技术',
+        '生物产业',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意产业',
+        '海洋产业',
+        '未来制造（智能机器人）',
+        '未来信息（光载信息、AI 底层生态）',
+        '未来能源',
+        '未来空间',
+        '未来健康（合成生物、细胞基因、脑机工程）',
+      ];
+      const opts = pop.locator('.arco-select-option');
+      const n = await opts.count();
+      if (n !== 15) throw new Error('集群可选项数 ' + n + ' ≠ 15（附录A）');
+      const names = [];
+      for (let i = 0; i < n; i++) {
+        names.push(((await opts.nth(i).innerText()).trim().split('\n')[0] || '').trim());
+      }
+      for (const e of expected) {
+        if (!names.includes(e)) throw new Error('缺集群「' + e + '」，实际=' + names.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index；入口 sibling 侧栏进页（深链 404）。前置默认或切回「单产业 × 多区域」后点
+  .arco-select-view[aria-label=集群]（P7 点可见 view）。15 项名对齐用例附录A；env-gate cluster_options_sample 曾只截 12 项，本条以 DOM 全量计数。
+  登录关评审 runner 前置。B 档零 allow_skip。

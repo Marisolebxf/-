@@ -1,0 +1,124 @@
+id: FUNC-03292
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03292
+priority: P0
+title: 标杆区域下拉共 8 项（附录A）
+entry_id: chain-sz-compare
+tier: A
+preconditions:
+  - 已进入分析配置
+  - 标杆尚未选择
+locators:
+  benchmark: select placeholder Q016
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 确认分析配置且标杆未选→展开标杆区域下拉（判定在 expect）
+expect:
+  - note: 前置：分析配置可见且标杆区域尚未选择
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const benchmarkView = () =>
+        page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search 与深圳对比深链均 SPA404，无法验标杆下拉 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
+      const view = benchmarkView();
+      await expect(view).toBeVisible({ timeout: 10000 });
+      const selected = (await view.locator('.arco-tag, .arco-select-view-value').allTextContents())
+        .map((t) => t.replace(/\s+/g, ' ').trim())
+        .filter((t) => t && !/Q016|勿冒充|请选择/.test(t));
+      if (selected.length) {
+        throw new Error('前置：标杆应尚未选择，现场已有=' + selected.join('|'));
+      }
+      globalThis.__func03292_ready = true;
+  - note: 1、可选城市共 8 个，名称见附录 A
+    assert: |-
+      if (!globalThis.__func03292_ready) throw new Error('前置：未满足分析配置与标杆未选');
+      const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
+      const want = ['北京市', '上海市', '杭州市', '成都市', '武汉市', '重庆市', '天津市', '宁波市'];
+      const benchmarkView = () =>
+        page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      const view = benchmarkView();
+      await view.scrollIntoViewIfNeeded();
+      await view.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      if (count === 0 && /暂无数据|无数据/.test(popText)) {
+        await page.keyboard.press('Escape').catch(() => {});
+        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空，无法验 8 城枚举');
+      }
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim().split('\n')[0].trim());
+      }
+      if (count !== 8) {
+        throw new Error('标杆下拉选项应为 8 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '标杆下拉选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/shenzhen?workspace=comparison&tab=comparison（entry-seed）；标杆点法同 03288（Q016 placeholder 定位 .arco-select-view）。
+  8 城对齐用例册附录 A（03292）。Q016 清单空时 blocked（ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016）。未选占位不写入 expect。A 档零 allow_skip。

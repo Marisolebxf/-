@@ -1,0 +1,256 @@
+id: FUNC-02237
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02237
+priority: P0
+title: 主流程-对比篮加入培育候选
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 已登录；对比篮中有尚未进入培育候选的企业（assert 自含企业查询入篮兜底）
+locators:
+  basket_dock: button「打开对比篮」
+  basket_sel: 对比篮 [aria-label^="选择"]
+  add_cultivate: compare-basket-action-bar button「加入培育候选」
+  cand_tab: tab「候选工作台」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 对比篮勾选→加入培育候选→候选工作台（企业名写入 page.__func02237）
+expect:
+  - note: 1、该企业出现在候选名单
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const origin =
+        typeof baseUrl === 'string' && baseUrl
+          ? baseUrl.replace(/\/$/, '')
+          : 'https://edu.itic-sci.com/tts/svcz';
+      const cultRoute =
+        '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation';
+      const candRoute = cultRoute + '&entry=candidates';
+      const searchRoute = '/enterprise/enterprise-search';
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
+      const openCandidateTab = async () => {
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) === 'true') return;
+        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        await candTab().click({ timeout: 10000 });
+        await page.waitForTimeout(900);
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          const byKey = page.locator('button[data-tab-key="candidates"]').first();
+          if (await byKey.count()) {
+            await byKey.click({ timeout: 8000, force: true });
+            await page.waitForTimeout(900);
+          }
+        }
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) !== 'true') {
+          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
+        }
+      };
+      const readCandidateNames = async () => {
+        const names = new Set();
+        const rows = stack().locator('.arco-table-tr:has(.arco-table-td)');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          const t = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/^企业名称/.test(t)) continue;
+          const link = row.getByRole('link').first();
+          if (await link.count()) {
+            const raw = ((await link.innerText({ timeout: 5000 }).catch(() => '')) || '').trim();
+            if (raw.length >= 2) names.add(raw);
+            continue;
+          }
+          const m = t.match(/([\u4e00-\u9fa5A-Za-z0-9（）()·]{4,40}(?:公司|集团|有限|科技|股份|企业))/);
+          if (m) names.add(m[1]);
+        }
+        return names;
+      };
+      const basketLayer = () =>
+        page.locator('[data-system-surface-id="compare-basket"][data-panel-open="true"]');
+      const listBasketEntNames = async () => {
+        const layer = basketLayer();
+        if (!(await layer.count())) return [];
+        const sels = layer.locator('[aria-label^="选择"]');
+        const n = await sels.count();
+        const out = [];
+        for (let i = 0; i < n; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const name = aria.replace(/^选择\s*/, '').trim();
+          if (!name || name.length < 4) continue;
+          if (/区域|产业|标签|机构/.test(name)) continue;
+          out.push(name);
+        }
+        return out;
+      };
+      const addCultivateFromBasket = async (preferName) => {
+        await dismissBasket();
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (!(await dock.count())) throw new Error('未见「打开对比篮」入口');
+        await dock.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const layer = basketLayer();
+        if (!(await layer.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          return null;
+        }
+        const sel = layer
+          .locator(`[aria-label="选择 ${preferName}"], [aria-label="选择${preferName}"]`)
+          .first();
+        if (!(await sel.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          return null;
+        }
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(350);
+        const addC = layer
+          .locator('[data-testid="compare-basket-action-bar"]')
+          .getByRole('button', { name: '加入培育候选' });
+        if (!(await addC.isEnabled().catch(() => false))) {
+          await page.keyboard.press('Escape').catch(() => {});
+          return null;
+        }
+        await addC.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        await page.keyboard.press('Escape').catch(() => {});
+        return preferName;
+      };
+      const seedBasketViaSearch = async () => {
+        await page.goto(origin + searchRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+        await page.getByRole('button', { name: '搜索' }).click();
+        await page.waitForTimeout(5000);
+        const cards = page.locator('main').locator('[aria-label^="选择"]');
+        const n = await cards.count();
+        for (let i = 0; i < Math.min(n, 10); i++) {
+          const pick = cards.nth(i);
+          const aria = (await pick.getAttribute('aria-label')) || '';
+          const name = aria.replace(/^选择\s*/, '').trim();
+          if (!name || name.length < 4 || /区域|产业|标签/.test(name)) continue;
+          await pick.click({ timeout: 8000 });
+          await page.waitForTimeout(350);
+          const bulk = page
+            .locator('div')
+            .filter({ hasText: /已选\s*1\s*家企业/ })
+            .filter({ has: page.getByRole('button', { name: '加入对比' }) })
+            .first();
+          if (!(await bulk.count())) {
+            await pick.click({ timeout: 3000 }).catch(() => {});
+            continue;
+          }
+          await bulk.getByRole('button', { name: '加入对比' }).click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+          await pick.click({ timeout: 3000 }).catch(() => {});
+          return name;
+        }
+        return null;
+      };
+      const pickAndAdd = async (existing) => {
+        await page.goto(origin + cultRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await dismissBasket();
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) {
+          await dock.first().click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+        }
+        let names = await listBasketEntNames();
+        await page.keyboard.press('Escape').catch(() => {});
+        if (!names.length) {
+          const seeded = await seedBasketViaSearch();
+          if (!seeded) throw new Error('环境闸门 ENV-CULTIVATE-BASKET-EMPTY：对比篮无企业且搜索入篮失败');
+          names = [seeded];
+        }
+        for (const name of names) {
+          if (existing.has(name)) continue;
+          const added = await addCultivateFromBasket(name);
+          if (added) return added;
+        }
+        for (const name of names) {
+          const added = await addCultivateFromBasket(name);
+          if (added) return added;
+        }
+        return null;
+      };
+      await dismissBasket();
+      await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await openCandidateTab();
+      const existing = await readCandidateNames();
+      const entName = await pickAndAdd(existing);
+      if (!entName) {
+        throw new Error(
+          '环境闸门 ENV-CULTIVATE-BASKET-ADD-001：对比篮勾选后未能加入培育候选或候选表无新增企业',
+        );
+      }
+      await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await openCandidateTab();
+      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({
+        timeout: 10000,
+      });
+      page.__func02237 = { entName };
+      const esc = entName.slice(0, Math.min(16, entName.length)).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      await expect(
+        stack().locator('.arco-table-content, .arco-table').getByText(new RegExp(esc)).first(),
+      ).toBeVisible({ timeout: 10000 });
+  - note: 2、线索来源为「对比篮」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const entName = (page.__func02237 || {}).entName || '';
+      if (!entName) throw new Error('缺少目标企业名（上一步未写入 page.__func02237）');
+      const tbl = stack().locator('.arco-table').first();
+      await expect(tbl).toBeVisible({ timeout: 8000 });
+      const ths = await tbl.locator('.arco-table-th').allInnerTexts();
+      const colIdx = ths.findIndex((h) => /线索来源/.test(h));
+      if (colIdx < 0) throw new Error('候选表未见「线索来源」列');
+      const rows = tbl.locator('.arco-table-body .arco-table-tr, .arco-table-tr:has(.arco-table-td)');
+      const rn = await rows.count();
+      let source = null;
+      for (let i = 0; i < rn; i++) {
+        const row = rows.nth(i);
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!txt.includes(entName.slice(0, Math.min(12, entName.length)))) continue;
+        const cell = row.locator('.arco-table-td').nth(colIdx);
+        source = ((await cell.innerText({ timeout: 5000 }).catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        break;
+      }
+      if (source !== '对比篮') {
+        throw new Error('线索来源非「对比篮」: ' + (source || '(未找到行)'));
+      }
+  - note: 3、状态为「待分析」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const entName = (page.__func02237 || {}).entName || '';
+      if (!entName) throw new Error('缺少目标企业名（上一步未写入 page.__func02237）');
+      const tbl = stack().locator('.arco-table').first();
+      const ths = await tbl.locator('.arco-table-th').allInnerTexts();
+      const colIdx = ths.findIndex((h) => /^状态$/.test(h.trim()) || /状态/.test(h));
+      if (colIdx < 0) throw new Error('候选表未见「状态」列');
+      const rows = tbl.locator('.arco-table-body .arco-table-tr, .arco-table-tr:has(.arco-table-td)');
+      const rn = await rows.count();
+      let status = null;
+      for (let i = 0; i < rn; i++) {
+        const row = rows.nth(i);
+        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!txt.includes(entName.slice(0, Math.min(12, entName.length)))) continue;
+        const cell = row.locator('.arco-table-td').nth(colIdx);
+        status = ((await cell.innerText({ timeout: 5000 }).catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        break;
+      }
+      if (status !== '待分析') {
+        throw new Error('状态非「待分析」: ' + (status || '(未找到行)'));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction + workspace=cultivation&recommendation_tab=cultivation。步骤=系统对比篮勾选未在候选名单的企业→compare-basket-action-bar「加入培育候选」→候选工作台 Tab。机检=行内企业名+线索来源列「对比篮」+状态列「待分析」。对比篮空→企业查询入篮兜底。D4·2026-10-20 rewrite-FUNC-02237 svcz 3/3 expect 绿。对比篮空→企业查询入篮兜底。登录与关评审由 runner 前置。A 档零 allow_skip。

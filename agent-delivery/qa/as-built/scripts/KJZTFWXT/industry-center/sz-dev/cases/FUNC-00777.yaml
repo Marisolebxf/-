@@ -1,0 +1,134 @@
+id: FUNC-00777
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00777
+priority: P1
+title: 刷新页面不自动带入最近一次对比结果
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已进入页面
+  - 账号下存在历史对比结果记录
+  - 当前未绑定任何对比结果
+locators:
+  bind: main input[placeholder="请显式选择有效结构化结果"]
+  bind_view: main .arco-select-view nth(1)
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 刷新页面并回读绑定选择器
+expect:
+  - note: 刷新后绑定选择器保持未绑定占位态，不自动带入最近一次对比结果
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const configVisible = async () =>
+        (await page.getByText('分析配置').first().isVisible().catch(() => false));
+      const ensureConfigPage = async () => {
+        await dismissBasket();
+        if (await configVisible()) return;
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await dismissBasket();
+        if (await configVisible()) return;
+        if (!(await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+          await dismissBasket();
+        }
+        if (!(await configVisible())) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置页 ' + page.url());
+        }
+      };
+      const bindView = () => page.locator('main .arco-select-view').nth(1);
+      const bindInp = () => page.locator('main input[placeholder="请显式选择有效结构化结果"]');
+      const readBindTxt = async () => ((await bindView().innerText().catch(() => '')) || '').trim();
+      const ensureUnbound = async () => {
+        if (await bindInp().count() && (await bindInp().first().isVisible().catch(() => false))) return;
+        const txt = await readBindTxt();
+        if (/CHAIN-/.test(txt)) {
+          const reset = page.getByRole('button', { name: '重置参数' });
+          if (await reset.count()) {
+            await reset.first().click({ timeout: 8000 });
+            await page.waitForTimeout(600);
+          }
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        if (/CHAIN-/.test(await readBindTxt())) throw new Error('前置：绑定非未绑定态 ' + (await readBindTxt()));
+      };
+      const assertUnboundBind = async () => {
+        const inp = bindInp().first();
+        await expect(inp).toBeVisible({ timeout: 8000 });
+        const ph = await inp.getAttribute('placeholder');
+        if (ph !== '请显式选择有效结构化结果') throw new Error('绑定占位不符: ' + ph);
+        const viewTxt = await readBindTxt();
+        if (/CHAIN-/.test(viewTxt)) throw new Error('刷新后静默继承绑定: ' + viewTxt);
+      };
+      const hasHistoryRecords = async () => {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        if (!(await recTab.count())) return false;
+        await recTab.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const rows = page.locator('main .arco-table-tr');
+        const n = await rows.count();
+        const devTab = page.getByRole('tab', { name: '深圳产业发展分析' });
+        await devTab.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        return n > 0;
+      };
+      await ensureConfigPage();
+      if (!(await hasHistoryRecords())) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-HISTORY-00777: 分析记录为空，无法满足「存在历史对比结果」前置');
+      }
+      await ensureUnbound();
+      await assertUnboundBind();
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1500);
+      await dismissBasket();
+      if (!(await configVisible())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await dismissBasket();
+      }
+      await assertUnboundBind();
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 刷新不静默继承最近 CHAIN 绑定；前置验分析记录非空 ENV-CHAIN-SZ-DEV-NO-HISTORY-00777。脏绑定重置+goto 回未绑定。catalog_path=entry-seed。

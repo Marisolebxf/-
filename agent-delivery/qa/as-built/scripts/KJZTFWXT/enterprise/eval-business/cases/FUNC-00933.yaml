@@ -1,0 +1,66 @@
+id: FUNC-00933
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00933
+priority: P0
+title: 点击空态按钮打开选择分析企业浮层且构成正确
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: A
+preconditions:
+  - 已进入商业力评估页
+  - 评估对象区为空（URL 无 enterprise_codes）
+  - 对比篮至少有企业（env-gate basket_count≥1；本环境可绿）
+locators:
+  cta: button「商业竞争力对标分析」或「前往对比篮选择企业」
+  overlay_title: 选择分析企业
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 30888 路由 enterprise-center/evaluation；点空态 CTA 打开浮层，构成断言在 expect 内自含
+expect:
+  - note: 浮层打开且标题为「选择分析企业」、副标题含从对比篮勾选与确定回填不发起分析的语义
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      if (/enterprise_codes/.test(page.url())) {
+        const origin = new URL(page.url()).origin;
+        await page.goto(origin + '/enterprise-center/evaluation?workspace=business&mode=business', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const openCta = page.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业/ }).first();
+      await expect(openCta).toBeVisible({ timeout: 10000 });
+      await openCta.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/从对比篮勾选/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/不会发起分析任务/).first()).toBeVisible({ timeout: 8000 });
+  - note: 浮层含企业 Tab、名称搜索框与企业类型筛选
+    assert: |-
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const entTab = page.locator('#compare-basket-tab-enterprise');
+      const tab = (await entTab.count()) ? entTab : page.getByRole('tab', { name: /企业\s*\d+\s*\/\s*\d+/ }).last();
+      await expect(tab).toBeVisible({ timeout: 8000 });
+      const tabText = await tab.textContent();
+      const basketN = Number(((tabText || '').match(/(\d+)\s*\/\s*\d+/) || [])[1] || 0);
+      if (basketN < 1) throw new Error('ENV-GATE:对比篮无企业(basket=0)，不满足用例前置');
+      await expect(page.getByPlaceholder('按企业名称搜索')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByPlaceholder('全部企业类型')).toBeVisible({ timeout: 8000 });
+  - note: 企业列表含勾选框、查看画像与移除动作
+    assert: |-
+      const n = await page.locator('[aria-label^="选择 "]').count();
+      if (n < 1) throw new Error('对比篮无可选企业（aria-label^=选择 ）');
+      await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('[aria-label="移除"]').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/evaluation（/enterprise/evaluation 404）。空态 CTA as-built「商业竞争力对标分析」（用例「前往对比篮选择企业」）。浮层副标题与 50892 一致。对比篮空则 ENV-GATE 前置不满足、不进金样绿。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。接旧 P0-02 / 用例册 00933。

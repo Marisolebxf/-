@@ -1,0 +1,80 @@
+id: FUNC-04021
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04021
+priority: P1
+title: 备选-编辑区清空条件后已选回到 0
+story: US-SVC-ORG-07
+entry_id: svc-search
+tier: B
+preconditions:
+  - 高级筛选已添加至少 1 个条件
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_city: 字段库 Tag「所在城市」
+  clear_btn: button「清空条件」
+  empty_edit_hint: text「从左侧字段库添加筛选条件」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 深链进页 → 高筛添加条件后点「清空条件」；预期在 expect 分步判定
+expect:
+  - note: 1、已选条件数为 0
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/智能检索|查机构|高级筛选/.test(t);
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/service-center\/search/, { timeout: 15000 });
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: goto /service-center/search 仍 SPA404 url=' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const cityTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' }).first();
+      await expect(cityTag).toBeVisible({ timeout: 8000 });
+      await cityTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(fieldLib.getByText(/已选\s*1\s*个条件/)).toBeVisible({ timeout: 8000 });
+      const condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      const clearBtn = page.getByRole('button', { name: '清空条件' }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(fieldLib.getByText(/已选\s*0\s*个条件/)).toBeVisible({ timeout: 8000 });
+      const apply = page.getByRole('button', { name: /应用筛选\s*[（(]\s*0\s*[）)]/ }).first();
+      await expect(apply).toBeVisible({ timeout: 8000 });
+      globalThis.__func04021_cleared = true;
+  - note: 2、编辑区回到「从左侧字段库添加筛选条件」
+    assert: |-
+      if (!globalThis.__func04021_cleared) throw new Error('前置：清空条件未完成');
+      await expect(page.getByText('从左侧字段库添加筛选条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const rows = page.locator('.condition-builder');
+      const n = await rows.count();
+      if (n > 0) {
+        const vis = await rows.first().isVisible().catch(() => false);
+        if (vis) throw new Error('清空后仍有可见条件行，count=' + n);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04021；catalog_path=/service-center/search。steps goto 深链（对齐 FUNC-04018）。
+  前置点字段库「所在城市」得已选 1 个条件；「清空条件」无确认框（用例注明）。
+  已选计数「已选 N 个条件」、应用按钮「应用筛选（N）」与 scout 一致。edu 2026-10-21 实跑 SPA404 时标 ENV-EDU-TTS-SVCZ-404-001。

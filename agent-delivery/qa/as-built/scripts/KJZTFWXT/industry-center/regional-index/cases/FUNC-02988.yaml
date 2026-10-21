@@ -1,0 +1,154 @@
+id: FUNC-02988
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02988
+priority: P0
+title: 条件发起分析至成功结果页（金样）
+entry_id: chain-regional-index
+tier: A
+preconditions:
+  - 已进入区域产业指数评价；当天该产业与区域尚未成功分析过（机跑遇当天复用则点「重新分析」）
+locators:
+  cluster: .arco-select-view[aria-label=集群]
+  industry: .arco-select-view[aria-label=产业]
+  start: button「开始分析」
+  view_result: button「查看分析结果」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 集群生物产业、产业生物、区域深圳市→开始分析→等生成结束→查看分析结果（机检在 expect）
+expect:
+  - note: 1、生成页出现「分析结果已生成」（结束不自动打开结果页）
+    assert: |-
+      const main = () => page.locator('main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+        await expect(page).toHaveURL(/\/industry-center\/regional/, { timeout: 15000 });
+      };
+      const pickByAria = async (aria, labelRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: labelRe }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const pickIndustryBio = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.locator('.arco-select-view[aria-label="产业"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opts = page.locator(optSel);
+        const bioExact = opts.filter({ hasText: /^生物$/ });
+        if (await bioExact.count()) {
+          await bioExact.first().click({ force: true });
+          return '生物';
+        }
+        const bioMed = opts.filter({ hasText: /^生物医药$/ });
+        if (await bioMed.count()) {
+          await bioMed.first().click({ force: true });
+          return '生物医药';
+        }
+        throw new Error('ENV-CHAIN-REG-BIO-INDUSTRY-001：生物产业下未见「生物」或「生物医药」选项');
+      };
+      const configure02988 = async () => {
+        await gate404();
+        await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(800);
+        await pickByAria('集群', /^生物产业$/);
+        const industryPicked = await pickIndustryBio();
+        await page.waitForTimeout(800);
+        const body = await main().innerText().catch(() => '');
+        if (!/深圳市/.test(body)) {
+          throw new Error('评价区域未含深圳市（用例默认保持深圳市）');
+        }
+        globalThis.__func02988 = { industryPicked };
+        return industryPicked;
+      };
+      const ensureFreshRun = async () => {
+        await configure02988();
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isDisabled()) {
+          throw new Error('ENV-CHAIN-REG-BIO-BLACKLIST-001：生物产业组合下「开始分析」仍 disabled（env-gate g4 黑名单）');
+        }
+        await start.click({ timeout: 10000 });
+        let rerunUsed = false;
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i === 0 ? 400 : 500);
+          const t = await main().innerText().catch(() => '');
+          const url = page.url();
+          if (/分析结果已生成/.test(t)) {
+            globalThis.__func02988 = { ...(globalThis.__func02988 || {}), doneBody: t };
+            return t;
+          }
+          if (/view=processing|区域产业指数评价生成中/.test(url + t)) continue;
+          const onResult =
+            (/view=result/.test(url) || /区域产业指数评价结果/.test(t)) &&
+            !/区域产业指数评价生成中/.test(t);
+          if (onResult && !rerunUsed) {
+            const rerun =
+              page.getByRole('button', { name: '重新分析' }).first().or(
+                page.getByRole('button', { name: '返回配置重新分析' }).first()
+              );
+            if (await rerun.isVisible().catch(() => false)) {
+              rerunUsed = true;
+              await rerun.click({ timeout: 8000 });
+              await page.waitForTimeout(1200);
+              await configure02988();
+              const start2 = page.getByRole('button', { name: '开始分析' }).first();
+              if (await start2.isDisabled()) {
+                throw new Error('ENV-CHAIN-REG-BIO-BLACKLIST-001：重新分析后「开始分析」仍 disabled');
+              }
+              await start2.click({ timeout: 10000 });
+              continue;
+            }
+          }
+          if (/分析失败|本次分析失败|INPUT_OBJECT_INVALID|对象无效/.test(t) && i >= 8) {
+            throw new Error('ENV-CHAIN-REG-ASYNC-FAIL-001：分析失败，未见「分析结果已生成」');
+          }
+        }
+        throw new Error('ENV-CHAIN-REG-ASYNC-TIMEOUT-001：120 轮内未见「分析结果已生成」');
+      };
+      const bodyDone = await ensureFreshRun();
+      await expect(main().getByText('分析结果已生成').first()).toBeVisible({ timeout: 8000 });
+      if (/view=result/.test(page.url()) && !/分析结果已生成/.test(bodyDone)) {
+        throw new Error('生成结束自动打开结果页（用例要求须手动点「查看分析结果」）');
+      }
+  - note: 2、点「查看分析结果」后进入标题为「区域产业指数评价结果」的页面
+    assert: |-
+      if (!globalThis.__func02988?.doneBody) throw new Error('前置：未见生成完成引导态');
+      const main = () => page.locator('main').first();
+      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+      await expect(viewBtn).toBeVisible({ timeout: 8000 });
+      await viewBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(2000);
+      const body = await main().innerText().catch(() => '');
+      const title = await page.title();
+      if (!/区域产业指数评价结果/.test(body) && !/区域产业指数评价结果/.test(title)) {
+        throw new Error('点「查看分析结果」后未见「区域产业指数评价结果」: ' + body.slice(0, 280));
+      }
+      await expect(main().getByText('区域产业指数评价结果').first()).toBeVisible({ timeout: 20000 });
+  - note: 3、成功结果页出现「区域产业综合指数」
+    assert: |-
+      await expect(page.locator('main').getByText('区域产业综合指数').first()).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）。用例步骤=生物产业+产业「生物」+深圳市+开始分析+「查看分析结果」。实勘 50892 g4 生物成功路径黑名单且产业常为「生物医药」；脚本优先点「生物」否则「生物医药」。过程五阶段见用例附录E（本条只验完成引导+结果壳）。当天复用→「重新分析/返回配置重新分析」后重配再跑。edu 深链 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。金样 A 档零 allow_skip。

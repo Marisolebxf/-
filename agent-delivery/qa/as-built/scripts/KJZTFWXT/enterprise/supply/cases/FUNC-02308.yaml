@@ -1,0 +1,77 @@
+id: FUNC-02308
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02308
+priority: P0
+title: 最近分析表列出六列
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开最近分析（assert 自含 goto 与点「最近分析」）
+locators:
+  recent_tab: tab「最近分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 点「最近分析」后阅读表头列名
+expect:
+  - note: 1、列名为任务名称、分析类型、企业摘要、创建时间、状态、操作
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const cols = ['任务名称', '分析类型', '企业摘要', '创建时间', '状态', '操作'];
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      const scrollHistoryHeader = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+        await bodies.first().evaluate((el) => { el.scrollLeft = 0; }).catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      await scrollHistoryHeader();
+      const headerCells = main().locator('table thead th, .arco-table-th');
+      const hn = await headerCells.count();
+      if (hn < 1) {
+        const t = await main().innerText();
+        if (!/任务名称/.test(t)) {
+          throw new Error('最近分析表头不可见（无 thead th）');
+        }
+      } else {
+        const headerText = (await headerCells.allInnerTexts()).join(' ').replace(/\s+/g, ' ').trim();
+        for (const c of cols) {
+          if (!headerText.includes(c)) {
+            throw new Error('表头缺列「' + c + '」；可见=' + headerText.slice(0, 200));
+          }
+        }
+      }
+      const bodyText = await main().innerText();
+      for (const c of cols) {
+        if (!bodyText.includes(c)) {
+          throw new Error('最近分析主区缺列名「' + c + '」');
+        }
+      }
+      await expect(main().getByText('任务名称').first()).toBeVisible({ timeout: 8000 });
+      await expect(main().getByText('操作').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=当前分析页点「最近分析」读表头。机检=view=history+六列名任务名称/分析类型/企业摘要/创建时间/状态/操作（thead 或主区文本）。横向滚动后仍验。登录与关评审由 runner 前置。A 档零 allow_skip。

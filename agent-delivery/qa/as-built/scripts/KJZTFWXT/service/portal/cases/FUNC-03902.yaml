@@ -1,0 +1,73 @@
+id: FUNC-03902
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03902
+priority: P0
+tier: B
+title: 技术力榜行内加入对比篮后按钮与提示
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 已打开服务机构技术能力且至少一行「加入对比篮」可点
+locators:
+  tab_cap: tab「服务机构技术能力」
+  btn_join: 行内 button「加入对比篮」
+  btn_in_basket: 行内 button「已在对比篮」
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 进入技术能力榜并点击首行可用「加入对比篮」
+expect:
+  - note: 1、该按钮变为「已在对比篮」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal 深链 SPA404，无法验加入对比篮 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const rowCount = await page.locator('main .arco-table tbody tr').count();
+      const emptyVisible = await page.getByText(/暂无覆盖机构入榜|暂无技术力入榜机构/).first().isVisible().catch(() => false);
+      if (rowCount === 0 && emptyVisible) {
+        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜诚实空，无行可点「加入对比篮」（Q060）');
+      }
+      const rows = page.locator('main .arco-table tbody tr');
+      let joinBtn = null;
+      let orgName = '';
+      const n = await rows.count();
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        const btn = row.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await btn.count())) continue;
+        if (!(await btn.isEnabled().catch(() => false))) continue;
+        joinBtn = btn;
+        orgName = ((await row.locator('.svc-portal-org__name').innerText().catch(async () => {
+          const cells = await row.locator('td').allTextContents();
+          return (cells[1] || '').split('\n')[0];
+        })) || '').replace(/\s+/g, ' ').trim();
+        break;
+      }
+      if (!joinBtn) {
+        throw new Error('前置：榜内无可用「加入对比篮」行（可能全榜已在对比篮或缺 orgId）');
+      }
+      if (!orgName) throw new Error('未能读取目标行机构名');
+      await joinBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(joinBtn).toHaveText('已在对比篮', { timeout: 8000 });
+  - note: 2、出现已加入该机构的提示
+    assert: |-
+      const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: /已将「.+」加入对比篮/ });
+      await expect(toast.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  源码 ServicePortalCapabilityRankPage.vue：成功 Message.success(`已将「${row.name}」加入对比篮`)；已在篮 Message.info。按钮态「已在对比篮」primary，非移出。
+  Tab 落点 /service-portal/capability-rank；goto catalog /service-portal。对比篮浮层不在本册断言。诚实空榜同 03898 → ENV-SVC-PORTAL-TECH-RANK-EMPTY。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

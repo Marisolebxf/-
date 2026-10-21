@@ -1,0 +1,105 @@
+id: FUNC-00756
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00756
+priority: P0
+title: 分析对象产业下拉未选态占位提示与选项加载正确
+entry_id: chain-sz-dev
+tier: A
+preconditions:
+  - 已登录 admin
+  - 分析对象为初始未选态（脏会话已选产业时再 goto 深链回占位；重置参数不清产业）
+locators:
+  industry: main .industry-catalog-select（placeholder「请选择产业」）
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 展开分析对象产业下拉并浏览选项
+expect:
+  - note: 未选产业时下拉呈引导占位提示「请选择产业」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404() || !onTarget()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: search 与深圳发展分析深链均 SPA404，无法验产业下拉 ' + page.url());
+      }
+      const ind = page.locator('main .industry-catalog-select').filter({ has: page.locator('input[placeholder="请选择产业"]') });
+      const hasPlaceholder = async () => {
+        if (!(await ind.count())) return false;
+        const ph = await ind.locator('input').first().getAttribute('placeholder');
+        return !!(ph && ph.includes('请选择产业'));
+      };
+      if (!(await hasPlaceholder())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+      }
+      await expect(ind.first()).toBeVisible({ timeout: 10000 });
+      const ph = await ind.locator('input').first().getAttribute('placeholder');
+      if (!ph || !ph.includes('请选择产业')) {
+        throw new Error('产业占位不符: ' + ph);
+      }
+  - note: 下拉选项正常加载，含可选产业集群
+    assert: |-
+      const ind = page.locator('main .industry-catalog-select').filter({ has: page.locator('input[placeholder="请选择产业"]') }).first();
+      await ind.locator('.arco-select-view').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      const n = await opts.count();
+      if (n < 2) throw new Error('产业选项未加载或过少: ' + n);
+      await expect(opts.filter({ hasText: '新一代信息技术' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(opts.filter({ hasText: '生物' }).first()).toBeVisible({ timeout: 8000 });
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 单级产业 Select（industry-catalog-select）；选项个数归 FUNC-03390。重置参数不清产业，须再 goto 回占位。catalog_path=entry-seed。A 档零 allow_skip。

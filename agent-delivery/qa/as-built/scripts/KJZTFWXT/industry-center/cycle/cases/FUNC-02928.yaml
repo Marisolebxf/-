@@ -1,0 +1,180 @@
+id: FUNC-02928
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02928
+priority: P1
+title: 失败任务查看结果/报告/下载均不可点
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 诊断记录有失败任务
+locators:
+  records_tab: tab「诊断记录」
+  status_filter: 任务状态
+  view_result: button「查看结果」
+  view_report: button「查看报告」
+  download_report: button「下载报告」
+  copy_config: button「复制配置」
+  delete_button: button「删除」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→诊断记录→筛「失败」；按钮禁用态在 expect
+expect:
+  - note: 前置：诊断记录 Tab；任务状态选「失败」且可见失败行
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const recordsSection = () => main().locator('.diagnosis-records, [data-frame-id="F-DIAG-05"]').first();
+      const recordsTable = () => recordsSection().locator('.arco-table').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        if (!/\/industry-center\/diagnosis/.test(page.url()) || !/workspace=cycle/.test(page.url())) {
+          await expandChainGroup();
+          const leaf = leafItem();
+          await expect(leaf.first()).toBeVisible({ timeout: 15000 });
+          await leaf.first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=cycle/);
+        await expect(page).toHaveURL(/tab=cycle/);
+      };
+      const scrollRecordActions = async () => {
+        const bodies = recordsSection().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const pickFailedRow = async () => {
+        await scrollRecordActions();
+        const rows = recordsTable().locator('tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (!TID_RE.test(rowText)) continue;
+          if (!/失败/.test(rowText) || /已完成/.test(rowText)) continue;
+          if (!/产业周期分析/.test(rowText)) continue;
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          await scrollRecordActions();
+          return row;
+        }
+        return null;
+      };
+      await dismissBasket();
+      if (!/\/industry-center\/search/.test(page.url())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await enterCyclePage();
+      await page.waitForTimeout(800);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const recBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(recBody)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-RECORDS-001：诊断记录未见 CHAIN 任务行');
+      }
+      if (!/失败/.test(recBody)) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-FAILED-001：诊断记录无失败任务（前置 1 不满足）');
+      }
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      const statusLabel = page.getByText('任务状态', { exact: false }).first();
+      await expect(statusLabel).toBeVisible({ timeout: 8000 });
+      let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      if ((await trigger.count()) < 1) {
+        trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+      }
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const opt = page.locator(optSel).filter({ hasText: /^失败$/ }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/失败/.test(shown)) {
+        throw new Error('任务状态筛选未回显「失败」：' + shown);
+      }
+      const failedRow = await pickFailedRow();
+      if (!failedRow) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-FAILED-001：筛「失败」后未见产业周期失败行');
+      }
+      globalThis.__func02928 = { failedRow, scrollRecordActions, main };
+  - note: 1、「查看结果」「查看报告」「下载报告」都不可点；2、「复制配置」和「删除」仍可点
+    assert: |-
+      const ctx = globalThis.__func02928;
+      if (!ctx?.failedRow) throw new Error('前置：未定位失败任务行');
+      const row = ctx.failedRow;
+      await ctx.scrollRecordActions();
+      const btnInRow = async (name) => {
+        let b = row.getByRole('button', { name, exact: true }).first();
+        if ((await b.count()) < 1) {
+          b = row.locator('button, .arco-btn').filter({ hasText: new RegExp('^' + name + '$') }).first();
+        }
+        return b;
+      };
+      const locked = ['查看结果', '查看报告', '下载报告'];
+      for (const name of locked) {
+        const b = await btnInRow(name);
+        await expect(b).toBeVisible({ timeout: 8000 });
+        const disabled = await b.isDisabled().catch(() => false);
+        const cls = (await b.getAttribute('class').catch(() => '')) || '';
+        if (!disabled && !/arco-btn-disabled/.test(cls)) {
+          throw new Error('失败行「' + name + '」应不可点（disabled 或 arco-btn-disabled），class=' + cls);
+        }
+      }
+      const allowed = ['复制配置', '删除'];
+      for (const name of allowed) {
+        const b = await btnInRow(name);
+        await expect(b).toBeVisible({ timeout: 8000 });
+        const disabled = await b.isDisabled().catch(() => true);
+        const cls = (await b.getAttribute('class').catch(() => '')) || '';
+        if (disabled || /arco-btn-disabled/.test(cls)) {
+          throw new Error('失败行「' + name + '」应仍可点，但为 disabled，class=' + cls);
+        }
+      }
+      const urlBefore = page.url();
+      const viewResult = await btnInRow('查看结果');
+      await viewResult.click({ timeout: 3000, force: true }).catch(() => {});
+      await page.waitForTimeout(600);
+      if (/view=result/.test(page.url()) || /view=report/.test(page.url())) {
+        throw new Error('点击 disabled「查看结果」仍进入结果/报告页：' + page.url());
+      }
+      if (await ctx.main().getByText('产业周期分析结果').first().isVisible().catch(() => false)) {
+        throw new Error('失败行不应打开「产业周期分析结果」页');
+      }
+      if (page.url() !== urlBefore && /task_id=/.test(page.url())) {
+        throw new Error('点击「查看结果」改变了 task 路由：' + urlBefore + ' -> ' + page.url());
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口 entry-seed：goto sibling /industry-center/search 再侧栏进入（深链冷启动 SPA 404→ENV-EDU-TTS-SVCZ-404-001）。用例=诊断记录任务状态「失败」→操作列「查看结果/查看报告/下载报告」disabled（对齐 scout 失败行同列文案连排）；
+  「复制配置」「删除」仍 enabled。无失败行→ENV-CHAIN-CYCLE-NO-FAILED-001。失败行无单独失败原因页（用例备注）。登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,90 @@
+id: FUNC-02706
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02706
+priority: P0
+title: 智能检索下点击未来产业进入高级筛选结果
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页（深链 catalog_path /industry-center/search）
+  - 当前为「智能检索」
+locators:
+  tab_smart: 检索模式 tab「智能检索」
+  hot_chip_future: button.enterprise-search-hot-button「未来产业」
+  result_region: region aria-label「产业查询结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 确认智能检索 Tab、点「未来产业」；三条 expect 在 assert 内自含（跨 tick）
+expect:
+  - note: 出现「高级筛选结果」且路由为高级筛选模式
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
+      await expect(smartTab).toBeVisible({ timeout: 10000 });
+      const sAria = await smartTab.getAttribute('aria-selected');
+      const sCls = (await smartTab.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        await smartTab.click();
+        await page.waitForTimeout(400);
+      }
+      const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^未来产业$/ }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.click();
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/[?&]mode=advanced/, { timeout: 10000 });
+      const deadline = Date.now() + 20000;
+      let hasAdvTitle = false;
+      while (Date.now() < deadline) {
+        hasAdvTitle = (await page.getByText('高级筛选结果').count()) > 0;
+        if (hasAdvTitle) break;
+        await page.waitForTimeout(500);
+      }
+      if (!hasAdvTitle) {
+        throw new Error('点击未来产业后未出现「高级筛选结果」标题');
+      }
+      await expect(page.getByText('高级筛选结果').first()).toBeVisible({ timeout: 5000 });
+  - note: 当前条件为 industry_attribute：future（UI 为产业属性 + future/未来产业）
+    assert: |-
+      const main = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+      const wireOk = /industry_attribute[：:]\s*future/i.test(main);
+      const uiOk = /产业属性[：:]\s*(?:future|未来产业)/.test(main);
+      if (!wireOk && !uiOk) {
+        throw new Error('当前条件区未见 industry_attribute:future 或 产业属性:future/未来产业；片段=' + main.slice(0, 220));
+      }
+  - note: 检索结果有返回行（条数大于 0）
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const text = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(text) && /共\s*0\s*条/.test(text)) {
+        throw new Error('未来产业热门场景为空结果：' + text.slice(0, 120));
+      }
+      let n = null;
+      const m1 = text.match(/共\s*(\d+)\s*条/);
+      const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
+      const m3 = text.match(/命中\s*(\d+)\s*(?:个|条)/);
+      if (m1) n = parseInt(m1[1], 10);
+      else if (m2) n = parseInt(m2[1], 10);
+      else if (m3) n = parseInt(m3[1], 10);
+      if (n === null || Number.isNaN(n) || n < 1) {
+        throw new Error('未能解析大于 0 的结果条数；片段=' + text.slice(0, 160));
+      }
+      const hitEntry =
+        (await region.getByRole('button', { name: '进入全景图谱' }).count()) > 0 ||
+        (await region.getByRole('button', { name: '查看摘要' }).count()) > 0;
+      if (!hitEntry) {
+        throw new Error('条数=' + n + ' 但未见命中条目操作（进入全景图谱/查看摘要）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/search；热门场景 chip=.enterprise-search-hot-button（scout 词「未来产业」）。用例预期 industry_attribute：future 机检接受 UI 标签「产业属性：future/未来产业」。与 FUNC-02691 同一入口的另一预设（key→future）。登录与关内部评审由 runner 前置。A 档零 allow_skip。

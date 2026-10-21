@@ -1,0 +1,84 @@
+id: FUNC-02325
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02325
+priority: P1
+title: 点放大后仍停留本次结果
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已打开一条成功结果的图谱（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  zoom_in: button[aria-label="放大"]
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 恢复成功结果→点图谱工具条「放大」→核对仍在本结果且任务摘要对象不变
+expect:
+  - note: 1、仍停留该结果页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const ensureGraphTab = async () => {
+        const graphTab = main().locator('[role=tab], button').filter({ hasText: /^图谱$/ }).first();
+        if (await graphTab.count() && (await graphTab.isVisible().catch(() => false))) {
+          await graphTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const readAnalysisObjects = async () => {
+        const line = page.getByText(/^分析对象：/).first();
+        await expect(line).toBeVisible({ timeout: 10000 });
+        return (await line.innerText()).replace(/\s+/g, ' ').trim();
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      const restore = page.getByRole('button', { name: '恢复结果' });
+      if (!(await restore.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+      }
+      await restore.first().click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 25000 });
+      await dismissBasket();
+      await ensureGraphTab();
+      globalThis.__func02325_objectsBefore = await readAnalysisObjects();
+      globalThis.__func02325_urlBefore = page.url();
+      const zoom = page.getByRole('button', { name: '放大' });
+      await expect(zoom.first()).toBeVisible({ timeout: 8000 });
+      await zoom.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/view=result/, { timeout: 8000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func02325_ready = true;
+  - note: 2、任务摘要中的对象不变
+    assert: |-
+      if (!globalThis.__func02325_ready) throw new Error('前置：未在结果页完成放大操作');
+      const before = globalThis.__func02325_objectsBefore;
+      if (!before) throw new Error('前置：未记录放大前分析对象');
+      const line = page.getByText(/^分析对象：/).first();
+      await expect(line).toBeVisible({ timeout: 8000 });
+      const after = (await line.innerText()).replace(/\s+/g, ' ').trim();
+      if (after !== before) {
+        throw new Error('任务摘要分析对象已变化：前=' + before + '；后=' + after);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route。前置=最近分析「恢复结果」；图谱工具条 aria「放大」（scout-result）。机检=view=result 不变、供应链图谱/任务摘要仍在、分析对象行逐字一致。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。

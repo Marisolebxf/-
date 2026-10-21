@@ -1,0 +1,119 @@
+id: FUNC-03291
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03291
+priority: P0
+title: 换成生物产业后产业选项随之变化
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入分析配置
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 集群切生物产业→展开产业下拉；预期在 expect
+expect:
+  - note: 1、产业选项变为 3 个，名称见附录 A（生物、生物医药与生命健康、高端医疗器械）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const expectedNames = ['生物', '生物医药与生命健康', '高端医疗器械'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const enterCompare = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/shenzhen/.test(page.url()) &&
+          /workspace=comparison/.test(page.url()) &&
+          /tab=comparison/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+      };
+      const pickCluster = async (nameRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="集群"]').first();
+        await view.scrollIntoViewIfNeeded();
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: nameRe }).first();
+        if (!(await opt.count())) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-03291：集群选项不可用 ' + String(nameRe));
+        }
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const readIndustryOptionTexts = async () => {
+        const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+        await industry.scrollIntoViewIfNeeded();
+        await industry.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const options = pop.locator('.arco-select-option');
+        const count = await options.count();
+        const texts = [];
+        for (let i = 0; i < count; i++) {
+          texts.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+        return { count, texts };
+      };
+      await enterCompare();
+      await pickCluster(/^生物产业$/);
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(clusterView).toContainText('生物产业', { timeout: 8000 });
+      const { count, texts } = await readIndustryOptionTexts();
+      if (count !== 3) {
+        throw new Error('产业选项个数应为 3，现场 count=' + count + ' texts=' + JSON.stringify(texts));
+      }
+      for (const name of expectedNames) {
+        const hit = texts.some((t) => t === name || t.includes(name));
+        if (!hit) {
+          throw new Error('产业选项缺少「' + name + '」，现场=' + JSON.stringify(texts));
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 03291 产业联动；集群切生物产业后产业下拉 3 项与用例附录 A 一致。路由 catalog_path + 侧栏回退与 00736/03288 同型。

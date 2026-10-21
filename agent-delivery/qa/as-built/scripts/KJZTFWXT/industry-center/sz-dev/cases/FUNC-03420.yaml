@@ -1,0 +1,93 @@
+id: FUNC-03420
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03420
+priority: P0
+title: 分析配置区全球案例匹配未纳入交付提示
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 系统可访问；已登录 admin
+  - 已进入深圳产业发展分析配置面（development 工作区）
+locators:
+  config_heading: 分析配置
+  case_gap_alert: alert「全球案例匹配本轮未纳入交付宣称。」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 阅读分析配置区内全球案例匹配提示
+expect:
+  - note: 配置区有「全球案例匹配本轮未纳入交付宣称。」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404() || !onTarget()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: search 与深圳发展分析深链均 SPA404，无法验配置区提示 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/shenzhen/);
+      await expect(page).toHaveURL(/workspace=development/);
+      await expect(page).toHaveURL(/tab=development/);
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const configHint = '全球案例匹配本轮未纳入交付宣称。';
+      const resultHint = '全球案例匹配本轮未宣称交付。';
+      const alert = page.locator('.arco-alert').filter({ hasText: configHint });
+      await expect(alert.first()).toBeVisible({ timeout: 8000 });
+      const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!body.includes(configHint)) throw new Error('配置区未检出配置句：' + configHint);
+      if (body.includes(resultHint)) {
+        const onResult = await page.getByText('深圳产业发展分析结果').first().isVisible().catch(() => false);
+        if (onResult) throw new Error('当前在结果页，非分析配置区');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 配置区 a-alert 文案「全球案例匹配本轮未纳入交付宣称。」（与结果页「未宣称交付」不同，见 FUNC-03421）；route=entry-seed catalog_path。

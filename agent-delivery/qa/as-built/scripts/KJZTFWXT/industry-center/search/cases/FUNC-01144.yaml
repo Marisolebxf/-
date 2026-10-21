@@ -1,0 +1,69 @@
+id: FUNC-01144
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01144
+priority: P0
+title: 主区三 Tab 构成顺序与默认选中智能检索
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页（深链 catalog_path /industry-center/search）
+locators:
+  tablist: '[role=tablist][aria-label=检索模式]（.enterprise-search-mode-tabs）'
+  tab_smart: 检索模式 tab「智能检索」
+  tab_industry: 检索模式 tab「查产业」
+  tab_adv: 检索模式 tab「高级筛选」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 读取主区检索模式 Tab 构成、顺序与默认选中（禁止全页 getByRole tab，勿与对比篮 tab 混淆）
+expect:
+  - note: 三 Tab 依次为「智能检索」「查产业」「高级筛选」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const tabItems = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      const useTabs = tabItems;
+      await expect(page.locator('.enterprise-search-mode-tabs')).toBeVisible({ timeout: 10000 });
+      await expect(useTabs).toHaveCount(3, { timeout: 8000 });
+      const texts = [];
+      for (let i = 0; i < 3; i++) {
+        texts.push((await useTabs.nth(i).innerText()).trim().replace(/\s+/g, ' '));
+      }
+      const want = ['智能检索', '查产业', '高级筛选'];
+      if (JSON.stringify(texts) !== JSON.stringify(want)) {
+        throw new Error('三 Tab 文案/顺序不符: ' + texts.join('|'));
+      }
+  - note: 默认选中「智能检索」
+    assert: |-
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      const smart = tabs.nth(0);
+      const ind = tabs.nth(1);
+      const adv = tabs.nth(2);
+      const sAria = await smart.getAttribute('aria-selected');
+      const sCls = (await smart.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        throw new Error('默认未选中智能检索');
+      }
+      const iAria = await ind.getAttribute('aria-selected');
+      const iCls = (await ind.getAttribute('class')) || '';
+      if (iAria === 'true' || iCls.includes('active')) {
+        throw new Error('查产业不应默认选中');
+      }
+      const aAria = await adv.getAttribute('aria-selected');
+      const aCls = (await adv.getAttribute('class')) || '';
+      if (aAria === 'true' || aCls.includes('active')) {
+        throw new Error('高级筛选不应默认选中');
+      }
+      await expect(page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/)).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 检索三 Tab 在 .enterprise-search-mode-tabs（aria-label=检索模式）；选中态 aria-selected + class active。同页对比篮另有企业/产业 tab，须作用域限定。互斥切换归 01151。路由 catalog_path /industry-center/search。testdata base_url edu.itic-sci.com/tts/svcz。登录与关内部评审由 runner 前置。A 档零 allow_skip。

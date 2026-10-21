@@ -1,0 +1,192 @@
+id: FUNC-02431
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02431
+priority: P0
+title: 已取消任务点继续查看后打开失败说明
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 最近分析中有一条状态为已取消的痛点任务（assert 自含：无则重新分析→取消任务兜底）
+locators:
+  continue_btn: button「继续查看」
+  retry: button「重试」
+  rebuild: button「按此配置新建」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points&view=history
+  - action: evaluate
+    note: 最近分析→点已取消行「继续查看」；三条预期在 expect
+expect:
+  - note: 前置：定位已取消行并点击「继续查看」
+    assert: |-
+      const painRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const historyRoute = painRoute + '&view=history';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openHistory = async () => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        if ((await main().locator(rowSel).count()) > 0) return;
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        const tab = page.getByRole('tab', { name: '最近分析' }).first();
+        if (await tab.isVisible().catch(() => false)) {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        }
+      };
+      const pickCanceledContinue = async () => {
+        const n = await main().locator(rowSel).count();
+        for (let i = 0; i < n; i++) {
+          const row = main().locator(rowSel).nth(i);
+          const rowText = await row.innerText().catch(() => '');
+          if (!/已取消/.test(rowText)) continue;
+          if (/失败/.test(rowText) && !/已取消/.test(rowText)) continue;
+          const cont = row.getByRole('button', { name: '继续查看' }).first();
+          if (!(await cont.count()) || !(await cont.isVisible().catch(() => false))) continue;
+          const tidM = rowText.match(TID_RE);
+          return { cont, expectedTid: tidM ? tidM[0] : null };
+        }
+        return null;
+      };
+      const waitLaterOrCancel = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          const cancel = page.getByRole('button', { name: '取消任务', exact: true });
+          if ((await cancel.count()) && (await cancel.first().isVisible().catch(() => false))) {
+            return cancel.first();
+          }
+          const body = await main().innerText().catch(() => '');
+          if (/对象与诊断摘要/.test(body) && /重新分析/.test(body)) return null;
+          await page.waitForTimeout(400);
+        }
+        return null;
+      };
+      const rowOpenControl = (row, label) =>
+        row.getByRole('button', { name: label }).or(row.getByRole('link', { name: label })).first();
+      const hasReanalyzeResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        if (/企业发展痛点分析生成中/.test(t) && !/对象与诊断摘要/.test(t)) return false;
+        return (
+          (await page.getByText('对象与诊断摘要').first().isVisible().catch(() => false)) &&
+          (await page.getByRole('button', { name: '重新分析' }).first().isVisible().catch(() => false))
+        );
+      };
+      const openSuccessFromHistory = async () => {
+        await openHistory();
+        const n = await main().locator(rowSel).count();
+        if (!n) return false;
+        for (let i = 0; i < n; i++) {
+          if (i > 0) await openHistory();
+          const row = main().locator(rowSel).nth(i);
+          const rowText = await row.innerText().catch(() => '');
+          if (!/已完成/.test(rowText)) continue;
+          for (const label of ['恢复结果', '预览结果']) {
+            const btn = rowOpenControl(row, label);
+            if (!(await btn.count())) continue;
+            await btn.scrollIntoViewIfNeeded().catch(() => {});
+            await btn.click({ timeout: 8000 });
+            await page.waitForURL(/view=result|task_id=/, { timeout: 15000 }).catch(() => {});
+            await page.getByText('对象与诊断摘要').first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+            await page.waitForTimeout(600);
+            if (await hasReanalyzeResult()) return true;
+          }
+        }
+        return false;
+      };
+      const seedCanceledViaReanalyze = async () => {
+        if (!(await openSuccessFromHistory())) {
+          throw new Error('ENV-PAIN-NO-RESTORE-ROW-001：无已完成可恢复行，无法造已取消任务');
+        }
+        const reBtn = main().getByRole('button', { name: '重新分析' }).first();
+        await expect(reBtn).toBeVisible({ timeout: 8000 });
+        await reBtn.click({ timeout: 15000 });
+        await page.waitForTimeout(800);
+        let inProc = /view=processing/.test(page.url());
+        if (!inProc) {
+          for (let t = 0; t < 30; t++) {
+            await page.waitForTimeout(500);
+            if (/view=processing/.test(page.url())) {
+              inProc = true;
+              break;
+            }
+            const body = await main().innerText().catch(() => '');
+            if (/企业发展痛点分析生成中/.test(body)) {
+              inProc = true;
+              break;
+            }
+            if (/对象与诊断摘要/.test(body) && /重新分析/.test(body)) break;
+          }
+        }
+        if (!inProc) {
+          throw new Error('ENV-PAIN-PROCESS-WINDOW-001：重新分析瞬时完成，未见过程窗可取消');
+        }
+        const cancelBtn = await waitLaterOrCancel(25000);
+        if (!cancelBtn) {
+          throw new Error('ENV-PAIN-PROCESS-WINDOW-001：过程页未见可点「取消任务」');
+        }
+        await cancelBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        const bodyAfter = await main().innerText().catch(() => '');
+        if (!/已取消任务/.test(bodyAfter) && !/开始分析/.test(bodyAfter)) {
+          await page.waitForTimeout(800);
+        }
+        await openHistory();
+        const hit = await pickCanceledContinue();
+        if (!hit) {
+          throw new Error('ENV-PAIN-NO-CANCELED-ROW-001：取消任务后最近分析无「已取消+继续查看」行');
+        }
+        return hit;
+      };
+      await openHistory();
+      let hit = await pickCanceledContinue();
+      if (!hit) hit = await seedCanceledViaReanalyze();
+      globalThis.__func02431_tid = hit.expectedTid;
+      await hit.cont.scrollIntoViewIfNeeded().catch(() => {});
+      await hit.cont.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      globalThis.__func02431_ready = true;
+  - note: 1、页面标题为「分析失败」
+    assert: |-
+      if (!globalThis.__func02431_ready) throw new Error('前置：未点击继续查看');
+      const main = page.locator('main.content-shell-layout, main').first();
+      await expect(main.getByText('分析失败').first()).toBeVisible({ timeout: 12000 });
+      const body = await main.innerText().catch(() => '');
+      if (!/分析失败/.test(body)) {
+        throw new Error('未见失败页标题「分析失败」：' + body.slice(0, 200));
+      }
+      if (/企业发展痛点分析生成中/.test(body)) {
+        throw new Error('继续查看后仍在生成中页，非失败说明');
+      }
+  - note: 2、说明为「任务失败」
+    assert: |-
+      if (!globalThis.__func02431_ready) throw new Error('前置：未点击继续查看');
+      const main = page.locator('main.content-shell-layout, main').first();
+      await expect(main.getByText('任务失败').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、页面有「重试」和「按此配置新建」
+    assert: |-
+      if (!globalThis.__func02431_ready) throw new Error('前置：未点击继续查看');
+      const main = page.locator('main.content-shell-layout, main').first();
+      const retry = main.getByRole('button', { name: '重试', exact: true });
+      const rebuild = main.getByRole('button', { name: '按此配置新建', exact: true });
+      if (!(await retry.count())) throw new Error('失败页未见「重试」');
+      if (!(await rebuild.count())) throw new Error('失败页未见「按此配置新建」');
+      await expect(retry.first()).toBeVisible({ timeout: 8000 });
+      await expect(rebuild.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path=/enterprise/risk；goto view=history。前置=列表已有「已取消+继续查看」或恢复已完成→重新分析→点「取消任务」造行。步骤=点「继续查看」。机检=分析失败标题+副标题「任务失败」+重试+按此配置新建（非过程页「按此配置新建分析」）。无已完成→ENV-PAIN-NO-RESTORE-ROW-001；无过程窗→ENV-PAIN-PROCESS-WINDOW-001；无已取消行→ENV-PAIN-NO-CANCELED-ROW-001。登录关评审 runner 前置。A 档零 allow_skip。

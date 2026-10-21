@@ -1,0 +1,111 @@
+id: FUNC-02289
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02289
+priority: P0
+title: 开始分析后过程页五阶段与取消稍后入口
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已登录；对象已回填；关系范围至少一类勾选（脚本内对比篮选 1 家回填）
+locators:
+  start: button「开始分析」
+  process_title: 企业供应链关系分析生成中
+  cancel: button「取消任务」
+  later: button「稍后查看」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 必要时回填对象→开始分析→抓取过程页快照（expect 机检）
+expect:
+  - note: 1、页标题为「企业供应链关系分析生成中」
+    assert: |-
+      const main = () => page.locator('main.content-shell-layout');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensureFilled = async () => {
+        await dismissBasket();
+        if (await page.getByText(/来自对比篮/).count()) return;
+        await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const sels = page.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001：对比篮无企业');
+        await sels.nth(0).click();
+        await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        await dismissBasket();
+      };
+      const ensureProcessSnap = async () => {
+        if (globalThis.__func02289?.body) return globalThis.__func02289;
+        await ensureFilled();
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isDisabled()) throw new Error('ENV-SUPPLY-START-DISABLED-001：开始分析仍禁用');
+        await start.click();
+        let body = '';
+        let sawGen = false;
+        let rerunUsed = false;
+        for (let i = 0; i < 28; i++) {
+          await page.waitForTimeout(i === 0 ? 350 : 450);
+          body = await main().innerText().catch(() => '');
+          const url = page.url();
+          if (/企业供应链关系分析生成中/.test(body)) {
+            sawGen = true;
+            break;
+          }
+          const onResult =
+            /view=result/.test(url) && /任务摘要/.test(body) && !/可视化分析过程/.test(body);
+          if (onResult && !rerunUsed) {
+            const rerun = page.getByRole('button', { name: '重新分析' }).first();
+            if (await rerun.isVisible().catch(() => false)) {
+              rerunUsed = true;
+              await rerun.click({ timeout: 8000 });
+              continue;
+            }
+            throw new Error('ENV-SUPPLY-DAY-REUSE-001：当天复用进结果页且无「重新分析」入口（与 02293 分流）');
+          }
+          if (/分析失败/.test(body) && !/企业供应链关系分析生成中/.test(body) && i >= 4) {
+            throw new Error('ENV-SUPPLY-PROC-001：任务快速失败，未见「企业供应链关系分析生成中」标题');
+          }
+          if (onResult && rerunUsed) {
+            throw new Error('ENV-SUPPLY-PROCESS-SKIP-001：重新分析后仍瞬时进结果页，未见过程态');
+          }
+        }
+        if (!sawGen) {
+          throw new Error('ENV-SUPPLY-PROC-001：24 轮内未见「企业供应链关系分析生成中」: ' + body.slice(0, 280));
+        }
+        globalThis.__func02289 = { body, url: page.url() };
+        return globalThis.__func02289;
+      };
+      const snap = await ensureProcessSnap();
+      await expect(main().getByText('企业供应链关系分析生成中').first()).toBeVisible({ timeout: 5000 });
+      if (!/企业供应链关系分析生成中/.test(snap.body)) {
+        throw new Error('过程页正文未见「企业供应链关系分析生成中」');
+      }
+  - note: 2、阶段为任务提交、权限与配置校验、数据汇聚、算法计算、结果组装
+    assert: |-
+      const snap = globalThis.__func02289;
+      if (!snap?.body) throw new Error('前置：未抓取过程页快照');
+      const stages = ['任务提交', '权限与配置校验', '数据汇聚', '算法计算', '结果组装'];
+      for (const s of stages) {
+        if (!snap.body.includes(s)) throw new Error('过程区缺少阶段「' + s + '」: ' + snap.body.slice(0, 320));
+      }
+      if (!/可视化分析过程/.test(snap.body)) throw new Error('未见「可视化分析过程」区块');
+      if (/进度\s*(8|9)\d%/.test(snap.body) && /等待中/.test(snap.body)) {
+        throw new Error('疑似伪造高百分比进度: ' + snap.body.slice(0, 200));
+      }
+  - note: 3、页上有「取消任务」与「稍后查看」
+    assert: |-
+      const snap = globalThis.__func02289;
+      if (!snap?.body) throw new Error('前置：未抓取过程页快照');
+      await expect(page.getByRole('button', { name: '取消任务' }).first()).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: '稍后查看' }).first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。前置=对象回填（无则对比篮选 1 家确定）。步骤=点「开始分析」；若当天复用直开结果则点一次「重新分析」再抓过程快照。机检=标题「企业供应链关系分析生成中」+五阶段+取消任务/稍后查看；不写进度百分比为通过条件。秒失败→ENV-SUPPLY-PROC-001。D4·2026-10-20 rewrite-FUNC-02289 svcz 3/3 expect 绿（复用场景走重新分析兜底）。登录与关评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,88 @@
+id: FUNC-03091
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03091
+priority: P0
+title: 默认集群下分析对象第二个下拉的选项个数正确
+entry_id: chain-key-link
+tier: A
+preconditions:
+  - 已进入产业关键环节识别页
+  - 分析对象第一个下拉仍显示「新一代信息技术」
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: evaluate
+    note: 确认第一个下拉为新一代信息技术后展开第二个（aria「产业」）下拉
+expect:
+  - note: 前置：已进入本页且分析对象第一个下拉为「新一代信息技术」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=key_link/);
+      await expect(page).toHaveURL(/tab=key-link/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      const left = await read(cluster);
+      if (!/新一代信息技术/.test(left)) {
+        throw new Error('前置：分析对象第一个下拉应为「新一代信息技术」，现场=' + left);
+      }
+      globalThis.__func03091_onPage = true;
+  - note: 1、展开「分析对象」第二个下拉后选项共 7 个（名称见用例附录 B）
+    assert: |-
+      if (!globalThis.__func03091_onPage) throw new Error('前置：未满足第一个下拉条件');
+      const want = [
+        '新一代信息技术',
+        '半导体与集成电路',
+        '人工智能与应用',
+        '智能终端',
+        '软件与信息服务',
+        '新型网络与通信',
+        '超高清视频与显示',
+      ];
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await industry.scrollIntoViewIfNeeded();
+      await industry.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 7) {
+        throw new Error('分析对象第二个下拉选项应为 7 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '分析对象第二个下拉选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link（testdata.route）。用例「分析对象第二个下拉」= 现场 aria-label「产业」（同 cycle/panorama 口径）。
+  7 项名称对齐用例册附录 B（03091）；前置第一个下拉=集群 aria「集群」默认新一代信息技术。点法 P7：.arco-select-view + 可见 popup .arco-select-option。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,62 @@
+id: FUNC-00939
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00939
+priority: P0
+title: 商业指标可移出当次组合且恢复勾选后权重回显
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已进入商业力评估页
+  - 指标区 6 项商业指标可见
+locators:
+  market_cb: '[aria-label="选择指标：市场"]'
+  metric_spins: main [role=spinbutton]
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 取消勾选市场后重新勾选；判定在 expect 内自含（P2 跨 tick）
+expect:
+  - note: 取消勾选后该指标移出当次组合
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const isChecked = async (cb) => (await cb.getAttribute('class') || '').includes('arco-checkbox-checked');
+      const marketWeight = () => page.locator('[aria-label="市场权重"]');
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const cb = page.locator('[aria-label="选择指标：市场"]');
+      await expect(cb).toBeVisible({ timeout: 8000 });
+      if (!(await isChecked(cb))) throw new Error('市场指标初始未勾选');
+      await expect(marketWeight()).toBeEnabled({ timeout: 8000 });
+      const weightBefore = String(await marketWeight().inputValue());
+      if (!weightBefore) throw new Error('市场权重初值为空');
+      await page.evaluate((w) => { window.__qa00939_weight = w; }, weightBefore);
+      await cb.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      if (await isChecked(cb)) throw new Error('取消勾选后市场仍 checked');
+      await expect(marketWeight()).toBeDisabled({ timeout: 8000 });
+  - note: 恢复勾选后该指标权重回显
+    assert: |-
+      const isChecked = async (cb) => (await cb.getAttribute('class') || '').includes('arco-checkbox-checked');
+      const marketWeight = () => page.locator('[aria-label="市场权重"]');
+      const cb = page.locator('[aria-label="选择指标：市场"]');
+      const weightBefore = await page.evaluate(() => window.__qa00939_weight);
+      if (!weightBefore) throw new Error('缺少取消前权重快照');
+      if (await isChecked(cb)) throw new Error('恢复前市场应未勾选');
+      await cb.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      if (!(await isChecked(cb))) throw new Error('重新勾选后市场未 checked');
+      await expect(marketWeight()).toBeEnabled({ timeout: 8000 });
+      const w = String(await marketWeight().inputValue());
+      if (w !== weightBefore) throw new Error('恢复勾选后权重未回显: 期望 ' + weightBefore + ' 实见 ' + w);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise-center/evaluation；取消勾选后指标仍留表内但权重输入 disabled（EvalConfigPanel selectedIndicators）。权重 aria-label「{名}权重」。登录与关内部评审由 runner 会话前置。接旧 P0-11 / 用例册 00939。

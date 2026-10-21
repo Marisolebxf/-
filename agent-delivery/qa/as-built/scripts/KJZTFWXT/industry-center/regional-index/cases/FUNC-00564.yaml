@@ -1,0 +1,69 @@
+id: FUNC-00564
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00564
+priority: P0
+title: 产业下拉空态提示与未选时开始分析禁用
+entry_id: chain-regional-index
+tier: A
+preconditions:
+  - 已进入区域产业指数评价页；评价模式为「单产业 × 多区域」
+  - 产业未选（重置参数后空态）
+locators:
+  mode_single: 文案「单产业 × 多区域」
+  industry_view: .arco-select-view[aria-label=产业]
+  industry_placeholder: input[placeholder="请选择产业"]
+  hint: 文案「单产业模式请选择 1 个产业」
+  start: button「开始分析」
+  reset: button「重置参数」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 关对比篮、确认单产业模式、重置到产业空态后断言提示与按钮态；再选产业验回显
+expect:
+  - note: 1、产业下拉空态提示为「请选择产业」
+    assert: |-
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) await close.first().click({ timeout: 3000 }).catch(() => {});
+        }
+      };
+      await dismissBasket();
+      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(800);
+      await expect(page.locator('input[placeholder="请选择产业"]').first()).toBeVisible({ timeout: 8000 });
+      const viewText = (await page.locator('.arco-select-view[aria-label="产业"]').innerText().catch(() => '')).trim();
+      if (viewText && !/请选择产业/.test(viewText)) {
+        throw new Error('产业空态 view 文案不符「请选择产业」: ' + viewText);
+      }
+  - note: 2、未选产业时显示提示「单产业模式请选择 1 个产业」；3、未选产业时「开始分析」disabled 且不自动起任务
+    assert: |-
+      await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeDisabled({ timeout: 8000 });
+      if (/view=processing/.test(page.url())) {
+        throw new Error('未选产业却进入过程态: ' + page.url());
+      }
+  - note: 选定产业后下拉回显所选产业（实勘样例「集成电路」）
+    assert: |-
+      await page.locator('.arco-select-view[aria-label="产业"]').click();
+      await page.waitForTimeout(600);
+      const opt = page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: /^集成电路$/ }).first();
+      await opt.click({ force: true });
+      await page.waitForTimeout(1000);
+      const indText = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim();
+      if (indText !== '集成电路') {
+        throw new Error('产业未回显集成电路: ' + indText);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）。空态 placeholder 在 input；提示与 disabled 联动；选「集成电路」为 scout 固定样例。合法组合 enabled 归 FUNC-00570。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

@@ -1,0 +1,90 @@
+id: FUNC-02093
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02093
+priority: P0
+title: 产业集群下拉展开后选项共 15 个（30888 现场清单）
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入深圳企业现状分析页
+  - 产业集群下拉尚未点开
+locators:
+  chain_select: main 产业集群下拉（placeholder 选择产业集群）
+  chain_popup: .arco-trigger-popup:visible / .arco-select-dropdown:visible 内 .arco-select-option
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 展开产业集群下拉；选项个数与 30888 现场名称在 expect 判定
+expect:
+  - note: 下拉展开后选项共 15 个，名称与 30888 产业集群清单一致（用例册附录 A 为产业链+企业类型 15 项，现场 D3 偏离）
+    assert: |-
+      const expected = [
+        '新一代信息技术', '生物产业', '新能源', '新材料', '高端装备', '智能网联新能源汽车',
+        '绿色环保', '低空经济与空天', '传统与创意产业', '海洋产业', '未来制造', '未来信息',
+        '未来能源', '未来空间', '未来健康',
+      ];
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForLoadState('domcontentloaded');
+      const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+      if (await posTab.count()) {
+        const sel = (await posTab.getAttribute('aria-selected')) || '';
+        const cls = (await posTab.getAttribute('class')) || '';
+        if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const chain = page.locator('main .arco-select-view').filter({
+        has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+      }).first();
+      await expect(chain).toBeVisible({ timeout: 12000 });
+      await chain.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const collectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            const st = window.getComputedStyle(el);
+            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+            if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+            out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      let options = await collectOptions();
+      if (options.length === 0) {
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(700);
+        options = await collectOptions();
+      }
+      if (options.length === 0) {
+        await chain.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(700);
+        options = await collectOptions();
+      }
+      if (options.length === 0) {
+        throw new Error('产业集群下拉展开后未读到任何选项');
+      }
+      if (options.length !== 15) {
+        throw new Error('选项个数应为 15，实际 ' + options.length + '：' + options.join('、'));
+      }
+      const missing = expected.filter((name) => !options.includes(name));
+      const extra = options.filter((name) => !expected.includes(name));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '选项名称与 30888 as-built 清单不一致；缺失：' + (missing.join('、') || '无') +
+          '；多余：' + (extra.join('、') || '无') +
+          '；现场：' + options.join('、')
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D3·30888 产业集群下拉 placeholder「选择产业集群」；展开共 15 项为深圳重点产业集群短名（新一代信息技术、生物产业、新能源…未来健康），
+  与用例册附录 A「产业链 8 项 + 企业类型 7 项」仅「新能源」重合。脚本按现场清单断言项数+全名（对齐产业分析模块 15 集群口径，参考 00938 对临时权重的 D3 写法）。
+  登录与关内部评审由 runner 会话前置。禁止 50892。不进金样。

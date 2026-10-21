@@ -1,0 +1,74 @@
+id: FUNC-01475
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01475
+priority: P1
+title: 结果区区域控件展开后第一列共 4 项
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空检索结果（本条 steps 自含智能搜索「人工智能」出结果）
+locators:
+  search_input: textbox 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  region_ctrl: 结果工具条区域级联（显示「全国热门科创城市 / 深圳 / 全部」）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与命中条数
+    timeout_ms: 2000
+  - action: evaluate
+    note: 点击「全国热门科创城市 / 深圳 / 全部」区域控件由 expect assert 自含
+expect:
+  - note: 区域控件展开后第一列共 4 项
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
+      const regionTrig = page.locator('.arco-select-view.sci-arco-cascader, span.sci-arco-cascader').filter({ hasText: /全国热门科创城市/ }).first();
+      if ((await regionTrig.count()) === 0) {
+        const byLabel = page.getByLabel('选择区域');
+        if (await byLabel.count()) await byLabel.first().click({ timeout: 8000 });
+        else throw new Error('未见结果区区域控件（全国热门科创城市）');
+      } else {
+        await regionTrig.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(500);
+      const col = page.locator('.arco-cascader-list-column').first();
+      await expect(col).toBeVisible({ timeout: 8000 });
+      const items = col.locator('.arco-cascader-list-item');
+      const count = await items.count();
+      if (count !== 4) {
+        const sample = await items.allTextContents();
+        throw new Error(`第一列项数为 ${count}，预期 4；样本=${sample.join('|')}`);
+      }
+  - note: 四项为全球、全国、区域、全国热门科创城市
+    assert: |-
+      const col = page.locator('.arco-cascader-list-column').first();
+      if (!(await col.isVisible().catch(() => false))) {
+        throw new Error('区域级联第一列未展开');
+      }
+      const expected = ['全球', '全国', '区域', '全国热门科创城市'];
+      const texts = (await col.locator('.arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`第一列未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 4) {
+        throw new Error(`第一列去重后项数 ${texts.length}，预期 4；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。结果区区域控件现场显示「全国热门科创城市 / 深圳 / 全部」（非占位「选择区域」）。作废 00459 后重写；本次只展开并断言第一列 4 项。

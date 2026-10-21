@@ -1,0 +1,65 @@
+id: FUNC-01482
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01482
+priority: P1
+title: 画像快览中「查看详情」打开企业详情且默认工商概况
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 「企业画像快览」已打开（本条 assert 自含智能搜索出结果并点「查看画像」）
+locators:
+  search_btn: button「搜索」
+  view_profile: main button「查看画像」
+  view_detail: .arco-drawer:visible button「查看详情」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与「查看画像」
+    timeout_ms: 2000
+  - action: evaluate
+    note: 打开画像快览并点「查看详情」由 expect assert 自含
+expect:
+  - note: 抽屉标题为「企业详情」且路由不变
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 15000 });
+      const routeBefore = page.url();
+      await profileBtn.click();
+      const quickDrawer = page.locator('.arco-drawer:visible').first();
+      await quickDrawer.waitFor({ state: 'visible', timeout: 12000 });
+      await expect(quickDrawer.locator('.arco-drawer-header')).toContainText('企业画像快览');
+      const detailBtn = quickDrawer.getByRole('button', { name: '查看详情' });
+      await expect(detailBtn).toBeVisible({ timeout: 8000 });
+      await detailBtn.click();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await drawer.waitFor({ state: 'visible', timeout: 12000 });
+      await expect(drawer.locator('.arco-drawer-header')).toContainText('企业详情');
+      await expect(page).toHaveURL(routeBefore);
+  - note: 默认页签为「工商概况」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByRole('tab', { name: '工商概况' })).toHaveAttribute('aria-selected', 'true');
+  - note: 页签共十项（清单见用例册附录A）
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      for (const t of ['工商概况','主要团队','资质荣誉','知识产权','经营财务','供应链关系','关系图谱','舆情动态','风险信息','招投标']) {
+        await expect(drawer.getByRole('tab', { name: t })).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。前置打开企业画像快览（01472 同路径）；快览内「查看详情」进十页签企业详情（00443 同断言）。点企业名称直开详情见 00443。

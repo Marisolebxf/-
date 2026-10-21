@@ -1,0 +1,113 @@
+id: FUNC-02914
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02914
+priority: P1
+title: 市场规模行查看打开参数说明抽屉并可关闭
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 已打开产业关键参数表
+locators:
+  param_table: 产业关键参数表
+  market_row: 市场规模行
+  view_btn: 市场规模行「查看」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→市场规模行「查看」→抽屉断言→关闭（判定在 expect）
+expect:
+  - note: 1、抽屉标题为「市场规模（配置参数） · 指标说明」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=cycle/);
+        await expect(page).toHaveURL(/tab=cycle/);
+      };
+      const openMarketDrawer = async () => {
+        await expect(page.getByText('产业关键参数').first()).toBeVisible({ timeout: 8000 });
+        const table = page.locator('.diagnosis-cycle-table, .arco-table').filter({ hasText: '指标名称' }).first();
+        await expect(table).toBeVisible({ timeout: 8000 });
+        const row = table.locator('tr, .arco-table-tr').filter({ hasText: '市场规模' }).first();
+        let clicked = false;
+        if (await row.count()) {
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          const view = row.getByRole('button', { name: '查看' });
+          if (await view.count()) {
+            await view.first().click({ timeout: 8000 });
+            clicked = true;
+          }
+        }
+        if (!clicked) {
+          const main = page.locator('main.content-shell-layout, main').first();
+          const views = main.getByRole('button', { name: '查看' });
+          await expect(views.first()).toBeVisible({ timeout: 8000 });
+          await views.first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(600);
+      };
+      await enterCyclePage();
+      await page.waitForTimeout(600);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await openMarketDrawer();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = drawer.locator('.arco-drawer-title, .arco-drawer-header').first();
+      const titleText = ((await title.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!titleText.includes('市场规模')) throw new Error('抽屉标题缺「市场规模」: ' + titleText);
+      if (!titleText.includes('配置参数')) throw new Error('抽屉标题缺「配置参数」: ' + titleText);
+      if (!titleText.includes('指标说明')) throw new Error('抽屉标题缺「指标说明」: ' + titleText);
+      globalThis.__func02914 = { drawerOpened: true };
+  - note: 2、抽屉内能看到「范围说明」和「当前输入」
+    assert: |-
+      if (!globalThis.__func02914?.drawerOpened) throw new Error('前置：未打开市场规模说明抽屉');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      if (!t.includes('范围说明')) throw new Error('抽屉缺「范围说明」；片段: ' + t.slice(0, 320));
+      if (!t.includes('当前输入')) throw new Error('抽屉缺「当前输入」；片段: ' + t.slice(0, 320));
+  - note: 3、关闭后回到参数表
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const closeBtn = drawer.locator('.arco-drawer-close-btn').first();
+      await closeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page.locator('.arco-drawer:visible')).toHaveCount(0, { timeout: 8000 });
+      await expect(page.getByText('产业关键参数').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('市场规模', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口对齐 entry-seed：goto sibling /industry-center/search
+  再侧栏「产业链分析」→「产业周期分析」（深链冷启动 SPA 404）。用例=产业关键参数表「市场规模」行「查看」→
+  IndustryMetricSpecDrawer 标题「{label}（配置参数） · 指标说明」；抽屉 .arco-drawer 内 a-descriptions 含范围说明/当前输入。
+  用例备注另三行各有查看、底部支撑指标/历史快照/当前任务参数——本条只验市场规模行与关闭回表。登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,151 @@
+id: FUNC-00921
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00921
+priority: P1
+title: 浮层名称搜索类型筛选与重置
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 「选择分析企业」浮层已打开
+  - 列表含多家企业（脚本自含对比篮≥2、开浮层）
+locators:
+  search: placeholder「按企业名称搜索」
+  type_filter: placeholder「全部企业类型」
+  reset: button「重置」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 对比篮≥2、开浮层后测搜索/类型/重置；断言在 expect
+expect:
+  - note: 名称搜索后列表仅含匹配企业
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const gotoEvalTech = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const ctaNew = main.getByRole('button', { name: '多企业技术力对比分析', exact: true });
+        const ctaOld = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await ctaNew.count() && await ctaNew.first().isVisible().catch(() => false)) {
+          await ctaNew.first().click({ timeout: 8000 });
+          return;
+        }
+        if (await ctaOld.count() && await ctaOld.first().isVisible().catch(() => false)) {
+          await ctaOld.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      const rowLabels = async (scope) => {
+        const labels = [];
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const n = await sels.count();
+        for (let i = 0; i < n; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const name = aria.replace(/^选择\s*/, '').trim();
+          if (name) labels.push(name);
+        }
+        return labels;
+      };
+      await ensureBasketEnterprises(2);
+      await gotoEvalTech();
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(1000);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const overlay = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+      const before = await rowLabels(overlay);
+      if (before.length < 2) throw new Error('浮层企业不足 2 家');
+      const kw = before[0].slice(0, Math.min(4, before[0].length)) || before[0];
+      const box = overlay.getByPlaceholder('按企业名称搜索');
+      await box.fill(kw);
+      await page.waitForTimeout(800);
+      const afterSearch = await rowLabels(overlay);
+      if (afterSearch.length < 1) throw new Error('名称搜索后无结果');
+      for (const nm of afterSearch) {
+        if (!nm.includes(kw)) throw new Error('搜索后列表含不匹配企业: ' + nm);
+      }
+      await box.fill('');
+      await page.waitForTimeout(400);
+  - note: 类型筛选后列表仅含该类型企业
+    assert: |-
+      const root = page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      if (!(await root.count())) throw new Error('浮层未打开');
+      const scope = root;
+      const typeView = scope.locator('.arco-select-view').filter({ hasText: /全部企业类型/ }).first();
+      await expect(typeView).toBeVisible({ timeout: 8000 });
+      await typeView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const opts = page.locator('.arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      let picked = null;
+      for (let i = 0, c = await opts.count(); i < c; i++) {
+        const t = ((await opts.nth(i).innerText()) || '').trim();
+        if (t && !/全部/.test(t)) { picked = t; await opts.nth(i).click(); break; }
+      }
+      if (!picked) throw new Error('无可选企业类型');
+      await page.waitForTimeout(800);
+      const rowsAfter = await scope.locator('[aria-label^="选择 "]').count();
+      if (rowsAfter < 1) throw new Error('类型筛选后列表为空');
+      const bodyTxt = await scope.innerText();
+      if (!bodyTxt.includes(picked.replace(/\s+/g, '')) && !bodyTxt.includes(picked.slice(0, 2))) {
+        throw new Error('筛选后未见类型「' + picked + '」相关展示');
+      }
+  - note: 重置后勾选与筛选回到初始态
+    assert: |-
+      const overlay = page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      await overlay.getByRole('button', { name: '重置', exact: true }).click();
+      await page.waitForTimeout(600);
+      const searchVal = await overlay.getByPlaceholder('按企业名称搜索').inputValue();
+      if (searchVal && searchVal.trim()) throw new Error('重置后搜索框未清空');
+      const typePh = overlay.getByPlaceholder('全部企业类型');
+      await expect(typePh).toBeVisible({ timeout: 8000 });
+      const ok = overlay.getByRole('button', { name: '确定', exact: true });
+      if (!(await ok.isDisabled())) throw new Error('重置后确定应禁用（无勾选）');
+      const checked = overlay.locator('.arco-checkbox-checked');
+      if (await checked.count()) throw new Error('重置后仍有勾选');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D1·30888 路由 enterprise-center/evaluation；picker 浮层为 system-compare-panel（非 arco-modal），作用域 data-system-surface-id=compare-basket。名称搜索用首条企业名前 4 字。类型为多选 a-select。由 P1-06 重写为 FUNC-00921。登录与关内部评审由 runner 会话前置。

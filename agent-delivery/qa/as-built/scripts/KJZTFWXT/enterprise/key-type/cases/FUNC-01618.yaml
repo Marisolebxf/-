@@ -1,0 +1,106 @@
+id: FUNC-01618
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01618
+priority: P1
+title: 清单搜索无匹配时空态文案且来源摘要家数为零
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业清单已打开
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  search_input: 抽屉内 .arco-input-search input（placeholder 搜索企业名称、统一社会信用代码、产业或区域）
+  empty_text: 文案「当前搜索条件无匹配企业」
+  source_summary: 抽屉「企业清单来源」区块内「共 N 家」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、输入不存在的企业XYZ；空态与家数在 expect 内
+expect:
+  - note: 文案为「当前搜索条件无匹配企业」
+    assert: |-
+      async function readSourceTotal(drawer) {
+        const block = drawer.locator('div').filter({ hasText: '企业清单来源' }).first();
+        await expect(block).toBeVisible({ timeout: 8000 });
+        const txt = ((await block.innerText()) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/共\s*(\d+)\s*家/);
+        if (!m) throw new Error('来源摘要未含「共 N 家」: ' + txt.slice(0, 200));
+        return parseInt(m[1], 10);
+      }
+      async function setDrawerKeyword(drawer, keyword) {
+        const inp = drawer.locator('.arco-input-search input').first();
+        await expect(inp).toBeVisible({ timeout: 8000 });
+        const listResp = page.waitForResponse(
+          (r) =>
+            r.request().method() === 'POST' &&
+            /key-analysis\/enterprise-list|enterprise-list/.test(r.url()) &&
+            r.status() === 200,
+          { timeout: 15000 },
+        );
+        await inp.click();
+        await inp.fill(keyword);
+        const resp = await listResp.catch(() => null);
+        if (resp) {
+          try {
+            const body = await resp.json();
+            const data = body?.data ?? body;
+            const t = data?.total;
+            if (typeof t === 'number' && t >= 0) {
+              await expect
+                .poll(async () => readSourceTotal(drawer), { timeout: 8000 })
+                .toBe(t);
+              return t;
+            }
+          } catch (_) {
+            /* fall through to DOM poll */
+          }
+        }
+        await page.waitForTimeout(500);
+        return null;
+      }
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({
+        timeout: 10000,
+      });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const kw = '不存在的企业XYZ';
+      await setDrawerKeyword(drawer, kw);
+      const empty = drawer.getByText('当前搜索条件无匹配企业');
+      await expect(empty.first()).toBeVisible({ timeout: 10000 });
+  - note: 来源摘要家数为 0
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const block = drawer.locator('div').filter({ hasText: '企业清单来源' }).first();
+      await expect(block).toBeVisible({ timeout: 8000 });
+      const txt = ((await block.innerText()) || '').replace(/\s+/g, ' ');
+      const m = txt.match(/共\s*(\d+)\s*家/);
+      if (!m) throw new Error('来源摘要未含「共 N 家」: ' + txt.slice(0, 200));
+      const total = parseInt(m[1], 10);
+      if (total !== 0) {
+        throw new Error('来源摘要家数应为 0，当前共 ' + total + ' 家；摘要=' + txt.slice(0, 120));
+      }
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const rowN = await profiles.count();
+      if (rowN > 0) {
+        throw new Error('空态下仍可见「查看画像」行数=' + rowN);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D3·30888 输入「不存在的企业XYZ」后列表空态「当前搜索条件无匹配企业」已出现，但来源摘要「共 N 家」仍显示区域 total（如 50）未归零，与用例预期 2 不符；同 KEYENT 清单搜索 total 未随 keyword 响应更新（见 FUNC-01595 复勘）。登录与关内部评审由 runner 会话前置。

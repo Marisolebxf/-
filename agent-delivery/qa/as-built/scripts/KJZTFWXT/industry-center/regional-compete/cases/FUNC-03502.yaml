@@ -1,0 +1,131 @@
+id: FUNC-03502
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03502
+priority: P0
+title: 单产业模式下评价区域 5 项可选满
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 评价模式为「单产业 × 多区域」（默认态）
+locators:
+  region_multi: main .arco-select-view-multiple
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 展开评价区域，核对 5 项并按用例顺序选满（步骤 1–2）
+expect:
+  - note: 1、选项共 5 个，名称见附录 A；2、标签为「评价区域（1–5）」；3、五个区域都可进入已选
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const EXPECT_OPTS = ['广东省', '深圳市', '北京市', '上海市', '杭州市'];
+      const PICK_ORDER = ['深圳市', '北京市', '上海市', '杭州市', '广东省'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=competitiveness/.test(page.url()) &&
+          /tab=competitiveness/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          await enterViaSidebar();
+        }
+        if (await bodyIs404() || !onTarget()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与 catalog 深链均 SPA404 ' + page.url());
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      await ensureLand();
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(500);
+      await expect(page.getByText('评价区域（1–5）').first()).toBeVisible({ timeout: 12000 });
+      const region = page
+        .locator('main .arco-select-view-multiple')
+        .filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ })
+        .first();
+      await expect(region).toBeVisible({ timeout: 10000 });
+      await region.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const opts = await pop.locator('.arco-select-option').evaluateAll((els) =>
+        els.map((e) => (e.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean)
+      );
+      if (opts.length !== 5) {
+        throw new Error('评价区域选项个数应为 5，实际 ' + opts.length + '：' + opts.join(' | '));
+      }
+      for (let i = 0; i < EXPECT_OPTS.length; i++) {
+        if (opts[i] !== EXPECT_OPTS[i]) {
+          throw new Error('第 ' + (i + 1) + ' 项期望「' + EXPECT_OPTS[i] + '」，实际「' + opts[i] + '」');
+        }
+      }
+      for (const name of PICK_ORDER) {
+        const opt = pop.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + name + '\\s*$') });
+        if (!(await opt.count())) {
+          throw new Error('未见评价区域选项「' + name + '」');
+        }
+        const selected = await opt.first().evaluate((el) => (el.className || '').includes('selected'));
+        if (!selected) {
+          await opt.first().click({ force: true });
+          await page.waitForTimeout(350);
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(500);
+      const shown = ((await region.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      for (const name of PICK_ORDER) {
+        if (!shown.includes(name)) {
+          throw new Error('五个区域未全部进入已选，缺「' + name + '」，现场=' + shown);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03502=单产业默认态「评价区域（1–5）」多选；下拉共 5 项（附录 A 顺序：广东/深圳/北京/上海/杭州）；
+  用例步骤顺序选满五区；默认常已含深圳市。catalog 深链 SPA404 时侧栏进入（同 03500）。B 档零 allow_skip。

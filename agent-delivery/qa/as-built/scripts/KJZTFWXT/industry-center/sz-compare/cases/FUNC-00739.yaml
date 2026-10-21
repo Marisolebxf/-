@@ -1,0 +1,116 @@
+id: FUNC-00739
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00739
+priority: P1
+title: 四维模型四行权重只读且均为25不可改
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入深圳产业情况分析对比页
+locators:
+  weight_table: '[data-testid="shenzhen-compare-weight-table"]'
+  weight_spins: 四维模型权重 input-number spinbutton ×4
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 读取四维指标名；点击权重增减；尝试在权重框输入新值（判定在 expect）
+expect:
+  - note: 1、四行指标名称为企业、专利、政策、人才
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const enterCompare = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/shenzhen/.test(page.url()) &&
+          /workspace=comparison/.test(page.url()) &&
+          /tab=comparison/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page.getByText('四维模型（只读确认）').first()).toBeVisible({ timeout: 12000 });
+      };
+      await enterCompare();
+      const table = page.locator('[data-testid="shenzhen-compare-weight-table"]');
+      await expect(table).toBeVisible({ timeout: 8000 });
+      const rows = table.locator('tbody tr');
+      await expect(rows).toHaveCount(4, { timeout: 8000 });
+      const dimNames = ['企业', '专利', '政策', '人才'];
+      for (let i = 0; i < 4; i++) {
+        const rt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!rt.includes(dimNames[i])) {
+          throw new Error('第 ' + (i + 1) + ' 行未含指标「' + dimNames[i] + '」: ' + rt.slice(0, 120));
+        }
+      }
+      globalThis.__func00739_ready = true;
+  - note: 2、各行权重仍为 25，增减与输入均不能改掉
+    assert: |-
+      if (!globalThis.__func00739_ready) throw new Error('前置：未进入四维模型区');
+      const table = page.locator('[data-testid="shenzhen-compare-weight-table"]');
+      const spins = table.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(4, { timeout: 8000 });
+      for (let i = 0; i < 4; i++) {
+        const el = spins.nth(i);
+        await expect(el).toBeDisabled();
+        const before = (await el.inputValue().catch(() => '')).replace(/\s+/g, '');
+        if (before !== '25') {
+          throw new Error('第 ' + (i + 1) + ' 行权重非 25，现场=' + before);
+        }
+        const wrap = el.locator('xpath=ancestor::*[contains(@class,"arco-input-number")][1]');
+        if (await wrap.count()) {
+          const stepBtns = wrap.locator('button');
+          const n = await stepBtns.count();
+          for (let j = 0; j < n; j++) {
+            const b = stepBtns.nth(j);
+            if (await b.isDisabled().catch(() => true)) continue;
+            await b.click({ timeout: 2000 }).catch(() => {});
+            await page.waitForTimeout(200);
+          }
+        }
+        await el.fill('99').catch(() => {});
+        await page.keyboard.press('Tab').catch(() => {});
+        await page.waitForTimeout(200);
+        const after = (await el.inputValue().catch(() => '')).replace(/\s+/g, '');
+        if (after !== '25') {
+          throw new Error('第 ' + (i + 1) + ' 行权重可被改写：' + before + ' → ' + after);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 区块「四维模型（只读确认）」+ data-testid=shenzhen-compare-weight-table；权重=a-input-number disabled aria-label=*权重（只读） value=25（SHENZHEN_COMPARE_DIMENSIONS）。行数/增删维名归 FUNC-00740。edu 2026-10-20 深链/侧栏 SPA404 同 FUNC-00732/00736。B 档零 allow_skip。

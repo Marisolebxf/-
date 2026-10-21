@@ -1,0 +1,84 @@
+id: FUNC-04999
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04999
+priority: P0
+tier: B
+title: 选定生物后产业链下拉两项
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布
+locators:
+  industry: .svc-portal-filter input[placeholder="全部产业"]
+  chain: .svc-portal-filter input[placeholder="全部产业链"]
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 选择产业「生物」；展开产业链下拉
+expect:
+  - note: 1、产业链下拉变为可选
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|全部产业/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验生物产业链 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const filter = page.locator('.svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 8000 });
+      const ind = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await expect(ind).toBeVisible({ timeout: 8000 });
+      await ind.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物' }).first().click();
+      await page.waitForTimeout(800);
+      const chain = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
+      if (dis) throw new Error('选定产业「生物」后产业链下拉仍禁用');
+  - note: 2、选项共 2 个，名称见附录 D
+    assert: |-
+      const filter = page.locator('.svc-portal-filter').first();
+      const chain = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      await chain.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const n = await opts.count();
+      const expected = ['生物医药与生命健康', '高端医疗器械'];
+      if (n !== 2) {
+        const preview = [];
+        for (let i = 0; i < Math.min(n, 10); i++) {
+          preview.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        throw new Error('「生物」下产业链选项应为 2 个，实际 count=' + n + ' labels=' + JSON.stringify(preview));
+      }
+      const texts = [];
+      for (let i = 0; i < 2; i++) {
+        texts.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      for (let i = 0; i < expected.length; i++) {
+        if (texts[i] !== expected[i]) {
+          throw new Error(
+            '产业链选项顺序/文案不符：第' + (i + 1) + '项期望「' + expected[i] + '」实际「' + texts[i] + '」；全集=' + JSON.stringify(texts),
+          );
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 entry-seed catalog_path /service-portal/industry-distribution。筛选 .svc-portal-filter +
+  IndustryCatalogSelect：选产业「生物」后产业链解锁；2 项与用例附录 D 顺序一致（生物医药与生命健康、高端医疗器械）。
+  edu.itic-sci.com/tts/svcz SPA404 时抛 ENV-EDU-TTS-SVCZ-404-001。登录与关内部评审由 runner 前置。

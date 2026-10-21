@@ -1,0 +1,113 @@
+id: FUNC-02404
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02404
+priority: P1
+title: 只读报告页「导出」当前不可点击
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 已打开只读报告（assert 自含：最近分析→已完成痛点任务→查看 HTML 报告）
+locators:
+  html_report_button: '[data-risk-history-open-html-report]'
+  export_locked: '[data-report-export-locked]'
+  export_btn: '[data-report-export-locked] button[data-report-download]'
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 打开只读报告；「导出」禁用态在 expect 判定
+expect:
+  - note: 1、「导出」不可点击
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const painRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const reportReady = async () => {
+        if (!/view=report/.test(page.url())) return false;
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        if (!(await reader.isVisible().catch(() => false))) return false;
+        const t = await reader.innerText().catch(() => '');
+        return /企业发展痛难点建议报告/.test(t) || /风险洞察 · 只读报告/.test(t);
+      };
+      const waitReportBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await reportReady()) return true;
+          await page.waitForTimeout(600);
+        }
+        return await reportReady();
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      const pickCompletedPainHtmlReport = async () => {
+        const buttons = main().locator('[data-risk-history-open-html-report], button:has-text("查看 HTML 报告")');
+        const n = await buttons.count();
+        if (n < 1) {
+          throw new Error(
+            '环境闸门 ENV-PAIN-NO-COMPLETED-001：最近分析无「查看 HTML 报告」按钮（缺已完成痛难点任务）',
+          );
+        }
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          if (await btn.isDisabled().catch(() => true)) continue;
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /企业发展痛点分析/.test(txt)) {
+            return btn;
+          }
+        }
+        throw new Error(
+          '环境闸门 ENV-PAIN-NO-COMPLETED-001：最近分析无「已完成」的痛点任务可「查看 HTML 报告」',
+        );
+      };
+      const openReportFromHistory = async () => {
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await dismissBasket();
+        if (await reportReady()) return;
+        await openRecentTab();
+        const reportBtn = await pickCompletedPainHtmlReport();
+        await reportBtn.scrollIntoViewIfNeeded().catch(() => {});
+        await reportBtn.click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+        if (!(await waitReportBody(45000))) {
+          throw new Error('点击 HTML 报告后未进入痛难点只读报告页，url=' + page.url());
+        }
+      };
+      await openReportFromHistory();
+      await expect(page.getByText('风险洞察 · 只读报告').first()).toBeVisible({ timeout: 10000 });
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      await expect(reader.locator('h1').filter({ hasText: '企业发展痛难点建议报告' }).first()).toBeVisible({
+        timeout: 12000,
+      });
+      const locked = reader.locator('[data-report-export-locked]').first();
+      await expect(locked).toBeVisible({ timeout: 8000 });
+      const exportBtn = locked.locator('button[data-report-download]').first();
+      await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      await expect(exportBtn).toBeDisabled();
+      const cls = (await exportBtn.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('「导出」未见 arco-btn-disabled（不可点击），class=' + cls);
+      }
+      const unlocked = reader.locator('[data-report-export-unlocked]');
+      if (await unlocked.count() && (await unlocked.first().isVisible().catch(() => false))) {
+        throw new Error('未付费 admin 环境出现可导出按钮（data-report-export-unlocked）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz entry-seed catalog_path=/enterprise/risk；goto workspace=pain-points&tab=pain-points。步骤=最近分析已完成「企业发展痛点分析」行「查看 HTML 报告」→ view=report 只读页。机检=ReportExportButton data-report-export-locked 内 button[data-report-download] disabled + arco-btn-disabled；用例只验不可点，不验付费角标与 download（02404 范围）。无已完成 HTML 报告→ENV-PAIN-NO-COMPLETED-001。admin 默认未付费。登录与关评审由 runner 前置。B 档零 allow_skip。

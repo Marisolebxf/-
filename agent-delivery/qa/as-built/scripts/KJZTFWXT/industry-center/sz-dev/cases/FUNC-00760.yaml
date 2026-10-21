@@ -1,0 +1,144 @@
+id: FUNC-00760
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00760
+priority: P0
+title: 绑定下拉含有效与置灰无效条目且无效不可选
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已登录 admin
+  - 已进入深圳产业发展分析页；已选产业「新一代信息技术」；绑定下拉同时存在有效与无效条目
+locators:
+  industry: main .industry-catalog-select
+  bind_input: main input[placeholder="请显式选择有效结构化结果"]
+  bind_label: 有效的深圳产业情况分析对比结果
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 展开绑定下拉；浏览条目；点置灰无效项；回读绑定值
+expect:
+  - note: 下拉同时含有效条目与置灰无效条目
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404() || !onTarget()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: search 与深圳发展分析深链均 SPA404，无法验绑定下拉 ' + page.url());
+      }
+      await expect(page.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 8000 });
+      const ind = () => page.locator('main .industry-catalog-select').first();
+      await expect(ind()).toBeVisible({ timeout: 10000 });
+      const pickIndustry = async (name) => {
+        await ind().locator('.arco-select-view').first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click();
+        await page.waitForTimeout(700);
+      };
+      const label = ((await ind().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!label.includes('新一代信息技术')) {
+        await pickIndustry('新一代信息技术');
+      }
+      await expect(ind()).toContainText('新一代信息技术', { timeout: 8000 });
+      const bindInp = page.locator('main input[placeholder="请显式选择有效结构化结果"]');
+      await expect(bindInp.first()).toBeVisible({ timeout: 8000 });
+      const bindView = bindInp.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
+      await bindView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const popupOpts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      if (!(await popupOpts.count())) {
+        throw new Error('D3: 绑定下拉无选项，无法验有效+无效并存');
+      }
+      const disabled = page.locator('.arco-trigger-popup:visible .arco-select-option.arco-select-option-disabled');
+      const enabled = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
+      const en = await enabled.count();
+      const dis = await disabled.count();
+      if (en < 1 || dis < 1) {
+        throw new Error('D3: 未见有效+无效并存（有效=' + en + ' 无效=' + dis + '）');
+      }
+  - note: 无效条目带不可作为输入的标注（原文样例见附录A）
+    assert: |-
+      const invalidOpt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /不可作为输入|（无效）/ });
+      await expect(invalidOpt.first()).toBeVisible({ timeout: 8000 });
+      const txt = ((await invalidOpt.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/PDF|导出/.test(txt) && !/无效/.test(txt)) {
+        throw new Error('无效项文案不符附录A: ' + txt);
+      }
+  - note: 点击无效条目后绑定值不变
+    assert: |-
+      const bindInp = page.locator('main input[placeholder="请显式选择有效结构化结果"]');
+      const bindView = bindInp.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
+      const readBind = async () => {
+        const ph = await bindInp.first().getAttribute('placeholder');
+        const viewTxt = ((await bindView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/请显式选择有效结构化结果/.test(viewTxt) || !viewTxt) return 'UNBOUND';
+        return viewTxt;
+      };
+      const before = await readBind();
+      const inv = page.locator('.arco-trigger-popup:visible .arco-select-option.arco-select-option-disabled').first();
+      await expect(inv).toBeVisible({ timeout: 8000 });
+      await inv.click({ force: true });
+      await page.waitForTimeout(500);
+      const after = await readBind();
+      if (before === 'UNBOUND' && after !== 'UNBOUND') {
+        if (/无效|PDF|不可作为输入/.test(after)) throw new Error('无效项被绑定: ' + after);
+      }
+      if (before !== 'UNBOUND' && after !== before && /无效|PDF/.test(after)) {
+        throw new Error('绑定值被无效项改变: ' + before + ' -> ' + after);
+      }
+      const phAfter = await bindInp.first().getAttribute('placeholder');
+      if (phAfter !== '请显式选择有效结构化结果' && before === 'UNBOUND' && /无效|PDF/.test(after)) {
+        throw new Error('未绑定态被无效项占用');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 绑定 input placeholder「请显式选择有效结构化结果」+ 点 ancestor .arco-select-view 展开；无效样例「（无效）导出 PDF 报告 · 不可作为输入」（附录A）。产业先选新一代信息技术。深链 404 时侧栏 /industry-center/search 回落（同 FUNC-00757）。B 档零 allow_skip。

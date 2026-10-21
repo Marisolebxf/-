@@ -1,0 +1,217 @@
+id: FUNC-02218
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02218
+priority: P1
+title: 企业排名勾选加入对比篮与取消选择已选计数
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 企业排名至少有一行（assert 自含到达培育推荐分析成功结果）
+locators:
+  result_table: recruit-tab-stack 内 .arco-table
+  row_checkbox: 结果表首行 checkbox
+  add_compare_btn: recruit-tab-stack button「加入对比篮」
+  clear_selection: button「取消选择」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 成功结果→勾选一行→加入对比篮→取消选择；计数与按钮态在 expect 判定
+expect:
+  - note: 1、勾选后已选为 1 家且「加入对比篮」可点
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const parseSelected = (text) => {
+        const m = (text || '').match(/已选\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const parseCounts = (text) => {
+        const analyzedM = (text || '').match(/共分析\s*(\d+)\s*家/);
+        if (!analyzedM) return null;
+        return { analyzed: parseInt(analyzedM[1], 10) };
+      };
+      const hasRankingTable = (text) =>
+        /培育推荐分析结果/.test(text) && /排名/.test(text) && /企业名称/.test(text) && (parseCounts(text)?.analyzed ?? 0) >= 1;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          if (await page.locator('input[placeholder="全部产业类别"]').first().isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const openRecentTab = async () => {
+        if (!(await hasHistoryTab())) {
+          const origin = new URL(page.url()).origin;
+          await page.goto(
+            origin + '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=history',
+            { waitUntil: 'domcontentloaded' },
+          );
+          await page.waitForTimeout(1200);
+        }
+        await waitFilterReady();
+        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+        if ((await tab.count()) < 1) {
+          await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
+        } else {
+          await tab.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(900);
+      };
+      const pickHistoryOpenButton = async (preferFilter) => {
+        await openRecentTab();
+        const st = stack();
+        for (const name of ['恢复结果', '继续查看', '查看结果']) {
+          const buttons = st.getByRole('button', { name });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            let row = btn.locator('xpath=ancestor::tr[1]');
+            if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (!txt || !(/已完成|成功/.test(txt) || name !== '恢复结果')) continue;
+            if (preferFilter && !/条件筛选/.test(txt)) continue;
+            return btn;
+          }
+        }
+        return null;
+      };
+      const waitResultShell = async (timeoutMs = 120000) => {
+        const title = () => stack().getByText('培育推荐分析结果').first();
+        const t0 = Date.now();
+        let last = '';
+        while (Date.now() - t0 < timeoutMs) {
+          await page.waitForTimeout(500);
+          last = await stack().innerText().catch(() => '');
+          const titleVis = await title().isVisible().catch(() => false);
+          if (titleVis && !/可视化分析过程/.test(last) && hasRankingTable(last)) return last;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && hasRankingTable(last)) return last;
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last)) {
+            throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达培育推荐分析成功结果以测企业排名勾选（与 FUNC-02197 同源 D4）');
+          }
+        }
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：长期停留在可视化分析过程，无法到达企业排名表');
+        }
+        throw new Error('未在超时内到达含企业排名表的成功结果: ' + last.slice(0, 200));
+      };
+      const runFilterAnalysis = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        return await waitResultShell();
+      };
+      const ensureSuccessResult = async () => {
+        await dismissBasket();
+        await expect(stack()).toBeVisible({ timeout: 15000 });
+        let body = await stack().innerText().catch(() => '');
+        if (hasRankingTable(body)) return;
+        for (const preferFilter of [true, false]) {
+          const histBtn = await pickHistoryOpenButton(preferFilter).catch(() => null);
+          if (!histBtn) continue;
+          await histBtn.scrollIntoViewIfNeeded();
+          await histBtn.click({ timeout: 15000 });
+          body = await waitResultShell(60000);
+          if (hasRankingTable(body)) return;
+        }
+        await page.getByRole('tab', { name: '条件筛选推荐' }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await runFilterAnalysis();
+      };
+      await ensureSuccessResult();
+      const st = stack();
+      let bodyText = await st.innerText().catch(() => '');
+      const beforeSel = parseSelected(bodyText);
+      if (beforeSel !== null && beforeSel !== 0) {
+        const clearPre = st.getByRole('button', { name: '取消选择', exact: true }).first();
+        if (await clearPre.count() && !(await clearPre.isDisabled())) {
+          await clearPre.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      const rows = st.locator('.arco-table-body .arco-table-tr');
+      const rowN = await rows.count();
+      if (rowN < 1) throw new Error('企业排名表无数据行，无法勾选');
+      const firstCb = rows.first().locator('.arco-checkbox').first();
+      await expect(firstCb).toBeVisible({ timeout: 8000 });
+      const cls0 = (await firstCb.getAttribute('class')) || '';
+      if (!/arco-checkbox-checked/.test(cls0)) {
+        await firstCb.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      bodyText = await st.innerText().catch(() => '');
+      const afterSel = parseSelected(bodyText);
+      if (afterSel !== 1) {
+        throw new Error('勾选一行后已选应为 1 家，现场=' + afterSel);
+      }
+      const addBtn = st.getByRole('button', { name: '加入对比篮', exact: true }).first();
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      if (await addBtn.isDisabled()) {
+        throw new Error('勾选后「加入对比篮」仍为禁用');
+      }
+  - note: 2、出现已加入对比篮的提示
+    assert: |-
+      const st = page.getByTestId('recruit-tab-stack');
+      const addBtn = st.getByRole('button', { name: '加入对比篮', exact: true }).first();
+      await addBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const msgJoin = page.locator('.arco-message-content').filter({ hasText: /已加入对比篮|已将\s*\d+\s*家企业加入对比篮/ }).first();
+      const msgAlready = page.locator('.arco-message-content').filter({ hasText: /已在对比篮/ }).first();
+      const ok = (await msgJoin.isVisible().catch(() => false)) || (await msgAlready.isVisible().catch(() => false));
+      if (!ok) {
+        throw new Error('点「加入对比篮」后未见已加入对比篮类提示（已扫 Message 区）');
+      }
+  - note: 3、取消选择后已选为 0 家且按钮再次不可点
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const parseSelected = (text) => {
+        const m = (text || '').match(/已选\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const st = stack();
+      const clearBtn = st.getByRole('button', { name: '取消选择', exact: true }).first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      if (await clearBtn.isDisabled()) {
+        throw new Error('加入对比篮后「取消选择」仍为禁用，无法验证归零');
+      }
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const afterText = await st.innerText().catch(() => '');
+      const afterSel = parseSelected(afterText);
+      if (afterSel === null) {
+        throw new Error('取消选择后未见「已选 N 家」文案，片段=' + afterText.slice(0, 160));
+      }
+      if (afterSel !== 0) {
+        throw new Error('取消选择后已选应为 0 家，现场=' + afterSel);
+      }
+      const addBtn = st.getByRole('button', { name: '加入对比篮', exact: true }).first();
+      if (!(await addBtn.isDisabled())) {
+        throw new Error('取消选择后「加入对比篮」应不可点，仍为 enabled');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + recommendation_tab=cultivation。前置=成功态直读→最近分析(entry=history 深链)优先条件筛选已完成恢复→任一已完成恢复→产业类别人工智能发起。机检=企业排名首行勾选→加入对比篮 Message（已加入对比篮|已将 N 家企业加入对比篮|已在对比篮）→取消选择归零且加入对比篮 disabled。D4·2026-10-20 rewrite-FUNC-02218 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（与 02197 同源，勾选三步未触达）。登录与关评审由 runner 前置。B 档零 allow_skip。

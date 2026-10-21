@@ -1,0 +1,112 @@
+id: FUNC-02302
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02302
+priority: P0
+title: 关键节点卡片展示关系类型与节点影响度
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果（assert 自含最近分析恢复或对比篮发起）
+locators:
+  section: 关键节点与断链风险
+  key_tab: 关键节点
+  restore: 恢复结果
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 在「关键节点与断链风险」点「关键节点」并阅读卡片
+expect:
+  - note: 1、卡片含企业名 2、卡片含关系类型与节点影响度
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const clickKeyPanel = async () => {
+        await expect(page.getByText('关键节点与断链风险').first()).toBeVisible({ timeout: 15000 });
+        const grp = main()
+          .locator('.analysis-rounded-radio, .arco-radio-group')
+          .filter({ hasText: '断链风险' })
+          .first();
+        const keyOpt = grp.getByText('关键节点', { exact: true });
+        if (!(await keyOpt.count())) {
+          throw new Error('未见关键节点/断链风险切换钮');
+        }
+        await keyOpt.scrollIntoViewIfNeeded().catch(() => {});
+        await keyOpt.click({ timeout: 12000 });
+        await page.waitForTimeout(600);
+      };
+      const keyPanelEmpty = async () => {
+        const t = await main().innerText().catch(() => '');
+        return /当前筛选下暂无关键节点/.test(t) || /关键节点 · 0 项/.test(t);
+      };
+      const assertKeyCards = async () => {
+        const cards = main().locator('[role=button]').filter({ hasText: /关系类型：.+节点影响度：/ });
+        const n = await cards.count();
+        if (n < 1) throw new Error('未见含关系类型的关键节点卡片');
+        const card = cards.first();
+        const cardText = (await card.innerText()).replace(/\s+/g, ' ').trim();
+        const nameEl = card.locator('.font-medium, span.font-medium').first();
+        let entName = '';
+        if (await nameEl.count()) entName = ((await nameEl.innerText()) || '').trim();
+        if (!entName) {
+          const head = cardText.split('\n')[0] || cardText.slice(0, 40);
+          if (head.length > 1 && !/关系类型/.test(head)) entName = head.replace(/关键节点$/, '').trim();
+        }
+        if (!entName || entName.length < 2) throw new Error('卡片未见企业名：' + cardText.slice(0, 120));
+        const rel = cardText.match(/关系类型：([^·]+)/);
+        const cent = cardText.match(/节点影响度：(\S+)/);
+        if (!rel || !rel[1].trim()) throw new Error('卡片未见关系类型：' + cardText.slice(0, 160));
+        if (!cent || !cent[1]) throw new Error('卡片未见节点影响度：' + cardText.slice(0, 160));
+        globalThis.__func02302_ready = true;
+      };
+      const tryRestoreRow = async (index) => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await dismissBasket();
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if ((await restore.count()) <= index) return false;
+        await restore.nth(index).click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+        await dismissBasket();
+        await clickKeyPanel();
+        if (await keyPanelEmpty()) return false;
+        await assertKeyCards();
+        return true;
+      };
+      if (/view=result/.test(page.url())) {
+        await dismissBasket();
+        if (await page.getByText('任务摘要').count()) {
+          await clickKeyPanel();
+          if (!(await keyPanelEmpty())) {
+            await assertKeyCards();
+            return;
+          }
+        }
+      }
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await dismissBasket();
+      await openRecentTab();
+      const restoreCount = await page.getByRole('button', { name: '恢复结果' }).count();
+      if (restoreCount < 1) throw new Error('ENV-SUPPLY-NO-COMPLETED-001');
+      for (let i = 0; i < Math.min(restoreCount, 5); i++) {
+        if (await tryRestoreRow(i)) return;
+      }
+      throw new Error('ENV-SUPPLY-KEY-NODES-EMPTY-001：已试多条已完成任务，关键节点均为 0 项');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=成功结果（已在结果页则直读；否则最近分析逐条「恢复结果」直至关键节点非空，最多 5 条）。步骤=「关键节点与断链风险」点「关键节点」。机检=卡片含企业名+「关系类型：… · 节点影响度：…」。全无关键节点→ENV-SUPPLY-KEY-NODES-EMPTY-001；无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

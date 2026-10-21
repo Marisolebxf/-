@@ -1,0 +1,207 @@
+id: FUNC-05428
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05428
+priority: P1
+title: 点选专精特新后无匹配企业
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 企业页至少 1 家
+  - 当前列出的企业都不是专精特新
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+  type_select: .arco-select-view（全部企业类型 / 专精特新）
+  empty_hint: 当前篮内无匹配企业
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 展开「全部企业类型」并点选「专精特新」；回显与空态在 expect 判定
+expect:
+  - note: 前置：开篮、至少 1 家且 listed 均无专精特新；展开类型并点选专精特新
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const TYPE_LABEL = '专精特新';
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedFromAddModal = async (panel) => {
+        await panel.getByRole('button', { name: '新增' }).click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder(/企业名称|搜索/).first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(400);
+            const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+            if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-ADD-MODAL-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const seedFromEnterpriseSearch = async () => {
+        const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+        await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+        if (await clearBtn.isVisible().catch(() => false)) {
+          await clearBtn.click({ timeout: 4000 }).catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        if (await recSection.count()) {
+          const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({
+            has: page.getByRole('button', { name: '查看画像', exact: true }),
+          });
+          for (let i = 0; i < await cards.count(); i++) {
+            const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+            if (await btn.count() && (await btn.isVisible().catch(() => false))) {
+              await btn.click({ timeout: 8000 });
+              await page.waitForTimeout(700);
+              break;
+            }
+          }
+        }
+        await page.goto(origin + hostPath, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      };
+      const cardHasZhuanjingTag = async (card) => {
+        const tagRow = card.locator('.mt-2');
+        if (!(await tagRow.count())) return false;
+        const hit = tagRow.getByText(TYPE_LABEL, { exact: true });
+        return (await hit.count()) > 0;
+      };
+      const removeZhuanjingCards = async (panel) => {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          const cards = panel.locator('.ent-compare-item-card');
+          const c = await cards.count();
+          for (let i = 0; i < c; i++) {
+            const card = cards.nth(i);
+            if (!(await card.isVisible().catch(() => false))) continue;
+            if (await cardHasZhuanjingTag(card)) {
+              const rm = card.getByRole('button', { name: '移除' }).first();
+              if (await rm.count()) {
+                await rm.click({ timeout: 8000 });
+                await page.waitForTimeout(500);
+                changed = true;
+                break;
+              }
+            }
+          }
+        }
+      };
+      const countVisibleEntCards = async (panel) => {
+        const cards = panel.locator('.ent-compare-item-card');
+        let n = 0;
+        for (let i = 0; i < (await cards.count()); i++) {
+          if (await cards.nth(i).isVisible().catch(() => false)) n += 1;
+        }
+        return n;
+      };
+      const allListedNonZhuanjing = async (panel) => {
+        const cards = panel.locator('.ent-compare-item-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          if (await cardHasZhuanjingTag(card)) return false;
+        }
+        return (await countVisibleEntCards(panel)) > 0;
+      };
+      let panel = await openPanel();
+      let entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let listN = await countVisibleEntCards(panel);
+      if (listN < 1) {
+        await seedFromAddModal(panel).catch(() => {});
+        listN = await countVisibleEntCards(panel);
+      }
+      if (listN < 1) {
+        await seedFromEnterpriseSearch();
+        panel = await openPanel();
+        entTab = panel.locator('#compare-basket-tab-enterprise');
+        await entTab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        listN = await countVisibleEntCards(panel);
+      }
+      if (listN < 1) throw new Error('ENV-SHELL-COMPARE-BASKET-EMPTY-001：无法满足企业页至少 1 家');
+      await removeZhuanjingCards(panel);
+      panel = await openPanel();
+      entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let tries = 0;
+      while (!(await allListedNonZhuanjing(panel)) && tries < 4) {
+        tries += 1;
+        await seedFromAddModal(panel).catch(() => {});
+        await removeZhuanjingCards(panel);
+        panel = await openPanel();
+        entTab = panel.locator('#compare-basket-tab-enterprise');
+        await entTab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      if (!(await allListedNonZhuanjing(panel))) {
+        throw new Error('ENV-SHELL-COMPARE-ZJTX-ONLY-001：无法满足「listed 企业均非专精特新」');
+      }
+      const resetBtn = panel.locator('.ent-compare-basket-workspace').getByRole('button', { name: '重置', exact: true }).first();
+      if (await resetBtn.isVisible().catch(() => false)) {
+        await resetBtn.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const typeTrigger = panel.locator('.ent-compare-basket-workspace .arco-select-view').first();
+      await expect(typeTrigger).toBeVisible({ timeout: 8000 });
+      await typeTrigger.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: TYPE_LABEL }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      globalThis.__func05428 = { done: true };
+  - note: 1、类型回显为「专精特新」
+    assert: |-
+      if (!globalThis.__func05428?.done) throw new Error('前置：未完成专精特新点选');
+      const panel = page.locator('.system-compare-panel');
+      const typeTrigger = panel.locator('.ent-compare-basket-workspace .arco-select-view').first();
+      await expect(typeTrigger).toBeVisible({ timeout: 8000 });
+      const triggerTxt = ((await typeTrigger.innerText()) || '').replace(/\s+/g, ' ');
+      if (!triggerTxt.includes('专精特新')) {
+        throw new Error('类型筛选应回显「专精特新」，实际: ' + triggerTxt);
+      }
+  - note: 2、出现「当前篮内无匹配企业」
+    assert: |-
+      if (!globalThis.__func05428?.done) throw new Error('前置：未完成专精特新点选');
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('当前篮内无匹配企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const listEmpty = panel.locator('[data-testid="compare-basket-list"]').filter({ hasText: '当前篮内无匹配企业' });
+      await expect(listEmpty.first()).toBeVisible({ timeout: 5000 });
+      const visibleCards = await panel.locator('.ent-compare-item-card').count();
+      let vis = 0;
+      const cards = panel.locator('.ent-compare-item-card');
+      for (let i = 0; i < (await cards.count()); i++) {
+        if (await cards.nth(i).isVisible().catch(() => false)) vis += 1;
+      }
+      if (vis > 0) throw new Error('无匹配类型筛选后仍可见企业卡片: ' + vis);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。前置移除篮内带「专精特新」资质 chip 的行以满足 listed 均非专精特新。步骤=展开类型下拉点选专精特新（与 05402 只展开不点选分开）。机检=select 回显专精特新+空态「当前篮内无匹配企业」。空篮入篮同 FUNC-05390。登录与关评审由 runner 前置。

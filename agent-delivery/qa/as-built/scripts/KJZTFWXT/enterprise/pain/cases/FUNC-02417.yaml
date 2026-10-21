@@ -1,0 +1,131 @@
+id: FUNC-02417
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02417
+priority: P1
+title: 四个维度都取消后不能开始分析，勾回一项后可以
+story: US-ENT-RISK-PAIN
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已回填至少 1 家企业；四个维度当前都已勾选（assert 自含）
+locators:
+  scope_label: text「诊断范围」
+  dims: [技术研发, 市场拓展, 融资, 管理]
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 取消四维→验开始分析禁用→勾回技术研发→验开始分析可用
+expect:
+  - note: 1、四项都取消后「开始分析」不可点击
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dims = ['技术研发', '市场拓展', '融资', '管理'];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const dimBox = (name) =>
+        page.locator('main .arco-checkbox-group .arco-checkbox').filter({ hasText: name }).first();
+      const isChecked = async (name) => {
+        const cls = (await dimBox(name).getAttribute('class')) || '';
+        return /arco-checkbox-checked/.test(cls);
+      };
+      const setChecked = async (name, want) => {
+        const box = dimBox(name);
+        await expect(box).toBeVisible({ timeout: 8000 });
+        const cur = await isChecked(name);
+        if (cur !== want) {
+          await box.click({ timeout: 8000 });
+          await page.waitForTimeout(280);
+        }
+        const after = await isChecked(name);
+        if (after !== want) throw new Error('维度「' + name + '」未能设为 ' + want);
+      };
+      const deeplinkFill = async () => {
+        const code = '0a2b82208071ce5a0e3bd562b80e263b';
+        await page.goto(toUrl(`${route}&enterprise_codes[]=${code}&source=compare-basket`), {
+          waitUntil: 'domcontentloaded',
+        });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      if (!(await page.getByText(/来自对比篮/).count())) {
+        try {
+          await deeplinkFill();
+        } catch (e) {
+          throw new Error('ENV-PAIN-BASKET-EMPTY-001：无法回填企业');
+        }
+      }
+      if (!(await page.getByText(/来自对比篮/).count())) {
+        throw new Error('ENV-PAIN-BASKET-EMPTY-001：对象区未回填企业');
+      }
+      await expect(page.getByRole('heading', { name: '企业发展痛难点分析' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('诊断范围', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      for (const d of dims) {
+        await setChecked(d, true);
+      }
+      for (const d of dims) {
+        await setChecked(d, false);
+      }
+      for (const d of dims) {
+        if (await isChecked(d)) throw new Error('四维应全未勾，但「' + d + '」仍勾选');
+      }
+      const start = main().getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+      const cls = (await start.getAttribute('class')) || '';
+      if (!/disabled|arco-btn-disabled/.test(cls) && !(await start.isDisabled())) {
+        throw new Error('开始分析应为 disabled');
+      }
+      globalThis.__func02417_ready = true;
+  - note: 2、勾回一项后「开始分析」可点击
+    assert: |-
+      if (!globalThis.__func02417_ready) throw new Error('前置：四维全取消+开始分析禁用未确认');
+      const dims = ['技术研发', '市场拓展', '融资', '管理'];
+      const dimBox = (name) =>
+        page.locator('main .arco-checkbox-group .arco-checkbox').filter({ hasText: name }).first();
+      const isChecked = async (name) => {
+        const cls = (await dimBox(name).getAttribute('class')) || '';
+        return /arco-checkbox-checked/.test(cls);
+      };
+      const setChecked = async (name, want) => {
+        const box = dimBox(name);
+        await expect(box).toBeVisible({ timeout: 8000 });
+        const cur = await isChecked(name);
+        if (cur !== want) {
+          await box.click({ timeout: 8000 });
+          await page.waitForTimeout(280);
+        }
+        const after = await isChecked(name);
+        if (after !== want) throw new Error('维度「' + name + '」未能设为 ' + want);
+      };
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      await setChecked('技术研发', true);
+      if (!(await isChecked('技术研发'))) throw new Error('勾回技术研发失败');
+      for (const d of ['市场拓展', '融资', '管理']) {
+        if (await isChecked(d)) throw new Error('仅应勾选技术研发，但「' + d + '」仍勾选');
+      }
+      const start = main().getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      const cls = (await start.getAttribute('class')) || '';
+      if (/arco-btn-disabled/.test(cls)) throw new Error('开始分析仍带 disabled 态');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=回填≥1家→四维全勾→全取消→开始分析 disabled→仅勾技术研发→开始分析 enabled；无额外提示句（用例备注）。回填优先深链 pain_seed，失败 ENV-PAIN-BASKET-EMPTY-001。登录与关评审由 runner 前置。A 档零 allow_skip。

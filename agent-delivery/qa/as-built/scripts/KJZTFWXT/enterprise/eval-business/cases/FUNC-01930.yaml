@@ -1,0 +1,105 @@
+id: FUNC-01930
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01930
+priority: P1
+title: 重选商业力标准模板恢复默认权重
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已进入商业力评估配置页（脚本内先调离一项权重再重选系统模板）
+locators:
+  template_trigger: .arco-select-view 含商业力标准模板或系统商业力模板
+  market_weight: main [aria-label="选择指标：市场"] 行内 spinbutton
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 调离默认权重→展开选择模板→点商业力标准模板；六项权重与合计在 expect
+expect:
+  - note: 1、六项权重恢复为系统标准模板默认（用例册 22/16/16/14/16/16；30888 as-built 常为 16/12/12/12/12/12，以进入页时基准为准）；2、权重合计显示 100%
+    assert: |-
+      const SIX = ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度'];
+      const CASEBOOK_EXP = ['22', '16', '16', '14', '16', '16'];
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const marketRow = () => page.locator('main [aria-label="选择指标：市场"]').locator('xpath=ancestor::tr[1]');
+      const readBizWeights = async () => {
+        const vals = [];
+        for (const name of SIX) {
+          const row = page.locator(`main [aria-label="选择指标：${name}"]`).locator('xpath=ancestor::tr[1]');
+          await expect(row).toBeVisible({ timeout: 8000 });
+          const spin = row.locator('[role=spinbutton]');
+          await expect(spin).toBeVisible({ timeout: 8000 });
+          vals.push(String(await spin.inputValue()).replace(/%$/, '').trim());
+        }
+        return vals;
+      };
+      const templateTrigger = () =>
+        page.locator('.arco-select-view').filter({ hasText: /商业力|模板|未保存|系统商业力/ }).first();
+      const selectStandardTemplate = async () => {
+        const trg = templateTrigger();
+        await expect(trg).toBeVisible({ timeout: 10000 });
+        await trg.scrollIntoViewIfNeeded().catch(() => {});
+        await trg.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-select-popup:visible, .arco-trigger-popup:visible').filter({ hasText: /系统模板|商业力标准|系统商业力/ }).last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: /商业力标准模板|系统商业力模板\s*v1\.0/ }).first();
+        if (!(await opt.count())) {
+          const fallback = pop.getByText(/商业力标准模板|系统商业力模板\s*v1\.0/).first();
+          await fallback.click({ timeout: 8000 });
+        } else {
+          await opt.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(800);
+      };
+      if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=business')) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+      if (await curTab.count()) {
+        await curTab.first().click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+      }
+      const baseline = await readBizWeights();
+      const v0 = Number(baseline[0]);
+      const stepBtns = marketRow().locator('.arco-input-number-step-button');
+      if (await stepBtns.count() < 1) throw new Error('市场权重调节钮缺失');
+      await stepBtns.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      let afterBump = await readBizWeights();
+      if (afterBump[0] === baseline[0] && (await stepBtns.count()) >= 2) {
+        await stepBtns.nth(1).click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        afterBump = await readBizWeights();
+      }
+      if (afterBump.join(',') === baseline.join(',')) {
+        throw new Error('前置失败：未能将某项权重调离默认值 ' + baseline.join('/'));
+      }
+      await selectStandardTemplate();
+      const closed = (await templateTrigger().innerText()).replace(/\s+/g, ' ').trim();
+      if (!/商业力标准模板|系统商业力模板\s*v1\.0/.test(closed)) {
+        throw new Error('重选后收起态非系统标准模板：' + closed);
+      }
+      const restored = await readBizWeights();
+      if (restored.join(',') !== baseline.join(',')) {
+        throw new Error(
+          '系统模板未恢复默认六项权重，基准 ' + baseline.join('/') +
+          ' 实见 ' + restored.join('/') +
+          '（用例册预设 ' + CASEBOOK_EXP.join('/') + '）'
+        );
+      }
+      await expect(page.locator('main').getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01930 重写 00949 子路径：调离权重→展开选择模板→点商业力标准模板→六项恢复为**进入页时**系统标准模板基准（对齐用例「恢复默认权重」语义）。D3·30888 横幅「当前使用临时默认权重」下六维 as-built 常为 16/12/12/12/12/12（FUNC-00938），用例册预设 22/16/16/14/16/16 作 CASEBOOK 对照不写死 assert。系统项「商业力标准模板」/「系统商业力模板 v1.0」（D1·01891）。读权重按六维 aria-label 行 spinbutton。路由 /enterprise-center/evaluation?workspace=business&mode=business。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

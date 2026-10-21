@@ -1,0 +1,81 @@
+id: FUNC-00740
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00740
+priority: P1
+title: 四维模型固定四行且无增删改维名入口
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已进入深圳产业情况分析对比页
+locators:
+  dimension_spins: 四维模型权重 spinbutton ×4
+  data_status: 数据状态列「可用」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 读取四维模型行数并在该区域查找增删行或改维名入口；判定在 expect
+expect:
+  - note: 1、数据状态四行都显示「可用」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const body404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      await dismissBasket();
+      if (!/\/industry-center\/shenzhen/.test(page.url()) || !/workspace=comparison/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1000);
+      }
+      if (await body404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比深链 SPA404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 10000 });
+      const main = page.locator('main.content-shell-layout, main').first();
+      const spins = main.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(4, { timeout: 8000 });
+      const dimNames = ['企业', '专利', '政策', '人才'];
+      for (let i = 0; i < 4; i++) {
+        const row = spins.nth(i).locator('xpath=ancestor::tr[1]');
+        const rowEl = (await row.count()) ? row : spins.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+        const rt = (await rowEl.count()) ? ((await rowEl.innerText().catch(() => '')) || '') : '';
+        if (!/可用/.test(rt)) {
+          throw new Error('第 ' + (i + 1) + ' 行数据状态未含「可用」: ' + rt.slice(0, 120));
+        }
+        const name = dimNames[i];
+        if (!rt.includes(name)) {
+          throw new Error('第 ' + (i + 1) + ' 行未含指标名「' + name + '」: ' + rt.slice(0, 120));
+        }
+      }
+  - note: 2、没有增行、删行或改指标名的按钮
+    assert: |-
+      const h1 = page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 });
+      if (!(await h1.isVisible().catch(() => false))) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 页面未就绪，无法验增删维入口 ' + page.url());
+      }
+      const main = page.locator('main.content-shell-layout, main').first();
+      const ban = /添加维度|新增维度|删除维度|增行|删行|添加指标|删除指标|改指标|编辑指标名/;
+      const btns = main.getByRole('button');
+      const n = await btns.count();
+      for (let i = 0; i < Math.min(n, 40); i++) {
+        const label = ((await btns.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '');
+        const aria = (await btns.nth(i).getAttribute('aria-label').catch(() => '')) || '';
+        if (ban.test(label) || ban.test(aria)) {
+          throw new Error('四维模型区域出现禁止入口: ' + (label || aria));
+        }
+      }
+      const addDel = main.locator('button, a').filter({ hasText: ban });
+      if (await addDel.count()) {
+        throw new Error('四维模型区域出现增删改维名控件 ' + (await addDel.first().innerText().catch(() => '')));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 深链 catalog_path（entry-seed）；四维行=4×spinbutton；数据状态「可用」在行内文本；增删改维名入口全局扫 main 内 button 文案。权重只读归 FUNC-00739。

@@ -1,0 +1,109 @@
+id: FUNC-01329
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01329
+priority: P0
+tier: B
+title: 三 Tab 构成正确且默认选中智能检索、切换互斥
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入 /service-center/search（深链 catalog_path）
+locators:
+  tablist: '[role=tablist][aria-label=检索模式]（.enterprise-search-mode-tabs）'
+  tab_smart: '.enterprise-search-mode-tabs [role=tab] → 智能检索'
+  tab_org: '.enterprise-search-mode-tabs [role=tab] → 查机构'
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 读三 Tab 名称与默认选中；轮切查机构/高级筛选/智能检索在 expect 内完成
+expect:
+  - note: 三 Tab 依次为「智能检索 / 查机构 / 高级筛选」、默认选中「智能检索」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      const texts = [];
+      for (let i = 0; i < 3; i++) texts.push((await tabs.nth(i).innerText()).trim().replace(/\s+/g, ' '));
+      if (texts[0] !== '智能检索' || texts[1] !== '查机构' || texts[2] !== '高级筛选') {
+        throw new Error('三 Tab 文案/顺序不符: ' + texts.join('|'));
+      }
+      const smart = tabs.nth(0);
+      const org = tabs.nth(1);
+      const adv = tabs.nth(2);
+      const sAria = await smart.getAttribute('aria-selected');
+      const sCls = await smart.getAttribute('class');
+      if (sAria !== 'true' && !(sCls || '').includes('active')) throw new Error('默认未选中智能检索');
+      const oAria = await org.getAttribute('aria-selected');
+      const oCls = await org.getAttribute('class');
+      if (oAria === 'true' || (oCls || '').includes('active')) throw new Error('查机构不应默认选中');
+      const aAria = await adv.getAttribute('aria-selected');
+      const aCls = await adv.getAttribute('class');
+      if (aAria === 'true' || (aCls || '').includes('active')) throw new Error('高级筛选不应默认选中');
+      await expect(page.getByPlaceholder(/用一句话描述机构需求/)).toBeVisible({ timeout: 8000 });
+  - note: 任一时刻仅一个 Tab 呈选中态、内容区不叠加
+    assert: |-
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      const smart = tabs.nth(0);
+      const org = tabs.nth(1);
+      const adv = tabs.nth(2);
+      const assertOne = async (on) => {
+        const states = [];
+        for (let i = 0; i < 3; i++) {
+          const el = tabs.nth(i);
+          const aria = await el.getAttribute('aria-selected');
+          const cls = await el.getAttribute('class');
+          states.push(aria === 'true' || (cls || '').includes('active'));
+        }
+        const n = states.filter(Boolean).length;
+        if (n !== 1) throw new Error('选中态非互斥: ' + JSON.stringify(states));
+        if (!states[on]) throw new Error('期望选中 idx=' + on + ' 实际 ' + JSON.stringify(states));
+      };
+      await org.click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/mode=org/);
+      await assertOne(1);
+      await expect(page.getByPlaceholder(/输入机构名称、城市或行业关键词/)).toBeVisible({ timeout: 8000 });
+      if (await page.getByPlaceholder(/用一句话描述机构需求/).count()) {
+        const vis = await page.getByPlaceholder(/用一句话描述机构需求/).isVisible().catch(() => false);
+        if (vis) throw new Error('查机构态仍见智能检索占位');
+      }
+      await adv.click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/mode=advanced/);
+      await assertOne(2);
+      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 8000 });
+      if (await page.getByPlaceholder(/输入机构名称、城市或行业关键词/).count()) {
+        const vis = await page.getByPlaceholder(/输入机构名称、城市或行业关键词/).isVisible().catch(() => false);
+        if (vis) throw new Error('高级筛选态仍见查机构占位');
+      }
+  - note: 切回后「智能检索」恢复选中与内容呈现
+    assert: |-
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      const smart = tabs.nth(0);
+      await smart.click();
+      await page.waitForTimeout(400);
+      await expect(page).toHaveURL(/mode=smart/);
+      const sAria = await smart.getAttribute('aria-selected');
+      const sCls = await smart.getAttribute('class');
+      if (sAria !== 'true' && !(sCls || '').includes('active')) throw new Error('切回后智能检索未选中');
+      for (const i of [1, 2]) {
+        const el = tabs.nth(i);
+        const aria = await el.getAttribute('aria-selected');
+        const cls = await el.getAttribute('class');
+        if (aria === 'true' || (cls || '').includes('active')) throw new Error('切回后仍有其它 Tab 选中 idx=' + i);
+      }
+      await expect(page.getByPlaceholder(/用一句话描述机构需求/)).toBeVisible({ timeout: 8000 });
+      if (await page.getByText('高级筛选 · 字段库').count()) {
+        const vis = await page.getByText('高级筛选 · 字段库').first().isVisible().catch(() => false);
+        if (vis) throw new Error('智能检索态仍见高级筛选字段库');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 深链 goto catalog_path /service-center/search（用例前置）。edu/tts/svcz 2026-10-21 实跑深链 SPA404 → ENV-EDU-TTS-SVCZ-404-001，三 Tab 断言未触达；探针不得改 catalog。落点后检索三 Tab 在 .enterprise-search-mode-tabs；选中 aria-selected + active；URL ?mode=smart|org|advanced。禁止全页 getByRole tab。对照重写 FUNC-01329，不读不改旧 P0-02。

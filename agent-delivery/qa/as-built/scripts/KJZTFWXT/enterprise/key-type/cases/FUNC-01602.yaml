@@ -1,0 +1,81 @@
+id: FUNC-01602
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01602
+priority: P1
+title: 地图刷新后仍在本页且区域回显不变
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 空间分布为地图视图（默认态）
+  - 已记下当前区域回显
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  map_toolbar: '[role="toolbar"][aria-label="地图工具栏"]'
+  refresh_btn: button aria-label「复位」或「刷新」（用例写刷新；30888 第三枚为复位）
+  region_combo: main combobox「选择区域」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 记下区域回显、点地图刷新/复位；终态在 expect 内
+expect:
+  - note: 1、空间分布为地图视图，记下区域级联回显后点击工具栏「刷新」（现场 aria「复位」）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      const mapBtn = panel.getByRole('button', { name: '地图视图', exact: true });
+      const mapCls = (await mapBtn.getAttribute('class')) || '';
+      if (!mapCls.includes('arco-btn-primary')) {
+        await mapBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const regionCombo = main.getByRole('combobox', { name: '选择区域' });
+      await expect(regionCombo).toBeVisible({ timeout: 8000 });
+      const titleEl = regionCombo.locator('[title]').first();
+      const beforeTitle = (await titleEl.getAttribute('title')) || '';
+      const beforePh = (await main.locator('input[placeholder*="全国热门"], input[placeholder*="深圳"]').first().getAttribute('placeholder')) || '';
+      const beforeRegion = (beforeTitle + '|' + beforePh).trim();
+      if (!beforeRegion || beforeRegion === '|') {
+        throw new Error('未能记下区域回显 title=' + beforeTitle + ' ph=' + beforePh);
+      }
+      await page.evaluate((snap) => { window.__keyTypeRegionBefore = snap; }, beforeRegion);
+      const toolbar = panel.locator('[role="toolbar"][aria-label="地图工具栏"]').first();
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      let refreshBtn = toolbar.locator('button[aria-label="复位"]').first();
+      if (!(await refreshBtn.count())) refreshBtn = toolbar.locator('button[aria-label="刷新"]').first();
+      await expect(refreshBtn).toBeVisible({ timeout: 8000 });
+      await refreshBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+  - note: 2、刷新后页面标题仍为类型分析页，区域回显与刷新前一致
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page).toHaveURL(/key-enterprise-analysis/, { timeout: 8000 });
+      const beforeRegion = await page.evaluate(() => window.__keyTypeRegionBefore || '');
+      if (!beforeRegion) throw new Error('缺少刷新前区域回显快照');
+      const regionCombo = main.getByRole('combobox', { name: '选择区域' });
+      await expect(regionCombo).toBeVisible({ timeout: 8000 });
+      const titleEl = regionCombo.locator('[title]').first();
+      const afterTitle = (await titleEl.getAttribute('title')) || '';
+      const afterPh = (await main.locator('input[placeholder*="全国热门"], input[placeholder*="深圳"]').first().getAttribute('placeholder')) || '';
+      const afterRegion = (afterTitle + '|' + afterPh).trim();
+      if (afterRegion !== beforeRegion) {
+        throw new Error('区域回显变化: before=' + beforeRegion + ' after=' + afterRegion);
+      }
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 路由 /enterprise-center/key-enterprise-analysis?workspace=type&view=type；用例「刷新」现场地图工具栏第三枚 aria-label「复位」（同 FUNC-00383/01601）。区域回显取 combobox title + placeholder 拼接比对。登录与关内部评审由 runner 会话前置。

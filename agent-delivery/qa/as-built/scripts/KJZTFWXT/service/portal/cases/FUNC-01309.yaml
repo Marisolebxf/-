@@ -1,0 +1,85 @@
+id: FUNC-01309
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01309
+priority: P0
+tier: A
+title: 产业选择与产业链级联解锁
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；筛选区可见；env-gate G3 pass
+locators:
+  industry: select placeholder 全部产业
+  chain: select placeholder 全部产业链
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 展开产业下拉；切换为任一产业集群；展开产业链下拉
+expect:
+  - note: 1、产业下拉选项共 15 个产业集群（清单见附录 B）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+      }
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/overview SPA 404，筛选区不可达');
+      }
+      const expected = [
+        '新一代信息技术', '生物', '新能源', '新材料', '高端装备',
+        '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋',
+        '未来制造', '未来信息', '未来能源', '未来空间', '未来健康',
+      ];
+      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await ind.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      const n = await opts.count();
+      if (n !== 15) throw new Error('产业选项数 ' + n + ' ≠15');
+      const texts = [];
+      for (let i = 0; i < n; i++) {
+        texts.push((await opts.nth(i).innerText()).trim());
+      }
+      for (const name of expected) {
+        if (!texts.includes(name)) throw new Error('产业选项缺少：' + name);
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+  - note: 2、选中产业后产业链下拉转为可选、选项随所选产业联动刷新
+    assert: |-
+      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await ind.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
+      await page.waitForTimeout(1000);
+      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
+      if (dis) throw new Error('选产业后产业链仍禁用');
+      await chain.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const chainOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
+      if (chainOpts < 1) throw new Error('产业链无联动选项');
+      const chainTexts = [];
+      for (let i = 0; i < chainOpts; i++) {
+        chainTexts.push((await page.locator('.arco-trigger-popup:visible .arco-select-option').nth(i).innerText()).trim());
+      }
+      const needSix = ['半导体与集成电路', '人工智能与应用', '新型网络与通信', '超高清视频与显示', '智能终端', '软件与信息服务'];
+      for (const c of needSix) {
+        if (!chainTexts.includes(c)) throw new Error('新一代信息技术下产业链缺少：' + c);
+      }
+      await page.keyboard.press('Escape');
+  - note: 3、产业链选项不自动代选第一项
+    assert: |-
+      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      const ph = await chain.locator('input').getAttribute('placeholder');
+      if (ph !== '全部产业链') throw new Error('产业链 placeholder 非全部产业链: ' + ph);
+      const valueInput = chain.locator('input.arco-select-view-input');
+      const val = (await valueInput.inputValue()).trim();
+      if (val) throw new Error('产业链似已代选 input 值: ' + val);
+      const tag = chain.locator('.arco-select-view-value');
+      if (await tag.count()) {
+        const t = (await tag.first().innerText()).trim();
+        if (t && t !== '全部产业链') throw new Error('产业链似已代选展示值: ' + t);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: P7 点 .arco-select-view；15 集群附录 B 全集+选「新一代信息技术」链 6 项附录 C。2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto overview SPA 404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 01309。

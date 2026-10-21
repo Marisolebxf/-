@@ -1,0 +1,78 @@
+id: FUNC-02792
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02792
+priority: P0
+title: 数据截至下拉给出最新快照和当前已发布日期
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已进入产业链全景图谱页
+locators:
+  data_as_of_input: 'input[placeholder="请选择数据截至"]'
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 展开数据截至下拉，选项个数与文案在 expect 判定
+expect:
+  - note: 前置：已进入本页且数据截至下拉可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
+      await expect(asOfInput).toHaveCount(1);
+      const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await expect(snapView).toBeVisible({ timeout: 8000 });
+      globalThis.__func02792_onPage = true;
+  - note: 1、展开「数据截至」下拉后选项共 2 个，为「最新快照」和「2026-10-18 · 当前状态」
+    assert: |-
+      if (!globalThis.__func02792_onPage) throw new Error('前置：未进入产业链全景图谱页');
+      const want = ['最新快照', '2026-10-18 · 当前状态'];
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
+      const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await snapView.scrollIntoViewIfNeeded();
+      await snapView.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 2) {
+        throw new Error('数据截至选项应为 2 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '数据截至选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；用例「数据截至下拉」= panorama-analysis-context 内
+  input[placeholder="请选择数据截至"] 所在 .arco-select-view（与 02788/P0-02 同定位）。
+  2 项对齐用例册 02792：「最新快照」「2026-10-18 · 当前状态」。点法对齐 02789（trigger-popup .arco-select-option）。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；选项断言仍依用例册 02792。

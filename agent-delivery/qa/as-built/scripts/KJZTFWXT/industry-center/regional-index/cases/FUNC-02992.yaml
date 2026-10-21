@@ -1,0 +1,117 @@
+id: FUNC-02992
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02992
+priority: P0
+title: 配置即时汇总随是否已选产业改变产业名
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 评价模式为「单产业 × 多区域」
+  - 评价区域含深圳市
+locators:
+  summary_block: main 内「配置即时汇总」区
+  cluster: .arco-select-view[aria-label=集群]
+  industry: .arco-select-view[aria-label=产业]
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+expect:
+  - note: 1、未选产业时汇总为「未选产业 · 深圳市 · 已计入 6 项」；首行汇总不含「权重合计」
+    assert: |-
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) await close.first().click({ timeout: 3000 }).catch(() => {});
+        }
+      };
+      const isSpa404 = async () => {
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const enterRegionalIndex = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (!onTarget() || (await isSpa404())) {
+          const u = new URL('/industry-center/search', baseUrl);
+          await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        }
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+        if (await isSpa404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      await enterRegionalIndex();
+      await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(800);
+      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
+      const summary = page.locator('main').filter({ hasText: '配置即时汇总' }).first();
+      await expect(summary).toBeVisible({ timeout: 8000 });
+      const sumText = (await summary.innerText()).replace(/\s+/g, ' ');
+      if (!/未选产业 · 深圳市 · 已计入 6 项/.test(sumText)) {
+        throw new Error('未选产业汇总不符，现场: ' + sumText.slice(0, 120));
+      }
+      const headline = sumText.split('计入指标')[0] || sumText;
+      if (/权重合计/.test(headline)) {
+        throw new Error('未选产业时首行汇总不应含「权重合计」，现场: ' + headline.slice(0, 120));
+      }
+      globalThis.__func02992 = { enterRegionalIndex, dismissBasket, optSel };
+  - note: 2、产业选「生物」后汇总中的产业名变为「生物」
+    assert: |-
+      const ctx = globalThis.__func02992;
+      if (!ctx) throw new Error('前置：未进入配置页');
+      const { optSel } = ctx;
+      const pickByAria = async (aria, labelRe) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: labelRe }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      await pickByAria('集群', /^生物产业$/);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.locator('.arco-select-view[aria-label="产业"]').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opts = page.locator(optSel);
+      const bioExact = opts.filter({ hasText: /^生物$/ });
+      let picked = '生物';
+      if (await bioExact.count()) {
+        await bioExact.first().click({ force: true });
+      } else {
+        throw new Error('ENV-CHAIN-REG-BIO-INDUSTRY-001：未见产业选项「生物」（用例要求汇总产业名为生物）');
+      }
+      await page.waitForTimeout(800);
+      const summary = page.locator('main').filter({ hasText: '配置即时汇总' }).first();
+      const sumText = (await summary.innerText()).replace(/\s+/g, ' ');
+      const headline = sumText.split('计入指标')[0] || sumText;
+      if (!new RegExp('^[^\\n]*' + picked + ' · 深圳市 · 已计入 6 项').test(headline) && !headline.includes(picked + ' · 深圳市 · 已计入 6 项')) {
+        throw new Error('选生物后汇总首行不符，现场: ' + headline.slice(0, 160));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 替换作废 00569 之子集（仅产业名联动）。catalog_path=entry-seed。edu 深链 404 时 assert 侧栏 sibling 进入。未选产业首行禁「权重合计」（用例册）。产业须点「生物」非「生物医药」（与 02988 金样 fallback 区分）。登录关评审 runner 前置。B 档零 allow_skip。

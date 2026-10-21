@@ -1,0 +1,59 @@
+id: FUNC-01472
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01472
+priority: P0
+title: 结果卡「查看画像」打开企业画像快览并列出三块摘要
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已有非空检索结果（本条 steps 自含智能搜索「人工智能」出结果）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  view_profile: main button「查看画像」
+  drawer: .arco-drawer:visible
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与「查看画像」
+    timeout_ms: 2000
+  - action: evaluate
+    note: 点结果卡「查看画像」由 expect assert 自含
+expect:
+  - note: 抽屉标题为「企业画像快览」且路由不变
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 15000 });
+      const routeBefore = page.url();
+      await profileBtn.click();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await drawer.waitFor({ state: 'visible', timeout: 12000 });
+      await expect(drawer.locator('.arco-drawer-header')).toContainText('企业画像快览');
+      await expect(page).toHaveURL(routeBefore);
+  - note: 可见「基础摘要」「竞争力摘要」「风险摘要」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer.getByText('基础摘要', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByText('竞争力摘要', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByText('风险摘要', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 抽屉内有「加入对比」与「查看详情」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer.getByRole('button', { name: '加入对比' })).toBeVisible({ timeout: 8000 });
+      await expect(drawer.getByRole('button', { name: '查看详情' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search。「查看画像」开企业画像快览（非十页签企业详情，见 00443/作废 00451）。十页签深度归 01482。

@@ -1,0 +1,115 @@
+id: FUNC-02999
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02999
+priority: P0
+title: 已完成记录「查看报告」打开报告页
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 分析记录中有状态为已完成且可查看报告的任务
+locators:
+  tab_records: tab「分析记录」
+  view_report: button「查看报告」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 分析记录 Tab→已完成行「查看报告」（机检在 expect）
+expect:
+  - note: 1、标题为「区域产业指数评价报告」
+    assert: |-
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      const openReportFromRecords = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+        const rows = page.locator('tr').filter({ hasText: '已完成' });
+        const n = await rows.count();
+        if (!n) {
+          throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK: 分析记录无已完成行');
+        }
+        for (let i = 0; i < Math.min(n, 10); i++) {
+          const row = rows.nth(i);
+          const rt = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ');
+          if (!/区域产业指数评价/.test(rt)) continue;
+          const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
+          if (!(await reportBtn.count())) continue;
+          const disabled = await reportBtn.isDisabled().catch(() => true);
+          if (disabled) continue;
+          await reportBtn.click({ timeout: 10000 });
+          await page.waitForTimeout(1200);
+          if (/view=report/.test(page.url())) return;
+          for (let j = 0; j < 20; j++) {
+            await page.waitForTimeout(400);
+            if (/view=report/.test(page.url())) return;
+          }
+        }
+        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-REPORT: 已完成行「查看报告」均不可用或未进入 view=report');
+      };
+      await gate404();
+      await openReportFromRecords();
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      await expect(reader.locator('h1').filter({ hasText: '区域产业指数评价报告' }).first()).toBeVisible({ timeout: 15000 });
+      globalThis.__func02999 = { readerReady: true };
+  - note: 2、目录共 7 节，名称见附录B
+    assert: |-
+      if (!globalThis.__func02999?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      const toc = reader.locator('nav.report-toc');
+      await expect(toc).toBeVisible({ timeout: 8000 });
+      const tocText = await toc.innerText();
+      const required = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const missing = required.filter((label) => !tocText.includes(label));
+      if (missing.length) {
+        throw new Error('报告目录缺节：' + missing.join('、') + '；目录片段=' + tocText.slice(0, 280));
+      }
+      if (required.filter((label) => tocText.includes(label)).length !== 7) {
+        throw new Error('报告目录节数不为 7，目录=' + tocText.replace(/\s+/g, ' ').slice(0, 320));
+      }
+  - note: 3、页上有「返回分析结果」「付费」「导出」
+    assert: |-
+      if (!globalThis.__func02999?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      const back = reader.locator('[data-report-back], button').filter({ hasText: '返回分析结果' }).first();
+      await expect(back).toBeVisible({ timeout: 8000 });
+      const exportArea = reader.locator('[data-report-export-locked], .report-toolbar__actions').first();
+      await expect(exportArea).toBeVisible({ timeout: 8000 });
+      await expect(reader.getByRole('button', { name: '导出' }).first()).toBeVisible({ timeout: 8000 });
+      const paid = reader.locator('[data-paid-badge="required"]');
+      await expect(paid.first()).toBeVisible({ timeout: 8000 });
+      await expect(paid.first()).toContainText('付费');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index；步骤=分析记录→首条「已完成」且「查看报告」可点。h1=identity.title「区域产业指数评价报告」；IndustryChainReportHost eyebrow 仍硬编码「产业链分析报告」（D1，不作为本用例主判）。目录七节=附录B/industryAnalysisReportShared。导出+付费=ReportExportButton data-report-export-locked。无已完成→ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK；报告钮不可用→ENV-CHAIN-REGIONAL-INDEX-NO-REPORT。edu 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。

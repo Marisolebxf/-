@@ -1,0 +1,144 @@
+id: FUNC-01805
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01805
+priority: P1
+title: 最近评估删除弹框点取消后记录仍在
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 最近评估中至少有一条记录
+locators:
+  recent_tab: tab「最近评估」
+  delete_button: button「删除」
+  modal_cancel: 弹框 button「取消」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 最近评估→记录该行任务 ID→点「删除」→弹框点「取消」；文案与行仍在 expect 判定
+expect:
+  - note: 1、弹出框说明删除后列表不再显示；2、该行仍留在列表中
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
+      const main = () => page.locator('main.app-main').first();
+      const rowFromAnchor = (anchor) =>
+        anchor.locator('xpath=ancestor::tr[1] | ancestor::*[contains(@class,"arco-table-tr")][1]').first();
+      const deleteInRow = (row) => row.locator('button, .arco-btn').filter({ hasText: /^删除$/ }).last();
+      const pickHistoryDelete = async () => {
+        const restores = main().getByRole('button', { name: '恢复结果' });
+        const rn = await restores.count();
+        for (let i = 0; i < rn; i++) {
+          const anchor = restores.nth(i);
+          if (!(await anchor.isVisible().catch(() => false))) continue;
+          const row = rowFromAnchor(anchor);
+          const del = deleteInRow(row);
+          if (!(await del.count())) continue;
+          await del.scrollIntoViewIfNeeded().catch(() => {});
+          if (!(await del.isVisible().catch(() => false))) continue;
+          return { del, row };
+        }
+        const continues = main().getByRole('button', { name: '继续查看' });
+        const cn = await continues.count();
+        for (let i = 0; i < cn; i++) {
+          const anchor = continues.nth(i);
+          if (!(await anchor.isVisible().catch(() => false))) continue;
+          const row = rowFromAnchor(anchor);
+          const del = deleteInRow(row);
+          if (!(await del.count())) continue;
+          await del.scrollIntoViewIfNeeded().catch(() => {});
+          if (!(await del.isVisible().catch(() => false))) continue;
+          return { del, row };
+        }
+        const dels = main().locator('button, .arco-btn').filter({ hasText: /^删除$/ });
+        const dn = await dels.count();
+        for (let i = 0; i < dn; i++) {
+          const del = dels.nth(i);
+          await del.scrollIntoViewIfNeeded().catch(() => {});
+          if (!(await del.isVisible().catch(() => false))) continue;
+          const inMain = await del.evaluate((el) => !!el.closest('main'));
+          if (!inMain) continue;
+          return { del, row: rowFromAnchor(del) };
+        }
+        return null;
+      };
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const tableTaskIds = async () => {
+        const rows = main().locator('table tbody tr');
+        const n = await rows.count();
+        const ids = [];
+        for (let i = 0; i < n; i++) {
+          const txt = await rows.nth(i).innerText().catch(() => '');
+          const m = txt.match(TID_RE);
+          if (m) ids.push(m[0]);
+        }
+        if (ids.length) return ids;
+        const body = await main().innerText().catch(() => '');
+        const all = body.match(new RegExp(TID_RE.source, 'g')) || [];
+        return [...new Set(all)];
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const scrollHistoryActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      await scrollHistoryActions();
+      let picked = await pickHistoryDelete();
+      if (!picked) {
+        await scrollHistoryActions();
+        picked = await pickHistoryDelete();
+      }
+      if (!picked) {
+        throw new Error('最近评估有历史行但操作列无「删除」按钮（ticket=DEF-ENT-EVAL-HISTORY-DELETE-UI-001）');
+      }
+      const { del: delBtn, row } = picked;
+      let rowText = (await row.count()) ? await row.innerText().catch(() => '') : '';
+      if (!rowText || !TID_RE.test(rowText)) {
+        rowText = await main().innerText().catch(() => '');
+      }
+      const tidM = rowText.match(TID_RE);
+      if (!tidM) throw new Error('删除前行未见任务 ID（ticket=ENV-EVAL-TECH-HISTORY-001）');
+      const expectedTid = tidM[0];
+      const idsBefore = await tableTaskIds();
+      if (!idsBefore.includes(expectedTid)) {
+        throw new Error('锚定任务 ID 不在表格行内：' + expectedTid);
+      }
+      await delBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '删除分析记录' });
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const bodyText = (await modal.innerText()).replace(/\s+/g, ' ');
+      if (!/删除后.*列表不再显示|列表不再显示/.test(bodyText)) {
+        throw new Error('弹框未说明删除后列表不再显示，正文：' + bodyText.slice(0, 160));
+      }
+      const cancelBtn = modal.getByRole('button', { name: '取消', exact: true });
+      await expect(cancelBtn).toBeVisible({ timeout: 5000 });
+      await cancelBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(modal).toBeHidden({ timeout: 10000 });
+      const idsAfter = await tableTaskIds();
+      if (!idsAfter.includes(expectedTid)) {
+        throw new Error('取消后任务不在最近评估列表：' + expectedTid);
+      }
+      const rowStill = main().locator('table tbody tr').filter({ hasText: expectedTid });
+      await expect(rowStill.first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D3·2026-10-19 30888 无头复勘：最近评估有 DEMO 历史行（「恢复结果」可见）但操作列无「删除」（横向滚动后仍无；lumen-ui-topic 源码已含删除钮，K8s dev 未含）→DEF-ENT-EVAL-HISTORY-DELETE-UI-001。脚本按用例「删除→取消→行仍在+弹框文案」写齐；缺陷修复后可绿。路由 enterprise-center/evaluation。B 档零 allow_skip。

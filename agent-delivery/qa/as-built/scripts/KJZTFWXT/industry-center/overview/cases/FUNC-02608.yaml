@@ -1,0 +1,84 @@
+id: FUNC-02608
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02608
+priority: P1
+title: 换集群未选产业时产业链禁用
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景
+locators:
+  cluster: 'span[aria-label="集群"]'
+  industry: 'span[aria-label="产业"]'
+  chain: .industry-overview-chain-select
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 展开产业集群左侧选框，选择「海洋产业」；回读产业占位与产业链禁用态
+expect:
+  - note: 步骤：展开产业左侧选框；选择「海洋产业」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opt = popup.locator('.arco-select-option').filter({ hasText: '海洋产业' });
+      await expect(opt.first()).toBeVisible({ timeout: 8000 });
+      await opt.first().click();
+      await page.waitForTimeout(800);
+      const clusterTitle = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      if (clusterTitle !== '海洋产业') {
+        throw new Error('集群应选中「海洋产业」，实际 title=' + clusterTitle);
+      }
+  - note: 1、右侧产业选框占位为「请选择产业」
+    assert: |-
+      const industry = page.locator('span[aria-label="产业"]');
+      await expect(industry).toBeVisible({ timeout: 8000 });
+      const indTitle = await industry.getAttribute('title');
+      if (indTitle && indTitle.trim()) {
+        throw new Error('换集群后产业应未选中，实际 title=' + indTitle);
+      }
+      const indPh = await industry.locator('input').getAttribute('placeholder').catch(() => null);
+      const indTxt = (await industry.innerText()).replace(/\s+/g, ' ').trim();
+      const okPh = indPh === '请选择产业' || indTxt.includes('请选择产业');
+      if (!okPh) {
+        throw new Error('产业占位应为「请选择产业」，placeholder=' + indPh + ' text=' + indTxt);
+      }
+  - note: 2、产业链选框不可展开，占位为「可选产业链」
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const disabled = await chain.evaluate((el) => el.className.includes('disabled'));
+      if (!disabled) throw new Error('未选产业时产业链应禁用');
+      const chainPh = await chain.locator('input').getAttribute('placeholder');
+      if (chainPh !== '可选产业链') {
+        throw new Error('产业链占位应为「可选产业链」，实际 placeholder=' + chainPh);
+      }
+      const beforeOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
+      try {
+        await chain.click({ timeout: 2000 });
+        await page.waitForTimeout(400);
+      } catch (_) {
+        /* 禁用态点击失败亦 acceptable */
+      }
+      const afterOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
+      if (afterOpts > beforeOpts) {
+        throw new Error('产业链禁用态下点击后仍出现选项弹层');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例「产业左侧选框」= 筛选区 aria-label 集群（02590 同口径）。切「海洋产业」后三级级联清空产业、产业链 .arco-select-view-disabled，占位产业=请选择产业、产业链=可选产业链（scout-after-cluster-switch 生物产业同型；testdata filters）。
+  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

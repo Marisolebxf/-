@@ -1,0 +1,180 @@
+id: FUNC-02921
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02921
+priority: P1
+title: 过程完成后点查看分析记录进入诊断记录并见本任务
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 过程页已出现「分析结果已生成」（脚本内 02888 同款配置发起或复用）
+locators:
+  view_records: button「查看分析记录」
+  records_tab: tab「诊断记录」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进产业周期分析→等到「分析结果已生成」→点「查看分析记录」；诊断记录与任务行在 expect
+expect:
+  - note: 1、进入诊断记录
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const body404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t);
+      };
+      const leafItem = () => page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        if (!/\/industry-center\/diagnosis/.test(page.url()) || !/workspace=cycle/.test(page.url())) {
+          await expandChainGroup();
+          const leaf = leafItem();
+          await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+          await leaf.first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        }
+        if (await body404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+        }
+        await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      };
+      const pickByAria = async (aria, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickTimeRange = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const block = page.locator('text=分析时间范围').first();
+        await expect(block).toBeVisible({ timeout: 8000 });
+        const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      };
+      const configure02888 = async () => {
+        await pickByAria('集群', '新一代信息技术');
+        await pickByAria('产业', '半导体与集成电路');
+        await pickTimeRange('近5年');
+        const market = page.locator('[role=spinbutton]').first();
+        await market.fill('88000');
+        await page.waitForTimeout(200);
+      };
+      const ensureDoneOnProcess = async () => {
+        await enterCyclePage();
+        const urlNow = page.url();
+        const bodyNow = await main().innerText().catch(() => '');
+        if (/分析结果已生成/.test(bodyNow)) {
+          const tid =
+            new URL(urlNow).searchParams.get('task_id') ||
+            (bodyNow.match(TID_RE) || [])[0] ||
+            '';
+          globalThis.__func02921 = { taskId: tid, readyRecords: false };
+          return;
+        }
+        if (/view=result/.test(urlNow) && /产业周期分析结果/.test(bodyNow)) {
+          const rerun = page.getByRole('button', { name: '重新分析' }).first();
+          if (await rerun.isVisible().catch(() => false)) {
+            await rerun.click({ timeout: 8000 });
+            await page.waitForTimeout(800);
+          } else {
+            throw new Error('ENV-CYCLE-DAY-REUSE-001：已在结果页且无「重新分析」，无法回到过程完成态');
+          }
+        }
+        await configure02888();
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isDisabled()) throw new Error('ENV-CYCLE-START-DISABLED-001：开始分析仍禁用');
+        await start.click({ timeout: 10000 });
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(500);
+          const t = await main().innerText().catch(() => '');
+          const u = page.url();
+          if (/分析结果已生成/.test(t)) {
+            const tid = new URL(u).searchParams.get('task_id') || (t.match(TID_RE) || [])[0] || '';
+            globalThis.__func02921 = { taskId: tid, readyRecords: false };
+            return;
+          }
+          if (/分析失败|本次分析失败/.test(t) && !/产业周期分析生成中/.test(t)) {
+            throw new Error('ENV-CYCLE-ASYNC-FAIL-001：分析失败，未见「分析结果已生成」');
+          }
+        }
+        throw new Error('ENV-CYCLE-ASYNC-TIMEOUT-001：120 轮内未见「分析结果已生成」');
+      };
+      await ensureDoneOnProcess();
+      await expect(main().getByText('分析结果已生成').first()).toBeVisible({ timeout: 8000 });
+      const recordsBtn = page.getByRole('button', { name: '查看分析记录' }).first();
+      await expect(recordsBtn).toBeVisible({ timeout: 8000 });
+      await recordsBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      const urlAfter = page.url();
+      if (!/tab=records|view=records/.test(urlAfter)) {
+        const bodyAfter = await main().innerText().catch(() => '');
+        if (!/诊断记录/.test(bodyAfter) || !/任务状态|全部状态/.test(bodyAfter)) {
+          throw new Error('点「查看分析记录」后未见诊断记录区，url=' + urlAfter);
+        }
+      }
+      globalThis.__func02921 = globalThis.__func02921 || {};
+      globalThis.__func02921.readyRecords = true;
+  - note: 2、列表中有这条任务
+    assert: |-
+      if (!globalThis.__func02921?.readyRecords) throw new Error('前置：未进入诊断记录');
+      const main = page.locator('main.content-shell-layout, main').first();
+      const body = await main.innerText().catch(() => '');
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      let taskId = globalThis.__func02921.taskId || '';
+      if (!taskId) {
+        taskId = new URL(page.url()).searchParams.get('task_id') || '';
+      }
+      if (!taskId) {
+        const m = body.match(TID_RE);
+        if (m) taskId = m[0];
+      }
+      if (!taskId) {
+        throw new Error('ENV-CYCLE-NO-TASK-ID-001：过程页未捕获 task_id，无法核对列表行');
+      }
+      if (!body.includes(taskId)) {
+        throw new Error('诊断记录列表未见本任务 ' + taskId + '；main=' + body.replace(/\s+/g, ' ').slice(0, 280));
+      }
+      const row = main.locator('tbody tr, .arco-table-tr').filter({ hasText: taskId }).first();
+      if ((await row.count()) < 1) {
+        throw new Error('表格行内未见任务编号 ' + taskId);
+      }
+      if (!/产业周期分析/.test(await row.innerText().catch(() => ''))) {
+        throw new Error('任务行未见类型「产业周期分析」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口对齐 entry-seed：goto sibling
+  /industry-center/search 再侧栏「产业链分析」→「产业周期分析」。用例前置=过程页「分析结果已生成」；步骤=点「查看分析记录」（非「查看分析结果」）。
+  openRecords→tab=records/诊断记录 Tab。机检=aria-selected 诊断记录+列表含 CHAIN 任务行+类型产业周期分析。02888 同款配置兜底发起；当天结果页→重新分析。SPA 404→ENV-EDU-TTS-SVCZ-404-001。
+  登录关评审 runner 前置。B 档（重写波 FUNC 编号）。

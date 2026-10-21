@@ -1,0 +1,65 @@
+id: FUNC-05400
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05400
+priority: P0
+title: 区域页签仅见开发中说明，无搜索勾选与发起分析
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  region_tab: '#compare-basket-tab-region'
+  developing: .system-compare-developing
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+expect:
+  - note: 前置对比篮已打开，并切换到区域页签
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const regionTab = panel.locator('#compare-basket-tab-region');
+      await regionTab.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const cls = (await regionTab.getAttribute('class')) || '';
+      if (!/active/.test(cls)) throw new Error('区域页签未激活: ' + cls);
+      await expect(panel.locator('.system-compare-developing')).toBeVisible({ timeout: 8000 });
+  - note: 出现「区域对比篮开发中」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByRole('heading', { name: '区域对比篮开发中' }).first()).toBeVisible({ timeout: 8000 });
+  - note: 出现「未来用于暂存行政区域基础对象」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('未来用于暂存行政区域基础对象', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 出现「当前暂未开放对象接入能力」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('当前暂未开放对象接入能力', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 该页签没有搜索、勾选和发起分析
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      const dev = panel.locator('.system-compare-developing');
+      await expect(dev).toBeVisible({ timeout: 8000 });
+      const searchInDev = dev.locator('input[type="search"], input[placeholder*="搜索"]');
+      if (await searchInDev.count()) throw new Error('区域开发页不应出现搜索框');
+      const phSearch = dev.getByPlaceholder(/搜索/);
+      if (await phSearch.count()) throw new Error('区域开发页不应出现搜索占位');
+      if (await dev.locator('.ent-compare-item-card').count()) throw new Error('区域开发页不应出现勾选卡片');
+      if (await dev.getByRole('checkbox').count()) throw new Error('区域开发页不应出现勾选框');
+      const launch = panel.locator('[data-testid="compare-basket-action-bar"]').getByRole('button', { name: '发起分析' });
+      if (await launch.count() && (await launch.first().isVisible().catch(() => false))) {
+        throw new Error('区域页不应显示底栏「发起分析」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。区域 Tab #compare-basket-tab-region；.system-compare-developing 三文案与 lumen-ui-topic EnterpriseCompareBasketView 一致；无 action bar / 搜索 / 卡片。

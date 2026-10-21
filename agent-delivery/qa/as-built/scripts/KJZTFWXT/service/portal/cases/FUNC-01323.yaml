@@ -1,0 +1,106 @@
+id: FUNC-01323
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01323
+priority: P1
+tier: B
+title: 机构详情地址参数分享恢复
+story: US-SVC-PT-06
+entry_id: svc-portal
+preconditions:
+  - 已打开任一机构详情抽屉；可复制含机构参数的地址（脚本自含：深圳页点卡写 ?org= 后深链复进）
+locators:
+  route_shenzhen: /service-portal/shenzhen
+  org_query: '?org=<id>（readOrgQuery，参数名 org）'
+  keyorg_card: button.svc-portal-keyorg-card
+  org_drawer: '[data-testid=svc-portal-keyorg-drawer]'
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点卡写参→复制含 org 的地址→新导航复进→关闭抽屉
+expect:
+  - note: 1、携带机构参数进入时自动打开对应机构抽屉（用例预期①）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/shenzhen SPA404，无法验机构参数分享恢复 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('button.svc-portal-keyorg-card');
+      const n = await cards.count();
+      if (n === 0) {
+        const empty = await page.getByText(/暂无重点机构/).first().isVisible().catch(() => false);
+        if (empty) {
+          throw new Error('ENV-SVC-PORTAL-KEY-ORG-EMPTY：重点机构墙诚实空，无法点卡写 ?org= 验分享恢复（Q060）');
+        }
+        throw new Error('重点产业服务机构无卡片，无法构造含 org 的分享地址');
+      }
+      const pick = cards.first();
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const u1 = page.url();
+      const orgId = (() => { try { return new URL(u1).searchParams.get('org'); } catch (e) { return null; } })();
+      if (!orgId) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 点卡后地址栏未见 ?org=，用例分享前提未承载');
+      }
+      const sharePath = '/service-portal/shenzhen?org=' + encodeURIComponent(orgId);
+      await page.goto(sharePath, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await dismissBasket();
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const u2 = page.url();
+      if (!/[?&]org=/.test(u2)) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 分享深链进入后 org 参数丢失 url=' + u2);
+      }
+  - note: 2、关闭抽屉后地址栏机构参数移除且焦点返回触发卡片（用例预期②）
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 5000 });
+      const closeBtn = drawer.locator('.arco-drawer-close-btn, button[aria-label="关闭"]').first();
+      if (await closeBtn.count()) {
+        await closeBtn.click({ timeout: 5000 });
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await page.waitForTimeout(800);
+      const u3 = page.url();
+      const orgAfter = (() => { try { return new URL(u3).searchParams.get('org'); } catch (e) { return null; } })();
+      const drawerVis = await drawer.isVisible().catch(() => false);
+      if (drawerVis) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后抽屉仍可见');
+      }
+      if (orgAfter) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后地址栏仍残留 org=' + orgAfter);
+      }
+      const active = await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el) return { tag: null, isCard: false, aria: '' };
+        return {
+          tag: el.tagName,
+          isCard: el.classList && el.classList.contains('svc-portal-keyorg-card'),
+          aria: el.getAttribute('aria-label') || '',
+        };
+      });
+      const focusOk = active.isCard || /查看.+重点机构详情/.test(active.aria || '');
+      if (!focusOk) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE-FOCUS: 关闭后焦点未回到触发卡片 active=' + JSON.stringify(active));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例 catalog_path=/service-portal/overview；机构参数分享场景在子路由 /service-portal/shenzhen 重点机构墙（与 01320/03909 一致）。query 参数名 as-built=org（readOrgQuery）。墙诚实空→ENV-SVC-PORTAL-KEY-ORG-EMPTY；edu/tts/svcz 深链 SPA404→ENV-EDU-TTS-SVCZ-404-001。无法解析 org 异常归 01327，本条不混测。B 档零 allow_skip。

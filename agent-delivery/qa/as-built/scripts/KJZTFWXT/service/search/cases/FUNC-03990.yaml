@@ -1,0 +1,124 @@
+id: FUNC-03990
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03990
+priority: P0
+tier: A
+title: 主流程-高级筛选到达结果（所在城市深圳）
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「高级筛选」Tab
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_city: 字段库 Tag「所在城市」
+  apply_btn: button「应用筛选（N）」
+  result_panel_title: heading「高级筛选结果」
+  current_cond: 当前条件 Tag「所在城市：深圳」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进入后高级筛选添加所在城市=深圳并应用；判定在 expect
+expect:
+  - note: 出现标题「高级筛选结果」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const enterSvcSearch = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
+        }
+        const searchItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
+      };
+      await enterSvcSearch();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      const cityTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' }).first();
+      await expect(cityTag).toBeVisible({ timeout: 8000 });
+      await cityTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      const opText = ((await condRow.locator('.condition-builder__op').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!opText.includes('属于')) {
+        throw new Error('所在城市比较符应为「属于」，实际=' + opText);
+      }
+      await condRow.locator('.condition-builder__value .arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      await pop.locator('.arco-select-option').filter({ hasText: /^深圳$/ }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const apply = page.getByRole('button', { name: /应用筛选/ }).first();
+      await expect(apply).toBeEnabled({ timeout: 8000 });
+      await apply.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选结果' })).toBeVisible({ timeout: 15000 });
+  - note: 当前条件为「所在城市：深圳」
+    assert: |-
+      await expect(page.getByText('当前条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('所在城市：深圳', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 检索结果中有机构卡片（至少一条含「加入对比篮」，不写死命中条数）
+    assert: |-
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
+      const n = await page.getByRole('button', { name: '加入对比篮' }).count();
+      if (n < 1) throw new Error('结果区未见机构卡片行动「加入对比篮」');
+      await expect(page.getByRole('button', { name: '加入对比篮' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  金样 03990；catalog_path=/service-center/search。edu 深链常 SPA404，侧栏经 sibling /industry-center/search 进「服务机构查询」（同 FUNC-03988）。
+  高级筛选点「所在城市」、multiSelect 选「深圳」、「应用筛选（N）」→ h2「高级筛选结果」+「当前条件」Tag「所在城市：深圳」+「检索结果」卡片。
+  未选城市值应用会显示横杠，本条必须先选深圳。登录与关内部评审由 runner 会话前置。

@@ -1,0 +1,161 @@
+id: FUNC-01713
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01713
+priority: P1
+title: 返回对比篮后选择器仍保留已选
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 结果页已有来自对比篮的分析对象（assert 可自含入篮与回填）
+locators:
+  return_basket_btn: main button「返回对比篮」或 D1「选择分析企业」
+  picker_title: text「选择分析企业」
+  result_badge: /来自对比篮\s*·\s*(\d+)\s*家/
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 结果态点「返回对比篮」；选择器打开与已选家数在 expect 判定
+expect:
+  - note: 1、打开「选择分析企业」
+    assert: |-
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?workspace=domain&view=domain',
+      ];
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const gotoRoute = async () => {
+        for (const r of routes) {
+          await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          const body = (await page.locator('body').innerText().catch(() => '')) || '';
+          if (!/404 Not Found|Unexpected Application Error/.test(body)) return;
+        }
+        throw new Error('领域分析深链不可达');
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const addEntFromSearch = async (min) => {
+        await page.goto(origin() + '/development/search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        let n = await basketEntCount();
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min);
+      };
+      const fillResultViaPicker = async (pickCount = 2) => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await ctaBtn.count()) {
+          await ctaBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        const n = await sels.count();
+        if (n < 1) throw new Error('选择分析企业弹层无可勾选企业');
+        const want = Math.min(pickCount, n);
+        for (let i = 0; i < want; i++) await sels.nth(i).click();
+        await page.waitForTimeout(400);
+        const confirmBtn = page.getByRole('button', { name: '确定' });
+        for (let t = 0; t < 25 && (await confirmBtn.first().isDisabled().catch(() => true)); t++) await page.waitForTimeout(200);
+        if (await confirmBtn.first().isDisabled().catch(() => true)) throw new Error('确定仍禁用');
+        await confirmBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(4000);
+      };
+      const readResultObjectCount = async () => {
+        const mainTxt = (await page.locator('main').innerText().catch(() => '')) || '';
+        const m = mainTxt.match(/来自对比篮\s*·\s*(\d+)\s*家/)
+          || mainTxt.match(/当前对象\s*·\s*(\d+)\s*家/);
+        if (!m) throw new Error('结果页未解析分析对象家数');
+        return parseInt(m[1], 10);
+      };
+      const inFromBasketResult = async () => {
+        const main = page.locator('main');
+        const bar = main.getByText(/来自对比篮\s*·\s*\d+\s*家/);
+        return (await bar.count()) > 0 && (await bar.first().isVisible().catch(() => false));
+      };
+      await gotoRoute();
+      await closeBasket();
+      if (!(await inFromBasketResult())) {
+        if (await basketEntCount() < 2) await addEntFromSearch(2);
+        await gotoRoute();
+        await closeBasket();
+        await fillResultViaPicker(2);
+        await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 12000 });
+      }
+      if (!(await inFromBasketResult())) {
+        throw new Error('前置未进入「来自对比篮」结果态');
+      }
+      const objectCount = await readResultObjectCount();
+      if (objectCount < 1) throw new Error('结果页分析对象家数应≥1');
+      await closeBasket();
+      const main = page.locator('main');
+      const returnBtn = main.getByRole('button', { name: '返回对比篮', exact: true });
+      const reopenPickerBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+      if (await returnBtn.count() && await returnBtn.first().isVisible().catch(() => false)) {
+        await returnBtn.first().click({ timeout: 12000 });
+      } else if (await reopenPickerBtn.count() && await reopenPickerBtn.first().isVisible().catch(() => false)) {
+        await reopenPickerBtn.first().click({ timeout: 12000 });
+      } else {
+        throw new Error('结果页未找到「返回对比篮」或 D1 等价「选择分析企业」');
+      }
+      await page.waitForTimeout(900);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await page.evaluate((n) => { window.__gkxFunc01713Expected = n; }, objectCount);
+  - note: 2、已选家数与当前结果一致
+    assert: |-
+      const expected = await page.evaluate(() => window.__gkxFunc01713Expected);
+      if (!expected || expected < 1) throw new Error('缺少预期家数上下文');
+      const panel = page.locator('.system-compare-panel, [aria-label="对比篮"]').filter({ hasText: '篮内企业' }).first();
+      const scope = (await panel.count()) ? panel : page.locator('body');
+      const txt = (await scope.innerText().catch(() => '')) || (await page.locator('body').innerText().catch(() => ''));
+      const liveM = txt.match(/当前已选择\s*(\d+)\s*家企业/);
+      let pickerSelected = liveM ? parseInt(liveM[1], 10) : null;
+      if (pickerSelected === null) {
+        const sels = page.locator('[aria-label^="选择 "]');
+        let checked = 0;
+        for (let i = 0; i < await sels.count(); i++) {
+          const ac = await sels.nth(i).getAttribute('aria-checked');
+          if (ac === 'true') checked++;
+        }
+        pickerSelected = checked;
+      }
+      if (pickerSelected !== expected) {
+        throw new Error(`选择器已选 ${pickerSelected} 家，结果页分析对象 ${expected} 家`);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D2·30888 结果态对象区无独立「返回对比篮/打开对比篮调整对象」，仅「选择分析企业」重开 picker（与 FUNC-01711 同入口）；有「返回对比篮」时优先点用例原文。须先篮内≥2 家再回填才见「来自对比篮·N家」。登录与关内部评审由 runner 会话前置。B 档。

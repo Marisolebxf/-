@@ -1,0 +1,53 @@
+id: FUNC-05426
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05426
+priority: P1
+title: 从查看引育名单进入培育候选名单
+story: US-ENT-CMP-04
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  view_lists: button「查看引育名单」
+  cultivate_menu: 查看培育候选名单
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 点击「查看引育名单」→「查看培育候选名单」；页面标题在 expect 判定
+expect:
+  - note: 1、对比篮已打开并点击「查看引育名单」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const viewLists = panel.getByRole('button', { name: /查看引育名单/ }).first();
+      await expect(viewLists).toBeVisible({ timeout: 8000 });
+      await viewLists.scrollIntoViewIfNeeded().catch(() => {});
+      await viewLists.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      const menuItem = page.getByText('查看培育候选名单', { exact: true }).first();
+      await expect(menuItem).toBeVisible({ timeout: 8000 });
+      globalThis.__func05426_menuReady = true;
+  - note: 2、点击「查看培育候选名单」
+    assert: |-
+      if (!globalThis.__func05426_menuReady) throw new Error('前置未打开「查看引育名单」菜单');
+      const item = page.getByText('查看培育候选名单', { exact: true }).first();
+      await item.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+  - note: 1、页面标题为「培育企业推荐分析」
+    assert: |-
+      await page.waitForURL(/workspace=cultivation|recommendation_tab=cultivation/, { timeout: 15000 }).catch(() => {});
+      const h1 = page.getByRole('heading', { name: '培育企业推荐分析' }).first();
+      await expect(h1).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。菜单项与 EnterpriseCompareBasketView a-doption 一致；落点路由 CANDIDATE_LIST_ROUTES.cultivation（/enterprise/attraction?workspace=cultivation&entry=candidates）。与 05425 分开，名单页内部不在本条。登录与关评审由 runner 前置。B 档零 allow_skip。

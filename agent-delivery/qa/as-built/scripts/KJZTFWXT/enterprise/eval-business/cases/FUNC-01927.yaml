@@ -1,0 +1,124 @@
+id: FUNC-01927
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01927
+priority: P0
+title: 最近评估表头字段完整
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开「最近评估」
+locators:
+  tab_recent: tab「最近评估」
+  new_eval_button: button「新建评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 点「最近评估」→任务表十列表头断言在 expect
+expect:
+  - note: 1、表头含任务名称、任务 ID、模式、企业摘要、模板 / 版本
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const EXPECT_HEADERS = [
+        '任务名称',
+        '任务 ID',
+        '模式',
+        '企业摘要',
+        '模板 / 版本',
+        '创建时间',
+        '状态',
+        '可信度',
+        '报告',
+        '操作',
+      ];
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const clickRecentTab = async () => {
+        const tablists = page.locator('[role=tablist]').filter({ has: page.getByRole('tab', { name: '最近评估', exact: true }) });
+        const list = (await tablists.count()) ? tablists.first() : page.locator('[role=tablist]').first();
+        const recent = list.getByRole('tab', { name: '最近评估', exact: true });
+        await expect(recent).toBeVisible({ timeout: 10000 });
+        await recent.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(recent).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      };
+      const readRecentTableHeaders = async () => {
+        return await page.evaluate((expected) => {
+          const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+          const matchRow = (headers) => {
+            if (!headers || headers.length !== 10) return null;
+            for (let i = 0; i < 10; i++) {
+              if (headers[i] !== expected[i]) return null;
+            }
+            return headers;
+          };
+          const tables = [...document.querySelectorAll('table, .arco-table')];
+          for (const table of tables) {
+            const headRow = table.querySelector('thead tr') || table.querySelector('.arco-table-header .arco-table-tr') || table.querySelector('.arco-table-tr');
+            if (!headRow) continue;
+            const cells = [...headRow.querySelectorAll('th, .arco-table-th')].map((c) => norm(c.innerText)).filter(Boolean);
+            if (cells.length < 10) continue;
+            const matched = matchRow(cells.slice(0, 10));
+            if (matched) return { ok: true, headers: matched, via: 'table' };
+          }
+          const body = document.body.innerText || '';
+          const anchor = body.indexOf('新建评估');
+          const slice = anchor >= 0 ? body.slice(anchor, anchor + 400) : body;
+          const seg = slice.split(/\n|\t/).map(norm).filter(Boolean);
+          const startIdx = seg.indexOf('任务名称');
+          if (startIdx >= 0) {
+            const matched = matchRow(seg.slice(startIdx, startIdx + 10));
+            if (matched) return { ok: true, headers: matched, via: 'text_proxy' };
+          }
+          for (let start = 0; start < seg.length; start++) {
+            if (seg[start] !== '任务名称') continue;
+            const matched = matchRow(seg.slice(start, start + 10));
+            if (matched) return { ok: true, headers: matched, via: 'text_proxy_scan' };
+          }
+          return { ok: false, reason: '未找到十列表头', seg: seg.slice(0, 16) };
+        }, EXPECT_HEADERS);
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 15000 });
+      await clickRecentTab();
+      await expect(page.getByRole('button', { name: '新建评估' }).first()).toBeVisible({ timeout: 10000 });
+      const hdr = await readRecentTableHeaders();
+      if (!hdr || !hdr.ok) throw new Error('最近评估表头读取失败: ' + JSON.stringify(hdr));
+      globalThis.__func01927_hdr = hdr.headers;
+      const first5 = hdr.headers.slice(0, 5);
+      const want5 = EXPECT_HEADERS.slice(0, 5);
+      for (let i = 0; i < 5; i++) {
+        if (first5[i] !== want5[i]) throw new Error('表头前5列不符: got ' + JSON.stringify(first5));
+      }
+  - note: 2、表头含创建时间、状态、可信度、报告、操作
+    assert: |-
+      const EXPECT_HEADERS = [
+        '任务名称',
+        '任务 ID',
+        '模式',
+        '企业摘要',
+        '模板 / 版本',
+        '创建时间',
+        '状态',
+        '可信度',
+        '报告',
+        '操作',
+      ];
+      const hdr = globalThis.__func01927_hdr;
+      if (!hdr || hdr.length !== 10) throw new Error('前置：未读取最近评估表头');
+      const last5 = hdr.slice(5, 10);
+      const want5 = EXPECT_HEADERS.slice(5, 10);
+      for (let i = 0; i < 5; i++) {
+        if (last5[i] !== want5[i]) throw new Error('表头后5列不符: got ' + JSON.stringify(last5));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01927 最近评估任务表十列表头（两句列全集）。对齐 FUNC-01802/eval-tech 读表逻辑；30888 路由 /enterprise-center/evaluation；表头 observed 见 fixtures/scout/scout-gate-r2.json。不验行数据/翻页。登录与关内部评审由 runner 会话前置。tier B，无 allow_skip。

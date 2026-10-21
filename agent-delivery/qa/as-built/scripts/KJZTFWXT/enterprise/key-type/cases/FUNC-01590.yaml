@@ -1,0 +1,124 @@
+id: FUNC-01590
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01590
+priority: P0
+title: 深圳下第三级区县选项共 11 项
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 已进入类型分析页
+locators:
+  filter_heading: main 内「产业与企业类型筛选」
+  region_cascader_view: main 内 [aria-label="选择区域"] 或 .sci-arco-cascader .arco-cascader-view（P7）
+  cascade_hot_group: 级联第一级「全国热门科创城市」项
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 展开区域级联、全国热门科创城市、深圳；第三级项数与名称在 expect 判定
+expect:
+  - note: 已进入重点企业类型分析页且筛选区可见
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await expect(main.getByRole('heading', { name: '产业与企业类型筛选' }).first()).toBeVisible({ timeout: 8000 });
+      const regionPh = main.locator('input[placeholder*="全国热门"]').first();
+      await expect(regionPh).toBeVisible({ timeout: 8000 });
+      const ph = (await regionPh.getAttribute('placeholder')) || '';
+      if (!/深圳/.test(ph)) throw new Error('默认区域非深圳: ' + ph);
+  - note: 展开「深圳」后第三级共 11 项
+    assert: |-
+      const main = page.locator('main');
+      let regionView = main.locator('[aria-label="选择区域"]').first();
+      if ((await main.locator('[aria-label="选择区域"]').count()) < 1) {
+        regionView = main.locator('.sci-arco-cascader .arco-cascader-view').first();
+      }
+      await regionView.scrollIntoViewIfNeeded();
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let panel = page.locator('.arco-cascader-list-column').first().locator('xpath=ancestor::*[contains(@class,"arco-trigger-popup") or starts-with(@id,"arco-cascader-popup")]').first();
+      if (!(await panel.isVisible().catch(() => false))) {
+        const combo = main.locator('.sci-arco-cascader').first();
+        const popupId = await combo.getAttribute('aria-controls');
+        if (!popupId) throw new Error('区域级联未暴露 aria-controls');
+        panel = page.locator('#' + popupId);
+      }
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const firstCol = panel.locator('.arco-cascader-list-column').first();
+      await firstCol.locator('.arco-cascader-list-item').filter({ hasText: '全国热门科创城市' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const secondCol = panel.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      let sz = secondCol.locator('.arco-cascader-list-item').filter({ hasText: /^深圳$/ }).first();
+      if (!(await sz.count())) {
+        sz = secondCol.locator('.arco-cascader-list-item').filter({ hasText: '深圳市' }).first();
+      }
+      await sz.hover({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let thirdCol = panel.locator('.arco-cascader-list-column').nth(2);
+      if (!(await thirdCol.isVisible().catch(() => false))) {
+        await sz.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        thirdCol = panel.locator('.arco-cascader-list-column').nth(2);
+      }
+      await expect(thirdCol).toBeVisible({ timeout: 8000 });
+      const items = thirdCol.locator('.arco-cascader-list-item');
+      const count = await items.count();
+      if (count !== 11) {
+        const sample = await items.allTextContents();
+        throw new Error(`深圳第三级项数为 ${count}，预期 11；样本=${sample.join('|')}`);
+      }
+  - note: 第三级 11 项名称与用例附录 D 一致
+    assert: |-
+      const expected = ['全部', '南山区', '福田区', '罗湖区', '宝安区', '龙岗区', '龙华区', '光明区', '坪山区', '盐田区', '大鹏新区'];
+      const main = page.locator('main');
+      let regionView = main.locator('[aria-label="选择区域"]').first();
+      if ((await main.locator('[aria-label="选择区域"]').count()) < 1) {
+        regionView = main.locator('.sci-arco-cascader .arco-cascader-view').first();
+      }
+      await regionView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let panel = page.locator('.arco-cascader-list-column').first().locator('xpath=ancestor::*[contains(@class,"arco-trigger-popup") or starts-with(@id,"arco-cascader-popup")]').first();
+      if (!(await panel.isVisible().catch(() => false))) {
+        const combo = main.locator('.sci-arco-cascader').first();
+        const popupId = await combo.getAttribute('aria-controls');
+        if (!popupId) throw new Error('区域级联未暴露 aria-controls');
+        panel = page.locator('#' + popupId);
+      }
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const firstCol = panel.locator('.arco-cascader-list-column').first();
+      await firstCol.locator('.arco-cascader-list-item').filter({ hasText: '全国热门科创城市' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const secondCol = panel.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol).toBeVisible({ timeout: 8000 });
+      let sz = secondCol.locator('.arco-cascader-list-item').filter({ hasText: /^深圳$/ }).first();
+      if (!(await sz.count())) {
+        sz = secondCol.locator('.arco-cascader-list-item').filter({ hasText: '深圳市' }).first();
+      }
+      await sz.hover({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      let thirdCol = panel.locator('.arco-cascader-list-column').nth(2);
+      if (!(await thirdCol.isVisible().catch(() => false))) {
+        await sz.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        thirdCol = panel.locator('.arco-cascader-list-column').nth(2);
+      }
+      await expect(thirdCol).toBeVisible({ timeout: 8000 });
+      const texts = (await thirdCol.locator('.arco-cascader-list-item').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`第三级未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 11) {
+        throw new Error(`第三级去重后项数 ${texts.length}，预期 11；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: 区域级联面板定位同 FUNC-01589（aria-label=选择区域 + aria-controls popup）；热门→hover 深圳后第三列 11 项，名称对齐用例附录 D。

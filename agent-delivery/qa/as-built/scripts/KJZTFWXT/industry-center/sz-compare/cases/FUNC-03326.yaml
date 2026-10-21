@@ -1,0 +1,141 @@
+id: FUNC-03326
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03326
+priority: P1
+title: 分析记录筛「分析中」时列表为空态
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开「分析记录」
+locators:
+  tab_rec: '[role=tab][data-tab-key=records]'
+  records_frame: '[data-frame-id="F-SZ-04"]'
+  status_filter: .diagnosis-records__filters .arco-select-view
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 进入分析记录并将任务状态选为「分析中」（空态判定在 expect）
+expect:
+  - note: 前置：分析记录 Tab 已打开；任务状态选为「分析中」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const statusSelect = () =>
+        page
+          .locator('.diagnosis-records__filters > div')
+          .filter({ hasText: '任务状态' })
+          .locator('.arco-select-view')
+          .first();
+      const readStatusLabel = async () => {
+        const view = statusSelect();
+        const title = await view.getAttribute('title');
+        const val = view.locator('.arco-select-view-value').first();
+        const inner = val.count ? ((await val.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim() : '';
+        return (title || inner || ((await view.innerText()) || '').replace(/\s+/g, ' ').trim()).trim();
+      };
+      const pickStatus = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(150);
+        const view = statusSelect();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + label + '\\s*$') });
+        await expect(opt.first()).toBeVisible({ timeout: 8000 });
+        await opt.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03326 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      const frame = page.locator('[data-frame-id="F-SZ-04"]');
+      await expect(frame).toBeVisible({ timeout: 10000 });
+      await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
+      await pickStatus('分析中');
+      const afterLabel = await readStatusLabel();
+      if (!/分析中/.test(afterLabel)) {
+        throw new Error('选「分析中」后任务状态未显示分析中；当前「' + afterLabel + '」');
+      }
+      globalThis.__func03326_ready = true;
+  - note: 1、列表显示「暂无数据」（筛选空态，不要求现场存在分析中任务）
+    assert: |-
+      if (!globalThis.__func03326_ready) throw new Error('前置：未完成分析中筛选');
+      const frame = page.locator('[data-frame-id="F-SZ-04"]');
+      await expect(frame).toBeVisible({ timeout: 8000 });
+      const table = frame.locator('.arco-table');
+      await expect(table).toBeVisible({ timeout: 8000 });
+      const emptyInTable = table.locator('.arco-table-empty, .arco-empty').filter({ hasText: /暂无数据/ });
+      if (await emptyInTable.count() && (await emptyInTable.first().isVisible().catch(() => false))) {
+        return;
+      }
+      const emptyBody = table.locator('.arco-table-body').getByText('暂无数据').first();
+      if (await emptyBody.isVisible().catch(() => false)) return;
+      const dataRows = table.locator('.arco-table-body tr.arco-table-tr').filter({ hasNotText: /暂无数据/ });
+      let visibleRows = 0;
+      for (let i = 0; i < (await dataRows.count()); i++) {
+        if (await dataRows.nth(i).isVisible().catch(() => false)) visibleRows += 1;
+      }
+      if (visibleRows > 0) {
+        throw new Error('筛「分析中」后列表仍有 ' + visibleRows + ' 行数据，未见空态「暂无数据」');
+      }
+      const fallback = frame.getByText('暂无数据').first();
+      await expect(fallback).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  F-SZ-04 recordStatusFilter=running（IndustryShenzhenPage RECORD_STATUS_OPTIONS）；筛「分析中」空表 Arco 空态「暂无数据」，不要求造 running 任务。
+  入口 route=entry-seed catalog_path；与同批 03325/03309/03317 共用深链/侧栏 fallback。edu 深链/侧栏 SPA404→ENV-EDU-TTS-SVCZ-404-001。

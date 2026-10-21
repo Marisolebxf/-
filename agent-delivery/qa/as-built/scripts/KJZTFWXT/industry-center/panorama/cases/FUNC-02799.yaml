@@ -1,0 +1,88 @@
+id: FUNC-02799
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02799
+priority: P1
+title: 市场规模页签空值
+story: US-CHAIN-PANORAMA-03
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已打开任一环节详情
+locators:
+  structure_list: '[aria-label="产业链结构列表"]'
+  inline_detail: '[data-testid="panorama-inline-detail"]'
+  tab_market: 市场规模
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 结构列表打开环节详情并点击「市场规模」页签（操作在 expect assert 内）
+expect:
+  - note: 前置：已进入本页并打开任一环节详情
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      await page.getByText('结构列表', { exact: true }).click();
+      await page.waitForTimeout(600);
+      const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
+      const listCls = (await listRadio.getAttribute('class')) || '';
+      if (!listCls.includes('arco-radio-checked')) {
+        throw new Error('前置：结构列表未选中');
+      }
+      const list = page.locator('[aria-label="产业链结构列表"]');
+      await expect(list).toBeVisible({ timeout: 10000 });
+      const nodeBtn = list.locator('.industry-topic-structure-list__nodes button').first();
+      await expect(nodeBtn).toBeVisible({ timeout: 8000 });
+      await nodeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail).toBeVisible({ timeout: 10000 });
+      globalThis.__func02799_ready = true;
+  - note: 1.点击「市场规模」
+    assert: |-
+      if (!globalThis.__func02799_ready) throw new Error('前置：未打开环节详情');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      const tab = detail.getByRole('tab', { name: '市场规模' });
+      await expect(tab).toBeVisible({ timeout: 8000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const selected =
+        (await tab.getAttribute('aria-selected')) === 'true' ||
+        ((await tab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        throw new Error('步骤：「市场规模」页签未选中');
+      }
+  - note: 1、展示「暂无正式数据源」
+    assert: |-
+      if (!globalThis.__func02799_ready) throw new Error('前置：未打开环节详情');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail.getByText('暂无正式数据源', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 2、说明写明没有正式数据时不使用估算值替代
+    assert: |-
+      if (!globalThis.__func02799_ready) throw new Error('前置：未打开环节详情');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      const note = detail.locator('.industry-panorama-market-note');
+      await expect(note).toBeVisible({ timeout: 8000 });
+      const noteText = ((await note.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/没有正式数据时保留空值，不使用估算值替代/.test(noteText)) {
+        throw new Error('市场规模说明口径不符: ' + noteText);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；前置结构列表点首环节打开 data-testid=panorama-inline-detail（IndustryPanoramaDetail.vue panorama 变体）。
+  页签 a-tabs key=market title=市场规模；空值 strong=暂无正式数据源 + p.industry-panorama-market-note 说明不使用估算值替代（scout-deep3 同口径）。
+  图谱 canvas 点击不稳定，本条仅结构列表。对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；空态断言仍依用例册 02799 与 IndustryPanoramaDetail strong + market-note。

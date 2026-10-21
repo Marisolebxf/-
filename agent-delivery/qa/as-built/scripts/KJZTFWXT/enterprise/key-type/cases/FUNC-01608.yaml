@@ -1,0 +1,59 @@
+id: FUNC-01608
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01608
+priority: P0
+title: 企业详情资质荣誉页签展示三列
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 企业详情已可从清单打开
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  list_drawer: .arco-drawer:visible（企业清单）
+  profile_btn: 清单行 button「查看画像」
+  detail_drawer: .arco-drawer:visible 标题「企业详情」
+  tab_qualification: 企业详情抽屉 tab「资质荣誉」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单→查看画像→资质荣誉；列与标题判定在 expect 内
+expect:
+  - note: 展示「资质荣誉」「认定机构」「认定时间」三列（用例写「类别」，D1 跟 30888 现场表头）；抽屉标题仍为「企业详情」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const listDrawer = page.locator('.arco-drawer:visible').first();
+      await expect(listDrawer).toBeVisible({ timeout: 8000 });
+      const profiles = listDrawer.getByRole('button', { name: '查看画像' });
+      if (await profiles.count() < 1) {
+        throw new Error('前置不满足：企业清单无企业行');
+      }
+      await profiles.first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const detailDrawer = page.locator('.arco-drawer:visible').first();
+      await expect(detailDrawer.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 12000 });
+      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      const qualTab = detailDrawer.getByRole('tab', { name: '资质荣誉' });
+      await expect(qualTab).toBeVisible({ timeout: 8000 });
+      await qualTab.scrollIntoViewIfNeeded();
+      await qualTab.click({ timeout: 8000 });
+      await expect(qualTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(detailDrawer.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      for (const col of ['资质荣誉', '认定机构', '认定时间']) {
+        await expect(detailDrawer.locator('th, .arco-table-th').filter({ hasText: col }).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；点「查看画像」后清单切企业详情单抽屉（`.arco-drawer-header-title`）。资质荣誉 Tab 表头为「资质荣誉」「认定机构」「认定时间」（用例预期「类别」= agency 列，现场文案认定机构）。无数据时仍验表头。登录与关内部评审由 runner 会话前置。

@@ -1,0 +1,83 @@
+id: FUNC-01328
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01328
+priority: P0
+tier: A
+title: 侧栏进入服务机构查询路由与页标题正确
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 系统正常；已登录 admin
+locators:
+  menu_group: 侧栏分组「产业服务链分析」
+  menu_leaf: 侧栏项「服务机构查询」（落点 /service-center/search）
+steps:
+  - action: evaluate
+    note: 从登录后会话壳经侧栏点「服务机构查询」；路由与页标题在 expect 判定
+expect:
+  - note: 路由为 /service-center/search
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/智能检索|产业查询|专题全景/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2500);
+        }
+      };
+      const ensureAppShell = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        const menuRoot = page.locator('.arco-menu, .layout-menu, nav').first();
+        const hasMenu = await menuRoot.isVisible().catch(() => false);
+        if (!hasMenu || (await bodyIs404())) {
+          await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1500);
+          await recover404Shell();
+        }
+      };
+      const searchItem = () =>
+        page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: /^服务机构查询$/ });
+      const expandServiceGroup = async () => {
+        if (await searchItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      await ensureAppShell();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 登录后仍 SPA404 无侧栏壳，无法侧栏进服务机构查询 url=' + page.url());
+      }
+      await expandServiceGroup();
+      const leaf = searchItem();
+      await expect(leaf.first()).toBeVisible({ timeout: 15000 });
+      await leaf.first().click({ timeout: 10000 });
+      await page.waitForURL(/\/service-center\/search/, { timeout: 20000 });
+      await recover404Shell();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏点击后 /service-center/search SPA404 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/\/service-center\/search/);
+  - note: 页标题为「服务机构查询」
+    assert: |-
+      await expect(page).toHaveTitle(/服务机构查询/);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由 catalog_path /service-center/search；edu/tts/svcz 冷启动深链（含 sibling）常 SPA404，本条 steps 不 goto 深链，assert 内先返回首页/根路径恢复壳再侧栏点 menu_leaf。侧栏项 div.arco-menu-item。document.title 常带后缀「 - 科技专题服务系统」。壳与三 Tab 归 01329。A 档零 allow_skip。

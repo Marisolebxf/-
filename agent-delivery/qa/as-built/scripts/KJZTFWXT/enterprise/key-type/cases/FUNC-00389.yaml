@@ -1,0 +1,75 @@
+id: FUNC-00389
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00389
+priority: P0
+title: 切换热门城市后区域回显更新且其余筛选保持
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 区域为默认深圳（全国热门科创城市 / 深圳 / 全部）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  region_cascader: main 内 .sci-arco-cascader（区域）
+  cascade_hot_group: 级联第一层「全国热门科创城市」分组容器
+  cascade_beijing: 第二层「北京」
+  kpi_section: 类型与区域分析三卡
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析；展开区域级联并在「全国热门科创城市」下选「北京」；回显与其余筛选在 expect 判定
+expect:
+  - note: 1、默认深圳态下展开级联，选「北京」后区域回显含「北京」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const regionCombo = main.getByRole('combobox', { name: '选择区域' });
+      await expect(regionCombo).toBeVisible({ timeout: 8000 });
+      const titleEl = regionCombo.locator('[title]').first();
+      const title0 = (await titleEl.getAttribute('title')) || '';
+      if (title0 && !/深圳/.test(title0)) throw new Error('前置区域非默认深圳: ' + title0);
+      await regionCombo.click({ force: true, timeout: 8000 });
+      await page.waitForTimeout(700);
+      const popupId = await regionCombo.getAttribute('aria-controls');
+      if (!popupId) throw new Error('区域级联未展开（无 aria-controls）');
+      const panel = page.locator('#' + popupId);
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      await panel.getByText('全国热门科创城市', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await panel.getByText('北京', { exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const title1 = (await titleEl.getAttribute('title')) || '';
+      const ph1 = (await main.locator('input[placeholder*="全国热门"]').first().getAttribute('placeholder')) || '';
+      if (!/北京/.test(title1 + ' ' + ph1)) throw new Error('区域回显未含北京 title=' + title1 + ' ph=' + ph1);
+  - note: 2、切换后「类型与区域分析」三卡（匹配企业数、覆盖企业类型数、覆盖区域数）仍在且可见
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      await expect(kpiSection).toBeVisible({ timeout: 8000 });
+      for (const n of ['匹配企业数', '覆盖企业类型数', '覆盖区域数']) {
+        await expect(kpiSection.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 3、年份、产业、企业类型保持切换前的默认值（近3年 2023—2026；产业集群未选；类型 placeholder「全部」空值）
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('近3年').first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText('2023', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText('2026', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const clusterInp = main.getByPlaceholder('选择产业集群').first();
+      await expect(clusterInp).toBeVisible({ timeout: 8000 });
+      if (await clusterInp.inputValue()) throw new Error('切换区域后产业集群被改动');
+      const typeLbl = main.getByText('企业类型', { exact: true }).first();
+      const row = typeLbl.locator('xpath=ancestor::div[1]');
+      const typeInp = row.getByPlaceholder('全部').first();
+      await expect(typeInp).toBeVisible({ timeout: 8000 });
+      if (await typeInp.inputValue()) throw new Error('切换区域后企业类型被改动');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D2·30888 区域为 role=combobox「选择区域」；下拉挂在 #arco-cascader-popup-*（非 .arco-trigger-popup），需 force 点开。选「全国热门科创城市」→「北京」后 title/placeholder 含北京。只验回显，不验地图下钻（coverage-fp）。登录与关内部评审由 runner 会话前置。

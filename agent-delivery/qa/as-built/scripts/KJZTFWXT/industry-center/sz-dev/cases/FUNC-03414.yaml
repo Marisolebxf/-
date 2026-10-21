@@ -1,0 +1,171 @@
+id: FUNC-03414
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03414
+priority: P1
+title: 分析记录删除弹框点取消记录仍在
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 分析记录中至少有一条记录
+locators:
+  tab_rec: tab「分析记录」
+  delete_button: button「删除」
+  modal_cancel: 弹框 button「取消」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 分析记录→任一条「删除」→Modal「取消」；弹框文案与行仍在 expect
+expect:
+  - note: 前置并打开删除弹框（对一条发展分析记录点「删除」）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const enterSzDev = async () => {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳产业发展分析深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=development/);
+        await expect(page).toHaveURL(/tab=development/);
+      };
+      const scrollRecordActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const pickDeletable = async () => {
+        await scrollRecordActions();
+        const rows = main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业发展分析' });
+        const n = await rows.count();
+        for (let i = 0; i < Math.min(n, 20); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          let del = row.getByRole('button', { name: '删除', exact: true }).first();
+          if (!(await del.count())) {
+            del = row.locator('button, .arco-btn').filter({ hasText: /^删除$/ }).first();
+          }
+          if (!(await del.count()) || (await del.isDisabled().catch(() => true))) continue;
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          await scrollRecordActions();
+          if (!(await del.isVisible().catch(() => false))) continue;
+          const tidM = rowText.match(TID_RE);
+          const tid = tidM ? tidM[0] : rowText.slice(0, 80);
+          return { del, tid };
+        }
+        return null;
+      };
+      await enterSzDev();
+      const recTab = page.getByRole('tab', { name: '分析记录' }).first();
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      await expect(main().getByText('任务').first()).toBeVisible({ timeout: 8000 });
+      const recBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/暂无数据/.test(recBody)) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-RECORD-03414：分析记录空态，无记录可测取消删除');
+      }
+      const picked = await pickDeletable();
+      if (!picked) {
+        if (!/深圳产业发展分析/.test(recBody) || !TID_RE.test(recBody)) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-RECORD-03414：分析记录未见深圳产业发展分析任务行');
+        }
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DELETE-03414：有记录行但操作列无可见可点「删除」');
+      }
+      globalThis.__func03414 = { tid: picked.tid };
+      await picked.del.click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').first();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      globalThis.__func03414.modal = modal;
+  - note: 1、对话框说明删除后列表不再显示该条
+    assert: |-
+      const modal = globalThis.__func03414?.modal;
+      if (!modal) throw new Error('前置：删除弹框未打开');
+      const body = ((await modal.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/删除|不再显示|列表/.test(body)) {
+        throw new Error('删除弹框正文未说明删除后列表不再显示：' + body.slice(0, 200));
+      }
+  - note: 2、点「取消」后该条仍留在列表中
+    assert: |-
+      const ctx = globalThis.__func03414;
+      if (!ctx?.modal) throw new Error('前置：删除弹框未打开');
+      const expectedTid = ctx.tid;
+      const modal = ctx.modal;
+      const cancel = modal.getByRole('button', { name: '取消', exact: true });
+      const okBtn = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(cancel).toBeVisible({ timeout: 5000 });
+      await expect(okBtn).toBeVisible({ timeout: 5000 });
+      await cancel.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(modal).toBeHidden({ timeout: 10000 });
+      const main = () => page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      if (TID_RE.test(expectedTid)) {
+        await expect(main().locator('tbody tr, .arco-table-tr').filter({ hasText: expectedTid }).first()).toBeVisible({ timeout: 8000 });
+      } else {
+        await expect(main().getByText('深圳产业发展分析').first()).toBeVisible({ timeout: 8000 });
+      }
+      const msgDeleted = page.locator('.arco-message-content').filter({ hasText: /已删除/ });
+      if (await msgDeleted.count() && (await msgDeleted.first().isVisible().catch(() => false))) {
+        throw new Error('取消后不应出现「已删除」提示');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed；步骤=分析记录 Tab→任一条发展分析「删除」→Modal 正文→「取消」→CHAIN 编号仍在（非破坏性；确定删除见 FUNC-03415）。
+  空态→ENV-CHAIN-SZ-DEV-NO-RECORD-03414；无可删→ENV-CHAIN-SZ-DEV-NO-DELETE-03414。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。B 档零 allow_skip。

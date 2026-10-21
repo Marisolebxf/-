@@ -1,0 +1,201 @@
+id: FUNC-00959
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00959
+priority: P0
+title: 权重和偏离或未选指标时开始分析被拦截且修复后恢复
+story: US-ENT-EVAL-QUALITY
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已带入至少 2 家企业；指标与权重区可见
+locators:
+  avg: 一键平均分配
+  start: 开始分析
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 调权偏离→开始；清空指标→开始；均分修复→开始（断言在 expect）
+expect:
+  - note: 权重和不为 100 时「开始分析」被拦截且权重不被静默归一化
+    assert: |-
+      const METRICS = ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度'];
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const main = () => page.locator('main.app-main').first();
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const ensureTwoObjectsFilled = async () => {
+        await ensureBasketEnterprises(2);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await dismissBasket();
+        }
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        if (/来自对比篮/.test(await main().innerText())) return;
+        const openCta = main().getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+        await expect(openCta).toBeVisible({ timeout: 10000 });
+        await openCta.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        const sels = page.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 2) throw new Error('对比篮可选企业不足 2 家');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(200);
+        await sels.nth(1).click({ force: true });
+        await page.waitForTimeout(200);
+        await page.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 });
+      };
+      const marketRow = () => page.locator('main [aria-label="选择指标：市场"]').locator('xpath=ancestor::tr[1]');
+      const marketWeight = () => marketRow().locator('[aria-label="市场权重"]');
+      const stepBtns = () => marketRow().locator('.arco-input-number-step-button');
+      const assertStartBlocked = async (reason) => {
+        const start = page.getByRole('button', { name: '开始分析' });
+        const url0 = page.url();
+        const disabled = await start.isDisabled();
+        if (!disabled) {
+          await start.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(900);
+        }
+        if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) {
+          throw new Error(reason + '：仍进入 view=processing');
+        }
+        if (/view=result/.test(page.url()) && !/view=result/.test(url0)) {
+          throw new Error(reason + '：仍进入 view=result');
+        }
+        if (!disabled) {
+          const sumLine = (await page.getByText(/权重合计/).first().innerText().catch(() => '')) || '';
+          const mainText = await main().innerText();
+          if (/校验通过/.test(sumLine) && !/校验未通过|需调整/.test(mainText + sumLine)) {
+            throw new Error(reason + '：开始分析仍可点且合计仍校验通过');
+          }
+        }
+      };
+      await ensureTwoObjectsFilled();
+      await expect(marketWeight()).toBeEnabled({ timeout: 8000 });
+      const v0 = Number(await marketWeight().inputValue());
+      const btns = stepBtns();
+      if (await btns.count() < 2) throw new Error('市场权重调节钮不足');
+      let v1 = v0;
+      for (let i = 0; i < 4 && v1 === v0; i++) {
+        await btns.nth(0).click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        v1 = Number(await marketWeight().inputValue());
+      }
+      if (v1 === v0) {
+        await btns.nth(1).click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        v1 = Number(await marketWeight().inputValue());
+      }
+      if (v1 === v0) throw new Error('未能制造权重偏离');
+      const snapBefore = v1;
+      await assertStartBlocked('权重和偏离');
+      const snapAfter = Number(await marketWeight().inputValue());
+      const mainText = await main().innerText();
+      if (snapAfter !== snapBefore && /校验通过/.test(mainText)) {
+        throw new Error('权重被静默归一化: ' + snapBefore + '→' + snapAfter);
+      }
+  - note: 未选任何指标时「开始分析」被拦截
+    assert: |-
+      const METRICS = ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度'];
+      for (const name of METRICS) {
+        const cb = page.locator(`main [aria-label="选择指标：${name}"]`);
+        const cls = (await cb.getAttribute('class')) || '';
+        if (cls.includes('checked') || (await cb.getAttribute('aria-checked')) === 'true') {
+          await cb.click({ timeout: 8000 });
+          await page.waitForTimeout(120);
+        }
+      }
+      await page.waitForTimeout(400);
+      const checked = [];
+      for (const name of METRICS) {
+        const cb = page.locator(`main [aria-label="选择指标：${name}"]`);
+        const cls = (await cb.getAttribute('class')) || '';
+        if (cls.includes('checked') || (await cb.getAttribute('aria-checked')) === 'true') checked.push(name);
+      }
+      if (checked.length) throw new Error('仍有已选指标: ' + checked.join('、'));
+      const start = page.getByRole('button', { name: '开始分析' });
+      const url0 = page.url();
+      if (!(await start.isDisabled())) {
+        await start.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(900);
+      }
+      if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) throw new Error('未选指标仍发起任务');
+      if (/view=result/.test(page.url()) && !/view=result/.test(url0)) throw new Error('未选指标仍进入结果态');
+      const mainText = await page.locator('main').first().innerText();
+      if (!(await start.isDisabled()) && !/请选择|至少.*指标|未选/.test(mainText)) {
+        const toast = page.locator('.arco-message, .arco-notification');
+        const hasToast = await toast.count() && await toast.first().isVisible().catch(() => false);
+        if (!hasToast) throw new Error('未选指标时开始分析未被拦截');
+      }
+  - note: 修复后配置校验通过；预检通过时可发起任务（预检债 ENV-EVAL-BUSINESS-PRECHECK-001 下仅验均分 100% 与全选，不假绿过程态）
+    assert: |-
+      const METRICS = ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度'];
+      for (const name of METRICS) {
+        const cb = page.locator(`main [aria-label="选择指标：${name}"]`);
+        const cls = (await cb.getAttribute('class')) || '';
+        if (!cls.includes('checked') && (await cb.getAttribute('aria-checked')) !== 'true') {
+          await cb.click({ timeout: 8000 });
+          await page.waitForTimeout(100);
+        }
+      }
+      await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.locator('main').getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+      const sumLine = await page.getByText(/权重合计/).first().innerText();
+      if (!/100%/.test(sumLine)) throw new Error('修复后权重合计非 100%: ' + sumLine);
+      const start = page.getByRole('button', { name: '开始分析' });
+      const mainText = await page.locator('main').first().innerText();
+      if (await start.isDisabled()) {
+        if (/预检未返回企业明细|请先在对比篮选择企业/.test(mainText)) return;
+        if (/enterprise_codes/.test(page.url())) throw new Error('修复后开始分析仍禁用（对象已回填，非预检空态）');
+        throw new Error('修复后开始分析仍禁用');
+      }
+      const url0 = page.url();
+      await start.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      if (/view=processing/.test(page.url()) && !/view=processing/.test(url0)) return;
+      if (/view=result/.test(page.url()) && !/view=result/.test(url0)) return;
+      throw new Error('修复后点击开始分析未进入过程/结果态');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 FUNC-00959 重写作废 P0-18：30888 路由 /enterprise-center/evaluation；禁止 50892 深链。前置对比篮≥2 家+浮层确定回填（同 FUNC-00934）。权和偏离用市场行 aria「市场权重」+ step-button（同 FUNC-00940）。拦截形态为开始分析 disabled、合计行非「校验通过」、或点击不进入 view=processing/result（observed）。env-gate 预检债 ENV-EVAL-BUSINESS-PRECHECK-001 下第三点见预检文案 early return。B 档零 allow_skip。

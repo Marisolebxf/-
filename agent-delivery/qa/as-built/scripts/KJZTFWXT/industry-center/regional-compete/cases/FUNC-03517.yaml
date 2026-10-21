@@ -1,0 +1,223 @@
+id: FUNC-03517
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03517
+priority: P1
+title: 分析记录翻到第二页
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 任务状态为全部状态；总条数大于 10（assert 自含数据闸门）
+locators:
+  tab_records: tab「分析记录」
+  records_pagination: main .arco-pagination
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 分析记录 Tab→任务状态保持全部状态→点分页「2」；页码与首行任务在 expect
+expect:
+  - note: 前置：分析记录 Tab；任务状态为全部状态；可翻到第 2 页；记下第 1 页首行 CHAIN 任务号
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const PAGE_SIZE = 10;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const main = () => page.locator('main').first();
+      const recordsTable = () => main().locator('.arco-table').first();
+      const recordsPagination = () => main().locator('.arco-pagination').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const firstVisibleRowTaskId = async () => {
+        const rows = recordsTable().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const t = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const m = t.match(TID_RE);
+          if (m) return m[0];
+        }
+        return '';
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const recordsTab = () => page.locator('[role=tab][data-tab-key="records"]');
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await recover404Shell();
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) await recover404Shell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
+        }
+        await expandChainGroup();
+        const leaf = leafItem();
+        if (!(await leaf.first().isVisible().catch(() => false))) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏未见「区域产业竞争力评价」menu_leaf url=' + page.url());
+        }
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const ensureWorkzone = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        const onRegional = () =>
+          /\/industry-center\/regional/.test(page.url()) && /workspace=competitiveness/.test(page.url());
+        if (!onRegional() || (await bodyIs404())) {
+          await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价着陆失败 ' + page.url());
+        }
+        await expect(recordsTab().first()).toBeVisible({ timeout: 15000 });
+      };
+      const ensureAllStatus = async () => {
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/任务状态|全部状态/.test(body)) return;
+        let trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+        if ((await trigger.count()) < 1) return;
+        const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/全部状态/.test(shown)) return;
+        const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: /^全部状态$/ }).first();
+        if (await opt.isVisible().catch(() => false)) {
+          await opt.click({ timeout: 8000 });
+          await page.waitForTimeout(900);
+        }
+      };
+      await ensureWorkzone();
+      await recordsTab().first().click({ timeout: 10000 });
+      await page.waitForTimeout(1500);
+      await ensureAllStatus();
+      const bodyRec = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!TID_RE.test(bodyRec)) {
+        throw new Error('ENV-CHAIN-REGIONAL-COMPETE-NO-RECORDS: 分析记录无 CHAIN 任务行');
+      }
+      const statusTrigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+      if (await statusTrigger.count()) {
+        const st = ((await statusTrigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!/全部状态/.test(st)) {
+          throw new Error('前置：任务状态应为全部状态，现场=' + st);
+        }
+      }
+      const pag = recordsPagination();
+      const totalMatch = bodyRec.match(/共\s*(\d+)\s*条/);
+      const total = totalMatch ? parseInt(totalMatch[1], 10) : NaN;
+      const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      const hasPage2 =
+        ((await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false))) ||
+        (await pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').count()) > 0;
+      if (!hasPage2 || (!Number.isNaN(total) && total <= PAGE_SIZE)) {
+        throw new Error(
+          'ENV-CHAIN-REGIONAL-COMPETE-PAGE2-001：分析记录总条数未超过 ' +
+            PAGE_SIZE +
+            '，无法翻到第 2 页（共' +
+            (Number.isNaN(total) ? '?' : total) +
+            '条）',
+        );
+      }
+      const taskPage1 = await firstVisibleRowTaskId();
+      if (!taskPage1) {
+        throw new Error('第 1 页首行未见任务编号 CHAIN-*');
+      }
+      globalThis.__func03517 = {
+        taskPage1,
+        main,
+        recordsTable,
+        recordsPagination,
+        TID_RE,
+      };
+  - note: 1、点击页码 2 后页码 2 为当前页（用例步骤 1）
+    assert: |-
+      const ctx = globalThis.__func03517;
+      if (!ctx) throw new Error('前置：分析记录翻页未就绪');
+      const clickPageNum = async (num) => {
+        const pag = ctx.recordsPagination();
+        await expect(pag).toBeVisible({ timeout: 10000 });
+        const btn = pag.locator('.arco-pagination-item').filter({ hasText: new RegExp('^\\s*' + num + '\\s*$') }).first();
+        if ((await btn.count()) > 0 && (await btn.isVisible().catch(() => false))) {
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(900);
+          return;
+        }
+        if (num === 2) {
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if ((await next.count()) && (await next.isVisible().catch(() => false))) {
+            await next.click({ timeout: 8000 });
+            await page.waitForTimeout(900);
+            return;
+          }
+        }
+        throw new Error('分页「' + num + '」不可点');
+      };
+      await clickPageNum(2);
+      const pag = ctx.recordsPagination();
+      const active = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+      if (active !== '2') {
+        throw new Error('翻页后当前页应为 2，现场 active=' + (active || '(空)'));
+      }
+  - note: 2、首行任务与第一页首行不同
+    assert: |-
+      const ctx = globalThis.__func03517;
+      if (!ctx) throw new Error('前置：分析记录翻页未就绪');
+      const rows = ctx.recordsTable().locator('tbody tr, .arco-table-tr').filter({ hasText: ctx.TID_RE });
+      let taskPage2 = '';
+      const n = await rows.count();
+      for (let i = 0; i < n; i++) {
+        const row = rows.nth(i);
+        if (!(await row.isVisible().catch(() => false))) continue;
+        const t = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = t.match(ctx.TID_RE);
+        if (m) {
+          taskPage2 = m[0];
+          break;
+        }
+      }
+      if (!taskPage2) {
+        throw new Error('第 2 页首行未见任务编号 CHAIN-*');
+      }
+      if (taskPage2 === ctx.taskPage1) {
+        throw new Error('第 2 页首行任务与第 1 页相同：' + taskPage2);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed competitiveness。前置=分析记录 Tab、任务状态「全部状态」、总条数>10（每页 10 条）。
+  步骤=分页点「2」。机检=active 页码为 2；第 2 页首可见 CHAIN 行≠第 1 页首行。无第 2 页→ENV-CHAIN-REGIONAL-COMPETE-PAGE2-001。
+  404 恢复+侧栏 fallback（同 03505）。2026-10-20 edu 机跑深链与 search 均 SPA404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

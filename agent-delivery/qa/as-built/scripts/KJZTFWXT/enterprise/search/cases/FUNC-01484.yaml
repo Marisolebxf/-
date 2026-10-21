@@ -1,0 +1,132 @@
+id: FUNC-01484
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01484
+priority: P1
+title: 点击对比篮打开浮层并列出已加入企业
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 对比篮内至少有一家企业（本条 assert 自含推荐卡入篮）
+locators:
+  basket_open: button aria-label 含「打开对比篮」
+  basket_panel: region aria-label「对比篮」.system-compare-panel
+  basket_list: .system-compare-panel .ent-section-panel
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+expect:
+  - note: 浮层标题含「对比篮」
+    assert: |-
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(200);
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+      if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click({ timeout: 4000 });
+        await page.waitForTimeout(600);
+      }
+      const ensureOneInBasket = async () => {
+        const openBtn = page.getByRole('button', { name: /打开对比篮/ }).first();
+        await expect(openBtn).toBeVisible({ timeout: 12000 });
+        const label = (await openBtn.getAttribute('aria-label')) || '';
+        const entM = label.match(/企业\s*(\d+)\s*\/\s*50/);
+        const entCount = entM ? parseInt(entM[1], 10) : 0;
+        if (entCount > 0) {
+          await openBtn.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          const panel = page.locator('.system-compare-panel[aria-label="对比篮"]');
+          await expect(panel).toBeVisible({ timeout: 8000 });
+          const list = panel.locator('.ent-section-panel');
+          const pick = list.locator('[aria-label^="选择 "]').first();
+          await expect(pick).toBeVisible({ timeout: 8000 });
+          const aria = (await pick.getAttribute('aria-label')) || '';
+          const entName = aria.replace(/^选择\s*/, '').trim();
+          if (!entName) throw new Error('篮内企业名称不可读');
+          await page.evaluate((n) => sessionStorage.setItem('qa-func-01484-ent', n), entName);
+          if (await closeB.first().isVisible().catch(() => false)) {
+            await closeB.first().click({ timeout: 2000 });
+            await page.waitForTimeout(400);
+          }
+          return;
+        }
+        await expect(page.getByText('智能搜索结果')).toHaveCount(0);
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 12000 });
+        const cards = recSection
+          .locator('div')
+          .filter({ hasText: '推荐理由：' })
+          .filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) });
+        const cardCount = await cards.count();
+        if (cardCount < 1) throw new Error('推荐企业分区无推荐卡，无法满足篮内至少一家企业');
+        let addBtn = null;
+        let entName = '';
+        for (let i = 0; i < cardCount; i++) {
+          const card = cards.nth(i);
+          const btn = card.getByRole('button', { name: '加入对比篮', exact: true });
+          if (await btn.count() && await btn.isVisible().catch(() => false)) {
+            addBtn = btn;
+            const nameBtn = card.locator('button').filter({ hasNotText: /查看画像|加入对比篮|已在对比篮|已加入|移除/ }).first();
+            entName = ((await nameBtn.innerText()) || '').trim();
+            if (!entName) {
+              const cardText = await card.innerText();
+              const m = cardText.match(/[\u4e00-\u9fa5（）()A-Za-z0-9·]+(?:有限公司|股份有限公司|集团)/);
+              entName = m ? m[0] : '';
+            }
+            break;
+          }
+        }
+        if (!addBtn) throw new Error('未见可入篮的推荐卡「加入对比篮」按钮');
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await expect(page.locator('.arco-message-content').filter({ hasText: '已加入对比篮' }).first()).toBeVisible({ timeout: 10000 });
+        await openBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const panelAfter = page.locator('.system-compare-panel[aria-label="对比篮"]');
+        await expect(panelAfter).toBeVisible({ timeout: 8000 });
+        const pickAfter = panelAfter.locator('[aria-label^="选择 "]').first();
+        await expect(pickAfter).toBeVisible({ timeout: 8000 });
+        const ariaAfter = ((await pickAfter.getAttribute('aria-label')) || '').replace(/^选择\s*/, '').trim();
+        if (!ariaAfter) throw new Error('入篮后篮内企业名不可读');
+        await page.evaluate((n) => sessionStorage.setItem('qa-func-01484-ent', n), ariaAfter);
+        if (await closeB.first().isVisible().catch(() => false)) {
+          await closeB.first().click({ timeout: 2000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      await ensureOneInBasket();
+      const openDock = page.getByRole('button', { name: /打开对比篮/ }).first();
+      await expect(openDock).toBeVisible({ timeout: 8000 });
+      await openDock.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const panel = page.locator('.system-compare-panel[aria-label="对比篮"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.system-compare-panel__header').getByText(/对比篮/).first()).toBeVisible({ timeout: 8000 });
+  - note: 列表中有已加入的企业名称
+    assert: |-
+      const entName = await page.evaluate(() => sessionStorage.getItem('qa-func-01484-ent'));
+      if (!entName) throw new Error('缺少本条会话标记的篮内企业名');
+      let panel = page.locator('.system-compare-panel[aria-label="对比篮"]');
+      if (!(await panel.isVisible().catch(() => false))) {
+        await page.getByRole('button', { name: /打开对比篮/ }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      panel = page.locator('.system-compare-panel[aria-label="对比篮"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const entTab = panel.getByRole('tab', { name: /^企业/ }).first();
+      if (await entTab.count() && await entTab.isVisible().catch(() => false)) {
+        await entTab.click({ timeout: 4000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const panelText = await panel.innerText();
+      const key = entName.length > 4 ? entName.slice(0, 4) : entName;
+      if (!panelText.includes(key)) {
+        throw new Error('篮内列表未见已加入企业「' + entName + '」，浮层片段：' + panelText.slice(0, 160));
+      }
+      await expect(panel.getByText('移除').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。用例册步骤「对比篮」现场为侧栏浮层入口 button aria-label「打开对比篮，共…项」含企业子计数。浮层 region aria-label「对比篮」，标题行文案「对比篮 · 共 N 项」。篮内企业列表在 .ent-section-panel；前置若企业子计数为 0 则从推荐卡「加入对比篮」置入。

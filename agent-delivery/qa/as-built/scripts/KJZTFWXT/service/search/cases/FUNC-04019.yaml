@@ -1,0 +1,111 @@
+id: FUNC-04019
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04019
+priority: P1
+tier: B
+title: 备选-无条件不可应用
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入服务机构查询
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  apply_btn: button「应用筛选（0）」
+  save_scheme_btn: button「保存为查询方案」
+steps:
+  - action: evaluate
+    note: 侧栏进页 → 点击「高级筛选」；判定在 expect
+expect:
+  - note: 1、「应用筛选（0）」为禁用
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2500);
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensureAppShell = async () => {
+        await dismissBasket();
+        await recover404Shell();
+        const menuRoot = page.locator('.arco-menu, .layout-menu, nav').first();
+        const hasMenu = await menuRoot.isVisible().catch(() => false);
+        if (!hasMenu || (await bodyIs404())) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1500);
+          await recover404Shell();
+        }
+      };
+      const searchItem = () =>
+        page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: /^服务机构查询$/ });
+      const enterSvcSearch = async () => {
+        await ensureAppShell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 登录后仍 SPA404 无侧栏壳 url=' + page.url());
+        }
+        if (!(await searchItem().first().isVisible().catch(() => false))) {
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+          }
+        }
+        await expect(searchItem().first()).toBeVisible({ timeout: 15000 });
+        await searchItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service-center\/search/, { timeout: 20000 });
+        await recover404Shell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏点击后 /service-center/search SPA404 url=' + page.url());
+        }
+      };
+      const btnDisabled = async (btn) => {
+        const disabled = await btn.isDisabled();
+        const cls = (await btn.getAttribute('class')) || '';
+        if (!disabled && !cls.includes('disabled')) {
+          throw new Error('按钮未禁用: ' + ((await btn.innerText().catch(() => '')) || '').trim());
+        }
+      };
+      await enterSvcSearch();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const applyBtn = page.getByRole('button', { name: /应用筛选（0）/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      await btnDisabled(applyBtn);
+  - note: 2、「保存为查询方案」为禁用
+    assert: |-
+      const btnDisabled = async (btn) => {
+        const disabled = await btn.isDisabled();
+        const cls = (await btn.getAttribute('class')) || '';
+        if (!disabled && !cls.includes('disabled')) {
+          throw new Error('按钮未禁用: ' + ((await btn.innerText().catch(() => '')) || '').trim());
+        }
+      };
+      const saveBtn = page.getByRole('button', { name: '保存为查询方案' }).first();
+      await expect(saveBtn).toBeVisible({ timeout: 8000 });
+      await btnDisabled(saveBtn);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04019；用例步骤=点击「高级筛选」（非深链直进）。未添加条件时「应用筛选（0）」与「保存为查询方案」均 disabled（对齐 scout-deep / P1-02 应用按钮口径）。
+  catalog_path=/service-center/search；进页=侧栏 sibling /industry-center/search（同 04016）。登录与关内部评审由 runner 会话前置。

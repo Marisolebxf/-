@@ -1,0 +1,165 @@
+id: FUNC-01795
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01795
+priority: P0
+title: 技术指标与差距诊断表列出附录B全部6列表头
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已打开技术力评估结果（脚本内：最近评估→恢复结果，同 FUNC-01794）
+locators:
+  gap_section: 技术指标与差距诊断
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 恢复结果态→滚动到差距诊断表；六列表头断言在 expect
+expect:
+  - note: 滚动到「技术指标与差距诊断」后，表头共 6 列（附录B列名；现场第3/4列 as-built 别名见 as_built_note）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const HEADER_ALIASES = [
+        ['企业'],
+        ['技术力综合得分'],
+        ['创新点（项）', '技术创新（项）'],
+        ['研发投入占比（%）', '技术投入（%）'],
+        ['数据可信度'],
+        ['领先差距与优势短板'],
+      ];
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyRes = async () => {
+        const t = await page.locator('body').innerText().catch(() => '');
+        return /技术力评估结果/.test(t) && /\d+\s*分/.test(t);
+      };
+      const waitBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await bodyRes()) return true;
+          await page.waitForTimeout(1000);
+        }
+        return await bodyRes();
+      };
+      const recoverFromRecentTab = async () => {
+        const tab = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (!(await tab.isVisible().catch(() => false))) return null;
+        await tab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const body = await page.locator('body').innerText().catch(() => '');
+        const ids = [...body.matchAll(/EVAL-\d{8}-\d{3}/g)].map((m) => m[0]);
+        const demoIds = [...body.matchAll(/DEMO-EVAL-\d{8}-\d+/g)].map((m) => m[0]);
+        const candidate = [...new Set([...ids, ...demoIds])][0] || null;
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if (await restore.count()) {
+          await restore.first().click({ timeout: 8000 });
+          if (await waitBody(60000)) return candidate;
+        }
+        if (candidate) {
+          await page.goto(toUrl(evalRoute + '&view=result&analysis_type=technology&task_id=' + encodeURIComponent(candidate)), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2000);
+          if (await waitBody(45000)) return candidate;
+        }
+        return null;
+      };
+      const ensureResultState = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const tab0 = page.getByRole('tab', { name: /最近评估/ }).first();
+        if (await tab0.isVisible().catch(() => false)) {
+          await tab0.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+        }
+        const restore0 = page.getByRole('button', { name: '恢复结果' });
+        if (await restore0.count()) {
+          await restore0.first().click({ timeout: 8000 });
+          await waitBody(60000);
+        }
+        if (!(await bodyRes())) await recoverFromRecentTab();
+        if (!(await bodyRes())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await recoverFromRecentTab();
+        }
+        if (!(await bodyRes())) throw new Error('未达结果态（ticket=ENV-EVAL-TECH-RESULT-SHELL-001，URL=' + page.url() + '）');
+        await expect(page.getByRole('heading', { name: '技术力评估结果' }).first()).toBeVisible({ timeout: 15000 });
+      };
+      const scrollToGapSection = async () => {
+        const main = page.locator('main');
+        for (let i = 0; i < 50; i++) {
+          const el = main.getByText('技术指标与差距诊断').first();
+          if (await el.count() && await el.isVisible().catch(() => false)) return;
+          await page.mouse.wheel(0, 600);
+          await page.waitForTimeout(400);
+        }
+        throw new Error('滚动后未见「技术指标与差距诊断」');
+      };
+      const readGapTableHeaders = async () => {
+        return await page.evaluate(() => {
+          const aliases = [
+            ['企业'],
+            ['技术力综合得分'],
+            ['创新点（项）', '技术创新（项）'],
+            ['研发投入占比（%）', '技术投入（%）'],
+            ['数据可信度'],
+            ['领先差距与优势短板'],
+          ];
+          const matchRow = (headers) => {
+            if (!headers || headers.length !== 6) return null;
+            for (let i = 0; i < 6; i++) {
+              if (!aliases[i].includes(headers[i])) return null;
+            }
+            return headers;
+          };
+          const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+          const own = (w) => [...document.querySelectorAll('*')].find((e) => [...e.childNodes].some((c) => c.nodeType === 3 && String(c.textContent).includes(w)));
+          const title = own('技术指标与差距诊断');
+          if (!title) return { ok: false, reason: '无区块标题' };
+          let block = title;
+          for (let j = 0; j < 14 && block; j++) {
+            block = block.parentElement;
+            if (!block) break;
+            const table = block.querySelector('table, .arco-table');
+            if (!table) continue;
+            const headRow = table.querySelector('thead tr') || table.querySelector('.arco-table-header .arco-table-tr') || table.querySelector('.arco-table-tr');
+            if (!headRow) continue;
+            const cells = [...headRow.querySelectorAll('th, .arco-table-th, td')].map((c) => norm(c.innerText)).filter(Boolean);
+            if (cells.length < 6) continue;
+            const matched = matchRow(cells.slice(0, 6));
+            if (matched) return { ok: true, headers: matched, via: 'table' };
+          }
+          const body = document.body.innerText || '';
+          const i = body.indexOf('技术指标与差距诊断');
+          if (i < 0) return { ok: false, reason: '正文无标题' };
+          const seg = body.slice(i, i + 320).split(/\n|\t/).map(norm).filter(Boolean);
+          for (let start = 0; start < seg.length; start++) {
+            if (seg[start] !== '企业') continue;
+            const matched = matchRow(seg.slice(start, start + 6));
+            if (matched) return { ok: true, headers: matched, via: 'text_proxy' };
+          }
+          return { ok: false, reason: '未找到六列表头', seg: seg.slice(0, 14) };
+        });
+      };
+      const headerRowOk = (headers) => {
+        if (!headers || headers.length !== 6) return { ok: false, reason: '列数非6', headers };
+        for (let i = 0; i < 6; i++) {
+          if (!HEADER_ALIASES[i].includes(headers[i])) return { ok: false, reason: '第' + (i + 1) + '列不符', got: headers[i], want: HEADER_ALIASES[i] };
+        }
+        return { ok: true, headers };
+      };
+      await ensureResultState();
+      await scrollToGapSection();
+      await expect(page.getByText('技术指标与差距诊断').first()).toBeVisible({ timeout: 10000 });
+      const hdr = await readGapTableHeaders();
+      if (!hdr || !hdr.ok) throw new Error('差距诊断表头读取失败: ' + (hdr && hdr.reason ? hdr.reason : 'timeout'));
+      const chk = headerRowOk(hdr.headers);
+      if (!chk.ok) throw new Error('表头校验失败: ' + JSON.stringify(chk));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01795 验差距诊断表六列表头（不验行数据）。D1：30888 第3/4列为「技术创新（项）」「技术投入（%）」，用例附录B为「创新点（项）」「研发投入占比（%）」——脚本 HEADER_ALIASES 双名接受。结果态优先最近评估→恢复结果（同 FUNC-01794）。B 档零 allow_skip。

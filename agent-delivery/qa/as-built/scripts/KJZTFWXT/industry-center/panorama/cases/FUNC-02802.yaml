@@ -1,0 +1,87 @@
+id: FUNC-02802
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02802
+priority: P0
+title: 查看时间下拉只有当前这一条已发布状态
+story: US-CHAIN-PANORAMA-04
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 当前为「图谱」视图
+locators:
+  snapshot_label: '#panorama-snapshot-label'
+  view_time_select: .industry-topic-evolution .industry-topic-snapshot-control .arco-select-view
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 确认「图谱」选中并展开「查看时间」下拉
+expect:
+  - note: 前置：已进入本页且当前为「图谱」，「查看时间」控件可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
+      await expect(graphRadio).toBeVisible({ timeout: 10000 });
+      const graphCls = (await graphRadio.getAttribute('class')) || '';
+      if (!graphCls.includes('arco-radio-checked')) {
+        await page.getByText('图谱', { exact: true }).click();
+        await page.waitForTimeout(500);
+      }
+      await expect(page.getByRole('heading', { name: '动态演进' })).toBeVisible({ timeout: 8000 });
+      const snapLabel = page.locator('#panorama-snapshot-label');
+      await expect(snapLabel).toHaveText('查看时间', { timeout: 8000 });
+      const vtView = page
+        .locator('.industry-topic-evolution .industry-topic-snapshot-control')
+        .filter({ has: snapLabel })
+        .locator('.arco-select-view')
+        .first();
+      await expect(vtView).toBeVisible({ timeout: 8000 });
+      globalThis.__func02802_onPage = true;
+  - note: 1、展开「查看时间」下拉后选项仅 1 个，为「2026-10-18 · 当前状态」
+    assert: |-
+      if (!globalThis.__func02802_onPage) throw new Error('前置：未在图谱视图或未见到查看时间');
+      const want = '2026-10-18 · 当前状态';
+      const snapLabel = page.locator('#panorama-snapshot-label');
+      const vtView = page
+        .locator('.industry-topic-evolution .industry-topic-snapshot-control')
+        .filter({ has: snapLabel })
+        .locator('.arco-select-view')
+        .first();
+      await vtView.scrollIntoViewIfNeeded();
+      await vtView.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 1) {
+        throw new Error('查看时间选项应为 1 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      if (got[0] !== want) {
+        throw new Error('查看时间唯一选项应为「' + want + '」，实际「' + got[0] + '」');
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；「查看时间」= 动态演进区 #panorama-snapshot-label 同块
+  .industry-topic-snapshot-control 内 .arco-select-view（IndustryPanoramaPage.vue，仅 canvasMode=graph）。
+  选项文案对齐用例册 02802「2026-10-18 · 当前状态」；scout 曾见 2026-10-13 为 D2 日期漂移说明。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

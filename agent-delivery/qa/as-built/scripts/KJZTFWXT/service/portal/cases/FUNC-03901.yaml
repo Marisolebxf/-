@@ -1,0 +1,89 @@
+id: FUNC-03901
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03901
+priority: P0
+tier: B
+title: 分析画像抽屉四区块标题与行机构名
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 已打开服务机构技术能力（runner 会话前置 + 门户 Tab 切换）
+locators:
+  tab_cap: tab「服务机构技术能力」
+  btn_profile: 行内「分析画像」
+  org_drawer: '.arco-drawer[data-testid="svc-org-profile-drawer"], .arco-drawer:has([data-testid="svc-org-profile-drawer"])'
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 进入「服务机构技术能力」并点击首行「分析画像」
+expect:
+  - note: 1、抽屉标题为「机构画像」加该行机构名
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal 深链 SPA404，无法验分析画像抽屉 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const rowCount = await page.locator('main .arco-table tbody tr').count();
+      const emptyVisible = await page.getByText(/暂无覆盖机构入榜|暂无技术力入榜机构/).first().isVisible().catch(() => false);
+      if (rowCount === 0 && emptyVisible) {
+        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜诚实空，无行可点「分析画像」（Q060）');
+      }
+      const firstRow = page.locator('main .arco-table tbody tr').first();
+      await expect(firstRow).toBeVisible({ timeout: 8000 });
+      const orgName = ((await firstRow.locator('.svc-portal-org__name').innerText().catch(async () => {
+        const cells = await firstRow.locator('td').allTextContents();
+        return (cells[1] || '').split('\n')[0];
+      })) || '').replace(/\s+/g, ' ').trim();
+      if (!orgName) throw new Error('未能读取首行机构名');
+      const profileBtn = firstRow.getByRole('button', { name: '分析画像' });
+      await expect(profileBtn).toBeEnabled({ timeout: 5000 });
+      await profileBtn.click();
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-org-profile-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 15000 });
+      const titleEl = drawer.locator('.arco-drawer-header, .arco-drawer-title').first();
+      const titleText = ((await titleEl.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/机构画像/.test(titleText)) {
+        throw new Error('抽屉标题未含「机构画像」：' + titleText);
+      }
+      if (!titleText.includes(orgName)) {
+        throw new Error('抽屉标题未含行机构名「' + orgName + '」：' + titleText);
+      }
+  - note: 2、区块依次为基本信息、领域覆盖细分、技术力五维、近三年新增服务记录
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-org-profile-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const sections = drawer.locator('section.svc-drawer-section h4');
+      const count = await sections.count();
+      if (count < 4) throw new Error('抽屉区块 h4 不足 4 个，实际=' + count);
+      const normalized = [];
+      for (let i = 0; i < 4; i++) {
+        const t = ((await sections.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (/^基本信息/.test(t)) normalized.push('基本信息');
+        else if (/领域覆盖细分/.test(t)) normalized.push('领域覆盖细分');
+        else if (/技术力五维/.test(t)) normalized.push('技术力五维');
+        else if (/近三年新增服务记录/.test(t)) normalized.push('近三年新增服务记录');
+        else normalized.push(t.slice(0, 20));
+      }
+      const expected = ['基本信息', '领域覆盖细分', '技术力五维', '近三年新增服务记录'];
+      for (let i = 0; i < expected.length; i++) {
+        if (normalized[i] !== expected[i]) {
+          throw new Error('区块顺序不符：期望=' + expected.join('>') + '；现场=' + normalized.join('>'));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  抽屉标题现场文案为「机构画像：{机构名}」（SvcOrgProfileDrawer.vue），与用例「机构画像加机构名」同义。
+  Tab 落点 /service-portal/capability-rank；goto 仍用 catalog /service-portal。诚实空榜同 03898 → ENV-SVC-PORTAL-TECH-RANK-EMPTY。
+  技术力五维字段明细归 05198，本条只验四区块 h4 标题顺序。登录与关内部评审由 runner 会话前置；抽屉断言限定 .arco-drawer。

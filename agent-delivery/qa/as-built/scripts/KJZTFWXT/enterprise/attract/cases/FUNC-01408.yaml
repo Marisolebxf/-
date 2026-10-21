@@ -1,0 +1,87 @@
+id: FUNC-01408
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01408
+priority: P0
+title: 专精特新与人工智能条件筛选发起招引推荐并到达成功结果
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: A
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  tag_select: placeholder「全部企业标签」
+  field_select: placeholder「全部行业领域」
+  start: button「开始分析」
+  result_title: 招引推荐分析结果
+  filter_summary: 本次筛选
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: evaluate
+    note: 选专精特新、行业领域（人工智能或现场 L0 等价项）后开始分析；成功态由 expect 机检
+expect:
+  - note: 1、成功页标题为「招引推荐分析结果」
+    assert: |-
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openPh = async (ph) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator(`input[placeholder="${ph}"]`).first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickOption = async (text) => {
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      await dismissBasket();
+      await openPh('全部企业标签');
+      await pickOption('专精特新');
+      await openPh('全部行业领域');
+      const ai = page.locator(optSel).filter({ hasText: '人工智能' });
+      if (await ai.count()) await ai.first().click({ timeout: 8000 });
+      else await page.locator(optSel).filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      await start.click();
+      let ok = false;
+      for (let i = 0; i < 36; i++) {
+        await page.waitForTimeout(2500);
+        const t = await page.locator('body').innerText();
+        const url = page.url();
+        if ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result')) {
+          ok = true;
+          break;
+        }
+        if (/任务失败|分析失败|推荐分析失败/.test(t) && !/可视化分析过程/.test(t)) {
+          throw new Error('推荐分析进入失败态: ' + t.slice(0, 240));
+        }
+      }
+      if (!ok) throw new Error('未在超时内到达成功结果态（仍停留在 processing 或无结果标题）');
+      await expect(page.getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、结果区出现「本次筛选」或结果表
+    assert: |-
+      const t = await page.locator('body').innerText();
+      const hasSummary = /本次筛选/.test(t);
+      const hasTable = t.includes('排名') && t.includes('企业名称');
+      if (!hasSummary && !hasTable) throw new Error('结果区未见「本次筛选」或结果表列头');
+      if (hasTable) {
+        await expect(page.getByText('排名', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+        await expect(page.getByText('企业名称', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      } else {
+        await expect(page.getByText(/本次筛选/).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链为 /enterprise-center/attraction（catalog /enterprise/attraction 本环境 404）；行业 ent.chains 无扁平「人工智能」时 fallback 新一代信息技术。D4·2026-10-19 实勘异步任务常卡在 analysis_view=processing。登录与关内部评审由 runner 会话前置。金样零 allow_skip。

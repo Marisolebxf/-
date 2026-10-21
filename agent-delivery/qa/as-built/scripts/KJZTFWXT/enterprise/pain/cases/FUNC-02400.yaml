@@ -1,0 +1,306 @@
+id: FUNC-02400
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02400
+priority: P0
+title: 结果页重新分析跑新任务并再次给出结果
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已打开一条成功结果（assert 自含：最近分析→恢复已完成任务）
+locators:
+  reanalyze: button「重新分析」
+  summary: 对象与诊断摘要
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 点击「重新分析」→等待分析结束（前置与三条预期在 expect）
+expect:
+  - note: 1、先进入「企业发展痛点分析生成中」
+    assert: |-
+      const painRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const historyRoute = painRoute + '&view=history';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const taskIdFrom = async () => {
+        const u = new URL(page.url());
+        const q = u.searchParams.get('task_id');
+        if (q) return q;
+        const body = await main().innerText().catch(() => '');
+        return body.match(TID_RE)?.[0] || '';
+      };
+      const hasReanalyzeResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        if (/企业发展痛点分析生成中/.test(t) && !/对象与诊断摘要/.test(t)) return false;
+        if (!(await page.getByText('对象与诊断摘要').first().isVisible().catch(() => false))) return false;
+        return await page.getByRole('button', { name: '重新分析' }).first().isVisible().catch(() => false);
+      };
+      const rowOpenControl = (row, label) =>
+        row
+          .getByRole('button', { name: label })
+          .or(row.getByRole('link', { name: label }))
+          .first();
+      const openResultFromRow = async (row) => {
+        for (const label of ['预览结果', '恢复结果']) {
+          const btn = rowOpenControl(row, label);
+          if (!(await btn.count())) continue;
+          await btn.scrollIntoViewIfNeeded().catch(() => {});
+          await btn.click({ timeout: 8000 });
+          await page.waitForURL(/view=result|task_id=/, { timeout: 15000 }).catch(() => {});
+          await page.getByText('对象与诊断摘要').first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+          await page.waitForTimeout(600);
+          return label;
+        }
+        return '';
+      };
+      const openHistoryList = async () => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+        if ((await main().locator(rowSel).count()) > 0) return rowSel;
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        if (await tab.isVisible().catch(() => false)) {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+        }
+        return rowSel;
+      };
+      const openSuccessViaHistory = async () => {
+        const rowSel = await openHistoryList();
+        const n = await main().locator(rowSel).count();
+        if (!n) return false;
+        for (let i = 0; i < n; i++) {
+          if (i > 0) {
+            await openHistoryList();
+          }
+          const row = main().locator(rowSel).nth(i);
+          const rowText = await row.innerText().catch(() => '');
+          const hasOpen =
+            (await rowOpenControl(row, '恢复结果').count()) > 0 ||
+            (await rowOpenControl(row, '预览结果').count()) > 0;
+          if (!hasOpen) continue;
+          if (/处理中/.test(rowText) && !/已完成/.test(rowText)) continue;
+          if (/已取消|失败/.test(rowText) && !/已完成/.test(rowText)) continue;
+          const via = await openResultFromRow(row);
+          if (!via) continue;
+          const body = await main().innerText().catch(() => '');
+          if (/view=result/.test(page.url()) && body.length < 80 && !/对象与诊断摘要/.test(body)) continue;
+          if (await hasReanalyzeResult()) return true;
+        }
+        return false;
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseNames = async (scope) => {
+        const names = [];
+        const sels = scope.locator('[aria-label^="选择 "]');
+        for (let i = 0; i < (await sels.count()); i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const joinOneViaAddModal = async (panel) => {
+        const addBtn = panel.getByRole('button', { name: '新增', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 8000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const modalRoot = page
+          .locator('.arco-modal:visible')
+          .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
+          .last();
+        await expect(modalRoot).toBeVisible({ timeout: 15000 });
+        const joinBtns = modalRoot.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(joinBtns.first()).toBeVisible({ timeout: 30000 });
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.keyboard.press('Escape').catch(() => {});
+      };
+      const ensureBasketInPicker = async (panel, min) => {
+        let names = await listEnterpriseNames(panel);
+        if (names.length >= min) return names;
+        await joinOneViaAddModal(panel);
+        names = await listEnterpriseNames(panel);
+        if (names.length < min) throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
+        return names;
+      };
+      const dockBtn = () => page.locator('button[aria-label*="打开对比篮"]').first();
+      const basketEntCount = async () => {
+        if (!(await dockBtn().count())) return 0;
+        const dockLabel = (await dockBtn().getAttribute('aria-label')) || '';
+        const m = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/) || dockLabel.match(/共\s*(\d+)\s*项/);
+        return m ? parseInt(m[1], 10) : 0;
+      };
+      const ensureBasketEnterprises = async (min) => {
+        if ((await basketEntCount()) >= min) return;
+        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const searchInput = page.getByPlaceholder(/企业名|产业|资质/).first();
+        if (await searchInput.isVisible().catch(() => false)) {
+          await searchInput.fill('科技');
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
+          if (await searchBtn.isVisible().catch(() => false)) {
+            await searchBtn.click({ timeout: 8000 });
+            await page.waitForTimeout(1500);
+          }
+        }
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        for (let i = 0; i < Math.min(await addBtns.count(), 5); i++) {
+          const btn = addBtns.nth(i);
+          if (!(await btn.isVisible().catch(() => false))) continue;
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          if ((await basketEntCount()) >= min) return;
+        }
+        if ((await basketEntCount()) < min) {
+          throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
+        }
+      };
+      const openPicker = async () => {
+        const emptyCta = main().getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main().getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        if (await adjustBtn.isVisible().catch(() => false)) {
+          await adjustBtn.click({ timeout: 8000 });
+        } else {
+          await emptyCta.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      };
+      const selectOneInPanel = async (panel) => {
+        await ensureBasketInPicker(panel, 1);
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无可选企业');
+        await sels.first().click({ timeout: 8000 });
+        await page.getByRole('button', { name: '确定', exact: true }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+      };
+      const ensureOneDimChecked = async () => {
+        const dims = ['技术研发', '市场拓展', '融资', '管理'];
+        for (const d of dims) {
+          const box = page.locator('main .arco-checkbox').filter({ hasText: d }).first();
+          if (!(await box.count())) continue;
+          const cls = (await box.getAttribute('class')) || '';
+          if (/arco-checkbox-checked/.test(cls)) return;
+        }
+        const first = page.locator('main .arco-checkbox').filter({ hasText: dims[0] }).first();
+        await expect(first).toBeVisible({ timeout: 8000 });
+        await first.click({ timeout: 8000 });
+        await page.waitForTimeout(300);
+      };
+      const ensureFilledAndStart = async () => {
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        if (!(await main().getByText(/来自对比篮/).first().isVisible().catch(() => false))) {
+          await ensureBasketEnterprises(1);
+          await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+          await closeBasket();
+          await openPicker();
+          const panel = pickerRoot();
+          await expect(panel).toBeVisible({ timeout: 10000 });
+          await selectOneInPanel(panel);
+          await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+        }
+        await ensureOneDimChecked();
+        const start = main().getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+        let last = '';
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 500 : 2000);
+          last = await main().innerText().catch(() => '');
+          if (await hasReanalyzeResult()) return;
+          if (/分析失败|本次分析失败/.test(last) && !/企业发展痛点分析生成中/.test(last)) {
+            throw new Error('ENV-PAIN-NEWTASK-FAIL-001：无法到达成功结果前置');
+          }
+        }
+        if (/view=processing|企业发展痛点分析生成中/.test(page.url() + last)) {
+          throw new Error('ENV-PAIN-ASYNC-NO-SUCCESS-001：分析长期停留生成中');
+        }
+        throw new Error('分析未在超时内到达带「重新分析」的成功结果：' + last.slice(0, 220));
+      };
+      const ensureSuccessResult = async () => {
+        if (await hasReanalyzeResult()) return;
+        if (await openSuccessViaHistory()) return;
+        await ensureFilledAndStart();
+      };
+      await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await ensureSuccessResult();
+      await expect(page.getByText('对象与诊断摘要').first()).toBeVisible({ timeout: 15000 });
+      const taskBefore = await taskIdFrom();
+      if (!taskBefore) throw new Error('成功结果页未见 RISK 任务编号');
+      const reBtn = main().getByRole('button', { name: '重新分析' }).first();
+      await expect(reBtn).toBeVisible({ timeout: 8000 });
+      await reBtn.scrollIntoViewIfNeeded().catch(() => {});
+      await reBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      await expect(page).toHaveURL(/view=processing/, { timeout: 25000 });
+      const last = await main().innerText().catch(() => '');
+      globalThis.__func02400 = { taskBefore, sawProcessing: true, lastBody: last };
+      await expect(main().getByText(/企业发展痛?点分析生成中/).first()).toBeVisible({ timeout: 15000 });
+  - note: 2、新任务编号与点击前不同
+    assert: |-
+      const ctx = globalThis.__func02400;
+      if (!ctx || !ctx.taskBefore) throw new Error('前置：未完成重新分析点击');
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const taskNow =
+        new URL(page.url()).searchParams.get('task_id') ||
+        (await main().innerText().catch(() => '')).match(TID_RE)?.[0] ||
+        '';
+      if (!taskNow) throw new Error('生成中页未见 RISK 任务编号');
+      if (taskNow === ctx.taskBefore) {
+        throw new Error('重新分析后 task_id 未变化：' + taskNow);
+      }
+      ctx.taskAfterStart = taskNow;
+  - note: 3、结束后再次出现「对象与诊断摘要」
+    assert: |-
+      const ctx = globalThis.__func02400;
+      if (!ctx) throw new Error('前置：重新分析流程未启动');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const hasSummaryResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        if (/企业发展痛点分析生成中/.test(t) && !/对象与诊断摘要/.test(t)) return false;
+        return await page.getByText('对象与诊断摘要').first().isVisible().catch(() => false);
+      };
+      let last = '';
+      for (let i = 0; i < 90; i++) {
+        await page.waitForTimeout(i < 4 ? 500 : 2000);
+        last = await main().innerText().catch(() => '');
+        if (await hasSummaryResult()) break;
+        if (/分析失败|本次分析失败/.test(last) && !/企业发展痛点分析生成中/.test(last)) {
+          throw new Error('ENV-PAIN-NEWTASK-FAIL-001：重新分析失败');
+        }
+      }
+      if (!(await hasSummaryResult())) {
+        if (/view=processing|企业发展痛点分析生成中/.test(page.url() + last)) {
+          throw new Error('ENV-PAIN-ASYNC-NO-SUCCESS-001：重新分析长期停留生成中');
+        }
+        throw new Error('重新分析未在超时内回到成功结果：' + last.slice(0, 220));
+      }
+      await expect(page.getByText('对象与诊断摘要').first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz entry-seed catalog_path=/enterprise/risk；goto 带 workspace=pain-points&tab=pain-points。前置=最近分析已完成行「预览结果/恢复结果」或对比篮回填→「开始分析」至带「重新分析」的结果页。步骤=「重新分析」无弹框→view=processing+生成中标题→新 RISK≠点击前→再出「对象与诊断摘要」。D4·2026-10-20 rewrite-FUNC-02400 svcz 3/3 expect 绿。篮空→ENV-PAIN-BASKET-EMPTY-001；异步→ENV-PAIN-ASYNC-NO-SUCCESS-001。登录关评审 runner 前置。A 档零 allow_skip。

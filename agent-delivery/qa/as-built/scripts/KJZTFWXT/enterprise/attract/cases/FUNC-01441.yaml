@@ -1,0 +1,169 @@
+id: FUNC-01441
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01441
+priority: P0
+title: 主流程-返回候选列表
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；最近分析中已有一条候选工作台且状态为已完成的记录
+locators:
+  recent_tab: Tab「最近分析」
+  restore_button: button「恢复结果」
+  back_to_candidates: button「返回候选列表」
+  candidate_heading: 文案「人工线索候选工作台」
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
+  - action: wait
+    for: 招引页 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 最近分析→恢复结果→点「返回候选列表」；候选工作台与勾选在 expect 判定
+expect:
+  - note: 1、回到「人工线索候选工作台」 2、名单仍可勾选
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const historyDeepLink = async () => {
+        const origin = new URL(page.url()).origin;
+        await page.goto(
+          origin +
+            '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history',
+          { waitUntil: 'domcontentloaded' },
+        );
+        await page.waitForTimeout(1200);
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady().catch(() => {});
+        if (await hasHistoryTab()) {
+          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+          if ((await tab.count()) < 1) {
+            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+            await expect(legacy).toBeVisible({ timeout: 12000 });
+            await legacy.click({ timeout: 8000 });
+          } else {
+            await expect(tab).toBeVisible({ timeout: 12000 });
+            await tab.click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(900);
+          return;
+        }
+        await historyDeepLink();
+        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
+          throw new Error(
+            '环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/深链（仅条件筛选+候选工作台时不自动化本用例）',
+          );
+        }
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+      };
+      const pickCompletedCandidateRestore = async () => {
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        if (n < 1) throw new Error('最近分析无「恢复结果」按钮（缺已完成候选工作台任务）');
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /候选工作台/.test(txt)) return btn;
+        }
+        throw new Error('最近分析无「已完成」的候选工作台任务可「恢复结果」');
+      };
+      const waitManualResult = async () => {
+        for (let i = 0; i < 24; i++) {
+          await page.waitForTimeout(500);
+          const t = await stack().innerText().catch(() => '');
+          if (/人工线索复核结果/.test(t) && (/共分析|返回候选列表|排名/.test(t) || /搜索企业名称/.test(t))) {
+            return;
+          }
+        }
+        throw new Error('点击恢复结果后未打开「人工线索复核结果」，url=' + page.url());
+      };
+      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
+      await dismissBasket();
+      await openRecentTab();
+      await waitHistoryShell();
+      const restoreBtn = await pickCompletedCandidateRestore();
+      await restoreBtn.scrollIntoViewIfNeeded();
+      await restoreBtn.click({ timeout: 15000 });
+      await waitManualResult();
+      const backBtn = stack().getByRole('button', { name: '返回候选列表' }).first();
+      await expect(backBtn).toBeVisible({ timeout: 10000 });
+      await backBtn.click({ timeout: 12000 });
+      let onCandidate = false;
+      for (let i = 0; i < 24; i++) {
+        await page.waitForTimeout(500);
+        const t = await stack().innerText().catch(() => '');
+        if (/人工线索候选工作台/.test(t)) {
+          onCandidate = true;
+          break;
+        }
+      }
+      if (!onCandidate) {
+        throw new Error('点击「返回候选列表」后未回到候选工作台，url=' + page.url());
+      }
+      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({
+        timeout: 10000,
+      });
+      const rows = stack().locator('.arco-table-body .arco-table-tr');
+      const nRows = await rows.count();
+      if (nRows < 1) {
+        throw new Error('候选工作台无企业行，无法验证「名单仍可勾选」');
+      }
+      const firstCb = rows.first().locator('.arco-checkbox').first();
+      await expect(firstCb).toBeVisible({ timeout: 8000 });
+      const bar = stack().getByTestId('candidate-action-bar');
+      await expect(bar).toBeVisible({ timeout: 8000 });
+      const beforeBar = ((await bar.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      await firstCb.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const cls = (await firstCb.getAttribute('class')) || '';
+      if (!cls.includes('arco-checkbox-checked')) {
+        throw new Error('勾选首行后 checkbox 未进入 checked 态');
+      }
+      const afterBar = ((await bar.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const selM = afterBar.match(/已选\s*(\d+)\s*家/);
+      const selected = selM ? parseInt(selM[1], 10) : 0;
+      if (selected < 1) {
+        throw new Error('勾选后 action-bar 应显示已选≥1 家，前=' + beforeBar.slice(0, 60) + ' 后=' + afterBar.slice(0, 80));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 entry=history；步骤=最近分析已完成「候选工作台」行「恢复结果」→RecruitResultPanel「返回候选列表」。机检=栈内「人工线索候选工作台」+表格首行 arco-checkbox 可勾选且 candidate-action-bar 已选≥1。前置同 01438。D4·2026-10-20 机跑 rewrite-FUNC-01441 仍为 demo 两 Tab 无最近分析→交卷 fail·ENV-ATTRACT-NO-HISTORY-TAB-001（runner C6，同 01438~01440）。登录与关评审由 runner 前置。B 档零 allow_skip。

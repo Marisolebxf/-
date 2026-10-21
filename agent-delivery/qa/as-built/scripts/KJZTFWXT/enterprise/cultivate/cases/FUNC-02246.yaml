@@ -1,0 +1,72 @@
+id: FUNC-02246
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02246
+priority: P0
+title: 三个条件都未选时开始分析不可点
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 停在条件筛选推荐 Tab
+  - 产业类别、政策导向、企业规模均未选
+locators:
+  filter_tab: tab「条件筛选推荐」
+  start: button「开始分析」
+  industry_ph: placeholder「全部产业类别」
+  policy_ph: placeholder「全部政策导向」
+  size_ph: placeholder「全部企业规模」
+  stack: testid recruit-tab-stack
+  empty_hint: 请设置条件并执行推荐分析
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 不改动三个选择器
+expect:
+  - note: 「开始分析」不可点
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openFilterTab = async () => {
+        const tab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        if ((await tab.getAttribute('aria-selected')) !== 'true') {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      const waitDefaultFilters = async () => {
+        for (const ph of ['全部产业类别', '全部政策导向', '全部企业规模']) {
+          await expect(page.locator(`input[placeholder="${ph}"]`).first()).toBeVisible({ timeout: 8000 });
+        }
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await openFilterTab();
+      await waitDefaultFilters();
+      let start = page.getByRole('button', { name: '开始分析' }).first();
+      if (!(await start.isDisabled())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        await openFilterTab();
+        await waitDefaultFilters();
+        start = page.getByRole('button', { name: '开始分析' }).first();
+      }
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+  - note: 结果区为「请设置条件并执行推荐分析」
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack');
+      await expect(stack.getByText('请设置条件并执行推荐分析').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog_path /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation；代替作废 01010，页无快捷 chip（用例备注）。默认态「开始分析」disabled + 结果引导文案。脏会话二次 goto 重置。登录与关评审由 runner 前置。A 档零 allow_skip。

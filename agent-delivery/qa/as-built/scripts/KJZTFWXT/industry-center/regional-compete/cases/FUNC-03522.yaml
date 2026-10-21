@@ -1,0 +1,134 @@
+id: FUNC-03522
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03522
+priority: P1
+title: 合计偏离 100% 的提示文案与开始分析禁用
+entry_id: chain-regional-compete
+tier: B
+preconditions:
+  - 已选产业，默认权重合计为 100%
+locators:
+  industry: '.arco-select-view[aria-label="产业"]'
+  enterprise_weight: main 第 1 个 [role=spinbutton]（企业能力）
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 把企业能力权重改为 50（用例步骤 1）
+expect:
+  - note: 1、文案为「权重合计须为 100%，当前 110%」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await recover404Shell();
+        await dismissBasket();
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          const home = page.getByRole('button', { name: '返回首页' });
+          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+            await home.first().click({ timeout: 8000 });
+            await page.waitForTimeout(2000);
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
+        }
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      const onConfigReady = async () => {
+        if (await bodyIs404()) return false;
+        return await page.getByText('三大一级维度权重').first().isVisible().catch(() => false);
+      };
+      const ensureLand = async () => {
+        await dismissBasket();
+        if (!(await onConfigReady())) {
+          await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价着陆失败 ' + page.url());
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      const pickIndustry = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
+        await expect(view).toBeVisible({ timeout: 12000 });
+        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/集成电路/.test(shown)) return;
+        for (let i = 0; i < 8; i++) {
+          await view.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          const opt = pop.locator('.arco-select-option').filter({ hasText: /^集成电路$/ });
+          if (await opt.count()) {
+            await opt.first().click({ force: true, timeout: 8000 });
+            await page.waitForTimeout(700);
+            await page.keyboard.press('Escape').catch(() => {});
+            return;
+          }
+          await page.waitForTimeout(400);
+        }
+        throw new Error('无法选择产业「集成电路」');
+      };
+      await ensureLand();
+      await pickIndustry();
+      await expect(page.getByText(/权重合计：100%\s*·\s*校验通过/).first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('main [role=spinbutton]');
+      await expect(spins).toHaveCount(3, { timeout: 8000 });
+      await expect(spins.nth(0)).toHaveValue('40', { timeout: 5000 });
+      await spins.nth(0).fill('50');
+      await page.waitForTimeout(600);
+      await expect(spins.nth(0)).toHaveValue('50', { timeout: 5000 });
+      await expect(page.getByText(/权重合计须为 100%，当前 110%/).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、「开始分析」不可点
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  03522=选产业「集成电路」默认 40/35/25 与「权重合计：100% · 校验通过」后，企业能力 spin 改 50 →
+  页脚 error 文案含「权重合计须为 100%，当前 110%」（现场或带前缀「计入」同义子串）；「开始分析」disabled。
+  catalog_path=entry-seed；B 档零 allow_skip。

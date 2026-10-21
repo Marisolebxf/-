@@ -1,0 +1,155 @@
+id: FUNC-02235
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02235
+priority: P1
+title: 过程态取消任务后回到条件区且已选产业仍在
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已登录；条件筛选推荐 Tab；已选产业类别并进入可视化分析过程（assert 自含选产业+开始分析+抢窗点取消）
+locators:
+  start: button「开始分析」
+  cancel_task: button「取消任务」
+  process_title: 可视化分析过程
+  industry_ph: placeholder「全部产业类别」
+  industry_opt: 人工智能
+  empty_hint: 请设置条件并执行推荐分析
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 选产业→开始分析→过程态点「取消任务」；终态断言在 expect
+expect:
+  - note: 1、提示「已取消任务，可重新配置后发起」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openFilterTab = async () => {
+        const tab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        if ((await tab.getAttribute('aria-selected')) !== 'true') {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      const pickIndustryAi = async () => {
+        await openFilterTab();
+        const ind = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业类别"]') }).first();
+        await ind.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.locator(optSel).filter({ hasText: '人工智能' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const clickCancelAsap = async () => {
+        return page.evaluate(() => {
+          return new Promise((resolve) => {
+            const failedUi = () => {
+              const t = document.body.innerText || '';
+              return /推荐分析失败|任务失败|分析失败/.test(t) && !/取消任务/.test(t);
+            };
+            const tryClick = () => {
+              if (failedUi()) {
+                resolve('failed');
+                return true;
+              }
+              const btn = Array.from(document.querySelectorAll('button')).find((b) =>
+                /取消任务/.test((b.textContent || '').trim()),
+              );
+              if (btn) {
+                btn.click();
+                resolve('ok');
+                return true;
+              }
+              return false;
+            };
+            if (tryClick()) return;
+            const deadline = Date.now() + 90000;
+            const obs = new MutationObserver(() => { tryClick(); });
+            obs.observe(document.body, { childList: true, subtree: true });
+            const tick = setInterval(() => {
+              if (tryClick()) {
+                clearInterval(tick);
+                obs.disconnect();
+              } else if (Date.now() > deadline) {
+                clearInterval(tick);
+                obs.disconnect();
+                resolve('timeout');
+              }
+            }, 40);
+          });
+        });
+      };
+      await dismissBasket();
+      await openFilterTab();
+      await pickIndustryAi();
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      const cancelRace = clickCancelAsap();
+      await start.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      const cancelResult = await cancelRace;
+      if (cancelResult === 'failed') {
+        throw new Error('D3:任务无 running 窗口即失败，未见取消任务（ticket=ENV-CULTIVATE-PROCESS-WINDOW-001）');
+      }
+      if (cancelResult === 'timeout') {
+        const bodyText = await stack().innerText().catch(() => '');
+        const url = page.url();
+        if (/培育推荐分析结果/.test(bodyText) && !/可视化分析过程/.test(bodyText)) {
+          throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001: 分析瞬时完成直达结果，未见可点「取消任务」（URL=' + url + '）');
+        }
+        if (/可视化分析过程/.test(bodyText) || url.includes('analysis_view=processing')) {
+          throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001: 90s 内未点到「取消任务」（URL=' + url + ' | ' + bodyText.slice(0, 200) + '）');
+        }
+        throw new Error('ENV-CULTIVATE-PROCESS-WINDOW-001: 开始后未见过程窗或取消钮（URL=' + url + '）');
+      }
+      await page.waitForTimeout(800);
+      globalThis.__func02235_cancelled = true;
+      const toastOk = await page
+        .locator('.arco-message, .arco-notification, [role="alert"]')
+        .filter({ hasText: /已取消任务，可重新配置后发起/ })
+        .first()
+        .isVisible({ timeout: 8000 })
+        .catch(() => false);
+      const bodyAfter = await page.locator('body').innerText().catch(() => '');
+      if (!toastOk && !/已取消任务，可重新配置后发起/.test(bodyAfter)) {
+        throw new Error('取消后未见提示「已取消任务，可重新配置后发起」');
+      }
+      const stAfter = await stack().innerText().catch(() => '');
+      if (/可视化分析过程/.test(stAfter) && /取消任务/.test(stAfter)) {
+        throw new Error('点取消后仍停留在可视化分析过程');
+      }
+  - note: 2、已选产业仍在（产业类别仍为人工智能）
+    assert: |-
+      if (!globalThis.__func02235_cancelled) throw new Error('前置：未完成取消任务');
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+      if ((await tab.getAttribute('aria-selected')) !== 'true') {
+        await tab.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const mainText = await page.locator('main').innerText().catch(() => '');
+      const indVal = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业类别"]') }).first();
+      const tagText = await indVal.innerText().catch(() => '');
+      if (!/人工智能/.test(tagText) && !/人工智能/.test(mainText)) {
+        throw new Error('取消后产业类别未保留「人工智能」');
+      }
+  - note: 3、结果区为「请设置条件并执行推荐分析」
+    assert: |-
+      if (!globalThis.__func02235_cancelled) throw new Error('前置：未完成取消任务');
+      const st = page.getByTestId('recruit-tab-stack');
+      await expect(st.getByText('请设置条件并执行推荐分析').first()).toBeVisible({ timeout: 10000 });
+      const body = await st.innerText().catch(() => '');
+      if (/可视化分析过程/.test(body)) throw new Error('取消后栈内仍含「可视化分析过程」');
+      if (/培育推荐分析结果/.test(body) && /共分析\s*\d+\s*家/.test(body) && !/请设置条件/.test(body)) {
+        throw new Error('取消后仍为成功结果主态，未见待发起空态');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation。步骤=仅产业类别「人工智能」→开始分析→MutationObserver 抢「取消任务」。预期① toast/正文含「已取消任务，可重新配置后发起」②产业仍为人工智能③ recruit-tab-stack「请设置条件并执行推荐分析」。过程窗不可达→ ENV-CULTIVATE-PROCESS-WINDOW-001；秒失败无取消钮→ 同票 D3。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,83 @@
+id: FUNC-02720
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02720
+priority: P0
+title: 收起字段库后再展开能回到字段分组
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选字段库已展开
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  collapse_btn: button「收起字段库」
+  expand_btn: button「展开字段库」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 高级筛选 Tab、收起/展开字段库；预期在 expect 判定
+expect:
+  - note: 1、收起后出现「字段库已收起，当前条件和操作区仍保留。」；2、按钮变为「展开字段库」；3、展开后重新看到「对象基础」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const collapseToggle = fieldLib.getByRole('button', { name: /收起字段库|展开字段库/ }).first();
+      if (await collapseToggle.count()) {
+        const btnText = ((await collapseToggle.innerText()) || '').replace(/\s+/g, '');
+        if (btnText.includes('展开')) {
+          await collapseToggle.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      await expect(fieldLib.getByRole('button', { name: '收起字段库' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      const groupTitle = fieldLib.locator('.fp-category__title').filter({ hasText: '对象基础' }).first();
+      await expect(groupTitle).toBeVisible({ timeout: 8000 });
+      await fieldLib.getByRole('button', { name: '收起字段库' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(fieldLib.getByText('字段库已收起，当前条件和操作区仍保留。')).toBeVisible({
+        timeout: 8000,
+      });
+      await expect(fieldLib.getByRole('button', { name: '展开字段库' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      const groupVisibleAfterCollapse = await groupTitle.isVisible().catch(() => false);
+      if (groupVisibleAfterCollapse) {
+        throw new Error('收起后「对象基础」分组标题仍可见');
+      }
+      await fieldLib.getByRole('button', { name: '展开字段库' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(fieldLib.getByRole('button', { name: '收起字段库' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      await expect(fieldLib.locator('.fp-category__title').filter({ hasText: '对象基础' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab（.enterprise-search-mode-tabs 第 3 枚）。
+  字段库 region aria-label 可为「高级筛选字段库」或「产业高级筛选字段库」；分组标题 .fp-category__title「对象基础」。
+  收起态文案 FilterPanel fp-page__desc。登录与关内部评审由 runner 前置。B 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑：goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout+fixtures。

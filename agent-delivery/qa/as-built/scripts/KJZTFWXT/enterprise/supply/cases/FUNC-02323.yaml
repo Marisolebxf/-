@@ -1,0 +1,41 @@
+id: FUNC-02323
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02323
+priority: P1
+title: 痛点分析页不出现供应链图谱
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已登录
+locators:
+  pain_route: /enterprise/risk?workspace=pain-points&tab=pain-points
+  h1: heading「企业发展痛难点分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+expect:
+  - note: 1、页标题为「企业发展痛难点分析」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      await expect(page).toHaveURL(/\/enterprise\/risk/);
+      await expect(page).toHaveURL(/workspace=pain-points/);
+      await expect(page).toHaveURL(/tab=pain-points/);
+      await expect(page).toHaveTitle(/企业发展痛难点分析 - 科技专题服务系统/);
+      await expect(page.getByRole('heading', { name: '企业发展痛难点分析' })).toBeVisible({ timeout: 8000 });
+  - note: 2、页面不出现供应链图谱
+    assert: |-
+      const main = page.locator('main.content-shell-layout, main').first();
+      await expect(main.getByText('供应链图谱', { exact: true })).toHaveCount(0);
+      const bodyText = await main.innerText().catch(() => '');
+      if (/供应链图谱/.test(bodyText)) {
+        throw new Error('主内容区仍含「供应链图谱」文案');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·同壳隔离：痛难点 workspace=pain-points&tab=pain-points（catalog ent-pain，与 ent-supply 共用 path /enterprise/risk）。步骤=深链打开痛难点配置页。机检=页头「企业发展痛难点分析」+主区无「供应链图谱」。登录与关评审由 runner 前置。B 档零 allow_skip。

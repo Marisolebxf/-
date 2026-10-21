@@ -1,0 +1,39 @@
+id: FUNC-01034
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01034
+priority: P0
+title: 对象区为空时呈现前往对比篮引导提示
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已进入供应链关系分析页
+  - 未带入任何分析对象（URL 无 enterprise_codes）
+locators:
+  guide_text: 请先在对比篮选择企业，再进入风险洞察配置。
+  cta: 前往对比篮选择企业
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 浏览分析对象区；空态与引导断言在 expect 自含
+expect:
+  - note: 对象区呈现前往对比篮选择企业的空态引导文案
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page.getByText(/请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 });
+  - note: 对象区呈现「前往对比篮选择企业」引导按钮
+    assert: |-
+      await expect(page.getByRole('button', { name: '前往对比篮选择企业' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 路由以 catalog ent-supply 为准（/enterprise/risk?workspace=supply-chain&tab=supply-chain）。现场空态文案「请先在对比篮选择企业，再进入风险洞察配置。」CTA「前往对比篮选择企业」。对比篮浮层仅当关闭钮可见时点击。

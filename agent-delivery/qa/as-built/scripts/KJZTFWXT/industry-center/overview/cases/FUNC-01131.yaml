@@ -1,0 +1,91 @@
+id: FUNC-01131
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01131
+priority: P0
+title: 三 Tab 互斥切换同一时刻仅一个选中
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景页
+locators:
+  tablist: '[aria-label=专题全景视图]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  tab_news: '#industry-overview-tab-news'
+  tab_profile: '#industry-overview-tab-profile'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 在专题全景视图 tablist 内依次点产业资讯、产业整体概况，回读选中态互斥与内容区不叠加
+expect:
+  - note: 同一时刻仅一个 Tab 呈选中态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const isSelected = async (el) => {
+        const aria = await el.getAttribute('aria-selected');
+        const cls = await el.getAttribute('class');
+        return aria === 'true' || (cls || '').includes('active');
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const tabs = mode.locator('[role=tab]');
+      await expect(tabs).toHaveCount(3, { timeout: 8000 });
+      const clickAndAssertOne = async (idx, label, urlRe) => {
+        await tabs.nth(idx).click();
+        await page.waitForTimeout(500);
+        await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveCount(1);
+        const sel = tabs.nth(idx);
+        if (!(await isSelected(sel))) throw new Error(label + ' 未选中');
+        for (const i of [0, 1, 2].filter((j) => j !== idx)) {
+          if (await isSelected(tabs.nth(i))) {
+            throw new Error('切换到' + label + '后仍有其它 Tab 选中: idx=' + i);
+          }
+        }
+        if (urlRe) await expect(page).toHaveURL(urlRe);
+      };
+      await clickAndAssertOne(1, '产业资讯', /[?&]tab=news/);
+      await clickAndAssertOne(2, '产业整体概况', /[?&]tab=profile/);
+      await clickAndAssertOne(0, '产业链全景', /[?&]tab=panorama/);
+  - note: 内容区不叠加呈现多个 Tab 内容
+    assert: |-
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const tabs = mode.locator('[role=tab]');
+      const vis = async (loc) => loc.isVisible().catch(() => false);
+      await tabs.nth(1).click();
+      await page.waitForTimeout(500);
+      await expect(page.getByText('全部类型', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (await vis(page.getByRole('button', { name: '进入全景图谱' }))) {
+        throw new Error('资讯态仍见进入全景图谱');
+      }
+      if (await vis(page.getByText('关键指标', { exact: true }).first())) {
+        throw new Error('资讯态仍见关键指标');
+      }
+      await tabs.nth(2).click();
+      await page.waitForTimeout(500);
+      await expect(page.getByText('关键指标', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (await vis(page.getByRole('button', { name: '进入全景图谱' }))) {
+        throw new Error('概况态仍见进入全景图谱');
+      }
+      if (await vis(page.getByText('全部类型', { exact: true }).first())) {
+        throw new Error('概况态仍见全部类型');
+      }
+      await tabs.nth(0).click();
+      await page.waitForTimeout(500);
+      await expect(page.getByRole('button', { name: '进入全景图谱' })).toBeVisible({ timeout: 8000 });
+      if (await vis(page.getByText('全部类型', { exact: true }).first())) {
+        throw new Error('全景态仍见全部类型');
+      }
+      if (await vis(page.getByText('关键指标', { exact: true }).first())) {
+        throw new Error('全景态仍见关键指标');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: 路由 catalog_path /industry-center/overview；主区 Tab 作用域 [aria-label=专题全景视图]，稳定 id industry-overview-tab-panorama/news/profile；选中态 aria-selected=true 或 class 含 active；URL ?tab=news/profile/panorama。内容互斥锚点：资讯「全部类型」、概况「关键指标」、全景「进入全景图谱」。对比篮浮层可见才关。禁止全页 getByRole('tab')。资讯/概况内容深验 observed（开放项 3）；切回归 01136；共用筛选归 01132。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

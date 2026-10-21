@@ -1,0 +1,75 @@
+id: FUNC-02019
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02019
+priority: P1
+title: 侧栏进入技术力评估不会留在综合竞争力
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已登录且能看到企业分析侧栏
+locators:
+  tech_menu: 侧栏 link「企业技术力评估对比分析」
+  compete_h1: heading「企业竞争力分析」或「企业综合竞争力评估」
+  tech_h1: heading「企业技术力评估对比分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 前置综合竞争力同壳页→侧栏点「企业技术力评估对比分析」；隔离断言在 expect
+expect:
+  - note: 1、地址进入技术力评估
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const clickSidebar = async (name) => {
+        const link = page.getByRole('link', { name, exact: true });
+        if (await link.count()) {
+          await link.first().scrollIntoViewIfNeeded().catch(() => {});
+          await link.first().click({ timeout: 8000 });
+          return;
+        }
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+        const retry = page.getByRole('link', { name, exact: true });
+        if (await retry.count()) {
+          await retry.first().scrollIntoViewIfNeeded().catch(() => {});
+          await retry.first().click({ timeout: 8000 });
+          return;
+        }
+        throw new Error('侧栏未找到: ' + name);
+      };
+      await closeBasket();
+      await expect(page.getByRole('heading', { name: /企业.*竞争力/ }).first()).toBeVisible({ timeout: 12000 });
+      const u0 = page.url();
+      if (!/workspace=competitiveness/.test(u0)) throw new Error('前置未在综合竞争力路由: ' + u0);
+      await clickSidebar('企业技术力评估对比分析');
+      await page.waitForURL(/\/enterprise(\-center)?\/evaluation/, { timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
+      await page.waitForTimeout(400);
+      const u = page.url();
+      if (!/workspace=technology/.test(u)) throw new Error('未进入技术力评估路由（缺 workspace=technology）: ' + u);
+      if (/workspace=competitiveness/.test(u) && !/workspace=technology/.test(u)) {
+        throw new Error('仍停留在综合竞争力 workspace: ' + u);
+      }
+  - note: 2、页标题含企业技术力评估
+    assert: |-
+      const techHead = page.getByRole('heading', { name: /企业技术力评估/ }).first();
+      await expect(techHead).toBeVisible({ timeout: 10000 });
+      const h1Text = (await techHead.innerText()).trim();
+      if (!/企业技术力评估/.test(h1Text)) throw new Error('主区标题不含企业技术力评估: ' + h1Text);
+      const competeHead = page.getByRole('heading', { name: /企业综合竞争力评估|企业竞争力分析/, exact: false });
+      if (await competeHead.count()) {
+        const vis = await competeHead.first().isVisible().catch(() => false);
+        if (vis) throw new Error('仍呈现综合竞争力主标题，未隔离至技术力: ' + (await competeHead.first().innerText()));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: |-
+  用例 02019·同壳层隔离（作废 00404 侧栏口径）。步骤仅点侧栏「企业技术力评估对比分析」；脚本前置深链综合竞争力页以覆盖「不会留在综合竞争力」。30888 路由 /enterprise-center/evaluation?workspace=technology&mode=technology；H1「企业技术力评估对比分析」。侧栏展开口径同 00403/00930（必要时先点「企业查询」）。技术力/商业力正向用例不在本册。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

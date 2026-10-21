@@ -1,0 +1,58 @@
+id: FUNC-00961
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00961
+priority: P0
+title: 区域选择器锁定深圳且为只读不可切换
+story: US-SZSTATUS-01
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入深圳企业现状分析页
+locators:
+  region_lock: 筛选区「区域固定：深圳市」
+  chain_select: 产业集群 / 产业下拉（可改，非区域）
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 浏览筛选区区域呈现；尝试在区域锁定文案附近触发改城市（判定在 expect）
+expect:
+  - note: 区域控件为禁用只读态且有明确锁定呈现
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForLoadState('domcontentloaded');
+      const lockTxt = page.locator('main').getByText(/区域固定[：:]\s*深圳/).first();
+      await expect(lockTxt).toBeVisible({ timeout: 12000 });
+      const legacyDisabled = page.locator('main span.sci-arco-cascader.arco-select-view-disabled, main .arco-select-view-disabled').filter({ hasText: /深圳/ });
+      const legacyCount = await legacyDisabled.count();
+      if (legacyCount) {
+        await expect(legacyDisabled.first()).toBeVisible();
+      }
+  - note: 无可改城市入口且区域锚点保持深圳
+    assert: |-
+      const main = page.locator('main');
+      const enabledRegionPick = main.locator(
+        'span.sci-arco-cascader:not(.arco-select-view-disabled), .arco-select-view:not(.arco-select-view-disabled)'
+      ).filter({ hasText: /全国热门科创城市|选择区域|全部/ });
+      if (await enabledRegionPick.count()) {
+        throw new Error('筛选区仍存在可编辑区域级联: ' + (await enabledRegionPick.first().innerText().catch(() => '')));
+      }
+      await expect(main.getByText(/区域固定[：:]\s*深圳/)).toBeVisible();
+      const lockEl = main.getByText(/区域固定[：:]\s*深圳/).first();
+      await lockEl.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      const popupBeijing = page.locator('.arco-trigger-popup').filter({ hasText: '北京' });
+      const popupVisible = await popupBeijing.evaluateAll((nodes) =>
+        nodes.some((n) => {
+          const st = window.getComputedStyle(n);
+          return st.display !== 'none' && st.visibility !== 'hidden' && n.offsetParent !== null;
+        })
+      ).catch(() => false);
+      if (popupVisible) throw new Error('区域锁定文案旁仍弹出可改城市面板');
+      const mainTxt = await main.innerText();
+      if (!/深圳/.test(mainTxt)) throw new Error('主区未保持深圳区域锚点');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D2·30888 区域由禁用级联改为静态「区域固定：深圳市」（2026-10 复勘）；旧文案「全国热门科创城市/深圳/全部」仅 legacy 分支兼容。后台提取范围黑盒不核。接旧 P0-06。

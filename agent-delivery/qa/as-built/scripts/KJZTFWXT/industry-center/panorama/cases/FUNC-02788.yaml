@@ -1,0 +1,74 @@
+id: FUNC-02788
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02788
+priority: P0
+title: 默认筛选已选值为两级新一代信息技术、半导体与集成电路和最新快照
+story: US-CHAIN-PANORAMA-01
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 刚进入产业链全景图谱页，未改筛选
+locators:
+  context: '[data-testid="panorama-analysis-context"]'
+  analysis_object_selects: .industry-cluster-select .arco-select-view
+  chain_select: .industry-catalog-select
+  data_as_of: '[data-testid="panorama-analysis-context"] .policy-analysis-filter-row .arco-select:has(input[placeholder="请选择数据截至"])'
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 不改动筛选，读取分析对象、所属产业链、数据截至已选值
+expect:
+  - note: 1、分析对象两级均为「新一代信息技术」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      await expect(objectSelects.first()).toBeVisible({ timeout: 8000 });
+      const n = await objectSelects.count();
+      if (n < 2) {
+        throw new Error('分析对象下应有 2 个下拉，现场可见 ' + n + ' 个');
+      }
+      const left = await read(objectSelects.nth(0));
+      const right = await read(objectSelects.nth(1));
+      if (!/新一代信息技术/.test(left)) throw new Error('分析对象左侧默认不符: ' + left);
+      if (!/新一代信息技术/.test(right)) throw new Error('分析对象右侧默认不符: ' + right);
+  - note: 2、所属产业链为「半导体与集成电路」
+    assert: |-
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const chain = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const val = await read(chain);
+      if (!/半导体与集成电路/.test(val)) throw new Error('所属产业链默认不符: ' + val);
+  - note: 3、数据截至为「最新快照」
+    assert: |-
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
+      await expect(asOfInput).toHaveCount(1);
+      const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await expect(snapView).toBeVisible({ timeout: 8000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const val = await read(snapView);
+      if (!/最新快照/.test(val)) throw new Error('数据截至默认不符: ' + val);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；筛选区 data-testid=panorama-analysis-context。
+  用例「分析对象」= IndustryClusterSelect 内两个 .arco-select-view（现场 aria 仍为集群/产业，界面无单独「集群」字样标签）。
+  默认两级展示文案均为「新一代信息技术」；所属产业链=industry-catalog-select；数据截至 Select title「最新快照」+ hidden placeholder「请选择数据截至」。
+  对比篮浮层可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。

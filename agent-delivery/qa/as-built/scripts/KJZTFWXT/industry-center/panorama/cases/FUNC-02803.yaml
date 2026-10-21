@@ -1,0 +1,92 @@
+id: FUNC-02803
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02803
+priority: P0
+title: 单快照时状态对比与演进时间轴不可切换
+story: US-CHAIN-PANORAMA-04
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 当前视图为「图谱」
+  - 「当前状态」子块已选中
+  - 产业链仅有一个已发布时间状态
+locators:
+  view_graph: .arco-radio-button「图谱」
+  sub_current: .arco-radio-button「当前状态」
+  sub_compare: .arco-radio-button「状态对比」
+  sub_timeline: .arco-radio-button「演进时间轴」
+  single_hint: 单快照不可用提示
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 图谱视图下依次点状态对比、演进时间轴，断言仍停当前状态且提示文案
+expect:
+  - note: 1、仍停留在「当前状态」；2、提示为单快照不可用文案
+    assert: |-
+      const HINT = '当前产业链仅有一个已发布时间状态，状态对比与演进时间轴暂不可用。';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const radioBtn = (name) =>
+        page.locator('.arco-radio-button').filter({ hasText: new RegExp('^' + name + '$') }).first();
+      const assertCurrentChecked = async () => {
+        const cur = radioBtn('当前状态');
+        const cls = (await cur.getAttribute('class')) || '';
+        if (!cls.includes('arco-radio-checked')) {
+          throw new Error('未停留在「当前状态」，class=' + cls);
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const graphRadio = radioBtn('图谱');
+      await expect(graphRadio).toBeVisible({ timeout: 10000 });
+      const graphCls = (await graphRadio.getAttribute('class')) || '';
+      if (!graphCls.includes('arco-radio-checked')) {
+        await page.getByText('图谱', { exact: true }).click();
+        await page.waitForTimeout(500);
+      }
+      await expect(page.getByRole('heading', { name: '动态演进' })).toBeVisible({ timeout: 10000 });
+      await assertCurrentChecked();
+      const cmp = radioBtn('状态对比');
+      const tl = radioBtn('演进时间轴');
+      await expect(cmp).toBeVisible({ timeout: 8000 });
+      await expect(tl).toBeVisible({ timeout: 8000 });
+      const cmpCls = (await cmp.getAttribute('class')) || '';
+      const tlCls = (await tl.getAttribute('class')) || '';
+      if (!cmpCls.includes('disabled') || !tlCls.includes('disabled')) {
+        throw new Error(
+          '前置：应为单快照（状态对比/演进时间轴 disabled），现场 cmp=' + cmpCls + ' tl=' + tlCls,
+        );
+      }
+      await cmp.click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(400);
+      await assertCurrentChecked();
+      if (await page.locator('[data-testid="panorama-timeline"]').count()) {
+        throw new Error('点击状态对比后不应出现演进时间轴面板');
+      }
+      await tl.click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(400);
+      await assertCurrentChecked();
+      if (await page.getByRole('button', { name: /播放|暂停/ }).count()) {
+        throw new Error('点击演进时间轴后不应出现播放控件');
+      }
+      const alert = page.locator('.arco-alert').filter({ hasText: HINT }).first();
+      await expect(alert).toBeVisible({ timeout: 8000 });
+      await expect(alert).toContainText(HINT, { timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 /industry-center/panorama；单快照时 IndustryPanoramaPage hasHistory=false，
+  a-radio dual/timeline disabled + a-alert 固定提示（testdata single_snapshot_hint）。
+  步骤对齐用例册 02803：图谱视图、默认当前状态，force 点 disabled 子块仍保持 arco-radio-checked。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

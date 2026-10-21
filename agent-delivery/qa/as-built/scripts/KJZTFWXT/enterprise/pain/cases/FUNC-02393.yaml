@@ -1,0 +1,197 @@
+id: FUNC-02393
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02393
+priority: P0
+title: 开始分析后进入生成中页并展示五段过程
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+tier: A
+preconditions:
+  - 已回填企业且至少勾选一个维度；该组合当天尚无成功结果（assert 自含）
+locators:
+  start: button「开始分析」
+  process_block: 可视化分析过程
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 回填对象→点击「开始分析」→停在生成中页（不等待成功结果）
+expect:
+  - note: 前置：回填 1 家企业并点击「开始分析」，进入 view=processing（非当天复用结果）
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
+      const listEnterpriseNames = async (scope) => {
+        const names = [];
+        const cards = scope.locator('.ent-compare-item-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const nameEl = card.locator('.ent-compare-item-card__name');
+          const name = (await nameEl.count())
+            ? (await nameEl.first().innerText()).trim()
+            : (await card.innerText()).split('\n')[0].trim();
+          if (name) names.push(name);
+        }
+        if (names.length) return names;
+        const sels = scope.locator('[aria-label^="选择 "]');
+        for (let i = 0; i < (await sels.count()); i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const joinOneViaAddModal = async (panel) => {
+        const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
+        const addBtn = (await workspace.count())
+          ? workspace.getByRole('button', { name: '新增', exact: true })
+          : panel.getByRole('button', { name: '新增', exact: true });
+        await expect(addBtn.first()).toBeVisible({ timeout: 8000 });
+        await addBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const modalRoot = page
+          .locator('[data-testid="compare-basket-add-modal"], .arco-modal:visible')
+          .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
+          .last();
+        await expect(modalRoot).toBeVisible({ timeout: 15000 });
+        await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 20000 }).catch(() => {});
+        const joinBtns = modalRoot.getByRole('button', { name: '加入对比篮', exact: true });
+        let joined = false;
+        for (let t = 0; t < 20; t++) {
+          if ((await joinBtns.count()) > 0 && (await joinBtns.first().isVisible().catch(() => false))) {
+            await joinBtns.first().click({ timeout: 8000 });
+            joined = true;
+            break;
+          }
+          await page.waitForTimeout(1000);
+        }
+        if (!joined) throw new Error('ENV-PAIN-BASKET-EMPTY-001：新增企业弹层无「加入对比篮」，对比篮 0 家企业');
+        await page.waitForTimeout(800);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const ensureBasketInPicker = async (panel, min) => {
+        let names = await listEnterpriseNames(panel);
+        if (names.length >= min) return names;
+        await joinOneViaAddModal(panel);
+        names = await listEnterpriseNames(panel);
+        if (names.length < min) throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
+        return names;
+      };
+      const ensureOneDimChecked = async () => {
+        const dims = ['技术研发', '市场拓展', '融资', '管理'];
+        for (const d of dims) {
+          const box = page.locator('main .arco-checkbox').filter({ hasText: d }).first();
+          if (!(await box.count())) continue;
+          const cls = (await box.getAttribute('class')) || '';
+          if (/arco-checkbox-checked/.test(cls)) return;
+        }
+        const first = page.locator('main .arco-checkbox').filter({ hasText: dims[0] }).first();
+        await expect(first).toBeVisible({ timeout: 8000 });
+        await first.click({ timeout: 8000 });
+        await page.waitForTimeout(300);
+      };
+      const openEnterprisePicker = async () => {
+        await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        let panel = pickerRoot();
+        if (!(await panel.isVisible().catch(() => false))) {
+          const pickerQs =
+            'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+          await page.goto(toUrl(`${route}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1200);
+          panel = pickerRoot();
+        }
+        await expect(panel).toBeVisible({ timeout: 15000 });
+        return panel;
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      if (!(await page.getByText(/来自对比篮/).count())) {
+        const panel = await openEnterprisePicker();
+        await ensureBasketInPicker(panel, 1);
+        const firstSel = panel.locator('[aria-label^="选择 "]').first();
+        if (!(await firstSel.count())) {
+          await panel.locator('.ent-compare-item-card').first().click({ timeout: 8000 });
+        } else {
+          await firstSel.scrollIntoViewIfNeeded().catch(() => {});
+          await firstSel.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(400);
+        const okBtn = panel.getByRole('button', { name: '确定' });
+        await expect(okBtn).toBeEnabled({ timeout: 8000 });
+        await okBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+      }
+      await ensureOneDimChecked();
+      const start = page.getByRole('button', { name: '开始分析' });
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      await start.click({ timeout: 8000 });
+      await page.waitForTimeout(2000);
+      const body0 = await main().innerText().catch(() => '');
+      if (/已打开今天相同条件|相同条件的风险分析结果/.test(body0) && /对象与诊断摘要/.test(body0)) {
+        throw new Error('ENV-PAIN-TODAY-REUSE-001：当天已有成功结果，未进入生成中页（见 02399）');
+      }
+      const url = page.url();
+      if (!/view=processing/.test(url) && !/view=result/.test(url)) {
+        throw new Error('点击开始分析后未进入过程/结果视图：' + url);
+      }
+      if (/view=result/.test(url) && /对象与诊断摘要/.test(body0)) {
+        throw new Error('ENV-PAIN-TODAY-REUSE-001：直接进入结果页，无法验收生成中（当天复用或分析过快）');
+      }
+      await expect(page).toHaveURL(/view=processing/, { timeout: 8000 });
+      globalThis.__func02393_started = true;
+  - note: 1、页面标题为「企业发展痛点分析生成中」
+    assert: |-
+      if (!globalThis.__func02393_started) throw new Error('前置：未进入生成中页');
+      const main = page.locator('main.content-shell-layout, main').first();
+      const body = await main.innerText().catch(() => '');
+      if (/分析失败/.test(body) && !/生成中/.test(body)) {
+        throw new Error('ENV-PAIN-NEWTASK-FAIL-001：过程页已失败，未见生成中标题');
+      }
+      await expect(main.getByText('企业发展痛点分析生成中').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、页面展示任务编号、分析类型、进度与已用时间
+    assert: |-
+      if (!globalThis.__func02393_started) throw new Error('前置：未进入生成中页');
+      const main = page.locator('main.content-shell-layout, main').first();
+      const body = await main.innerText().catch(() => '');
+      const url = page.url();
+      if (!/RISK-\d{8}-\d{3}/.test(body) && !/RISK-\d{8}-\d{3}/.test(url)) {
+        throw new Error('未见任务编号 RISK-YYYYMMDD-NNN');
+      }
+      if (!/企业发展痛点分析/.test(body)) throw new Error('未见分析类型「企业发展痛点分析」');
+      if (!/进度/.test(body) || !/\d+\s*%/.test(body)) throw new Error('进度未以百分比显示');
+      if (!/已用时间/.test(body) || !/\d+\s*秒/.test(body)) throw new Error('未见已用时间（秒）');
+  - note: 3、五个阶段名称（附录 A）均在可视化分析过程中展示
+    assert: |-
+      if (!globalThis.__func02393_started) throw new Error('前置：未进入生成中页');
+      const stages = ['任务提交', '权限与配置校验', '数据汇聚', '算法计算', '结果组装'];
+      await expect(page.getByText('可视化分析过程').first()).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main.content-shell-layout, main').first();
+      const body = await main.innerText().catch(() => '');
+      for (const s of stages) {
+        if (!body.includes(s)) throw new Error('未见阶段：' + s);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz；CTA 开选择器→回填 1 家→「开始分析」→停 processing。断言=生成中标题+任务摘要+五段过程。2026-10-20 实跑：企业 Tab 0/50，新增企业无加入按钮→ENV-PAIN-BASKET-EMPTY-001(blocked)。当天复用→ENV-PAIN-TODAY-REUSE-001。

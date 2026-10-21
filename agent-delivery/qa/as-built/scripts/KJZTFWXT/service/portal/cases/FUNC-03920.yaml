@@ -1,0 +1,66 @@
+id: FUNC-03920
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03920
+priority: P1
+tier: B
+title: 深圳环节分布空态
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（产业未选；runner goto /service-portal）
+locators:
+  tab_sz: tab「深圳产业服务介绍」
+  segment_heading: heading 含「深圳产业链环节分布」
+  segment_empty: 环节分布 SectionPanel 内 a-empty
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「深圳产业服务介绍」页签并滚动到环节分布
+expect:
+  - note: 1、说明无领域×环节矩阵且不填演示环节条
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal SPA404，无法验深圳环节分布空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const segHeading = page.locator('main').getByRole('heading', { name: /深圳产业链环节分布/ }).first();
+      await segHeading.scrollIntoViewIfNeeded();
+      await expect(segHeading).toBeVisible({ timeout: 8000 });
+      const panel = segHeading.locator('xpath=ancestor::*[contains(@class,"section") or contains(@class,"Section")][1]').first();
+      const emptyDesc = panel.locator('.arco-empty-description').first();
+      if (!(await emptyDesc.count())) {
+        const fallback = page.getByText(/无领域×环节矩阵/).first();
+        await expect(fallback).toBeVisible({ timeout: 8000 });
+        const txt = ((await fallback.innerText()) || '').replace(/\s+/g, ' ');
+        if (!/不填演示环节条/.test(txt)) {
+          const body = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+          if (!/不填演示环节条/.test(body)) throw new Error('环节分布空态缺「不填演示环节条」');
+        }
+      } else {
+        await expect(emptyDesc).toBeVisible({ timeout: 8000 });
+        const txt = ((await emptyDesc.innerText()) || '').replace(/\s+/g, ' ');
+        if (!/无领域×环节矩阵/.test(txt)) throw new Error('环节分布空态缺「无领域×环节矩阵」：' + txt);
+        if (!/不填演示环节条/.test(txt)) throw new Error('环节分布空态缺「不填演示环节条」：' + txt);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  与 FUNC-03904 同入口：goto /service-portal → Tab「深圳产业服务介绍」。环节分布 SectionPanel 标题含 industryLabel（未选产业时为「全部产业 · 深圳产业链环节分布」）；
+  空态 a-empty description 固定「本包络无领域×环节矩阵。不填演示环节条。」（ServicePortalShenzhenPage）。catalog_path 仍为 /service-portal。

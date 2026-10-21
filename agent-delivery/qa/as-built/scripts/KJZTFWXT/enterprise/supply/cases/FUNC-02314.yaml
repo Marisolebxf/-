@@ -1,0 +1,77 @@
+id: FUNC-02314
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02314
+priority: P1
+title: 按企业名称搜索篮内无匹配不发起分析
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已打开「选择分析企业」
+  - 篮内有企业（assert 自含打开浮层）
+locators:
+  overlay_title: 选择分析企业
+  name_search: placeholder「按企业名称搜索」
+  empty_hint: 当前篮内无匹配企业
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 打开选择分析企业后在「按企业名称搜索」输入篮内不存在名称；空态与不进入过程页在 expect
+expect:
+  - note: 1、出现「当前篮内无匹配企业」；2、不进入分析过程页
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const noMatchKeyword = '___qa_func_02314_no_such_ent___';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const visiblePanel = () => page.locator('.system-compare-panel:visible').last();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('从对比篮勾选本页分析对象').first()).toBeVisible({ timeout: 8000 });
+      const selsBefore = page.locator('[aria-label^="选择 "]');
+      if ((await selsBefore.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      await expect(selsBefore.first()).toBeVisible({ timeout: 8000 });
+      const panel = visiblePanel();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const search = panel.getByPlaceholder('按企业名称搜索');
+      await expect(search.first()).toBeVisible({ timeout: 8000 });
+      await search.first().fill(noMatchKeyword);
+      await page.waitForTimeout(700);
+      await expect(panel.getByText('当前篮内无匹配企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const selCount = await selsBefore.count();
+      if (selCount > 0) {
+        let vis = 0;
+        for (let i = 0; i < selCount; i++) {
+          if (await selsBefore.nth(i).isVisible().catch(() => false)) vis++;
+        }
+        if (vis > 0) throw new Error('无匹配搜索后仍可见勾选行 ' + vis);
+      }
+      const url = page.url();
+      if (/view=progress|view=processing/.test(url)) {
+        throw new Error('无匹配搜索后不应进入分析过程页 URL：' + url);
+      }
+      const mainText = await page.locator('main').innerText().catch(() => '');
+      if (/可视化分析过程|企业供应链关系分析生成中/.test(mainText) && !/选择分析企业/.test(mainText.slice(0, 200))) {
+        throw new Error('无匹配搜索后不应出现分析过程区块');
+      }
+      await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.getByRole('button', { name: '确定' }).first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。前置=篮内≥1 企业（打开「选择分析企业」浮层）。步骤=面板内「按企业名称搜索」输入固定不存在串。机检=「当前篮内无匹配企业」+勾选行不可见+无 view=progress/processing/可视化分析过程且浮层仍可见。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

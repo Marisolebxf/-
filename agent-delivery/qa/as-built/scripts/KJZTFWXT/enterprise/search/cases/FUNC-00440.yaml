@@ -1,0 +1,49 @@
+id: FUNC-00440
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00440
+priority: P0
+title: 智能搜索关键词检索后得到长卡片结果与命中条数
+story: US-E1-SCH-02
+entry_id: ent-search
+tier: A
+preconditions:
+  - 已进入企业查询默认智能搜索
+  - 搜索框已回填示例词（现场示例查询首 chip）
+locators:
+  route: /enterprise/enterprise-search
+  example_chip: .enterprise-search-example-button
+  search_btn: button「搜索」（exact）
+  result_title: 文案「智能搜索结果」+「命中 N 家企业」（N≥1，分行展示）
+  view_profile: main button「查看画像」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 示例词回填与点「搜索」由 expect 首条 assert 自含（对齐用例唯一步骤）
+expect:
+  - note: 结果标题为智能搜索结果且含命中条数（可见非零命中，不钉死精确数字）
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const chip = page.locator('.enterprise-search-example-button').first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.click();
+      await page.waitForTimeout(400);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(600);
+      await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/).first()).toBeVisible({ timeout: 8000 });
+  - note: 至少一张横向长卡片且含企业名称与经营状态
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(main.getByText(/在营|吊销|注销|停业|迁出/).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByRole('button').filter({ hasText: /有限公司|股份|集团|有限责任公司/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 卡片含「查看画像」动作
+    assert: |-
+      await expect(page.locator('main').getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；空态「未命中结果」记数据阻塞
+as_built_note: 路由以 catalog 为准：/enterprise/enterprise-search；示例 chip 词单以现场首枚为准（非用例册「人工智能」五词）。结果标题「智能搜索结果」与「命中 N 家企业」分行展示，断言拆开匹配。

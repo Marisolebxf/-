@@ -1,0 +1,57 @@
+id: FUNC-03914
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03914
+priority: P1
+tier: B
+title: 暂无覆盖环节仍可进入短板分析
+story: US-SVC-PT-02
+entry_id: svc-portal
+preconditions:
+  - 已打开服务机构产业分布（runner 会话前置 + Tab 切换）
+locators:
+  tab_ind: tab「服务机构产业分布」
+  stage_pilot: button.svc-portal-stage-card（含「中试熟化」且显示暂无覆盖）
+  stage_link: .svc-portal-stage-card__link「环节详情」
+  chain_tab: tab「服务链短板分析」（服务链短板分析页签）
+steps:
+  - action: goto
+    target: /service-portal
+  - action: evaluate
+    note: 点击「中试熟化」上的「环节详情」
+expect:
+  - note: 1、页面标题变为「服务链短板分析」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('C2：门户深链 404，无法验产业分布页');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await tablist.getByRole('tab', { name: '服务机构产业分布', exact: true }).click();
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const pilotCard = page.locator('.svc-portal-stage-card').filter({ hasText: '中试熟化' }).first();
+      await expect(pilotCard).toBeVisible({ timeout: 8000 });
+      const emptyPilot = pilotCard.locator('.svc-portal-stage-card__empty').filter({ hasText: '暂无覆盖' });
+      if (!(await emptyPilot.isVisible().catch(() => false))) {
+        throw new Error('ENV-SVC-PORTAL-PILOT-COVERED：中试熟化现场有覆盖家数，无法验「暂无覆盖仍可进入」');
+      }
+      const link = pilotCard.locator('.svc-portal-stage-card__link').filter({ hasText: '环节详情' });
+      await expect(link).toBeVisible({ timeout: 5000 });
+      await link.click({ timeout: 8000 });
+      await expect(page).toHaveURL(/service\/chain-analysis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=chain/, { timeout: 5000 });
+      const chainTablist = page.locator('[role="tablist"]').filter({ has: page.getByRole('tab', { name: '服务链短板分析' }) }).first();
+      const titleTab = chainTablist.getByRole('tab', { name: '服务链短板分析', exact: true });
+      await expect(titleTab).toBeVisible({ timeout: 10000 });
+      await expect(titleTab).toHaveAttribute('aria-selected', 'true');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  与 03895 对称：本条要求「中试熟化」展示暂无覆盖（03894 expect-3）仍点 .svc-portal-stage-card__link 进入分析侧。
+  整卡为 button @click=openStage；落点 /service/chain-analysis?workspace=chain&segment=…；WorkbenchTabs 选中「服务链短板分析」。
+  中试熟化若有家数 → ENV-SVC-PORTAL-PILOT-COVERED。登录与关内部评审由 runner 前置。

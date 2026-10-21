@@ -1,0 +1,58 @@
+id: FUNC-00444
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00444
+priority: P0
+title: 点击热门场景后切换高级筛选并立即得到结果
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: A
+preconditions:
+  - 系统正常
+  - 初始态可见热门场景
+locators:
+  hot_chip: .enterprise-search-hot-button（热门场景行首枚，30888 如「专精特新企业」）
+  adv_breadcrumb: 面包屑「高级筛选」
+  field_library: 高级筛选 · 字段库
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 点击热门场景 chip 与三条 expect 判定在 assert 内自含（跨 tick）
+expect:
+  - note: 页面切换为高级筛选且出现该场景条件摘要
+    assert: |-
+      const chip = page.locator('.enterprise-search-hot-button').first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      const label = (await chip.innerText()).trim();
+      await chip.click();
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/mode=advanced/, { timeout: 8000 });
+      await expect(page.getByText('高级筛选', { exact: false }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText(/已选 \d+ 个条件/).first()).toBeVisible({ timeout: 8000 });
+      const main = await page.locator('main').innerText();
+      if (!main.includes(label)) {
+        throw new Error('当前条件区未见所点热门场景摘要: ' + label);
+      }
+  - note: 结果标题为高级筛选结果且含命中条数或明确空态
+    assert: |-
+      const deadline = Date.now() + 15000;
+      let hasTitle = false;
+      while (Date.now() < deadline) {
+        hasTitle = (await page.getByText('高级筛选结果').count()) > 0;
+        if (hasTitle) break;
+        if ((await page.getByText('未命中结果，可调整条件或切换高级筛选').count()) > 0) {
+          await expect(page.getByText('未命中结果，可调整条件或切换高级筛选').first()).toBeVisible({ timeout: 2000 });
+          break;
+        }
+        await page.waitForTimeout(500);
+      }
+      if (!hasTitle && (await page.getByText('未命中结果，可调整条件或切换高级筛选').count()) === 0) {
+        throw new Error('点击热门场景后未即时出现高级筛选结果标题或明确空态');
+      }
+      if (hasTitle) {
+        await expect(page.getByText(/命中 \d+ (家企业|个企业对象)/).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 高级筛选页无蓝色搜索主视觉
+    assert: 'await expect(page.getByRole(''button'', { name: ''搜索'', exact: true })).toHaveCount(0)'
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 企业查询路由 /enterprise/enterprise-search（catalog /enterprise/enterprise-search 404）。热门 scene chip 词单为专精特新企业/国高企/上市企业等（非用例册深圳高新技术四词）。D3·30888 实勘点击 chip 仅 mode=advanced 置入条件，约 20s 内仍无「高级筛选结果」直至点「应用筛选」——与用例「立即得到结果」冲突，本条金样机跑预期红直至产品修复。

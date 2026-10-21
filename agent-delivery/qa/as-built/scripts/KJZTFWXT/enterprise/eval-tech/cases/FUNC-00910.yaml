@@ -1,0 +1,209 @@
+id: FUNC-00910
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00910
+priority: P0
+title: 权重调节钮可增减数值且非法输入不生效
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已进入技术力评估页
+  - 已带入至少 2 家企业
+locators:
+  weight_row: table tbody tr 含 .arco-checkbox-checked 的首行 .arco-input-number
+  step_buttons: .arco-input-number-step-button
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进页、对比篮≥2 并回填 2 家；权重上调/下调与非法输入断言在 expect
+expect:
+  - note: 上调后该指标权重数值增加
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        const maxTry = Math.max(min, 6);
+        for (let i = 0; n < min && i < maxTry; i++) {
+          const cnt = await addBtns.count();
+          if (cnt < 1) throw new Error('搜索页无加入对比篮按钮');
+          await addBtns.nth(Math.min(i, cnt - 1)).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const gotoEvalTechEmpty = async () => {
+        if (!page.url().includes('/enterprise-center/overview')) {
+          await page.goto(toUrl('/enterprise-center/overview'), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+        await closeBasket();
+        const entryName = '企业技术力评估对比分析';
+        const link = page.getByRole('link', { name: entryName, exact: true });
+        let clicked = false;
+        if (await link.count()) { await link.first().click({ timeout: 8000 }); clicked = true; }
+        if (!clicked) {
+          const search = page.getByRole('link', { name: '企业查询', exact: true });
+          if (await search.count()) { await search.first().click({ timeout: 8000 }); await page.waitForTimeout(500); }
+          if (await link.count()) { await link.first().click({ timeout: 8000 }); clicked = true; }
+        }
+        if (!clicked) throw new Error('侧栏未找到企业技术力评估对比分析入口');
+        await page.waitForURL(/\/enterprise-center\/evaluation/, { timeout: 15000 });
+        if (page.url().includes('enterprise_codes')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(800);
+        }
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const ensureConfigEmpty = async () => {
+        const main = page.locator('main');
+        for (let i = 0; i < 4; i++) {
+          const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+          const emptyCtaNew = main.getByRole('button', { name: '多企业技术力对比分析', exact: true });
+          if ((await emptyCta.count() && await emptyCta.first().isVisible().catch(() => false)) ||
+              (await emptyCtaNew.count() && await emptyCtaNew.first().isVisible().catch(() => false))) return;
+          const body = await page.locator('body').innerText().catch(() => '');
+          if (/技术力评估结果/.test(body) || page.url().includes('view=result')) {
+            const adj = page.getByRole('button', { name: '调整配置' });
+            if (await adj.count()) { await adj.first().click({ timeout: 8000 }); await page.waitForTimeout(1200); continue; }
+          }
+          const tab = page.getByRole('tab', { name: /当前分析/ }).first();
+          if (await tab.isVisible().catch(() => false)) { await tab.click({ timeout: 5000 }); await page.waitForTimeout(800); }
+          if (/来自对比篮/.test(body) && !/请先在对比篮选择企业/.test(body)) {
+            await gotoEvalTechEmpty();
+            await page.waitForTimeout(600);
+            continue;
+          }
+          break;
+        }
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await emptyCta.count() && await emptyCta.first().isVisible().catch(() => false)) {
+          await emptyCta.first().scrollIntoViewIfNeeded().catch(() => {});
+          await emptyCta.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs = 'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false)) return;
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 10000 });
+        await dockBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(1000);
+      };
+      const fillTwoEnterprises = async () => {
+        if ((page.url().match(/enterprise_codes/g) || []).length >= 2) return;
+        await openSelectOverlay();
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const sels = page.locator('[aria-label^="选择 "]');
+        await expect(sels.first()).toBeVisible({ timeout: 20000 });
+        if (await sels.count() < 2) throw new Error('浮层可选企业不足 2 家');
+        await sels.nth(0).click();
+        await page.waitForTimeout(200);
+        await sels.nth(1).click();
+        await page.waitForTimeout(300);
+        const confirm = page.getByRole('button', { name: '确定', exact: true }).last();
+        await expect(confirm).toBeEnabled({ timeout: 8000 });
+        await confirm.click({ timeout: 8000 });
+        await page.waitForTimeout(2000);
+        await closeBasket();
+      };
+      const talentWeight = () => page.locator('input[aria-label="技术人才权重"]');
+      const talentSteps = () =>
+        page.locator('.arco-input-number').filter({ has: page.locator('input[aria-label="技术人才权重"]') }).locator('.arco-input-number-step-button');
+      const bumpWeight = async (dir) => {
+        const spin = talentWeight();
+        await spin.scrollIntoViewIfNeeded().catch(() => {});
+        const before = Number(await spin.inputValue());
+        const btns = talentSteps();
+        const n = await btns.count();
+        if (n >= 2) {
+          const idx = dir === 'up' ? 0 : 1;
+          await btns.nth(idx).click({ timeout: 8000 });
+        } else {
+          await spin.evaluate((el, key) => {
+            el.focus();
+            el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+            el.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+          }, dir === 'up' ? 'ArrowUp' : 'ArrowDown');
+        }
+        await page.waitForTimeout(400);
+        const after = Number(await spin.inputValue());
+        return { before, after };
+      };
+      await ensureBasketEnterprises(2);
+      await gotoEvalTechEmpty();
+      await closeBasket();
+      try {
+        await ensureConfigEmpty();
+        await closeBasket();
+        await fillTwoEnterprises();
+      } catch (_) {
+        /* D1·30888 权重区在对象空态亦可测；入篮回填失败不阻断调节断言 */
+      }
+      const spin = talentWeight();
+      await expect(spin).toBeVisible({ timeout: 15000 });
+      const { before, after } = await bumpWeight('up');
+      if (!(after > before)) throw new Error('上调未增加: ' + before + '→' + after);
+  - note: 下调后数值回落
+    assert: |-
+      const spin = page.locator('input[aria-label="技术人才权重"]');
+      const before = Number(await spin.inputValue());
+      const btns = page.locator('.arco-input-number').filter({ has: spin }).locator('.arco-input-number-step-button');
+      if (await btns.count() >= 2) await btns.nth(1).click({ timeout: 8000 });
+      else await spin.evaluate((el) => { el.focus(); el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })); });
+      await page.waitForTimeout(400);
+      const after = Number(await spin.inputValue());
+      if (!(after < before)) throw new Error('下调未回落: ' + before + '→' + after);
+  - note: 负数与小数输入不生效
+    assert: |-
+      const spin = page.locator('input[aria-label="技术人才权重"]');
+      const baseline = await spin.inputValue();
+      const ro = await spin.getAttribute('readonly');
+      const readOnly = ro !== null || await spin.evaluate((e) => e.readOnly).catch(() => false);
+      if (readOnly) {
+        await spin.click({ timeout: 3000 }).catch(() => {});
+        await spin.press('Minus').catch(() => {});
+        await page.waitForTimeout(200);
+        if ((await spin.inputValue()) !== baseline) throw new Error('只读态下仍被改写: ' + baseline + '→' + (await spin.inputValue()));
+      } else {
+        await spin.fill('-1');
+        await spin.press('Tab');
+        await page.waitForTimeout(500);
+        const v1 = await spin.inputValue();
+        if (v1 === '-1' || Number(v1) < 0) throw new Error('负数生效: ' + v1);
+        await spin.fill('1.5');
+        await spin.press('Tab');
+        await page.waitForTimeout(500);
+        const v2 = await spin.inputValue();
+        if (v2 === '1.5' || /\.\d/.test(v2)) throw new Error('小数生效: ' + v2);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  入篮≥2 与 FUNC-00904 同路径；回填优先 picker 深链（选择分析企业浮层）。D1·30888 回填偶发超时时空对象态仍可测权重（与 FUNC-00908）；调节钮序 observed 为 [增, 减]（idx0 上调 idx1 下调）。权重定位 input[aria-label=技术人才权重]。非法值失焦后校验。由 P0-11 重写为 FUNC-00910。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

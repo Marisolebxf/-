@@ -1,0 +1,137 @@
+id: FUNC-01826
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01826
+priority: P1
+title: 确定清空对比篮后篮空且企业计数为0
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 「选择分析企业」浮层已打开（脚本自含入篮≥1 与开浮层）
+  - 篮内至少有 1 家企业
+locators:
+  picker_title: text「选择分析企业」
+  clear_basket_btn: button「清空对比篮」
+  modal_ok: 弹框 button「确定」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 开浮层后点「清空对比篮」→ 弹框点「确定」；提示、名单与计数在 expect 判定
+expect:
+  - note: 1、出现「对比篮已清空」；2、篮内不再列出企业；3、「企业」计数变为 0
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const gotoEvalTech = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const ctaNew = main.getByRole('button', { name: '多企业技术力对比分析', exact: true });
+        const ctaOld = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await ctaNew.count() && await ctaNew.first().isVisible().catch(() => false)) {
+          await ctaNew.first().click({ timeout: 8000 });
+          return;
+        }
+        if (await ctaOld.count() && await ctaOld.first().isVisible().catch(() => false)) {
+          await ctaOld.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=2&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const pickerRoot = () =>
+        page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      const overlayEnterpriseCount = async (scope) => {
+        const txt = (await scope.innerText()).replace(/\s+/g, ' ');
+        const m = txt.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        const cards = scope.locator('.ent-compare-item-card');
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const cardN = await cards.count();
+        const selN = await sels.count();
+        return cardN || selN;
+      };
+      await ensureBasketEnterprises(1);
+      await gotoEvalTech();
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const scope = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+      const beforeCount = await overlayEnterpriseCount(scope);
+      if (beforeCount < 1) throw new Error('篮内应有至少 1 家企业，实际 0');
+      const clearBtn = scope.getByRole('button', { name: '清空对比篮', exact: true });
+      await expect(clearBtn.first()).toBeVisible({ timeout: 8000 });
+      await clearBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '清空对比篮' }).last();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      const okBtn = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(okBtn).toBeVisible({ timeout: 8000 });
+      await okBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(modal).toBeHidden({ timeout: 10000 });
+      await expect(page.locator('.arco-message-content').filter({ hasText: '对比篮已清空' }).first()).toBeVisible({ timeout: 10000 });
+      const afterScope = (await pickerRoot().count()) ? pickerRoot() : scope;
+      const cardsAfter = afterScope.locator('.ent-compare-item-card');
+      const selAfter = afterScope.locator('[aria-label^="选择 "]');
+      const cardN = await cardsAfter.count();
+      const selN = await selAfter.count();
+      if (cardN > 0 || selN > 0) {
+        throw new Error(`确定清空后篮内仍列企业：卡片 ${cardN}、选择行 ${selN}`);
+      }
+      const afterOverlayCount = await overlayEnterpriseCount(afterScope);
+      if (afterOverlayCount !== 0) {
+        throw new Error(`浮层「企业」计数应为 0，实际 ${afterOverlayCount}`);
+      }
+      const emptyHint = afterScope.getByText('对比篮暂无企业', { exact: false });
+      if (await emptyHint.count() < 1) {
+        const alt = afterScope.getByText('当前篮内无匹配企业', { exact: false });
+        if (await alt.count() < 1 && cardN === 0 && selN === 0) {
+          /* 名单已空则空态文案非硬门禁 */
+        } else if (await alt.count() < 1) {
+          throw new Error('篮内空态文案未出现且仍有残留项');
+        }
+      }
+      const dockN = await basketEntCount();
+      if (dockN !== 0) throw new Error('dock 对比篮「企业」计数应为 0，实际 ' + dockN);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01826；确定清空对齐 EnterpriseCompareBasketView.confirmClearBasket → Message.success「对比篮已清空」（与 KEYDOM 01722 / EVAL 01811 取消对称）。30888 路由 enterprise-center/evaluation；开浮层 CTA「多企业技术力对比分析」/深链 picker 回退。用例册备注 2026-10-18：曾出现 toast 已清空但名单与计数未变（D3 缺陷候选）；脚本仍按篮空+计数 0 验收。会清掉当前账号整篮。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

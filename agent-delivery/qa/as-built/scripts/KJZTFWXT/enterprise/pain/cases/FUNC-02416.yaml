@@ -1,0 +1,103 @@
+id: FUNC-02416
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02416
+priority: P1
+title: 关掉已带回的企业后对象区回到空态
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 当前分析已带回至少 1 家企业（assert 自含深链或 picker 回填）
+locators:
+  object_empty_guide: 请先在对比篮选择企业，再进入风险洞察配置。
+  object_close: .arco-tag-close-btn（分析对象区企业 tag 旁）
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 回填 1 家→点对象区 tag 关闭钮；空态与企业名判定在 expect
+expect:
+  - note: 1、对象区显示「请先在对比篮选择企业，再进入风险洞察配置。」
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const emptyGuide = '请先在对比篮选择企业，再进入风险洞察配置。';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const deeplinkFill = async () => {
+        const code = '0a2b82208071ce5a0e3bd562b80e263b';
+        const entName = '东莞华为服务有限公司';
+        await page.goto(toUrl(`${route}&enterprise_codes[]=${code}&source=compare-basket`), {
+          waitUntil: 'domcontentloaded',
+        });
+        await page.waitForTimeout(1500);
+        await closeBasket();
+        if (!(await page.getByText(/来自对比篮/).count())) {
+          throw new Error('ENV-PAIN-BASKET-EMPTY-001：深链回填失败');
+        }
+        globalThis.__func02416_ent = entName;
+        return entName;
+      };
+      const objectScope = () => {
+        const m = main();
+        return m.locator('section, div').filter({ hasText: '分析对象' }).first();
+      };
+      const clickObjectClose = async () => {
+        const scope = objectScope();
+        const area = (await scope.count()) ? scope : main();
+        const tagClose = area.locator('.arco-tag-close-btn').first();
+        if (!(await tagClose.count()) || !(await tagClose.isVisible().catch(() => false))) {
+          const globalClose = main().locator('.arco-tag-close-btn').first();
+          await expect(globalClose).toBeVisible({ timeout: 8000 });
+          await globalClose.click({ timeout: 8000 });
+        } else {
+          await tagClose.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(600);
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      let entName = globalThis.__func02416_ent || '';
+      if (!(await page.getByText(/来自对比篮/).count())) {
+        entName = await deeplinkFill();
+      } else {
+        const body = await main().innerText().catch(() => '');
+        const lines = body.split('\n').map((s) => s.trim());
+        entName =
+          lines.find((l) => /公司|集团|有限|股份|科技|服务/.test(l) && !/来自对比篮|分析对象|返回对比篮|开始分析/.test(l)) ||
+          '东莞华为服务有限公司';
+        globalThis.__func02416_ent = entName;
+      }
+      await expect(page.getByText(/来自对比篮\s*[·•]\s*1\s*家/).first()).toBeVisible({ timeout: 10000 });
+      await clickObjectClose();
+      await expect(page.getByText(emptyGuide).first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func02416_closed = true;
+  - note: 2、该企业名称不再显示
+    assert: |-
+      if (!globalThis.__func02416_closed) throw new Error('前置：对象关闭未完成');
+      const entName = globalThis.__func02416_ent || '东莞华为服务有限公司';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const body = await main().innerText().catch(() => '');
+      const objIdx = body.indexOf('分析对象');
+      const slice = objIdx >= 0 ? body.slice(objIdx, objIdx + 800) : body.slice(0, 1500);
+      if (slice.includes(entName)) throw new Error('对象区仍显示企业名：' + entName);
+      await expect(page.getByRole('button', { name: '前往对比篮选择企业', exact: true })).toBeVisible({
+        timeout: 8000,
+      });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。对象旁关闭=分析对象区企业 tag 的 .arco-tag-close-btn（与用例「关闭按钮」同义；非浮层「移除」02428）。步骤=深链 pain_seed 回填 1 家→点 tag 关闭→空态引导文案+CTA。机检=引导句+企业名不在对象区+无「来自对比篮·N家」。回填失败→ENV-PAIN-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

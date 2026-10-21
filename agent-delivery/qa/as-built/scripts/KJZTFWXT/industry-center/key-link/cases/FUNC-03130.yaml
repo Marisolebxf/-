@@ -1,0 +1,140 @@
+id: FUNC-03130
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03130
+priority: P1
+title: 产业链为空时开始分析不可用
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入产业关键环节识别页
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 生物产业+生物医药与生命健康→校验所属产业链空与开始分析禁用（判定在 expect）
+expect:
+  - note: 1、「所属产业链」为空
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            await assertNotSpa404('direct-catalog');
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const pickSelect = async (trigger, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const readViewText = async (loc) => {
+        return ((await loc.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      };
+      const segmentEmpty = (txt) => !txt || /^[\s—\-]*$/.test(txt) || /请选择|未选|所属产业链/.test(txt);
+      await enterKeyLink();
+      await assertNotSpa404('landing');
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      const segment = page.locator('.arco-select-view.industry-catalog-select').first();
+      await pickSelect(cluster, '生物产业');
+      await expect(cluster).toContainText('生物产业', { timeout: 8000 });
+      await pickSelect(industry, '生物医药与生命健康');
+      await expect(industry).toContainText('生物医药与生命健康', { timeout: 8000 });
+      const segTxt = await readViewText(segment);
+      if (!segmentEmpty(segTxt)) {
+        throw new Error('所属产业链应为空，实际回显：「' + segTxt + '」');
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      await segment.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      const popVisible = await pop.isVisible().catch(() => false);
+      if (popVisible) {
+        const optCount = await pop.locator('.arco-select-option').count();
+        if (optCount > 0) {
+          throw new Error('所属产业链下拉仍有 ' + optCount + ' 个选项，应为空');
+        }
+      }
+      globalThis.__func03130 = { ready: true };
+  - note: 2、「开始分析」不可点击
+    assert: |-
+      if (!globalThis.__func03130?.ready) throw new Error('前置：未完成生物+生物医药选齐或产业链非空');
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await start.scrollIntoViewIfNeeded();
+      await expect(start).toBeDisabled({ timeout: 8000 });
+      if (/view=processing|view=result/.test(page.url())) {
+        throw new Error('产业链为空却进入过程/结果态: ' + page.url());
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例=集群选生物产业、产业选生物医药与生命健康；所属产业链无细分选项（.industry-catalog-select 空/占位）。
+  开始分析 arco-btn-disabled（对齐 testdata actions 与 env-gate 生物黑名单门控）。catalog_path=entry-seed；
+  edu 深链 SPA 404→侧栏进入。登录关评审 runner 前置。B 档零 allow_skip。

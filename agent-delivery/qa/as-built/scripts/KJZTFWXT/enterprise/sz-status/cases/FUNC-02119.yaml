@@ -1,0 +1,170 @@
+id: FUNC-02119
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02119
+priority: P0
+title: 对比对象A锁定深圳且禁用不可改
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入「多城市横向对标」（脚本自含选链并切对标 Tab）
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  radar_card: '[data-testid="szstatus-city-radar"]'
+  object_a_select: szstatus-city-radar 内「对比对象 A」后的首个 .arco-select（disabled）
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链后切对标 Tab；点击对比对象 A 下拉并读禁用态与当前值（判定在 expect）
+expect:
+  - note: 控件标题为「对比对象 A」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      const radar = page.locator('[data-testid="szstatus-city-radar"]');
+      await expect(radar).toBeVisible({ timeout: 12000 });
+      await expect(radar.getByText('对比对象 A', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 控件为禁用态；当前值为「深圳」；点击下拉后仍不可改
+    assert: |-
+      const radar = page.locator('[data-testid="szstatus-city-radar"]');
+      const objectA = radar.locator('.arco-select').first();
+      await expect(objectA).toBeVisible({ timeout: 8000 });
+      const disabled = await objectA.evaluate((el) => {
+        if (el.classList.contains('arco-select-disabled')) return true;
+        const input = el.querySelector('input');
+        return Boolean(input && input.disabled);
+      });
+      if (!disabled) throw new Error('对比对象 A 下拉未呈禁用态');
+      const valueBefore = ((await objectA.locator('.arco-select-view-value, .arco-select-view').first().innerText()) || '')
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (!/深圳/.test(valueBefore)) {
+        throw new Error('对比对象 A 当前值非深圳：' + valueBefore);
+      }
+      const popupBefore = await page.locator('.arco-trigger-popup:visible').count();
+      await objectA.locator('.arco-select-view').click({ timeout: 8000, force: true });
+      await page.waitForTimeout(500);
+      const valueAfter = ((await objectA.locator('.arco-select-view-value, .arco-select-view').first().innerText()) || '')
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (!/深圳/.test(valueAfter)) {
+        throw new Error('点击对比对象 A 后值被改动：' + valueAfter);
+      }
+      const stillDisabled = await objectA.evaluate((el) => {
+        if (el.classList.contains('arco-select-disabled')) return true;
+        const input = el.querySelector('input');
+        return Boolean(input && input.disabled);
+      });
+      if (!stillDisabled) throw new Error('点击后对比对象 A 不再禁用');
+      const openedForA = await page.evaluate(() => {
+        const radarEl = document.querySelector('[data-testid="szstatus-city-radar"]');
+        if (!radarEl) return false;
+        const firstSelect = radarEl.querySelector('.arco-select');
+        if (!firstSelect) return false;
+        const id = firstSelect.getAttribute('id') || firstSelect.querySelector('[id]')?.getAttribute('id') || '';
+        for (const pop of document.querySelectorAll('.arco-trigger-popup')) {
+          const st = window.getComputedStyle(pop);
+          if (st.display === 'none' || st.visibility === 'hidden') continue;
+          const aria = pop.getAttribute('aria-hidden');
+          if (aria === 'true') continue;
+          const html = pop.innerHTML || '';
+          if (id && html.includes(id)) return true;
+        }
+        return false;
+      });
+      if (openedForA) throw new Error('禁用态对比对象 A 点击后仍展开下拉');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  对比对象 A 为 CityBenchmarkPanel 内首个 disabled a-select（无 data-testid；B 为 szstatus-radar-object-b）。
+  30888 深链 enterprise-center；选链/对标 Tab 对齐 FUNC-02089/02117。须先关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。
+  comparableMetricCount≥3 时雷达区可见（scout-benchmark）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

@@ -1,0 +1,194 @@
+id: FUNC-03118
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03118
+priority: P1
+title: 诊断记录已完成任务复制配置回到分析配置
+story: US-CHAIN-DIAG-07
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 诊断记录中有一条已完成任务
+locators:
+  records_tab: tab「诊断记录」
+  copy_config: button「复制配置」
+  config_heading: heading「分析配置」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 侧栏进关键环节→诊断记录→已完成行「复制配置」（判定在 expect）
+expect:
+  - note: 1、提示「已复制分析配置，可调整后重新分析」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
+      };
+      const assertNotSpa404 = async (where) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+            await assertNotSpa404('direct-catalog');
+          }
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const openRecordsTab = async () => {
+        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+      };
+      await enterKeyLink();
+      await openRecordsTab();
+      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /已完成|成功/ });
+      const n = await rows.count();
+      if (n < 1) throw new Error('ENV-KEYLINK-NO-COMPLETED-03118：诊断记录无已完成行');
+      let taskId = '';
+      let expectCluster = '';
+      let expectSegment = '';
+      let clicked = false;
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        const row = rows.nth(i);
+        const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/产业关键环节识别/.test(rowText)) continue;
+        const m = rowText.match(TID_RE);
+        if (!m) continue;
+        taskId = m[0];
+        const view = row.getByRole('button', { name: '查看结果' }).first();
+        if (await view.count() && !(await view.isDisabled().catch(() => true))) {
+          await view.click({ timeout: 12000, force: true });
+          for (let j = 0; j < 24; j++) {
+            await page.waitForTimeout(500);
+            const rb = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+            if (/产业关键环节识别结果/.test(rb)) break;
+          }
+          const resultBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const obj = resultBody.match(/分析对象[：:]\s*([^\n]+)/);
+          if (obj) {
+            const parts = obj[1].split(/[/／]/).map((s) => s.trim()).filter(Boolean);
+            if (parts[0]) expectCluster = parts[0];
+            if (parts[1]) expectSegment = parts[1];
+          }
+          await openRecordsTab();
+        }
+        let rowAgain = main().locator('tbody tr, .arco-table-tr').filter({ hasText: taskId }).first();
+        if (!(await rowAgain.count())) rowAgain = row;
+        const copyBtn = rowAgain.getByRole('button', { name: '复制配置' }).first();
+        if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
+        await copyBtn.click({ timeout: 15000 });
+        clicked = true;
+        break;
+      }
+      if (!clicked || !taskId) {
+        throw new Error('ENV-KEYLINK-NO-COPY-03118：无已完成关键环节任务可点「复制配置」');
+      }
+      await page.waitForTimeout(700);
+      const toast = page.locator('.arco-message:visible, .arco-message-wrapper:visible').filter({ hasText: /已复制分析配置/ });
+      await expect(toast.first()).toBeVisible({ timeout: 10000 });
+      globalThis.__func03118 = { taskId, expectCluster, expectSegment, toastOk: true };
+  - note: 1、回到「分析配置」；2、下拉回显该任务保存的分析对象；3、未进入结果页且未自动开始分析
+    assert: |-
+      if (!globalThis.__func03118?.toastOk) throw new Error('前置：复制配置 toast 未通过');
+      const main = () => page.locator('main').first();
+      const url = page.url();
+      if (/view=result|demo_state=processing|tab=records/.test(url)) {
+        throw new Error('复制后应回到分析配置 Tab，非结果/记录/生成 URL：' + url);
+      }
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/产业关键环节识别结果/.test(body) && !/分析配置/.test(body)) {
+        throw new Error('复制后不应停在结果页');
+      }
+      if (/可视化分析过程|生成中/.test(body)) {
+        throw new Error('复制后不应自动进入生成中');
+      }
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
+      const configTab = page.getByRole('tab', { name: '产业关键环节识别' }).first();
+      await expect(configTab).toHaveAttribute('aria-selected', 'true');
+      const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
+      await expect(cluster).toBeVisible({ timeout: 8000 });
+      const clusterText = ((await cluster.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!clusterText || /请选择|未选/.test(clusterText)) {
+        throw new Error('分析对象（集群）未回显：「' + clusterText + '」');
+      }
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industry).toBeVisible({ timeout: 8000 });
+      const industryText = ((await industry.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!industryText || /请选择|未选/.test(industryText)) {
+        throw new Error('分析对象（产业）未回显：「' + industryText + '」');
+      }
+      const segment = page.locator('.arco-select-view.industry-catalog-select').first();
+      if (await segment.count()) {
+        const segText = ((await segment.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!segText || /请选择|未选/.test(segText)) {
+          throw new Error('所属产业链未回显：「' + segText + '」');
+        }
+      }
+      const expC = globalThis.__func03118?.expectCluster || '';
+      const expS = globalThis.__func03118?.expectSegment || '';
+      if (expC && !clusterText.includes(expC) && !body.includes(expC)) {
+        throw new Error('集群回显与结果页快照不一致：结果「' + expC + '」配置「' + clusterText + '」');
+      }
+      if (expS && !body.includes(expS) && !(await segment.count() ? (await segment.innerText()).includes(expS) : false)) {
+        throw new Error('产业链回显与结果页快照不一致：结果「' + expS + '」');
+      }
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+      const startBtn = page.getByRole('button', { name: '开始分析' }).first();
+      if (await startBtn.isDisabled().catch(() => false)) {
+        throw new Error('复制后「开始分析」不应因自动起任务而长期禁用');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；goto sibling /industry-center/search 再侧栏进入。
+  步骤=诊断记录已完成行（可选先「查看结果」快照分析对象）→「复制配置」→ toast + h2 分析配置 + 产业关键环节识别 Tab 选中 +
+  集群/产业/所属产业链非空 + URL 非 result/processing + 无结果页/生成中 + 未自动开始。
+  无已完成→ENV-KEYLINK-NO-COMPLETED-03118 / ENV-KEYLINK-NO-COPY-03118。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

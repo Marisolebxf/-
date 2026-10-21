@@ -1,0 +1,149 @@
+id: FUNC-02332
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02332
+priority: P0
+title: 报告页导出不可点且仍停留报告页无下载
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已打开一条已完成任务的供应链分析报告（assert 自含：最近分析→查看 HTML 报告）
+locators:
+  html_report_button: '[data-risk-history-open-html-report]'
+  export_locked: '[data-report-export-locked]'
+  paid_badge: '[data-paid-badge="required"]'
+  export_btn: '[data-report-export-locked] button[data-report-download]'
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析进入只读供应链报告后点「导出」；禁用、停留、无下载在 expect 判定
+expect:
+  - note: 1、「导出」不可点（旁有「付费」）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const reportReady = async () => {
+        if (!/view=report/.test(page.url())) return false;
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        if (!(await reader.isVisible().catch(() => false))) return false;
+        const t = await reader.innerText().catch(() => '');
+        return /供应链分析报告/.test(t) || /报告目录/.test(t);
+      };
+      const waitReportBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await reportReady()) return true;
+          await page.waitForTimeout(600);
+        }
+        return await reportReady();
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const pickCompletedSupplyHtmlReport = async () => {
+        const st = main();
+        const buttons = st.locator('[data-risk-history-open-html-report], button:has-text("查看 HTML 报告")');
+        const n = await buttons.count();
+        if (n < 1) {
+          throw new Error('ENV-SUPPLY-NO-COMPLETED-HTML-001：最近分析无「查看 HTML 报告」按钮');
+        }
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          if (await btn.isDisabled().catch(() => true)) continue;
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /企业供应链关系分析/.test(txt)) {
+            return btn;
+          }
+        }
+        throw new Error(
+          'ENV-SUPPLY-NO-COMPLETED-HTML-001：最近分析无「已完成」的供应链任务可「查看 HTML 报告」',
+        );
+      };
+      const openReportFromHistory = async () => {
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await dismissBasket();
+        if (await reportReady()) return;
+        await openRecentTab();
+        const reportBtn = await pickCompletedSupplyHtmlReport();
+        await reportBtn.scrollIntoViewIfNeeded().catch(() => {});
+        await reportBtn.click({ timeout: 15000 });
+        const tNav = Date.now();
+        while (Date.now() - tNav < 45000 && !/view=report/.test(page.url())) {
+          await page.waitForTimeout(500);
+        }
+        if (!(await waitReportBody(60000))) {
+          throw new Error('点击 HTML 报告后未进入供应链只读报告页，url=' + page.url());
+        }
+      };
+      await openReportFromHistory();
+      await expect(page.getByText('风险洞察 · 只读报告').first()).toBeVisible({ timeout: 10000 });
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const locked = reader.locator('[data-report-export-locked]').first();
+      await expect(locked).toBeVisible({ timeout: 8000 });
+      const paidTag = locked.locator('[data-paid-badge="required"]');
+      await expect(paidTag).toBeVisible({ timeout: 5000 });
+      await expect(paidTag).toContainText('付费');
+      const exportBtn = locked.locator('button[data-report-download]').first();
+      await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      await expect(exportBtn).toBeDisabled();
+      const cls = (await exportBtn.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('「导出」未见 arco-btn-disabled，class=' + cls);
+      }
+      globalThis.__func02332 = { exportBtn, urlBefore: page.url(), readerReady: true };
+  - note: 2、仍停在供应链分析报告页
+    assert: |-
+      if (!globalThis.__func02332?.readerReady) {
+        throw new Error('ENV-SUPPLY-NO-COMPLETED-HTML-001（报告页未打开）');
+      }
+      const url = page.url();
+      if (!/view=report/.test(url)) throw new Error('不在报告 view=report：' + url);
+      if (!/workspace=supply-chain/.test(url)) throw new Error('不在供应链工作区：' + url);
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const h1 = reader.locator('h1').filter({ hasText: '供应链分析报告' }).first();
+      const toc = reader.locator('nav.report-toc');
+      if (!(await h1.isVisible().catch(() => false)) && !(await toc.isVisible().catch(() => false))) {
+        throw new Error('报告页未见「供应链分析报告」标题或报告目录');
+      }
+      await expect(page.getByText('风险洞察 · 只读报告').first()).toBeVisible({ timeout: 5000 });
+  - note: 3、没有下载文件（强制点「导出」后地址不变）
+    assert: |-
+      const ctx = globalThis.__func02332;
+      if (!ctx?.exportBtn) throw new Error('前置：未定位导出按钮');
+      const urlBefore = ctx.urlBefore || page.url();
+      let downloadFired = false;
+      page.once('download', () => { downloadFired = true; });
+      try {
+        await ctx.exportBtn.click({ timeout: 5000, force: true });
+      } catch {}
+      await page.waitForTimeout(1500);
+      if (downloadFired) throw new Error('未付费点击「导出」仍触发了 download 事件');
+      if (page.url() !== urlBefore) {
+        throw new Error('强制点「导出」后地址变化：before=' + urlBefore + ' after=' + page.url());
+      }
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 5000 });
+      const unlocked = page.locator('[data-report-export-unlocked]');
+      if (await unlocked.count() && (await unlocked.first().isVisible().catch(() => false))) {
+        throw new Error('未付费环境出现可导出按钮（data-report-export-unlocked）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=最近分析点已完成「企业供应链关系分析」行 data-risk-history-open-html-report「查看 HTML 报告」→ view=report 只读页点「导出」。机检=ReportExportButton data-report-export-locked +「付费」+ disabled 导出；force 点击无 download 且 URL 不变；h1「供应链分析报告」。无已完成可开 HTML 报告→ENV-SUPPLY-NO-COMPLETED-HTML-001。admin 默认未付费（同 eval-tech 01830）。登录与关评审由 runner 前置。B 档零 allow_skip。

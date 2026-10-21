@@ -1,0 +1,275 @@
+id: FUNC-03110
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03110
+priority: P0
+title: 开始分析后生成页五阶段完成且不自动进结果
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: B
+preconditions:
+  - 已进入本页；当天尚未成功分析过即将选择的对象组合（assert 自含：遇当天复用则「重新分析」或换合法组合）
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+  start: button「开始分析」
+  view_result: button「查看分析结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 选齐三级对象→开始分析→等五阶段均已完成（判定在 expect）
+expect:
+  - note: 1、当前页为「产业关键环节识别生成中」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const main = () => page.locator('main').first();
+      const stages = [
+        '任务提交与产业链对象冻结',
+        '全链路环节结构化拆解（研发/设计/制造/销售/服务）',
+        '基于附加值率、技术壁垒、市场集中度计算高端化指数',
+        '关键环节智能标注与竞争格局/代表企业/技术趋势归纳',
+        '结果可信性校验与分析报告组装',
+      ];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        return false;
+      };
+      const assertNotSpa404 = async (where) => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
+            await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          if (await leaf().first().isVisible().catch(() => false)) {
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
+            await assertNotSpa404('sidebar');
+          } else {
+            await page.goto(spaUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
+              waitUntil: 'domcontentloaded',
+              timeout: 60000,
+            });
+            await page.waitForTimeout(1000);
+          }
+        }
+        await assertNotSpa404('key-link-landing');
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @post-nav ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('pre-h1');
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @pre-h1 ' + page.url());
+        }
+        const h1 = page.getByRole('heading', { name: '产业关键环节识别', level: 1 });
+        if (!(await h1.isVisible().catch(() => false))) {
+          await assertNotSpa404('h1-missing');
+          throw new Error('ENV-KEYLINK-SHELL-001：未见产业关键环节识别页头（非 404 时查路由/权限）');
+        }
+      };
+      const pickSelect = async (trigger, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const opt = page.locator(optSel).filter({ hasText: new RegExp('^\\s*' + esc + '\\s*$') }).first();
+        if (!(await opt.count())) {
+          const fallback = page.locator(optSel).filter({ hasText: label }).first();
+          await expect(fallback).toBeVisible({ timeout: 8000 });
+          await fallback.click({ timeout: 8000 });
+        } else {
+          await expect(opt).toBeVisible({ timeout: 8000 });
+          await opt.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(700);
+      };
+      const configureTriple = async (combo) => {
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        await pickSelect(page.locator('.arco-select-view[aria-label="集群"]').first(), combo.cluster);
+        await pickSelect(page.locator('.arco-select-view[aria-label="产业"]').first(), combo.chain);
+        const seg = page.locator('.arco-select-view.industry-catalog-select').first();
+        await expect(seg).toBeVisible({ timeout: 8000 });
+        await pickSelect(seg, combo.segment);
+      };
+      const isResultPage = async () => {
+        const t = await main().innerText().catch(() => '');
+        return (
+          (/view=result/.test(page.url()) && /task_id=/.test(page.url())) ||
+          ((await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false)) &&
+            !/产业关键环节识别生成中/.test(t))
+        );
+      };
+      const tryRerunFromResult = async () => {
+        const rerun = page
+          .getByRole('button', { name: '重新分析' })
+          .first()
+          .or(page.getByRole('button', { name: '按此配置新建分析' }).first());
+        if (!(await rerun.isVisible().catch(() => false))) return false;
+        await rerun.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        return true;
+      };
+      const allStagesDone = (body) => {
+        for (const s of stages) {
+          if (!body.includes(s)) return false;
+          const idx = body.indexOf(s);
+          const slice = body.slice(idx, idx + s.length + 48);
+          if (!/已完成/.test(slice)) return false;
+        }
+        return true;
+      };
+      const combos = [
+        { cluster: '新一代信息技术', chain: 'INB1701', segment: '半导体与集成电路' },
+        { cluster: '新材料', chain: '新材料', segment: '新材料' },
+        { cluster: '低空经济与空天', chain: '低空经济与空天', segment: '低空经济与空天' },
+      ];
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @session ' + page.url());
+      }
+      await enterKeyLink();
+      let terminalBody = '';
+      let sawGenerating = false;
+      for (let ci = 0; ci < combos.length; ci++) {
+        await configureTriple(combos[ci]);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isDisabled()) continue;
+        await start.click({ timeout: 12000 });
+        let rerunUsed = false;
+        for (let i = 0; i < 120; i++) {
+          await page.waitForTimeout(i < 6 ? 500 : 800);
+          const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const url = page.url();
+          if (/产业关键环节识别生成中|可视化分析过程/.test(body)) sawGenerating = true;
+          if (/分析失败|本次分析生成失败|INPUT_OBJECT_INVALID/.test(body) && i >= 8 && !sawGenerating) {
+            break;
+          }
+          if (/今日已分析过相同条件/.test(body) && (await isResultPage())) {
+            if (!rerunUsed && (await tryRerunFromResult())) {
+              rerunUsed = true;
+              await configureTriple(combos[ci]);
+              const s2 = page.getByRole('button', { name: '开始分析' }).first();
+              if (await s2.isEnabled()) {
+                await s2.click({ timeout: 12000 });
+                sawGenerating = false;
+              }
+              continue;
+            }
+            break;
+          }
+          if ((await isResultPage()) && !/分析结果已生成/.test(body) && !sawGenerating) {
+            if (!rerunUsed && (await tryRerunFromResult())) {
+              rerunUsed = true;
+              await configureTriple(combos[ci]);
+              const s2 = page.getByRole('button', { name: '开始分析' }).first();
+              if (await s2.isEnabled()) {
+                await s2.click({ timeout: 12000 });
+                sawGenerating = false;
+              }
+              continue;
+            }
+            break;
+          }
+          if (/分析结果已生成/.test(body) && allStagesDone(body)) {
+            terminalBody = body;
+            globalThis.__func03110 = { body: terminalBody, url: url, combo: combos[ci] };
+            break;
+          }
+          if (allStagesDone(body) && /查看分析结果/.test(body) && !/产业关键环节识别结果/.test(body)) {
+            terminalBody = body;
+            globalThis.__func03110 = { body: terminalBody, url: url, combo: combos[ci] };
+            break;
+          }
+        }
+        if (globalThis.__func03110?.body) break;
+      }
+      if (!globalThis.__func03110?.body) {
+        await assertNotSpa404('proc-miss');
+        throw new Error('ENV-KEYLINK-PROC-03110-001：未能在合法组合上等到五阶段均已完成且停留生成页');
+      }
+      terminalBody = globalThis.__func03110.body;
+      if (!/产业关键环节识别生成中/.test(terminalBody) && !/分析结果已生成/.test(terminalBody)) {
+        throw new Error('终态未见「产业关键环节识别生成中」或「分析结果已生成」：' + terminalBody.slice(0, 280));
+      }
+  - note: 2、五个阶段均显示「已完成」（附录 E）
+    assert: |-
+      const snap = globalThis.__func03110;
+      if (!snap?.body) throw new Error('前置：未抓取生成页终态');
+      const stages = [
+        '任务提交与产业链对象冻结',
+        '全链路环节结构化拆解（研发/设计/制造/销售/服务）',
+        '基于附加值率、技术壁垒、市场集中度计算高端化指数',
+        '关键环节智能标注与竞争格局/代表企业/技术趋势归纳',
+        '结果可信性校验与分析报告组装',
+      ];
+      const body = snap.body;
+      for (const s of stages) {
+        if (!body.includes(s)) throw new Error('过程区缺少阶段「' + s + '」');
+        const idx = body.indexOf(s);
+        const slice = body.slice(idx, idx + s.length + 48);
+        if (!/已完成/.test(slice)) {
+          throw new Error('阶段「' + s + '」旁未见「已完成」：' + slice.slice(0, 80));
+        }
+      }
+      if (/\d+\s*%\s*(完成|进度)?/.test(body) || /\b进度\s*\d+\s*%/.test(body)) {
+        throw new Error('生成页不应出现百分比进度');
+      }
+  - note: 3、可见「查看分析结果」；生成结束不自动进入结果页
+    assert: |-
+      const snap = globalThis.__func03110;
+      if (!snap?.body) throw new Error('前置：未抓取生成页终态');
+      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+      await expect(viewBtn).toBeVisible({ timeout: 8000 });
+      await expect(viewBtn).toBeEnabled({ timeout: 8000 });
+      const t = snap.body;
+      if (/产业关键环节识别结果/.test(t) && !/产业关键环节识别生成中/.test(t) && !/分析结果已生成/.test(t)) {
+        throw new Error('生成结束不应自动进入「产业关键环节识别结果」页');
+      }
+      if (/view=result/.test(snap.url || page.url()) && /task_id=/.test(snap.url || page.url())) {
+        const onResult = await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false);
+        if (onResult) throw new Error('终态 URL 已为结果页，违反「不自动进结果」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；goto sibling /industry-center/search 再侧栏进入。
+  步骤=选齐集群/产业/所属产业链→「开始分析」→等附录 E 五阶段均「已完成」+「查看分析结果」可见且不自动进结果（对齐 AC-US-CHAIN-DIAG-03-03）。
+  当天复用→「重新分析」或换合法组合（新一代信息技术/INB1701/半导体、新材料、低空经济与空天）。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。
+  过程瞬态/秒级复用无过程窗→ENV-KEYLINK-PROC-03110-001。登录关评审 runner 前置。B 档零 allow_skip。

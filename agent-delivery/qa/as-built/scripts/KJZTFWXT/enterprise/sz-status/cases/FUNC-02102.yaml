@@ -1,0 +1,148 @@
+id: FUNC-02102
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02102
+priority: P1
+title: 未勾选时加入对比篮不可点击
+story: US-SZSTATUS-02
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 清单已出现
+  - 没有任何勾选
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  enterprise_table: '[data-testid="szstatus-enterprise-table"]'
+  batch_count: 已选 N 家 · 当前结果 M 家
+  add_compare_btn: main button「加入对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链至清单出现后保持未勾选（判定在 expect）
+expect:
+  - note: 1、「加入对比篮」为不可点击状态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const collectOptions = () =>
+        page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+            const st = window.getComputedStyle(el);
+            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+            if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+            out.push(t);
+          }
+          return [...new Set(out)];
+        });
+      const selectChainForList = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (!needPick) return;
+        await chain.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        let options = await collectOptions();
+        if (options.length === 0) {
+          await page.keyboard.press('ArrowDown');
+          await page.waitForTimeout(700);
+          options = await collectOptions();
+        }
+        if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+        const pick = prefer.find((n) => options.includes(n)) || options[0];
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+        const opt = popup.getByText(pick, { exact: true }).first();
+        if (await opt.count()) await opt.click({ timeout: 8000 });
+        else {
+          await page.evaluate((name) => {
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              if (t === name) { el.click(); return; }
+            }
+          }, pick);
+        }
+        await page.waitForTimeout(800);
+      };
+      const waitList = async () => {
+        let listOk = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { listOk = true; break; }
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { listOk = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!listOk) throw new Error('选链后定位结果未出现（未见清单或「覆盖产业链环节」）');
+        await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      };
+      const readSelectedCount = async () => {
+        const line = page.locator('main').getByText(/已选 \d+ 家 · 当前结果 \d+ 家/).first();
+        await expect(line).toBeVisible({ timeout: 8000 });
+        const txt = ((await line.innerText()) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/已选\s*(\d+)\s*家/);
+        if (!m) throw new Error('未解析已选家数: ' + txt.slice(0, 120));
+        return parseInt(m[1], 10);
+      };
+      const ensureZeroSelected = async () => {
+        let n = await readSelectedCount();
+        if (n === 0) return;
+        const cancelAll = page.getByText('取消全选', { exact: true }).first();
+        if (await cancelAll.count()) {
+          await cancelAll.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(400);
+          n = await readSelectedCount();
+          if (n === 0) return;
+        }
+        const selectAll = page.getByText('全选当前结果', { exact: true }).first();
+        if (await selectAll.count()) {
+          await selectAll.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(400);
+          const cancel = page.getByText('取消全选', { exact: true }).first();
+          if (await cancel.count()) {
+            await cancel.click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+          n = await readSelectedCount();
+        }
+        if (n !== 0) throw new Error('前置未满足：当前已选 ' + n + ' 家，无法验未勾选态');
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainForList();
+      await waitList();
+      await ensureZeroSelected();
+      const selected = await readSelectedCount();
+      if (selected !== 0) {
+        throw new Error('应保持未勾选，已选读到 ' + selected + ' 家');
+      }
+      const addBtn = page.locator('main').getByRole('button', { name: '加入对比篮', exact: true }).first();
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      await expect(addBtn).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  前端 EnterpriseTable：a-button :disabled="!selectedInResult.length"，未勾选当前页企业即 disabled（与已选全局计数一致时同效）。
+  30888 深链 enterprise-center 前缀；产业集群优先人工智能。清单区出现即可，不要求必有数据行。须先关对比篮。
+  登录与关内部评审由 runner 会话前置。禁止 50892。B 档零 allow_skip。

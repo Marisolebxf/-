@@ -1,0 +1,120 @@
+id: FUNC-01906
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01906
+priority: P1
+title: 画像快览「查看详情」进入该企业详情
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 「企业画像快览」已打开（assert 自含：企业查询智能搜索「查看画像」；篮内深链无快览见 as_built_note）
+locators:
+  view_profile: main button「查看画像」
+  view_detail: .arco-drawer:visible button「查看详情」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与「查看画像」
+    timeout_ms: 2000
+  - action: evaluate
+    note: 点「查看画像」开快览并点「查看详情」；离开快览与详情企业名在 expect 判定
+expect:
+  - note: 1、离开快览并打开该企业详情
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
+      const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 15000 });
+      await profileBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+      if (!(await quickDrawer.isVisible().catch(() => false))) {
+        if (/\/development\/enterprise\//.test(page.url())) {
+          throw new Error(
+            'ENV-GATE·前置「企业画像快览」不可达：「查看画像」直跳详情深链 ' +
+              page.url() +
+              '（edu 同 01905/01472；目标态应先开快览再点「查看详情」）',
+          );
+        }
+        const wrongDetail = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+        if (await wrongDetail.isVisible().catch(() => false)) {
+          throw new Error('D3·「查看画像」打开「企业详情」抽屉而非「企业画像快览」，无法验收本条');
+        }
+        throw new Error('ENV-GATE·点击「查看画像」后未出现「企业画像快览」；url=' + page.url());
+      }
+      await expect(quickDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业画像快览');
+      const quickHay = ((await quickDrawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const nameMatch = quickHay.match(/[\u4e00-\u9fa5（）()A-Za-z0-9]{4,40}有限公司/);
+      const entLabel = nameMatch ? nameMatch[0] : '';
+      const shortEnt = entLabel ? entLabel.slice(0, Math.min(8, entLabel.length)) : '';
+      if (!shortEnt) throw new Error('快览内无法读取企业名称');
+      globalThis.__func01906_shortEnt = shortEnt;
+      const detailBtn = quickDrawer.getByRole('button', { name: '查看详情', exact: true });
+      await expect(detailBtn).toBeVisible({ timeout: 8000 });
+      await detailBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const quickStill = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' });
+      if (await quickStill.count() && await quickStill.last().isVisible().catch(() => false)) {
+        throw new Error('D3·点击「查看详情」后「企业画像快览」仍可见，未离开快览');
+      }
+      const positive = ['工商概况', '主要团队', '资质荣誉', '知识产权', '经营财务', '企业详情'];
+      const failOnly = (hay) => {
+        const hasFail = /请求失败|Request failed|status code\s*424/i.test(hay);
+        const hasRetry = hay.includes('重试');
+        const hasPos = positive.some((m) => hay.includes(m));
+        const hasEnt = shortEnt && hay.includes(shortEnt);
+        return hasFail && hasRetry && !hasPos && !hasEnt;
+      };
+      if (/\/development\/enterprise\//.test(page.url())) {
+        const main = page.locator('main');
+        const bodyTxt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (failOnly(bodyTxt)) throw new Error('D3·详情正文仅请求失败与重试');
+        globalThis.__func01906_detailMode = 'fullpage';
+        return;
+      }
+      const detailDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+      if (await detailDrawer.isVisible().catch(() => false)) {
+        const hay = ((await detailDrawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (failOnly(hay)) throw new Error('D3·详情抽屉正文仅请求失败与重试');
+        await expect(detailDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业详情');
+        globalThis.__func01906_detailMode = 'drawer';
+        return;
+      }
+      throw new Error('未识别企业详情进入态；url=' + page.url());
+  - note: 2、详情中能看到该企业名称
+    assert: |-
+      const shortEnt = globalThis.__func01906_shortEnt || '';
+      if (!shortEnt) throw new Error('前置：快览企业名未记录');
+      const mode = globalThis.__func01906_detailMode || '';
+      if (mode === 'fullpage') {
+        const main = page.locator('main');
+        const bodyTxt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!bodyTxt.includes(shortEnt)) {
+          throw new Error('详情页未含快览企业「' + shortEnt + '」；url=' + page.url());
+        }
+        return;
+      }
+      if (mode === 'drawer') {
+        const detailDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+        await expect(detailDrawer).toBeVisible({ timeout: 8000 });
+        const hay = ((await detailDrawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!hay.includes(shortEnt)) {
+          throw new Error('企业详情抽屉未含快览所选企业「' + shortEnt + '」');
+        }
+        return;
+      }
+      throw new Error('前置：详情进入态未记录');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01906 商业力（entry_id=ent-eval-business）画像内「查看详情」；前置快览经 /enterprise/enterprise-search 智能搜索「查看画像」（01472/01482 同路径；商业力页先 goto 再搜会导致命中断言失败故 steps 直进企业查询）。「查看画像」若直跳 /development/enterprise/ 无快览则 ENV-GATE（同 01905）。快览→「查看详情」→离开快览→详情全页或抽屉含企业名。登录与关内部评审由 runner 前置。B 档零 allow_skip。

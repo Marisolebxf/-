@@ -1,0 +1,163 @@
+id: FUNC-05403
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05403
+priority: P1
+title: 从企业行打开画像快览三个摘要区块
+story: US-ENT-CMP-02
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 企业页至少 1 家
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+  portrait_button: button「查看画像」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 点该行「查看画像」；快览标题与三摘要区块在 expect 判定
+expect:
+  - note: 前置开篮≥1 家，点首行「查看画像」打开快览
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedFromAddModal = async (panel) => {
+        await panel.getByRole('button', { name: '新增' }).click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder(/企业名称|搜索/).first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(400);
+            const go = modal.getByRole('button', { name: /搜索|查询/ }).first();
+            if (await go.count()) await go.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-ADD-MODAL-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const seedFromEnterpriseSearch = async () => {
+        const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+        await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        const clearBtn = page.locator('.enterprise-search-history-row button').filter({ hasText: '清空' }).first();
+        if (await clearBtn.isVisible().catch(() => false)) {
+          await clearBtn.click({ timeout: 4000 }).catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        if (await recSection.count()) {
+          const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({
+            has: page.getByRole('button', { name: '查看画像', exact: true }),
+          });
+          for (let i = 0; i < await cards.count(); i++) {
+            const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+            if (await btn.count() && (await btn.isVisible().catch(() => false))) {
+              await btn.click({ timeout: 8000 });
+              await page.waitForTimeout(700);
+              break;
+            }
+          }
+        }
+        await page.goto(origin + hostPath, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      };
+      let panel = await openPanel();
+      let entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      let listN = 0;
+      let cards = panel.locator('.ent-compare-item-card');
+      for (let i = 0; i < (await cards.count()); i++) {
+        if (await cards.nth(i).isVisible().catch(() => false)) listN += 1;
+      }
+      if (listN < 1) {
+        await seedFromAddModal(panel).catch(() => {});
+        listN = 0;
+        cards = panel.locator('.ent-compare-item-card');
+        for (let i = 0; i < (await cards.count()); i++) {
+          if (await cards.nth(i).isVisible().catch(() => false)) listN += 1;
+        }
+      }
+      if (listN < 1) {
+        await seedFromEnterpriseSearch();
+        panel = await openPanel();
+        entTab = panel.locator('#compare-basket-tab-enterprise');
+        await entTab.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        cards = panel.locator('.ent-compare-item-card');
+        listN = 0;
+        for (let i = 0; i < (await cards.count()); i++) {
+          if (await cards.nth(i).isVisible().catch(() => false)) listN += 1;
+        }
+      }
+      if (listN < 1) throw new Error('ENV-SHELL-COMPARE-BASKET-EMPTY-001：无法满足企业页至少 1 家');
+      const row = panel.locator('.ent-compare-item-card').filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) }).first();
+      await expect(row).toBeVisible({ timeout: 8000 });
+      const nameEl = row.locator('.ent-compare-item-card__name').first();
+      const entName = ((await nameEl.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!entName) throw new Error('篮内企业卡片无名称');
+      await row.getByRole('button', { name: '查看画像', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      if (/enterprise\/[^/?#]+/.test(page.url()) && !page.url().includes('/enterprise/search')) {
+        throw new Error('D3·篮内「查看画像」深链跳转全页，非抽屉快览；url=' + page.url());
+      }
+      const wrongDetail = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+      if (await wrongDetail.count() && (await wrongDetail.isVisible().catch(() => false))) {
+        throw new Error('D3·「查看画像」直接打开「企业详情」抽屉，非「企业画像快览」');
+      }
+      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+      await expect(quickDrawer).toBeVisible({ timeout: 12000 });
+      globalThis.__func05403 = { entName, quickDrawerSel: '.arco-drawer:visible' };
+  - note: 1、抽屉标题为「企业画像快览」
+    assert: |-
+      const st = globalThis.__func05403 || {};
+      if (!st.entName) throw new Error('前置：未打开画像快览');
+      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+      await expect(quickDrawer).toBeVisible({ timeout: 8000 });
+      await expect(quickDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业画像快览');
+  - note: 2、标题旁有该企业名称
+    assert: |-
+      const st = globalThis.__func05403 || {};
+      const entName = st.entName;
+      if (!entName) throw new Error('前置：未记录企业名称');
+      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+      await expect(quickDrawer).toBeVisible({ timeout: 8000 });
+      const headerHay = ((await quickDrawer.locator('.arco-drawer-header').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const bodyHay = ((await quickDrawer.locator('.arco-drawer-body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const nearTitle = headerHay + ' ' + bodyHay.slice(0, 120);
+      if (!nearTitle.includes(entName) && !bodyHay.includes(entName)) {
+        throw new Error(`快览内未见企业名称「${entName}」；header=${headerHay.slice(0, 80)}`);
+      }
+  - note: 3、可见「基础摘要」「竞争力摘要」「风险摘要」
+    assert: |-
+      const st = globalThis.__func05403 || {};
+      if (!st.entName) throw new Error('前置：未打开画像快览');
+      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+      await expect(quickDrawer).toBeVisible({ timeout: 8000 });
+      for (const label of ['基础摘要', '竞争力摘要', '风险摘要']) {
+        const block = quickDrawer.getByText(label, { exact: true }).first();
+        await expect(block).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。步骤=篮内首行「查看画像」。机检=快览抽屉标题+企业名+三摘要区块标题（与 05420 分步，本条不点「查看详情」）。「查看画像」若直跳详情/深链→D3 fail。空篮入篮同 FUNC-05390。登录与关评审由 runner 前置。

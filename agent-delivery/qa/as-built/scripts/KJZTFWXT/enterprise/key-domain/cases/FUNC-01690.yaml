@@ -1,0 +1,95 @@
+id: FUNC-01690
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01690
+priority: P0
+title: 空态点击前往对比篮选择企业打开页内选择器
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 领域分析页尚未选择分析对象（空态）
+locators:
+  route: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  empty_section: heading「待选择分析对象」
+  empty_cta: button「前往对比篮选择企业」
+  picker_title: heading「选择分析企业」
+  picker_hint: 从对比篮勾选…确定…回填
+  picker_no_task: 不会发起分析任务
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 关系统浮层；若已进结果态则重置空态；点空态 CTA（细节在 expect）
+expect:
+  - note: 1、出现标题「选择分析企业」
+    assert: |-
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const ensureDomainPage = async () => {
+        const origin = new URL(page.url()).origin;
+        if ((await page.getByText('404 Not Found').count()) > 0 || !/key-enterprise-analysis/.test(page.url())) {
+          await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(600);
+        }
+        if ((await page.getByText('404 Not Found').count()) > 0) {
+          await page.goto(origin + '/enterprise-center/overview', { waitUntil: 'domcontentloaded' });
+          await page.getByRole('link', { name: '企业查询', exact: true }).click();
+          await page.waitForURL(/search|key-enterprise/, { timeout: 12000 });
+          await page.getByRole('link', { name: '重点企业领域分析', exact: true }).click();
+          await page.waitForURL(/key-enterprise-analysis/, { timeout: 12000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      await ensureDomainPage();
+      await closeBasket();
+      if (/enterprise_codes=/.test(page.url()) || (await page.getByRole('heading', { name: '领域布局概览' }).count())) {
+        await page.goto(route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        await ensureDomainPage();
+      }
+      await expect(page.getByText('尚未选择分析对象').first()).toBeVisible({ timeout: 12000 });
+      if (await page.getByRole('heading', { name: '领域布局概览' }).count()) {
+        throw new Error('前置应为空态，但已见领域布局概览');
+      }
+      const main = page.locator('main');
+      const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+      const objectCta = main.getByRole('button', { name: '选择分析企业', exact: true });
+      const clickEmptyEntry = async () => {
+        if (await emptyCta.count() && await emptyCta.first().isVisible().catch(() => false)) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else if (await objectCta.count()) {
+          await objectCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到空态 CTA（前往对比篮选择企业 / 选择分析企业）');
+        }
+      };
+      await clickEmptyEntry();
+      await page.waitForTimeout(700);
+      let hasPicker = (await page.getByText('选择分析企业', { exact: true }).count()) > 0;
+      if (!hasPicker) {
+        await closeBasket();
+        await clickEmptyEntry();
+        await page.waitForTimeout(700);
+        hasPicker = (await page.getByText('选择分析企业', { exact: true }).count()) > 0;
+      }
+      if (!hasPicker) throw new Error('未打开页内「选择分析企业」弹层');
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、文案说明确定后回填对象
+    assert: |-
+      await expect(page.getByText(/从对比篮勾选/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/确定/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/回填/).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、文案说明不会发起分析任务
+    assert: |-
+      await expect(page.getByText(/不会发起分析任务/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链须 enterprise-center 前缀（/enterprise/* 会 SPA 404）。空态主区无「待选择分析对象」大 panel，对象条「尚未选择分析对象」+ CTA「选择分析企业」（50892 为 ent-section「前往对比篮选择企业」）；二者同开 page_picker。标题用 getByText 因未必是 heading。登录与关内部评审由 runner 会话前置。B 档。

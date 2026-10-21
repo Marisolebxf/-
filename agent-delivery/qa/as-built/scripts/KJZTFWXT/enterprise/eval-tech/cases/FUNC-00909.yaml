@@ -1,0 +1,123 @@
+id: FUNC-00909
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00909
+priority: P0
+title: 取消勾选技术指标可移出并恢复回显
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已进入技术力评估页
+  - 指标区 5 项技术指标可见
+locators:
+  metric_table: table 含五维指标名
+  metric_row: tr.arco-table-tr 按指标名
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 进入技术力评估配置页；取消/恢复勾选技术合作；组合与权重断言在 expect
+expect:
+  - note: 取消勾选后该指标移出当次组合
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const metricNames = ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入'];
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalTech = async () => {
+        await page.goto(toUrl('/enterprise-center/evaluation?workspace=technology&mode=technology'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        if (page.url().includes('view=result')) {
+          const adj = page.getByRole('button', { name: '调整配置' });
+          if (await adj.count()) {
+            await adj.first().click({ timeout: 8000 });
+            await page.waitForTimeout(1200);
+          }
+        }
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const metricTable = () =>
+        page.locator('table').filter({ has: page.getByText('技术人才', { exact: true }) }).filter({ has: page.getByText('技术投入', { exact: true }) }).first();
+      const metricRow = (name) =>
+        metricTable().locator('tr.arco-table-tr').filter({ has: page.getByText(name, { exact: true }) }).first();
+      const countCheckedMetrics = async () => {
+        let n = 0;
+        for (const name of metricNames) {
+          if (await metricRow(name).locator('input[type=checkbox]').isChecked().catch(() => false)) n++;
+        }
+        return n;
+      };
+      await gotoEvalTech();
+      await expect(metricTable()).toBeVisible({ timeout: 10000 });
+      for (const n of metricNames) {
+        await expect(metricRow(n)).toBeVisible({ timeout: 8000 });
+      }
+      if ((await countCheckedMetrics()) !== 5) {
+        for (const n of metricNames) {
+          const row = metricRow(n);
+          const cb = row.locator('.arco-checkbox').first();
+          if (!(await row.locator('input[type=checkbox]').isChecked().catch(() => false))) {
+            await cb.click({ timeout: 5000 });
+            await page.waitForTimeout(200);
+          }
+        }
+      }
+      const coopRow = metricRow('技术合作');
+      await coopRow.locator('.arco-checkbox').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      if (await coopRow.locator('input[type=checkbox]').isChecked().catch(() => true)) {
+        throw new Error('技术合作取消勾选后仍为选中');
+      }
+      if ((await countCheckedMetrics()) !== 4) {
+        throw new Error('移出组合后勾选指标数应为 4，实见 ' + (await countCheckedMetrics()));
+      }
+      const sumTxt = await page.getByText(/权重合计/).first().innerText();
+      if (!/85%|需调整/.test(sumTxt)) {
+        throw new Error('移出后权重合计未联动：' + sumTxt);
+      }
+      if (!(await coopRow.locator('[role=spinbutton]').isDisabled().catch(() => false))) {
+        throw new Error('移出后技术合作权重输入应禁用');
+      }
+  - note: 恢复勾选后该指标权重回显
+    assert: |-
+      const metricNames = ['技术人才', '技术创新', '技术转化', '技术合作', '技术投入'];
+      const metricTable = () =>
+        page.locator('table').filter({ has: page.getByText('技术人才', { exact: true }) }).filter({ has: page.getByText('技术投入', { exact: true }) }).first();
+      const metricRow = (name) =>
+        metricTable().locator('tr.arco-table-tr').filter({ has: page.getByText(name, { exact: true }) }).first();
+      const countCheckedMetrics = async () => {
+        let n = 0;
+        for (const name of metricNames) {
+          if (await metricRow(name).locator('input[type=checkbox]').isChecked().catch(() => false)) n++;
+        }
+        return n;
+      };
+      const coopRow = metricRow('技术合作');
+      await coopRow.locator('.arco-checkbox').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      if (!(await coopRow.locator('input[type=checkbox]').isChecked().catch(() => false))) {
+        throw new Error('技术合作恢复勾选后仍未选中');
+      }
+      if ((await countCheckedMetrics()) !== 5) {
+        throw new Error('恢复后勾选指标数应为 5，实见 ' + (await countCheckedMetrics()));
+      }
+      const w = await coopRow.locator('[role=spinbutton]').inputValue();
+      if (w !== '15') throw new Error('技术合作权重未回显 15，实见 ' + w);
+      if (await coopRow.locator('[role=spinbutton]').isDisabled().catch(() => true)) {
+        throw new Error('恢复后技术合作权重输入仍禁用');
+      }
+      const sumTxt = await page.getByText(/权重合计/).first().innerText();
+      if (!/100%/.test(sumTxt)) throw new Error('恢复后权重合计未回到 100%：' + sumTxt);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  D2·30888 指标为 Arco Table 行内 checkbox（非 label 包裹文案）；页上 spinbutton 共 8 个，不得以全页 count=5 判定。移出组合=勾选 4 项+该行权重禁用+合计 85%「需调整」；恢复=勾选 5 项+技术合作权重 15 回显且可编辑+合计 100%。路由 enterprise-center/evaluation。由 P0-10 重写为 FUNC-00909。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

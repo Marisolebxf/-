@@ -1,0 +1,177 @@
+id: FUNC-01727
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01727
+priority: P1
+title: 系统对比篮发起分析弹窗六项任务与未选禁下一步
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 系统对比篮已勾选至少一家企业（assert 可自含入篮与勾选）
+locators:
+  dock: button aria-label 前缀「打开对比篮」
+  panel: .system-compare-panel
+  select_ent: aria-label^「选择 」或 .ent-compare-item-card__check
+  start: button「发起分析」
+  modal: .arco-modal.analysis-picker-modal:visible
+  next: button「下一步：前往配置」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 打开系统对比篮、勾选企业、点「发起分析」；弹窗断言在 expect
+expect:
+  - note: 1、弹窗标题为「选择分析任务」；2、可选分析共 6 项（附录 A，D1·30888 现场仅 4 项则断言可见 4 项全称）；3、未选时「下一步：前往配置」不可点击；4、选一项后可点下一步
+    assert: |-
+      const tasksExpected = ['重点企业领域分布分析', '技术力评估', '商业力评估', '综合竞争力评估', '企业供应链关系分析', '企业发展痛点分析'];
+      const tasksVisible30888 = ['重点企业领域分布分析', '技术力评估', '商业力评估', '企业供应链关系分析'];
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      await ensureBasketEnterprises(1);
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      await expect(dockBtn).toBeVisible({ timeout: 12000 });
+      await dockBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const checks = panel.locator('.ent-compare-item-card__check');
+      if (await checks.count()) {
+        const firstCheck = checks.first();
+        const checked = await firstCheck.getAttribute('aria-checked');
+        if (checked !== 'true') await firstCheck.click({ timeout: 8000 });
+      } else {
+        const ariaPick = page.locator('[aria-label^="选择 "]').first();
+        const ariaChecked = await ariaPick.getAttribute('aria-checked');
+        if (ariaChecked !== 'true') await ariaPick.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(400);
+      const launch = panel.getByRole('button', { name: '发起分析', exact: true });
+      if (await launch.isDisabled()) throw new Error('勾选企业后「发起分析」仍不可点');
+      await launch.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const modal = page.locator('.arco-modal:visible, .analysis-picker-modal').first();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      await expect(modal.getByText('选择分析任务', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      const bodyEl = modal.locator('.arco-modal-body');
+      if (await bodyEl.count()) {
+        await bodyEl.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+        await page.waitForTimeout(200);
+      }
+      await expect(modal.getByText('重点企业领域分布分析', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const aliasToCanon = {
+        '企业技术力评估对比分析': '技术力评估',
+        '企业商业力评估对比分析': '商业力评估',
+        '企业竞争力分析': '综合竞争力评估',
+        '企业发展痛难点分析': '企业发展痛点分析',
+      };
+      const canonizeOption = (raw) => {
+        const t = String(raw || '').replace(/\s+/g, ' ').trim().split('\n')[0];
+        if (tasksExpected.includes(t)) return t;
+        for (const [alias, canon] of Object.entries(aliasToCanon)) {
+          if (t === alias || t.includes(alias)) return canon;
+        }
+        return t;
+      };
+      let optionTitles = (await modal.getByRole('radio').allTextContents()).map(canonizeOption).filter((t) => tasksExpected.includes(t));
+      optionTitles = [...new Set(optionTitles)];
+      if (optionTitles.length < 4) {
+        const bodyInner = (await bodyEl.innerText().catch(() => '')) || (await modal.innerText());
+        for (const t of tasksExpected) {
+          if (!optionTitles.includes(t) && bodyInner.includes(t)) optionTitles.push(t);
+        }
+        for (const [alias, canon] of Object.entries(aliasToCanon)) {
+          if (!optionTitles.includes(canon) && bodyInner.includes(alias)) optionTitles.push(canon);
+        }
+        optionTitles = [...new Set(optionTitles)];
+      }
+      if (optionTitles.length < 4) {
+        for (const t of tasksExpected) {
+          if (await modal.getByText(t, { exact: true }).count()) optionTitles.push(t);
+        }
+        for (const [alias, canon] of Object.entries(aliasToCanon)) {
+          if (await modal.getByText(alias, { exact: true }).count()) optionTitles.push(canon);
+        }
+        optionTitles = [...new Set(optionTitles)];
+      }
+      const assertFullSix = optionTitles.length === 6 && tasksExpected.every((t) => optionTitles.includes(t));
+      const tasksToAssert = assertFullSix ? tasksExpected : tasksVisible30888;
+      if (!assertFullSix) {
+        if (optionTitles.length !== tasksVisible30888.length) {
+          throw new Error('D1·30888 浮层应为 ' + tasksVisible30888.length + ' 项 radio，实际 ' + optionTitles.length + '：' + optionTitles.join('、'));
+        }
+        const missingOnSite = tasksExpected.filter((t) => !optionTitles.includes(t));
+        const extraOnSite = optionTitles.filter((t) => !tasksExpected.includes(t));
+        if (extraOnSite.length) throw new Error('浮层含非附录 A 项: ' + extraOnSite.join('、'));
+        if (missingOnSite.length && !missingOnSite.every((t) => ['综合竞争力评估', '企业发展痛点分析'].includes(t))) {
+          throw new Error('缺附录 A 任务项（非已知 30888 缺口）: ' + missingOnSite.join('、') + '；现场=' + optionTitles.join('、'));
+        }
+      }
+      for (const t of tasksToAssert) {
+        let opt = modal.getByText(t, { exact: true }).first();
+        if (!(await opt.count())) {
+          const alias = Object.entries(aliasToCanon).find(([, canon]) => canon === t)?.[0];
+          if (alias) opt = modal.getByText(alias, { exact: true }).first();
+        }
+        await opt.scrollIntoViewIfNeeded({ timeout: 8000 }).catch(() => {});
+        await expect(opt).toBeVisible({ timeout: 8000 });
+      }
+      const nextBtn = modal.getByRole('button', { name: '下一步：前往配置', exact: true });
+      await expect(nextBtn).toBeVisible({ timeout: 5000 });
+      const disabled = await nextBtn.isDisabled();
+      const cls = (await nextBtn.getAttribute('class')) || '';
+      if (!disabled && !/arco-btn-disabled/.test(cls)) {
+        throw new Error('未选分析任务时「下一步：前往配置」应不可点击');
+      }
+      let pickOpt = modal.getByText(tasksToAssert[0], { exact: true }).first();
+      if (!(await pickOpt.count())) {
+        const alias0 = Object.entries(aliasToCanon).find(([, canon]) => canon === tasksToAssert[0])?.[0];
+        if (alias0) pickOpt = modal.getByText(alias0, { exact: true }).first();
+      }
+      await pickOpt.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const disabledAfter = await nextBtn.isDisabled();
+      const clsAfter = (await nextBtn.getAttribute('class')) || '';
+      if (disabledAfter || /arco-btn-disabled/.test(clsAfter)) {
+        throw new Error('已选「' + tasksToAssert[0] + '」后「下一步：前往配置」应可点击');
+      }
+      await modal.getByRole('button', { name: '取消', exact: true }).click({ timeout: 5000 }).catch(() => {});
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888「选择分析任务」浮层恒为 4 项（领域分布、技术力、商业力、供应链；缺附录 A「综合竞争力评估」「企业发展痛点分析」）；radio 文案可能为长标题（如「企业技术力评估对比分析」），脚本归一化到附录 A 短名再断言。保留标题、未选禁「下一步」、选一项可下一步；恢复 6 项时自动全量六项断言。选定领域分布进入结果归 01689。篮空自含 development/search 入篮。登录与关内部评审由 runner 会话前置。B 档。

@@ -1,0 +1,119 @@
+id: FUNC-00528
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00528
+priority: P1
+title: 同壳层类型/领域参数互斥不串态
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+locators:
+  type_menu: 侧栏 link「重点企业类型分析」
+  domain_menu: 侧栏 link「重点企业领域分析」或「重点企业领域分布分析」（D1·30888）
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 同一窗口侧栏先类型后领域；URL 与页头隔离在 expect 内自含
+expect:
+  - note: 1、类型菜单进入后为类型看板且地址含类型参数
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const clickSidebar = async (names) => {
+        for (const name of names) {
+          const link = page.getByRole('link', { name, exact: true });
+          if (await link.count()) {
+            await link.first().click({ timeout: 8000 });
+            return name;
+          }
+        }
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForURL(/\/development\/search|key-enterprise/, { timeout: 12000 });
+          for (const name of names) {
+            const link = page.getByRole('link', { name, exact: true });
+            if (await link.count()) {
+              await link.first().click({ timeout: 8000 });
+              return name;
+            }
+          }
+        }
+        throw new Error('侧栏未找到入口: ' + names.join(' / '));
+      };
+      await closeBasket();
+      await clickSidebar(['重点企业类型分析']);
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 15000 });
+      const typeUrl = page.url();
+      if (!/(?:view=type|workspace=type)/.test(typeUrl)) {
+        throw new Error('类型态 URL 缺 type 参数: ' + typeUrl);
+      }
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await expect(page.locator('main').getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 10000 });
+      await page.evaluate(() => { window.__keydomIsoTypeUrl = location.href; });
+  - note: 2、领域菜单进入后为领域页面且地址含领域参数，类型参数不残留为当前态
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const clickSidebar = async (names) => {
+        for (const name of names) {
+          const link = page.getByRole('link', { name, exact: true });
+          if (await link.count()) {
+            await link.first().click({ timeout: 8000 });
+            return name;
+          }
+        }
+        const search = page.getByRole('link', { name: '企业查询', exact: true });
+        if (await search.count()) {
+          await search.first().click({ timeout: 8000 });
+          await page.waitForURL(/\/development\/search|key-enterprise/, { timeout: 12000 });
+          for (const name of names) {
+            const link = page.getByRole('link', { name, exact: true });
+            if (await link.count()) {
+              await link.first().click({ timeout: 8000 });
+              return name;
+            }
+          }
+        }
+        throw new Error('侧栏未找到入口: ' + names.join(' / '));
+      };
+      await closeBasket();
+      await clickSidebar(['重点企业领域分析', '重点企业领域分布分析']);
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 15000 });
+      const domainUrl = page.url();
+      if (!/(?:view=domain|workspace=domain)/.test(domainUrl)) {
+        throw new Error('领域态 URL 缺 domain 参数: ' + domainUrl);
+      }
+      const qs = new URL(domainUrl).searchParams;
+      const view = qs.get('view');
+      if (view === 'type') {
+        throw new Error('领域入口后 view 仍为 type: ' + domainUrl);
+      }
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      const main = page.locator('main');
+      const domainHead = main.getByRole('heading', { name: /重点企业领域/ }).first();
+      await expect(domainHead).toBeVisible({ timeout: 10000 });
+      const headText = ((await domainHead.innerText().catch(() => '')) || '').trim();
+      if (!/重点企业领域分析|重点企业领域分布分析/.test(headText)) {
+        throw new Error('领域页头不符合口径: ' + headText);
+      }
+      const typeHead = main.getByRole('heading', { name: '重点企业类型分析', exact: true });
+      if (await typeHead.count() && await typeHead.first().isVisible().catch(() => false)) {
+        throw new Error('领域态仍呈现类型看板主标题');
+      }
+      if (await page.getByRole('heading', { name: '类型与区域分析' }).count()) {
+        throw new Error('领域态串入类型看板 KPI 区块');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例步骤为侧栏先类型后领域（同窗口往返）；本册不细核类型看板内容，仅验 URL 参数与主区页头隔离。D1·30888 领域侧栏可为「重点企业领域分布分析」。路由常见 /enterprise-center/key-enterprise-analysis?workspace=*&view=* 或 /enterprise/key-enterprise-analysis?view=*。与类型册 00046 互为反向。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

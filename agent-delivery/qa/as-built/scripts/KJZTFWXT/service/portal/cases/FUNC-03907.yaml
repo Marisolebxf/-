@@ -1,0 +1,58 @@
+id: FUNC-03907
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03907
+priority: P0
+tier: B
+title: 检索深圳服务机构分流至服务机构查询
+story: US-SVC-PT-05
+entry_id: svc-portal
+preconditions:
+  - 已打开深圳产业服务介绍（runner 深链 /service-portal/shenzhen）
+locators:
+  search_cta: button「检索深圳服务机构」
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点击页头「检索深圳服务机构」
+expect:
+  - note: 1、页面标题变为「服务机构查询」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业服务介绍/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/shenzhen SPA404，无法点击检索分流 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const cta = page.getByRole('button', { name: '检索深圳服务机构', exact: true });
+      await expect(cta).toBeVisible({ timeout: 8000 });
+      await cta.click();
+      await expect(page).toHaveURL(/service-center\/search/, { timeout: 15000 });
+      const docTitle = await page.title();
+      if (!/服务机构查询/.test(docTitle)) {
+        throw new Error('浏览器标题未含「服务机构查询」：' + docTitle);
+      }
+      const navCurrent = page.locator('.layout-menu-item-selected, .arco-menu-selected').filter({ hasText: '服务机构查询' });
+      const navHit = (await navCurrent.count()) > 0;
+      const hubTab = page.getByRole('tab', { name: '智能检索' });
+      const hubVisible = await hubTab.isVisible().catch(() => false);
+      if (!navHit && !hubVisible) {
+        throw new Error('到达查询页但未见侧栏「服务机构查询」选中或智能检索 Tab；title=' + docTitle);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深圳页 ServicePortalShenzhenPage.goSearch → /service-center/search（query 透传 industry/chain）。
+  用例册 SVCPORTAL 预期为页面标题「服务机构查询」；机检 document.title 含该文案，并辅验侧栏选中或智能检索 Tab（SearchHub）。
+  goto 深链 /service-portal/shenzhen；catalog_path 仍为 /service-portal。查询页筛选不在本册展开。

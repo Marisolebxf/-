@@ -1,0 +1,95 @@
+id: FUNC-02619
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02619
+priority: P1
+title: 退出全屏后工具回到全屏且全景仍在
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 图谱已全屏
+  - 按钮为「退出全屏」
+locators:
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+  tab_panorama: '#industry-overview-tab-panorama'
+  fullscreen_btn: button aria-label「全屏」
+  exit_fullscreen_btn: button aria-label「退出全屏」
+  panorama_h2: F-OV-01 内 h2 产业链全景标题
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 前置进入全屏后点击「退出全屏」；预期在 expect 判定
+expect:
+  - note: 前置：产业链全景 Tab、图谱已加载并处于全屏，按钮为「退出全屏」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      const panTab = mode.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const selected =
+        (await panTab.getAttribute('aria-selected')) === 'true' ||
+        ((await panTab.getAttribute('class')) || '').includes('active');
+      if (!selected) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：当前链无快照，无法验退出全屏');
+      }
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+      const fsBtn = panel.locator('[aria-label="全屏"]').first();
+      await expect(fsBtn).toBeVisible({ timeout: 8000 });
+      await fsBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const exitBtn = panel.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('.industry-overview-panorama-workbench.is-fullscreen')).toBeVisible({ timeout: 8000 });
+  - note: 步骤：点击「退出全屏」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const exitBtn = panel.locator('[aria-label="退出全屏"]').first();
+      await expect(exitBtn).toBeVisible({ timeout: 8000 });
+      await expect(exitBtn).toBeEnabled();
+      await exitBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+  - note: 1、按钮回到「全屏」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const fsBtn = panel.locator('[aria-label="全屏"]').first();
+      await expect(fsBtn).toBeVisible({ timeout: 8000 });
+      await expect(fsBtn).toBeEnabled();
+      const exitCount = await panel.locator('[aria-label="退出全屏"]').count();
+      if (exitCount > 0) {
+        const vis = await panel.locator('[aria-label="退出全屏"]').first().isVisible().catch(() => false);
+        if (vis) throw new Error('退出全屏后仍可见「退出全屏」按钮');
+      }
+      const workbench = panel.locator('.industry-overview-panorama-workbench.is-fullscreen');
+      await expect(workbench).toHaveCount(0);
+  - note: 2、全景标题仍在
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 8000 });
+      const t = ((await h2.innerText()) || '').trim();
+      if (!/产业链全景$/.test(t)) {
+        throw new Error('全景标题应仍以「产业链全景」结尾，实际：' + t);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；前置在 assert 内先点「全屏」满足用例「图谱已全屏」。
+  图谱工具 SharedMapChrome（aria 全屏/退出全屏），全屏态 .industry-overview-panorama-workbench.is-fullscreen。
+  退出后 is-fullscreen 类移除且「全屏」按钮恢复。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

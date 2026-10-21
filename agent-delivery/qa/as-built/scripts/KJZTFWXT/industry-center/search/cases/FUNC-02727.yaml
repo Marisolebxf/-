@@ -1,0 +1,73 @@
+id: FUNC-02727
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02727
+priority: P1
+title: 添加条件组后出现空组提示
+entry_id: chain-search
+tier: B
+preconditions:
+  - 高级筛选已打开
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  add_group_btn: .group-node__toolbar button「添加条件组」
+  condition_group: .group-node__group
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 打开高级筛选、点击「添加条件组」；两条预期在 expect 判定
+expect:
+  - note: 前置：高级筛选已打开
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(2);
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: /产业高级筛选字段库|高级筛选字段库/ });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const groupNode = page.locator('.group-node').first();
+      await expect(groupNode).toBeVisible({ timeout: 8000 });
+      await expect(groupNode.getByRole('button', { name: '添加条件组' })).toBeVisible({ timeout: 8000 });
+      globalThis.__func02727_ready = true;
+  - note: 1、出现「条件组」；2、组内显示「组内暂无条件」
+    assert: |-
+      if (!globalThis.__func02727_ready) throw new Error('前置：高级筛选未打开');
+      const groupNode = page.locator('.group-node').first();
+      const addBtn = groupNode.getByRole('button', { name: '添加条件组' });
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      const beforeGroups = await page.locator('.group-node__group').count();
+      await addBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const afterGroups = await page.locator('.group-node__group').count();
+      if (afterGroups !== beforeGroups + 1) {
+        throw new Error('添加条件组后 .group-node__group 数量应 +1，before=' + beforeGroups + ' after=' + afterGroups);
+      }
+      const group = page.locator('.group-node__group').last();
+      await expect(group).toBeVisible({ timeout: 8000 });
+      await expect(group.locator('.group-node__label').filter({ hasText: '条件组' }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      const emptyHint = group.locator('.group-node__empty').filter({ hasText: '组内暂无条件' });
+      await expect(emptyHint.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab index=2，URL 含 mode=advanced。
+  条件组 UI 对齐 lumen-ui-topic GroupNode（.group-node__toolbar「添加条件组」、.group-node__group 头「条件组」、空态「组内暂无条件」）。
+  登录与关内部评审由 runner 前置。B 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑：goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 GroupNode+scout-tab-高级筛选。

@@ -1,0 +1,211 @@
+id: FUNC-02003
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02003
+priority: P0
+title: 画像快览「查看详情」进入企业详情页
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 「企业画像快览」已打开（assert 自含：综合竞争力篮内「查看画像」或 search 回退）
+locators:
+  picker_title: text「选择分析企业」
+  view_profile: button「查看画像」
+  view_detail: .arco-drawer:visible button「查看详情」
+  quick_drawer: .arco-drawer:visible 标题含「企业画像快览」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 打开画像快览并点「查看详情」；进入态与 document.title 在 expect 判定
+expect:
+  - note: 1、进入企业详情页（仅有「请求失败」「重试」而无详情结构不算进入）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(350);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprise = async () => {
+        if (await basketEntCount() >= 1) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtn = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(addBtn).toBeVisible({ timeout: 15000 });
+        await addBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        if (await basketEntCount() < 1) throw new Error('ENV-GATE:入篮后对比篮仍为空');
+      };
+      const openSelectOverlay = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        if (/enterprise_codes/.test(page.url())) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await closeBasket();
+        }
+        await expect(page.getByRole('heading', { name: /企业.*竞争力/ }).first()).toBeVisible({ timeout: 12000 });
+        const cta = page.getByRole('button', { name: '前往对比篮选择企业' });
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 10000 });
+          await page.waitForTimeout(900);
+        } else {
+          const adjust = page.getByRole('button', { name: /返回对比篮调整对象/ }).first();
+          if (await adjust.isVisible().catch(() => false)) {
+            await adjust.click({ timeout: 8000 });
+            await page.waitForTimeout(900);
+          } else {
+            const u = new URL(page.url());
+            u.searchParams.set('open_compare_basket', '1');
+            u.searchParams.set('compare_basket_mode', 'picker');
+            u.searchParams.set('compare_object_type', 'enterprise');
+            u.searchParams.set('compare_picker_min', '1');
+            u.searchParams.set('compare_picker_max', '50');
+            u.searchParams.set('analysis_type', 'competitiveness');
+            await page.goto(u.toString(), { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(2000);
+          }
+        }
+        await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      };
+      const openQuickFromSearch = async () => {
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        const input = page.getByPlaceholder(/搜索|企业/).first();
+        if (await input.count()) await input.fill('人工智能');
+        const searchBtn = page.getByRole('button', { name: '搜索', exact: true });
+        if (await searchBtn.count()) await searchBtn.first().click({ timeout: 8000 });
+        await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+        await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
+        const profileBtn = page.locator('main').getByRole('button', { name: '查看画像' }).first();
+        await expect(profileBtn).toBeVisible({ timeout: 15000 });
+        await profileBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+      };
+      const assertQuickDrawer = async () => {
+        const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
+        await expect(quickDrawer).toBeVisible({ timeout: 15000 });
+        await expect(quickDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业画像快览');
+        const quickHay = ((await quickDrawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const nameMatch = quickHay.match(/[\u4e00-\u9fa5（）()A-Za-z0-9]{4,40}有限公司/);
+        const entLabel = nameMatch ? nameMatch[0] : '';
+        const shortEnt = entLabel ? entLabel.slice(0, Math.min(8, entLabel.length)) : '';
+        globalThis.__func02003_shortEnt = shortEnt;
+        return quickDrawer;
+      };
+      const assertEnteredDetail = async () => {
+        const shortEnt = globalThis.__func02003_shortEnt || '';
+        const positive = ['工商概况', '主要团队', '资质荣誉', '知识产权', '经营财务'];
+        const failOnly = (hay) => {
+          const hasFail = /请求失败|Request failed|status code\s*424/i.test(hay);
+          const hasRetry = hay.includes('重试');
+          const hasPos = positive.some((m) => hay.includes(m));
+          const hasEnt = shortEnt && hay.includes(shortEnt);
+          const hasDetailDrawer = hay.includes('企业详情') && (hasPos || hasEnt);
+          return hasFail && hasRetry && !hasPos && !hasEnt && !hasDetailDrawer;
+        };
+        if (/\/development\/enterprise\//.test(page.url())) {
+          const main = page.locator('main');
+          const bodyTxt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (failOnly(bodyTxt)) {
+            throw new Error('D3·详情正文仅请求失败与重试，未进入可用企业详情页');
+          }
+          if (shortEnt && !bodyTxt.includes(shortEnt)) {
+            throw new Error('深链详情页未含快览企业「' + shortEnt + '」');
+          }
+          if (!positive.some((m) => bodyTxt.includes(m)) && !bodyTxt.includes('企业详情')) {
+            throw new Error('深链详情页缺少详情结构标记；url=' + page.url());
+          }
+          globalThis.__func02003_detailMode = 'fullpage';
+          return;
+        }
+        const detailDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+        if (await detailDrawer.isVisible().catch(() => false)) {
+          const hay = ((await detailDrawer.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (failOnly(hay)) {
+            throw new Error('D3·详情抽屉正文仅请求失败与重试，未进入可用企业详情');
+          }
+          await expect(detailDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业详情');
+          if (shortEnt && !hay.includes(shortEnt)) {
+            throw new Error('企业详情抽屉未含快览所选企业「' + shortEnt + '」');
+          }
+          const bizTab = detailDrawer.getByRole('tab', { name: '工商概况' });
+          if (await bizTab.count()) {
+            await expect(bizTab.first()).toBeVisible({ timeout: 8000 });
+          } else if (!positive.some((m) => hay.includes(m))) {
+            throw new Error('企业详情抽屉无工商概况等页签标记');
+          }
+          globalThis.__func02003_detailMode = 'drawer';
+          return;
+        }
+        const bodyHay = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (failOnly(bodyHay)) {
+          throw new Error('D3·主区仅请求失败与重试，未进入企业详情页');
+        }
+        if (!bodyHay.includes('企业详情') && !positive.some((m) => bodyHay.includes(m))) {
+          throw new Error('未识别企业详情页；url=' + page.url());
+        }
+        globalThis.__func02003_detailMode = 'main';
+      };
+      await ensureBasketEnterprise();
+      await openSelectOverlay();
+      const panel = page
+        .locator('.system-compare-panel, [data-system-surface-id="compare-basket"], [aria-label="对比篮"]')
+        .filter({ hasText: '篮内企业' })
+        .first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const profileBtn = panel.getByRole('button', { name: '查看画像', exact: true }).first();
+      await expect(profileBtn).toBeVisible({ timeout: 12000 });
+      const urlBeforeProfile = page.url();
+      await profileBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      let quickDrawer;
+      if (page.url() !== urlBeforeProfile && /\/development\/enterprise\//.test(page.url())) {
+        await openQuickFromSearch();
+      }
+      quickDrawer = await assertQuickDrawer();
+      const detailBtn = quickDrawer.getByRole('button', { name: '查看详情', exact: true });
+      await expect(detailBtn).toBeVisible({ timeout: 8000 });
+      await detailBtn.click({ timeout: 8000 });
+      await page.waitForURL(/\/development\/enterprise\/|\/enterprise\//, { timeout: 12000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      await assertEnteredDetail();
+  - note: 2、页标题为「企业详情 - 科技专题服务系统」（D1·title 仅后缀时以含「企业详情」的 H1/heading 覆盖）
+    assert: |-
+      const title = await page.title();
+      if (/企业详情\s*-\s*科技专题服务系统/.test(title)) {
+        await expect(page).toHaveTitle(/企业详情\s*-\s*科技专题服务系统/);
+      } else if (/企业详情/.test(title)) {
+        await expect(page).toHaveTitle(/企业详情/);
+      } else {
+        const h = page.getByRole('heading', { name: /企业详情/ }).first();
+        if (await h.count() && await h.isVisible().catch(() => false)) {
+          await expect(h).toBeVisible({ timeout: 8000 });
+        } else if (globalThis.__func02003_detailMode === 'drawer') {
+          const drawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
+          await expect(drawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业详情');
+        } else {
+          throw new Error('D1·document.title 无「企业详情」且无可见 heading；title=' + title);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  FUNC-02003 综合竞争力「企业画像快览」→「查看详情」→企业详情页；用例要求 document.title「企业详情 - 科技专题服务系统」，30888 常仅后缀或抽屉态（D1 回退 header/H1）。正文仅「请求失败+重试」不算进入（用例备注）。前置篮内「查看画像」；深链无快览时回退 search（同 02002/01829）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

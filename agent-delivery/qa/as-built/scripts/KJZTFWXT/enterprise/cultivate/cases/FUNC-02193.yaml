@@ -1,0 +1,78 @@
+id: FUNC-02193
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02193
+priority: P0
+title: 主流程-范围标签深圳市内企业
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 已登录；停在条件筛选推荐 Tab
+locators:
+  filter_tab: tab「条件筛选推荐」
+  condition_heading: 培育推荐条件
+  scope_tag: .arco-tag 文案「深圳市内企业」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 看培育推荐条件标题右侧（无额外操作）
+expect:
+  - note: 1、显示「深圳市内企业」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      }
+      const filterTab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+      await expect(filterTab).toBeVisible({ timeout: 10000 });
+      if ((await filterTab.getAttribute('aria-selected')) !== 'true') {
+        await filterTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      const stack = page.getByTestId('recruit-tab-stack');
+      const heading = stack.getByText('培育推荐条件', { exact: true }).first();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const scopeTag = stack.locator('.arco-tag').filter({ hasText: '深圳市内企业' }).first();
+      await expect(scopeTag).toBeVisible({ timeout: 8000 });
+      const headingBox = await heading.boundingBox();
+      const tagBox = await scopeTag.boundingBox();
+      if (!headingBox || !tagBox) {
+        throw new Error('无法定位培育推荐条件标题或范围标签布局');
+      }
+      const sameRow = Math.abs(headingBox.y - tagBox.y) < 48 && tagBox.x >= headingBox.x - 8;
+      if (!sameRow) {
+        throw new Error('「深圳市内企业」未出现在培育推荐条件标题同行右侧附近');
+      }
+  - note: 2、它不是可展开的筛选项
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack');
+      const scopeTag = stack.locator('.arco-tag').filter({ hasText: '深圳市内企业' }).first();
+      await expect(scopeTag).toBeVisible({ timeout: 8000 });
+      const cls = (await scopeTag.getAttribute('class')) || '';
+      if (!/\barco-tag\b/.test(cls)) {
+        throw new Error('范围标签不是 Arco Tag，class=' + cls);
+      }
+      const inSelect = scopeTag.locator('xpath=ancestor::*[contains(@class,"arco-select")][1]');
+      if ((await inSelect.count()) > 0) {
+        throw new Error('范围标签嵌在 arco-select 内，疑似可展开筛选项');
+      }
+      if (await scopeTag.locator('input, [role=combobox]').count()) {
+        throw new Error('范围标签内含 input/combobox，疑似可展开筛选项');
+      }
+      const popBefore = await page.locator('.arco-trigger-popup:visible').count();
+      await scopeTag.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      const popAfter = await page.locator('.arco-trigger-popup:visible').count();
+      if (popAfter > popBefore) {
+        throw new Error('点击范围标签后出现 trigger 弹层，疑似可展开筛选项');
+      }
+      const role = (await scopeTag.getAttribute('role')) || '';
+      if (/combobox|listbox|button/.test(role)) {
+        throw new Error('范围标签 role=' + role + '，疑似可交互筛选项');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation；范围标签为 main recruit-tab-stack 内 .arco-tag「深圳市内企业」（2026-10-14 scout）。步骤=仅目视标题右侧，无展开操作。登录与关内部评审由 runner 前置。A 档零 allow_skip。

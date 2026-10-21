@@ -1,0 +1,176 @@
+id: FUNC-02597
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02597
+priority: P0
+title: 换一条产业链后全景标题与环节数改为新链
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景
+  - 当前为「产业链全景」
+locators:
+  chain: .industry-overview-chain-select
+  tab_panorama: '#industry-overview-tab-panorama'
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 确认「产业链全景」Tab 后展开产业链选框并选择「人工智能与应用」
+expect:
+  - note: 前置：当前为「产业链全景」Tab，默认链全景统计已加载
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parsePanoramaStats = (body) => {
+        const m = body.match(/当前产业链图谱包含\s*(\d+)\s*个链位环节和\s*(\d+)\s*条关系/);
+        if (!m) return null;
+        return { nodes: Number(m[1]), edges: Number(m[2]) };
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 专题全景入口 SPA 404 ' + page.url());
+      }
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(mode).toBeVisible({ timeout: 10000 });
+      const panTab = mode.getByRole('tab', { name: '产业链全景' });
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const aria = await panTab.getAttribute('aria-selected');
+      const cls = await panTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        await panTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      const aria2 = await panTab.getAttribute('aria-selected');
+      const cls2 = await panTab.getAttribute('class');
+      if (aria2 !== 'true' && !(cls2 || '').includes('active')) {
+        throw new Error('前置：当前应为「产业链全景」Tab');
+      }
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const chainBefore = (await chain.innerText()).replace(/\s+/g, ' ').trim();
+      if (!/半导体与集成电路/.test(chainBefore)) {
+        throw new Error('前置：换链前产业链应为「半导体与集成电路」，实际：' + chainBefore);
+      }
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      if (await panel.getByText('暂无已发布全景快照', { exact: true }).isVisible().catch(() => false)) {
+        throw new Error('前置：默认链无快照，无法验换链刷新');
+      }
+      await expect(panel.locator('.industry-overview-canvas canvas').first()).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      const statsBefore = parsePanoramaStats((await panel.innerText()).replace(/\s+/g, ' '));
+      if (!statsBefore) {
+        throw new Error('前置：默认链环节数说明未出现');
+      }
+      globalThis.__func02597 = { statsBefore, chainBefore };
+  - note: 步骤：展开「产业链」选框并选择「人工智能与应用」（等待 snapshot 回包）
+    assert: |-
+      if (!globalThis.__func02597) throw new Error('前置：未记录换链前统计');
+      const { statsBefore } = globalThis.__func02597;
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      await chain.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opt = popup.locator('.arco-select-option').filter({ hasText: '人工智能与应用' });
+      await expect(opt.first()).toBeVisible({ timeout: 8000 });
+      const snapWait = page.waitForResponse(
+        (r) => /\/chain\/topic\/v1\/industry\/panorama\/snapshot/.test(r.url()) && r.request().method() === 'GET',
+        { timeout: 25000 },
+      ).catch(() => null);
+      const overviewWait = page.waitForResponse(
+        (r) => /\/chain\/topic\/v1\/industry\/overview(?:\?|$)/.test(r.url()) && r.request().method() === 'GET',
+        { timeout: 25000 },
+      ).catch(() => null);
+      await opt.first().click({ timeout: 8000 });
+      await Promise.all([snapWait, overviewWait]);
+      await page.waitForTimeout(400);
+      const chainTxt = (await chain.innerText()).replace(/\s+/g, ' ');
+      if (!/人工智能与应用/.test(chainTxt)) {
+        throw new Error('选链后产业链选框应为「人工智能与应用」，实际：' + chainTxt);
+      }
+      globalThis.__func02597.chainAfter = chainTxt;
+      globalThis.__func02597.statsBefore = statsBefore;
+  - note: 标题为「人工智能与应用产业链全景」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      const h2 = panel.locator('h2').first();
+      await expect(h2).toBeVisible({ timeout: 15000 });
+      const title = ((await h2.innerText()) || '').trim().replace(/\s+/g, ' ');
+      if (title !== '人工智能与应用产业链全景') {
+        throw new Error('标题不符: ' + title);
+      }
+  - note: 写明 4 个链位环节和 3 条关系（须与换链前统计不同，排除标题已变图谱未刷新的 C6）
+    assert: |-
+      const ctx = globalThis.__func02597;
+      if (!ctx?.statsBefore) throw new Error('前置：未记录换链前统计');
+      const parsePanoramaStats = (body) => {
+        const m = body.match(/当前产业链图谱包含\s*(\d+)\s*个链位环节和\s*(\d+)\s*条关系/);
+        if (!m) return null;
+        return { nodes: Number(m[1]), edges: Number(m[2]) };
+      };
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const expectNodes = 4;
+      const expectEdges = 3;
+      let statsAfter = null;
+      const deadline = Date.now() + 18000;
+      while (Date.now() < deadline) {
+        const body = (await panel.innerText()).replace(/\s+/g, ' ');
+        statsAfter = parsePanoramaStats(body);
+        if (statsAfter && statsAfter.nodes === expectNodes && statsAfter.edges === expectEdges) break;
+        await page.waitForTimeout(400);
+      }
+      const bodyFinal = (await panel.innerText()).replace(/\s+/g, ' ');
+      if (!statsAfter) {
+        throw new Error('环节/关系统计文案缺失: ' + bodyFinal.slice(0, 240));
+      }
+      const sameAsBefore =
+        statsAfter.nodes === ctx.statsBefore.nodes && statsAfter.edges === ctx.statsBefore.edges;
+      if (sameAsBefore) {
+        throw new Error(
+          'C6·换链后 H2/选框已变但全景环节数未刷新（仍 ' +
+            statsAfter.nodes +
+            '/' +
+            statsAfter.edges +
+            '，换链前 ' +
+            ctx.statsBefore.nodes +
+            '/' +
+            ctx.statsBefore.edges +
+            '）；预期 ' +
+            expectNodes +
+            '/' +
+            expectEdges
+        );
+      }
+      if (statsAfter.nodes !== expectNodes || statsAfter.edges !== expectEdges) {
+        throw new Error(
+          '环节/关系统计不符: 预期 ' +
+            expectNodes +
+            '/' +
+            expectEdges +
+            '，实际 ' +
+            statsAfter.nodes +
+            '/' +
+            statsAfter.edges +
+            '；正文：' +
+            bodyFinal.slice(0, 240)
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；深链进入后切链刷新全景（US-CHAIN-OV-02）。
+  断言作用域 F-OV-01；选「人工智能与应用」后 waitForResponse panorama/snapshot + overview，再 poll 至「4 个链位环节和 3 条关系」。
+  若标题/选框已变但 stats 仍同换链前 → 显式 C6（上次机跑 H2 已变仍 6/5）。入口 SPA 404 → ENV-EDU-TTS-SVCZ-404-001。edu 默认半导体现场跟 02593（2026-10-21 实勘 8/7）。
+  登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

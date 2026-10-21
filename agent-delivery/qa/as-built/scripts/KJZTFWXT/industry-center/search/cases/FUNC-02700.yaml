@@ -1,0 +1,77 @@
+id: FUNC-02700
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02700
+priority: P0
+title: 可用产业加入对比篮后按钮改为移出
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 推荐产业中「生物」为可用
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  bio_join: button「将生物加入对比篮」
+  bio_remove: button「将生物移出对比篮」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 在推荐行点击「将生物加入对比篮」；按钮态在 expect 判定
+expect:
+  - note: 前置：推荐产业列表含可用「生物」且按钮为加入态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('前置应为推荐产业 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '生物' }).first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const joinBtn = page.getByRole('button', { name: '将生物加入对比篮', exact: true });
+      const removeBtn = page.getByRole('button', { name: '将生物移出对比篮', exact: true });
+      if (await removeBtn.count()) {
+        const vis = await removeBtn.first().isVisible().catch(() => false);
+        if (vis) {
+          await removeBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      }
+      await expect(joinBtn).toBeVisible({ timeout: 8000 });
+  - note: 步骤：点击「将生物加入对比篮」
+    assert: |-
+      const joinBtn = page.getByRole('button', { name: '将生物加入对比篮', exact: true });
+      await expect(joinBtn).toBeVisible({ timeout: 8000 });
+      await joinBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+  - note: 1、该按钮变为「将生物移出对比篮」
+    assert: |-
+      const removeBtn = page.getByRole('button', { name: '将生物移出对比篮', exact: true });
+      await expect(removeBtn).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '将生物加入对比篮', exact: true })).toHaveCount(0);
+  - note: 无确认框（用例备注）
+    assert: |-
+      const modal = page.locator('.arco-modal-wrapper:visible, .arco-popconfirm-popup:visible');
+      const mc = await modal.count();
+      if (mc > 0) {
+        throw new Error('点击加入对比篮不应弹出确认层，现场可见弹层 ' + mc + ' 个');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；推荐态 data-search-state=recommendation。
+  对比篮操作为 icon 按钮 aria-label「将生物加入对比篮」/「将生物移出对比篮」（scout-base.json），
+  非可见文案「加入对比篮」。会话残留已入篮时前置先点移出还原。与 02701 成对。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,72 @@
+id: FUNC-02606
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02606
+priority: P0
+title: 特色研判空态
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_profile: '#industry-overview-tab-profile'
+  profile_panel: '[data-frame-id="F-OV-03"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 点击「产业整体概况」，校验「区域特色研判」空态文案
+expect:
+  - note: 步骤：点击「产业整体概况」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业整体概况' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=profile/, { timeout: 8000 });
+      const profTab = page.locator('#industry-overview-tab-profile');
+      const aria = await profTab.getAttribute('aria-selected');
+      const cls = await profTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('点击后「产业整体概况」Tab 未选中');
+      }
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+  - note: 1、「区域特色研判」为「CMS 研判未返回时保持空态，不以资讯或 Demo 文案冒充。」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      const findings = panel.locator('.industry-overview-findings');
+      await expect(findings).toBeVisible({ timeout: 8000 });
+      await expect(findings.getByRole('heading', { name: '区域特色研判', level: 3 })).toBeVisible({
+        timeout: 8000,
+      });
+      const emptyCopy = 'CMS 研判未返回时保持空态，不以资讯或 Demo 文案冒充。';
+      const emptyP = findings.locator('p').filter({ hasText: emptyCopy });
+      await expect(emptyP.first()).toBeVisible({ timeout: 8000 });
+      const txt = (await emptyP.first().innerText()).replace(/\s+/g, ' ').trim();
+      if (txt !== emptyCopy) {
+        throw new Error('区域特色研判空态应为「' + emptyCopy + '」，实际：' + txt);
+      }
+      const articleLike = findings.locator('article, .arco-typography, .industry-overview-news');
+      const articleCount = await articleLike.count();
+      if (articleCount > 0) {
+        for (let i = 0; i < articleCount; i++) {
+          const vis = await articleLike.nth(i).isVisible().catch(() => false);
+          if (vis) throw new Error('无 CMS 研判稿时不应展示资讯/Demo 正文块');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；概况区 data-frame-id=F-OV-03，Tab id=industry-overview-tab-profile，URL ?tab=profile。
+  CMS 未返回时 .industry-overview-findings 内固定 p 文案（IndustryOverviewPage.vue）；2026-10-14 scout-tab-概况 已观测。
+  登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

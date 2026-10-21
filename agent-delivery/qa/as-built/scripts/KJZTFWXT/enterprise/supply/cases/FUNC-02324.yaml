@@ -1,0 +1,79 @@
+id: FUNC-02324
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02324
+priority: P1
+title: 点新建分析后回到空配置且开始分析不可点
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已打开最近分析（assert 自含点「最近分析」）
+locators:
+  tab_recent: tab「最近分析」
+  new_analysis_btn: button「新建分析」
+  empty_cta: button「前往对比篮选择企业」
+  start_btn: button「开始分析」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 点「最近分析」→点「新建分析」；空配置与按钮态在 expect
+expect:
+  - note: 1、进入当前分析的空配置
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+      await expect(tab).toBeVisible({ timeout: 8000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      await expect(page.getByText('任务名称').first()).toBeVisible({ timeout: 12000 });
+      const newBtn = page.getByRole('button', { name: '新建分析' });
+      await expect(newBtn.first()).toBeVisible({ timeout: 8000 });
+      await newBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      if (/view=history/.test(page.url())) {
+        throw new Error('点「新建分析」后仍停在 view=history，未进入当前分析');
+      }
+      const m = main();
+      await expect(m.getByText('分析对象', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const adjustBtn = m.getByRole('button', { name: '返回对比篮调整对象' });
+      if (await adjustBtn.count() && (await adjustBtn.first().isVisible().catch(() => false))) {
+        throw new Error('当前分析仍为回填态（见「返回对比篮调整对象」）');
+      }
+      globalThis.__func02324_newDone = true;
+  - note: 2、出现「前往对比篮选择企业」
+    assert: |-
+      if (!globalThis.__func02324_newDone) throw new Error('前置：未完成新建分析步骤');
+      await expect(page.getByRole('button', { name: '前往对比篮选择企业' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、「开始分析」不可点
+    assert: |-
+      if (!globalThis.__func02324_newDone) throw new Error('前置：未完成新建分析步骤');
+      const start = page.locator('main.content-shell-layout, main').first().getByRole('button', { name: '开始分析' });
+      await expect(start.first()).toBeVisible({ timeout: 8000 });
+      if (!(await start.first().isDisabled())) {
+        throw new Error('空配置下「开始分析」应为不可用');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=「最近分析」(view=history)→「新建分析」。机检=离开 history+无「返回对比篮调整对象」+「前往对比篮选择企业」+引导文案+「开始分析」disabled。登录与关评审由 runner 前置。B 档零 allow_skip。

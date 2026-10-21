@@ -1,0 +1,78 @@
+id: FUNC-02616
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02616
+priority: P1
+title: 详情里点确定后回到资讯列表
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 在「产业资讯」
+  - 列表有「查看详情」
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  news_panel: '[data-frame-id="F-OV-02"]'
+  news_card: .industry-overview-news-card
+  detail_btn: button「查看详情」
+  detail_drawer: .arco-drawer:visible
+  confirm_btn: .arco-drawer:visible 内 button「确定」
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 产业资讯打开详情后点「确定」，校验抽屉关闭且列表仍可查看详情
+expect:
+  - note: 前置：在「产业资讯」且列表有「查看详情」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业资讯' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=news/, { timeout: 8000 });
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await expect(newsPanel).toBeVisible({ timeout: 10000 });
+      const empty = newsPanel.getByText('当前筛选无事件', { exact: true });
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置：列表应有资讯，现场为空态');
+      }
+      const detailCount = await newsPanel.getByRole('button', { name: '查看详情', exact: true }).count();
+      if (detailCount < 1) {
+        throw new Error('前置：列表应有「查看详情」，实际 ' + detailCount + ' 个');
+      }
+  - note: 步骤：点击「查看详情」
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await newsPanel.getByRole('button', { name: '查看详情', exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+  - note: 步骤：点击「确定」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible');
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const ok = drawer.getByRole('button', { name: '确定', exact: true });
+      await expect(ok).toBeVisible({ timeout: 8000 });
+      await ok.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+  - note: 1、对话框关闭
+    assert: |-
+      await expect(page.locator('.arco-drawer:visible')).toHaveCount(0, { timeout: 8000 });
+  - note: 2、列表仍有「查看详情」
+    assert: |-
+      const newsPanel = page.locator('[data-frame-id="F-OV-02"]');
+      await expect(newsPanel).toBeVisible({ timeout: 8000 });
+      await expect(newsPanel.getByRole('button', { name: '查看详情', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；资讯详情为 a-drawer（宽 520），Arco 默认 footer 含「确定」「取消」（与 demo React footer=null 不同）。
+  用例写「对话框」按抽屉口径；关闭断言用 .arco-drawer:visible 计数为 0（X2 可视性，非 DOM 存在性）。
+  登录与关内部评审由 runner 会话前置。B 档 P1。

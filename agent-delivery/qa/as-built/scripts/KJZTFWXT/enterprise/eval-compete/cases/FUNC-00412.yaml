@@ -1,0 +1,133 @@
+id: FUNC-00412
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00412
+priority: P0
+title: 一键平均分配将已选维度权重均分且和保持 100
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - env-gate select_objects=pass（对比篮≥1 家企业；不足时脚本经企业查询补篮）
+  - 已进入综合竞争力页且已回填至少 1 家企业
+locators:
+  avg_button: button「一键平均分配」
+  metrics: 创新能力/经营能力/成长能力
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 补篮回填→调成非均分态→点一键平均分配；34/33/33 与合计在 expect
+expect:
+  - note: 三项权重变为 34、33、33
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const dimNames = ['创新能力', '经营能力', '成长能力'];
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const openEnterprisePicker = async () => {
+        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+        const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const fillOneEnterprise = async () => {
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url()) && await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) return;
+        await openEnterprisePicker();
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(300);
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      const readDimWeights = async () => {
+        const vals = [];
+        for (const name of dimNames) {
+          const row = page.getByRole('row').filter({ hasText: name }).first();
+          await expect(row).toBeVisible({ timeout: 8000 });
+          const spin = row.locator('[role=spinbutton], .arco-input-number input').first();
+          vals.push(Number(await spin.inputValue()));
+        }
+        return vals;
+      };
+      const isAvgSplit = (vals) => {
+        const s = [...vals].sort((a, b) => a - b);
+        return s.join(',') === '33,33,34';
+      };
+      await fillOneEnterprise();
+      await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      let before = await readDimWeights();
+      if (isAvgSplit(before)) {
+        const row0 = page.getByRole('row').filter({ hasText: dimNames[0] }).first();
+        await row0.locator('.arco-input-number-step-button').first().click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+        before = await readDimWeights();
+      }
+      if (isAvgSplit(before)) throw new Error('无法调成非均分态: ' + before.join('/'));
+      await page.getByRole('button', { name: '一键平均分配' }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const after = await readDimWeights();
+      const expected = [34, 33, 33];
+      if (after.join(',') !== expected.join(',')) {
+        throw new Error('均分后权重 ' + after.join('/') + ' ≠ 34/33/33');
+      }
+      globalThis.__func00412_after = after;
+  - note: 权重和仍为 100
+    assert: |-
+      const dimNames = ['创新能力', '经营能力', '成长能力'];
+      let sum = 0;
+      for (const name of dimNames) {
+        const row = page.getByRole('row').filter({ hasText: name }).first();
+        const spin = row.locator('[role=spinbutton], .arco-input-number input').first();
+        sum += Number(await spin.inputValue());
+      }
+      if (sum !== 100) throw new Error('均分后权重和 ' + sum);
+      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 由 P0-11 重写为 FUNC-00412；30888 路由 /enterprise-center/evaluation（禁 50892）。权重按三指标行读取（全页 spin 可能为 4）。均分现场 34/33/33。系统对比篮选择器回填（同 FUNC-00411/01988）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

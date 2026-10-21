@@ -1,0 +1,42 @@
+id: FUNC-01035
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01035
+priority: P0
+title: 关系范围区含供应商客户与合作伙伴三复选项
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已进入供应链关系分析页
+locators:
+  section_label: 关系范围
+  options: [供应商, 客户, 合作伙伴]
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 浏览关系范围区；可见性与默认勾选在 expect 自含
+expect:
+  - note: 关系范围区含供应商、客户、合作伙伴三个复选项
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page.getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      for (const n of ['供应商', '客户', '合作伙伴']) {
+        const box = page.locator('main .arco-checkbox').filter({ hasText: n }).first();
+        await expect(box).toBeVisible({ timeout: 8000 });
+      }
+  - note: 供应商、客户、合作伙伴三个复选项默认均为勾选
+    assert: |-
+      for (const n of ['供应商', '客户', '合作伙伴']) {
+        const box = page.locator('main .arco-checkbox').filter({ hasText: n }).first();
+        const cls = (await box.getAttribute('class')) || '';
+        if (!/arco-checkbox-checked/.test(cls)) throw new Error(n + ' 默认未勾选');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=浏览关系范围区。机检=「关系范围」标题+main 内三复选可见且默认 checked（与 testdata.relation_scope 一致）。对比篮关闭钮可见再点。D4·2026-10-20 rewrite-FUNC-01035 svcz 2/2 expect 绿。登录与关评审由 runner 前置。A 档零 allow_skip。

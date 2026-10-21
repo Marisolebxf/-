@@ -1,0 +1,54 @@
+id: FUNC-04034
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04034
+priority: P1
+tier: B
+title: 空输入点搜索不进入检索结果
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 已进入「智能检索」；输入框为空
+locators:
+  smart_tab: tab「智能检索」
+  search_input: textbox placeholder 含「用一句话描述机构需求」
+  search_btn: button「搜索」
+  shell_example: 文案「示例查询」
+  shell_leading: heading「技术力领先机构」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 确认输入框为空后点击「搜索」（判定在 expect）
+expect:
+  - note: 1、不出现「检索结果」；无匹配机构计数
+    assert: |-
+      const hideCompareBasket = async () => {
+        const x = page.locator('[aria-label="关闭对比篮"]');
+        if (!(await x.count())) return;
+        if (await x.first().isVisible().catch(() => false)) {
+          await x.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await hideCompareBasket();
+      const on404 = await page.getByText('抱歉，页面不存在').isVisible().catch(() => false);
+      if (on404) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-center/search SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('tab', { name: '智能检索' })).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      const ph = '用一句话描述机构需求，如「深圳 检验检测」';
+      const inp = page.getByPlaceholder(ph);
+      await inp.fill('');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      if ((await page.getByRole('heading', { name: '检索结果' }).count()) > 0) {
+        throw new Error('空输入点击搜索后不应出现「检索结果」标题');
+      }
+      if ((await page.getByText(/共 \d+ 家匹配机构/).count()) > 0) {
+        throw new Error('空输入点击搜索后不应出现匹配机构计数');
+      }
+  - note: 2、仍显示「示例查询」与「技术力领先机构」（壳页未切走）
+    assert: |-
+      await expect(page.getByText('示例查询', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('heading', { name: '技术力领先机构', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 用例注明无必填提示（01344 已作废）；机检只验未进结果区且壳页「示例查询」「技术力领先机构」仍在。catalog_path=/service-center/search。登录与关内部评审由 runner 会话前置。对比篮浮层可见才关。对照重写 id=FUNC-04034，不沿用 P0-17 金样必填口径。

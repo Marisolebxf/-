@@ -1,0 +1,76 @@
+id: FUNC-01892
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01892
+priority: P0
+title: 市场行查看打开指标说明抽屉并展示业务字段
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 指标表已显示「市场」
+locators:
+  metric_row: 市场行
+  view_btn: 市场行「查看」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 深链进入配置页；市场行查看与抽屉断言在 expect
+expect:
+  - note: 1、抽屉标题含「市场」与「指标说明」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalBusiness = async () => {
+        if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=business')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        await expect(page.getByText('市场', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      };
+      const openMarketDrawer = async () => {
+        const row = page.locator('main [aria-label="选择指标：市场"]').locator('xpath=ancestor::tr[1]');
+        await expect(row).toBeVisible({ timeout: 8000 });
+        const view = row.getByRole('button', { name: '查看' });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      await gotoEvalBusiness();
+      await openMarketDrawer();
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const title = drawer.locator('.arco-drawer-title, .arco-drawer-header').first();
+      await expect(title).toContainText('市场', { timeout: 5000 });
+      await expect(title).toContainText('指标说明', { timeout: 5000 });
+  - note: 2、含衡量目的、所属维度、业务口径、单位
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block2 = ['衡量目的', '所属维度', '业务口径', '单位'];
+      const miss2 = block2.filter((k) => !t.includes(k));
+      if (miss2.length) throw new Error('抽屉缺字段: ' + miss2.join('、') + '；片段: ' + t.slice(0, 280));
+  - note: 3、含指标方向、适用范围、数据状态、缺失影响
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const t = await drawer.innerText();
+      const block3 = ['指标方向', '适用范围', '数据状态', '缺失影响'];
+      const miss3 = block3.filter((k) => !t.includes(k));
+      if (miss3.length) throw new Error('抽屉缺字段: ' + miss3.join('、') + '；片段: ' + t.slice(0, 280));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 FUNC-01892 重写作废 00942：仅断言抽屉标题与八项说明区块（不写年营收/利润率/客户集中度等现场无字段）。深链 /enterprise-center/evaluation?workspace=business&mode=business；市场行 aria「选择指标：市场」+ 行内「查看」。抽屉限定 .arco-drawer:visible。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,71 @@
+id: FUNC-00390
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00390
+priority: P1
+title: 改选起止年份后回显正确且类型与区域分析三卡仍在
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 时间默认为近3年 2023—2026（用例册 2022—2026；30888 as-built 跟现场）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  start_year_combo: main [aria-label="起始年份"]
+  end_year_combo: main [aria-label="结束年份"]
+  kpi_section: 类型与区域分析三卡
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析；展开起始/结束年份并点选 2021、2024；回显与 KPI 在 expect 判定
+expect:
+  - note: 1、展开开始年份面板并点选 2021 后，开始年份回显为 2021
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({ timeout: 8000 });
+      const startCombo = main.locator('[aria-label="起始年份"]').first();
+      const endCombo = main.locator('[aria-label="结束年份"]').first();
+      await expect(startCombo).toBeVisible({ timeout: 8000 });
+      await expect(endCombo).toBeVisible({ timeout: 8000 });
+      const d0 = await startCombo.locator('.arco-select-view-value').innerText();
+      const d1 = await endCombo.locator('.arco-select-view-value').innerText();
+      if (d0 !== '2023' || d1 !== '2026') throw new Error('前置默认年份非 2023/2026: ' + d0 + '/' + d1);
+      await startCombo.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pid1 = await startCombo.getAttribute('aria-controls');
+      const opts1 = pid1
+        ? page.locator(`#${pid1} .arco-select-option`)
+        : page.locator('.arco-select-popup-visible .arco-select-option');
+      await opts1.filter({ hasText: '2021' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const vStart = await startCombo.locator('.arco-select-view-value').innerText();
+      if (vStart !== '2021') throw new Error('开始年份回显=' + vStart + '，期望 2021');
+  - note: 2、点选结束年份 2024 后，结束年份回显为 2024（须点完起止两年）
+    assert: |-
+      const main = page.locator('main');
+      const endCombo = main.locator('[aria-label="结束年份"]').first();
+      await endCombo.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pid2 = await endCombo.getAttribute('aria-controls');
+      const opts2 = pid2
+        ? page.locator(`#${pid2} .arco-select-option`)
+        : page.locator('.arco-select-popup-visible .arco-select-option');
+      await opts2.filter({ hasText: '2024' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const vEnd = await endCombo.locator('.arco-select-view-value').innerText();
+      if (vEnd !== '2024') throw new Error('结束年份回显=' + vEnd + '，期望 2024');
+  - note: 3、改选后「类型与区域分析」三卡（匹配企业数、覆盖企业类型数、覆盖区域数）仍在且可见
+    assert: |-
+      const kpiSection = page.locator('section').filter({ hasText: '匹配企业数' }).filter({ hasText: '覆盖区域数' }).first();
+      await expect(kpiSection).toBeVisible({ timeout: 8000 });
+      for (const n of ['匹配企业数', '覆盖企业类型数', '覆盖区域数']) {
+        await expect(kpiSection.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·30888 时间为「近3年」预设 + aria-label 起始/结束年份 Arco Select（非 placeholder 开始/结束年份 input）；默认 2023—2026。点起始选 2021 后结束仍为 2026 直至再点结束选 2024（用例备注）。家数不钉死。登录与关内部评审由 runner 会话前置。

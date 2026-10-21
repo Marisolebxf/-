@@ -1,0 +1,77 @@
+id: FUNC-01819
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01819
+priority: P1
+title: 上调权重后合计偏离 100 并提示需要调整
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 当前为技术力标准模板
+  - 权重合计为 100%
+locators:
+  talent_weight: input[aria-label="技术人才权重"]
+  talent_step_up: 技术人才行 .arco-input-number-step-button 首个（上调）
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 深链进入配置页；技术人才权重上调与合计偏离断言在 expect
+expect:
+  - note: 1、该权重数值增加
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const gotoEvalTech = async () => {
+        if (!page.url().includes('/enterprise-center/evaluation') || !page.url().includes('workspace=technology')) {
+          await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+        }
+        await closeBasket();
+        await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 10000 });
+        const curTab = page.getByRole('tab', { name: '当前分析', exact: true });
+        if (await curTab.count()) {
+          await curTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+      };
+      const talentRow = () =>
+        page.locator('table tbody tr').filter({ hasText: '技术人才' }).filter({ has: page.locator('.arco-checkbox-checked') }).first();
+      const talentWeight = () => talentRow().locator('.arco-input-number input').first();
+      const talentStepUp = () => talentRow().locator('.arco-input-number-step-button').first();
+      await gotoEvalTech();
+      const tpl = page.locator('.arco-select-view').filter({ hasText: /技术力.*模板|系统技术力模板/ }).first();
+      await expect(tpl).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+      const spin = talentWeight();
+      await expect(spin).toBeVisible({ timeout: 8000 });
+      const before = Number(await spin.inputValue());
+      if (before !== 20) throw new Error('前置技术人才权重非默认 20: ' + before);
+      const up = talentStepUp();
+      await up.scrollIntoViewIfNeeded().catch(() => {});
+      await up.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const after = Number(await spin.inputValue());
+      if (!(after > before)) throw new Error('上调未增加: ' + before + '→' + after);
+  - note: 2、权重合计提示需调整为 100%
+    assert: |-
+      const sumLine = () => page.locator('div').filter({ hasText: /权重合计：/ }).first();
+      let sumText = '';
+      for (let i = 0; i < 20; i++) {
+        sumText = (await sumLine().innerText().catch(() => '')).trim();
+        if (/需调整为\s*100%/.test(sumText)) break;
+        await page.waitForTimeout(500);
+      }
+      if (!/需调整为\s*100%/.test(sumText)) throw new Error('合计行未提示需调整: ' + (sumText || '(空)'));
+      if (/校验通过/.test(sumText) && /权重合计：100%/.test(sumText)) {
+        throw new Error('合计仍为 100% 校验通过态: ' + sumText);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 FUNC-01819 异常-权重合计；深链 /enterprise-center/evaluation?workspace=technology&mode=technology（同 FUNC-00908，对象空态可调权）。D1·30888 模板下拉「系统技术力模板 v1.0」（兼匹配用例「技术力标准模板」）。合计偏离文案与 lumen EvalConfigPanel「· 需调整为 100%」一致。技术人才权重取已勾选行 .arco-input-number input；调节钮序 idx0=上调（同 FUNC-00910）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

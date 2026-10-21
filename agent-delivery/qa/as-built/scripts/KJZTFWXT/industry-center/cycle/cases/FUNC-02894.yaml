@@ -1,0 +1,116 @@
+id: FUNC-02894
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02894
+priority: P0
+title: 分析时间范围仅近3年近5年切换不发起分析
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: A
+preconditions:
+  - 已打开产业周期分析
+locators:
+  time_block: text=分析时间范围
+  records_tab: tab「诊断记录」
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 展开分析时间范围→选近3年→打开诊断记录（判定在 expect）
+expect:
+  - note: 前置：产业周期分析页可见；诊断记录基线条数已采样
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const countChainRows = async () => {
+        const body = await main().innerText().catch(() => '');
+        const ids = body.match(TID_RE) || [];
+        return new Set(ids).size;
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=cycle/);
+      await expect(page).toHaveURL(/tab=cycle/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const nBefore = await countChainRows();
+      await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      globalThis.__func02894 = { nBefore, main, countChainRows, TID_RE };
+  - note: 1、选项为「近3年」「近5年」，共 2 个
+    assert: |-
+      const ctx = globalThis.__func02894;
+      if (!ctx) throw new Error('前置：未打开产业周期分析');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      const block = page.locator('text=分析时间范围').first();
+      await expect(block).toBeVisible({ timeout: 8000 });
+      const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 2) {
+        throw new Error('分析时间范围选项应为 2 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      const want = ['近3年', '近5年'];
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error('分析时间范围选项不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got));
+        }
+      }
+      globalThis.__func02894.timeTrigger = trigger;
+      globalThis.__func02894.optSel = optSel;
+  - note: 2、选中后回显「近3年」；切换时间范围不自动发起分析
+    assert: |-
+      const ctx = globalThis.__func02894 || {};
+      const { optSel } = ctx;
+      if (!optSel) throw new Error('前置：未展开分析时间范围');
+      const pick3 = page.locator(optSel).filter({ hasText: '近3年' }).first();
+      await expect(pick3).toBeVisible({ timeout: 8000 });
+      await pick3.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const block = page.locator('text=分析时间范围').first();
+      const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      await expect(trigger).toContainText('近3年', { timeout: 8000 });
+      const url = page.url();
+      if (/view=result/.test(url)) throw new Error('改时间范围后自动进结果: ' + url);
+      if (/view=processing/.test(url)) throw new Error('改时间范围后自动进 processing: ' + url);
+      const t = await ctx.main().innerText().catch(() => '');
+      if (/可视化分析过程/.test(t)) throw new Error('改时间范围后出现分析过程，疑自动起任务');
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
+      globalThis.__func02894.picked3 = true;
+  - note: 3、诊断记录不因此新增任务
+    assert: |-
+      const ctx = globalThis.__func02894;
+      if (!ctx?.picked3) throw new Error('前置：未选近3年');
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const nAfter = await ctx.countChainRows();
+      if (nAfter > ctx.nBefore) {
+        throw new Error('诊断记录 CHAIN 条数增加：' + ctx.nBefore + ' -> ' + nAfter);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·edu tts/svcz catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。用例步骤=展开分析时间范围→选近3年→诊断记录。
+  时间范围=「分析时间范围」标签后首个 .arco-select-view（与 02888 pickTimeRange 同口径；非 chip）。选项近3年/近5年共2项（testdata time_range）。进入页默认近5年（用例备注，本脚本首条 expect 不重复断言）。
+  诊断记录条数=main 内 CHAIN-\\d{8}-\\d{3} 去重计数（对齐 02890）。登录关评审 runner 前置。A 档零 allow_skip。

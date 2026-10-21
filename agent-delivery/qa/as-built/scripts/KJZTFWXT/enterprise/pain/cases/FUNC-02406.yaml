@@ -1,0 +1,242 @@
+id: FUNC-02406
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02406
+priority: P0
+title: 生成中点稍后查看后回到最近分析且任务仍在处理
+story: US-ENT-RISK-PROCESS
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 生成中页已打开（assert 自含：成功结果重新分析或回填发起至 view=processing）
+locators:
+  view_later: button「稍后查看」
+  process_title: 企业发展痛点分析生成中
+  recent_tab: tab「最近分析」
+  continue_view: button「继续查看」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 生成中页点「稍后查看」→最近分析；三条预期在 expect
+expect:
+  - note: 1、回到最近分析
+    assert: |-
+      page.setDefaultTimeout(20000);
+      const painRoute = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const historyRoute = painRoute + '&view=history';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const procHint = /企业发展痛?点分析生成中|可视化分析过程/;
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const inProcess = async () => {
+        const t = await main().innerText().catch(() => '');
+        const url = page.url();
+        return procHint.test(t) && /view=processing/.test(url);
+      };
+      const readTaskHint = async () => {
+        const u = page.url();
+        const fromUrl = u.searchParams?.get?.('task_id') || (u.match(/task_id=([^&]+)/) || [])[1];
+        if (fromUrl) return decodeURIComponent(fromUrl);
+        const body = await main().innerText().catch(() => '');
+        const m = body.match(TID_RE);
+        return m ? m[0] : null;
+      };
+      const waitLaterBtn = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          const b = page.getByRole('button', { name: '稍后查看', exact: true });
+          if ((await b.count()) && (await b.first().isVisible().catch(() => false)) && (await b.first().isEnabled().catch(() => false))) {
+            return b.first();
+          }
+          if (!(await inProcess())) break;
+          await page.waitForTimeout(250);
+        }
+        return null;
+      };
+      const hasReanalyzeResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        if (/企业发展痛点分析生成中/.test(t) && !/对象与诊断摘要/.test(t)) return false;
+        return (
+          (await page.getByText('对象与诊断摘要').first().isVisible().catch(() => false)) &&
+          (await page.getByRole('button', { name: '重新分析' }).first().isVisible().catch(() => false))
+        );
+      };
+      const openRecentTab = async () => {
+        const tab = page.getByRole('tab', { name: '最近分析' }).first();
+        if (await tab.isVisible().catch(() => false)) {
+          await tab.click({ timeout: 12000, force: true });
+        } else {
+          await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        }
+        await page.waitForTimeout(900);
+      };
+      const openSuccessViaHistory = async () => {
+        await page.goto(toUrl(historyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+        const n = await main().locator(rowSel).count();
+        for (let i = 0; i < n; i++) {
+          const row = main().locator(rowSel).nth(i);
+          const rowText = await row.innerText().catch(() => '');
+          if (!/已完成/.test(rowText)) continue;
+          for (const label of ['恢复结果', '预览结果']) {
+            const btn = row.getByRole('button', { name: label }).first();
+            if (!(await btn.count())) continue;
+            await btn.click({ timeout: 8000 });
+            await page.waitForURL(/view=result|task_id=/, { timeout: 15000 }).catch(() => {});
+            await page.waitForTimeout(800);
+            if (await hasReanalyzeResult()) return true;
+          }
+        }
+        return false;
+      };
+      const reachProcessViaReanalyze = async () => {
+        if (!(await openSuccessViaHistory()) && !(await hasReanalyzeResult())) {
+          throw new Error('ENV-PAIN-NO-SUCCESS-001');
+        }
+        const reBtn = page.getByRole('button', { name: '重新分析', exact: true }).first();
+        if (!(await reBtn.count()) || !(await reBtn.isVisible().catch(() => false))) {
+          throw new Error('ENV-PAIN-REANALYZE-001');
+        }
+        await reBtn.click({ timeout: 10000 });
+        for (let i = 0; i < 24; i++) {
+          await page.waitForTimeout(i < 4 ? 400 : 500);
+          if (await inProcess()) return;
+        }
+        if (!(await inProcess())) throw new Error('ENV-PAIN-PROCESS-WINDOW-001');
+      };
+      const ensureFilledAndStart = async () => {
+        await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        if (!(await main().getByText(/来自对比篮/).first().isVisible().catch(() => false))) {
+          throw new Error('ENV-PAIN-BASKET-EMPTY-001：需先回填企业（对比篮/选择器）');
+        }
+        const dims = ['技术研发', '市场拓展', '融资', '管理'];
+        for (const d of dims) {
+          const box = page.locator('main .arco-checkbox').filter({ hasText: d }).first();
+          if (!(await box.count())) continue;
+          const cls = (await box.getAttribute('class')) || '';
+          if (/arco-checkbox-checked/.test(cls)) break;
+        }
+        const start = main().getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+        await page.waitForTimeout(1500);
+        const body0 = await main().innerText().catch(() => '');
+        if (/已打开今天相同条件/.test(body0) && /对象与诊断摘要/.test(body0)) {
+          throw new Error('ENV-PAIN-TODAY-REUSE-001：当天复用直达结果，无法测生成中稍后查看');
+        }
+        if (!(await inProcess())) throw new Error('ENV-PAIN-PROCESS-WINDOW-001：开始分析后未进入生成中');
+      };
+      await page.goto(toUrl(painRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      let laterBtn = null;
+      try {
+        await reachProcessViaReanalyze();
+        laterBtn = await waitLaterBtn(45000);
+      } catch (e1) {
+        try {
+          await ensureFilledAndStart();
+          laterBtn = await waitLaterBtn(45000);
+        } catch (e2) {
+          throw new Error('ENV-PAIN-ASYNC-NO-PROCESS-001: ' + String(e1.message || e1).slice(0, 100));
+        }
+      }
+      if (!laterBtn) {
+        throw new Error('ENV-PAIN-PROCESS-WINDOW-001: 生成中页未见可点「稍后查看」（URL=' + page.url() + '）');
+      }
+      await expect(page.getByRole('button', { name: '稍后查看', exact: true }).first()).toBeVisible({ timeout: 5000 });
+      const taskHint = await readTaskHint();
+      try {
+        await laterBtn.click({ timeout: 12000 });
+      } catch {
+        await laterBtn.click({ timeout: 12000, force: true });
+      }
+      await page.waitForTimeout(1500);
+      if (!/view=history/.test(page.url()) && !(await main().getByText('最近分析').first().isVisible().catch(() => false))) {
+        await openRecentTab();
+      }
+      const bodyAfter = await main().innerText().catch(() => '');
+      if (procHint.test(bodyAfter) && /view=processing/.test(page.url())) {
+        throw new Error('点稍后查看后仍停留生成中页');
+      }
+      if (!/最近分析|任务名称|RISK-/.test(bodyAfter) && !/view=history/.test(page.url())) {
+        throw new Error('未回到最近分析列表：' + bodyAfter.slice(0, 180));
+      }
+      globalThis.__func02406 = { taskHint };
+  - note: 2、该任务状态为「处理中」
+    assert: |-
+      if (!globalThis.__func02406) throw new Error('前置：未完成稍后查看');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const hint = globalThis.__func02406.taskHint;
+      const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+      const n = await main().locator(rowSel).count();
+      if (!n) throw new Error('最近分析列表无行');
+      let targetRow = null;
+      for (let i = 0; i < n; i++) {
+        const row = main().locator(rowSel).nth(i);
+        const txt = await row.innerText().catch(() => '');
+        if (hint && txt.includes(hint)) {
+          targetRow = row;
+          break;
+        }
+      }
+      if (!targetRow && hint) {
+        throw new Error('列表未见任务 ' + hint);
+      }
+      if (!targetRow) {
+        for (let i = 0; i < n; i++) {
+          const row = main().locator(rowSel).nth(i);
+          const txt = await row.innerText().catch(() => '');
+          if (/处理中/.test(txt) && /企业发展痛点分析/.test(txt)) {
+            targetRow = row;
+            globalThis.__func02406.taskHint = (txt.match(/RISK-\d{8}-\d{3}/) || [])[0] || hint;
+            break;
+          }
+        }
+      }
+      if (!targetRow) throw new Error('未见状态为处理中的痛点任务行');
+      const rowText = await targetRow.innerText().catch(() => '');
+      if (!/处理中/.test(rowText)) {
+        throw new Error('任务行状态非「处理中」：' + rowText.replace(/\s+/g, ' ').slice(0, 200));
+      }
+      globalThis.__func02406.targetRowIndex = await targetRow.evaluate((el) => {
+        const tr = el.closest('tr') || el;
+        return tr ? tr.rowIndex : -1;
+      }).catch(() => -1);
+  - note: 3、该行有「继续查看」
+    assert: |-
+      if (!globalThis.__func02406) throw new Error('前置：未完成稍后查看');
+      const hint = globalThis.__func02406.taskHint;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const rowSel = '.arco-table-body .arco-table-tr, tbody tr';
+      let row = null;
+      const n = await main().locator(rowSel).count();
+      for (let i = 0; i < n; i++) {
+        const r = main().locator(rowSel).nth(i);
+        const txt = await r.innerText().catch(() => '');
+        if (hint && txt.includes(hint)) {
+          row = r;
+          break;
+        }
+      }
+      if (!row) throw new Error('未定位任务行 ' + (hint || ''));
+      const cont = row.getByRole('button', { name: '继续查看', exact: true }).first();
+      await expect(cont).toBeVisible({ timeout: 8000 });
+      await expect(cont).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz entry-seed catalog_path=/enterprise/risk；goto workspace=pain-points&tab=pain-points。前置=成功结果「重新分析」或已回填「开始分析」至 view=processing。步骤=「稍后查看」。机检=最近分析+该行「处理中」+「继续查看」。无成功可恢复→ENV-PAIN-NO-SUCCESS-001；无过程窗/无稍后查看→ENV-PAIN-PROCESS-WINDOW-001；篮空→ENV-PAIN-BASKET-EMPTY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,219 @@
+id: FUNC-02118
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02118
+priority: P0
+title: 同口径雷达三维度与双对象图例
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已进入「多城市横向对标」且结果已出现（脚本自含选链并切对标 Tab）
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  radar_card: '[data-testid="szstatus-city-radar"]'
+  radar_title: 同口径多指标雷达对比
+  object_b: '[data-testid="szstatus-radar-object-b"]'
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 选链后切对标 Tab；阅读同口径雷达维度与图例（判定在 expect）
+expect:
+  - note: 「同口径多指标雷达对比」雷达区已渲染（comparableMetricCount≥3 时展示）
+    assert: |-
+      const installCityBenchmarkHook = async () => {
+        await page.evaluate(() => {
+          window.__GKX_QA_SZ_CITY_BENCH__ = null;
+          if (window.__GKX_QA_SZ_FETCH_BENCH_PATCHED__) return;
+          window.__GKX_QA_SZ_FETCH_BENCH_PATCHED__ = true;
+          const orig = window.fetch.bind(window);
+          window.fetch = async (...args) => {
+            const res = await orig(...args);
+            const url = String(args[0] ?? '');
+            if (url.includes('sz-status/city-benchmark')) {
+              try {
+                const j = await res.clone().json();
+                const payload = j?.data ?? j;
+                const dimensions = (payload?.dimensions ?? [])
+                  .filter((d) => d && d.available && d.key !== 'average_business_power')
+                  .map((d) => String(d.label || '').trim())
+                  .filter(Boolean);
+                window.__GKX_QA_SZ_CITY_BENCH__ = {
+                  dimensions,
+                  left: payload?.radar_pair?.left?.object_name ?? '',
+                  right: payload?.radar_pair?.right?.object_name ?? '',
+                };
+              } catch (e) {}
+            }
+            return res;
+          };
+        });
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      await installCityBenchmarkHook();
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      const radar = page.locator('[data-testid="szstatus-city-radar"]');
+      await expect(radar).toBeVisible({ timeout: 15000 });
+      await expect(radar.getByText('同口径多指标雷达对比', { exact: true })).toBeVisible({ timeout: 8000 });
+  - note: 雷达含平均技术力、企业密度、产业链完整度三个维度（不含平均商业力）
+    assert: |-
+      const bench = page.locator('[data-testid="szstatus-city-benchmark"]');
+      await expect(bench).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('[data-testid="szstatus-city-radar"] canvas').first()).toBeVisible({ timeout: 8000 });
+      const dims = ['平均技术力', '企业密度', '产业链完整度'];
+      for (const d of dims) {
+        await expect(bench.getByText(d, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+      const radarTxt = ((await page.locator('[data-testid="szstatus-city-radar"]').innerText()) || '').replace(/\s+/g, ' ');
+      if (radarTxt.includes('平均商业力')) {
+        throw new Error('雷达卡片文案不应含平均商业力（雷达仅三轴）');
+      }
+      const hookDims = await page.evaluate(() => (window.__GKX_QA_SZ_CITY_BENCH__?.dimensions || []));
+      if (hookDims.length) {
+        const missing = dims.filter((d) => !hookDims.includes(d));
+        if (missing.length) throw new Error('city-benchmark API 维度缺：' + missing.join('、'));
+        if (hookDims.includes('平均商业力')) throw new Error('API 雷达维度不应含平均商业力');
+      }
+  - note: 图例含深圳市（或深圳）与当前参照对象 B 的名称
+    assert: |-
+      const readLegendNames = async () =>
+        page.evaluate(() => {
+          const hook = window.__GKX_QA_SZ_CITY_BENCH__;
+          const names = [];
+          if (hook?.left) names.push(String(hook.left));
+          if (hook?.right) names.push(String(hook.right));
+          if (names.length >= 2) return { via: 'api', names };
+          const card = document.querySelector('[data-testid="szstatus-city-radar"]');
+          if (card) {
+            const ec = window.echarts;
+            if (ec?.getInstanceByDom) {
+              for (const el of card.querySelectorAll('div, canvas')) {
+                const inst = ec.getInstanceByDom(el);
+                if (!inst) continue;
+                const opt = inst.getOption() || {};
+                const series = (opt.series || []).find((s) => s && s.type === 'radar');
+                if (!series) continue;
+                const ns = (series.data || []).map((d) => String(d.name || '').trim()).filter(Boolean);
+                if (ns.length) return { via: 'echarts', names: ns };
+              }
+            }
+          }
+          return { via: 'ui', names: [] };
+        });
+      const refName = await page.evaluate(() => {
+        const root = document.querySelector('[data-testid="szstatus-radar-object-b"]');
+        if (!root) return '';
+        const view = root.querySelector('.arco-select-view-value, .arco-select-view') || root;
+        return (view.textContent || '').trim().replace(/\s+/g, ' ');
+      });
+      if (!refName) throw new Error('未读到对比对象 B 当前值');
+      const legend = await readLegendNames();
+      let names = legend.names || [];
+      if (names.length < 2) {
+        const cardText = ((await page.locator('[data-testid="szstatus-city-radar"]').innerText()) || '').replace(/\s+/g, ' ');
+        if (/深圳/.test(cardText)) names.push('深圳');
+        if (refName && cardText.includes(refName)) names.push(refName);
+      }
+      if (!names.some((n) => /深圳/.test(n))) {
+        throw new Error('雷达图例未见深圳/深圳市；via=' + legend.via + '；names=' + names.join('、'));
+      }
+      const refHit = names.some((n) => n === refName || n.includes(refName) || refName.includes(n));
+      if (!refHit) {
+        throw new Error('雷达图例未见当前参照「' + refName + '」；via=' + legend.via + '；names=' + names.join('、'));
+      }
+      await expect(page.getByText('对比对象 A', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('对比对象 B', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  30888 无 window.echarts：维度/图例优先 hook fetch sz-status/city-benchmark（对齐 FUNC-02092）；次选 echarts；维度再回退城市×指标表表头。
+  图例名为 radar_pair.object_name（现场 A=深圳、B=全国/NATIONAL，用例「深圳市」按 D1 接受「深圳」）。
+  选链/对标 Tab 对齐 FUNC-02117；30888 深链 enterprise-center 前缀。须先关对比篮。B 档零 allow_skip。禁止 50892。

@@ -1,0 +1,78 @@
+id: FUNC-01413
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01413
+priority: P0
+title: 条件筛选推荐统一判定模型展示三项维度及支撑因子
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  stack: recruit-tab-stack
+  model_heading: 文案「统一判定模型」
+  dim_tech: 技术匹配度
+  dim_growth: 成长性
+  dim_region: 区域适配性
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 进入条件筛选推荐；统一判定模型三项与支撑因子在 expect 判定
+expect:
+  - note: 1、条件筛选推荐页展示「统一判定模型」及技术匹配度、成长性、区域适配性三项
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
+      };
+      await dismissBasket();
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const body = await page.locator('body').innerText();
+      if (!/统一判定模型/.test(body)) {
+        throw new Error('条件区未见「统一判定模型」，url=' + page.url());
+      }
+      for (const dim of ['技术匹配度', '成长性', '区域适配性']) {
+        await expect(page.getByText(dim, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 2、每项下方有对应支撑因子说明（产业/成长/区域三类关键词）
+    assert: |-
+      const body = await page.locator('body').innerText();
+      const checks = [
+        { dim: '技术匹配度', hints: ['支撑因子', '产业相关度', '产业链'] },
+        { dim: '成长性', hints: ['支撑因子', '营收', '成长'] },
+        { dim: '区域适配性', hints: ['支撑因子', '政策', '生态'] },
+      ];
+      for (const { dim, hints } of checks) {
+        const idx = body.indexOf(dim);
+        if (idx < 0) throw new Error(`正文未见维度「${dim}」`);
+        const slice = body.slice(idx, idx + 220);
+        for (const h of hints) {
+          if (!slice.includes(h)) {
+            throw new Error(`「${dim}」附近未见支撑因子关键词「${h}」；片段=${slice.replace(/\s+/g, ' ').slice(0, 120)}`);
+          }
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/attraction。统一判定模型为条件区静态展示（testdata model_chips）；支撑因子文案以 2026-10-14 env-gate 实勘为准。登录与关评审由 runner 会话前置。

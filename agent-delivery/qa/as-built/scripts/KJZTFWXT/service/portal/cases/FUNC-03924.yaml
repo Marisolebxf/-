@@ -1,0 +1,63 @@
+id: FUNC-03924
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03924
+priority: P0
+tier: A
+title: 概况三个分析区块标题
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况；env-gate G2 pass
+locators:
+  tab_overview: tab「全球服务机构概况」
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 打开「全球服务机构概况」页签
+expect:
+  - note: 1、三区块标题依次为数量分析 · 历年总量趋势、类型分析 · 机构类型占比、规模分析 · 人员规模分布
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/overview SPA404，无法验概况三区块标题 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await expect(tablist).toBeVisible({ timeout: 8000 });
+      const overviewTab = tablist.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      const aria = await overviewTab.getAttribute('aria-selected');
+      const cls = (await overviewTab.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        await overviewTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const titles = ['数量分析 · 历年总量趋势', '类型分析 · 机构类型占比', '规模分析 · 人员规模分布'];
+      const tops = [];
+      for (const t of titles) {
+        const h = page.getByRole('heading', { name: t, exact: true }).first();
+        await expect(h).toBeVisible({ timeout: 8000 });
+        const box = await h.boundingBox();
+        if (!box) throw new Error('区块标题不可见: ' + t);
+        tops.push(box.y);
+      }
+      for (let i = 1; i < tops.length; i++) {
+        if (tops[i] <= tops[i - 1]) throw new Error('三区块标题自上而下顺序不符用例「依次为」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  三区块为 heading 级标题（scout-deep-overview）；步骤显式确保 tab「全球服务机构概况」选中（已选中则不重复点）。
+  goto /service-portal/overview（catalog default_landing）。对比篮挡主区时先关。
+  edu.itic-sci.com/tts/svcz 2026-10-21 实跑 overview SPA404 → ENV-EDU-TTS-SVCZ-404-001（同 FUNC-01306）。

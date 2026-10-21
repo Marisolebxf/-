@@ -1,0 +1,215 @@
+id: FUNC-02210
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02210
+priority: P0
+title: 主流程-恢复结果（条件筛选起源）
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 最近分析有条件筛选且已完成的任务
+locators:
+  recent_tab: tab「最近分析」
+  restore_button: button「恢复结果」
+  result_title: 培育推荐分析结果
+  adjust_btn: button「调整分析条件」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 最近分析→已完成条件筛选行点「恢复结果」；结果标题与条件摘要在 expect 判定
+expect:
+  - note: 1、出现「培育推荐分析结果」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部产业类别"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const historyDeepLink = async () => {
+        await page.goto(
+          toUrl('/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=history'),
+          { waitUntil: 'domcontentloaded' },
+        );
+        await page.waitForTimeout(1200);
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady().catch(() => {});
+        if (await hasHistoryTab()) {
+          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+          if ((await tab.count()) < 1) {
+            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+            await expect(legacy).toBeVisible({ timeout: 12000 });
+            await legacy.click({ timeout: 8000 });
+          } else {
+            await expect(tab).toBeVisible({ timeout: 12000 });
+            await tab.click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(900);
+          return;
+        }
+        await historyDeepLink();
+        if (!(await hasHistoryTab()) && !/培育推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
+          throw new Error(
+            '环境闸门 ENV-CULTIVATE-NO-HISTORY-TAB-001：现场培育页无「最近分析」Tab/深链，无法自动化本用例',
+          );
+        }
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/培育推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+      };
+      const pickCompletedFilterRow = async () => {
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        if (n < 1) return null;
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) {
+            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          }
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (!txt || !/条件筛选/.test(txt)) continue;
+          if (/候选工作台/.test(txt) && !/条件筛选/.test(txt)) continue;
+          let summary = '';
+          const m = txt.match(/条件筛选\s*[·•]\s*([^\n]+)/);
+          if (m) summary = m[1].trim();
+          else {
+            const parts = txt.split(/\s+/).filter(Boolean);
+            const idx = parts.findIndex((p) => p === '条件筛选');
+            if (idx >= 0 && parts[idx + 1]) summary = parts.slice(idx + 1, idx + 6).join(' ');
+          }
+          return { btn, rowText: txt.replace(/\s+/g, ' ').trim(), summary };
+        }
+        return null;
+      };
+      const waitResultAfterRestore = async (timeoutMs = 60000) => {
+        const t0 = Date.now();
+        let last = '';
+        while (Date.now() - t0 < timeoutMs) {
+          await page.waitForTimeout(500);
+          last = await stack().innerText().catch(() => '');
+          if (/培育推荐分析结果/.test(last) && (/共分析|本次筛选|排名|搜索企业名称/.test(last) || page.url().includes('analysis_view=result'))) {
+            return last;
+          }
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last)) {
+            throw new Error('ENV-CULTIVATE-ANALYSIS-FAIL-001');
+          }
+        }
+        throw new Error('点击恢复结果后未打开「培育推荐分析结果」，url=' + page.url() + ' body=' + last.slice(0, 220));
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/enterprise\/attraction/);
+      await expect(page).toHaveURL(/workspace=cultivation/);
+      await openRecentTab();
+      await waitHistoryShell();
+      const picked = await pickCompletedFilterRow();
+      if (!picked) {
+        throw new Error(
+          '环境闸门 ENV-CULTIVATE-NO-SUCCESS-FILTER-001：最近分析无「已完成」的条件筛选任务可「恢复结果」（前置 1 不满足）',
+        );
+      }
+      globalThis.__func02210 = { summary: picked.summary, rowText: picked.rowText };
+      await picked.btn.scrollIntoViewIfNeeded();
+      await picked.btn.click({ timeout: 15000 });
+      let body;
+      try {
+        body = await waitResultAfterRestore();
+      } catch (e) {
+        const msg = String(e.message || e);
+        if (msg.includes('ENV-CULTIVATE-ANALYSIS-FAIL-001')) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：恢复结果未到达成功态（与 02188/02196 同源 D4）');
+        }
+        throw e;
+      }
+      globalThis.__func02210.body = body;
+      await expect(stack().getByText('培育推荐分析结果').first()).toBeVisible({ timeout: 10000 });
+  - note: 2、有「调整分析条件」
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const ctx = globalThis.__func02210 || {};
+      if (!ctx.body && !/培育推荐分析结果/.test(await stack().innerText().catch(() => ''))) {
+        throw new Error('前置：未打开培育推荐分析结果');
+      }
+      const adjust = stack().getByRole('button', { name: '调整分析条件' }).first();
+      if (!(await adjust.count())) {
+        const pageBtn = page.getByRole('button', { name: '调整分析条件' }).first();
+        await expect(pageBtn).toBeVisible({ timeout: 8000 });
+      } else {
+        await expect(adjust).toBeVisible({ timeout: 8000 });
+      }
+  - note: 3、本次筛选与该行条件摘要相符
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const ctx = globalThis.__func02210 || {};
+      const body = (await stack().innerText().catch(() => '')) || ctx.body || '';
+      if (!/本次筛选/.test(body)) throw new Error('成功结果未见「本次筛选」摘要');
+      const filterLine = (body.match(/本次筛选[：:]\s*([^\n]+)/) || [])[1]?.trim() || '';
+      if (!filterLine) throw new Error('未解析到本次筛选摘要行');
+      const rowSummary = (ctx.summary || ctx.rowText || '').replace(/\s+/g, ' ').trim();
+      if (!rowSummary) throw new Error('缺少最近分析行条件摘要（上一步未写入 globalThis.__func02210）');
+      const raw = rowSummary.includes('条件筛选') ? (rowSummary.match(/条件筛选\s*[·•]\s*([^|]+)/) || [])[1]?.trim() || rowSummary : rowSummary;
+      const tokens = raw
+        .split(/[/、,，]/)
+        .map((s) => s.trim())
+        .filter((s) => s.length >= 2 && s !== '—' && s !== '条件筛选');
+      if (tokens.length < 1) {
+        throw new Error('无法从条件摘要解析可比 token：' + rowSummary.slice(0, 120));
+      }
+      const decode = {
+        AI001: '人工智能',
+        IC001: '集成电路',
+        BIO001: '生物医药',
+      };
+      const expand = (tok) => {
+        const out = [tok];
+        if (decode[tok]) out.push(decode[tok]);
+        return out;
+      };
+      const missing = [];
+      for (const tok of tokens) {
+        const alts = expand(tok);
+        if (!alts.some((a) => a.length >= 2 && filterLine.includes(a))) missing.push(tok);
+      }
+      if (missing.length) {
+        throw new Error(
+          '本次筛选与最近分析条件摘要不符；缺 token=' +
+            missing.join('、') +
+            '；摘要=' +
+            rowSummary.slice(0, 100) +
+            '；本次筛选=' +
+            filterLine.slice(0, 120),
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/attraction + workspace=cultivation&recommendation_tab=cultivation（步骤=最近分析 Tab 或 entry=history 兜底→条件筛选行「恢复结果」，按钮仅 success 行出现）。机检=培育推荐分析结果+「调整分析条件」+本次筛选与行内条件摘要 token 互证（D2·AI001 等编码可映射汉字）。D4·2026-10-20 rewrite-FUNC-02210 svcz 机跑 blocked·ENV-CULTIVATE-NO-SUCCESS-FILTER-001（最近分析无 success 条件筛选，零「恢复结果」；与 02188/02196 同源）。无 Tab→ENV-CULTIVATE-NO-HISTORY-TAB-001。登录与关评审由 runner 前置。B 档零 allow_skip。

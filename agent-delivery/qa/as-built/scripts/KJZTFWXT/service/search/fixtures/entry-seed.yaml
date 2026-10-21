@@ -1,0 +1,16 @@
+# 服务机构查询入口 seed（重写波路由闸门）
+# 真源：catalog/KJZTFWXT.yaml id=svc-search
+
+entry_id: svc-search
+catalog_path: /service-center/search
+menu_path: [产业服务链分析, 服务机构查询]
+menu_leaf: 服务机构查询
+# edu/tts/svcz 下 /service-portal/overview 常 SPA404；侧栏 sibling 用产业链「产业查询」页
+sibling_for_sidebar_entry: /industry-center/search
+
+forbidden_paths: []
+
+route_gate:
+  - fixtures/testdata.yaml 的 route 必须等于 catalog_path
+  - 侧栏进入：goto sibling_for_sidebar_entry，再点 menu_leaf；waitForURL 对 catalog_path
+  - 探针 URL 与 catalog 不一致时只记 as_built_note，禁止改 goto 目标

@@ -1,0 +1,60 @@
+id: FUNC-01145
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01145
+priority: P0
+title: 智能检索输入区构成与占位提示正确
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页；当前为「智能检索」Tab（默认）
+locators:
+  smart_tab: .enterprise-search-mode-tabs [role=tab]「智能检索」
+  search_input: textbox placeholder 含「输入产业、产业链、链位方向或同义词」
+  search_btn: button「搜索」（class 含 arco-input-search-btn）
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 核对智能检索 Tab 默认态下输入区构成、占位与搜索按钮
+expect:
+  - note: 默认选中「智能检索」Tab
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const smart = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(0);
+      await expect(smart).toBeVisible({ timeout: 10000 });
+      const aria = await smart.getAttribute('aria-selected');
+      const cls = (await smart.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('默认未选中智能检索 Tab');
+      }
+  - note: 输入区含检索框，占位含四类检索对象与示例词「光刻」「低空交通」
+    assert: |-
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await expect(input).toBeEnabled();
+      const ph = (await input.getAttribute('placeholder')) || '';
+      const need = ['产业', '产业链', '链位方向', '同义词', '光刻', '低空交通'];
+      const miss = need.filter((k) => !ph.includes(k));
+      if (miss.length) {
+        throw new Error('占位缺关键词 ' + miss.join(',') + '；实际=' + ph);
+      }
+  - note: 「搜索」按钮可见可点且为 arco-input-search-btn
+    assert: |-
+      const btn = page.getByRole('button', { name: '搜索', exact: true });
+      await expect(btn).toBeVisible({ timeout: 8000 });
+      await expect(btn).toBeEnabled();
+      const cls = (await btn.getAttribute('class')) || '';
+      if (!/arco-input-search-btn/.test(cls)) {
+        throw new Error('搜索按钮缺 arco-input-search-btn: ' + cls);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 占位原文=testdata smart_search.placeholder（弯引号示例「光刻」「低空交通」）；四类对象=产业/产业链/链位方向/同义词。搜索触发归 FUNC-01147。路由 catalog_path /industry-center/search。对比篮遮挡时 dismiss。登录与关内部评审由 runner 前置。A 档零 allow_skip。

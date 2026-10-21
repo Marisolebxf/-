@@ -1,0 +1,73 @@
+id: FUNC-00476
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00476
+priority: P1
+title: 主查询零命中空态提供纠错动作且不推推荐
+story: US-E1-SCH-08
+entry_id: ent-search
+tier: B
+preconditions:
+  - 可构造必无命中的关键词（fixtures keyword_no_hit）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」（exact）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: ZZQXNOHIT99999xyz
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 主查询零命中空态
+    timeout_ms: 3000
+expect:
+  - note: 空态提供改词、清空条件、打开高级筛选等纠错动作之一
+    assert: |-
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const main = page.locator('main');
+      const emptyTitle = main.getByText('未找到匹配企业').first();
+      const emptyLegacy = main.getByText(/未命中结果/).first();
+      const titleOk = (await emptyTitle.isVisible().catch(() => false)) || (await emptyLegacy.isVisible().catch(() => false));
+      if (!titleOk) throw new Error('主查询零命中空态标题未出现（未找到匹配企业/未命中结果）');
+      const mainText = (await main.innerText()).replace(/\s+/g, ' ');
+      const hasGuide = /高级筛选|调整条件|切换高级筛选|放宽筛选|改词|多字段/.test(mainText);
+      if (!hasGuide) throw new Error('空态未见改词或高级筛选引导文案');
+      await expect(page.getByRole('button', { name: '清空条件' }).first()).toBeVisible({ timeout: 12000 });
+      const advBtn = page.getByRole('button', { name: '打开高级筛选' });
+      const relaxBtn = page.getByRole('button', { name: '放宽筛选' });
+      const hasAdvBtn = (await advBtn.count()) > 0 && (await advBtn.first().isVisible().catch(() => false));
+      const hasRelaxBtn = (await relaxBtn.count()) > 0 && (await relaxBtn.first().isVisible().catch(() => false));
+      if (!hasAdvBtn && !hasRelaxBtn && !/高级筛选/.test(mainText)) {
+        throw new Error('空态缺少打开高级筛选/放宽筛选按钮且无高级筛选文案引导');
+      }
+      if (await page.getByText('智能搜索结果', { exact: true }).isVisible().catch(() => false)) {
+        const hitPos = main.getByText(/命中\s*[1-9]\d*\s*家企业/);
+        if ((await hitPos.count()) > 0 && (await hitPos.first().isVisible().catch(() => false))) {
+          throw new Error('必无命中词仍出现非零命中结果摘要');
+        }
+      }
+      const profile = main.getByRole('button', { name: '查看画像' });
+      if ((await profile.count()) > 0 && (await profile.first().isVisible().catch(() => false))) {
+        throw new Error('零命中空态下仍可见企业结果卡');
+      }
+  - note: 空态不出现「推荐企业」分区
+    assert: |-
+      const main = page.locator('main');
+      const rec = main.getByText('推荐企业', { exact: true });
+      if ((await rec.count()) > 0 && (await rec.first().isVisible().catch(() => false))) {
+        throw new Error('主查询零命中空态不应出现「推荐企业」分区');
+      }
+      await expect(rec).toHaveCount(0);
+      const profileInEmpty = main.locator('section').filter({ hasText: /未命中结果/ }).getByRole('button', { name: '查看画像' });
+      if ((await profileInEmpty.count()) > 0 && (await profileInEmpty.first().isVisible().catch(() => false))) {
+        throw new Error('零命中空态下不应展示推荐式企业卡「查看画像」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。必无命中词 fixtures keyword_no_hit。现场主查询零命中为「未找到匹配企业」+ 多字段提示含「可改用高级筛选」+「清空条件」「放宽筛选」（用例册摘要亦记「打开高级筛选」变体）。无「智能搜索结果」摘要卡，与 FUNC-00472 局部再筛空态区分。若空词反而出列表记数据问题不判通过。

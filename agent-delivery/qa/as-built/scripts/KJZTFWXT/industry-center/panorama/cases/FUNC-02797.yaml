@@ -1,0 +1,78 @@
+id: FUNC-02797
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02797
+priority: P1
+title: 环节详情的关联企业页签为空态原文
+story: US-CHAIN-PANORAMA-03
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 已打开「集成电路设计」详情
+locators:
+  structure_list: '[aria-label="产业链结构列表"]'
+  inline_detail: '[data-testid="panorama-inline-detail"]'
+  enterprise_tab: 详情 a-tabs「关联企业」
+  empty_enterprise: .arco-empty-description「暂无已发布企业」
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 结构列表点「集成电路设计」打开详情（前置在 expect assert 内）
+expect:
+  - note: 前置：已打开「集成电路设计」详情
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      await page.getByText('结构列表', { exact: true }).click();
+      await page.waitForTimeout(600);
+      const list = page.locator('[aria-label="产业链结构列表"]');
+      await expect(list).toBeVisible({ timeout: 10000 });
+      const icBtn = list.locator('.industry-topic-structure-list__nodes button').filter({ hasText: '集成电路设计' });
+      await expect(icBtn).toHaveCount(1, { timeout: 8000 });
+      await icBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail).toBeVisible({ timeout: 10000 });
+      const titleH3 = detail.locator('.industry-overview-object-panel__heading h3');
+      await expect(titleH3).toHaveText('集成电路设计', { timeout: 8000 });
+      globalThis.__func02797_ready = true;
+  - note: 1、点击「关联企业」后该页签展示「暂无已发布企业」
+    assert: |-
+      if (!globalThis.__func02797_ready) throw new Error('前置：未打开「集成电路设计」详情');
+      const detail = page.locator('[data-testid="panorama-inline-detail"]');
+      await expect(detail).toBeVisible({ timeout: 8000 });
+      const entTab = detail.locator('.arco-tabs-tab').filter({ hasText: /^关联企业$/ }).first();
+      await expect(entTab).toBeVisible({ timeout: 8000 });
+      await entTab.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const tabCls = (await entTab.getAttribute('class')) || '';
+      if (!tabCls.includes('arco-tabs-tab-active')) {
+        throw new Error('步骤：「关联企业」页签未选中');
+      }
+      const path = detail.locator('.industry-panorama-drill-path[aria-label="节点深度下钻路径"]');
+      await expect(path).toBeVisible({ timeout: 8000 });
+      const pathText = ((await path.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/关联企业/.test(pathText)) {
+        throw new Error('下钻路径末项应为「关联企业」，现场: ' + pathText);
+      }
+      const empty = detail.locator('.arco-empty-description').filter({ hasText: '暂无已发布企业' });
+      await expect(empty.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；结构列表点环节打开 data-testid=panorama-inline-detail（IndustryPanoramaDetail.vue panorama 变体）。
+  三组 subject a-tabs；关联企业 pane 空态 a-empty description=暂无已发布企业（scout-deep3 同口径）。breadcrumb industry-panorama-drill-path 末项随 subjectTab。
+  对比篮可见才关。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；空态断言仍依用例册 02797。

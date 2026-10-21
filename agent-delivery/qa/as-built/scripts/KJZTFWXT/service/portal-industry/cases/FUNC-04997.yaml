@@ -1,0 +1,86 @@
+id: FUNC-04997
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04997
+priority: P0
+tier: B
+title: 产业下拉 15 个产业集群
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已打开服务机构产业分布
+locators:
+  industry: .svc-portal-filter .arco-select-view（placeholder 全部产业）
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 展开产业下拉
+expect:
+  - note: 1、选项共 15 个，名称见附录 C
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|全部产业/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法展开产业下拉 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const expected = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const filter = page.locator('.svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 8000 });
+      const ind = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
+      await expect(ind).toBeVisible({ timeout: 8000 });
+      await ind.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 8000 });
+      const n = await opts.count();
+      if (n !== 15) {
+        const preview = [];
+        for (let i = 0; i < Math.min(n, 20); i++) {
+          preview.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+        }
+        throw new Error('产业下拉选项应为 15 个，实际 count=' + n + ' labels=' + JSON.stringify(preview));
+      }
+      const texts = [];
+      for (let i = 0; i < 15; i++) {
+        texts.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      for (let i = 0; i < expected.length; i++) {
+        if (texts[i] !== expected[i]) {
+          throw new Error(
+            '产业下拉选项顺序/文案不符：第' + (i + 1) + '项期望「' + expected[i] + '」实际「' + texts[i] + '」；全集=' + JSON.stringify(texts),
+          );
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 entry-seed catalog_path /service-portal/industry-distribution。筛选条 .svc-portal-filter +
+  IndustryCatalogSelect（产业 placeholder「全部产业」）。15 项与用例附录 C 顺序一致。登录与关内部评审由 runner 前置。

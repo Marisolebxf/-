@@ -1,0 +1,66 @@
+id: FUNC-00938
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00938
+priority: P0
+title: 指标与权重区展示6项商业指标且默认权重和为100
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: A
+preconditions:
+  - 已进入商业力评估页
+  - 系统模板为默认加载态
+locators:
+  metrics: 市场/产品/品牌/技术合作/产业链覆盖率/关键环节参与度
+  spins: '[role=spinbutton]'
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 浏览指标与权重区；六项名称、默认权重与查看入口在 expect 内自含
+expect:
+  - note: 指标区含市场、产品、品牌、技术合作、产业链覆盖率、关键环节参与度 6 项
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      for (const n of ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度']) {
+        await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 默认权重依次为 22、16、16、14、16、16 且和为 100（用例册）；30888 D3 临时默认权重横幅下六项 as-built 16/12/12/12/12/12，已选指标合计 100%
+    assert: |-
+      await expect(page.getByText(/当前使用临时默认权重/).first()).toBeVisible({ timeout: 8000 });
+      const six = [
+        ['市场', '16'], ['产品', '12'], ['品牌', '12'],
+        ['技术合作', '12'], ['产业链覆盖率', '12'], ['关键环节参与度', '12'],
+      ];
+      const vals = [];
+      for (const [name, exp] of six) {
+        const cb = page.locator(`main [aria-label="选择指标：${name}"]`);
+        await expect(cb).toBeVisible({ timeout: 8000 });
+        const row = cb.locator('xpath=ancestor::tr[1]');
+        const spin = row.locator('[role=spinbutton]');
+        await expect(spin).toBeVisible({ timeout: 8000 });
+        const v = String(await spin.inputValue()).replace(/%$/, '');
+        vals.push(v);
+        if (v !== exp) throw new Error(name + ' as-built 权重 ' + v + ' ≠ ' + exp);
+      }
+      await expect(page.locator('main').getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+  - note: 每项带权重调节钮与「查看」明细入口
+    assert: |-
+      const six = ['市场', '产品', '品牌', '技术合作', '产业链覆盖率', '关键环节参与度'];
+      for (const name of six) {
+        const row = page.locator(`main [aria-label="选择指标：${name}"]`).locator('xpath=ancestor::tr[1]');
+        const steps = row.locator('.arco-input-number-step-button');
+        if (await steps.count() < 2) throw new Error(name + ' 调节钮不足: ' + await steps.count());
+        await expect(row.getByRole('button', { name: '查看' })).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D3·30888 横幅「当前使用临时默认权重，待甲方确认」；系统模板 as-built「系统商业力模板 v1.0」。表内除商业力六维外含年营收/利润率等经营指标行（本条仍按 aria-label 读六维行权重）。用例册六项预设 22/16/16/14/16/16；现场临时默认 16/12/12/12/12/12（六维之和 76，与经营指标合计仍 100%）。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。接旧 P0-04 / 用例册 00938。

@@ -1,0 +1,100 @@
+id: FUNC-02612
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02612
+priority: P1
+title: 选定产业后产业链可选但未选链时加入对比篮仍禁用
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景
+locators:
+  cluster: 'span[aria-label="集群"]'
+  industry: 'span[aria-label="产业"]'
+  chain: .industry-overview-chain-select
+  chain_popup: .arco-trigger-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 选「海洋产业」与「海洋先进制造与高端服务」后展开产业链选框；三项预期在 expect 判定
+expect:
+  - note: 步骤 1~2：选择「海洋产业」；选择「海洋先进制造与高端服务」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      let popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      let clusterOpt = popup.locator('.arco-select-option').filter({ hasText: '海洋产业' });
+      await expect(clusterOpt.first()).toBeVisible({ timeout: 8000 });
+      await clusterOpt.first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const clusterTitle = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      if (clusterTitle !== '海洋产业') {
+        throw new Error('集群应选中「海洋产业」，实际 title=' + clusterTitle);
+      }
+      await expect(page.locator('span[aria-label="产业"]')).toBeVisible({ timeout: 8000 });
+      await page.locator('span[aria-label="产业"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const indOpt = popup.locator('.arco-select-option').filter({ hasText: '海洋先进制造与高端服务' });
+      await expect(indOpt.first()).toBeVisible({ timeout: 8000 });
+      await indOpt.first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const indTitle = await page.locator('span[aria-label="产业"]').getAttribute('title');
+      if (indTitle !== '海洋先进制造与高端服务') {
+        throw new Error('产业应选中「海洋先进制造与高端服务」，实际 title=' + indTitle);
+      }
+      const chain = page.locator('.industry-overview-chain-select');
+      await expect(chain).toBeVisible({ timeout: 8000 });
+      const disabled = await chain.evaluate((el) => el.className.includes('disabled'));
+      if (disabled) {
+        throw new Error('选定产业后产业链应解除禁用');
+      }
+  - note: 2、占位在未选中前为「可选产业链」
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select');
+      const chainTitle = (await chain.getAttribute('title')) || '';
+      if (chainTitle.trim()) {
+        throw new Error('未选产业链前 title 应为空，实际 title=' + chainTitle);
+      }
+      const chainPh = await chain.locator('input').getAttribute('placeholder');
+      if (chainPh !== '可选产业链') {
+        throw new Error('产业链占位应为「可选产业链」，实际 placeholder=' + chainPh);
+      }
+  - note: 步骤 3 / 1、产业链选框已展开并出现选项
+    assert: |-
+      const chain = page.locator('.industry-overview-chain-select');
+      await chain.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opts = popup.locator('.arco-select-option');
+      const count = await opts.count();
+      if (count < 1) {
+        throw new Error('展开产业链选框后应出现选项，实际 ' + count + ' 项');
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+  - note: 3、「加入对比篮」仍为禁用
+    assert: |-
+      const join = page.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(join).toBeVisible({ timeout: 8000 });
+      await expect(join).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例步骤：集群 aria-label 集群、产业 aria-label 产业、产业链 .industry-overview-chain-select（02608/02611 同口径）。
+  选「海洋产业」+「海洋先进制造与高端服务」后产业链解除 .disabled，占位仍为「可选产业链」且未选链 title 为空；可展开见选项（本条不数个数，见 02592）。
+  未选产业链时「加入对比篮」disabled（与 02610 同型，02610 仅选集群未选产业）。路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

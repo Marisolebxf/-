@@ -1,0 +1,119 @@
+id: FUNC-03589
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03589
+priority: P1
+title: 展开产业链分析后下级菜单与附录 A 一致（10 项）
+entry_id: chain-maintenance
+tier: B
+preconditions:
+  - 已登录；左侧「产业链分析」为收起
+locators:
+  menu_group: 侧栏「产业链分析」分组标题
+  chain_submenu: 产业链分析下级 .arco-menu-item
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 收起态下点击「产业链分析」展开；子项清单在 expect 判定
+expect:
+  - note: 1、下级菜单共 10 项，名称与顺序同附录 A（不含维护管理）
+    assert: |-
+      const APPENDIX_A = [
+        '专题全景',
+        '产业查询',
+        '产业链全景图谱',
+        '产业周期分析',
+        '区域产业指数评价',
+        '产业关键环节识别',
+        '产业瓶颈堵点识别',
+        '深圳产业情况分析对比',
+        '深圳产业发展分析',
+        '区域产业竞争力评价',
+      ];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const chainHeader = () =>
+        page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+      const menuState = async () =>
+        page.evaluate(() => {
+          const headers = [...document.querySelectorAll('.arco-menu-inline-header, .arco-menu-submenu-title')];
+          const header = headers.find((h) => (h.innerText || '').trim().includes('产业链分析'));
+          if (!header) return { error: '未找到左侧「产业链分析」' };
+          const root = header.closest('.arco-menu-inline');
+          if (!root) return { error: '产业链分析菜单容器异常' };
+          const content = root.querySelector('.arco-menu-inline-content');
+          const expanded =
+            !!content &&
+            window.getComputedStyle(content).display !== 'none' &&
+            content.querySelector('.arco-menu-item');
+          const labels = expanded
+            ? [...content.querySelectorAll(':scope > .arco-menu-item')].map((el) => {
+                const inner = el.querySelector('.arco-menu-title, .arco-menu-item-inner') || el;
+                return (inner.innerText || el.innerText || '').trim().replace(/\s+/g, ' ');
+              })
+            : [];
+          return { expanded, labels };
+        });
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !(await chainHeader().count());
+      };
+      const ensureShell = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链侧栏壳 SPA 404 ' + page.url());
+        }
+        if (!(await chainHeader().count())) {
+          throw new Error('未见侧栏「产业链分析」分组 ' + page.url());
+        }
+      };
+      await ensureShell();
+      let state = await menuState();
+      if (state.error) throw new Error(state.error);
+      if (state.expanded) {
+        await chainHeader().first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        state = await menuState();
+        if (state.error) throw new Error(state.error);
+        if (state.expanded) {
+          throw new Error('前置：无法将「产业链分析」收起到收起态');
+        }
+      }
+      await chainHeader().first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      state = await menuState();
+      if (state.error) throw new Error(state.error);
+      if (!state.expanded) throw new Error('点击后「产业链分析」未展开');
+      const labels = state.labels.filter((t) => t && t !== '产业链分析');
+      if (labels.includes('维护管理')) {
+        throw new Error('附录 A 不含「维护管理」，现场侧栏却可见：' + labels.join('、'));
+      }
+      if (labels.length !== APPENDIX_A.length) {
+        throw new Error(
+          '下级菜单项数为 ' + labels.length + '，预期 ' + APPENDIX_A.length + '；实际=' + (labels.join('、') || '(空)'),
+        );
+      }
+      for (let i = 0; i < APPENDIX_A.length; i++) {
+        if (labels[i] !== APPENDIX_A[i]) {
+          throw new Error(
+            '第 ' +
+              (i + 1) +
+              ' 项应为「' +
+              APPENDIX_A[i] +
+              '」，实际「' +
+              (labels[i] || '(无)') +
+              '」；全套：' +
+              labels.join('、'),
+          );
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: 03589 只验侧栏「产业链分析」展开后 10 项子菜单（用例附录 A）；不含维护管理。不 goto /industry-center/maintenance（03588 验无权拦截）。侧栏壳 goto /industry-center/search（对齐 FUNC-02588）。edu 产业链路由 404 时 ENV-EDU-TTS-SVCZ-404-001 → blocked。B 档零 allow_skip。

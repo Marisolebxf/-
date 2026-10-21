@@ -1,0 +1,107 @@
+id: FUNC-02708
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02708
+priority: P0
+title: 检索结果产业分类下拉选项个数与名称正确
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已搜出检索结果
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  result_tools: .industry-search-result-tools
+  refine_classification: 结果内筛选区 placeholder「产业分类」的 Arco Select
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 智能检索出结果后展开「产业分类」；选项个数与名称在 expect 判定
+expect:
+  - note: 前置：已搜出检索结果（智能检索「光刻」）
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      await expect(region.locator('.industry-search-result-tools')).toBeVisible({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const text = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(text) && /共\s*0\s*条/.test(text)) {
+        throw new Error('前置：光刻检索为空，无法验结果内产业分类');
+      }
+      let n = null;
+      const m1 = text.match(/共\s*(\d+)\s*条/);
+      const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
+      if (m1) n = parseInt(m1[1], 10);
+      else if (m2) n = parseInt(m2[1], 10);
+      if (n === null || Number.isNaN(n) || n < 1) {
+        throw new Error('前置：未能解析大于 0 的结果条数；片段=' + text.slice(0, 160));
+      }
+      globalThis.__func02708_hasResults = true;
+  - note: 1、展开「产业分类」后选项共 15 个，名称见用例附录 A
+    assert: |-
+      if (!globalThis.__func02708_hasResults) throw new Error('前置：未搜出检索结果');
+      const want = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const tools = region.locator('.industry-search-result-tools');
+      await expect(tools).toBeVisible({ timeout: 8000 });
+      const clsSelect = tools.locator('.arco-select:has(input[placeholder="产业分类"])').first();
+      await expect(clsSelect).toBeVisible({ timeout: 8000 });
+      await clsSelect.scrollIntoViewIfNeeded();
+      await clsSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 15) {
+        throw new Error('产业分类选项应为 15 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '产业分类选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索「光刻」（testdata smart_search.keyword_primary）。
+  结果内产业分类=ResultToolbar refine classification，placeholder「产业分类」；选项来自 buildIndustrySearchConfig(catalogRecords) 去重 classification 字段。
+  15 项名称对齐用例册附录 A（02708）。选择器 scoped 在 region 内 .industry-search-result-tools，Arco Select 点法对齐 FUNC-02707（P7）。登录与关内部评审由 runner 前置。
+  2026-10-20 edu.itic-sci.com/tts/svcz 机跑：goto /industry-center/search 落 404（/login 同 404），ENV-EDU-TTS-SVCZ-404-001 → blocked；点状复勘 locators 仍依 scout/env-gate G5+fixtures。

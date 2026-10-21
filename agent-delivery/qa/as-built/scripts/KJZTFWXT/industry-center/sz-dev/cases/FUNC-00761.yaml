@@ -1,0 +1,129 @@
+id: FUNC-00761
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00761
+priority: P0
+title: 「开始分析」按钮随门禁满足状态联动门控
+entry_id: chain-sz-dev
+tier: A
+preconditions:
+  - 已登录 admin
+  - 配置为初始空态（脏会话已选产业或已绑定时再 goto 深链回占位；重置参数不清产业）
+locators:
+  start: button「开始分析」
+  industry: main .industry-catalog-select（placeholder「请选择产业」）
+  bind: main input[placeholder="请显式选择有效结构化结果"]
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 读初始态→仅选产业→绑有效对比结果，回读开始分析门控
+expect:
+  - note: 初始态「开始分析」置灰禁用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const ensureEmptyConfig = async () => {
+        const ind = page.locator('main .industry-catalog-select').filter({ has: page.locator('input[placeholder="请选择产业"]') });
+        const bindInp = page.locator('main input[placeholder="请显式选择有效结构化结果"]');
+        const hasPlaceholder = async () => {
+          if (!(await ind.count())) return false;
+          const ph = await ind.locator('input').first().getAttribute('placeholder');
+          return !!(ph && ph.includes('请选择产业'));
+        };
+        const bindEmpty = async () => {
+          if (!(await bindInp.count())) return true;
+          const viewTxt = await bindInp.first().evaluate((el) => {
+            const v = el.closest('.arco-select-view');
+            return v ? (v.innerText || '').trim() : '';
+          });
+          return !/CHAIN-/.test(viewTxt);
+        };
+        if (!(await hasPlaceholder()) || !(await bindEmpty())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1500);
+          await dismissBasket();
+        }
+        if (!(await hasPlaceholder())) {
+          throw new Error('无法回到产业未选空态（重置参数不清产业，须再 goto）');
+        }
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await dismissBasket();
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404() || !onTarget()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析 ' + page.url());
+      }
+      await ensureEmptyConfig();
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+  - note: 仅配置产业时按钮仍为禁用态
+    assert: |-
+      const ind = page.locator('main .industry-catalog-select').filter({ has: page.locator('input[placeholder="请选择产业"]') }).first();
+      await ind.locator('.arco-select-view').first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
+      await page.waitForTimeout(700);
+      await expect(ind).toContainText('新一代信息技术', { timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+  - note: 产业与有效对比结果齐备后按钮恢复可用
+    assert: |-
+      const bind = page.locator('main .arco-select-view').nth(1);
+      await bind.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
+      const n = await en.count();
+      if (n < 1) throw new Error('ENV-CHAIN-SZ-DEV-NO-VALID-BIND: 绑定下拉无有效条目，无法验门控 enabled');
+      await en.first().click();
+      await page.waitForTimeout(700);
+      const bindTxt = (await bind.innerText()).trim();
+      if (!/CHAIN-/.test(bindTxt)) throw new Error('有效绑定未回显: ' + bindTxt);
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 深链 404 时侧栏 sibling /industry-center/search 回落（同 FUNC-00756）。产业 industry-catalog-select + 绑定 main .arco-select-view nth(1)。合法组合=新一代信息技术+有效 CHAIN 绑定（testdata.bind.valid_sample）。A 档零 allow_skip。

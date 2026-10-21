@@ -1,0 +1,136 @@
+id: FUNC-01899
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01899
+priority: P1
+title: 按企业名称定位无匹配时只过滤关键经营指标对比且不新建任务
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开含多家企业的商业力评估结果（as-built：最近评估→恢复结果）
+locators:
+  hist_tab: Tab「最近评估」
+  restore_button: button「恢复结果」
+  kpi_block: 文本「关键经营指标对比」
+  locate_input: placeholder「按企业名称定位」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 结果态在「关键经营指标对比」内输入不存在的企业名；判定在 expect
+expect:
+  - note: 1、「关键经营指标对比」显示「未找到匹配企业」
+    assert: |-
+      const NO_HIT = 'ZZQXNOHIT99999xyz';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const TID_RE = /((?:DEMO-)?EVAL-\d{8}-\d{3})/;
+      const readTid = async () => {
+        const u = page.url();
+        const fromUrl = (u.match(/task_id=([^&]+)/) || [])[1] || null;
+        if (fromUrl && TID_RE.test(fromUrl)) return decodeURIComponent(fromUrl);
+        const body = await main().innerText().catch(() => '');
+        const m = body.match(/任务\s*ID[：:\s]*(DEMO-EVAL-\d{8}-\d{3}|EVAL-\d{8}-\d{3})/);
+        return m ? m[1] : null;
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const kpiBlockReady = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        const t = await main().innerText().catch(() => '');
+        return t.includes('关键经营指标对比');
+      };
+      const kpiSection = async () => {
+        let section = page.locator('section.ent-section-panel').filter({ hasText: '关键经营指标对比' });
+        if (await section.count()) return section.first();
+        return main().locator('section').filter({ hasText: '关键经营指标对比' }).first();
+      };
+      const openResultViaHistory = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+        await page.getByText('最近评估', { exact: true }).first().click({ timeout: 8000 });
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        await restore.first().waitFor({ state: 'visible', timeout: 10000 });
+        if ((await restore.count()) < 1) throw new Error('最近评估无已完成任务可「恢复结果」');
+        await restore.first().click({ timeout: 8000 });
+        const t0 = Date.now();
+        while (Date.now() - t0 < 30000) {
+          if (await kpiBlockReady()) return;
+          await page.waitForTimeout(500);
+        }
+        if (!(await kpiBlockReady())) throw new Error('恢复结果后未见关键经营指标对比：' + page.url());
+      };
+      if (!(await kpiBlockReady())) {
+        if (globalThis.__func01896_onResult || globalThis.__func01897_onResult || globalThis.__func01898_onResult) {
+          await page.waitForTimeout(500);
+        }
+        if (!(await kpiBlockReady())) await openResultViaHistory();
+      }
+      await expect(page).toHaveURL(/view=result/);
+      const tidBefore = await readTid();
+      const section = await kpiSection();
+      await section.scrollIntoViewIfNeeded();
+      await expect(section.getByText('关键经营指标对比', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      const visLine = section.getByText(/当前可见\s*\d+\s*\/\s*\d+\s*家/);
+      await expect(visLine).toBeVisible({ timeout: 12000 });
+      const beforeText = await section.innerText();
+      const loadedM = beforeText.match(/当前可见\s*(\d+)\s*\/\s*(\d+)\s*家/);
+      const loaded = loadedM ? parseInt(loadedM[2], 10) : 0;
+      if (loaded < 2) throw new Error('前置需≥2 家企业结果，当前已加载 ' + loaded);
+      const locate = section.getByPlaceholder(/按企业名称定位/);
+      if (!(await locate.count())) throw new Error('关键经营指标对比区未找到「按企业名称定位」');
+      const input = locate.first();
+      await input.scrollIntoViewIfNeeded();
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.click({ timeout: 5000 });
+      await input.fill(NO_HIT);
+      await page.waitForTimeout(800);
+      const afterText = await section.innerText();
+      if (!/未找到匹配企业/.test(afterText)) {
+        throw new Error('关键经营指标对比区未出现「未找到匹配企业」');
+      }
+      await expect(section.getByText('未找到匹配企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const visAfter = afterText.match(/当前可见\s*(\d+)\s*\/\s*(\d+)\s*家/);
+      const visible = visAfter ? parseInt(visAfter[1], 10) : -1;
+      const totalLoaded = visAfter ? parseInt(visAfter[2], 10) : loaded;
+      if (visible !== 0 || totalLoaded !== loaded) {
+        throw new Error('过滤后当前可见应为 0 / ' + loaded + '，实际：' + (visAfter ? visAfter[0] : '无'));
+      }
+      globalThis.__func01899 = { tidBefore, urlBefore: page.url(), loaded };
+  - note: 2、任务 ID 不变；3、地址仍为结果视图
+    assert: |-
+      const s = globalThis.__func01899;
+      if (!s || !s.tidBefore) throw new Error('前置：定位过滤未完成');
+      await expect(page).toHaveURL(/view=result/);
+      if (/view=processing/.test(page.url())) throw new Error('误进入过程态：' + page.url());
+      const TID_RE = /((?:DEMO-)?EVAL-\d{8}-\d{3})/;
+      const readTid = async () => {
+        const u = page.url();
+        const fromUrl = (u.match(/task_id=([^&]+)/) || [])[1] || null;
+        if (fromUrl && TID_RE.test(decodeURIComponent(fromUrl))) return decodeURIComponent(fromUrl);
+        const body = await page.locator('main.app-main').first().innerText().catch(() => '');
+        const m = body.match(/任务\s*ID[：:\s]*(DEMO-EVAL-\d{8}-\d{3}|EVAL-\d{8}-\d{3})/);
+        return m ? m[1] : null;
+      };
+      const tidAfter = await readTid();
+      if (!tidAfter) throw new Error('过滤后未见任务 ID（前=' + s.tidBefore + '）');
+      if (tidAfter !== s.tidBefore) {
+        throw new Error('任务 ID 已变化：前=' + s.tidBefore + ' 后=' + tidAfter);
+      }
+      if (!/workspace=business/.test(page.url())) throw new Error('结果视图 URL 缺 workspace=business：' + page.url());
+      const procHint = await page.getByText(/评估生成中|可视化分析过程/).first().isVisible().catch(() => false);
+      if (procHint) throw new Error('过滤后仍见过程态文案，疑似新建任务');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01899 验结果态「关键经营指标对比」内 placeholder「按企业名称定位」；输入 fixtures 风格必无命中串 ZZQXNOHIT99999xyz 后 a-empty「未找到匹配企业」+ 当前可见 0/N（N=任务快照家数不变）。不点重新分析/开始分析。单跑经最近评估→恢复结果（同 FUNC-01896）。路由 enterprise-center/evaluation。登录与关内部评审由 runner 会话前置。tier B，无 allow_skip。

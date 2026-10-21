@@ -1,0 +1,42 @@
+id: FUNC-00379
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00379
+priority: P0
+title: 侧栏进入重点企业类型分析路由与标题正确
+story: US-KEYENT-01
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 系统正常；已登录且可访问企业分析侧栏
+locators:
+  sidebar_group: 侧栏分组「企业分析」
+  sidebar_search: 侧栏 link「企业查询」
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  h1: main 内 heading「重点企业类型分析」
+  filter_region: main 内 heading「产业与企业类型筛选」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏「企业分析」下经「企业查询」展开后点「重点企业类型分析」；导航与路由断言在 expect[0] 自含
+expect:
+  - note: 地址参数含 view=type 或 workspace=type
+    assert: |-
+      await page.getByRole('link', { name: '企业查询', exact: true }).click();
+      await page.waitForURL(/\/development\/search/, { timeout: 10000 });
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const u = page.url();
+      if (!/(?:view=type|workspace=type)/.test(u)) throw new Error('URL 缺 type 参数: ' + u);
+  - note: 页面标题为「重点企业类型分析 - 科技专题服务系统」（D1·30888 document.title 恒为「科技专题服务系统」，以主区 H1 覆盖标题意图）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await expect(page.locator('main').getByRole('heading', { name: '重点企业类型分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 主区呈现类型分析筛选区（现场区块标题「产业与企业类型筛选」）
+    assert: |-
+      await expect(page.locator('main').getByRole('heading', { name: '产业与企业类型筛选', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: D1·30888 侧栏路由为 /enterprise-center/key-enterprise-analysis?workspace=type&view=type（catalog 深链 /enterprise/key-enterprise-analysis 本环境 404）。overview 仅露出「企业查询」，先点该链展开企业分析组再点「重点企业类型分析」。D1·document.title 未含页名，恒为「科技专题服务系统」；「页面标题」机检改断言 main H1「重点企业类型分析」。D2·v2 页筛选区标题为「产业与企业类型筛选」，无 section[aria-label=类型分析筛选]。

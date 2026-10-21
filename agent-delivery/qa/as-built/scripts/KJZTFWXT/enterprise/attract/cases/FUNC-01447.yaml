@@ -1,0 +1,143 @@
+id: FUNC-01447
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01447
+priority: P1
+title: 条件筛选成功结果页「导出数据」为禁用态
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录；已打开一条条件筛选的成功结果（assert 自含）
+locators:
+  export_btn: button「导出数据」
+  result_title: 招引推荐分析结果
+steps:
+  - action: goto
+    target: /
+  - action: goto
+    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 打开条件筛选成功结果页；导出禁用态在 expect 判定
+expect:
+  - note: 1、「导出数据」处于禁用状态
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const TAG = '高新技术企业';
+      const FIELD_PRIMARY = '人工智能';
+      const FIELD_FALLBACK = '新一代信息技术';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parseCounts = (text) => {
+        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
+        if (!analyzedM) return null;
+        return { analyzed: parseInt(analyzedM[1], 10) };
+      };
+      const isSuccessResult = async () => {
+        const st = stack();
+        const t = await st.innerText().catch(() => '');
+        const url = page.url();
+        const counts = parseCounts(t);
+        return (
+          counts &&
+          counts.analyzed >= 1 &&
+          ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
+        );
+      };
+      const tryRestoreCompletedFilter = async () => {
+        const byKey = page.locator('button[data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
+        const tab = (await byKey.count()) ? byKey.first() : byName.first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const st = stack();
+        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const n = await buttons.count();
+        for (let i = 0; i < n; i++) {
+          const btn = buttons.nth(i);
+          let row = btn.locator('xpath=ancestor::tr[1]');
+          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+            await btn.click({ timeout: 15000 });
+            for (let j = 0; j < 20; j++) {
+              await page.waitForTimeout(500);
+              if (await isSuccessResult()) return true;
+            }
+            return false;
+          }
+        }
+        return false;
+      };
+      const waitSuccessResult = async (rounds = 48) => {
+        const st = stack();
+        let last = '';
+        for (let i = 0; i < rounds; i++) {
+          await page.waitForTimeout(2500);
+          last = await st.innerText().catch(() => '');
+          const url = page.url();
+          if ((/招引推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
+            if (parseCounts(last)?.analyzed >= 1) return;
+          }
+          if (/任务失败|分析失败|推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
+            throw new Error('推荐分析进入失败态: ' + last.slice(0, 240));
+          }
+        }
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：无法在超时内到达成功结果以测「导出数据」禁用（30888 与 FUNC-01408/01418 同源 D4）');
+        }
+        throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
+      };
+      const openPh = async (ph) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator(`input[placeholder="${ph}"]`).first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickOption = async (text) => {
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const reachFilterSuccess = async () => {
+        if (await isSuccessResult()) return;
+        if (await tryRestoreCompletedFilter()) return;
+        await page.getByRole('tab', { name: '条件筛选推荐' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await openPh('全部企业标签');
+        await pickOption(TAG);
+        await openPh('全部行业领域');
+        const ai = page.locator(optSel).filter({ hasText: FIELD_PRIMARY });
+        if (await ai.count()) await ai.first().click({ timeout: 8000 });
+        else await page.locator(optSel).filter({ hasText: FIELD_FALLBACK }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        await waitSuccessResult();
+        await expect(stack().getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+      };
+      await dismissBasket();
+      await reachFilterSuccess();
+      const st = stack();
+      const exportBtn = st.getByRole('button', { name: '导出数据' }).first();
+      await expect(exportBtn).toBeVisible({ timeout: 10000 });
+      await expect(exportBtn).toBeDisabled({ timeout: 5000 });
+      const cls = (await exportBtn.getAttribute('class')) || '';
+      if (!/arco-btn-disabled/.test(cls)) {
+        throw new Error('导出数据按钮未见 arco-btn-disabled，class=' + cls);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 深链 /enterprise-center/attraction；前置=栈内成功态→最近分析恢复已完成条件筛选→否则高新+人工智能（或新一代信息技术）发起。成功结果页「导出数据」须 disabled + arco-btn-disabled（用例册备选·导出数据当前禁用）。D4·30888 异步卡 processing→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。

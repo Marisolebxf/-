@@ -1,0 +1,130 @@
+id: FUNC-01822
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01822
+priority: P0
+title: 回填企业后数据覆盖区列出每家可信度与可用数据覆盖
+story: US-ENT-EVAL-TECH
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 已回填至少 1 家企业（脚本内对比篮勾选并确定）
+locators:
+  section_title: 数据覆盖与可信度
+  coverage_panel: section.ent-section-panel（含数据覆盖与可信度）
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 回填对象后等待数据覆盖区加载；每家可信度与覆盖判定在 expect
+expect:
+  - note: 1、每家企业显示可信度；2、显示可用数据覆盖
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const CRED_LABELS = ['高可信', '中可信', '低可信', '不可生成'];
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const main = page.locator('main');
+        const recSection = main.locator('section').filter({ hasText: '推荐企业' }).first();
+        await expect(recSection.getByText('推荐企业', { exact: true })).toBeVisible({ timeout: 15000 });
+        const cards = recSection.locator('div').filter({ hasText: '推荐理由：' }).filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) });
+        const cardCount = await cards.count();
+        if (cardCount < min) throw new Error('推荐企业卡不足 ' + min);
+        for (let i = 0; n < min && i < cardCount; i++) {
+          const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+          if (!(await btn.count()) || !(await btn.isVisible().catch(() => false))) continue;
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const openSelectOverlay = async () => {
+        const main = page.locator('main');
+        const cta = main.getByRole('button', { name: /多企业技术力对比分析|前往对比篮选择企业/ }).first();
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          return;
+        }
+        const adjust = main.getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        if (await adjust.count() && await adjust.first().isVisible().catch(() => false)) {
+          await adjust.first().click({ timeout: 8000 });
+          return;
+        }
+        const pickerQs = 'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(toUrl(evalRoute + '&' + pickerQs), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+        if (await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false)) return;
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (await dockBtn.count()) {
+          await dockBtn.click({ timeout: 10000 });
+          await page.waitForTimeout(1000);
+        }
+      };
+      await ensureBasketEnterprises(1);
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      if (await sels.count() < 1) throw new Error('浮层可选企业不足 1 家');
+      await sels.nth(0).click();
+      await page.waitForTimeout(300);
+      const confirm = page.getByRole('button', { name: '确定', exact: true }).last();
+      await expect(confirm).toBeEnabled({ timeout: 8000 });
+      await confirm.click({ timeout: 8000 });
+      await page.waitForTimeout(3500);
+      await closeBasket();
+      const mainText = await page.locator('main').innerText().catch(() => '');
+      if (/暂未选择评估对象/.test(mainText)) throw new Error('确定后对象区仍为空态');
+      const bodyAfter = await page.locator('body').innerText().catch(() => '');
+      if (/预检未返回企业明细/.test(bodyAfter)) throw new Error('回填后预检阻塞（ticket=ENV-EVAL-TECH-PRECHECK-001）');
+      let section = page.locator('section.ent-section-panel').filter({ hasText: '数据覆盖与可信度' });
+      if (!(await section.count())) section = page.locator('main section').filter({ hasText: '数据覆盖与可信度' });
+      section = section.first();
+      await section.scrollIntoViewIfNeeded();
+      await expect(section.getByText('数据覆盖与可信度', { exact: true })).toBeVisible({ timeout: 15000 });
+      const visLine = section.getByText(/当前可见\s*\d+\s*\/\s*\d+\s*家/);
+      await expect(visLine).toBeVisible({ timeout: 20000 });
+      const boxText = await section.innerText();
+      if (/选择企业后显示数据覆盖与可信度/.test(boxText)) throw new Error('数据覆盖区仍为空态');
+      const visM = boxText.match(/当前可见\s*(\d+)\s*\/\s*(\d+)\s*家/);
+      const visible = visM ? parseInt(visM[1], 10) : 0;
+      if (visible < 1) throw new Error('当前可见企业数不足 1，文案：' + (visM ? visM[0] : '无'));
+      let credCount = 0;
+      for (const label of CRED_LABELS) {
+        const re = new RegExp(label, 'g');
+        const m = boxText.match(re);
+        if (m) credCount += m.length;
+      }
+      const coverageCount = (boxText.match(/可用数据覆盖/g) || []).length;
+      if (credCount < visible) {
+        throw new Error('可信度展示不足：可见 ' + visible + ' 家，可信度标签计 ' + credCount);
+      }
+      if (coverageCount < visible) {
+        throw new Error('可用数据覆盖展示不足：可见 ' + visible + ' 家，覆盖块计 ' + coverageCount);
+      }
+      await expect(section.getByText('可用数据覆盖').first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01822 验配置态「数据覆盖与可信度」卡片：每家含可信度档位（高/中/低/不可生成）与「可用数据覆盖」行（scout-p007b）。D1·30888 开浮层 CTA「多企业技术力对比分析」（旧「前往对比篮…」回退）。加载完成以「当前可见 N / M 家」为准。预检失败 ticket=ENV-EVAL-TECH-PRECHECK-001。B 档零 allow_skip。

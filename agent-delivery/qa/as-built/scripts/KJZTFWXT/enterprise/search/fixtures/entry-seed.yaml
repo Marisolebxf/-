@@ -1,0 +1,22 @@
+# 企业查询入口 seed（重写波路由闸门）
+# 真源优先级：catalog.path > 本文件 > 用例册路由列 > 探针猜到的 URL
+# 子 agent 写 goto / waitForURL / href 前必读；禁止另造路径。
+
+entry_id: ent-search
+catalog_path: /enterprise/enterprise-search
+menu_path: [企业分析, 企业查询]
+menu_leaf: 企业查询
+
+# 深链用例：goto 直接用 catalog_path
+# 侧栏进入用例：先 goto sibling，再点 menu_leaf（避免已在目标页时「入口」语义空转）
+sibling_for_sidebar_entry: /enterprise/attraction
+
+forbidden_paths:
+  - /development/search          # 历史误勘，已废
+  - /enterprise-center/overview  # 专题企业域无此页（产业链才是 /industry-center/overview）
+
+route_gate:
+  - fixtures/testdata.yaml 的 route 必须等于 catalog_path
+  - steps goto / expect waitForURL / locators href 禁止出现 forbidden_paths
+  - 探针若看到与 catalog_path 不同的 URL：记 as_built_note，不得改脚本路由去迁就探针
+  - 点状复勘只核对按钮名、列名、chip 文案；不重勘、不改写路由

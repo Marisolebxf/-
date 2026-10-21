@@ -1,0 +1,132 @@
+id: FUNC-01913
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01913
+priority: P1
+title: 对比篮未勾选企业时发起分析禁用
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 对比篮已打开且篮内至少有 1 家企业、当前未勾选（脚本自含入篮与重置勾选）
+locators:
+  dock: button aria-label 含「打开对比篮」
+  panel: .system-compare-panel
+  launch: button「发起分析」
+  reset: button「重置」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开系统对比篮→企业页签重置为未勾选→停留在底部；门控与未进入过程/结果在 expect
+expect:
+  - note: 1、「发起分析」为禁用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const ensureZeroSelection = async (panel) => {
+        const entTab = panel.getByRole('tab', { name: /企业/ }).first();
+        if (await entTab.count() && await entTab.isVisible().catch(() => false)) {
+          await entTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+        const resetBtn = panel.getByRole('button', { name: '重置', exact: true });
+        if (await resetBtn.count() && await resetBtn.isVisible().catch(() => false)) {
+          await resetBtn.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        const sels = panel.locator('[aria-label^="选择 "]');
+        const nSel = await sels.count();
+        for (let i = 0; i < nSel; i++) {
+          const el = sels.nth(i);
+          const pressed = await el.getAttribute('aria-pressed');
+          const checked = await el.getAttribute('aria-checked');
+          const cls = (await el.getAttribute('class')) || '';
+          if (pressed === 'true' || checked === 'true' || /checked|selected|is-active/.test(cls)) {
+            await el.click({ force: true });
+            await page.waitForTimeout(200);
+          }
+        }
+        const panelText = (await panel.innerText()).replace(/\s+/g, ' ');
+        const m = panelText.match(/当前已选择\s*(\d+)\s*家企业/);
+        if (m && parseInt(m[1], 10) !== 0) {
+          throw new Error('对比篮应未勾选企业，文案：' + m[0]);
+        }
+      };
+      await ensureBasketEnterprises(1);
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      await expect(dockBtn).toBeVisible({ timeout: 10000 });
+      await dockBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await ensureZeroSelection(panel);
+      const launch = panel.getByRole('button', { name: '发起分析', exact: true });
+      await expect(launch).toBeVisible({ timeout: 8000 });
+      await launch.scrollIntoViewIfNeeded().catch(() => {});
+      await expect(launch).toBeDisabled({ timeout: 8000 });
+      globalThis.__func01913_panelReady = true;
+  - note: 2、不进入过程页或结果页
+    assert: |-
+      if (!globalThis.__func01913_panelReady) throw new Error('前置未打开对比篮或未核发起分析禁用');
+      const panel = page.locator('.system-compare-panel');
+      const launch = panel.getByRole('button', { name: '发起分析', exact: true });
+      if (await launch.isDisabled()) {
+        const modal = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' });
+        if (await modal.count()) throw new Error('发起分析禁用却仍出现选择分析任务浮层');
+        const main = page.locator('main.app-main').first();
+        const mainText = await main.innerText().catch(() => '');
+        if (/商业力评估结果/.test(mainText) && /view=result/.test(page.url())) {
+          throw new Error('未勾选却进入商业力评估结果页');
+        }
+        if (/view=processing/.test(page.url())) throw new Error('未勾选却进入过程态');
+        return;
+      }
+      await launch.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const modalAfter = page.locator('.arco-modal:visible').filter({ hasText: '选择分析任务' });
+      if (await modalAfter.count()) throw new Error('未勾选仍可发起并打开选择分析任务');
+      if (/view=processing/.test(page.url())) throw new Error('未勾选点击后进入过程态');
+      const body = await page.locator('main').first().innerText().catch(() => '');
+      if (/商业力评估结果/.test(body)) throw new Error('未勾选却出现商业力评估结果');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01913：系统对比篮（dock「打开对比篮」→ .system-compare-panel）底部「发起分析」门控；与浮层「确定」/配置页「开始分析」（01912）区分。30888 路由 /enterprise-center/evaluation?workspace=business&mode=business；篮内≥1 家、重置为「当前已选择 0 家企业」。禁止 50892。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

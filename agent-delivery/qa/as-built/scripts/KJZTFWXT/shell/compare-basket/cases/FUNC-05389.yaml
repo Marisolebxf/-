@@ -1,0 +1,64 @@
+id: FUNC-05389
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05389
+priority: P0
+title: 企业页无对象时见空态说明与开始收集企业
+story: US-ENT-CMP-05
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 对比篮已打开且企业页签为 0/50（非空则先清空）
+locators:
+  panel: .system-compare-panel
+  enterprise_tab: '#compare-basket-tab-enterprise'
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: wait
+    for: .system-compare-panel 可见
+expect:
+  - note: 企业页签为 0/50 且出现「对比篮暂无企业」
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const entTab = panel.locator('#compare-basket-tab-enterprise');
+      await entTab.click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const entTabText = ((await entTab.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/0\s*\/\s*50/.test(entTabText) || (await panel.locator('.ent-compare-item-card').count())) {
+        const clearBtn = panel.getByRole('button', { name: '清空对比篮' });
+        if (!(await clearBtn.count())) throw new Error('企业非空且无法清空: tab=' + entTabText);
+        await clearBtn.click({ timeout: 8000 });
+        const m = page.locator('.arco-modal:visible');
+        await m.getByRole('button', { name: /确定|确认|清空/ }).last().click({ timeout: 8000 }).catch(async () => {
+          await m.locator('button.arco-btn-primary').last().click({ timeout: 8000 });
+        });
+        await page.waitForTimeout(1000);
+      }
+      const entTabText2 = ((await entTab.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/0\s*\/\s*50/.test(entTabText2)) throw new Error('企业页签非 0/50: ' + entTabText2);
+      const cls = await entTab.getAttribute('class');
+      if (!/active/.test(cls || '')) throw new Error('未停在企业页签: class=' + cls);
+      await expect(panel.getByText('对比篮暂无企业').first()).toBeVisible({ timeout: 8000 });
+  - note: 说明可从企业查询、重点企业分析、总览或企业画像加入
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      const txt = await panel.innerText();
+      if (!/企业查询/.test(txt)) throw new Error('空态未见「企业查询」');
+      if (!/重点企业分析/.test(txt)) throw new Error('空态未见「重点企业分析」');
+      if (!/总览/.test(txt)) throw new Error('空态未见「总览」');
+      if (!/企业画像/.test(txt)) throw new Error('空态未见「企业画像」');
+  - note: 出现「开始收集企业」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('开始收集企业').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 路由 catalog=app-shell#system-compare-basket；goto 宿主页 /enterprise/search。空态主文案「对比篮暂无企业」+ 区块「开始收集企业」（2026-10-14 scout）；同屏另有「新增」「查看引育名单」见用例备注。清空篮会改会话数据。

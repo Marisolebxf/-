@@ -1,0 +1,59 @@
+id: FUNC-03915
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03915
+priority: P1
+tier: B
+title: 概况页人员规模区块保持空态并说明没有四档
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户；env-gate G2 scale_empty 诚实空
+locators:
+  tab_overview: tab「全球服务机构概况」
+  block_scale: heading「规模分析 · 人员规模分布」
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 点击「全球服务机构概况」页签
+expect:
+  - note: 1、区块文案含「概况实包无人员规模四档，保持空态。」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/overview SPA404，无法验人员规模空态 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const overviewTab = page.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      if (await overviewTab.count()) {
+        await overviewTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const heading = page.getByRole('heading', { name: '规模分析 · 人员规模分布', exact: true }).first();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const emptyCopy = page.getByText('概况实包无人员规模四档，保持空态。').first();
+      await expect(emptyCopy).toBeVisible({ timeout: 8000 });
+      const section = heading.locator('xpath=ancestor::*[contains(@class,"arco-card") or self::section][1]');
+      const sectionRoot = (await section.count()) ? section.first() : heading.locator('xpath=ancestor::div[1]');
+      const barCanvas = sectionRoot.locator('canvas').first();
+      if (await barCanvas.isVisible().catch(() => false)) {
+        throw new Error('人员规模区不应渲染四档条形图 canvas，应保持空态文案');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  规模四档为 Java 实包诚实空（ENV-SVC-PORTAL-SCALE-EMPTY）；断言完整空态句「概况实包无人员规模四档，保持空态。」（scout-deep-overview）。
+  步骤点 tab「全球服务机构概况」；规模区块 heading 可见且无 canvas 条形图。goto /service-portal/overview。
+  对比篮挡主区时先关。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+  edu.itic-sci.com/tts/svcz 2026-10-21 机跑 overview SPA404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 03915（空态完整句见 scout-deep-overview）。

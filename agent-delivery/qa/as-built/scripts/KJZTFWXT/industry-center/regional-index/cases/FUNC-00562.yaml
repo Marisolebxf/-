@@ -1,0 +1,67 @@
+id: FUNC-00562
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00562
+priority: P0
+title: 进入区域产业指数评价页路由与双 Tab 默认态
+entry_id: chain-regional-index
+tier: A
+preconditions:
+  - 系统可访问
+locators:
+  tab_index: '[role=tab][data-tab-key=index]'
+  tab_records: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 评价模式或模板工作集可见
+    timeout_ms: 5000
+expect:
+  - note: 1、路径为 /industry-center/regional；2、query 含 workspace=index 与 tab=index
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/regional/, { timeout: 15000 });
+      const u = new URL(page.url());
+      if (u.searchParams.get('workspace') !== 'index' || u.searchParams.get('tab') !== 'index') {
+        throw new Error('query 不符 workspace=index&tab=index，现场: ' + u.search);
+      }
+  - note: 3、页标题为「区域产业指数评价」
+    assert: |-
+      const title = await page.title();
+      if (!/区域产业指数评价/.test(title)) {
+        throw new Error('document.title 不含「区域产业指数评价」，现场: ' + title);
+      }
+  - note: 4、选中 Tab 为「区域产业指数评价」，另一 Tab 为「分析记录」
+    assert: |-
+      const main = page.locator('[role=tab][data-tab-key="index"]');
+      const rec = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(main).toBeVisible({ timeout: 8000 });
+      await expect(rec).toBeVisible({ timeout: 8000 });
+      const aria = await main.getAttribute('aria-selected');
+      const cls = await main.getAttribute('class') || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('「区域产业指数评价」Tab 未选中');
+      }
+      const mainText = (await main.innerText()).trim();
+      const recText = (await rec.innerText()).trim();
+      if (!/区域产业指数评价/.test(mainText)) {
+        throw new Error('主 Tab 文案不符: ' + mainText);
+      }
+      if (!/^分析记录/.test(recText)) {
+        throw new Error('记录 Tab 文案不符: ' + recText);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）。本条步骤为深链直达指数 Tab，非侧栏类。现场无独立 h1，标题在 document.title。Tab 用 data-tab-key=index/records，避免内嵌追溯按钮污染 getByRole 精确名。competitiveness 兄弟 workspace 不写正向断言。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

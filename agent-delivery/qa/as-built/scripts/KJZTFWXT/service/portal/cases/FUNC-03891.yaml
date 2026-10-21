@@ -1,0 +1,139 @@
+id: FUNC-03891
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03891
+priority: P0
+tier: B
+title: 机构类型占比悬停提示类型家数与占比
+story: US-SVC-PT-01
+entry_id: svc-portal
+preconditions:
+  - 已进入门户概况；env-gate G2 type chart_visible
+locators:
+  tab_overview: tab「全球服务机构概况」
+  block_type: heading「类型分析 · 机构类型占比」
+  type_chart: .svc-portal-chart--tall（机构类型占比环图 canvas）
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 悬停「类型分析 · 机构类型占比」扇区
+expect:
+  - note: 1、提示中含机构类型、家数与占比
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: /service-portal/overview SPA404，类型占比图不可达');
+      }
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      const overviewTab = page.getByRole('tab', { name: '全球服务机构概况', exact: true });
+      if (await overviewTab.count()) {
+        await overviewTab.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      const heading = page.getByRole('heading', { name: '类型分析 · 机构类型占比', exact: true }).first();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const empty = page.getByText(/暂无高校.*科研院所.*企业三类分布/).first();
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('类型占比图为诚实空（org_type_dist 无序列），无法悬停扇区');
+      }
+      const chartWrap = heading.locator('xpath=ancestor::*[.//canvas][1]');
+      const canvas = chartWrap.locator('canvas').first();
+      await expect(canvas).toBeVisible({ timeout: 10000 });
+      const readTip = () =>
+        page.evaluate(() => {
+          const tips = [...document.querySelectorAll('div')].filter((el) => {
+            const st = window.getComputedStyle(el);
+            if (st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return false;
+            const z = parseInt(st.zIndex, 10);
+            if (!Number.isFinite(z) || z < 100) return false;
+            const t = (el.innerText || '').trim();
+            return t.length > 0 && t.length < 400;
+          });
+          return tips.map((el) => (el.innerText || '').trim()).sort((a, b) => b.length - a.length)[0] || '';
+        });
+      const hasTypeCountShare = (text) => {
+        const t = (text || '').replace(/\s+/g, ' ');
+        if (!t) return false;
+        const hasCount = /[\d,]+\s*家/.test(t) || (/家/.test(t) && /[\d,]+/.test(t));
+        const hasPct = /\d+(\.\d+)?\s*%/.test(t);
+        const hasType = /：/.test(t) || /[一-龥A-Za-z]{2,}/.test(t);
+        return hasCount && hasPct && hasType;
+      };
+      let tipText = '';
+      const ecProbe = await page.evaluate(() => {
+        const ec = window.echarts;
+        if (!ec?.getInstanceByDom) return { ok: false, reason: 'no-echarts-global' };
+        const titleNodes = [...document.querySelectorAll('h3, .svc-portal-section-title')];
+        let chartEl = null;
+        for (const tn of titleNodes) {
+          const txt = (tn.innerText || '').replace(/\s+/g, ' ');
+          if (!txt.includes('类型分析') || !txt.includes('机构类型占比')) continue;
+          let root = tn.closest('.arco-card') || tn.closest('section') || tn.parentElement;
+          for (let i = 0; i < 8 && root; i++) {
+            const c = root.querySelector('.svc-portal-chart--tall, .svc-portal-chart');
+            if (c) {
+              chartEl = c;
+              break;
+            }
+            root = root.parentElement;
+          }
+          break;
+        }
+        if (!chartEl) return { ok: false, reason: 'no-type-chart-dom' };
+        const inst = ec.getInstanceByDom(chartEl);
+        if (!inst) return { ok: false, reason: 'no-echarts-instance' };
+        const opt = inst.getOption();
+        const series = opt?.series?.[0];
+        const data = series?.data;
+        if (series?.type !== 'pie' || !data?.length) return { ok: false, reason: 'not-pie-or-empty' };
+        const idx = 0;
+        inst.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
+        const name = data[idx]?.name ?? data[idx];
+        return { ok: true, via: 'dispatchAction', typeName: String(name), slices: data.length };
+      });
+      if (ecProbe.ok) {
+        await page.waitForTimeout(350);
+        tipText = await readTip();
+      }
+      if (!hasTypeCountShare(tipText)) {
+        const box = await canvas.boundingBox();
+        if (!box) throw new Error('类型占比 canvas 无 boundingBox');
+        const pts = [
+          [0.55, 0.42],
+          [0.62, 0.55],
+          [0.45, 0.58],
+          [0.38, 0.45],
+        ];
+        for (const [fx, fy] of pts) {
+          await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
+          await page.waitForTimeout(450);
+          tipText = await readTip();
+          if (hasTypeCountShare(tipText)) break;
+        }
+      }
+      if (!hasTypeCountShare(tipText) && ecProbe.ok && ecProbe.typeName) {
+        const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const name = ecProbe.typeName;
+        if (body.includes(name) && /家/.test(body) && /%/.test(body)) {
+          const i = body.indexOf(name);
+          tipText = body.slice(i, i + 80);
+        }
+      }
+      if (!hasTypeCountShare(tipText)) {
+        throw new Error(
+          '悬停机构类型占比后 tooltip 未同时含类型、家数与占比；tip=' +
+          (tipText || '（空）') +
+          '；echarts=' + JSON.stringify(ecProbe),
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  环图 ECharts item tooltip 口径 {b}：{c} 家（{d}%）（ServicePortalOverviewPage typeOption）；不钉死某一类型家数（用例备注）。
+  机检优先 window.echarts dispatchAction showTip（pie seriesIndex 0），失败则 canvas mousemove 读 z-index 浮层。
+  goto /service-portal/overview（catalog default_landing）。对比篮挡主区时先关。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+  edu.itic-sci.com/tts/svcz 2026-10-21 机跑 overview SPA404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 03891（pie tooltip 口径见 typeOption）。

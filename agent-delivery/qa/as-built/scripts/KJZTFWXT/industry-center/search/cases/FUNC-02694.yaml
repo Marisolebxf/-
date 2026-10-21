@@ -1,0 +1,91 @@
+id: FUNC-02694
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02694
+priority: P0
+title: 推荐产业点查看摘要打开对应该行的抽屉
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 推荐产业列表已显示
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+  drawer: .arco-drawer.industry-search-drawer
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 在「新一代信息技术」推荐行点击「查看摘要」；抽屉字段与底栏在 expect 判定
+expect:
+  - note: 1、抽屉标题为「新一代信息技术」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('前置应为推荐产业列表 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '新一代信息技术' }).first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      await card.getByRole('button', { name: '查看摘要', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.locator('.arco-drawer-title')).toHaveText('新一代信息技术', { timeout: 8000 });
+  - note: 2、列出类型、领域、所属产业、来源
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const body = drawer.locator('.industry-search-drawer-body');
+      for (const label of ['类型', '领域', '所属产业', '来源']) {
+        await expect(body.locator('.arco-descriptions-item-label').filter({ hasText: label })).toBeVisible({
+          timeout: 8000,
+        });
+      }
+  - note: 2、来源为 catalog
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const body = drawer.locator('.industry-search-drawer-body');
+      const labels = body.locator('.arco-descriptions-item-label');
+      const values = body.locator('.arco-descriptions-item-value');
+      const n = await labels.count();
+      let drawerSource = '';
+      for (let i = 0; i < n; i++) {
+        const lab = (await labels.nth(i).innerText()).replace(/\s+/g, ' ').trim();
+        if (/^来源[：:]?$/.test(lab)) {
+          drawerSource = (await values.nth(i).innerText()).replace(/\s+/g, ' ').trim();
+          break;
+        }
+      }
+      if (!drawerSource) throw new Error('抽屉 descriptions 未见来源字段');
+      if (drawerSource !== 'catalog') {
+        throw new Error('推荐行来源应为 catalog，实际「' + drawerSource + '」');
+      }
+  - note: 3、底部有「关闭」和「进入全景」
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      const footer = drawer.locator('.industry-search-drawer-footer');
+      await expect(footer.getByRole('button', { name: '关闭', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(footer.getByRole('button', { name: '进入全景', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；未检索 recommendation 态点推荐行「查看摘要」。
+  抽屉 class industry-search-drawer，标题为产业名；a-descriptions 含类型/领域/所属产业/来源；
+  推荐目录行来源字段现场为 catalog；底栏「关闭」「进入全景」（非列表态「进入全景图谱」）。
+  登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

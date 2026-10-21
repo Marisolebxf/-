@@ -1,0 +1,86 @@
+id: FUNC-01916
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01916
+priority: P0
+title: 对比篮切换到产业页签不发起商业力分析
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开对比篮（脚本自含打开系统对比篮面板）
+locators:
+  dock: button aria-label 含「打开对比篮」
+  panel: .system-compare-panel
+  industry_tab: '#compare-basket-tab-industry'
+  enterprise_tab: '#compare-basket-tab-enterprise'
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开对比篮→点击「产业」页签；名单与未发起分析判定在 expect
+expect:
+  - note: 1、名单切换为产业对象；2、不出现「商业力评估结果」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openCompareBasket = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        await expect(dockBtn).toBeVisible({ timeout: 12000 });
+        await dockBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      if (/view=result/.test(page.url())) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      await dismissBasket();
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await dismissBasket();
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const urlBefore = page.url();
+      const panel = await openCompareBasket();
+      const entTab = panel.locator('#compare-basket-tab-enterprise');
+      const indTab = panel.locator('#compare-basket-tab-industry');
+      await expect(entTab).toBeVisible({ timeout: 8000 });
+      await expect(indTab).toBeVisible({ timeout: 8000 });
+      await indTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const indClass = (await indTab.getAttribute('class')) || '';
+      if (!/active/.test(indClass)) throw new Error('产业页签未激活');
+      const panelText = await panel.innerText();
+      if (!/篮内产业对象/.test(panelText)) {
+        throw new Error('产业页签未见「篮内产业对象」标题');
+      }
+      if (/^篮内企业/m.test(panelText) || (/\b篮内企业\b/.test(panelText) && !/篮内产业对象/.test(panelText))) {
+        throw new Error('名单未切换为产业对象（仍为企业列表）');
+      }
+      const hasIndustryRows =
+        /产业\s+\d+\s*·\s*产业链\s+\d+/.test(panelText) ||
+        /查看对象/.test(panelText) ||
+        /对比篮暂无产业或产业链/.test(panelText) ||
+        /按产业或产业链名称搜索/.test(panelText);
+      if (!hasIndustryRows) throw new Error('产业页签未见产业对象名单或空态标识');
+      const mainText = await main().innerText().catch(() => '');
+      if (/商业力评估结果/.test(mainText)) throw new Error('主区出现「商业力评估结果」，疑似误发起分析');
+      if (/view=result/.test(page.url()) && !/view=result/.test(urlBefore)) {
+        throw new Error('切产业页签后 URL 进入结果视图：' + page.url());
+      }
+      await expect(main().getByRole('heading', { name: '商业力评估结果' })).toHaveCount(0);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01916：系统对比篮（.system-compare-panel）内点 #compare-basket-tab-industry；产业名单标题「篮内产业对象」（对照企业 Tab「篮内企业」）。仅切 Tab 不得出现主区「商业力评估结果」或误入 view=result。30888 路由 /enterprise-center/evaluation；打开对比篮用 dock aria-label（用例「打开对比篮」）。产业 0 条时以空态「对比篮暂无产业或产业链」仍算产业名单。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

@@ -1,0 +1,159 @@
+id: FUNC-02319
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02319
+priority: P1
+title: 未勾选企业时确定不可用且对象区不被回填
+story: US-ENT-RISK-OBJECT
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已打开「选择分析企业」（assert 自含打开浮层）
+  - 已选为 0 家（assert 自含取消勾选或保持未选）
+locators:
+  overlay_title: 选择分析企业
+  confirm_btn: button「确定」
+  clear_selection_btn: button「取消选择」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 空配置打开选择分析企业，已选 0 家时点「确定」；确定态与对象空态在 expect
+expect:
+  - note: 1、「确定」不可用
+    assert: |-
+      const route = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const toUrl = (p) => (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') + (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const ensureEmptyConfig = async () => {
+        const m = main();
+        const emptyCta = page.getByRole('button', { name: '前往对比篮选择企业' });
+        if (await emptyCta.first().isVisible().catch(() => false)) return;
+        const fromBasket = m.getByText(/来自对比篮/);
+        if (!(await fromBasket.count()) || !(await fromBasket.first().isVisible().catch(() => false))) return;
+        const recentTab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        if (await recentTab.count()) {
+          await recentTab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(600);
+        }
+        const newBtn = page.getByRole('button', { name: '新建分析' });
+        if (await newBtn.count() && (await newBtn.first().isVisible().catch(() => false))) {
+          await newBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+        }
+        const curTab = page.locator('main [role=tab], main button').filter({ hasText: '当前分析' }).first();
+        if (await curTab.count()) {
+          await curTab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+        }
+        if (!(await emptyCta.first().isVisible().catch(() => false)) && (await fromBasket.first().isVisible().catch(() => false))) {
+          throw new Error('无法回到对象空态：仍见「来自对比篮」');
+        }
+      };
+      const openPicker = async () => {
+        const emptyCta = page.getByRole('button', { name: '前往对比篮选择企业' });
+        const pickBtn = main().getByRole('button', { name: '选择分析企业' });
+        const adjustBtn = main().getByRole('button', { name: '返回对比篮调整对象' });
+        if (await emptyCta.first().isVisible().catch(() => false)) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else if (await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到打开「选择分析企业」入口');
+        }
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible').last();
+      const readPickerSelectedCount = async () => {
+        const panel = pickerRoot();
+        const scope = (await panel.count()) ? panel : page.locator('body');
+        const txt = (await scope.innerText().catch(() => '')) || '';
+        const liveM = txt.match(/当前已选择\s*(\d+)\s*家企业/);
+        if (liveM) return parseInt(liveM[1], 10);
+        const pickedM = txt.match(/已选\s*(\d+)\s*家/);
+        if (pickedM) return parseInt(pickedM[1], 10);
+        const sels = page.locator('[aria-label^="选择 "]');
+        let checked = 0;
+        for (let i = 0; i < await sels.count(); i++) {
+          if ((await sels.nth(i).getAttribute('aria-checked')) === 'true') checked++;
+        }
+        return checked;
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      await ensureEmptyConfig();
+      await openPicker();
+      const panel = pickerRoot();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      if ((await sels.count()) < 1) throw new Error('ENV-SUPPLY-BASKET-EMPTY-001');
+      let selected = await readPickerSelectedCount();
+      if (selected > 0) {
+        const clearBtn = panel.getByRole('button', { name: '取消选择', exact: true });
+        if (await clearBtn.count() && !(await clearBtn.first().isDisabled())) {
+          await clearBtn.first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          selected = await readPickerSelectedCount();
+        }
+        for (let i = 0; i < await sels.count() && selected > 0; i++) {
+          const sel = sels.nth(i);
+          if ((await sel.getAttribute('aria-checked')) === 'true') {
+            await sel.click();
+            await page.waitForTimeout(300);
+            selected = await readPickerSelectedCount();
+          }
+        }
+      }
+      if (selected !== 0) throw new Error('前置：已选应为 0 家，实际 ' + selected);
+      globalThis.__func02319_pickerOpen = true;
+      const confirmBtn = panel.getByRole('button', { name: '确定', exact: true });
+      await expect(confirmBtn.first()).toBeVisible({ timeout: 5000 });
+      const disabled = await confirmBtn.first().isDisabled();
+      if (!disabled) throw new Error('已选为 0 家时「确定」应不可用');
+      await confirmBtn.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      if (!(await confirmBtn.first().isDisabled())) {
+        throw new Error('点「确定」后按钮变为可用，疑似发生回填');
+      }
+      await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 5000 });
+  - note: 2、配置页对象区仍是空态
+    assert: |-
+      if (!globalThis.__func02319_pickerOpen) throw new Error('前置：未打开选择分析企业');
+      const panel = page.locator('.system-compare-panel:visible').last();
+      const cancelBtn = panel.getByRole('button', { name: '取消', exact: true });
+      if (await cancelBtn.count()) {
+        await cancelBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const m = page.locator('main.content-shell-layout, main').first();
+      const fromBasket = m.getByText(/来自对比篮/);
+      if (await fromBasket.count() && (await fromBasket.first().isVisible().catch(() => false))) {
+        throw new Error('对象区已被回填：仍见「来自对比篮」');
+      }
+      await expect(page.getByRole('button', { name: '前往对比篮选择企业' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(m.getByText(/请先在对比篮选择企业/).first()).toBeVisible({ timeout: 8000 });
+      const start = m.getByRole('button', { name: '开始分析' });
+      if (await start.count() && !(await start.first().isDisabled())) {
+        throw new Error('空态下「开始分析」应为不可用');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=对象空态→打开「选择分析企业」→已选 0 家→点「确定」（disabled 不关闭浮层）。机检=确定 disabled+取消后对象区「前往对比篮选择企业」与引导文案仍在、无「来自对比篮」。对比篮空→ENV-SUPPLY-BASKET-EMPTY-001。用例备注「取消选择」同样不可用未单列 expect。登录与关评审由 runner 前置。B 档零 allow_skip。

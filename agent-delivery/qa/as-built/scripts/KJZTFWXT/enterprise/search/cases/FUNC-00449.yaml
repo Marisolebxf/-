@@ -1,0 +1,61 @@
+id: FUNC-00449
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00449
+priority: P0
+title: 点击最近检索记录可恢复该次查询结果
+story: US-E1-SCH-03
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已登录
+  - 已执行过至少一次普通查询
+locators:
+  recent_chip: text「智能搜索：人工智能」（最近检索行）
+  smart_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: evaluate
+    note: 1.普通查询；2.再次进入本页回到初始态；3.点最近检索「智能搜索：人工智能」——见 expect
+expect:
+  - note: 页面再次呈现该次检索的结果标题与命中条数
+    assert: |-
+      const kw = '人工智能';
+      const recentLabel = `智能搜索：${kw}`;
+      const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ });
+      await input.fill(kw);
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      const hitLine = page.getByText(/命中 \d+ 家企业/).first();
+      await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 15000 });
+      await expect(hitLine).toBeVisible({ timeout: 15000 });
+      const hitBefore = ((await hitLine.innerText()).match(/命中 (\d+) 家企业/) || [])[1];
+      if (!hitBefore) throw new Error('首次检索未解析命中条数');
+      const origin = new URL(page.url()).origin;
+      await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const mainInit = await page.locator('main').innerText();
+      if (mainInit.includes('智能搜索结果') && /命中 \d+ 家企业/.test(mainInit)) {
+        throw new Error('回到初始态后仍呈现结果区，无法验证最近检索恢复');
+      }
+      const recentChip = page.getByText(recentLabel, { exact: true });
+      await expect(recentChip).toBeVisible({ timeout: 8000 });
+      await recentChip.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 15000 });
+      const hitAfter = page.getByText(/命中 \d+ 家企业/).first();
+      await expect(hitAfter).toBeVisible({ timeout: 15000 });
+      const hitAfterN = ((await hitAfter.innerText()).match(/命中 (\d+) 家企业/) || [])[1];
+      if (hitAfterN !== hitBefore) {
+        throw new Error(`恢复后命中条数 ${hitAfterN} 与首次 ${hitBefore} 不一致`);
+      }
+  - note: 智能搜索与查企业区无「查询方案」入口
+    assert: |-
+      await expect(page.getByRole('button', { name: '使用查询方案' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '保存为查询方案' })).toHaveCount(0);
+      await page.getByRole('tab', { name: '查企业' }).click();
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('button', { name: '使用查询方案' })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '保存为查询方案' })).toHaveCount(0);
+      await page.getByRole('tab', { name: '智能搜索' }).click();
+      await page.waitForTimeout(400);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 30888 路由 /enterprise/enterprise-search（D1）。回到初始态=同路由再次 goto 离开结果区；最近记录文案为「智能搜索：{词}」（非裸关键词 chip）。恢复直出结果。

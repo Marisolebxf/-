@@ -1,0 +1,102 @@
+id: FUNC-02300
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02300
+priority: P0
+title: 勾选只看关键后图谱只留关键节点
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果；停在「图谱」（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  tab_graph: tab「图谱」
+  filter_key: checkbox「只看关键」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 恢复成功结果→图谱 Tab→勾选/取消只看关键
+expect:
+  - note: 1、勾选后当前展示只保留关键节点
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const parseNodeCount = async () => {
+        const display = page.getByText(/当前展示：\d+级/).first();
+        await expect(display).toBeVisible({ timeout: 10000 });
+        const dt = await display.innerText().catch(() => '');
+        const m = dt.match(/节点\s*(\d+)\s*个/);
+        if (!m) throw new Error('当前展示未解析节点数：' + dt);
+        return parseInt(m[1], 10);
+      };
+      const keyCheckbox = () =>
+        page.locator('label.arco-checkbox').filter({ hasText: '只看关键' }).first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const ensureGraphTab = async () => {
+        const graphTab = page.locator('main .arco-radio-button, main [role=tab], main button').filter({ hasText: /^图谱$/ }).first();
+        if (await graphTab.count()) {
+          await graphTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      const restore = page.getByRole('button', { name: '恢复结果' });
+      if (!(await restore.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+      }
+      await restore.first().click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 25000 });
+      await dismissBasket();
+      await ensureGraphTab();
+      const nBefore = await parseNodeCount();
+      globalThis.__func02300_nBefore = nBefore;
+      const kc = keyCheckbox();
+      await expect(kc).toBeVisible({ timeout: 8000 });
+      await kc.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const clsOn = await kc.getAttribute('class').catch(() => '');
+      if (!/arco-checkbox-checked/.test(clsOn || '')) throw new Error('只看关键未处于勾选态');
+      const nKey = await parseNodeCount();
+      globalThis.__func02300_nKey = nKey;
+      if (nKey > nBefore) throw new Error('勾选只看关键后节点数反而增加：' + nBefore + '→' + nKey);
+      globalThis.__func02300_ready = true;
+  - note: 2、取消后不再按关键节点收窄
+    assert: |-
+      if (!globalThis.__func02300_ready) throw new Error('前置：未勾选只看关键');
+      const nBefore = globalThis.__func02300_nBefore;
+      const nKey = globalThis.__func02300_nKey;
+      const parseNodeCount = async () => {
+        const display = page.getByText(/当前展示：\d+级/).first();
+        const dt = await display.innerText().catch(() => '');
+        const m = dt.match(/节点\s*(\d+)\s*个/);
+        if (!m) throw new Error('当前展示未解析节点数：' + dt);
+        return parseInt(m[1], 10);
+      };
+      const keyCheckbox = () =>
+        page.locator('label.arco-checkbox').filter({ hasText: '只看关键' }).first();
+      const kc = keyCheckbox();
+      await kc.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const clsOff = await kc.getAttribute('class').catch(() => '');
+      if (/arco-checkbox-checked/.test(clsOff || '')) throw new Error('取消后只看关键仍为勾选态');
+      const nAfter = await parseNodeCount();
+      if (nAfter < nKey) throw new Error('取消只看关键后节点数少于过滤态：' + nKey + '→' + nAfter);
+      if (nAfter !== nBefore) throw new Error('取消后节点数未恢复至勾选前：' + nBefore + '→' + nAfter);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析「恢复结果」+ 图谱 Tab。步骤=勾选/取消「只看关键」。机检=节点数勾选后≤勾选前（用例册：中心与供应商皆关键时节点数可不减少）；取消后节点数≥过滤态且恢复至勾选前。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

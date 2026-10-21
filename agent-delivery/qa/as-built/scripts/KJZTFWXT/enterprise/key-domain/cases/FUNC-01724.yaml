@@ -1,0 +1,82 @@
+id: FUNC-01724
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01724
+priority: P1
+title: 新增企业弹层内加入对比篮
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 「新增企业」弹层已打开且存在「加入对比篮」行（assert 自含打开路径）
+locators:
+  picker_open: button「选择分析企业」/「打开对比篮」/「前往对比篮选择企业」
+  add_modal: .arco-modal-title「新增企业」
+  row_add_basket: button「加入对比篮」
+  row_remove_basket: button「移出对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 页内打开选择器→新增→点「加入对比篮」；提示与按钮态在 expect 判定
+expect:
+  - note: 1、提示已加入该企业；2、该行按钮变为「移出对比篮」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const gotoRoute = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      const clickPageOpenPicker = async () => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(900);
+      };
+      await gotoRoute();
+      await clickPageOpenPicker();
+      const panel = page.locator('.system-compare-panel').last();
+      await expect(panel).toBeVisible({ timeout: 12000 });
+      const addBtn = panel.getByRole('button', { name: '新增', exact: true });
+      await expect(addBtn.first()).toBeVisible({ timeout: 10000 });
+      await addBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) }).last();
+      await expect(modal).toBeVisible({ timeout: 15000 });
+      await modal.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+      const joinBtn = modal.getByRole('button', { name: '加入对比篮', exact: true }).first();
+      await expect(joinBtn).toBeVisible({ timeout: 30000 });
+      const entName = ((await joinBtn.locator('xpath=ancestor::tr[1]').locator('td').first().innerText()) || '').trim();
+      if (!entName) throw new Error('无法读取企业名称列');
+      await joinBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const msg = page.locator('.arco-message-content').filter({ hasText: '已加入' }).filter({ hasText: entName }).first();
+      await expect(msg).toBeVisible({ timeout: 10000 });
+      const rowAfter = modal.locator('.arco-table-tr').filter({ hasText: entName });
+      await expect(rowAfter.getByRole('button', { name: '移出对比篮', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 01724；30888 对象条 CTA「选择分析企业」开 picker 浮层。Arco 表行用 `.arco-table-tr`（非 `.arco-table-body .arco-table-tr`）。点击后按企业名重查行断言「移出对比篮」。Message「已加入「{name}」」。登录与关内部评审由 runner 会话前置。B 档。

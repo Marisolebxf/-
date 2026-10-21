@@ -1,0 +1,72 @@
+id: FUNC-02611
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02611
+priority: P1
+title: 换成海洋产业后产业选项改为该集群的名单
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景
+locators:
+  cluster: 'span[aria-label="集群"]'
+  industry: 'span[aria-label="产业"]'
+  industry_popup: .arco-trigger-popup:visible .arco-select-option
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 选择「海洋产业」后展开产业右侧选框；选项个数与名称在 expect 判定
+expect:
+  - note: 步骤 1：选择「海洋产业」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const clusterPopup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(clusterPopup).toBeVisible({ timeout: 8000 });
+      const clusterOpt = clusterPopup.locator('.arco-select-option').filter({ hasText: '海洋产业' });
+      await expect(clusterOpt.first()).toBeVisible({ timeout: 8000 });
+      await clusterOpt.first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const clusterTitle = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      if (clusterTitle !== '海洋产业') {
+        throw new Error('集群应选中「海洋产业」，实际 title=' + clusterTitle);
+      }
+  - note: 1、选项共 2 个：海洋、海洋先进制造与高端服务
+    assert: |-
+      const expected = ['海洋', '海洋先进制造与高端服务'];
+      await expect(page.locator('span[aria-label="产业"]')).toBeVisible({ timeout: 8000 });
+      await page.locator('span[aria-label="产业"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const options = await popup.locator('.arco-select-option').allTextContents();
+      const normalized = [...new Set(options.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
+      if (normalized.length !== 2) {
+        throw new Error('海洋产业集群下产业选项应为 2 个，实际 ' + normalized.length + '：' + normalized.join('、'));
+      }
+      const missing = expected.filter((name) => !normalized.includes(name));
+      const extra = normalized.filter((name) => !expected.includes(name));
+      if (missing.length || extra.length) {
+        throw new Error(
+          '产业选项与用例册附录不一致；缺失：' + (missing.join('、') || '无') +
+          '；多余：' + (extra.join('、') || '无') +
+          '；现场：' + normalized.join('、')
+        );
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例「产业右侧选框」= 筛选区 aria-label 产业 的下拉（02591/02589 同口径）。先切集群「海洋产业」（02608 同选法），再展开产业下拉。
+  海洋产业集群下产业 2 项与用例册附录 A（02611）、scout 口径一致。路由 catalog_path /industry-center/overview。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

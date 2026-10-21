@@ -1,0 +1,89 @@
+id: FUNC-03534
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03534
+priority: P0
+title: 单产业模式未选产业时的占位、提示与开始分析禁用
+entry_id: chain-regional-compete
+tier: A
+preconditions:
+  - 评价模式为「单产业 × 多区域」
+  - 产业未选
+locators:
+  mode_single: 文案「单产业 × 多区域」
+  industry_view: .arco-select-view[aria-label=产业]
+  industry_placeholder: input[placeholder="请选择产业"]
+  hint: 文案「单产业模式请选择 1 个产业」
+  start: button「开始分析」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
+  - action: evaluate
+    note: 打开配置页、确认单产业模式且不选产业；三条预期在 expect
+expect:
+  - note: 1、产业占位为「请选择产业」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
+      };
+      const ensureConfigShell = async () => {
+        await dismissBasket();
+        if (!(await bodyIs404())) return;
+        await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1000);
+        if (await bodyIs404()) {
+          const leaf = page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(400);
+          }
+          if (await leaf.first().isVisible().catch(() => false)) {
+            await leaf.first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价 catalog/侧栏不可达 ' + page.url());
+        }
+      };
+      await ensureConfigShell();
+      await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await page.getByText('单产业 × 多区域', { exact: true }).first().click().catch(() => {});
+      await page.waitForTimeout(400);
+      const indView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      const viewText = (await indView.innerText().catch(() => '')).trim();
+      if (viewText && !/请选择产业/.test(viewText)) {
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(800);
+      }
+      await expect(page.locator('input[placeholder="请选择产业"]').first()).toBeVisible({ timeout: 8000 });
+      const viewAfter = (await indView.innerText().catch(() => '')).trim();
+      if (viewAfter && !/请选择产业/.test(viewAfter)) {
+        throw new Error('产业未处于空态占位「请选择产业」: ' + viewAfter);
+      }
+  - note: 2、提示为「单产业模式请选择 1 个产业」
+    assert: |-
+      await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、「开始分析」不可点
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeDisabled({ timeout: 8000 });
+      if (/view=processing/.test(page.url())) {
+        throw new Error('未选产业却进入过程态: ' + page.url());
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=entry-seed /industry-center/regional?workspace=competitiveness&tab=competitiveness。
+  用例仅打开页且不选产业；若会话残留已选产业则用「重置参数」回到空态（非选产业动作）。
+  占位在 input placeholder / 产业 select view；提示与 disabled 联动（scout-deep 同口径）。A 档零 allow_skip。

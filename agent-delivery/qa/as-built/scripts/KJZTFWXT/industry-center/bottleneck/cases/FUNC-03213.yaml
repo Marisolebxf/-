@@ -1,0 +1,114 @@
+id: FUNC-03213
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03213
+priority: P1
+title: 诊断记录任务状态下拉四选项
+story: US-CHAIN-DIAG-07
+entry_id: chain-bottleneck
+tier: B
+preconditions:
+  - 已打开「诊断记录」（assert 自含 catalog 进入并切 Tab）
+locators:
+  records_tab: tab「诊断记录」
+  status_label: 任务状态
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 切诊断记录→展开「任务状态」，选项在 expect
+expect:
+  - note: 前置：产业瓶颈堵点识别页已切到「诊断记录」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
+      };
+      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
+      const enterBottleneck = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=bottleneck/.test(page.url()) &&
+          /tab=bottleneck/.test(page.url());
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (await bodyIs404()) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) {
+            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
+            const expandChain = async () => {
+              if (await leaf().first().isVisible().catch(() => false)) return;
+              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+              if (await sub.count()) {
+                await sub.first().click({ timeout: 8000 });
+                await page.waitForTimeout(400);
+              }
+            };
+            await expandChain();
+            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+            await leaf().first().click({ timeout: 10000 });
+            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=bottleneck/);
+        await expect(page).toHaveURL(/tab=bottleneck/);
+        await expect(page.getByRole('heading', { name: '产业瓶颈堵点识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      };
+      await enterBottleneck();
+      const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+      await expect(tab).toBeVisible({ timeout: 10000 });
+      await tab.click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      const bodyAfter = await main().innerText().catch(() => '');
+      if (!/诊断记录|任务状态|全部状态/.test(bodyAfter)) {
+        throw new Error('点「诊断记录」后未见任务状态区，url=' + page.url());
+      }
+      globalThis.__func03213_ready = true;
+  - note: 1、选项为全部状态、分析中、已完成、失败，共 4 个
+    assert: |-
+      if (!globalThis.__func03213_ready) throw new Error('前置：诊断记录 Tab 未打开');
+      await page.keyboard.press('Escape').catch(() => {});
+      const block = page.locator('text=任务状态').first();
+      await expect(block).toBeVisible({ timeout: 8000 });
+      const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      await expect(trigger).toBeVisible({ timeout: 8000 });
+      await trigger.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 4) {
+        throw new Error('任务状态选项应为 4 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      const want = ['全部状态', '分析中', '已完成', '失败'];
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error('任务状态选项不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got));
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck（entry-seed）；enterBottleneck 深链优先、侧栏 sibling 回落（同 FUNC-03191）。
+  步骤=诊断记录 Tab→「任务状态」标签后首个 .arco-select-view（对齐 cycle FUNC-02907 / key-link FUNC-03121）。
+  选项=testdata records.status_filter 族：全部状态、分析中、已完成、失败。用例备注：筛选项仅任务状态。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

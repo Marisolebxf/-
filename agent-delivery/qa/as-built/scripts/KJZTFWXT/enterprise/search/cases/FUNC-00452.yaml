@@ -1,0 +1,38 @@
+id: FUNC-00452
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00452
+priority: P0
+title: 带高级筛选参数直入时字段库与面包屑正确
+story: US-E1-SCH-04
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已登录
+locators:
+  field_lib: text 高级筛选 · 字段库
+  breadcrumb_nav: nav[aria-label="面包屑"]
+  crumb_ent_search_link: 面包屑 link「企业查询」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search?mode=advanced
+expect:
+  - note: 页面呈现高级筛选字段库
+    assert: |-
+      await page.waitForURL(/mode=advanced/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(800);
+      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByPlaceholder('搜索字段名称 / key')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText('经营状态', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main').getByText('从字段库添加筛选条件').first()).toBeVisible({ timeout: 8000 });
+  - note: 面包屑为「企业分析 / 企业查询 / 高级筛选」且「企业查询」为链接
+    assert: |-
+      const nav = page.locator('nav[aria-label="面包屑"]');
+      await expect(nav).toBeVisible({ timeout: 8000 });
+      await expect(nav.getByText('企业分析', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(nav.getByText('高级筛选', { exact: true })).toBeVisible({ timeout: 8000 });
+      const entLink = nav.getByRole('link', { name: '企业查询', exact: true });
+      await expect(entLink).toBeVisible({ timeout: 8000 });
+      const href = await entLink.getAttribute('href');
+      if (!href || href === '#') throw new Error('面包屑「企业查询」非有效链接: ' + href);
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链用 /enterprise/enterprise-search?mode=advanced（用例册 /enterprise/enterprise-search?mode=advanced 在本环境无字段库与面包屑）。全页高级筛选态 Hub Tab 可隐藏，以面包屑 nav 与字段库标题判定。

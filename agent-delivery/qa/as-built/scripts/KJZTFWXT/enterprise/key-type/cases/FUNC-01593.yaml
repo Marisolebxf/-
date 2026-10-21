@@ -1,0 +1,86 @@
+id: FUNC-01593
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01593
+priority: P0
+title: 企业清单有数据时每行展示身份区域类型与查看画像
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 企业清单中有企业行（默认深圳筛选）
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  row_card: .arco-drawer-body div.items-start.border
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 进入类型分析页、打开企业清单抽屉；行字段在 expect 内判定
+expect:
+  - note: 点击「查看企业清单」后抽屉内有企业行（非空态）
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({ timeout: 10000 });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const empty = drawer.getByText('当前搜索条件无匹配企业');
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('前置不满足：默认深圳清单无企业行（空态）');
+      }
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const n = await profiles.count();
+      if (n < 1) throw new Error('抽屉内未见「查看画像」，判定无企业行');
+  - note: 每行有企业名称与统一社会信用代码
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const n = await profiles.count();
+      for (let i = 0; i < n; i++) {
+        const row = profiles.nth(i).locator('xpath=ancestor::div[contains(@class,"items-start")][1]');
+        const nameEl = row.locator('strong').first();
+        await expect(nameEl).toBeVisible({ timeout: 5000 });
+        const name = ((await nameEl.innerText()) || '').trim();
+        if (!name) throw new Error(`第 ${i + 1} 行缺企业名称`);
+        const codeLine = nameEl.locator('xpath=following-sibling::div[1]');
+        await expect(codeLine).toBeVisible({ timeout: 5000 });
+        const code = ((await codeLine.innerText()) || '').replace(/\s+/g, '').trim();
+        if (!code || code.length < 10 || code === name.replace(/\s+/g, '')) {
+          throw new Error(`第 ${i + 1} 行「${name}」缺统一社会信用代码字段: 「${code}」`);
+        }
+      }
+  - note: 每行有区县及类型标签
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const n = await profiles.count();
+      for (let i = 0; i < n; i++) {
+        const row = profiles.nth(i).locator('xpath=ancestor::div[contains(@class,"items-start")][1]');
+        const tags = row.locator('.arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 1) {
+          const name = ((await row.locator('strong').first().innerText()) || '').trim();
+          throw new Error(`第 ${i + 1} 行「${name}」缺区县或类型标签（.arco-tag 为 0）`);
+        }
+      }
+  - note: 每行有「查看画像」
+    assert: |-
+      const drawer = page.locator('.arco-drawer:visible').first();
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const n = await profiles.count();
+      for (let i = 0; i < n; i++) {
+        await expect(profiles.nth(i)).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 侧栏进入 key-enterprise-analysis；抽屉行 DOM 对齐 EnterpriseListDrawer（strong 名、strong 后首 div 为信用代码、arco-tag 区县/产业/类型、查看画像）。30888 Mock 信用代码可含 MOCK 非 GB 校验位，只验 dedicated 代码行非空。不钉死公司名。登录与关内部评审由 runner 会话前置。

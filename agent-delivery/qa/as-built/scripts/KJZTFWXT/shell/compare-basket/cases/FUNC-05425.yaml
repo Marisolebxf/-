@@ -1,0 +1,54 @@
+id: FUNC-05425
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05425
+priority: P1
+title: 查看招引候选名单页标题正确
+story: US-ENT-CMP-04
+entry_id: shell-compare-basket
+tier: B
+preconditions:
+  - 对比篮已打开
+locators:
+  panel: .system-compare-panel
+  view_lists: button「查看引育名单」
+  menu_attract: 查看招引候选名单
+  page_title: heading「招引企业推荐分析」
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: evaluate
+    note: 点击「查看引育名单」→「查看招引候选名单」；标题在 expect 判定
+expect:
+  - note: 前置开篮并进入招引候选名单页
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const panel = page.locator('.system-compare-panel');
+      if (!(await panel.isVisible().catch(() => false))) {
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+      }
+      const viewLists = panel.getByRole('button', { name: /查看引育名单/ }).first();
+      await expect(viewLists).toBeVisible({ timeout: 8000 });
+      await viewLists.scrollIntoViewIfNeeded().catch(() => {});
+      await viewLists.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      let menuItem = page.locator('.arco-dropdown-menu-item:visible').filter({ hasText: '查看招引候选名单' }).first();
+      if (!(await menuItem.count())) {
+        menuItem = page.getByText('查看招引候选名单', { exact: true }).first();
+      }
+      await expect(menuItem).toBeVisible({ timeout: 8000 });
+      await menuItem.click({ timeout: 10000 });
+      await page.waitForURL(/\/enterprise\/attraction/, { timeout: 15000 });
+      await page.waitForURL(/recommendation_tab=attraction/, { timeout: 15000 });
+      await page.waitForTimeout(600);
+      globalThis.__func05425_nav = true;
+  - note: 1、页面标题为「招引企业推荐分析」
+    assert: |-
+      if (!globalThis.__func05425_nav) throw new Error('前置未进入招引候选名单页');
+      await expect(page.getByRole('heading', { name: '招引企业推荐分析' }).first()).toBeVisible({ timeout: 12000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。下拉→/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates（compareBasketDispatch）。本条只验 H1，名单页内部不在本条。与 05409/05426 分开。登录与关评审由 runner 前置。B 档零 allow_skip。

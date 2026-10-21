@@ -1,0 +1,109 @@
+id: FUNC-05397
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05397
+priority: P0
+title: 服务机构页签列表搜索占位与行按钮
+story: US-ENT-CMP-07
+entry_id: shell-compare-basket
+tier: A
+preconditions:
+  - 对比篮已打开
+  - 服务机构页至少 1 家
+locators:
+  panel: .system-compare-panel
+  service_tab: '#compare-basket-tab-service_org'
+  search: placeholder 按机构名称搜索
+steps:
+  - action: goto
+    target: /enterprise/search
+  - action: click
+    target: 打开对比篮
+  - action: click
+    target: 服务机构页签
+expect:
+  - note: 前置：对比篮已打开，服务机构页至少 1 家；打开服务机构页签
+    assert: |-
+      const hostPath = '/enterprise/search';
+      if (!page.url().includes(hostPath)) throw new Error('未在宿主页: ' + page.url());
+      const parseSvcCount = (text) => {
+        const m = (text || '').replace(/\s+/g, ' ').match(/服务机构[^\d]*(\d+)\s*\/\s*50/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const openPanel = async () => {
+        const panel = page.locator('.system-compare-panel');
+        if (await panel.isVisible().catch(() => false)) return panel;
+        const dock = page.getByRole('button', { name: /打开对比篮/ });
+        if (await dock.count()) await dock.first().click({ timeout: 10000 });
+        else await page.getByRole('button', { name: /^对比篮$/ }).first().click({ timeout: 10000 });
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const seedServiceFromAdd = async (panel) => {
+        const svcTab = panel.locator('#compare-basket-tab-service_org');
+        await svcTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const addBtn = panel.getByRole('button', { name: '新增' }).first();
+        await addBtn.click({ timeout: 8000 });
+        const modal = page.locator('.arco-modal:visible').last();
+        await expect(modal).toBeVisible({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        let joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        if (!(await joinBtns.count())) {
+          const search = modal.getByPlaceholder('输入机构名称').first();
+          if (await search.count()) {
+            await search.fill('科技');
+            await page.waitForTimeout(600);
+          }
+          joinBtns = modal.getByRole('button', { name: '加入对比篮', exact: true });
+        }
+        if (!(await joinBtns.count())) throw new Error('ENV-SHELL-COMPARE-SVC-ADD-001：新增弹层无「加入对比篮」');
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        const close = modal.getByRole('button', { name: '取消' }).first();
+        if (await close.count()) await close.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      let panel = await openPanel();
+      let svcTab = panel.locator('#compare-basket-tab-service_org');
+      await svcTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      let svcCount = parseSvcCount(await svcTab.innerText());
+      let ws = panel.locator('[data-testid="service-org-compare-basket-workspace"]');
+      let nRows = await ws.getByRole('button', { name: '查看画像', exact: true }).count();
+      if ((svcCount != null && svcCount < 1) || nRows < 1) {
+        await seedServiceFromAdd(panel);
+        panel = page.locator('.system-compare-panel');
+        svcTab = panel.locator('#compare-basket-tab-service_org');
+        await svcTab.click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        svcCount = parseSvcCount(await svcTab.innerText());
+        ws = panel.locator('[data-testid="service-org-compare-basket-workspace"]');
+        nRows = await ws.getByRole('button', { name: '查看画像', exact: true }).count();
+      }
+      if (nRows < 1 && (svcCount == null || svcCount < 1)) {
+        throw new Error('ENV-SHELL-COMPARE-SVC-EMPTY-001：服务机构页至少 1 家');
+      }
+      const cls = (await svcTab.getAttribute('class')) || '';
+      if (!/active/.test(cls)) throw new Error('服务机构页签未激活: ' + cls);
+  - note: 区块标题为「篮内服务机构」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      await expect(panel.getByText('篮内服务机构').first()).toBeVisible({ timeout: 8000 });
+      const cls = (await panel.locator('#compare-basket-tab-service_org').getAttribute('class')) || '';
+      if (!/active/.test(cls)) throw new Error('服务机构页签未激活: ' + cls);
+  - note: 搜索占位为「按机构名称搜索」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      const ws = panel.locator('[data-testid="service-org-compare-basket-workspace"]');
+      const search = ws.getByPlaceholder('按机构名称搜索');
+      await expect(search.first()).toBeVisible({ timeout: 8000 });
+      await expect(search.first()).toHaveAttribute('placeholder', '按机构名称搜索');
+  - note: 行上有「查看画像」「移除」
+    assert: |-
+      const panel = page.locator('.system-compare-panel');
+      const ws = panel.locator('[data-testid="service-org-compare-basket-workspace"]');
+      const viewBtn = ws.getByRole('button', { name: '查看画像', exact: true }).first();
+      await expect(viewBtn).toBeVisible({ timeout: 8000 });
+      const row = viewBtn.locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+      await expect(row.getByRole('button', { name: '移除', exact: true })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog=app-shell#system-compare-basket；goto /enterprise/search。服务机构 Tab #compare-basket-tab-service_org；ServiceOrgCompareBasketPanel 标题「篮内服务机构」、搜索 placeholder「按机构名称搜索」、行按钮「查看画像」「移除」。scout 2026-10-14 服务机构 1/50。空篮经服务机构 Tab「新增」入篮（会改会话数据）。

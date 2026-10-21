@@ -1,0 +1,55 @@
+id: FUNC-00393
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00393
+priority: P1
+title: 显示热力开关可关闭后再打开
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 空间分布为地图视图
+  - 「显示热力」开关为开启
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  heat_switch: switch aria-label「显示热力」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 地图视图下两次切换「显示热力」；开关关/开态在 expect 内顺序判定
+expect:
+  - note: 前置：空间分布为地图视图且「显示热力」默认为开
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      const sw = panel.getByRole('switch', { name: '显示热力' });
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      await expect(sw).toHaveAttribute('aria-checked', 'true');
+  - note: 1、第一次点击「显示热力」后开关为关
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const sw = panel.getByRole('switch', { name: '显示热力' });
+      await sw.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(sw).toHaveAttribute('aria-checked', 'false');
+  - note: 2、第二次点击「显示热力」后开关为开
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const sw = panel.getByRole('switch', { name: '显示热力' });
+      await sw.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(sw).toHaveAttribute('aria-checked', 'true');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 用例只验开关往返态（关→开），不判热力图层像素；深链跟 FUNC-00384（30888 catalog 路由）。登录与关内部评审由 runner 会话前置。

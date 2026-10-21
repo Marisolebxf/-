@@ -1,0 +1,89 @@
+id: FUNC-02791
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02791
+priority: P0
+title: 默认分析对象下所属产业链下拉选项个数正确
+entry_id: chain-panorama
+tier: A
+preconditions:
+  - 分析对象两级均为「新一代信息技术」
+locators:
+  segment: .industry-catalog-select
+steps:
+  - action: goto
+    target: /industry-center/panorama
+  - action: evaluate
+    note: 展开「所属产业链」下拉，选项个数与名称在 expect 判定
+expect:
+  - note: 前置：已进入本页且分析对象两级均为「新一代信息技术」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
+      }
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      await expect(ctx).toBeVisible({ timeout: 10000 });
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const objectSelects = ctx.locator('.industry-cluster-select .arco-select-view');
+      await expect(objectSelects.first()).toBeVisible({ timeout: 8000 });
+      const n = await objectSelects.count();
+      if (n < 2) throw new Error('分析对象下应有 2 个下拉，现场可见 ' + n + ' 个');
+      const left = await read(objectSelects.nth(0));
+      const right = await read(objectSelects.nth(1));
+      if (!/新一代信息技术/.test(left)) throw new Error('分析对象左侧不符前置: ' + left);
+      if (!/新一代信息技术/.test(right)) throw new Error('分析对象右侧不符前置: ' + right);
+      const seg = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      await expect(seg).toBeVisible({ timeout: 8000 });
+      globalThis.__func02791_onPage = true;
+  - note: 1、展开「所属产业链」下拉后选项共 6 个（名称见用例附录 C）
+    assert: |-
+      if (!globalThis.__func02791_onPage) throw new Error('前置：分析对象未满足或未到所属产业链控件');
+      const want = [
+        '半导体与集成电路',
+        '人工智能与应用',
+        '新型网络与通信',
+        '超高清视频与显示',
+        '智能终端',
+        '软件与信息服务',
+      ];
+      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
+      const seg = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
+      await seg.scrollIntoViewIfNeeded();
+      await seg.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== 6) {
+        throw new Error('所属产业链选项应为 6 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '所属产业链选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/panorama；用例「所属产业链」= industry-catalog-select（testdata filters.segment）。
+  前置默认两级「新一代信息技术」对齐 FUNC-02788 / scout-deep textHead；6 项名称对齐用例册附录 C（02791）。
+  点法对齐 P0-06（.industry-catalog-select + .arco-trigger-popup .arco-select-option）。登录与关内部评审由 runner 前置。A 档零 allow_skip。

@@ -1,0 +1,146 @@
+id: FUNC-03011
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03011
+priority: P1
+title: 结果页按此配置新建分析回到配置且产业区域与结果一致
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已打开一条成功结果（assert 自含）
+locators:
+  rebuild: button「按此配置新建分析」
+  tab_config: tab「区域产业指数评价」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 成功结果页点「按此配置新建分析」；两条预期在 expect
+expect:
+  - note: 前置打开成功结果并点击「按此配置新建分析」
+    assert: |-
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const isSuccessResult = async () => {
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/区域产业指数评价生成中|可视化分析过程/.test(body) && !/区域产业指数评价结果/.test(body)) {
+          return false;
+        }
+        return await main().getByText('区域产业指数评价结果').first().isVisible().catch(() => false);
+      };
+      const openCompletedResult = async () => {
+        await gate404();
+        await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: /CHAIN-\d{8}-\d{3}/ }).first();
+        if (!(await doneRow.count())) {
+          throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK: 分析记录无已完成行');
+        }
+        const viewBtn = doneRow.getByRole('button', { name: '查看结果' }).first();
+        await expect(viewBtn).toBeVisible({ timeout: 8000 });
+        await viewBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(2500);
+        if (!(await isSuccessResult())) {
+          throw new Error('打开结果页后未见「区域产业指数评价结果」');
+        }
+      };
+      await openCompletedResult();
+      const resultBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      let expectIndustry = '';
+      let expectRegion = '';
+      const snap = resultBody.match(/([\u4e00-\u9fa5A-Za-z0-9·]{2,20})\s*[·•]\s*(广东省|深圳市|北京市|上海市|杭州市|广州市)/);
+      if (snap) {
+        expectIndustry = snap[1].replace(/·/g, '').trim();
+        expectRegion = snap[2];
+      }
+      if (!expectIndustry || !expectRegion) {
+        const alt = resultBody.match(/(集成电路|传感器|人工智能|智能终端|软件与信息服务|生物)\s*[·•]\s*(广东省|深圳市|北京市|上海市|杭州市|广州市)/);
+        if (alt) {
+          expectIndustry = alt[1];
+          expectRegion = alt[2];
+        }
+      }
+      if (!expectIndustry || !expectRegion) {
+        throw new Error('结果页未解析出产业·区域快照，无法互证回填');
+      }
+      const rebuild = main().getByRole('button', { name: '按此配置新建分析', exact: true }).first();
+      if (!(await rebuild.count()) || !(await rebuild.isVisible().catch(() => false))) {
+        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-REBUILD-001：结果页无「按此配置新建分析」');
+      }
+      await rebuild.scrollIntoViewIfNeeded().catch(() => {});
+      await rebuild.click({ timeout: 15000 });
+      await page.waitForTimeout(1500);
+      globalThis.__func03011 = { expectIndustry, expectRegion, resultSnippet: resultBody.slice(0, 400) };
+  - note: 1、回到分析配置
+    assert: |-
+      if (!globalThis.__func03011) throw new Error('前置：未从结果页点按此配置新建分析');
+      const url = page.url();
+      if (/view=processing|demo_state=processing/.test(url)) {
+        throw new Error('按此配置新建后不应进入生成中 URL：' + url);
+      }
+      const main = () => page.locator('main').first();
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/区域产业指数评价生成中|可视化分析过程/.test(body) && !/分析配置|已计入/.test(body)) {
+        throw new Error('按此配置新建后不应停在生成中态');
+      }
+      if (/区域产业指数评价结果/.test(body) && !/开始分析/.test(body)) {
+        throw new Error('按此配置新建后应离开结果页主态');
+      }
+      await expect(page).toHaveURL(/tab=index|workspace=index/, { timeout: 12000 });
+      await expect(page.getByRole('tab', { name: '区域产业指数评价' }).first()).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 10000 });
+  - note: 2、产业与区域与该次结果一致
+    assert: |-
+      if (!globalThis.__func03011?.expectIndustry) throw new Error('前置：无结果页产业区域快照');
+      const expInd = globalThis.__func03011.expectIndustry;
+      const expReg = globalThis.__func03011.expectRegion;
+      const main = () => page.locator('main').first();
+      const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industryView).toBeVisible({ timeout: 8000 });
+      const industryText = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!industryText || /请选择|未选产业/.test(industryText)) {
+        throw new Error('产业未按结果回显：「' + industryText + '」；结果快照「' + expInd + '」（缺陷候选同用例册备注）');
+      }
+      const regionBlock = page.locator('text=评价区域').first();
+      await expect(regionBlock).toBeVisible({ timeout: 8000 });
+      const regionView = regionBlock.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      let regionText = '';
+      if (await regionView.count()) {
+        regionText = ((await regionView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      }
+      if (!regionText) {
+        const regionFromSummary = body.match(/[·•]\s*(广东省|深圳市|北京市|上海市|杭州市|广州市)\s*[·•]/);
+        regionText = regionFromSummary ? regionFromSummary[1] : '';
+      }
+      if (!regionText || /请选择/.test(regionText)) {
+        throw new Error('评价区域未按结果回显：「' + regionText + '」');
+      }
+      const indOk = industryText.includes(expInd) || expInd.includes(industryText) || body.includes(expInd);
+      if (!indOk) {
+        throw new Error('产业与结果不一致：结果「' + expInd + '」配置「' + industryText + '」');
+      }
+      const regOk = regionText.includes(expReg) || body.includes(expReg);
+      if (!regOk) {
+        throw new Error('区域与结果不一致：结果「' + expReg + '」配置「' + regionText + '」');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index。步骤=分析记录已完成→查看结果→快照产业·区域→结果页「按此配置新建分析」（非记录行「复制配置」，≠03000）。
+  机检=tab=index+开始分析可见+产业/评价区域与结果互证。无已完成→ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK；无按钮→ENV-CHAIN-REGIONAL-INDEX-NO-REBUILD-001。
+  用例册备注：现场曾产业未选仅区域回填→本脚本按预期 2 应 fail 记缺陷候选。edu 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。

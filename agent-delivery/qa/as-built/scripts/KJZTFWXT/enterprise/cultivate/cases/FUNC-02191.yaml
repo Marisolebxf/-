@@ -1,0 +1,94 @@
+id: FUNC-02191
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02191
+priority: P0
+title: 政策导向下拉给出 4 个选项
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 停在条件筛选推荐 Tab
+locators:
+  filter_tab: tab「条件筛选推荐」
+  policy_select: main .arco-select-view 含 placeholder 全部政策导向
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 展开「全部政策导向」由 expect assert 自含
+expect:
+  - note: 展开政策导向下拉后选项共 4 项
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openFilterTab = async () => {
+        const tab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        if ((await tab.getAttribute('aria-selected')) !== 'true') {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      const collectPolicyOptions = async () => {
+        const pol = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部政策导向"]') }).first();
+        await expect(pol).toBeVisible({ timeout: 8000 });
+        await pol.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opts = popup.locator('[role=option], .arco-select-option');
+        const texts = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
+        return [...new Set(texts)];
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await openFilterTab();
+      await expect(page.locator('input[placeholder="全部政策导向"]').first()).toBeVisible({ timeout: 8000 });
+      let unique = await collectPolicyOptions();
+      if (unique.length !== 4) {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await openFilterTab();
+        unique = await collectPolicyOptions();
+      }
+      if (unique.length !== 4) {
+        throw new Error(`政策导向去重后选项数为 ${unique.length}，预期 4；实际=${unique.join('、')}`);
+      }
+      await page.evaluate((u) => { window.__qa_policy_opts = u; }, unique);
+  - note: 四项为科技创新、产业升级、绿色发展、市场拓展
+    assert: |-
+      let unique = await page.evaluate(() => window.__qa_policy_opts);
+      if (!Array.isArray(unique) || unique.length !== 4) {
+        const pol = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部政策导向"]') }).first();
+        await pol.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const texts = (await popup.locator('[role=option], .arco-select-option').allTextContents())
+          .map((t) => t.replace(/\s+/g, '').trim())
+          .filter(Boolean);
+        unique = [...new Set(texts)];
+      }
+      const expected = ['科技创新', '产业升级', '绿色发展', '市场拓展'];
+      for (const name of expected) {
+        if (!unique.some((t) => t === name || t.includes(name))) {
+          throw new Error(`政策导向未见「${name}」，实际=${unique.join('、')}`);
+        }
+      }
+      if (unique.length !== 4) {
+        throw new Error(`政策导向去重后项数 ${unique.length}，预期 4；实际=${unique.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog_path 深链含 recommendation_tab=cultivation；政策导向四项与 testdata.policy_options_observed 一致（2026-10-14 scout）。登录与关评审由 runner 前置。

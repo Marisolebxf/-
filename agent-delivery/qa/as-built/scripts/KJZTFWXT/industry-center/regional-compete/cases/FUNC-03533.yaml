@@ -1,0 +1,126 @@
+id: FUNC-03533
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03533
+priority: P0
+title: 侧栏进入区域产业竞争力评价页标题与双 Tab 默认态正确
+entry_id: chain-regional-compete
+tier: A
+preconditions:
+  - 已登录
+locators:
+  menu_group: 侧栏分组「产业链分析」
+  menu_leaf: 侧栏项「区域产业竞争力评价」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 展开「产业链分析」→点「区域产业竞争力评价」；标题与页签在 expect
+expect:
+  - note: 1、页标题为「区域产业竞争力评价」
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'https://edu.itic-sci.com/tts/svcz/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/区域产业竞争力评价/.test(bodyGate);
+      };
+      const recover404Shell = async () => {
+        if (!(await bodyIs404())) return;
+        const home = page.getByRole('button', { name: '返回首页' });
+        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
+          await home.first().click({ timeout: 8000 });
+          await page.waitForTimeout(2000);
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const onTarget = () =>
+        /\/industry-center\/regional/.test(page.url()) &&
+        /workspace=competitiveness/.test(page.url()) &&
+        /tab=competitiveness/.test(page.url());
+      const ensureMenuShell = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) {
+          await recover404Shell();
+        }
+        if (await bodyIs404()) {
+          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (await bodyIs404()) {
+            await recover404Shell();
+          }
+        }
+      };
+      const enterViaSidebar = async () => {
+        await ensureMenuShell();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404 且返回首页后仍 404） ' + page.url());
+        }
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+      };
+      if (!onTarget() || (await bodyIs404())) {
+        await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1000);
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与 catalog 深链均 SPA404 ' + page.url());
+      }
+      await expect(page).toHaveURL(/\/industry-center\/regional/);
+      await expect(page).toHaveURL(/workspace=competitiveness/);
+      await expect(page).toHaveURL(/tab=competitiveness/);
+      await expect(page).toHaveTitle(/区域产业竞争力评价 - 科技专题服务系统/);
+  - note: 2、页签为「区域产业竞争力评价」和「分析记录」，前者选中
+    assert: |-
+      const main = page.locator('[role=tab][data-tab-key="competitiveness"]');
+      const rec = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(main).toBeVisible({ timeout: 8000 });
+      await expect(rec).toBeVisible({ timeout: 8000 });
+      const aria = await main.getAttribute('aria-selected');
+      const cls = await main.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('区域产业竞争力评价 Tab 未选中');
+      }
+      if (!/区域产业竞争力评价/.test((await main.innerText()).trim())) {
+        throw new Error('主 Tab 文案不符');
+      }
+      if (!/^分析记录/.test((await rec.innerText()).trim())) {
+        throw new Error('记录 Tab 文案不符');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=entry-seed /industry-center/regional?workspace=competitiveness&tab=competitiveness。
+  用例步骤=展开「产业链分析」→点「区域产业竞争力评价」；goto sibling /industry-center/search。
+  现场无独立 h1，标题在 document.title；Tab 用 data-tab-key（同 P0-01）。作废 01100 中间层「区域产业评价」菜单。
+  登录关评审 runner 前置。A 档零 allow_skip。

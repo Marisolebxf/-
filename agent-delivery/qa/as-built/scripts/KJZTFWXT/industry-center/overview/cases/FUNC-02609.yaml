@@ -1,0 +1,92 @@
+id: FUNC-02609
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02609
+priority: P1
+title: 只换集群且未选产业时全景给出无快照文案
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已选择「海洋产业」
+  - 尚未选择产业
+locators:
+  cluster: span[aria-label=集群]
+  industry: span[aria-label=产业]
+  tab_panorama: '#industry-overview-tab-panorama'
+  panorama_panel: '[data-frame-id="F-OV-01"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 选「海洋产业」且未选产业，打开「产业链全景」Tab，校验无快照空态
+expect:
+  - note: 前置：已选「海洋产业」、产业为「请选择产业」、尚未选产业链
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const pickCluster = async (name) => {
+        await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: name });
+        await expect(opt.first()).toBeVisible({ timeout: 8000 });
+        await opt.first().click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await pickCluster('海洋产业');
+      const clusterTxt = (await page.locator('span[aria-label="集群"]').innerText()).replace(/\s+/g, ' ').trim();
+      if (!clusterTxt.includes('海洋产业')) {
+        throw new Error('前置：集群应为「海洋产业」，实际：' + clusterTxt);
+      }
+      const industryEl = page.locator('span[aria-label="产业"]');
+      await expect(industryEl).toBeVisible({ timeout: 8000 });
+      const industryTitle = ((await industryEl.getAttribute('title')) || '').trim();
+      const industryTxt = (await industryEl.innerText()).replace(/\s+/g, ' ').trim();
+      const industryEmpty =
+        industryTitle.includes('请选择产业') ||
+        industryTxt.includes('请选择产业') ||
+        (!industryTitle && !industryTxt.replace(/请选择产业/g, '').trim());
+      if (!industryEmpty) {
+        throw new Error('前置：尚未选择产业，产业选框应为空/「请选择产业」，title=' + industryTitle + ' text=' + industryTxt);
+      }
+      const chain = page.locator('.industry-overview-chain-select');
+      const chainCls = (await chain.getAttribute('class')) || '';
+      if (!chainCls.includes('disabled')) {
+        throw new Error('前置：未选产业时产业链选框应禁用');
+      }
+  - note: 步骤：打开「产业链全景」
+    assert: |-
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await expect(mode).toBeVisible({ timeout: 10000 });
+      const panTab = page.locator('#industry-overview-tab-panorama');
+      await expect(panTab).toBeVisible({ timeout: 8000 });
+      const aria = await panTab.getAttribute('aria-selected');
+      const cls = await panTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        await mode.getByRole('tab', { name: '产业链全景' }).click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      }
+      await expect(page).toHaveURL(/[?&]tab=panorama/, { timeout: 8000 });
+      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
+  - note: 1、全景区出现「暂无已发布全景快照」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-01"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const empty = panel.getByText('暂无已发布全景快照', { exact: true });
+      await expect(empty).toBeVisible({ timeout: 10000 });
+      const workbench = panel.locator('.industry-overview-panorama-workbench');
+      await expect(workbench).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview。换集群「海洋产业」后产业清空（placeholder/title「请选择产业」）、产业链 disabled（与 scout-after-cluster-switch 同口径）。
+  未选产业/链时 loadOverview 不拉 snapshot，全景 Tab 内 a-empty description「暂无已发布全景快照」（F-OV-01，lumen-ui-topic IndustryOverviewPage hasSnapshot=false）。
+  用例步骤「打开产业链全景」= #industry-overview-tab-panorama；默认已选则回读。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,53 @@
+id: FUNC-02610
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02610
+priority: P1
+title: 未选产业链时加入对比篮不可用
+entry_id: chain-overview
+tier: B
+preconditions:
+  - 已进入专题全景
+locators:
+  cluster: 'span[aria-label="集群"]'
+  join: button「加入对比篮」
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 展开集群选框选择「海洋产业」，回读「加入对比篮」禁用态
+expect:
+  - note: 步骤：展开产业左侧选框；选择「海洋产业」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      await expect(page.locator('span[aria-label="集群"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('span[aria-label="集群"]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opt = popup.locator('.arco-select-option').filter({ hasText: '海洋产业' });
+      await expect(opt.first()).toBeVisible({ timeout: 8000 });
+      await opt.first().click();
+      await page.waitForTimeout(800);
+      const clusterTitle = await page.locator('span[aria-label="集群"]').getAttribute('title');
+      if (clusterTitle !== '海洋产业') {
+        throw new Error('集群应选中「海洋产业」，实际 title=' + clusterTitle);
+      }
+  - note: 1、「加入对比篮」为禁用
+    assert: |-
+      const join = page.getByRole('button', { name: '加入对比篮', exact: true });
+      await expect(join).toBeVisible({ timeout: 8000 });
+      await expect(join).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  用例「产业左侧选框」= 筛选区 aria-label 集群（02608/02590 同口径）。切「海洋产业」且未选产业/产业链时「加入对比篮」disabled（testdata disabled_when_no_chain；scout-after-cluster-switch 生物产业同型）。
+  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

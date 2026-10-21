@@ -1,0 +1,290 @@
+id: FUNC-02220
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02220
+priority: P1
+title: 结果区产业类别下拉只含当前结果出现过的类别
+story: US-ENT-RECRUIT-C1
+entry_id: ent-cultivate
+tier: B
+preconditions:
+  - 已有培育推荐分析结果（assert 自含到达成功结果）
+locators:
+  result_industry: recruit-tab-stack 内 input[placeholder="产业类别"]
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 展开结果区产业类别下拉；选项与全表产业去重互证在 expect
+expect:
+  - note: 1、选项个数等于当前结果中不重复的产业类别数
+    assert: |-
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const parseCounts = (text) => {
+        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
+        const filteredM = text.match(/当前筛选\s*(\d+)\s*家/);
+        if (!analyzedM || !filteredM) return null;
+        return { analyzed: parseInt(analyzedM[1], 10), filtered: parseInt(filteredM[1], 10) };
+      };
+      const hasRankingTable = (text) =>
+        /培育推荐分析结果/.test(text) && /排名/.test(text) && /企业名称/.test(text) && (parseCounts(text)?.analyzed ?? 0) >= 1;
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          if (await page.locator('input[placeholder="全部产业类别"]').first().isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady();
+        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+        if ((await tab.count()) < 1) {
+          await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
+        } else {
+          await tab.click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(900);
+      };
+      const pickHistoryOpenButton = async () => {
+        await openRecentTab();
+        const st = stack();
+        for (const name of ['恢复结果', '继续查看', '查看结果']) {
+          const buttons = st.getByRole('button', { name });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            let row = btn.locator('xpath=ancestor::tr[1]');
+            if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (txt && /条件筛选/.test(txt) && (/已完成|成功/.test(txt) || name !== '恢复结果')) {
+              return btn;
+            }
+          }
+        }
+        return null;
+      };
+      const waitResultShell = async (timeoutMs = 120000) => {
+        const title = () => stack().getByText('培育推荐分析结果').first();
+        const t0 = Date.now();
+        let last = '';
+        while (Date.now() - t0 < timeoutMs) {
+          await page.waitForTimeout(500);
+          last = await stack().innerText().catch(() => '');
+          const titleVis = await title().isVisible().catch(() => false);
+          if (titleVis && !/可视化分析过程/.test(last) && hasRankingTable(last)) return last;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && hasRankingTable(last)) return last;
+          const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
+          if (failVis && !/可视化分析过程/.test(last)) {
+            throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达培育推荐分析成功结果以测结果产业类别（与 FUNC-02188/02197 同源 D4）');
+          }
+        }
+        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
+        if (stuck) {
+          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：长期停留在可视化分析过程，无法到达企业排名结果');
+        }
+        throw new Error('未在超时内到达含企业排名表的成功结果: ' + last.slice(0, 200));
+      };
+      const runFilterAnalysis = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator('input[placeholder="全部产业类别"]').first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        return await waitResultShell();
+      };
+      const ensureSuccessResult = async () => {
+        await dismissBasket();
+        await expect(stack()).toBeVisible({ timeout: 15000 });
+        let body = await stack().innerText().catch(() => '');
+        if (hasRankingTable(body)) return body;
+        const histBtn = await pickHistoryOpenButton().catch(() => null);
+        if (histBtn) {
+          await histBtn.scrollIntoViewIfNeeded();
+          await histBtn.click({ timeout: 15000 });
+          body = await waitResultShell(60000);
+          if (hasRankingTable(body)) return body;
+        }
+        await page.getByRole('tab', { name: '条件筛选推荐' }).first().click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        return await runFilterAnalysis();
+      };
+      const industryColIndex = async (table) => {
+        const ths = table.locator('.arco-table-th');
+        const n = await ths.count();
+        for (let i = 0; i < n; i++) {
+          const t = ((await ths.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '');
+          if (t.includes('产业类别')) return i;
+        }
+        throw new Error('企业排名表未见「产业类别」列头');
+      };
+      const readIndustriesOnPage = async () => {
+        const st = stack();
+        const table = st.locator('.arco-table').first();
+        await expect(table).toBeVisible({ timeout: 10000 });
+        const idx = await industryColIndex(table);
+        const rows = table.locator('.arco-table-body .arco-table-tr');
+        const rn = await rows.count();
+        const out = [];
+        for (let i = 0; i < rn; i++) {
+          const cell = rows.nth(i).locator('.arco-table-td').nth(idx);
+          const t = ((await cell.innerText().catch(() => '')) || '').trim();
+          if (t && t !== '—') out.push(t);
+        }
+        return out;
+      };
+      const gotoResultPage = async (pageNum) => {
+        const st = stack();
+        const item = st.locator('.arco-pagination-item').filter({ hasText: new RegExp('^\\s*' + pageNum + '\\s*$') }).first();
+        if ((await item.count()) < 1) return false;
+        await item.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        return true;
+      };
+      const collectIndustryCounts = async () => {
+        await gotoResultPage(1).catch(() => {});
+        const counts = new Map();
+        const visited = new Set();
+        for (let guard = 0; guard < 32; guard++) {
+          const active = stack().locator('.arco-pagination-item-active').first();
+          const cur = ((await active.innerText().catch(() => '')) || '1').trim();
+          if (visited.has(cur)) break;
+          visited.add(cur);
+          for (const ind of await readIndustriesOnPage()) {
+            counts.set(ind, (counts.get(ind) || 0) + 1);
+          }
+          const nextNums = [];
+          const items = stack().locator('.arco-pagination-item');
+          const ni = await items.count();
+          for (let j = 0; j < ni; j++) {
+            const label = ((await items.nth(j).innerText().catch(() => '')) || '').trim();
+            if (/^\d+$/.test(label) && !visited.has(label)) nextNums.push(parseInt(label, 10));
+          }
+          if (!nextNums.length) break;
+          nextNums.sort((a, b) => a - b);
+          const ok = await gotoResultPage(nextNums[0]);
+          if (!ok) break;
+        }
+        await gotoResultPage(1).catch(() => {});
+        return counts;
+      };
+      const openResultIndustryDropdown = async () => {
+        const st = stack();
+        const ph = st.locator('input[placeholder="产业类别"]').first();
+        await expect(ph).toBeVisible({ timeout: 10000 });
+        await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-popup-visible').first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        return popup;
+      };
+      const readDropdownLabels = async (popup) => {
+        const opts = popup.locator('[role=option], .arco-select-option');
+        const texts = (await opts.allTextContents())
+          .map((t) => t.replace(/\s+/g, '').trim())
+          .filter(Boolean);
+        return [...new Set(texts)];
+      };
+      await ensureSuccessResult();
+      const st = stack();
+      await st.getByRole('button', { name: '重置' }).click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(600);
+      const industryCounts = await collectIndustryCounts();
+      if (industryCounts.size < 1) {
+        throw new Error('成功结果表未读到任何产业类别单元格');
+      }
+      const popup = await openResultIndustryDropdown();
+      const dropdownLabels = await readDropdownLabels(popup);
+      if (dropdownLabels.length !== industryCounts.size) {
+        throw new Error(
+          '产业类别下拉去重项数 ' +
+            dropdownLabels.length +
+            ' ≠ 结果表产业去重数 ' +
+            industryCounts.size +
+            '；下拉=' +
+            dropdownLabels.join('、') +
+            '；表=' +
+            [...industryCounts.keys()].join('、'),
+        );
+      }
+      for (const label of dropdownLabels) {
+        if (!industryCounts.has(label)) {
+          throw new Error('下拉含结果表未出现的产业类别：' + label);
+        }
+      }
+      for (const label of industryCounts.keys()) {
+        if (!dropdownLabels.includes(label)) {
+          throw new Error('结果表产业类别未出现在下拉：' + label);
+        }
+      }
+      const pick = dropdownLabels[0];
+      globalThis.__func02220 = { pick, expectedFiltered: industryCounts.get(pick) || 0, industryCounts: Object.fromEntries(industryCounts) };
+      await page.keyboard.press('Escape').catch(() => {});
+  - note: 2、选定一项后当前筛选只留该类别
+    assert: |-
+      const ctx = globalThis.__func02220;
+      if (!ctx || !ctx.pick) throw new Error('前置：未完成下拉与结果表互证');
+      const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
+      const st = stack();
+      const parseCounts = (text) => {
+        const filteredM = text.match(/当前筛选\s*(\d+)\s*家/);
+        return filteredM ? parseInt(filteredM[1], 10) : null;
+      };
+      const industryColIndex = async (table) => {
+        const ths = table.locator('.arco-table-th');
+        const n = await ths.count();
+        for (let i = 0; i < n; i++) {
+          const t = ((await ths.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, '');
+          if (t.includes('产业类别')) return i;
+        }
+        throw new Error('未见产业类别列');
+      };
+      const ph = st.locator('input[placeholder="产业类别"]').first();
+      await ph.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const opt = page.locator(optSel).filter({ hasText: ctx.pick }).first();
+      await expect(opt).toBeVisible({ timeout: 8000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      let filtered = null;
+      for (let i = 0; i < 16; i++) {
+        await page.waitForTimeout(400);
+        filtered = parseCounts(await st.innerText().catch(() => ''));
+        if (filtered === ctx.expectedFiltered) break;
+      }
+      if (filtered !== ctx.expectedFiltered) {
+        throw new Error(
+          '选定「' + ctx.pick + '」后当前筛选为 ' + filtered + ' 家，预期 ' + ctx.expectedFiltered + ' 家',
+        );
+      }
+      const table = st.locator('.arco-table').first();
+      const idx = await industryColIndex(table);
+      const rows = table.locator('.arco-table-body .arco-table-tr');
+      const rn = await rows.count();
+      if (rn < 1) throw new Error('筛选后表内无数据行');
+      for (let i = 0; i < rn; i++) {
+        const cell = rows.nth(i).locator('.arco-table-td').nth(idx);
+        const t = ((await cell.innerText().catch(() => '')) || '').trim();
+        if (t !== ctx.pick) {
+          throw new Error('筛选后第 ' + (i + 1) + ' 行产业类别为「' + t + '」，预期仅「' + ctx.pick + '」');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation。步骤=结果区 placeholder「产业类别」（非条件区「全部产业类别」）展开下拉。机检=下拉去重项与全表分页扫产业列互证；选定首项后「当前筛选」= 该产业在共分析结果中的条数且当前页可见行产业列一致。前置同 02197（成功态直读→最近分析恢复→产业类别人工智能发起）。D4·2026-10-20 rewrite-FUNC-02220 svcz 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（恢复/新发起均无法到达成功结果，两条 expect 未触达；与 02188/02197 同源）。登录与关评审由 runner 前置。B 档零 allow_skip。

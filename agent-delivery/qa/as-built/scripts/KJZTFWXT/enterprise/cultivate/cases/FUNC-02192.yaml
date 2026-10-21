@@ -1,0 +1,94 @@
+id: FUNC-02192
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02192
+priority: P0
+title: 企业规模下拉给出 4 个选项
+entry_id: ent-cultivate
+tier: A
+preconditions:
+  - 停在条件筛选推荐 Tab
+locators:
+  filter_tab: tab「条件筛选推荐」
+  scale_select: main .arco-select-view 含 placeholder 全部企业规模
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+  - action: evaluate
+    note: 展开「全部企业规模」由 expect assert 自含
+expect:
+  - note: 展开企业规模下拉后选项共 4 项
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const openFilterTab = async () => {
+        const tab = page.getByRole('tab', { name: '条件筛选推荐' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        if ((await tab.getAttribute('aria-selected')) !== 'true') {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      };
+      const collectScaleOptions = async () => {
+        const sel = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部企业规模"]') }).first();
+        await expect(sel).toBeVisible({ timeout: 8000 });
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opts = popup.locator('[role=option], .arco-select-option');
+        const texts = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
+        return [...new Set(texts)];
+      };
+      await dismissBasket();
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await openFilterTab();
+      await expect(page.locator('input[placeholder="全部企业规模"]').first()).toBeVisible({ timeout: 8000 });
+      let unique = await collectScaleOptions();
+      if (unique.length !== 4) {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await openFilterTab();
+        unique = await collectScaleOptions();
+      }
+      if (unique.length !== 4) {
+        throw new Error(`企业规模去重后选项数为 ${unique.length}，预期 4；实际=${unique.join('、')}`);
+      }
+      await page.evaluate((u) => { window.__qa_scale_opts = u; }, unique);
+  - note: 四项为大型、中型、小型、微型
+    assert: |-
+      let unique = await page.evaluate(() => window.__qa_scale_opts);
+      if (!Array.isArray(unique) || unique.length !== 4) {
+        const sel = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部企业规模"]') }).first();
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const texts = (await popup.locator('[role=option], .arco-select-option').allTextContents())
+          .map((t) => t.replace(/\s+/g, '').trim())
+          .filter(Boolean);
+        unique = [...new Set(texts)];
+      }
+      const expected = ['大型', '中型', '小型', '微型'];
+      for (const name of expected) {
+        if (!unique.some((t) => t === name || t.includes(name))) {
+          throw new Error(`企业规模未见「${name}」，实际=${unique.join('、')}`);
+        }
+      }
+      if (unique.length !== 4) {
+        throw new Error(`企业规模去重后项数 ${unique.length}，预期 4；实际=${unique.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: catalog_path 深链含 recommendation_tab=cultivation；企业规模四项与用例主表一致。登录与关评审由 runner 前置。

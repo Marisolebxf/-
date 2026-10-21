@@ -1,0 +1,186 @@
+id: FUNC-02306
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02306
+priority: P0
+title: 已完成任务点恢复结果打开原结果且不新建任务
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 最近分析中有已完成的供应链任务
+locators:
+  recent_tab: tab「最近分析」
+  restore: button「恢复结果」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析→已完成行点「恢复结果」；结果页与 task_id/摘要在 expect
+expect:
+  - note: 1、打开该任务的结果页（非过程页、非新建分析）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const scrollHistoryActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const extractTid = (rowText) => {
+        const m = rowText.match(TID_RE);
+        return m ? m[0] : null;
+      };
+      const entSummaryFromRow = async (row) => {
+        const cells = row.locator('td');
+        const cn = await cells.count();
+        if (cn >= 3) {
+          const t = (await cells.nth(2).innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (t && t !== '—' && t !== '-') return t;
+        }
+        const txt = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+        const parts = txt.split(/\s+/);
+        const tidIdx = parts.findIndex((p) => TID_RE.test(p));
+        if (tidIdx >= 0 && parts.length > tidIdx + 2) {
+          const slice = parts.slice(tidIdx + 2, tidIdx + 6).join(' ');
+          if (slice && !/^企业供应链/.test(slice)) return slice;
+        }
+        const m = txt.match(/企业供应链关系分析\s+(.+?)\s+\d{4}[/-]\d/);
+        if (m) return m[1].trim();
+        return '';
+      };
+      const isCompletedRestoreRow = (rowText) =>
+        /已完成/.test(rowText) && /恢复结果/.test(rowText) && TID_RE.test(rowText);
+      const pickCompletedRestoreOnPage = async () => {
+        await scrollHistoryActions();
+        const rows = main().locator('table tbody tr, .arco-table-tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = await row.innerText().catch(() => '');
+          if (!isCompletedRestoreRow(rowText)) continue;
+          const entSummary = await entSummaryFromRow(row);
+          if (!entSummary || entSummary === '—') continue;
+          const restore = row.getByRole('button', { name: '恢复结果' }).first();
+          if (!(await restore.count()) || !(await restore.isVisible().catch(() => false))) continue;
+          const tid = extractTid(rowText);
+          if (!tid) continue;
+          return { restore, tid, entSummary, rowText };
+        }
+        return null;
+      };
+      const pickCompletedRestore = async () => {
+        const pag = main().locator('.arco-pagination').first();
+        for (let guard = 0; guard < 24; guard++) {
+          const hit = await pickCompletedRestoreOnPage();
+          if (hit) return hit;
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        return null;
+      };
+      const isSuccessResult = async () => {
+        if (!/view=result/.test(page.url())) return false;
+        const t = await main().innerText().catch(() => '');
+        return /任务摘要/.test(t) && /供应链图谱/.test(t);
+      };
+      if (!globalThis.__func02306_clicked) {
+        await dismissBasket();
+        await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await openRecentTab();
+        await expect(main().getByText('任务名称').first()).toBeVisible({ timeout: 12000 });
+        const hit = await pickCompletedRestore();
+        if (!hit) {
+          throw new Error('ENV-SUPPLY-NO-COMPLETED-001：最近分析无「已完成」且可「恢复结果」的供应链任务');
+        }
+        globalThis.__func02306 = {
+          rowTid: hit.tid,
+          entSummary: hit.entSummary,
+          rowText: hit.rowText,
+        };
+        await hit.restore.scrollIntoViewIfNeeded().catch(() => {});
+        await scrollHistoryActions();
+        await hit.restore.click({ timeout: 15000 });
+        await page.waitForTimeout(1500);
+        globalThis.__func02306_clicked = true;
+        if (!(await isSuccessResult())) {
+          await page.goto(
+            toUrl(supplyRoute + '&view=result&task_id=' + encodeURIComponent(hit.tid)),
+            { waitUntil: 'domcontentloaded' },
+          );
+          await page.waitForTimeout(2000);
+        }
+      }
+      const deadline = Date.now() + 30000;
+      while (Date.now() < deadline && !(await isSuccessResult())) {
+        if (/view=progress|分析中/.test(page.url())) {
+          await page.waitForTimeout(800);
+          continue;
+        }
+        await page.waitForTimeout(500);
+      }
+      if (/view=progress/.test(page.url())) {
+        throw new Error('恢复结果后仍停在过程页（疑似新建分析而非打开原结果）');
+      }
+      await expect(page).toHaveURL(/view=result/, { timeout: 15000 });
+      await expect(page.getByText('任务摘要').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 12000 });
+      globalThis.__func02306_onResult = true;
+  - note: 2、任务摘要与该行企业摘要一致
+    assert: |-
+      if (!globalThis.__func02306_onResult) throw new Error('前置：结果页未就绪');
+      const ctx = globalThis.__func02306;
+      if (!ctx?.entSummary) throw new Error('前置：未见列表行企业摘要');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const body = await main().innerText();
+      const idx = body.indexOf('任务摘要');
+      const block = idx >= 0 ? body.slice(idx, idx + 1200) : body;
+      const ent = ctx.entSummary.replace(/\s+/g, ' ').trim();
+      const objM = block.match(/分析对象[：:]\s*([^\n]+)/);
+      const objLine = objM ? objM[1].trim() : '';
+      const tokens = ent.split(/[、,，;；\s]+/).filter((t) => t.length >= 2);
+      const hitToken =
+        tokens.find((t) => block.includes(t) || objLine.includes(t)) ||
+        (ent.length >= 2 && (block.includes(ent) || objLine.includes(ent)));
+      if (!hitToken) {
+        throw new Error(
+          '任务摘要与行内企业摘要不一致：行摘要=' + ent + '；分析对象=' + objLine + '；摘要块=' + block.slice(0, 280),
+        );
+      }
+  - note: 3、地址中的任务标识与所点行一致
+    assert: |-
+      if (!globalThis.__func02306_onResult) throw new Error('前置：结果页未就绪');
+      const rowTid = globalThis.__func02306?.rowTid;
+      if (!rowTid) throw new Error('前置：未见所点行 RISK 任务标识');
+      let urlTid = '';
+      try {
+        urlTid = new URL(page.url()).searchParams.get('task_id') || '';
+      } catch {}
+      if (!urlTid) throw new Error('结果页 URL 缺少 task_id');
+      if (urlTid !== rowTid) {
+        throw new Error('任务标识不一致：行=' + rowTid + ' URL=' + urlTid);
+      }
+      await expect(page).toHaveURL(new RegExp('task_id=' + rowTid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 catalog_path /enterprise/risk?workspace=supply-chain&tab=supply-chain。步骤=最近分析「已完成」行点「恢复结果」。机检=view=result+任务摘要/供应链图谱（非 view=progress）+摘要区与行「企业摘要」列互证（分析对象/token）+ URL task_id 与行 RISK 一致。跳过企业摘要「—」行。分页检索；点恢复未进结果则 task_id 深链兜底。无已完成可恢复→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。B 档零 allow_skip。

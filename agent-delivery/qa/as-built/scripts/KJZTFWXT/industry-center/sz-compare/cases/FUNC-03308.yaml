@@ -1,0 +1,98 @@
+id: FUNC-03308
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03308
+priority: P0
+title: 分析记录表列名齐全
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-compare
+tier: B
+preconditions:
+  - 已打开「分析记录」
+locators:
+  tab_rec: '[role=tab][data-tab-key=records]'
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=comparison&tab=comparison
+  - action: evaluate
+    note: 进入对比页并切到「分析记录」，读取表头（判定在 expect）
+expect:
+  - note: 列名为任务、类型、状态、创建时间、操作
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const expectedHeaders = ['任务', '类型', '状态', '创建时间', '操作'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比深链与侧栏入口均不可用，无法验分析记录列名 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await expect(recTab).toBeVisible({ timeout: 8000 });
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+      const thLoc = page.locator('.arco-table thead .arco-table-th');
+      await expect(thLoc.first()).toBeVisible({ timeout: 10000 });
+      const raw = await thLoc.allTextContents();
+      const headers = raw.map((s) => (s || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+      if (headers.length < expectedHeaders.length) {
+        throw new Error('表头列数不足: ' + JSON.stringify(headers));
+      }
+      for (let i = 0; i < expectedHeaders.length; i++) {
+        if (headers[i] !== expectedHeaders[i]) {
+          throw new Error('第' + (i + 1) + '列应为「' + expectedHeaders[i] + '」，实际「' + headers[i] + '」；全部=' + JSON.stringify(headers));
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 分析记录区表头与 lumen historyColumns 一致（任务/类型/状态/创建时间/操作）；类型列单元格文案「深圳产业情况分析对比」归用例备注，本脚本只验表头。入口 route=entry-seed catalog_path；edu 深链/侧栏 SPA404 时 ENV-EDU-TTS-SVCZ-404-001。

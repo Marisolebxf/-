@@ -1,0 +1,174 @@
+id: FUNC-01903
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01903
+priority: P1
+title: 只读商业力报告页点击导出触发下载或已导出反馈
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 已打开「商业力评估报告」只读页（as-built：最近评估→恢复结果→查看 HTML 报告）
+  - 演示需 L2+ 且开通「付费权益（报告导出）」方可点导出（30888 人设菜单开关）
+locators:
+  report_root: '[data-report-readonly="true"]'
+  export_btn: '[data-report-export-unlocked] button[data-report-download]'
+  paid_switch: switch「付费权益」（30888 as-built；lumen 源码可为「付费权益（报告导出）」）
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 打开只读报告→开通付费演示→点「导出」；下载或 Toast 在 expect
+expect:
+  - note: 1、浏览器开始下载文件，或页面给出已导出反馈
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const main = () => page.locator('main.app-main').first();
+      const reportRoot = () => page.locator('[data-report-readonly="true"]').first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const waitReportShell = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (/view=report/.test(page.url()) && await reportRoot().isVisible().catch(() => false)) {
+            const t = await reportRoot().innerText().catch(() => '');
+            if (/报告目录/.test(t)) return true;
+          }
+          await page.waitForTimeout(500);
+        }
+        return false;
+      };
+      const bodyResultReady = async () => {
+        const t = await main().innerText().catch(() => '');
+        return /商业力评估结果/.test(t) && /商业力最高得分/.test(t) && /\d+\s*分/.test(t);
+      };
+      const openRecentResult = async () => {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const restore = main().getByRole('button', { name: '恢复结果' }).first();
+        if (!(await restore.isVisible().catch(() => false))) return false;
+        await restore.click({ timeout: 8000 });
+        await page.waitForTimeout(3500);
+        if (!/view=result/.test(page.url())) {
+          const tid = (/(?:EVAL|DEMO-EVAL)-\d{8}-\d+/.exec(await main().innerText().catch(() => '')) || [])[0];
+          if (tid) {
+            await page.goto(toUrl(evalRoute + '&view=result&analysis_type=business&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(2500);
+          }
+        }
+        return await bodyResultReady();
+      };
+      const openHtmlReport = async () => {
+        if (!(await bodyResultReady())) {
+          const ok = await openRecentResult();
+          if (!ok) throw new Error('最近评估无已完成商业力结果（ticket=ENV-EVAL-BUSINESS-HISTORY-001）');
+        }
+        const entry = page.locator('[data-eval-open-html-report]').first();
+        const btn = (await entry.isVisible().catch(() => false))
+          ? entry
+          : page.getByRole('button', { name: /查看\s*HTML\s*报告/ }).first();
+        await expect(btn).toBeVisible({ timeout: 10000 });
+        await btn.scrollIntoViewIfNeeded().catch(() => {});
+        await closeBasket();
+        try { await btn.click({ timeout: 8000 }); } catch { await btn.click({ force: true, timeout: 8000 }); }
+        let tNav = Date.now();
+        while (Date.now() - tNav < 30000 && !/view=report/.test(page.url())) await page.waitForTimeout(400);
+        if (!/view=report/.test(page.url())) {
+          const tid = new URL(page.url()).searchParams.get('task_id') || (/(?:EVAL|DEMO-EVAL)-\d{8}-\d+/.exec(await main().innerText().catch(() => '')) || [])[0];
+          if (!tid) throw new Error('无法打开报告且无 task_id：' + page.url());
+          await page.goto(toUrl(evalRoute + '&view=report&analysis_type=business&task_id=' + encodeURIComponent(tid)), { waitUntil: 'domcontentloaded' });
+        }
+        if (!(await waitReportShell(90000))) {
+          throw new Error('只读报告壳未就绪（ticket=ENV-EVAL-BUSINESS-REPORT-SHELL-001）：' + page.url());
+        }
+      };
+      const dismissBlockingModals = async () => {
+        for (let i = 0; i < 3; i++) {
+          const wrap = page.locator('.arco-modal-wrapper').filter({ has: page.locator('.arco-modal') });
+          if (!(await wrap.count()) || !(await wrap.first().isVisible().catch(() => false))) break;
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.waitForTimeout(250);
+          const cancel = page.getByRole('button', { name: '取消', exact: true });
+          if (await cancel.count() && await cancel.first().isVisible().catch(() => false)) {
+            await cancel.first().click({ timeout: 2000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const ensurePaidForExport = async () => {
+        const reportUrl = page.url();
+        const menuBtn = page.locator('button.persona-switch').first();
+        const findPaidSwitch = async () => {
+          for (const name of [/付费权益/, '付费权益（报告导出）']) {
+            const sw = page.getByRole('switch', { name });
+            if (await sw.count() && await sw.first().isVisible().catch(() => false)) return sw.first();
+          }
+          return null;
+        };
+        await dismissBlockingModals();
+        await menuBtn.scrollIntoViewIfNeeded().catch(() => {});
+        await menuBtn.click({ timeout: 8000, force: true });
+        await page.waitForTimeout(500);
+        let paidSw = await findPaidSwitch();
+        if (!paidSw) throw new Error('人设菜单未见付费权益 switch');
+        if ((await paidSw.getAttribute('aria-checked')) !== 'true') {
+          await paidSw.click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await dismissBlockingModals();
+        const paidOk = await page.locator('button.persona-switch').first().getAttribute('data-paid');
+        if (paidOk !== '1') {
+          throw new Error('付费权益 switch 未生效（persona-switch data-paid≠1）');
+        }
+        if (!(await reportRoot().locator('[data-report-export-unlocked]').count())) {
+          await page.goto(reportUrl, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(2000);
+          if (!(await waitReportShell(60000))) throw new Error('开通付费后报告壳未就绪');
+        }
+        if (!(await reportRoot().locator('[data-report-export-unlocked]').count())) {
+          throw new Error('付费已开但报告页仍为 data-report-export-locked');
+        }
+      };
+      if (!/view=report/.test(page.url()) || !(await reportRoot().isVisible().catch(() => false))) {
+        await openHtmlReport();
+      } else if (!(await waitReportShell(15000))) {
+        await openHtmlReport();
+      }
+      await expect(reportRoot()).toBeVisible({ timeout: 10000 });
+      const h1 = ((await reportRoot().locator('h1').first().innerText().catch(() => '')) || '').trim();
+      if (!(/商业力评估/.test(h1) && /报告/.test(h1)) && !(await reportRoot().getByText(/商业力评估报告/).count())) {
+        throw new Error('非商业力只读报告页（h1=' + h1.slice(0, 80) + '）');
+      }
+      await ensurePaidForExport();
+      await dismissBlockingModals();
+      const exportBtn = reportRoot().locator('[data-report-export-unlocked][data-report-download], [data-report-export-unlocked] button[data-report-download]').first();
+      await expect(exportBtn).toBeVisible({ timeout: 12000 });
+      if (await exportBtn.isDisabled().catch(() => true)) {
+        throw new Error('付费已开但导出钮仍 disabled');
+      }
+      const downloadPromise = page.waitForEvent('download', { timeout: 20000 }).catch(() => null);
+      await exportBtn.click({ timeout: 10000 });
+      const dl = await downloadPromise;
+      let feedbackOk = false;
+      if (dl) feedbackOk = true;
+      if (!feedbackOk) {
+        const msg = page.locator('.arco-message').filter({ hasText: /报告已导出|导出成功|已导出/ });
+        await expect(msg.first()).toBeVisible({ timeout: 12000 });
+        feedbackOk = true;
+      }
+      if (!feedbackOk) throw new Error('点击导出后既无 download 也无已导出提示');
+      if (!/view=report/.test(page.url())) throw new Error('导出后离开报告页：' + page.url());
+      await expect(reportRoot().locator('nav[aria-label="报告目录"]').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01903 验商业力只读报告「导出」终态（客户端 PDF blob + Message.success「报告已导出」）。30888 as-built：人设 switch aria-label=「付费权益」（非 lumen 文案「付费权益（报告导出）」）；开通后 data-report-export-unlocked。前置打开报告同 01902。过程态可能弹 Arco Modal 挡 persona，脚本先 Esc/取消。与 01830 分工：本条测可导出路径。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

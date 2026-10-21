@@ -1,0 +1,79 @@
+id: FUNC-01726
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01726
+priority: P2
+title: 更多操作恢复默认位置后对比篮仍打开
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 系统对比篮已打开（assert 自含 open_compare_basket=1 workbench 态，非页内 picker）
+locators:
+  dock_open: button aria-label 含「打开对比篮」
+  more_ops: button aria-label「更多操作」
+  reset_position: 下拉「恢复默认位置」
+  panel: .system-compare-panel
+  close_basket: button aria-label「关闭对比篮」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: open_compare_basket=1 展开 workbench 对比篮→更多操作→恢复默认位置；菜单与仍打开在 expect 判定
+expect:
+  - note: 1、菜单中有「恢复默认位置」；2、对比篮保持打开
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const findResetMenuItem = async () => {
+        const candidates = [
+          page.getByRole('menuitem', { name: '恢复默认位置', exact: true }),
+          page.locator('.arco-dropdown-option').filter({ hasText: '恢复默认位置' }),
+          page.locator('.arco-trigger-popup:visible').getByText('恢复默认位置', { exact: true }),
+        ];
+        for (const loc of candidates) {
+          if (await loc.count() && await loc.first().isVisible().catch(() => false)) return loc.first();
+        }
+        return null;
+      };
+      const openSystemBasketWorkbench = async () => {
+        const withOpen = route + (route.includes('?') ? '&' : '?') + 'open_compare_basket=1';
+        await page.goto(toUrl(withOpen), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        const openLayer = page.locator('[data-system-surface-id="compare-basket"][data-panel-open="true"]');
+        await expect(openLayer).toBeVisible({ timeout: 15000 });
+        const panel = openLayer.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 8000 });
+        const pickerTitle = panel.getByText('选择分析企业', { exact: true });
+        if (await pickerTitle.count() && await pickerTitle.first().isVisible().catch(() => false)) {
+          throw new Error('对比篮为 picker 模式，无「更多操作」（需 workbench 系统壳层）');
+        }
+        return { openLayer, panel };
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(600);
+      await closeBasket();
+      const { openLayer, panel } = await openSystemBasketWorkbench();
+      const moreBtn = panel.getByRole('button', { name: '更多操作' });
+      await expect(moreBtn).toBeVisible({ timeout: 10000 });
+      await moreBtn.click({ timeout: 8000, force: true });
+      await page.waitForTimeout(400);
+      const resetItem = await findResetMenuItem();
+      if (!resetItem) throw new Error('更多操作菜单中未见「恢复默认位置」');
+      await expect(resetItem).toBeVisible({ timeout: 8000 });
+      await resetItem.click({ timeout: 8000, force: true });
+      await page.waitForTimeout(500);
+      await expect(openLayer).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('[aria-label="关闭对比篮"]').first()).toBeVisible({ timeout: 8000 });
+      await expect(panel.locator('#compare-basket-tab-enterprise')).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 01726；「更多操作」仅 interactionMode≠picker（EnterpriseCompareBasketView）。30888 右下 dock Playwright click 易被拖拽吞掉，前置用 URL `open_compare_basket=1` 开 workbench 壳层；勿用主区「选择分析企业/前往对比篮」picker。恢复位置不校验坐标（归 COMPARE 05427）。登录与关内部评审由 runner 会话前置。B 档。

@@ -1,0 +1,67 @@
+id: FUNC-02699
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02699
+priority: P0
+title: 点击推荐产业名称打开该产业摘要
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 推荐产业列表已显示
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+  drawer: .arco-drawer.industry-search-drawer
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 在推荐行点击名称「生物」；抽屉标题与字段在 expect 判定
+expect:
+  - note: 1、抽屉标题为「生物」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('前置应为推荐产业列表 recommendation 态，实际 data-search-state=' + state);
+      }
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const card = list.locator('.industry-search-recommendation-card').filter({ hasText: '生物' }).first();
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const nameBtn = card.locator('.industry-search-recommendation-title button').first();
+      await expect(nameBtn).toHaveText('生物', { timeout: 8000 });
+      await nameBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.locator('.arco-drawer-title')).toHaveText('生物', { timeout: 8000 });
+  - note: 2、列出类型、领域、所属产业、来源
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('.industry-search-drawer-body') });
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const body = drawer.locator('.industry-search-drawer-body');
+      for (const label of ['类型', '领域', '所属产业', '来源']) {
+        await expect(body.locator('.arco-descriptions-item-label').filter({ hasText: label })).toBeVisible({
+          timeout: 8000,
+        });
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；recommendation 态点推荐行名称按钮
+  （.industry-search-recommendation-title button，非「查看摘要」）打开「生物」摘要抽屉。
+  抽屉 class industry-search-drawer，标题为产业名；a-descriptions 含类型/领域/所属产业/来源。
+  登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

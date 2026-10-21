@@ -1,0 +1,132 @@
+id: FUNC-00411
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00411
+priority: P0
+title: 权重调节钮可增减数值且数值联动
+story: US-ENT-EVAL-COMP
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - env-gate select_objects=pass（对比篮≥1 家企业；不足时脚本经企业查询补篮）
+  - 已进入综合竞争力页且已回填至少 1 家企业
+locators:
+  metric_row: row「创新能力」
+  step_up: 首维 .arco-input-number-step-button 上调
+  step_down: 首维 .arco-input-number-step-button 下调
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 补篮→系统对比篮选择器回填 1 家→首维权重上调/下调；联动在 expect
+expect:
+  - note: 上调后该维度权重数值加一档
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness';
+      const dimName = '创新能力';
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      const openEnterprisePicker = async () => {
+        const pickUrl = evalRoute + '&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise';
+        const cta = main().getByRole('button', { name: '前往对比篮选择企业' });
+        if (await cta.isVisible().catch(() => false)) {
+          await cta.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        await page.goto(toUrl(pickUrl), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      };
+      const fillOneEnterprise = async () => {
+        await ensureBasketEnterprises(1);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        if (/enterprise_codes/.test(page.url()) && await main().getByText(/来自对比篮/).first().isVisible().catch(() => false)) return;
+        await openEnterprisePicker();
+        const panel = page.locator('.system-compare-panel');
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+        await sels.nth(0).click({ force: true });
+        await page.waitForTimeout(300);
+        await panel.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await dismissBasket();
+        await expect(main().getByText(/来自对比篮/).first()).toBeVisible({ timeout: 10000 });
+      };
+      const innovationRow = () => page.getByRole('row').filter({ hasText: dimName }).first();
+      const rowSpin = () => innovationRow().locator('[role=spinbutton], .arco-input-number input').first();
+      await fillOneEnterprise();
+      await page.getByRole('tab', { name: '当前分析' }).click({ timeout: 5000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      await expect(innovationRow()).toBeVisible({ timeout: 10000 });
+      const before = Number(await rowSpin().inputValue());
+      const up = innovationRow().locator('.arco-input-number-step-button').first();
+      await up.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      const afterUp = Number(await rowSpin().inputValue());
+      if (!(afterUp > before)) throw new Error('上调未增加: ' + before + '→' + afterUp);
+      const step = afterUp - before;
+      globalThis.__func00411_before = before;
+      globalThis.__func00411_afterUp = afterUp;
+      globalThis.__func00411_step = step;
+  - note: 下调后数值回落一档
+    assert: |-
+      const dimName = '创新能力';
+      const innovationRow = () => page.getByRole('row').filter({ hasText: dimName }).first();
+      const rowSpin = () => innovationRow().locator('[role=spinbutton], .arco-input-number input').first();
+      const step = globalThis.__func00411_step || 1;
+      const beforeUp = globalThis.__func00411_before;
+      const afterUp = globalThis.__func00411_afterUp ?? Number(await rowSpin().inputValue());
+      const down = innovationRow().locator('.arco-input-number-step-button').nth(1);
+      await down.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      const afterDown = Number(await rowSpin().inputValue());
+      if (!(afterDown < afterUp)) throw new Error('下调未回落: ' + afterUp + '→' + afterDown);
+      if (afterDown !== afterUp - step) throw new Error('下调幅度非一档: 期望 ' + (afterUp - step) + ' 实际 ' + afterDown);
+      if (beforeUp !== undefined && afterDown !== beforeUp) throw new Error('下调后未回到上调前: ' + beforeUp + '→' + afterDown);
+  - note: 权重输入框数值与按钮操作联动
+    assert: |-
+      const dimName = '创新能力';
+      const row = page.getByRole('row').filter({ hasText: dimName }).first();
+      const spin = row.locator('[role=spinbutton], .arco-input-number input').first();
+      const v = await spin.inputValue();
+      if (v === '' || v === null || Number.isNaN(Number(v))) throw new Error('输入框数值未联动: ' + v);
+      if (globalThis.__func00411_before !== undefined && Number(v) !== globalThis.__func00411_before) {
+        throw new Error('联动后数值应回到初始: ' + globalThis.__func00411_before + ' 实际 ' + v);
+      }
+      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 由 P0-10 重写为 FUNC-00411；30888 路由 /enterprise-center/evaluation（禁 50892）；权重按「创新能力」指标行取 spin（全页可能有额外 input-number）。系统对比篮选择器回填（同 FUNC-01988）。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

@@ -1,0 +1,63 @@
+id: FUNC-01731
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01731
+priority: P1
+title: 页头展示数据更新时点
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - 系统正常；已进入重点企业领域分析
+locators:
+  route_primary: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  page_header: main 内页头区（H1「重点企业领域分析」邻近）
+  data_update_hint: main 内文案「数据更新至」
+  no_time_hint: 页头「暂无时点」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 浏览页头；数据更新时点断言在 expect
+expect:
+  - note: 1、页头有「数据更新至」
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const origin = () => new URL(page.url()).origin;
+      const routes = [
+        '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain',
+        '/enterprise/key-enterprise-analysis?workspace=domain&view=domain',
+      ];
+      for (const r of routes) {
+        await page.goto(origin() + r, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(600);
+        await closeBasket();
+        const body = (await page.locator('body').innerText().catch(() => '')) || '';
+        if (!/404 Not Found|Unexpected Application Error/.test(body) && /重点企业领域/.test(body)) break;
+      }
+      const main = page.locator('main');
+      const title = main.getByRole('heading').filter({ hasText: /重点企业领域/ }).first();
+      await expect(title).toBeVisible({ timeout: 10000 });
+      await expect(main.getByText('数据更新至').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、没有时点时显示「暂无时点」（有具体时点则页头含日期类文案）
+    assert: |-
+      const main = page.locator('main');
+      const headerSlice = ((await main.innerText().catch(() => '')) || '').split('\n').slice(0, 16).join('\n');
+      const hasNoTime = (await main.getByText('暂无时点', { exact: true }).count()) > 0;
+      const hasConcreteTime = /\d{4}-\d{2}-\d{2}/.test(headerSlice);
+      if (!hasNoTime && !hasConcreteTime) {
+        throw new Error('页头「数据更新至」后应显示「暂无时点」或具体时点，observed: ' + headerSlice.replace(/\s+/g, ' ').slice(0, 160));
+      }
+      if (hasNoTime) {
+        await expect(main.getByText('暂无时点', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      } else {
+        await expect(main.getByText(/\d{4}-\d{2}-\d{2}/).first()).toBeVisible({ timeout: 5000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: D1·30888 复勘 H1 为「重点企业领域分布分析」（用例简称「重点企业领域分析」）；页头「数据更新至」+ 具体日期 2026-07-22（scout 旧稿「暂无时点」已过时）。深链 enterprise-center。登录与关内部评审由 runner 会话前置。P1·B 档。

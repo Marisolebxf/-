@@ -1,0 +1,64 @@
+id: FUNC-02602
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02602
+priority: P0
+title: 产业介绍空态
+entry_id: chain-overview
+tier: A
+preconditions:
+  - 已进入专题全景
+locators:
+  tablist: '[aria-label="专题全景视图"]'
+  tab_profile: '#industry-overview-tab-profile'
+  profile_panel: '[data-frame-id="F-OV-03"]'
+steps:
+  - action: goto
+    target: /industry-center/overview
+  - action: evaluate
+    note: 点击「产业整体概况」，校验产业介绍 CMS 空态文案
+expect:
+  - note: 步骤：点击「产业整体概况」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
+      const mode = page.locator('[aria-label="专题全景视图"]');
+      await mode.getByRole('tab', { name: '产业整体概况' }).click();
+      await page.waitForTimeout(600);
+      await expect(page).toHaveURL(/[?&]tab=profile/, { timeout: 8000 });
+      const profTab = page.locator('#industry-overview-tab-profile');
+      const aria = await profTab.getAttribute('aria-selected');
+      const cls = await profTab.getAttribute('class');
+      if (aria !== 'true' && !(cls || '').includes('active')) {
+        throw new Error('点击后「产业整体概况」Tab 未选中');
+      }
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel).toBeVisible({ timeout: 10000 });
+  - note: 1、「产业介绍」为「暂无 CMS 介绍，不以资讯或摘要冒充」
+    assert: |-
+      const panel = page.locator('[data-frame-id="F-OV-03"]');
+      await expect(panel.getByRole('heading', { name: '产业介绍', level: 2 })).toBeVisible({
+        timeout: 8000,
+      });
+      const emptyCopy = '暂无 CMS 介绍，不以资讯或摘要冒充';
+      const introEmpty = panel
+        .locator('.arco-empty')
+        .filter({ has: page.locator('.arco-empty-description', { hasText: emptyCopy }) });
+      await expect(introEmpty.first()).toBeVisible({ timeout: 8000 });
+      const desc = introEmpty.first().locator('.arco-empty-description');
+      const txt = (await desc.innerText()).replace(/\s+/g, ' ').trim();
+      if (txt !== emptyCopy) {
+        throw new Error('产业介绍空态应为「' + emptyCopy + '」，实际：' + txt);
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/overview；概况区 data-frame-id=F-OV-03，无 introText 时 a-empty description 固定为「暂无 CMS 介绍，不以资讯或摘要冒充」（IndustryOverviewPage.vue）。
+  用例前提为无 CMS 介绍稿；现场默认集群无稿则绿，有稿则 fail 属数据态不符。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

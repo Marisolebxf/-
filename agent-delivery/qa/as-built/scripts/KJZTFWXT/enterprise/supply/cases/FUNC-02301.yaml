@@ -1,0 +1,102 @@
+id: FUNC-02301
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02301
+priority: P0
+title: 勾选只看风险后图谱只留风险节点
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已打开一条成功结果；停在「图谱」（assert 自含最近分析恢复）
+locators:
+  restore: button「恢复结果」
+  tab_graph: tab「图谱」
+  filter_risk: checkbox「只看风险」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 恢复成功结果→图谱 Tab→勾选「只看风险」
+expect:
+  - note: 1、当前展示的节点不多于勾选前
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const parseNodeCount = async () => {
+        const display = page.getByText(/当前展示：\d+级/).first();
+        await expect(display).toBeVisible({ timeout: 10000 });
+        const dt = await display.innerText().catch(() => '');
+        const m = dt.match(/节点\s*(\d+)\s*个/);
+        if (!m) throw new Error('当前展示未解析节点数：' + dt);
+        return parseInt(m[1], 10);
+      };
+      const riskCheckbox = () =>
+        page.locator('label.arco-checkbox').filter({ hasText: '只看风险' }).first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const ensureGraphTab = async () => {
+        const graphTab = page.locator('main .arco-radio-button, main [role=tab], main button').filter({ hasText: /^图谱$/ }).first();
+        if (await graphTab.count()) {
+          await graphTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      const restore = page.getByRole('button', { name: '恢复结果' });
+      if (!(await restore.count())) {
+        throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」已完成任务');
+      }
+      await restore.first().click({ timeout: 15000 });
+      await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+      await expect(page.getByText('供应链图谱').first()).toBeVisible({ timeout: 25000 });
+      await dismissBasket();
+      await ensureGraphTab();
+      const nBefore = await parseNodeCount();
+      globalThis.__func02301_nBefore = nBefore;
+      const rc = riskCheckbox();
+      await expect(rc).toBeVisible({ timeout: 8000 });
+      await rc.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const clsOn = await rc.getAttribute('class').catch(() => '');
+      if (!/arco-checkbox-checked/.test(clsOn || '')) throw new Error('只看风险未处于勾选态');
+      const nRisk = await parseNodeCount();
+      globalThis.__func02301_nRisk = nRisk;
+      if (nRisk > nBefore) throw new Error('勾选只看风险后节点数反而增加：' + nBefore + '→' + nRisk);
+      globalThis.__func02301_ready = true;
+  - note: 2、留下的节点带风险标记
+    assert: |-
+      if (!globalThis.__func02301_ready) throw new Error('前置：未勾选只看风险');
+      const nRisk = globalThis.__func02301_nRisk;
+      if (nRisk <= 0) throw new Error('只看风险后无可见节点，无法校验风险标记');
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const graphTab = main().locator('.arco-radio-button, [role=tab], button').filter({ hasText: /^图谱$/ }).first();
+      const structureTab = main().locator('.arco-radio-button, [role=tab], button').filter({ hasText: /^结构列表$/ }).first();
+      await structureTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const riskTags = main().locator('.arco-tag').filter({ hasText: /^(单点依赖|节点异常|路径脆弱)$/ });
+      const tagCount = await riskTags.count();
+      if (tagCount < 1) throw new Error('结构列表（只看风险态）未见风险类型标签');
+      if (tagCount > nRisk) throw new Error('风险标签数 ' + tagCount + ' 大于当前展示节点数 ' + nRisk);
+      for (let i = 0; i < tagCount; i++) {
+        await expect(riskTags.nth(i)).toBeVisible({ timeout: 5000 });
+      }
+      await graphTab.click({ timeout: 5000 });
+      await page.waitForTimeout(300);
+      const rc = page.locator('label.arco-checkbox').filter({ hasText: '只看风险' }).first();
+      const cls = await rc.getAttribute('class').catch(() => '');
+      if (!/arco-checkbox-checked/.test(cls || '')) throw new Error('回图谱后只看风险未保持勾选');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route /enterprise/risk?workspace=supply-chain&tab=supply-chain。前置=最近分析「恢复结果」+ 图谱 Tab。步骤=勾选「只看风险」。机检=节点数 after≤before；同筛选下结构列表每行带风险类型红 tag（与 visibleNodes 同源，canvas 标签不稳定），再回图谱且复选框仍勾选。无已完成→ENV-SUPPLY-NO-COMPLETED-001。登录与关评审由 runner 前置。A 档零 allow_skip。

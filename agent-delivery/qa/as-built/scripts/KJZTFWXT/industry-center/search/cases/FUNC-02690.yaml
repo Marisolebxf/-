@@ -1,0 +1,98 @@
+id: FUNC-02690
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02690
+priority: P0
+title: 高级筛选对象类型为产业后应用筛选得结果
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+locators:
+  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_object_type: 字段库 Tag「对象类型」
+  apply_btn: button 应用筛选（N）
+  result_region: region aria-label「产业查询结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 点高级筛选、添加对象类型=产业、应用筛选；三条预期在 expect 分步判定
+expect:
+  - note: 1、出现「高级筛选结果」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await tabs.nth(2).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
+      const objTypeTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '对象类型' }).first();
+      await expect(objTypeTag).toBeVisible({ timeout: 8000 });
+      await objTypeTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const condRow = page.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      await condRow.locator('.condition-builder__value .arco-select-view').click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible');
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      await pop.getByText('产业', { exact: true }).click({ timeout: 8000 });
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+      const applyBtn = page.getByRole('button', { name: /应用筛选\s*[（(]\s*1\s*[）)]/ }).first();
+      await expect(applyBtn).toBeVisible({ timeout: 8000 });
+      if (await applyBtn.isDisabled()) throw new Error('已选对象类型=产业但应用筛选仍禁用');
+      await applyBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const hasAdvTag = (await page.getByText('高级筛选结果', { exact: true }).count()) > 0;
+      const hasResultTitle = (await fieldLib.getByRole('heading', { name: '高级筛选结果' }).count()) > 0;
+      if (!hasAdvTag && !hasResultTitle) {
+        throw new Error('应用筛选后未见「高级筛选结果」摘要或字段库结果标题');
+      }
+  - note: 2、当前条件为「对象类型：产业」
+    assert: |-
+      await expect(page.getByText('当前条件').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('对象类型：产业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、结果行类型均为产业
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 8000 });
+      const cards = region.locator('.industry-search-result-card');
+      const n = await cards.count();
+      if (n < 1) {
+        const empty = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+        throw new Error('高级筛选对象类型=产业应至少 1 条结果，实际 count=0；片段=' + empty.slice(0, 160));
+      }
+      for (let i = 0; i < n; i++) {
+        const card = cards.nth(i);
+        const typeTags = card.locator('.industry-search-result-title .arco-tag');
+        const typeText = ((await typeTags.first().innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (typeText !== '产业') {
+          throw new Error('第 ' + (i + 1) + ' 条结果类型应为「产业」，实际=' + typeText);
+        }
+        if ((await card.getByText('产业链', { exact: true }).count()) > 0) {
+          const title = await card.locator('h3').innerText().catch(() => '');
+          throw new Error('第 ' + (i + 1) + ' 条含产业链类型标记：' + title);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；高级筛选 Tab 后 region aria-label「高级筛选字段库」（trace 挂件 label 为产业高级筛选字段库，禁混用）。字段 Tag 在 .fp-tags。
+  字段库 Tag 含「推荐」后缀，须点 .fp-tags .arco-tag filter(hasText 对象类型)；取值点 .condition-builder__value .arco-select-view 勿误点等于算子。
+  对象类型 singleSelect；条件 chip「对象类型：产业」在 QueryConditionSummary。
+  结果卡 .industry-search-result-card，类型 Tag 在 .industry-search-result-title。登录与关内部评审由 runner 前置。A 档零 allow_skip。

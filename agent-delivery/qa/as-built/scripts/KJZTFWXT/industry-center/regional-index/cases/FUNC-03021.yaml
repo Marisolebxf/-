@@ -1,0 +1,169 @@
+id: FUNC-03021
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03021
+priority: P1
+title: 删除分析记录时点确定后该记录消失
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 当次新建一条可删除的分析记录（assert 自含）
+locators:
+  tab_records: tab「分析记录」
+  delete_button: button「删除」
+  modal_ok: 弹框 button「确定」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 配置区显式开始分析→分析记录 Tab→该行「删除」→「确定」；记录消失由 expect 判定
+expect:
+  - note: 前置：当次新建任务并在分析记录中确定删除
+    assert: |-
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const throwEnv404 = (where) => {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 @' + where + ' ' + page.url());
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await dismissBasket();
+        if (await bodyIs404()) throwEnv404('sibling-search');
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        try {
+          await expect(leaf().first()).toBeVisible({ timeout: 5000 });
+        } catch (e) {
+          if (await bodyIs404()) throwEnv404('sibling-search-no-menu');
+          throw e;
+        }
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      const createFreshTask = async () => {
+        await dismissBasket();
+        if (await bodyIs404()) await enterViaSidebar();
+        if (await bodyIs404()) throwEnv404('catalog-deep-link');
+        await expect(page.getByRole('heading', { name: '分析配置' }).first()).toBeVisible({ timeout: 12000 });
+        await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible({ timeout: 12000 });
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        await page.locator('.arco-select-view[aria-label="产业"]').click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: /^集成电路$/ }).first().click({ force: true });
+        await page.waitForTimeout(1000);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 8000 });
+        await page.waitForURL(/view=processing/, { timeout: 20000 });
+        const url = page.url();
+        let tid = null;
+        try {
+          tid = new URL(url).searchParams.get('task_id');
+        } catch (_) {}
+        if (!tid || !TID_RE.test(tid)) {
+          const bodyProc = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const m = bodyProc.match(TID_RE);
+          tid = m ? m[0] : null;
+        }
+        if (!tid) throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-TASK-ID: 开始分析后未解析 task_id');
+        return tid;
+      };
+      const scrollRecordActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(350);
+      };
+      const pickRowDeleteByTid = async (tid) => {
+        await scrollRecordActions();
+        const row = main().locator('tr').filter({ hasText: tid }).first();
+        if (!(await row.count())) return null;
+        let del = row.getByRole('button', { name: '删除', exact: true }).first();
+        if (!(await del.count())) {
+          del = row.locator('button, .arco-btn').filter({ hasText: /^删除$/ }).last();
+        }
+        if (!(await del.count())) return null;
+        await row.scrollIntoViewIfNeeded().catch(() => {});
+        await scrollRecordActions();
+        if (!(await del.isVisible().catch(() => false))) return null;
+        return { del, row };
+      };
+      const freshTid = await createFreshTask();
+      await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+      let picked = null;
+      const t0 = Date.now();
+      while (Date.now() - t0 < 20000) {
+        picked = await pickRowDeleteByTid(freshTid);
+        if (picked) break;
+        await page.waitForTimeout(800);
+      }
+      if (!picked) {
+        const mainText = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!mainText.includes(freshTid)) {
+          throw new Error('ENV-CHAIN-REGIONAL-INDEX-RECORD-LAG: 新建任务未出现在分析记录 ' + freshTid);
+        }
+        throw new Error('DEF-CHAIN-REGIONAL-INDEX-DELETE-UI-001: 有任务行但操作列无可见「删除」 tid=' + freshTid);
+      }
+      globalThis.__func03021 = { tid: freshTid, confirmed: false };
+      await picked.del.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '删除分析记录' });
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const ok = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(ok).toBeVisible({ timeout: 5000 });
+      await ok.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(modal).toBeHidden({ timeout: 15000 });
+      globalThis.__func03021.confirmed = true;
+  - note: 1、该记录从列表消失
+    assert: |-
+      if (!globalThis.__func03021?.confirmed) throw new Error('前置：未完成删除确定');
+      const expectedTid = globalThis.__func03021.tid;
+      const esc = expectedTid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const main = () => page.locator('main').first();
+      const t0 = Date.now();
+      while (Date.now() - t0 < 12000) {
+        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!new RegExp(esc).test(body)) break;
+        await page.waitForTimeout(400);
+      }
+      const rowGone = main().locator('tr').filter({ hasText: expectedTid });
+      await expect(rowGone).toHaveCount(0, { timeout: 8000 });
+      const bodyAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (new RegExp(esc).test(bodyAfter)) {
+        throw new Error('确定删除后任务仍在分析记录列表：' + expectedTid);
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index；edu 深链 404 时 sibling 侧栏进页（同 FUNC-03019）。
+  破坏性：配置区选集成电路+「开始分析」→解析 task_id→Tab「分析记录」→该行「删除」→Modal「确定」→CHAIN 编号从列表消失（取消路径 FUNC-03019）。
+  记录未同步→ENV-CHAIN-REGIONAL-INDEX-RECORD-LAG；有行无删→DEF-CHAIN-REGIONAL-INDEX-DELETE-UI-001。登录关评审 runner 前置。B 档零 allow_skip。

@@ -10,6 +10,7 @@
 
 | 脚本 id | 用例编号 | 页面区块/状态 | P | 可见动作 |
 |---------|----------|---------------|---|----------|
+| FUNC-02988 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02988 | 主流程·生成→结果 | P0 | 生物产业/生物+开始分析+查看分析结果（金样） |
 | P0-01 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00562 | 入口·路由与双 Tab | P0 | 进入指数评价页 |
 | P0-02 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00563 | 评价模式·互斥联动 | P0 | 切多产业/单产业 |
 | P0-03 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00566 | 指标树·模板态锁定 | P0 | 默认模板六指标 |
@@ -26,6 +27,31 @@
 | P1-05 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00575 | 评审·追溯零泄漏 | P1 | 开/关内部评审模式 |
 | P1-06 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00576 | 分析记录·结果 | P1 | B · allow_skip · ticket=GAP-CHAIN-REG-METRICS（g5 有已完成可开壳；种子 CHAIN-20260910-020 结果 KPI/四力诚实降级；哨兵=「第 1 名」；≠ sticky 债；无已完成归 ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK） |
 | P1-07 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-00577 | 异常·权重门禁 | P1 | B · allow_skip · ticket=D3-CHAIN-REG-INDEX-CUSTOM-STICKY-LOCK（自定义态 spin/checkbox 粘滞只读；合计偏离/0 计入门禁依赖可写权重或可取消计入；哨兵=未锁定 checkbox，同 P0-07/P1-03） |
+| FUNC-02993 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02993 | 主流程·指标说明抽屉 | P0 | 企业商业化能力行「查看」→ 标题与指标来源 |
+| FUNC-02996 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02996 | 主流程·添加指标下拉 | P0 | 未保存配置→展开添加指标→四力分组+附录D 六项 |
+| FUNC-02994 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02994 | 主流程·移除指标 | P0 | 政策覆盖率行「移除」→ 行消失 + 计入权重合计须为 100% |
+| FUNC-02995 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02995 | 主流程·一键均分 | P0 | 未保存配置→一键均分→权重相等+合计校验通过 |
+| FUNC-02997 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02997 | 主流程·分析记录 | P0 | 分析记录表五列+行上五按钮；类型=区域产业指数评价 |
+| FUNC-02998 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02998 | 主流程·查看结果 | P0 | 已完成行「查看结果」→结果壳+区域产业综合指数 |
+| FUNC-02999 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-02999 | 主流程·查看报告 | P0 | 已完成行「查看报告」→报告标题+七节目录+返回/付费/导出 |
+| FUNC-03002 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03002 | 主流程·集群下拉 | P0 | 单产业模式→展开集群→15 项附录A |
+| FUNC-03003 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03003 | 主流程·产业下拉 | P0 | 集群新一代信息技术→展开产业→6 项附录A |
+| FUNC-03008 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03008 | 备选·重置参数 | P1 | 选产业+改指标→重置→官方模板六行且产业仍在 |
+| FUNC-03000 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03000 | 主流程·复制配置 | P0 | 已完成行「复制配置」→toast+未保存模板+产业区域回显+汇总校验 |
+| FUNC-03006 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03006 | 备选·当次自定义 | P1 | 官方模板→点「当前未保存配置」→模板+未保存提示文案 |
+| FUNC-03011 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03011 | 备选·按此配置新建 | P1 | 结果页「按此配置新建分析」→分析配置+产业区域与结果一致 |
+| FUNC-03009 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03009 | 备选·保存模板·取消 | P1 | 分析配置→保存为个人模板→取消→关层仍在配置 |
+| FUNC-03010 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03010 | 备选·保存模板·确定 | P1 | 合法配置→保存命名确定→「我的模板」出现新名且带 N 项 |
+| FUNC-03012 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03012 | 报告·返回结果 | P1 | 报告页「返回分析结果」→区域产业指数评价结果 |
+| FUNC-03018 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03018 | 报告·付费落点 | P1 | 报告页点「付费」→仍停留区域产业指数评价报告（无弹层） |
+| FUNC-03013 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03013 | 备选·状态筛选 | P1 | 任务状态选已完成→列表行均为已完成 |
+| FUNC-03014 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03014 | 备选·筛选重置 | P1 | 筛已完成→重置→全部状态且列表含已完成+失败 |
+| FUNC-03015 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03015 | 备选·记录翻页 | P1 | 分析记录点「2」→换批任务+10 条/页 |
+| FUNC-03016 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03016 | 备选·下载报告 | P1 | 已完成行「下载报告」→download 或 /asset 非空字节 |
+| FUNC-03017 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03017 | 报告·导出 | P1 | 报告页开通付费→「导出」→download 或已导出提示 |
+| FUNC-03019 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03019 | 异常·删除记录 | P1 | 分析记录「删除」→取消→记录仍在 |
+| FUNC-03021 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03021 | 异常·删除记录 | P1 | 当次新建→分析记录「删除」→确定→记录消失 |
+| FUNC-03023 | ZNFWJQ-KJZTFWXT-v1.0-FUNC-03023 | 异常·失败记录 | P1 | 失败行「查看结果」→仍留分析记录且不进入结果壳 |
 
 ## 覆盖说明
 

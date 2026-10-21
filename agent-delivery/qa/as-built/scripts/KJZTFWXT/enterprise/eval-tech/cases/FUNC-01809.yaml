@@ -1,0 +1,83 @@
+id: FUNC-01809
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01809
+priority: P1
+title: 最近评估点击新建评估回到未选企业配置页
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-tech
+tier: B
+preconditions:
+  - 当前在最近评估 Tab
+locators:
+  tab_recent: tab「最近评估」
+  tab_current: tab「当前分析」
+  new_eval_btn: button「新建评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+  - action: evaluate
+    note: 最近评估→点「新建评估」；当前分析空态断言在 expect
+expect:
+  - note: 1、进入当前分析；2、对象区提示先在对比篮选择企业
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const main = () => page.locator('main.app-main').first();
+      const evalTablist = () =>
+        page.locator('[role=tablist]').filter({ has: page.getByRole('tab', { name: '最近评估', exact: true }) }).first();
+      const closeBasket = async () => {
+        const closeB = page.locator('button[aria-label="关闭对比篮"]');
+        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
+          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const clickRecentTab = async () => {
+        const list = evalTablist();
+        await expect(list).toBeVisible({ timeout: 10000 });
+        const recent = list.getByRole('tab', { name: '最近评估', exact: true });
+        await recent.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(recent).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 15000 });
+      await clickRecentTab();
+      await expect(main().getByText('任务名称', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const newBtn = page.getByRole('button', { name: '新建评估' }).first();
+      await expect(newBtn).toBeVisible({ timeout: 10000 });
+      await newBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      if (await main().getByText('任务名称', { exact: true }).count()) {
+        const taskHdr = main().getByText('任务名称', { exact: true }).first();
+        if (await taskHdr.isVisible().catch(() => false)) {
+          throw new Error('点击新建评估后仍停留在最近评估列表');
+        }
+      }
+      const mainText = await main().innerText().catch(() => '');
+      if (/技术力评估结果/.test(mainText) && /view=result/.test(page.url())) {
+        throw new Error('新建评估后仍停留在结果态：' + page.url());
+      }
+      if (!/评估模板/.test(mainText) || !/评估对象/.test(mainText)) {
+        throw new Error('新建评估后未见配置页主区（片段=' + mainText.slice(0, 200).replace(/\s+/g, ' ') + '）');
+      }
+      const emptyGuide =
+        /暂未选择评估对象/.test(mainText) &&
+        /(?:请先在对比篮|请在系统对比[篮库])/.test(mainText) &&
+        /选择企业/.test(mainText);
+      if (!emptyGuide) {
+        throw new Error('对象区未见对比篮选企空态引导（片段=' + mainText.slice(0, 320).replace(/\s+/g, ' ') + '）');
+      }
+      if (/来自对比篮\s*·\s*\d+/.test(mainText) && !/暂未选择评估对象/.test(mainText)) {
+        throw new Error('新建评估后对象区仍显示已回填企业（应为空配置）');
+      }
+      const list = evalTablist();
+      const curTab = list.getByRole('tab', { name: '当前分析', exact: true });
+      const curSel = await curTab.getAttribute('aria-selected').catch(() => null);
+      if (curSel !== 'true' && !/评估模板/.test(mainText)) {
+        throw new Error('当前分析 Tab 未选中且主区非配置态（aria-selected=' + curSel + '）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  01809 最近评估点「新建评估」→配置页「当前分析」+ 对象区空态。30888 D1：引导文案为「暂未选择评估对象」+「请在系统对比库中选择企业」（篮/库混写，断言用对比[篮库]）。Tab aria-selected 偶发不准，以主区配置+空态为准。B 档零 allow_skip。

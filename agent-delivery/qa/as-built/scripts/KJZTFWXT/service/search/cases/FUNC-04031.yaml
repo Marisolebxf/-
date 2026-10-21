@@ -1,0 +1,100 @@
+id: FUNC-04031
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04031
+priority: P1
+tier: B
+title: 备选-关闭机构抽屉
+story: US-SVC-ORG-07
+entry_id: svc-search
+preconditions:
+  - 机构抽屉已打开
+locators:
+  org_card: article.svc-org-search-card
+  org_name_link: button.svc-org-search-link
+  drawer: .arco-drawer
+  drawer_close_btn: .arco-drawer:visible button「关闭」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 深链进页 → 检索出卡 → 打开抽屉 → 点「关闭」（判定在 expect）
+expect:
+  - note: 前置：机构抽屉已打开
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t);
+      };
+      const assertReachable = async () => {
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链 /service-center/search SPA404 url=' + page.url());
+        }
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await assertReachable();
+      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+      if (!(await inp.isVisible().catch(() => false))) {
+        await assertReachable();
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 智能检索输入框不可见 url=' + page.url());
+      }
+      await inp.fill('深圳');
+      const searchBtn = page.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
+      await expect(searchBtn).toBeVisible({ timeout: 8000 });
+      await searchBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(2500);
+      await assertReachable();
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
+      const hitRe = page.getByText(/共 \d+ 家匹配机构/);
+      await expect(hitRe).toBeVisible({ timeout: 15000 });
+      const hitText = ((await hitRe.innerText()) || '').trim();
+      const card = page.locator('article.svc-org-search-card').first();
+      if ((await card.count()) < 1) throw new Error('ENV-SVC-SEARCH-NO-CARD-001: 结果区未见机构卡片');
+      await expect(card).toBeVisible({ timeout: 10000 });
+      const nameBtn = card.locator('button.svc-org-search-link').first();
+      await nameBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 12000 });
+      globalThis.__func04031 = { hitText, cardCount: await page.locator('article.svc-org-search-card').count(), drawerOpened: true };
+  - note: 1.点击「关闭」
+    assert: |-
+      if (!globalThis.__func04031?.drawerOpened) throw new Error('前置：机构抽屉未打开');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const closeBtn = drawer.getByRole('button', { name: '关闭', exact: true });
+      await expect(closeBtn).toBeVisible({ timeout: 8000 });
+      await closeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+  - note: 1、抽屉关闭
+    assert: |-
+      if (!globalThis.__func04031?.drawerOpened) throw new Error('前置：机构抽屉未打开');
+      const visibleDrawer = page.locator('.arco-drawer:visible');
+      await expect(visibleDrawer).toHaveCount(0, { timeout: 10000 });
+      const orgParam = new URL(page.url()).searchParams.get('org');
+      if (orgParam) throw new Error('关闭后 URL 仍带 org 参数：' + orgParam);
+  - note: 2、检索结果列表仍在
+    assert: |-
+      const snap = globalThis.__func04031;
+      if (!snap?.drawerOpened) throw new Error('前置：机构抽屉未打开');
+      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(snap.hitText)).toBeVisible({ timeout: 8000 });
+      const n = await page.locator('article.svc-org-search-card').count();
+      if (n < 1 || n !== snap.cardCount) {
+        throw new Error('关闭抽屉后机构卡片数变化：before=' + snap.cardCount + ' after=' + n);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04031；catalog_path=/service-center/search 深链进页（非侧栏进入）。抽屉底栏「关闭」= ServiceOrgSearchPage closeOrg；
+  03994 字段抽屉对照同页。现场 edu/tts/svcz 深链 SPA404 时抛 ENV-EDU-TTS-SVCZ-404-001。

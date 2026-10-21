@@ -1,0 +1,104 @@
+id: FUNC-02716
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02716
+priority: P0
+title: 取消选择后已选条消失且结果仍在
+entry_id: chain-search
+tier: B
+preconditions:
+  - 检索结果态且选择条已出现（已勾选至少一行）
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  selection_toolbar: .industry-search-selection-toolbar
+  cancel_selection: .industry-search-selection-toolbar button「取消选择」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 光刻检索→勾选首行→点「取消选择」；已选条与结果行在 expect 判定
+expect:
+  - note: 前置：光刻检索有结果，勾选首行后选择条含「已选」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
+      await expect(input).toBeVisible({ timeout: 8000 });
+      await input.fill('光刻');
+      await page.getByRole('button', { name: '搜索', exact: true }).click();
+      await page.waitForTimeout(800);
+      await expect(region).toBeVisible({ timeout: 15000 });
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
+        throw new Error('前置：光刻检索为空，无法验取消选择');
+      }
+      const cards = region.locator('.industry-search-result-card');
+      const cardCount = await cards.count();
+      if (cardCount < 1) {
+        throw new Error('前置：结果区无可见结果卡片');
+      }
+      let picked = null;
+      for (let i = 0; i < cardCount; i++) {
+        const card = cards.nth(i);
+        if (!(await card.isVisible().catch(() => false))) continue;
+        const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+        if ((await chk.count()) < 1) continue;
+        const heading = card.locator('.industry-search-result-title h3, .industry-search-result-title [role=heading]').first();
+        const name = ((await heading.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        await chk.scrollIntoViewIfNeeded().catch(() => {});
+        const checkedCls = await chk.getAttribute('class').catch(() => '');
+        if (!checkedCls || !checkedCls.includes('arco-checkbox-checked')) {
+          await chk.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+        picked = name || 'row-' + i;
+        globalThis.__func02716_cardIndex = i;
+        break;
+      }
+      if (!picked) {
+        throw new Error('前置：当前页无可勾选的结果行');
+      }
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      await expect(toolbar.getByText(/^已选\s+\d+/)).toBeVisible({ timeout: 5000 });
+      globalThis.__func02716_ready = true;
+      globalThis.__func02716_beforeCards = cardCount;
+  - note: 1、「已选」条消失；2、结果行仍在
+    assert: |-
+      if (!globalThis.__func02716_ready) throw new Error('前置：选择条未就绪');
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await toolbar.getByRole('button', { name: '取消选择', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(toolbar).toBeHidden({ timeout: 8000 });
+      const cards = region.locator('.industry-search-result-card');
+      let visible = 0;
+      const n = await cards.count();
+      for (let i = 0; i < n; i++) {
+        if (await cards.nth(i).isVisible().catch(() => false)) visible++;
+      }
+      if (visible < 1) {
+        throw new Error('取消选择后结果行应仍在，当前可见卡片数=' + visible);
+      }
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
+        throw new Error('取消选择后不应变为空结果态');
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索「光刻」出结果后勾选首条可勾选行。
+  选择条 .industry-search-selection-toolbar（v-if selectedIds.length）；文案「已选 N」+ text 按钮「取消选择」（selectedIds=[]）。
+  取消后 toolbar 隐藏，结果卡片仍可见。登录与关内部评审由 runner 前置。B 档 coverage。

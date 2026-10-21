@@ -1,0 +1,61 @@
+id: FUNC-02006
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02006
+priority: P0
+title: 最近评估表展示固定列
+story: US-ENT-EVAL-HISTORY
+entry_id: ent-eval-compete
+tier: B
+preconditions:
+  - 已进入综合竞争力评估
+locators:
+  hist_tab: Tab「最近评估」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+  - action: evaluate
+    note: 点击「最近评估」Tab；表头判定在 expect
+expect:
+  - note: 1、表头含任务名称、任务 ID、模式、企业摘要、模板 / 版本
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await dismissBasket();
+      const tab = page.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(tab).toBeVisible({ timeout: 12000 });
+      await tab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const histTable = main().locator('.arco-table').first();
+      await expect(histTable).toBeVisible({ timeout: 10000 });
+      const headerCells = (await histTable.locator('thead th').allInnerTexts()).map((s) => s.replace(/\s+/g, ' ').trim());
+      const headers = headerCells.join('|');
+      const group1 = ['任务名称', '任务 ID', '模式', '企业摘要'];
+      for (const col of group1) {
+        if (!headerCells.some((h) => h === col || h.includes(col))) {
+          throw new Error('最近评估表缺少列：' + col + '；实际表头：' + headers);
+        }
+      }
+      const hasTpl = headerCells.some((h) => /模板\s*\/\s*版本/.test(h));
+      if (!hasTpl) throw new Error('最近评估表缺少列：模板 / 版本；实际表头：' + headers);
+      globalThis.__func02006_headerCells = headerCells;
+  - note: 2、表头含创建时间、状态、可信度、报告、操作
+    assert: |-
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      let headerCells = globalThis.__func02006_headerCells;
+      if (!headerCells || !headerCells.length) {
+        headerCells = (await main().locator('.arco-table').first().locator('thead th').allInnerTexts()).map((s) => s.replace(/\s+/g, ' ').trim());
+      }
+      const headers = headerCells.join('|');
+      for (const col of ['创建时间', '状态', '可信度', '报告', '操作']) {
+        if (!headerCells.some((h) => h === col || h.includes(col))) {
+          throw new Error('最近评估表缺少列：' + col + '；实际表头：' + headers);
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  02006 最近评估任务表固定列。30888 路由 /enterprise-center/evaluation；点 Tab「最近评估」读 thead（env-gate hist_snippet 对齐）。登录与关内部评审由 runner 会话前置。tier B，零 allow_skip。

@@ -1,0 +1,117 @@
+id: FUNC-00472
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00472
+priority: P1
+title: 结果内再筛零命中时保留结果操作区呈局部空态
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 有结果列表（本条自含智能搜索「人工智能」）
+  - 可构造再筛无命中条件（经营状态「注销」，不足则叠加企业规模「微型」）
+locators:
+  search_input: textbox name 含「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  refine_status: 结果工具条 .arco-select-view 经营状态
+  basket_dock: button aria-label 含「打开对比篮」
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: wait
+    for: 智能搜索结果与命中条数
+    timeout_ms: 2000
+  - action: evaluate
+    note: 施加再筛至零命中、操作区与局部空态由 expect assert 自含（P2 跨 tick）
+expect:
+  - note: 原查询摘要与排序、再筛、对比篮等结果操作区保留
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      const main = page.locator('main');
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 20000 });
+      await page.waitForTimeout(600);
+      const sortSel = main.locator('.arco-select-view').filter({ hasText: /综合竞争力优先|有效专利数|最新营收|成立时间/ }).last();
+      await expect(sortSel).toBeVisible({ timeout: 8000 });
+      for (const ph of ['经营状态', '企业规模', '资质荣誉']) {
+        if ((await main.locator('input[placeholder="' + ph + '"]').count()) < 1) {
+          throw new Error('结果内再筛缺少控件 placeholder: ' + ph);
+        }
+      }
+      await expect(page.getByRole('button', { name: /打开对比篮/ }).first()).toBeVisible({ timeout: 8000 });
+      const parseHit = async () => {
+        const hit = page.getByText(/命中\s*(\d+)\s*家企业/).first();
+        if ((await hit.count()) && (await hit.isVisible().catch(() => false))) {
+          return Number((await hit.innerText()).match(/(\d+)/)[1]);
+        }
+        const empty = page.getByText(/未命中结果/).first();
+        if ((await empty.count()) && (await empty.isVisible().catch(() => false))) return 0;
+        return -1;
+      };
+      const pickRefine = async (placeholder, optionText) => {
+        const wrap = main.locator('.arco-select').filter({ has: main.locator('input[placeholder="' + placeholder + '"]') }).first();
+        if ((await wrap.count()) < 1) {
+          const sel = main.locator('.arco-select-view').filter({ hasText: placeholder }).first();
+          await sel.click({ timeout: 8000 });
+        } else {
+          await wrap.locator('.arco-select-view').first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(500);
+        const opt = page.locator('[role=listbox]:visible [role=option], .arco-select-option').filter({ hasText: optionText }).first();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        await expect(main.locator('.arco-tag').filter({ hasText: optionText }).first()).toBeVisible({ timeout: 8000 });
+      };
+      await pickRefine('经营状态', '注销');
+      let hits = await parseHit();
+      if (hits > 0) {
+        await pickRefine('企业规模', '微型');
+        hits = await parseHit();
+      }
+      if (hits !== 0) {
+        throw new Error('未能构造再筛零命中（注销后 hits=' + hits + '）');
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(sortSel).toBeVisible({ timeout: 8000 });
+      await expect(main.locator('.arco-tag').filter({ hasText: '注销' }).first()).toBeVisible({ timeout: 8000 });
+      if ((await main.locator('input[placeholder="资质荣誉"]').count()) < 1 && (await main.locator('.arco-tag').filter({ hasText: '微型' }).count()) > 0) {
+        await expect(main.locator('.arco-tag').filter({ hasText: '微型' }).first()).toBeVisible({ timeout: 8000 });
+      }
+      if ((await main.locator('input[placeholder="资质荣誉"]').count()) > 0) {
+        await expect(main.locator('input[placeholder="资质荣誉"]').first()).toBeVisible({ timeout: 8000 });
+      }
+      if ((await main.locator('input[placeholder="企业规模"]').count()) > 0) {
+        await expect(main.locator('input[placeholder="企业规模"]').first()).toBeVisible({ timeout: 8000 });
+      }
+      await expect(page.getByRole('button', { name: /打开对比篮/ }).first()).toBeVisible({ timeout: 8000 });
+      const exportBtn = page.getByRole('button', { name: '导出当前结果' });
+      if ((await exportBtn.count()) > 0) {
+        await expect(exportBtn.first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 仅列表区呈局部空态（仍处结果摘要下，出现未命中提示且无企业结果卡）
+    assert: |-
+      const main = page.locator('main');
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/未命中结果/).first()).toBeVisible({ timeout: 8000 });
+      const hitLine = page.getByText(/命中\s*[1-9]\d*\s*家企业/);
+      if ((await hitLine.count()) > 0 && (await hitLine.first().isVisible().catch(() => false))) {
+        throw new Error('再筛零命中后仍显示非零命中条数摘要');
+      }
+      const viewProfile = main.getByRole('button', { name: '查看画像' });
+      if ((await viewProfile.count()) > 0 && (await viewProfile.first().isVisible().catch(() => false))) {
+        throw new Error('局部空态下仍可见企业结果卡「查看画像」');
+      }
+      const rec = page.getByText('推荐企业');
+      if ((await rec.count()) > 0 && (await rec.first().isVisible().catch(() => false))) {
+        throw new Error('结果内再筛空态不应出现主查询空态「推荐企业」分区');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 路由 /enterprise/enterprise-search。零命中优先「注销」；数据仍有命中则叠加「微型」。再筛点选跟 FUNC-00458/01479（placeholder 锚定 .arco-select-view）。选中后经营状态 placeholder 消失属正常，以 tag「注销」+其余再筛 placeholder 核对工具条仍在。

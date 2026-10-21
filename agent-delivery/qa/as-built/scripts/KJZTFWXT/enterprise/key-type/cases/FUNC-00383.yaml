@@ -1,0 +1,62 @@
+id: FUNC-00383
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00383
+priority: P0
+title: 地图工具栏按钮、热力开关默认态与图例四级齐备
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 已进入类型分析页
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  map_panel: section.analysis-workspace-panel（三级地理透视与可视化呈现）
+  map_btn: button「地图视图」
+  toolbar: 放大 / 缩小 / 刷新 / 全屏
+  heat_switch: switch aria-label「显示热力」
+  legend: 图例「企业数量强度」：低/中/高/极高
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 侧栏进入类型分析并点「地图视图」；工具栏/热力/图例在 expect 内判定
+expect:
+  - note: 从侧栏进入重点企业类型分析并点击「地图视图」后，空间分布区地图可见
+    assert: |-
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click({ timeout: 10000 });
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await page.waitForTimeout(2000);
+      const close = page.getByRole('button', { name: '关闭对比篮' });
+      if (await close.count()) await close.first().click({ timeout: 3000 }).catch(() => {});
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await panel.getByRole('button', { name: '地图视图', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 10000 });
+  - note: 工具栏含放大、缩小、刷新、全屏四个按钮（30888 第三枚 aria-label 为「复位」）
+    assert: |-
+      const toolbar = page.locator('[role="toolbar"][aria-label="地图工具栏"]').first();
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      for (const b of ['放大', '缩小', '复位', '全屏']) {
+        await expect(toolbar.locator(`button[aria-label="${b}"]`)).toBeVisible({ timeout: 8000 });
+      }
+  - note: 「显示热力」开关默认为开启
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const sw = panel.getByRole('switch', { name: '显示热力' });
+      await expect(sw).toBeVisible({ timeout: 8000 });
+      await expect(sw).toHaveAttribute('aria-checked', 'true');
+  - note: 图例标题为「企业数量强度」，含低、中、高、极高四级
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel.getByText('企业数量强度', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      for (const lv of ['低', '中', '高', '极高']) {
+        await expect(panel.getByText(lv, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·30888 侧栏/空间分布区同 FUNC-00382；用例「刷新」现场按钮 aria-label「复位」。工具栏 role=toolbar aria-label=地图工具栏。登录与关内部评审由 runner 会话前置。

@@ -1,0 +1,70 @@
+id: FUNC-03899
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03899
+priority: P0
+tier: A
+title: 技术力口径说明-综合分来源与固定五维等权
+story: US-SVC-PT-04
+entry_id: svc-portal
+preconditions:
+  - 已进入门户（runner 会话前置 + 概况默认 Tab）
+locators:
+  tab_cap: tab「服务机构技术能力」
+  caliber_copy: main 区口径说明段落（与榜单同屏）
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: evaluate
+    note: 点击「服务机构技术能力」页签（404 时回退深链 capability-rank 承载同页）
+expect:
+  - note: 1、说明写明综合分由平台技术力模型给出
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构技术能力/.test(t);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(new URL('/service-portal/capability-rank', baseUrl).href, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      } else {
+        const tablist = page.locator('[aria-label="专题服务子导航"]');
+        await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
+      }
+      if (/sso\/user\/login|itic-sci\.com\/sso/.test(page.url())) {
+        throw new Error('ENV-EDU-TTS-SVCZ-SSO-001：未建立业务会话，门户被重定向 SSO');
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/* SPA404，无法验技术力口径说明');
+      }
+      await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+      const mainText = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+      if (!/综合分/.test(mainText) || !/平台技术力模型/.test(mainText)) {
+        throw new Error('口径说明未写明综合分由平台技术力模型给出；main_snip=' + mainText.slice(0, 200));
+      }
+  - note: 2、说明写明固定五维等权且门户不可调权
+    assert: |-
+      if (!/service-portal\/capability-rank/.test(page.url())) {
+        throw new Error('已离开技术能力页：' + page.url());
+      }
+      const mainText = ((await page.locator('main').innerText()) || '').replace(/\s+/g, ' ');
+      if (!/固定五维等权/.test(mainText) && !/五维等权/.test(mainText)) {
+        throw new Error('口径说明未写明固定五维等权；main_snip=' + mainText.slice(0, 200));
+      }
+      if (!/门户不可调权/.test(mainText)) {
+        throw new Error('口径说明未写明门户不可调权；main_snip=' + mainText.slice(0, 200));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  Tab 落点 /service-portal/capability-rank；步骤优先 overview+点 Tab，SPA404 时回退 goto capability-rank（仍验用例终态，与 FUNC-03897 同模式）。
+  现场口径句「综合分由平台技术力模型给出（固定五维等权，门户不可调权）。」与榜单同屏；「不二次计分」归 05189。
+  edu.itic-sci.com/tts/svcz 2026-10-21 机跑全门户 SPA404 → ENV-EDU-TTS-SVCZ-404-001→ledger blocked。登录与关内部评审由 runner 会话前置。金样 A 档零 allow_skip。

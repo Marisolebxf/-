@@ -1,0 +1,252 @@
+id: FUNC-03407
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03407
+priority: P1
+title: 分析记录「重置筛选」恢复全部状态并列出各状态记录
+story: US-CHAIN-SZ-05
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已打开「分析记录」
+locators:
+  tab_rec: tab「分析记录」
+  records_frame: '[data-frame-id="F-SZ-04"]'
+  reset_filter: button「重置筛选」
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 分析记录选「失败」后点「重置筛选」；状态与列表在 expect
+expect:
+  - note: 前置：进入分析记录；选「失败」后非失败行不再列出（基线存在时）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const enterSzDev = async () => {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳发展分析深链与 /industry-center/search 侧栏均 SPA404，无法验重置筛选 ' + page.url());
+        }
+        await expect(page).toHaveURL(/workspace=development/);
+      };
+      const main = () => page.locator('main').first();
+      const taskRows = () =>
+        main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业发展分析' });
+      const countVisibleRows = async () => {
+        const rows = taskRows();
+        let n = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) n += 1;
+        }
+        return n;
+      };
+      const rowStatus = (text) => {
+        const t = (text || '').replace(/\s+/g, ' ');
+        if (/分析中/.test(t)) return '分析中';
+        if (/已完成|成功/.test(t)) return '已完成';
+        if (/失败/.test(t)) return '失败';
+        return '';
+      };
+      const collectStatuses = async () => {
+        const rows = taskRows();
+        const set = new Set();
+        let nonFail = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const text = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const st = rowStatus(text);
+          if (st) set.add(st);
+          if (st && st !== '失败') nonFail += 1;
+        }
+        return { statuses: set, nonFail };
+      };
+      const statusSelect = () =>
+        page
+          .locator('.diagnosis-records__filters > div')
+          .filter({ hasText: '任务状态' })
+          .locator('.arco-select-view')
+          .first();
+      const readStatusLabel = async () => {
+        const view = statusSelect();
+        const title = await view.getAttribute('title');
+        const val = view.locator('.arco-select-view-value').first();
+        const inner = val.count ? ((await val.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim() : '';
+        return (title || inner || ((await view.innerText()) || '').replace(/\s+/g, ' ').trim()).trim();
+      };
+      const pickStatus = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(150);
+        const view = statusSelect();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + label + '\\s*$') });
+        await expect(opt.first()).toBeVisible({ timeout: 8000 });
+        await opt.first().click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      await enterSzDev();
+      const recTab = page.getByRole('tab', { name: '分析记录' });
+      await expect(recTab).toBeVisible({ timeout: 10000 });
+      await recTab.click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      await expect(recTab).toHaveAttribute('aria-selected', 'true');
+      const frame = page.locator('[data-frame-id="F-SZ-04"]');
+      await expect(frame).toBeVisible({ timeout: 10000 });
+      await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
+      const baselineTotal = await countVisibleRows();
+      if (baselineTotal < 1) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-RECORD-03407：分析记录无深圳产业发展分析任务行，无法验重置筛选');
+      }
+      const baseline = await collectStatuses();
+      await pickStatus('失败');
+      const afterFailLabel = await readStatusLabel();
+      if (!/失败/.test(afterFailLabel)) {
+        throw new Error('选「失败」后任务状态未显示失败；当前「' + afterFailLabel + '」');
+      }
+      if (baseline.nonFail > 0) {
+        const afterFail = await collectStatuses();
+        if (afterFail.nonFail > 0) {
+          throw new Error('筛「失败」后仍见非失败行');
+        }
+      }
+      globalThis.__func03407 = {
+        baselineTotal,
+        statusKinds: baseline.statuses.size,
+        hadNonFail: baseline.nonFail > 0,
+      };
+  - note: 1、任务状态回到「全部状态」；2、列表重新出现各状态的记录
+    assert: |-
+      const st = globalThis.__func03407;
+      if (!st || typeof st.baselineTotal !== 'number') throw new Error('前置：未完成失败筛选');
+      const frame = page.locator('[data-frame-id="F-SZ-04"]');
+      await expect(frame).toBeVisible({ timeout: 8000 });
+      const resetBtn = frame.getByRole('button', { name: '重置筛选' });
+      await expect(resetBtn).toBeVisible({ timeout: 8000 });
+      await resetBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const statusSelect = () =>
+        page
+          .locator('.diagnosis-records__filters > div')
+          .filter({ hasText: '任务状态' })
+          .locator('.arco-select-view')
+          .first();
+      const readStatusLabel = async () => {
+        const view = statusSelect();
+        const title = await view.getAttribute('title');
+        const val = view.locator('.arco-select-view-value').first();
+        const inner = val.count ? ((await val.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim() : '';
+        return (title || inner || ((await view.innerText()) || '').replace(/\s+/g, ' ').trim()).trim();
+      };
+      const label = await readStatusLabel();
+      if (!/全部状态/.test(label)) {
+        throw new Error('重置筛选后任务状态应为「全部状态」，当前「' + label + '」');
+      }
+      const main = () => page.locator('main').first();
+      const taskRows = () =>
+        main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业发展分析' });
+      const countVisibleRows = async () => {
+        const rows = taskRows();
+        let n = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          if (await rows.nth(i).isVisible().catch(() => false)) n += 1;
+        }
+        return n;
+      };
+      const rowStatus = (text) => {
+        const t = (text || '').replace(/\s+/g, ' ');
+        if (/分析中/.test(t)) return '分析中';
+        if (/已完成|成功/.test(t)) return '已完成';
+        if (/失败/.test(t)) return '失败';
+        return '';
+      };
+      const collectStatuses = async () => {
+        const rows = taskRows();
+        const set = new Set();
+        for (let i = 0; i < (await rows.count()); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const text = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const s = rowStatus(text);
+          if (s) set.add(s);
+        }
+        return set;
+      };
+      const totalAfter = await countVisibleRows();
+      if (totalAfter < st.baselineTotal) {
+        throw new Error('重置筛选后列表行数少于基线（基线 ' + st.baselineTotal + '，当前 ' + totalAfter + '）');
+      }
+      const kindsAfter = (await collectStatuses()).size;
+      if (st.statusKinds >= 2 && kindsAfter < 2) {
+        throw new Error('重置筛选后应重新出现多种任务状态，当前仅 ' + kindsAfter + ' 种');
+      }
+      if (st.hadNonFail) {
+        const rows = taskRows();
+        let nonFail = 0;
+        for (let i = 0; i < (await rows.count()); i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const text = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const s = rowStatus(text);
+          if (s && s !== '失败') nonFail += 1;
+        }
+        if (nonFail < 1) {
+          throw new Error('重置筛选后未见非失败状态记录');
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  F-SZ-04 分析记录「重置筛选」= recordStatusFilter='all'（IndustryShenzhenPage development 工作区）；
+  双层 expect：基线有任务行 → 筛失败 → 重置回全部状态并恢复基线行数/多状态（有非失败行时验回显）。
+  无记录→ENV-CHAIN-SZ-DEV-NO-RECORD-03407。edu 深链/侧栏 SPA404→ENV-EDU-TTS-SVCZ-404-001。同 sz-compare FUNC-03317 / sz-dev FUNC-03405 入口 fallback。

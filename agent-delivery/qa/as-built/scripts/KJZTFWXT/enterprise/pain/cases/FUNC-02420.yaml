@@ -1,0 +1,238 @@
+id: FUNC-02420
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02420
+priority: P1
+title: 勾选一家企业后已选计数和确定可用
+story: US-ENT-RISK-OBJECT
+entry_id: ent-pain
+tier: B
+preconditions:
+  - 选择分析企业中至少有 1 家企业（assert 自含；无则 ENV-PAIN-BASKET-EMPTY-001）
+  - 当前已选为 0 家（assert 自含取消选择或取消勾选）
+locators:
+  overlay_title: 选择分析企业
+  confirm: button「确定」
+  clear_selection: button「取消选择」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=pain-points&tab=pain-points
+  - action: evaluate
+    note: 打开选择分析企业→已选 0 家→勾选 1 家；计数与按钮态在 expect
+expect:
+  - note: 1、已选数量变为 1 家
+    assert: |-
+      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
+      const toUrl = (p) =>
+        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz') +
+        (p.startsWith('/') ? p : '/' + p);
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+      const basketEntCount = async () => {
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        let m = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        if (m) return parseInt(m[1], 10);
+        m = dockLabel.match(/共\s*(\d+)\s*项/);
+        if (m) return parseInt(m[1], 10);
+        return 0;
+      };
+      const seedBasketFromSearchPage = async (min) => {
+        const searchInput = page
+          .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
+          .or(page.getByPlaceholder(/企业名|产业|资质/))
+          .first();
+        if (await searchInput.isVisible().catch(() => false)) {
+          await searchInput.fill('科技');
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
+          if (await searchBtn.isVisible().catch(() => false)) {
+            await searchBtn.click({ timeout: 8000 });
+            await page.waitForTimeout(1500);
+          }
+        }
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        let n = await basketEntCount();
+        for (let round = 0; round < 5 && n < min; round++) {
+          const btnN = await addBtns.count();
+          let clicked = 0;
+          for (let i = 0; i < btnN && n < min; i++) {
+            const btn = addBtns.nth(i);
+            if (!(await btn.isVisible().catch(() => false))) continue;
+            await btn.click({ timeout: 8000 });
+            await page.waitForTimeout(700);
+            clicked++;
+            n = await basketEntCount();
+          }
+          if (!clicked) break;
+        }
+        return (await basketEntCount()) >= min;
+      };
+      const ensureBasketEnterprises = async (min) => {
+        if ((await basketEntCount()) >= min) return;
+        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        if (await seedBasketFromSearchPage(min)) return;
+        throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
+      };
+      const joinOneViaAddModal = async (panel) => {
+        const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
+        const addBtn = (await workspace.count())
+          ? workspace.getByRole('button', { name: '新增', exact: true })
+          : panel.getByRole('button', { name: '新增', exact: true });
+        await expect(addBtn.first()).toBeVisible({ timeout: 8000 });
+        await addBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const modalRoot = page
+          .locator('[data-testid="compare-basket-add-modal"], .arco-modal:visible')
+          .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
+          .last();
+        await expect(modalRoot).toBeVisible({ timeout: 15000 });
+        await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
+        const joinBtns = modalRoot.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(joinBtns.first()).toBeVisible({ timeout: 30000 });
+        await joinBtns.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const ensureBasketInPicker = async (panel, min) => {
+        const sels = panel.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) >= min) return;
+        await joinOneViaAddModal(panel);
+        if ((await sels.count()) < min) throw new Error('ENV-PAIN-BASKET-EMPTY-001：picker 篮内无企业可选');
+      };
+      const openPickerDeepLink = async () => {
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(toUrl(`${route}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 10000 });
+      };
+      const openPicker = async () => {
+        const emptyCta = main().getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const adjustBtn = main().getByRole('button', { name: '返回对比篮调整对象', exact: true });
+        if (await adjustBtn.isVisible().catch(() => false)) {
+          await adjustBtn.click({ timeout: 8000 });
+        } else if (await emptyCta.isVisible().catch(() => false)) {
+          await emptyCta.click({ timeout: 8000 });
+        } else {
+          await openPickerDeepLink();
+          return;
+        }
+        await page.waitForTimeout(600);
+        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible').last();
+      const readPickerSelectedCount = async () => {
+        const panel = pickerRoot();
+        const scope = (await panel.count()) ? panel : page.locator('body');
+        const txt = (await scope.innerText().catch(() => '')) || '';
+        const liveM = txt.match(/当前已选择\s*(\d+)\s*家企业/);
+        if (liveM) return parseInt(liveM[1], 10);
+        const pickedM = txt.match(/已选\s*(\d+)\s*家/);
+        if (pickedM) return parseInt(pickedM[1], 10);
+        const sels = page.locator('[aria-label^="选择 "]');
+        let checked = 0;
+        for (let i = 0; i < (await sels.count()); i++) {
+          if ((await sels.nth(i).getAttribute('aria-checked')) === 'true') checked++;
+        }
+        return checked;
+      };
+      const ensureZeroPickerSelection = async (panel) => {
+        let selected = await readPickerSelectedCount();
+        if (selected > 0) {
+          const clearBtn = panel.getByRole('button', { name: '取消选择', exact: true });
+          if ((await clearBtn.count()) && !(await clearBtn.first().isDisabled())) {
+            await clearBtn.first().click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+            selected = await readPickerSelectedCount();
+          }
+          const sels = page.locator('[aria-label^="选择 "]');
+          for (let i = 0; i < (await sels.count()) && selected > 0; i++) {
+            const sel = sels.nth(i);
+            if ((await sel.getAttribute('aria-checked')) === 'true') {
+              await sel.click({ timeout: 5000 });
+              await page.waitForTimeout(300);
+              selected = await readPickerSelectedCount();
+            }
+          }
+        }
+        return selected;
+      };
+      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+      }
+      await closeBasket();
+      const ensurePickerWithEnterprises = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        await openPicker();
+        let panel = pickerRoot();
+        if (!(await panel.count()) || !(await panel.isVisible().catch(() => false))) {
+          await openPickerDeepLink();
+          panel = pickerRoot();
+        }
+        await expect(panel).toBeVisible({ timeout: 10000 });
+        const basketTab = panel.getByRole('tab', { name: '篮内企业' }).or(panel.getByText('篮内企业', { exact: true }));
+        if ((await basketTab.count()) && (await basketTab.first().isVisible().catch(() => false))) {
+          await basketTab.first().click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+        let sels = panel.locator('[aria-label^="选择 "]');
+        if ((await sels.count()) < 1) {
+          try {
+            await ensureBasketInPicker(panel, 1);
+          } catch (e) {
+            const msg = String(e.message || e);
+            if (!/ENV-PAIN-BASKET-EMPTY|暂无对象/.test(msg)) throw e;
+            await ensureBasketEnterprises(1);
+            await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(800);
+            await closeBasket();
+            await openPickerDeepLink();
+            panel = pickerRoot();
+            await expect(panel).toBeVisible({ timeout: 10000 });
+            await ensureBasketInPicker(panel, 1);
+          }
+        }
+        return panel;
+      };
+      const panel = await ensurePickerWithEnterprises();
+      const sels = panel.locator('[aria-label^="选择 "]');
+      if ((await sels.count()) < 1) throw new Error('ENV-PAIN-BASKET-EMPTY-001');
+      let selected = await ensureZeroPickerSelection(panel);
+      if (selected !== 0) throw new Error('前置：已选应为 0 家，实际 ' + selected);
+      const firstSel = sels.first();
+      if ((await firstSel.getAttribute('aria-checked')) !== 'true') {
+        await firstSel.scrollIntoViewIfNeeded().catch(() => {});
+        await firstSel.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      selected = await readPickerSelectedCount();
+      if (selected !== 1) throw new Error('勾选 1 家后已选应为 1 家，实际 ' + selected);
+      globalThis.__func02420_picker = true;
+  - note: 2、「确定」可点击
+    assert: |-
+      if (!globalThis.__func02420_picker) throw new Error('前置：未在 picker 勾选 1 家');
+      const panel = page.locator('.system-compare-panel:visible').last();
+      await expect(panel.getByRole('button', { name: '确定', exact: true }).first()).toBeEnabled({ timeout: 8000 });
+  - note: 3、「取消选择」可点击
+    assert: |-
+      if (!globalThis.__func02420_picker) throw new Error('前置：未在 picker 勾选 1 家');
+      const panel = page.locator('.system-compare-panel:visible').last();
+      await expect(panel.getByRole('button', { name: '取消选择', exact: true }).first()).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=优先 CTA/深链打开 picker→篮内企业→picker「新增」或 enterprise-search 兜底→已选归零→勾选 1 家（不点确定）。机检=已选 1 家+「确定」「取消选择」enabled。对齐 02401 picker 兜底顺序。篮空→ENV-PAIN-BASKET-EMPTY-001。取消归零见 02430。登录与关评审由 runner 前置。B 档零 allow_skip。

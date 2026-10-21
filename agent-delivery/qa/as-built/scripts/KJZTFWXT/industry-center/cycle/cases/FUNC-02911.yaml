@@ -1,0 +1,96 @@
+id: FUNC-02911
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02911
+priority: P0
+title: 诊断记录已完成任务点查看报告打开报告页
+story: US-CHAIN-DIAG-07
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 诊断记录有一条已完成任务
+locators:
+  records_tab: tab「诊断记录」
+  view_report: button「查看报告」
+  report_eyebrow: .report-toolbar__eyebrow
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 诊断记录已完成行点「查看报告」；报告页与标题在 expect
+expect:
+  - note: 1、在该行点「查看报告」后进入报告页
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const body404 = async () => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(t);
+      };
+      const waitReportReader = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        for (let i = 0; i < 36; i++) {
+          if (await reader.isVisible().catch(() => false)) return reader;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('点击「查看报告」后未进入只读报告页，url=' + page.url());
+      };
+      await dismissBasket();
+      if (!/\/industry-center\/diagnosis/.test(page.url()) || !/workspace=cycle/.test(page.url())) {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+      }
+      if (await body404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const reportBtns = main().getByRole('button', { name: '查看报告' });
+      const n = await reportBtns.count();
+      let pickedTask = '';
+      let clicked = false;
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        let row = reportBtns.nth(i).locator('xpath=ancestor::tr[1]');
+        if ((await row.count()) < 1) row = reportBtns.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+        const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+        if (!rt || !/已完成/.test(rt) || !/产业周期分析/.test(rt)) continue;
+        const m = rt.match(/CHAIN-\d{8}-\d{3}/);
+        if (!m) continue;
+        pickedTask = m[0];
+        await reportBtns.nth(i).click({ timeout: 15000 });
+        clicked = true;
+        for (let j = 0; j < 24; j++) {
+          await page.waitForTimeout(500);
+          if (/view=report/.test(page.url()) && (await page.locator('.system-report-reader[data-report-readonly="true"]').isVisible().catch(() => false))) break;
+        }
+        if (/view=report/.test(page.url())) break;
+        pickedTask = '';
+        clicked = false;
+      }
+      if (!clicked || !pickedTask) {
+        throw new Error('ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001：诊断记录无已完成产业周期任务可点「查看报告」');
+      }
+      globalThis.__func02911 = { taskId: pickedTask, readerReady: false };
+      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
+      const reader = await waitReportReader();
+      globalThis.__func02911.readerReady = true;
+      await expect(reader).toBeVisible({ timeout: 8000 });
+  - note: 2、标题为「产业链分析报告」
+    assert: |-
+      if (!globalThis.__func02911?.readerReady) throw new Error('前置：报告页未打开');
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader).toBeVisible({ timeout: 8000 });
+      const eyebrow = reader.locator('.report-toolbar__eyebrow');
+      await expect(eyebrow.filter({ hasText: '产业链分析报告' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；steps goto 对齐 entry-seed/testdata.route。
+  用例=诊断记录已完成行「查看报告」→报告页+eyebrow「产业链分析报告」（对齐 02905，h1 为 analysisLabel+报告不作本用例主判）。
+  无已完成任务→ENV-CHAIN-CYCLE-NO-COMPLETED-RECORD-001。SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档（重写波 FUNC 编号）。

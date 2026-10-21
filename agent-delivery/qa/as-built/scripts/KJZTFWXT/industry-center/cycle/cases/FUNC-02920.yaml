@@ -1,0 +1,101 @@
+id: FUNC-02920
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02920
+priority: P1
+title: 参数表选择列复选框不可切换且数据状态仍为可用
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 已打开产业关键参数表
+locators:
+  param_table: 产业关键参数表（选择列 checkbox）
+  select_checkbox: label.arco-checkbox[aria-label="周期参数默认启用"]
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→点选择列复选框→断言不可切换且四行数据状态仍为可用
+expect:
+  - note: 前置：产业周期分析页与产业关键参数表可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      await dismissBasket();
+      await expandChainGroup();
+      const leaf = leafItem();
+      await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+      await leaf.first().click({ timeout: 10000 });
+      await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+      await expect(page).toHaveURL(/workspace=cycle/);
+      await expect(page).toHaveURL(/tab=cycle/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('产业关键参数').first()).toBeVisible({ timeout: 8000 });
+      const table = page.locator('.diagnosis-cycle-table, .arco-table').filter({ hasText: '指标名称' }).first();
+      await expect(table).toBeVisible({ timeout: 8000 });
+  - note: 1、点「选择」列复选框后四行都不能切换（disabled 或点击后 checked 态不变）
+    assert: |-
+      const table = page.locator('.diagnosis-cycle-table, .arco-table').filter({ hasText: '指标名称' }).first();
+      const rowNames = ['市场规模', '市场增长率', '利润率', '技术成熟度'];
+      const boxes = table.locator('label.arco-checkbox[aria-label="周期参数默认启用"]');
+      let n = await boxes.count();
+      if (n < 4) {
+        const fallback = page.locator('label.arco-checkbox[aria-label="周期参数默认启用"]');
+        n = await fallback.count();
+        if (n < 4) throw new Error('选择列复选框不足 4，count=' + n);
+      }
+      const useBoxes = n >= 4 ? boxes : page.locator('label.arco-checkbox[aria-label="周期参数默认启用"]');
+      await expect(useBoxes).toHaveCount(4, { timeout: 8000 });
+      for (let i = 0; i < 4; i++) {
+        const box = useBoxes.nth(i);
+        await box.scrollIntoViewIfNeeded().catch(() => {});
+        const cls = (await box.getAttribute('class')) || '';
+        if (!/arco-checkbox-disabled/.test(cls)) {
+          throw new Error('第' + (i + 1) + '个选择列复选框应 disabled，class=' + cls);
+        }
+        const before = await box.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
+        const target = box.locator('.arco-checkbox-target, input[type=checkbox]').first();
+        await target.click({ timeout: 5000, force: true }).catch(() => box.click({ force: true }));
+        await page.waitForTimeout(200);
+        const after = await box.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
+        if (before !== after) {
+          throw new Error('第' + (i + 1) + '个复选框点击后状态变化 before=' + before + ' after=' + after);
+        }
+      }
+  - note: 2、四行数据状态仍全部是「可用」
+    assert: |-
+      const main = page.locator('main.content-shell-layout, main').first();
+      const tableText = await main.innerText().catch(() => '');
+      for (const name of ['市场规模', '市场增长率', '利润率', '技术成熟度']) {
+        const idx = tableText.indexOf(name);
+        if (idx < 0) throw new Error('表内未见行名 ' + name);
+        const slice = tableText.slice(idx, idx + 80);
+        if (!/可用/.test(slice)) {
+          throw new Error(name + ' 行数据状态非「可用」：' + slice.replace(/\s+/g, ' ').slice(0, 60));
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·选择列实勘 checkbox aria-label=周期参数默认启用，class 含 arco-checkbox-disabled（scout.json）；用例「选择列」语义=不可勾/取消，是否参与分析看「数据状态」列「可用」。
+  D4·路由 entry-seed catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；edu tts/svcz 深链若 SPA 404 标 ENV-EDU-TTS-SVCZ-404-001（与 02895/02916 同根因）。登录关评审 runner 前置。B 档零 allow_skip。

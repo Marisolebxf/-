@@ -1,0 +1,115 @@
+id: FUNC-01595
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01595
+priority: P0
+title: 清单搜索命中时来源摘要家数少于搜索前
+story: US-KEYENT-04
+entry_id: ent-key-type
+tier: A
+preconditions:
+  - 企业清单已打开且有多行
+locators:
+  sidebar_entry: 侧栏 link「重点企业类型分析」
+  list_btn: button 文案含「查看企业清单」
+  drawer: .arco-drawer:visible
+  search_input: 抽屉内 .arco-input-search input（placeholder 搜索企业名称、统一社会信用代码、产业或区域）
+  source_summary: 抽屉「企业清单来源」区块内「共 N 家」
+steps:
+  - action: goto
+    target: /enterprise-center/overview
+  - action: evaluate
+    note: 打开企业清单、在搜索框输入「深圳」；家数对比在 expect 内
+expect:
+  - note: 来源摘要中的家数少于输入前
+    assert: |-
+      async function readSourceTotal(drawer) {
+        const block = drawer.locator('div').filter({ hasText: '企业清单来源' }).first();
+        await expect(block).toBeVisible({ timeout: 8000 });
+        const txt = ((await block.innerText()) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/共\s*(\d+)\s*家/);
+        if (!m) throw new Error('来源摘要未含「共 N 家」: ' + txt.slice(0, 200));
+        return parseInt(m[1], 10);
+      }
+      async function setDrawerKeyword(drawer, keyword) {
+        const inp = drawer.locator('.arco-input-search input').first();
+        await expect(inp).toBeVisible({ timeout: 8000 });
+        const prev = await readSourceTotal(drawer);
+        const listResp = page.waitForResponse(
+          (r) =>
+            r.request().method() === 'POST' &&
+            /key-analysis\/enterprise-list|enterprise-list/.test(r.url()) &&
+            r.status() === 200,
+          { timeout: 15000 },
+        );
+        await inp.click();
+        await inp.fill(keyword);
+        const resp = await listResp.catch(() => null);
+        if (resp) {
+          try {
+            const body = await resp.json();
+            const data = body?.data ?? body;
+            const t = data?.total;
+            if (typeof t === 'number' && t >= 0) {
+              await expect
+                .poll(async () => readSourceTotal(drawer), { timeout: 8000 })
+                .toBe(t);
+              return { apiTotal: t, beforePoll: prev };
+            }
+          } catch (_) {
+            /* fall through to DOM poll */
+          }
+        }
+        await page.waitForTimeout(400);
+        return { apiTotal: null, beforePoll: prev };
+      }
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      await page.getByRole('link', { name: '重点企业类型分析', exact: true }).click();
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '重点企业类型分析', level: 1 })).toBeVisible({
+        timeout: 10000,
+      });
+      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      await listBtn.scrollIntoViewIfNeeded();
+      await listBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const profiles = drawer.getByRole('button', { name: '查看画像' });
+      const beforeRows = await profiles.count();
+      if (beforeRows < 2) {
+        throw new Error('前置不满足：企业清单需有多行，当前可见行=' + beforeRows);
+      }
+      const beforeTotal = await readSourceTotal(drawer);
+      if (beforeTotal < 2) {
+        throw new Error('前置不满足：来源摘要家数需≥2，当前=' + beforeTotal);
+      }
+      const searchInp = drawer.locator('.arco-input-search input').first();
+      const kwBefore = ((await searchInp.inputValue()) || '').trim();
+      if (kwBefore) {
+        await setDrawerKeyword(drawer, '');
+        await page.waitForTimeout(500);
+      }
+      const baselineTotal = await readSourceTotal(drawer);
+      await setDrawerKeyword(drawer, '深圳');
+      const empty = drawer.getByText('当前搜索条件无匹配企业');
+      if (await empty.isVisible().catch(() => false)) {
+        throw new Error('搜索「深圳」后为零匹配（归 FUNC-01618）');
+      }
+      const afterTotal = await readSourceTotal(drawer);
+      if (afterTotal >= baselineTotal) {
+        throw new Error(
+          '来源摘要家数未少于输入前（输入前共 ' +
+            baselineTotal +
+            ' 家，输入「深圳」后共 ' +
+            afterTotal +
+            ' 家）',
+        );
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·抽屉搜索为 a-input-search，placeholder「搜索企业名称、统一社会信用代码、产业或区域」；来源摘要「企业清单来源」行内「共 N 家」随 API total 更新。用例步骤仅「深圳」，机检只比来源摘要家数，不钉死 N。30888 默认深圳清单若搜「深圳」total 不降则红（非可见行代替）。登录与关内部评审由 runner 会话前置。

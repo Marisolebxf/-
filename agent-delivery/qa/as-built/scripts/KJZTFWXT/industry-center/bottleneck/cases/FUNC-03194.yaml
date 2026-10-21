@@ -1,0 +1,87 @@
+id: FUNC-03194
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03194
+priority: P0
+title: 五维权重只读且合计通过校验
+story: US-CHAIN-DIAG-05
+entry_id: chain-bottleneck
+tier: A
+preconditions:
+  - 已打开分析配置
+locators:
+  weight_spin: '[role=spinbutton]'
+  step_btn: .arco-input-number-step-button
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
+  - action: evaluate
+    note: 看权重列→点「技术」行权重加减钮（判定在 expect）
+expect:
+  - note: 前置：注册诊断维度表可见，五行权重初值均为 20%
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=bottleneck/);
+      await expect(page).toHaveURL(/tab=bottleneck/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/产业瓶颈堵点识别/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别 SPA 404 ' + page.url());
+      }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('注册诊断维度').first()).toBeVisible({ timeout: 8000 });
+      const names = ['技术', '人才', '市场需求', '资本', '政策'];
+      const vals = [];
+      for (let i = 0; i < names.length; i++) {
+        const row = page.getByRole('row').filter({ hasText: names[i] }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        const spin = row.locator('[role=spinbutton]').first();
+        const v = await spin.inputValue();
+        vals.push(v);
+        if (v !== '20') throw new Error(names[i] + ' 权重应为 20%，spin=' + v);
+      }
+      globalThis.__func03194_before = vals.slice();
+  - note: 1、五行权重均为 20%；spin 与步进钮均为只读/disabled
+    assert: |-
+      const names = ['技术', '人才', '市场需求', '资本', '政策'];
+      for (let i = 0; i < names.length; i++) {
+        const row = page.getByRole('row').filter({ hasText: names[i] }).first();
+        const spin = row.locator('[role=spinbutton]').first();
+        await expect(spin).toBeDisabled();
+        const steps = row.locator('.arco-input-number-step-button');
+        const sc = await steps.count();
+        if (sc < 2) throw new Error(names[i] + ' 行缺少加减钮，count=' + sc);
+        for (let j = 0; j < sc; j++) {
+          const cls = (await steps.nth(j).getAttribute('class')) || '';
+          if (!/arco-input-number-step-button-disabled/.test(cls)) {
+            throw new Error(names[i] + ' 第' + (j + 1) + '个步进钮应 disabled，class=' + cls);
+          }
+        }
+      }
+  - note: 2、点「技术」行权重增减钮后数值仍为 20%
+    assert: |-
+      const row = page.getByRole('row').filter({ hasText: '技术' }).first();
+      const spin = row.locator('[role=spinbutton]').first();
+      const before = (globalThis.__func03194_before && globalThis.__func03194_before[0]) || '20';
+      const steps = row.locator('.arco-input-number-step-button');
+      for (let j = 0; j < Math.min(await steps.count(), 2); j++) {
+        await steps.nth(j).click({ timeout: 5000, force: true }).catch(() => {});
+        await page.waitForTimeout(150);
+      }
+      const after = await spin.inputValue();
+      if (after !== before) {
+        throw new Error('技术 点击加减钮后权重变化 ' + before + '→' + after);
+      }
+  - note: 3、页脚为「权重合计：100% · 校验通过」
+    assert: |-
+      await expect(page.getByText(/权重合计：100%\s*·\s*校验通过/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck（entry-seed）；edu 侧栏兄弟 /industry-center/search 404，本条与 FUNC-03191/03192 同走深链 goto。
+  五维名=技术/人才/市场需求/资本/政策，权重 spin 值均为 20，步进钮 arco-input-number-step-button-disabled。
+  用例步骤「点某一权重增减」实勘点「技术」行。登录关评审 runner 前置。A 档零 allow_skip。

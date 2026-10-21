@@ -1,0 +1,134 @@
+id: FUNC-01043
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01043
+priority: P0
+title: 无下级关系节点点开呈现已到末级类提示
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: A
+preconditions:
+  - 已进入结果态；画布存在无下钻标识的节点（assert 自含最近分析恢复可展示图谱的任务）
+locators:
+  restore: button「恢复结果」
+  struct_list: tab「结构列表」
+  node_panel_btn: 当前节点行下钻/末级按钮
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析恢复含图谱任务→点节点（含下钻后重试）→读「当前节点」与「暂无下级关系」
+expect:
+  - note: 1、呈现「暂无下级关系」类末级提示（现场含「当前节点」与按钮「暂无下级关系」）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const nodePanelButton = () =>
+        main().locator('div.border-t.border-\\[var\\(--sci-border\\)\\]').getByRole('button').first();
+      const panelButtonText = async () => {
+        const btn = nodePanelButton();
+        if (!(await btn.count())) return '';
+        return (await btn.innerText()).replace(/\s+/g, ' ').trim();
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const restoreGraphResult = async () => {
+        const restores = page.getByRole('button', { name: '恢复结果' });
+        const total = await restores.count();
+        if (!total) {
+          throw new Error('环境闸门 ENV-SUPPLY-NO-COMPLETED-001：最近分析无「恢复结果」');
+        }
+        for (let r = 0; r < total; r++) {
+          await restores.nth(r).click({ timeout: 15000 });
+          await page.waitForURL(/view=result/, { timeout: 25000 }).catch(() => {});
+          await page.waitForTimeout(1800);
+          if (await page.getByText('供应链图谱').first().isVisible().catch(() => false)) {
+            return r;
+          }
+          await openRecentTab();
+        }
+        throw new Error('环境闸门 ENV-SUPPLY-NO-GRAPH-RESULT-001：已完成任务恢复后均无可展示供应链图谱');
+      };
+      const openStructureList = async () => {
+        const structTab = main()
+          .locator('.arco-radio-button, [role=tab], button')
+          .filter({ hasText: /^结构列表$/ })
+          .first();
+        await structTab.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const list = page.locator('[aria-label="供应链结构列表"]');
+        await expect(list).toBeVisible({ timeout: 10000 });
+        return list;
+      };
+      const seekLeafOnCurrentView = async () => {
+        for (let depth = 0; depth < 4; depth++) {
+          const txt = await panelButtonText();
+          if (txt === '暂无下级关系') return true;
+          if (txt === '已到最大深度') {
+            throw new Error('环境闸门 ENV-SUPPLY-NO-LEAF-NODE-001：仅见「已到最大深度」未见「暂无下级关系」叶节点提示');
+          }
+          if (txt === '以此为中心下钻') {
+            const btn = nodePanelButton();
+            if (await btn.isDisabled().catch(() => true)) break;
+            await btn.click({ timeout: 8000 });
+            await page.waitForTimeout(2200);
+            continue;
+          }
+          break;
+        }
+        return false;
+      };
+      const clickNodesUntilLeaf = async (list) => {
+        for (const label of ['供应商', '客户', '合作伙伴']) {
+          const title = list.locator('.industry-topic-section-title').filter({ hasText: label }).first();
+          if (!(await title.count())) continue;
+          const section = title.locator('xpath=ancestor::section[1]');
+          const buttons = section.locator('.industry-topic-structure-list__nodes button');
+          const count = await buttons.count();
+          for (let i = 0; i < count; i++) {
+            await buttons.nth(i).click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+            if (await seekLeafOnCurrentView()) return { group: label, index: i };
+          }
+        }
+        const canvas = page.locator('canvas').first();
+        if (await canvas.isVisible().catch(() => false)) {
+          const box = await canvas.boundingBox();
+          if (box) {
+            for (let gx = 0.25; gx <= 0.75; gx += 0.125) {
+              for (let gy = 0.3; gy <= 0.7; gy += 0.125) {
+                await page.mouse.click(box.x + box.width * gx, box.y + box.height * gy);
+                await page.waitForTimeout(450);
+                if (await seekLeafOnCurrentView()) return { group: 'canvas', index: gx + ',' + gy };
+              }
+            }
+          }
+        }
+        throw new Error(
+          '环境闸门 ENV-SUPPLY-NO-LEAF-NODE-001：edu 可恢复任务中遍历结构列表与图谱点击后未见「暂无下级关系」',
+        );
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      await restoreGraphResult();
+      await dismissBasket();
+      const list = await openStructureList();
+      await clickNodesUntilLeaf(list);
+      await expect(page.getByText(/当前节点/).first()).toBeVisible({ timeout: 8000 });
+      const leafBtn = nodePanelButton();
+      await expect(leafBtn).toHaveText('暂无下级关系', { timeout: 8000 });
+      await expect(leafBtn).toBeDisabled();
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 testdata.route。步骤=最近分析恢复首个含「供应链图谱」任务→结构列表/图谱点节点，必要时「以此为中心下钻」后复验。机检=「当前节点」+ 节点面板按钮 exact「暂无下级关系」且 disabled（SupplyChainInsightPanel leaf 态）。2026-10-20 实勘：可恢复任务节点均可下钻，未见叶节点→ENV-SUPPLY-NO-LEAF-NODE-001 blocked。RISK-20260910-001 恢复体为空壳。登录与关评审由 runner 前置。A 档零 allow_skip。

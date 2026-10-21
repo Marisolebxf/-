@@ -1,0 +1,135 @@
+id: FUNC-00767
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00767
+priority: P1
+title: 发展目标三项勾选状态机回显正确
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已进入页面
+locators:
+  goals: main label.arco-checkbox（政策/技术/人才）
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 逐项勾选/取消政策、技术、人才；全取消后再全选
+expect:
+  - note: 勾选区由政策、技术、人才三项构成
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const goals = ['政策', '技术', '人才'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
+      };
+      const ensureConfigPage = async () => {
+        await dismissBasket();
+        const goalHeading = page.getByText('发展目标').first();
+        if (await goalHeading.isVisible().catch(() => false)) return;
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          await dismissBasket();
+        }
+        if (await goalHeading.isVisible().catch(() => false)) return;
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(800);
+          if (!(await bodyIs404())) await enterViaSidebar();
+          await dismissBasket();
+        }
+        if (await goalHeading.isVisible().catch(() => false)) return;
+        if (await bodyIs404() || !(await goalHeading.isVisible().catch(() => false))) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置页 ' + page.url());
+        }
+      };
+      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      await ensureConfigPage();
+      await expect(page.getByText('发展目标').first()).toBeVisible({ timeout: 10000 });
+      for (const g of goals) {
+        await expect(goalEl(g)).toBeVisible({ timeout: 8000 });
+      }
+  - note: 勾选与取消后选中态即时正确回显（取消「技术」再勾回）
+    assert: |-
+      const goals = ['政策', '技术', '人才'];
+      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      const tech = goalEl('技术');
+      await expect(tech).toBeVisible({ timeout: 8000 });
+      const wasTech = await isChecked(tech);
+      if (!wasTech) {
+        await tech.click({ timeout: 8000 });
+        await page.waitForTimeout(350);
+        if (!(await isChecked(tech))) throw new Error('勾选「技术」后未呈现选中态');
+      }
+      await tech.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      if (await isChecked(tech)) throw new Error('取消「技术」后仍为选中');
+      await tech.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      if (!(await isChecked(tech))) throw new Error('重新勾选「技术」后未恢复选中');
+      for (const g of ['政策', '人才']) {
+        const el = goalEl(g);
+        if (!(await isChecked(el))) {
+          await el.click({ timeout: 8000 });
+          await page.waitForTimeout(200);
+        }
+        if (!(await isChecked(el))) throw new Error('「' + g + '」未能保持或恢复选中');
+      }
+  - note: 全取消后重新勾选，三项均恢复选中
+    assert: |-
+      const goals = ['政策', '技术', '人才'];
+      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      for (const g of goals) {
+        const el = goalEl(g);
+        if (await isChecked(el)) {
+          await el.click({ timeout: 8000 });
+          await page.waitForTimeout(200);
+        }
+        if (await isChecked(el)) throw new Error('「' + g + '」取消后仍为选中');
+      }
+      for (const g of goals) {
+        await goalEl(g).click({ timeout: 8000 });
+        await page.waitForTimeout(200);
+      }
+      for (const g of goals) {
+        if (!(await isChecked(goalEl(g)))) throw new Error('全选后「' + g + '」未恢复选中');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 实勘默认三勾（fixtures goals.default_checked）；勾选区在「发展目标」标题下 main label.arco-checkbox。取消单项后「开始分析」门控见 FUNC-03393。

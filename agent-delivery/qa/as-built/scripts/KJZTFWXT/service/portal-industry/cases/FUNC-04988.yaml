@@ -1,0 +1,61 @@
+id: FUNC-04988
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04988
+priority: P0
+tier: A
+title: 深链打开产业分布标题页签与面包屑落点
+story: US-SVC-PT-02
+entry_id: svc-portal-industry
+preconditions:
+  - 已登录（runner 会话前置）
+locators:
+  tab_ind: tab「服务机构产业分布」
+  breadcrumb: navigation aria-label=面包屑
+steps:
+  - action: goto
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 进入服务机构产业分布页（深链 catalog_path）
+expect:
+  - note: 1、主标题为「服务机构产业分布」
+    assert: |-
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业分布|全球服务机构概况/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验标题落点 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、「服务机构产业分布」页签为选中
+    assert: |-
+      const tablist = page.locator('[aria-label="专题服务子导航"]');
+      await expect(tablist).toBeVisible({ timeout: 8000 });
+      const sel = tablist.getByRole('tab', { name: '服务机构产业分布', exact: true });
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      const aria = await sel.getAttribute('aria-selected');
+      const cls = (await sel.getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('arco-tabs-tab-active') && !cls.includes('active')) {
+        throw new Error('服务机构产业分布 Tab 未选中（aria-selected=' + aria + '）');
+      }
+  - note: 3、面包屑末级为「服务机构产业分布」
+    assert: |-
+      const nav = page.getByRole('navigation', { name: '面包屑' });
+      await expect(nav).toBeVisible({ timeout: 8000 });
+      const current = nav.locator('.svc-portal-breadcrumb__current');
+      await expect(current).toHaveText('服务机构产业分布', { exact: true });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  深链 goto entry-seed catalog_path /service-portal/industry-distribution；Tab 在 aria-label=专题服务子导航；
+  面包屑末级 .svc-portal-breadcrumb__current（同 svc-portal 03923）。edu.itic-sci.com/tts/svcz SPA404 时抛 ENV-EDU-TTS-SVCZ-404-001。
+  登录与关内部评审由 runner 会话前置。金样 A 档零 allow_skip。

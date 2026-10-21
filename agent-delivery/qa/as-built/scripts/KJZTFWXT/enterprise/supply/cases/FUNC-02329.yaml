@@ -1,0 +1,125 @@
+id: FUNC-02329
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02329
+priority: P1
+title: 失败任务的查看 HTML 报告不可点
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 最近分析中有状态为失败的供应链任务
+locators:
+  recent_tab: tab「最近分析」
+  html_report_button: button「查看 HTML 报告」或 data-risk-history-open-html-report
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析→失败供应链行浏览「查看 HTML 报告」；禁用态在 expect 判定
+expect:
+  - note: 1、「查看 HTML 报告」不可点
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const scrollHistoryActions = async () => {
+        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
+        }
+        await page.waitForTimeout(400);
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      const waitHistoryTable = async () => {
+        for (let i = 0; i < 30; i++) {
+          const t = await main().innerText().catch(() => '');
+          if (/最近分析/.test(t) && (/任务名称/.test(t) || /RISK-/.test(t))) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析表未渲染，url=' + page.url());
+      };
+      const isFailedSupplyRow = (rowText) =>
+        /失败/.test(rowText) && /企业供应链关系分析/.test(rowText) && TID_RE.test(rowText);
+      const pickFailedHtmlReportOnPage = async () => {
+        await scrollHistoryActions();
+        const rows = main().locator('table tbody tr, .arco-table-tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rowText = await row.innerText().catch(() => '');
+          if (!isFailedSupplyRow(rowText)) continue;
+          const btn = row.locator('[data-risk-history-open-html-report], button:has-text("查看 HTML 报告")').first();
+          if ((await btn.count()) < 1) continue;
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          await scrollHistoryActions();
+          return { btn, rowText };
+        }
+        return null;
+      };
+      const pickFailedHtmlReport = async () => {
+        const pag = main().locator('.arco-pagination').first();
+        for (let guard = 0; guard < 24; guard++) {
+          const hit = await pickFailedHtmlReportOnPage();
+          if (hit) return hit;
+          if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
+          await next.click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        throw new Error(
+          '环境闸门 ENV-SUPPLY-NO-FAILED-HISTORY-001：最近分析无状态为「失败」的供应链任务行（前置 1 不满足）',
+        );
+      };
+      await dismissBasket();
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await openRecentTab();
+      await waitHistoryTable();
+      const { btn: reportBtn, rowText } = await pickFailedHtmlReport();
+      globalThis.__func02329 = { rowText };
+      await expect(reportBtn).toBeVisible({ timeout: 8000 });
+      await expect(reportBtn).toBeDisabled({ timeout: 8000 });
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      if (await reader.isVisible().catch(() => false)) {
+        throw new Error('失败行「查看 HTML 报告」仍打开了报告页，与用例预期不符');
+      }
+      if (/view=report/.test(page.url())) {
+        throw new Error('仍在 view=report，失败行不应打开 HTML 报告');
+      }
+      const enabledPeer = main().locator(
+        '[data-risk-history-open-html-report]:not(.arco-btn-disabled):not([disabled])',
+      );
+      let hasEnabledCompleted = false;
+      const peerN = await enabledPeer.count();
+      for (let j = 0; j < peerN && j < 12; j++) {
+        const eb = enabledPeer.nth(j);
+        if (!(await eb.isVisible().catch(() => false))) continue;
+        let row = eb.locator('xpath=ancestor::tr[1]');
+        if ((await row.count()) < 1) {
+          row = eb.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
+        }
+        const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+        if (txt && /已完成/.test(txt) && /企业供应链关系分析/.test(txt)) {
+          hasEnabledCompleted = true;
+          break;
+        }
+      }
+      globalThis.__func02329.hasEnabledCompleted = hasEnabledCompleted;
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 catalog_path /enterprise/risk?workspace=supply-chain&tab=supply-chain；最近分析 view=history。步骤=浏览「失败」且「企业供应链关系分析」行 data-risk-history-open-html-report（RiskTaskHistory status!==success→disabled）。机检=button disabled + 非 view=report + 无 SystemReportReader。对照 02305 已完成行同钮可点。无失败行→ENV-SUPPLY-NO-FAILED-HISTORY-001。登录与关评审由 runner 前置。B 档零 allow_skip。

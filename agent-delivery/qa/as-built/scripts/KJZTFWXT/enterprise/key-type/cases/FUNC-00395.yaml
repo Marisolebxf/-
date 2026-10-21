@@ -1,0 +1,49 @@
+id: FUNC-00395
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00395
+priority: P1
+title: 默认停在深圳时返回上一级为禁用
+story: US-KEYENT-02
+entry_id: ent-key-type
+tier: B
+preconditions:
+  - 区域为「全国热门科创城市 / 深圳 / 全部」
+  - 空间分布为地图视图
+locators:
+  map_panel: section.analysis-workspace-panel「三级地理透视与可视化呈现」
+  drill_up: button「返回上一级」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
+  - action: evaluate
+    note: 默认区域与返回上一级禁用态在 expect 内判定
+expect:
+  - note: 前置：地图视图就绪且区域为默认「全国热门科创城市 / 深圳 / 全部」
+    assert: |-
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+      }
+      await page.waitForURL(/key-enterprise-analysis/, { timeout: 10000 });
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      await expect(panel.locator('.leaflet-container').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('全国热门科创城市 / 深圳 / 全部').first()).toBeVisible({ timeout: 8000 });
+  - note: 1、「返回上一级」可见
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const drillUp = panel.getByRole('button', { name: '返回上一级' });
+      await expect(drillUp).toBeVisible({ timeout: 8000 });
+  - note: 2、该按钮为禁用
+    assert: |-
+      const panel = page.locator('section.analysis-workspace-panel').filter({
+        has: page.getByRole('heading', { name: '三级地理透视与可视化呈现' }),
+      }).first();
+      const drillUp = panel.getByRole('button', { name: '返回上一级' });
+      await expect(drillUp).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 用例步「侧栏进入」以 30888 深链等价；国家→区县下钻可返回场景未覆盖矩阵行，本条仅验单城默认禁用。深链跟 FUNC-00393/00394。登录与关内部评审由 runner 会话前置。

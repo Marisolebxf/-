@@ -1,0 +1,166 @@
+id: FUNC-00971
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00971
+priority: P0
+title: 缺口径指标呈现不可用态且空数据有提示
+story: US-SZSTATUS-03
+entry_id: ent-sz-status
+tier: B
+preconditions:
+  - 已切至「多城市横向对标」Tab 且视图加载完成（脚本自含选链并切对标 Tab）
+locators:
+  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
+  tab_benchmark: 「多城市横向对标」/「多城市横向对标分析」Tab
+  table_title: 城市 × 指标对比表
+  unavailable: 暂不可用
+  empty_status: 无数据
+steps:
+  - action: goto
+    target: /enterprise-center/shenzhen-enterprise-status-analysis
+  - action: evaluate
+    note: 浏览对标视图各指标与数据呈现（判定在 expect）
+expect:
+  - note: 缺口径指标呈现不可用态且不以 0 或替代指标补齐
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(300); }
+        }
+      };
+      const selectChainToResult = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        if (await posTab.count()) {
+          const sel = (await posTab.getAttribute('aria-selected')) || '';
+          const cls = (await posTab.getAttribute('class')) || '';
+          if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+        const chain = page.locator('main .arco-select-view').filter({
+          has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
+        }).first();
+        await expect(chain).toBeVisible({ timeout: 12000 });
+        const collectOptions = () =>
+          page.evaluate(() => {
+            const out = [];
+            for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+              const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+              const st = window.getComputedStyle(el);
+              if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
+              if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
+              out.push(t);
+            }
+            return [...new Set(out)];
+          });
+        const prefer = ['人工智能', '新一代信息技术'];
+        let needPick = true;
+        for (const name of prefer) {
+          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
+            needPick = false;
+            break;
+          }
+        }
+        if (needPick) {
+          await chain.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          let options = await collectOptions();
+          if (options.length === 0) {
+            await page.keyboard.press('ArrowDown');
+            await page.waitForTimeout(700);
+            options = await collectOptions();
+          }
+          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
+          const pick = prefer.find((n) => options.includes(n)) || options[0];
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          const opt = popup.getByText(pick, { exact: true }).first();
+          if (await opt.count()) await opt.click({ timeout: 8000 });
+          else {
+            await page.evaluate((name) => {
+              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
+                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
+                if (t === name) { el.click(); return; }
+              }
+            }, pick);
+          }
+          await page.waitForTimeout(800);
+        }
+        let ok = false;
+        for (let i = 0; i < 50; i++) {
+          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
+          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
+            await page.waitForTimeout(150);
+            continue;
+          }
+          await page.waitForTimeout(120);
+        }
+        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+      };
+      const clickBenchmarkTab = async () => {
+        const benchNames = ['多城市横向对标分析', '多城市横向对标'];
+        for (const bn of benchNames) {
+          const tab = page.locator('main [role=tab], main .arco-tabs-tab, main button').filter({ hasText: bn }).first();
+          if (await tab.count()) {
+            await tab.click({ timeout: 8000 });
+            return;
+          }
+        }
+        throw new Error('未找到多城市横向对标 Tab');
+      };
+      await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      await selectChainToResult();
+      await dismissBasket();
+      await clickBenchmarkTab();
+      await page.waitForTimeout(2000);
+      await expect(page.getByText('城市 × 指标对比表', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      await expect(page.locator('main').getByText('暂不可用').first()).toBeVisible({ timeout: 8000 });
+      const paddedZero = await page.evaluate(() => {
+        const tables = document.querySelectorAll('main .arco-table');
+        for (const table of tables) {
+          let node = table.parentElement;
+          for (let d = 0; d < 10 && node; d++) {
+            const t = (node.innerText || '').slice(0, 120);
+            if (t.includes('城市 × 指标对比表') || t.includes('城市×指标对比表')) {
+              const headers = [...table.querySelectorAll('thead th, .arco-table-th')].map((el) =>
+                (el.innerText || '').replace(/\s+/g, ' ').trim(),
+              );
+              const idx = headers.findIndex((h) => h.includes('平均商业力'));
+              if (idx < 0) return false;
+              for (const row of table.querySelectorAll('tbody tr')) {
+                const cells = [...row.querySelectorAll('td, .arco-table-td')];
+                const cell = (cells[idx]?.innerText || '').trim();
+                if (cell === '0' || cell === '0分' || cell === '0.0' || cell === '0.00') return true;
+              }
+              return false;
+            }
+            node = node.parentElement;
+          }
+        }
+        return false;
+      });
+      if (paddedZero) throw new Error('平均商业力列以 0 补齐（应为不可用态）');
+  - note: 对标数据为空时呈现空态提示
+    assert: |-
+      const mainTxt = await page.locator('main').innerText();
+      if (!mainTxt.includes('城市 × 指标对比表') && !mainTxt.includes('城市×指标对比表')) {
+        throw new Error('未见城市×指标对比表');
+      }
+      const tail = mainTxt.split('数据状态').pop() || '';
+      const hasPopulatedRows = /演示值|参考值|\d+\s*分/.test(tail.slice(0, 900));
+      const looksAllEmpty = /无数据|暂无数据/.test(tail.slice(0, 900)) && !hasPopulatedRows;
+      if (looksAllEmpty) {
+        await expect(
+          page.locator('main').getByText('无数据').or(page.locator('main').getByText('暂无数据')).first(),
+        ).toBeVisible({ timeout: 8000 });
+      } else if (hasPopulatedRows) {
+        if (/\b0%\b/.test(tail) && !/暂不可用/.test(tail)) {
+          throw new Error('对标表数据状态区疑似以 0% 冒充有效对标');
+        }
+      } else if (!/无数据|暂无数据|演示值|参考值/.test(tail.slice(0, 600))) {
+        throw new Error('数据状态区未见空态或明示态文案；样本=' + tail.replace(/\s+/g, ' ').slice(0, 220));
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  接旧 P0-12 重写为 FUNC-00971。30888 深链 enterprise-center；选链/对标 Tab 对齐 FUNC-02089/00970/02117。
+  observed：平均商业力为「暂不可用」不以 0 补齐；30888 有对标行时数据状态为「演示值/参考值」（非空不要求全页「无数据」）；scout 空库时为「无数据」。
+  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。禁止 50892。

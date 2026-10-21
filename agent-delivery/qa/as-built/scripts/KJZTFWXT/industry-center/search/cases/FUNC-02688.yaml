@@ -1,0 +1,83 @@
+id: FUNC-02688
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02688
+priority: P0
+title: 未搜索时展示推荐产业列表
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已进入产业查询页
+  - 当前为「智能检索」
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  smart_tab: '.enterprise-search-mode-tabs [role=tab] → 智能检索'
+  recommend_list: .industry-search-recommendation-list
+  recommend_card: .industry-search-recommendation-card
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 浏览检索框下方推荐产业列表；标题、说明与每条操作在 expect 判定
+expect:
+  - note: 1、当前为「智能检索」且未检索时结果区呈推荐引导态
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      const smart = tabs.nth(0);
+      const sAria = await smart.getAttribute('aria-selected');
+      const sCls = await smart.getAttribute('class');
+      if (sAria !== 'true' && !(sCls || '').includes('active')) {
+        throw new Error('当前 Tab 不是默认「智能检索」');
+      }
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region).toBeVisible({ timeout: 10000 });
+      const state = await region.getAttribute('data-search-state');
+      if (state !== 'recommendation') {
+        throw new Error('未检索时应为 recommendation 态，实际 data-search-state=' + state);
+      }
+  - note: 1、标题为「推荐产业」
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region.locator('h2').filter({ hasText: /^推荐产业$/ })).toBeVisible({ timeout: 8000 });
+  - note: 2、说明为「目录中的可用产业，可作为查询起点」
+    assert: |-
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      await expect(region.getByText('目录中的可用产业，可作为查询起点', { exact: true })).toBeVisible({
+        timeout: 8000,
+      });
+  - note: 3、每条有名称、「查看摘要」和「进入全景图谱」
+    assert: |-
+      const list = page.locator('.industry-search-recommendation-list');
+      await expect(list).toBeVisible({ timeout: 8000 });
+      const cards = list.locator('.industry-search-recommendation-card');
+      const n = await cards.count();
+      if (n < 1) throw new Error('推荐产业列表应至少 1 条，实际 count=' + n);
+      for (let i = 0; i < n; i++) {
+        const card = cards.nth(i);
+        const nameBtn = card.locator('.industry-search-recommendation-title button').first();
+        await expect(nameBtn).toBeVisible({ timeout: 8000 });
+        const name = (await nameBtn.innerText()).replace(/\s+/g, ' ').trim();
+        if (!name) throw new Error('第 ' + (i + 1) + ' 条推荐产业缺少名称');
+        await expect(card.getByRole('button', { name: '查看摘要', exact: true })).toBeVisible({
+          timeout: 8000,
+        });
+        await expect(card.getByRole('button', { name: '进入全景图谱', exact: true })).toBeVisible({
+          timeout: 8000,
+        });
+      }
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；未检索时 region data-search-state=recommendation。
+  列表容器 .industry-search-recommendation-list，卡片 .industry-search-recommendation-card；
+  名称在 .industry-search-recommendation-title button；操作「查看摘要」「进入全景图谱」与 scout-base 一致。
+  说明文案仅在未检索引导态 p 展示（关评审后可见）。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

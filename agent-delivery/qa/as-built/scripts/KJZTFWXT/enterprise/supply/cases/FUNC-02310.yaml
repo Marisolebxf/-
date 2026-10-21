@@ -1,0 +1,162 @@
+id: FUNC-02310
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02310
+priority: P1
+title: 最近分析翻到第二页后仍是任务列表
+story: US-ENT-RISK-PROCESS
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 最近分析总条数多于一页（用例册每页 12 条；不足则 ticket=ENV-SUPPLY-HISTORY-PAGE2-001）
+locators:
+  recent_tab: tab「最近分析」
+  page2: .arco-pagination-item「2」
+  page1: .arco-pagination-item「1」
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 最近分析→读总条数→点页码 2→点回页码 1；任务行与总条数在 expect
+expect:
+  - note: 1、第二页仍显示任务行
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const PAGE_SIZE = 12;
+      const TID_RE = /RISK-\d{8}-\d{3}/;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page).toHaveURL(/view=history/, { timeout: 12000 });
+      };
+      const historyPagination = () => main().locator('.arco-pagination').first();
+      const readTotalFromPagination = async () => {
+        const pg = historyPagination();
+        if (!(await pg.count()) || !(await pg.isVisible().catch(() => false))) return null;
+        const t = (await pg.innerText().catch(() => '')).replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const readRowTaskIds = async () => {
+        const rows = main().locator('table tbody tr, .arco-table-body .arco-table-tr');
+        const n = await rows.count();
+        const ids = [];
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const txt = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (!txt || /暂无/.test(txt)) continue;
+          const m = txt.match(TID_RE);
+          if (m) ids.push(m[0]);
+        }
+        return [...new Set(ids)];
+      };
+      const clickPageNum = async (num) => {
+        const pag = historyPagination();
+        await expect(pag).toBeVisible({ timeout: 10000 });
+        const btn = pag.locator('.arco-pagination-item').filter({ hasText: new RegExp('^\\s*' + num + '\\s*$') }).first();
+        if ((await btn.count()) > 0 && (await btn.isVisible().catch(() => false))) {
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(1200);
+          return;
+        }
+        if (num === 2) {
+          const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if ((await next.count()) && (await next.isVisible().catch(() => false))) {
+            await next.click({ timeout: 8000 });
+            await page.waitForTimeout(1200);
+            return;
+          }
+        }
+        throw new Error('分页「' + num + '」不可点');
+      };
+      await page.goto(toUrl(supplyRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      await openRecentTab();
+      await expect(main().getByText('任务名称').first()).toBeVisible({ timeout: 12000 });
+      const totalBefore = await readTotalFromPagination();
+      if (totalBefore !== null && totalBefore <= PAGE_SIZE) {
+        throw new Error(
+          '数据闸门：最近分析共 ' + totalBefore + ' 条不大于单页 ' + PAGE_SIZE + '，无法验翻页（ticket=ENV-SUPPLY-HISTORY-PAGE2-001）',
+        );
+      }
+      const pag = historyPagination();
+      const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      const hasPage2 = (await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false));
+      const hasNext =
+        (await pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').count()) > 0;
+      if (!hasPage2 && !hasNext) {
+        if (totalBefore !== null && totalBefore > PAGE_SIZE) {
+          throw new Error('产品异常：总数 ' + totalBefore + ' 超过单页但分页不可点（ticket=GAP-SUPPLY-HISTORY-PAGINATION-001）');
+        }
+        throw new Error('数据闸门：分页「2」不可见，最近分析未超过一页（ticket=ENV-SUPPLY-HISTORY-PAGE2-001）');
+      }
+      const idsPage1 = await readRowTaskIds();
+      if (!idsPage1.length) {
+        throw new Error('第 1 页未见 RISK 任务行（ticket=ENV-SUPPLY-HISTORY-001）');
+      }
+      globalThis.__func02310_total = totalBefore;
+      await clickPageNum(2);
+      const active2 = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+      if (active2 !== '2') {
+        throw new Error('翻页后当前页应为 2，现场 active=' + (active2 || '(空)'));
+      }
+      const idsPage2 = await readRowTaskIds();
+      if (!idsPage2.length) {
+        throw new Error('点击分页「2」后未见 RISK 任务行');
+      }
+      globalThis.__func02310_onPage2 = true;
+  - note: 2、总条数与翻页前一致（点回页码 1 后仍一致）
+    assert: |-
+      if (!globalThis.__func02310_onPage2) throw new Error('前置：未到第 2 页');
+      const totalBefore = globalThis.__func02310_total;
+      const PAGE_SIZE = 12;
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const historyPagination = () => main().locator('.arco-pagination').first();
+      const readTotalFromPagination = async () => {
+        const pg = historyPagination();
+        if (!(await pg.count()) || !(await pg.isVisible().catch(() => false))) return null;
+        const t = (await pg.innerText().catch(() => '')).replace(/\s+/g, ' ');
+        const m = t.match(/共\s*(\d+)\s*条/);
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const pag = historyPagination();
+      await expect(pag).toBeVisible({ timeout: 8000 });
+      const tPg2 = (await pag.innerText().catch(() => '')).replace(/\s+/g, ' ');
+      if (!/共\s*\d+\s*条/.test(tPg2)) {
+        throw new Error('第 2 页分页区未见「共 N 条」提示');
+      }
+      const totalOnPage2 = await readTotalFromPagination();
+      if (totalBefore !== null && totalOnPage2 !== null && totalOnPage2 !== totalBefore) {
+        throw new Error('第 2 页总条数变化: ' + totalBefore + '→' + totalOnPage2);
+      }
+      const page1Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^1$/ }).first();
+      if (!(await page1Btn.count()) || !(await page1Btn.isVisible().catch(() => false))) {
+        throw new Error('分页「1」不可见，无法完成用例步骤点回第 1 页');
+      }
+      await page1Btn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const cls1 = (await page1Btn.getAttribute('class')) || '';
+      if (!/arco-pagination-item-active/.test(cls1)) {
+        const active1 = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+        throw new Error('点回第 1 页后 active 应为 1，现场 active=' + (active1 || '(空)'));
+      }
+      const totalAfter = await readTotalFromPagination();
+      if (totalBefore !== null && totalAfter !== null && totalAfter !== totalBefore) {
+        throw new Error('点回第 1 页后总条数变化: ' + totalBefore + '→' + totalAfter);
+      }
+      if (totalAfter !== null && totalAfter <= PAGE_SIZE) {
+        throw new Error('总条数 ' + totalAfter + ' 不应仅一页（与翻页前矛盾）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path /enterprise/risk + workspace=supply-chain&tab=supply-chain。步骤=最近分析点页码「2」→点回「1」。机检=第 2 页仍有 RISK 任务行；分页「共 N 条」翻页前后一致。用例册 pageSize=12、18+ 条。不足一页→ENV-SUPPLY-HISTORY-PAGE2-001。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,106 @@
+id: FUNC-01912
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01912
+priority: P1
+title: 只回填一家企业时开始分析禁用
+story: US-ENT-EVAL-BIZ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 对比篮至少有一家企业（脚本自含入篮≥2 以便浮层只勾选 1 家）
+locators:
+  confirm: button「确定」
+  start_analysis: button「开始分析」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 浮层仅勾选 1 家后点「确定」；对象区与开始分析门控在 expect 判定
+expect:
+  - note: 1、对象区显示来自对比篮 1 家且可见所选企业名
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, (await addBtns.count()) - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          n = await basketEntCount();
+          if (n < min && idx >= (await addBtns.count()) - 1) break;
+        }
+        if (n < min) throw new Error('ENV-GATE:对比篮企业不足 ' + min + ' 家，当前 ' + n);
+      };
+      await ensureBasketEnterprises(2);
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1000);
+      await dismissBasket();
+      if (/enterprise_codes/.test(page.url())) {
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await dismissBasket();
+      }
+      await expect(page.getByRole('heading', { name: '企业商业力评估对比分析' }).first()).toBeVisible({ timeout: 12000 });
+      const openCta = page.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+      await expect(openCta).toBeVisible({ timeout: 10000 });
+      await openCta.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const sels = page.locator('[aria-label^="选择 "]');
+      if (await sels.count() < 1) throw new Error('对比篮无可选企业');
+      const l0 = await sels.nth(0).getAttribute('aria-label');
+      const name0 = (l0 || '').replace(/^选择\s*/, '');
+      await sels.nth(0).click({ force: true });
+      await page.waitForTimeout(300);
+      const confirm = page.getByRole('button', { name: '确定' });
+      await expect(confirm).toBeEnabled({ timeout: 5000 });
+      await confirm.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByText(/来自对比篮/).first()).toBeVisible({ timeout: 8000 });
+      const mainText = await page.locator('main').first().innerText();
+      let m = mainText.match(/来自对比篮\s*[·•]\s*(\d+)\s*家/);
+      if (!m) m = mainText.match(/来自对比篮[^0-9]*(\d+)\s*家/);
+      const nObj = m ? parseInt(m[1], 10) : NaN;
+      if (nObj !== 1) throw new Error('对象区应显示来自对比篮 1 家，实际文案：' + (m ? m[0] : '未匹配'));
+      await expect(page.getByText(name0).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、「开始分析」为禁用态
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
+  - note: 3、不进入过程页（点击开始分析亦不得进入 view=processing）
+    assert: |-
+      const start = page.getByRole('button', { name: '开始分析' });
+      if (await start.isDisabled()) {
+        if (/view=processing/.test(page.url())) throw new Error('开始分析禁用却仍进入过程态');
+        return;
+      }
+      await start.click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      if (/view=processing/.test(page.url())) throw new Error('仅 1 家回填仍进入过程态');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  重写作废 P0-17/00958：现场拦截为「开始分析」禁用，无「至少两家」独立说明文案（用例册 D1）。30888 路由 /enterprise-center/evaluation?workspace=business&mode=business；前置对比篮≥2 家、浮层只勾 1 家确定（对齐 FUNC-00934 回填链）。禁止 50892 深链。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。

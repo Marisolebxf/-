@@ -1,0 +1,84 @@
+id: FUNC-04033
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04033
+priority: P1
+title: 备选-删除单条条件
+story: US-SVC-ORG-07
+entry_id: svc-search
+tier: B
+preconditions:
+  - 已进入「高级筛选」
+locators:
+  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
+  field_lib: region「高级筛选字段库」
+  field_org_name: 字段库 Tag「机构名称」
+  cond_row: .condition-builder（含机构名称）
+  remove_btn: button[aria-label="删除条件"]
+  empty_edit_hint: text「从左侧字段库添加筛选条件」
+steps:
+  - action: goto
+    target: /service-center/search
+  - action: evaluate
+    note: 深链进页 → 高级筛选添加「机构名称」→ 点行内删除图标；两条预期在 expect 判定
+expect:
+  - note: 1、已选条件数为 0
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/智能检索|查机构|高级筛选/.test(t);
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/service-center\/search/, { timeout: 15000 });
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: goto /service-center/search 仍 SPA404 url=' + page.url());
+      }
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      await expect(advTab).toBeVisible({ timeout: 10000 });
+      await advTab.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const nameTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '机构名称' }).first();
+      await expect(nameTag).toBeVisible({ timeout: 8000 });
+      await nameTag.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await expect(fieldLib.getByText(/已选\s*1\s*个条件/)).toBeVisible({ timeout: 8000 });
+      const condRow = page.locator('.condition-builder').filter({ hasText: '机构名称' }).first();
+      await expect(condRow).toBeVisible({ timeout: 8000 });
+      const removeBtn = condRow.getByRole('button', { name: '删除条件' });
+      await expect(removeBtn).toBeVisible({ timeout: 8000 });
+      await removeBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const modal = page.locator('.arco-modal:visible');
+      if (await modal.count()) {
+        throw new Error('删除单条条件不应弹出确认框（用例：无确认框）');
+      }
+      await expect(fieldLib.getByText(/已选\s*0\s*个条件/)).toBeVisible({ timeout: 8000 });
+      const apply = page.getByRole('button', { name: /应用筛选\s*[（(]\s*0\s*[）)]/ }).first();
+      await expect(apply).toBeVisible({ timeout: 8000 });
+      globalThis.__func04033_removed = true;
+  - note: 2、编辑区回到「从左侧字段库添加筛选条件」
+    assert: |-
+      if (!globalThis.__func04033_removed) throw new Error('前置：删除条件行未完成');
+      await expect(page.getByText('从左侧字段库添加筛选条件', { exact: true })).toBeVisible({ timeout: 8000 });
+      const orgRow = page.locator('.condition-builder').filter({ hasText: '机构名称' });
+      const n = await orgRow.count();
+      if (n > 0) {
+        const vis = await orgRow.first().isVisible().catch(() => false);
+        if (vis) throw new Error('删除后仍有可见机构名称条件行，count=' + n);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  B 档 04033；catalog_path=/service-center/search。字段库点「机构名称」→ 条件行
+  aria-label「删除条件」（ConditionBuilder.vue）直接删，无确认框。已选计数与应用筛选(0) 对齐 FUNC-04021。

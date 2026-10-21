@@ -1,0 +1,78 @@
+id: FUNC-00462
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00462
+priority: P0
+title: 翻页或再筛后已勾选企业被清除
+story: US-E1-SCH-05
+entry_id: ent-search
+tier: B
+preconditions:
+  - 已勾选至少 2 家企业（本条自含勾选前两张结果卡）
+  - 命中数超过单页（人工智能检索应满足；否则数据阻塞）
+locators:
+  search_input: textbox「输入企业名、产业、资质、区域或专利关键词」
+  search_btn: button「搜索」
+  row_checkbox_1: main .arco-checkbox 第 2 个（第 1 个为「全选本页」）
+  row_checkbox_2: main .arco-checkbox 第 3 个
+  batch_bar: 文案「已选 N 家企业」
+  page2: 分页第 2 页（.arco-pagination-item「2」）
+steps:
+  - action: goto
+    target: /enterprise/enterprise-search
+  - action: fill
+    target: 搜索框
+    value: 人工智能
+  - action: click
+    target: 搜索
+  - action: evaluate
+    note: 勾选 2 家、翻第 2 页与清除断言在 expect 内自含（P2 跨 tick）
+expect:
+  - note: 已选计数条消失或清零
+    assert: |-
+      await page.keyboard.press('Escape');
+      const closeB = page.locator('button[aria-label="关闭对比篮"]');
+      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
+        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      const hitEl = page.getByText(/命中\s*(\d+)\s*家企业/).first();
+      await expect(hitEl).toBeVisible({ timeout: 15000 });
+      const hitText = (await hitEl.innerText()) || '';
+      const hitM = hitText.match(/命中\s*(\d+)\s*家企业/);
+      const hitN = hitM ? parseInt(hitM[1], 10) : 0;
+      const pageSize = 9;
+      if (hitN <= pageSize) {
+        throw new Error('数据阻塞：命中 ' + hitN + ' 家不大于单页 ' + pageSize + '，无法验证翻页清选择');
+      }
+      const rowCb = page.locator('main .arco-checkbox');
+      if (await rowCb.count() < 3) throw new Error('结果行复选框不足 2 条（含全选本页）');
+      await rowCb.nth(1).click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      await rowCb.nth(2).click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByText(/已选\s*2\s*家企业/).first()).toBeVisible({ timeout: 8000 });
+      const page2 = page.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      await expect(page2).toBeVisible({ timeout: 8000 });
+      const urlBefore = page.url();
+      await page2.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      await expect(page.getByRole('button', { name: '查看画像' }).first()).toBeVisible({ timeout: 15000 });
+      if (!page.url().includes('/enterprise/enterprise-search') && !page.url().includes('/enterprise/enterprise-search')) {
+        throw new Error('翻页后路由偏离企业查询：' + page.url());
+      }
+      const barGone = (await page.getByText(/已选\s*[1-9]\d*\s*家企业/).count()) === 0;
+      if (!barGone) {
+        throw new Error('翻页后已选计数条仍在（勾选被跨页保留）');
+      }
+  - note: 勾选不跨页保留
+    assert: |-
+      const checkedMain = await page.locator('main .arco-checkbox-checked').count();
+      if (checkedMain > 0) {
+        throw new Error('翻页后 main 内仍有 ' + checkedMain + ' 个勾选残留');
+      }
+      const checkedInput = await page.locator('main input[type=checkbox]:checked').count();
+      if (checkedInput > 0) {
+        throw new Error('翻页后仍有 ' + checkedInput + ' 个行复选框勾选残留');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·30888 深链 /enterprise/enterprise-search。再筛清除与翻页同判（备注）；改排序清除 observed 不机检。顺带核对第 2 页有卡且路由不变（含于首条 expect）。

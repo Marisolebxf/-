@@ -1,0 +1,139 @@
+id: FUNC-02912
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02912
+priority: P1
+title: 重置参数收回时间与四参数默认且保留集群
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 已选好集群（非默认以便验保留）
+  - 分析时间范围为近3年
+  - 市场增长率为 20
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  time_block: text=分析时间范围
+  reset: button「重置参数」
+  spins: role=spinbutton ×4
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 侧栏进入产业周期分析→选集群→改近3年→市场增长率20→点「重置参数」（判定在 expect）
+expect:
+  - note: 前置：产业周期分析页可见并完成用例前置改值
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const leafItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
+      const expandChainGroup = async () => {
+        if (await leafItem().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterCyclePage = async () => {
+        await dismissBasket();
+        await expandChainGroup();
+        const leaf = leafItem();
+        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=cycle/);
+        await expect(page).toHaveURL(/tab=cycle/);
+      };
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const pickSelect = async (aria, text) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const view = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await expect(view).toBeVisible({ timeout: 8000 });
+        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown.includes(text)) return;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const pickTimeRange = async (label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const block = page.locator('text=分析时间范围').first();
+        await expect(block).toBeVisible({ timeout: 8000 });
+        const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+        const cur = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (cur.includes(label)) return;
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      await enterCyclePage();
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await pickSelect('集群', '生物产业');
+      globalThis.__func02912 = { clusterLabel: '生物产业' };
+      await pickTimeRange('近3年');
+      const block = page.locator('text=分析时间范围').first();
+      const timeTrigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      await expect(timeTrigger).toContainText('近3年', { timeout: 8000 });
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(4, { timeout: 8000 });
+      await spins.nth(1).fill('20');
+      await page.waitForTimeout(400);
+      if ((await spins.nth(1).inputValue()) !== '20') {
+        throw new Error('前置：市场增长率应改为 20，实际=' + (await spins.nth(1).inputValue()));
+      }
+  - note: 1、点「重置参数」后分析时间范围回到「近5年」
+    assert: |-
+      const ctx = globalThis.__func02912;
+      if (!ctx?.clusterLabel) throw new Error('前置：未完成集群与时间/参数改值');
+      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const block = page.locator('text=分析时间范围').first();
+      const timeTrigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      await expect(timeTrigger).toContainText('近5年', { timeout: 8000 });
+      const url = page.url();
+      if (/view=result/.test(url)) throw new Error('重置后进入结果态: ' + url);
+      if (/view=processing/.test(url)) throw new Error('重置后进入 processing: ' + url);
+  - note: 2、四个参数回到 02895 默认（第1行空+预填提示，第2/3/4行 12.8、10.6、84）
+    assert: |-
+      const spins = page.locator('[role=spinbutton]');
+      const v0 = await spins.nth(0).inputValue();
+      if (v0 !== '') throw new Error('重置后市场规模应空，实际=' + v0);
+      const ph = await spins.nth(0).getAttribute('placeholder');
+      if (ph !== '空则提交时由 ADS 预填') throw new Error('重置后市场规模 placeholder=' + ph);
+      const v1 = await spins.nth(1).inputValue();
+      const v2 = await spins.nth(2).inputValue();
+      const v3 = await spins.nth(3).inputValue();
+      if (v1 !== '12.8' || v2 !== '10.6' || v3 !== '84') {
+        throw new Error('重置后默认数值不符：期望 12.8/10.6/84 实际 ' + [v1, v2, v3].join('/'));
+      }
+  - note: 3、集群仍是重置前选中的那一项；重置不会发起分析
+    assert: |-
+      const label = globalThis.__func02912?.clusterLabel || '生物产业';
+      await expect(page.locator('.arco-select-view[aria-label="集群"]').first()).toContainText(label, { timeout: 8000 });
+      const main = page.locator('main.content-shell-layout, main').first();
+      const t = await main.innerText().catch(() => '');
+      if (/可视化分析过程|产业周期分析生成中/.test(t)) {
+        throw new Error('重置后出现分析过程，疑自动起任务');
+      }
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·edu tts/svcz catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口对齐 entry-seed：goto sibling /industry-center/search 再侧栏「产业链分析」→「产业周期分析」（深链冷启动 SPA 404）。用例前置=已选集群+近3年+市场增长率20；步骤=点「重置参数」。
+  集群验保留用显式改选「生物产业」（非页默认新一代信息技术）。时间范围=分析时间范围标签后首个 .arco-select-view（同 02894/02888）。四参数默认对齐 FUNC-02895。
+  重置不清集群、收回近5年与默认数值、不自动起任务（用例「重置不会发起分析」）。登录关评审 runner 前置。B 档备选 P1。

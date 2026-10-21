@@ -1,0 +1,121 @@
+id: FUNC-01714
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01714
+priority: P1
+title: 取消选择后已选为0且确定不可用
+story: US-KEYENT-01
+entry_id: ent-key-domain
+tier: B
+preconditions:
+  - env-gate overall=pass
+  - 「选择分析企业」已打开（assert 可自含入篮与打开选择器）
+locators:
+  picker_title: text「选择分析企业」
+  clear_selection_btn: button「取消选择」
+  confirm_btn: button「确定」
+steps:
+  - action: goto
+    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 打开选择器并勾选企业后点「取消选择」；家数与确定态在 expect 判定
+expect:
+  - note: 1、已选为 0 家；2、「确定」不可点击
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
+      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
+        }
+      };
+      const gotoRoute = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const ensureBasketEnterprises = async (min) => {
+        let n = await basketEntCount();
+        if (n >= min) return;
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        await expect(addBtns.first()).toBeVisible({ timeout: 15000 });
+        while (n < min) {
+          const idx = Math.min(n, await addBtns.count() - 1);
+          await addBtns.nth(idx).click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          n = await basketEntCount();
+          if (n < min && idx >= await addBtns.count() - 1) break;
+        }
+        if (n < min) throw new Error('对比篮企业不足 ' + min + '，当前 ' + n);
+      };
+      const clickPageOpenPicker = async () => {
+        const main = page.locator('main');
+        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+        const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
+          await pickBtn.first().click({ timeout: 8000 });
+        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
+          await openBtn.first().click({ timeout: 8000 });
+        } else if (await emptyCta.count()) {
+          await emptyCta.first().click({ timeout: 8000 });
+        } else {
+          throw new Error('未找到选择分析企业/打开对比篮入口');
+        }
+        await page.waitForTimeout(800);
+      };
+      const pickerRoot = () => page.locator('.system-compare-panel:visible, .arco-modal:visible').filter({ hasText: '选择分析企业' }).last();
+      const readPickerSelectedCount = async () => {
+        const panel = pickerRoot();
+        const scope = (await panel.count()) ? panel : page.locator('body');
+        const txt = (await scope.innerText().catch(() => '')) || '';
+        const liveM = txt.match(/当前已选择\s*(\d+)\s*家企业/);
+        if (liveM) return parseInt(liveM[1], 10);
+        const sels = page.locator('[aria-label^="选择 "]');
+        let checked = 0;
+        for (let i = 0; i < await sels.count(); i++) {
+          if ((await sels.nth(i).getAttribute('aria-checked')) === 'true') checked++;
+        }
+        return checked;
+      };
+      await gotoRoute();
+      await ensureBasketEnterprises(2);
+      await gotoRoute();
+      await clickPageOpenPicker();
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      const root = pickerRoot();
+      const sels = page.locator('[aria-label^="选择 "]');
+      if ((await sels.count()) < 1) throw new Error('选择器无企业可勾选');
+      let selected = await readPickerSelectedCount();
+      if (selected < 1) {
+        await sels.first().click();
+        await page.waitForTimeout(400);
+        selected = await readPickerSelectedCount();
+      }
+      if (selected < 1) throw new Error('勾选后已选仍为 0，无法验证取消选择');
+      const clearBtn = root.getByRole('button', { name: '取消选择', exact: true });
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const after = await readPickerSelectedCount();
+      if (after !== 0) throw new Error('取消选择后已选应为 0 家，实际 ' + after);
+      const confirmBtn = page.getByRole('button', { name: '确定', exact: true });
+      await expect(confirmBtn.first()).toBeVisible({ timeout: 5000 });
+      const disabled = await confirmBtn.first().isDisabled();
+      if (!disabled) throw new Error('已选为 0 时「确定」应不可点击');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: 用例 01714 前置「选择分析企业」已打开；脚本自含入篮、打开页内选择器、先勾选≥1 再点「取消选择」（与 01712「取消」关闭弹层区分）。已选读「当前已选择 N 家企业」或勾选 aria-checked。登录与关内部评审由 runner 会话前置。B 档。

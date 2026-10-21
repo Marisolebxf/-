@@ -1,0 +1,203 @@
+id: FUNC-01910
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01910
+priority: P1
+title: 全选当前筛选结果已选等于列表且确定可点
+story: US-ENT-EVAL-OBJ
+entry_id: ent-eval-business
+tier: B
+preconditions:
+  - 「选择分析企业」浮层已打开（脚本自含入篮≥2 与开浮层）
+  - 篮内至少有两家企业且当前未勾选
+locators:
+  picker_title: text「选择分析企业」
+  select_all_chk: checkbox aria-label「全选当前筛选结果」
+  confirm_btn: button「确定」
+steps:
+  - action: goto
+    target: /enterprise-center/evaluation?workspace=business&mode=business
+  - action: evaluate
+    note: 开浮层后点「全选当前筛选结果」；已选计数与确定门控在 expect 判定
+expect:
+  - note: 1、已选家数变为当前列表企业数；2、「确定」变为可点
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'https://edu.itic-sci.com/tts/svcz/';
+      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
+      const evalRoute = '/enterprise-center/evaluation?workspace=business&mode=business';
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const basketEntCount = async () => {
+        const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
+        if (!(await dockBtn.count())) return 0;
+        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
+        const entM = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
+        const totalM = dockLabel.match(/共\s*(\d+)\s*项/);
+        return entM ? parseInt(entM[1], 10) : (totalM ? parseInt(totalM[1], 10) : 0);
+      };
+      const waitBasketAtLeast = async (min, ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if ((await basketEntCount()) >= min) return true;
+          await page.waitForTimeout(400);
+        }
+        return (await basketEntCount()) >= min;
+      };
+      const addFromVisibleCards = async (need) => {
+        let added = 0;
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        const btnN = await addBtns.count();
+        for (let i = 0; i < btnN && added < need; i++) {
+          const btn = addBtns.nth(i);
+          if (!(await btn.isVisible().catch(() => false))) continue;
+          await btn.click({ timeout: 8000 });
+          await page.waitForTimeout(700);
+          added++;
+        }
+        if (added < need) {
+          const rec = page.locator('main section').filter({ hasText: '推荐企业' }).first();
+          if (await rec.isVisible().catch(() => false)) {
+            const cards = rec.locator('div').filter({ hasText: '推荐理由：' });
+            for (let i = 0, c = await cards.count(); i < c && added < need; i++) {
+              const btn = cards.nth(i).getByRole('button', { name: '加入对比篮', exact: true });
+              if (await btn.isVisible().catch(() => false)) {
+                await btn.click({ timeout: 8000 });
+                await page.waitForTimeout(700);
+                added++;
+              }
+            }
+          }
+        }
+        return added;
+      };
+      const ensureBasketEnterprises = async (min) => {
+        if ((await basketEntCount()) >= min) return;
+        const searchPaths = ['/enterprise/enterprise-search', '/development/search'];
+        for (const sp of searchPaths) {
+          await page.goto(toUrl(sp), { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1000);
+          await closeBasket();
+          const searchInput = page
+            .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
+            .or(page.getByPlaceholder(/企业名|产业|资质/))
+            .first();
+          if (await searchInput.isVisible().catch(() => false)) {
+            await searchInput.fill('人工智能');
+            const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
+            if (await searchBtn.isVisible().catch(() => false)) {
+              await searchBtn.click({ timeout: 8000 });
+              await page.waitForTimeout(1200);
+              await page.getByText('智能搜索结果', { exact: true }).first().waitFor({ state: 'visible', timeout: 25000 }).catch(() => {});
+            }
+          }
+          let n = await basketEntCount();
+          while (n < min) {
+            const need = min - n;
+            const clicked = await addFromVisibleCards(need);
+            if (!clicked) break;
+            await waitBasketAtLeast(min, 8000);
+            n = await basketEntCount();
+            if (n >= min) return;
+          }
+        }
+        if ((await basketEntCount()) < min) {
+          throw new Error('ENV-GATE:对比篮企业不足 ' + min + '，当前 ' + (await basketEntCount()) + '（edu 检索/推荐入篮不可达，见 D4）');
+        }
+      };
+      const openSelectOverlay = async () => {
+        const pickerQs =
+          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(toUrl(`${evalRoute}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        if (!(await page.getByText('选择分析企业', { exact: true }).first().isVisible().catch(() => false))) {
+          const main = page.locator('main');
+          const cta = main.getByRole('button', { name: /商业竞争力对标分析|前往对比篮选择企业|返回对比篮调整对象/ }).first();
+          if (await cta.isVisible().catch(() => false)) {
+            await cta.click({ timeout: 8000 });
+            await page.waitForTimeout(1000);
+          }
+        }
+      };
+      const pickerRoot = () =>
+        page
+          .locator('.system-compare-panel:visible, .arco-modal:visible, .arco-drawer:visible, [role="dialog"]')
+          .filter({ hasText: '选择分析企业' })
+          .last();
+      const listEnterpriseCount = async (scope) => {
+        const cards = scope.locator('.ent-compare-item-card');
+        const cardN = await cards.count();
+        if (cardN > 0) return cardN;
+        const sels = scope.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        if (selN > 0) return selN;
+        return 0;
+      };
+      const parseSelectedCount = async (scope) => {
+        const text = ((await scope.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = text.match(/已选\s*(\d+)\s*家/);
+        if (m) return parseInt(m[1], 10);
+        const liveM = text.match(/当前已选择\s*(\d+)\s*家企业/);
+        if (liveM) return parseInt(liveM[1], 10);
+        return null;
+      };
+      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await closeBasket();
+      await openSelectOverlay();
+      await page.waitForTimeout(800);
+      let scope = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+      let listN = await listEnterpriseCount(scope);
+      if (listN < 2) {
+        await closeBasket();
+        await ensureBasketEnterprises(2);
+        await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        await openSelectOverlay();
+        await page.waitForTimeout(800);
+        scope = (await pickerRoot().count()) ? pickerRoot() : page.locator('body');
+        listN = await listEnterpriseCount(scope);
+      }
+      await expect(page.getByText('选择分析企业', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+      const emptyFilter = scope.getByText('当前篮内无匹配企业', { exact: false });
+      if (await emptyFilter.isVisible().catch(() => false)) {
+        const resetBtn = scope.getByRole('button', { name: '重置', exact: true });
+        if (await resetBtn.count()) await resetBtn.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      if (listN < 2) throw new Error('ENV-GATE:篮内列表不足 2 家，当前 ' + listN);
+      const beforeSelected = await parseSelectedCount(scope);
+      if (beforeSelected !== null && beforeSelected !== 0) {
+        const clearPre = scope.getByRole('button', { name: '取消选择', exact: true });
+        if (await clearPre.count() && !(await clearPre.first().isDisabled())) {
+          await clearPre.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      const confirmBefore = scope.getByRole('button', { name: '确定', exact: true });
+      if (await confirmBefore.count() && !(await confirmBefore.isDisabled())) {
+        const clearPre2 = scope.getByRole('button', { name: '取消选择', exact: true });
+        if (await clearPre2.count() && !(await clearPre2.first().isDisabled())) {
+          await clearPre2.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      }
+      const selectAll =
+        scope.getByRole('checkbox', { name: '全选当前筛选结果' }).or(scope.locator('[aria-label="全选当前筛选结果"]'));
+      await expect(selectAll.first()).toBeVisible({ timeout: 8000 });
+      await selectAll.first().scrollIntoViewIfNeeded({ timeout: 8000 });
+      await selectAll.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const afterAll = await parseSelectedCount(scope);
+      if (afterAll === null) throw new Error('全选后未见「已选 N 家」文案');
+      if (afterAll !== listN) {
+        throw new Error(`全选后已选应为 ${listN} 家，实际 ${afterAll} 家（列表 ${listN} 家）`);
+      }
+      const okBtn = scope.getByRole('button', { name: '确定', exact: true });
+      await expect(okBtn.first()).toBeVisible({ timeout: 8000 });
+      if (await okBtn.first().isDisabled()) throw new Error('全选后「确定」应变为可点');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: |-
+  用例 01910（全选）。底栏「全选当前筛选结果」为 a-checkbox（aria-label，CompareBasketActionBar），非 button；已选文案「已选 N 家」。前置先 picker 深链看列表≥2，否则 ensure≥2：/enterprise/enterprise-search 智能搜索「人工智能」+推荐卡「加入对比篮」，回退 /development/search。未勾选时先「取消选择」。30888 路由 /enterprise-center/evaluation?workspace=business&mode=business；开浮层同 FUNC-01909。D4·2026-10-20 edu.itic-sci.com/tts/svcz 机跑 rewrite-FUNC-01910 为 ENV-GATE（篮 0、检索无结果态；同批 FUNC-00457 亦红），交卷 fail 待环境恢复复跑。登录与关内部评审由 runner 前置。B 档零 allow_skip。
