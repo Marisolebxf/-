@@ -33524,13 +33524,18 @@ tasks:
     update_time: "2026-10-21T11:36:09+08:00"
     update_time: "2026-10-20T23:16:54+08:00"
   - id: LUMEN-SVC-SEARCH-ES-SWITCH-L01
+    model_used: "cursor-auto"
+    evidence: "agent-delivery/agent-handoffs/E7-产业服务链分析/SVC-SEARCH-ES/SWITCH-L01-handoff.md"
+    cost_warn: "green"
+    actual_tokens: 95000
+    actual_cost: 3.8
     supervised_by: "human:淮政琎"
     claimed_at: "2026-10-20T15:14:17.746Z"
     last_seen_at: "2026-10-20T15:14:17.746Z"
     lock_until: "2026-10-20T19:14:17.746Z"
     claimed_by: "human:徐滕强"
     title: "服务机构检索切 ES 引擎 — dev 灰度切换 + engine 埋点补接 + 双 tab/弹框回归"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "api-agent"
     epic: "E7-产业服务链分析"
     priority: "P0"
@@ -33540,8 +33545,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 80000
-    note: |
-      建单背景：LUMEN-SVC-SEARCH-ES-L01 已签收（done，2026-10-20），三仓推 dev（etl a17a2a4 / topic-py db68cf7 / ui-topic 5f583db）。遗留 engine 灰度埋点按用户裁定待灰度窗口一并接，本单即该窗口。前端零改动（S3 filters DSL/sort/新字段已在 ui-topic 5f583db 交付，弹框走同一接口）。范围：切 SVC_SEARCH_ENGINE=es（K8s dev）+ 三 tab/弹框回归 + Python engine 埋点补接 + 回退验证。
+    note: "联调确认：CI/CD 全绿（pipeline 2652/2658），K8s dev rollout 成功，用户页面验证组合词搜索通过（2026-10-21 12:15）。"
     definition_of_done:
       - "K8s dev 环境 SVC_SEARCH_ENGINE=es 切换完成（helm/env 配置变更，含回退方案），重启后服务健康"
       - "灰度埋点补接：Python 侧 engine 打点落日志/可观测（ES-L01 遗留项），mysql/es 均可从日志区分引擎"
@@ -33549,4 +33553,62 @@ tasks:
       - "回归：服务机构查询页 + 对比篮新增弹框（svcSearchOrgs 路径）在 ES 引擎下实走通过，keyword/高筛 filters/排序均正常"
       - "回退验证：切回 mysql 后接口行为与切前一致"
       - "handoff 文档 + cost 回填"
-    update_time: "2026-10-20T23:14:17+08:00"
+    update_time: "2026-10-21T12:27:06+08:00"
+  - id: LUMEN-SVC-P-JAVA-STAGES-L01
+    title: "P 段 C — svc 异步分析 8 叶阶段节点生命周期（seed/finalize + 词表）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      替代废单 LUMEN-SVC-JAVA-JOB-L01（2026-08-18 废作，勿复用）。范围：gkxlumen-topic-async-service svcJob 阶段节点 seed/finalize + SvcAnalysisTypes 词表；代码本地已实现并过 16 用例，受人工验收闸门约束，push 前须监管人走查确认。
+    touched_files:
+      - "lumen-svc-platform/gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/java/com/topcomm/gkxlumen/topic/async/support/analysis/SvcAnalysisTypes.java"
+      - "lumen-svc-platform/gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/java/com/topcomm/gkxlumen/topic/async/service/impl/analysis/AnalysisTaskServiceImpl.java"
+      - "lumen-svc-platform/gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/test/java/com/topcomm/gkxlumen/topic/async/service/impl/analysis/AnalysisTaskServiceImplSvcJobTest.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/服务机构-SVC/DEMO-SVC-REOPEN-长任务总控.md"
+      - "原型：demo-ui-topic /service/institution-judgment analysis_view=processing（阶段节点 Steps 设计）"
+    definition_of_done:
+      - "createTask svcJob 分支 seedSvcNodes：8 叶按词表预插节点，首节点 started 其余 pending"
+      - "落地路径 finalizeSvcNodes：成功全 completed / 失败当前 failed 余 pending"
+      - "词表与 demo-ui-topic 原型一致（org_coverage/org_trend/tech_power/shortboard/graph/shenzhen/attract/cultivate）"
+      - "单测覆盖 8 叶词表与节点流转（现 16 用例绿，java -cp JUnit Launcher 可离线跑）"
+      - "push origin/dev 后 K8s dev 发布，svc 分析工作区过程页可见阶段节点并正确流转"
+      - "handoff + cost 四字段回填；受人工验收闸门约束：push 前须监管人走查确认"
+    update_time: "2026-10-21T12:25:54+08:00"
+  - id: LUMEN-SVC-P-FE-STAGES-L01
+    title: "P 段 D — svc 分析过程页阶段节点走查联调（8 叶全叶子对照原型）"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 100000
+    note: "产业服务链全部异步分析叶子在过程页缺阶段节点（原型 Steps 交互），对照 demo-ui-topic 复刻验收；前置 LUMEN-SVC-P-JAVA-STAGES-L01 提供节点数据（已实现 seed/finalize）。同步型叶子可能仍在即时等待路径，须一并确认显隐；禁止另起交互。"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "lumen-ui-topic/src/views/service/ServiceAnalysisProcessShell.vue"
+      - "lumen-ui-topic/src/views/service/svcAnalysisWorkspace.ts"
+    design_refs:
+      - "agent-delivery/Design.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/UX-UE 通用交互组件规范.md"
+      - "原型：demo-ui-topic /service/institution-judgment analysis_view=processing（阶段节点 Steps 设计）"
+    definition_of_done:
+      - "ServiceAnalysisProcessShell 阶段 Steps 与后端 8 叶词表渲染一致（pending/started/completed/failed 四态）"
+      - "机构领域覆盖/新增趋势/技术力评估/服务链短板/图谱/深圳现状/引育推荐各过程页逐一走查，缺节点=0"
+      - " USE_MOCK=false 时无 fixture 填数；失败路径展示 failed 节点不误报完成"
+      - "Design.md §14 + UX-UE 规范 §19 清单对照通过；type-check/build 三绿"
+      - "handoff + cost；受人工验收闸门约束：走查修正后停本地等监管人确认"
+    update_time: "2026-10-21T12:26:12+08:00"
