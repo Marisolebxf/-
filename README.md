@@ -40,7 +40,7 @@ ${GKX_ROOT}/                                # 你的本地工作区根（在 .en
 
 ### 降 Token：瘦工作区（推荐）
 
-日常开发请用 **`workspaces/`** 下的场景工作区，不要默认打开上级 **`gkx-lumen.code-workspace`（19 根业务仓 + worktrees）**。说明见 **[workspaces/README.md](workspaces/README.md)**；预算背景见 `agent-delivery/budget-estimate.md` §6.1。
+日常开发请用 **`workspaces/`** 下的场景工作区，不要默认打开上级 **`gkx-lumen.code-workspace`（23 根业务仓 + worktrees）**。说明见 **[workspaces/README.md](workspaces/README.md)**；预算背景见 `agent-delivery/budget-estimate.md` §6.1。
 
 ---
 
