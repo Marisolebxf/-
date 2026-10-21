@@ -88,9 +88,9 @@ forbidden_paths:
 1. 落完表后写「下一批从某某起，说继续再派」，本轮没有调用子 agent。
 2. 给子 agent 加了 `no ledger`。子 agent 已经交卷，表仍是 `running`，父控对话又没写下一条回复，槽就永远满着。
 
-提示词挡不住系统注入的 “no follow-up needed”。父控把 `running=0` 说成「无需再改表」就会结束本轮，即使 `pending` 还有一千多条。项目 hook `.cursor/hooks/rewrite-loop-stop.py` 在该父控对话结束时检查编排表：`pending>0` 且 `running<6` 则自动把「补满 6 路」送回同一对话。开关文件：`agent-delivery/qa/as-built/.rewrite-loop-armed`（删掉即停）。`loop_limit=250`。
+提示词挡不住系统注入的 “no follow-up needed”。父控把 `running=0` 说成「无需再改表」就会结束本轮，即使 `pending` 还有一千多条。原先用来在对话结束时自动补派的 `.cursor/hooks/rewrite-loop-stop.py` 已删除：它只认旧父控对话，路径也写死在另一台机器上，开关文件不存在，实际不会触发。
 
-对策写进下面的 Kickoff / 子 agent 原文，并由上述 hook 强制：
+对策只留在下面的 Kickoff / 子 agent 原文：
 
 - 子 agent 交卷前**自己改自己那一行**（文件锁，只动本条）。父控死了，表也不会停在 `running`。
 - 父控每次回复的**最后一个动作**必须是派子 agent（`pending>0` 且 `running<6`）。禁止用进度小结收尾。系统若说 “no follow-up needed”：只要 `pending>0`，就还有后续，必须派。

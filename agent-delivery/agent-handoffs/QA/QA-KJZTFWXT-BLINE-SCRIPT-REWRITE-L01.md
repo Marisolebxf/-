@@ -8,7 +8,7 @@
 2. 派单表只认 `agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv`。`pass` 不重派。`pending` 才是还要写脚本的队列。
 3. 开工前先探活 `https://edu.itic-sci.com/tts/svcz/` 和 `/login`。页面算打开：不是连不上、不是 5xx，且约 8 秒内能看见登录框或侧栏/主区。HTTP 200 但空白或错误壳，与 5xx 同样算没打开。探活失败就停，不要派。
 4. 登记表 note 里曾写 `http://10.50.69.111:30888/` 已探活。那是过时备注。环境以 playbook 文首 edu 为准。
-5. 自动续跑 hook 当前未武装（没有 `agent-delivery/qa/as-built/.env-down`，也没有 `.rewrite-loop-armed`）。新父控对话若要武装：先把 `.cursor/hooks/rewrite-loop-stop.py` 里的 `PARENT` 改成新对话 id（现为旧父控 `573eb243`），再创建 `.rewrite-loop-armed`。不要在本交接对话里武装。
+5. 自动续跑 hook 已删除（`.cursor/hooks/rewrite-loop-stop.py` 与 `.cursor/hooks.json`）。不要再创建 `.rewrite-loop-armed`，也不要改 `PARENT`。续跑靠 Kickoff 里「最后一个动作必须是派子 agent」。
 6. 进度行格式：`完成/执行/待派/总`。完成 = pass + blocked，执行 = running，待派 = pending + fail。同时最多 6 路。
 
 ## 叫停时进度（2026-10-21 03:14 之后未再派）
@@ -69,7 +69,7 @@ pending 头：`service/rec-cultivate` 36，`service/org-capability` 34，`servic
 
 - 本 handoff。
 - 随提交带上 playbook 的入口 seed、路由闸门、三层故障范围、子 agent 探活，以及 `_script.md` 路由闸门。
-- `.cursor/hooks/rewrite-loop-stop.py` 仅在 `.rewrite-loop-armed` 存在且对话 id 匹配时补派。当前未武装。
+- `.cursor/hooks/rewrite-loop-stop.py` 已删除。当时未武装，且只匹配旧父控 `573eb243`。
 
 ## 测试结果
 
@@ -78,7 +78,7 @@ pending 头：`service/rec-cultivate` 36，`service/org-capability` 34，`servic
 
 ## 遗留风险
 
-- 旧父控对话若有人重建 `.rewrite-loop-armed` 且不改 `PARENT`，hook 会把补派打回 `573eb243`。
+- 自动续跑 hook 已删除，不会再把补派打回旧父控 `573eb243`。
 - blocked 里还有非 404 的环境缺口（对比篮、评估历史、结果壳等）。环境恢复后按 note 里的 `ENV-*` 复跑，不要重写。
 - 其它入口的 `/enterprise-center/overview` 未做批量替换。新脚本以 catalog / entry-seed 为准。
 
@@ -96,5 +96,5 @@ pending 头：`service/rec-cultivate` 36，`service/org-capability` 34，`servic
 - `agent-delivery/qa/as-built/script-backfill-playbook.md`
 - `agent-delivery/qa/as-built/prompts/_script.md`
 - `agent-delivery/qa/as-built/scripts/KJZTFWXT/**`
-- `.cursor/hooks.json`
-- `.cursor/hooks/rewrite-loop-stop.py`
+- `.cursor/hooks.json`（已删）
+- `.cursor/hooks/rewrite-loop-stop.py`（已删）
