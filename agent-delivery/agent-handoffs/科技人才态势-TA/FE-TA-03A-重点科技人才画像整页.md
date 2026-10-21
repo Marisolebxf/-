@@ -197,6 +197,10 @@ type-check 门被 04A 存量错误挡住，一并修齐（非 03A 范围但同�
 
 修正后三绿复测：type-check 0 错 / talent.test.mjs ok / build ✓ 21.16s。
 
+**双仓 commit + push dev（2026-10-21 10:06 用户放行「双仓commit、push dev」）**：
+- pc `3f07ea6` fix(talent): FE-TA-03A 走查修正 a-progress percent 语义与 a-tag 尺寸对齐（16 文件，+108/−25）
+- 编排 `8673ec2d` docs(talent): FE-TA-03A 走查修正记录与复刻经验追加
+
 ## 产物清单
 
 - 代码（本地未提交，等验收）：`src/views/talent/profile/`（index + 10 组件）、`src/views/talent/models/profileRelation.ts` / `profileMetrics.ts` / `profileReportExport.ts` / `fieldMapReportExport.ts`、`src/views/talent/styles/demo-talent-profile.css`、`src/views/talent/talent.test.mjs`（第 12 节）
