@@ -1,7 +1,37 @@
 # LUMEN-PORTAL-IFRAME-L01 · lumen-ui-topic 统一门户 iframe 嵌入对接
 
 > **状态**：开发完成，待联调（integration） · **监管**：human:孔东 · **执行**：agent:frontend-agent
-> **commit**：`34f61c5`（重做版）→ `a4549cf`（契约对齐，2026-10-16） · **强度**：ponytail full
+> **commit**：`34f61c5`（重做版）→ `a4549cf`（契约对齐，2026-10-16）→ `f1825fe`（外网子路径 base，2026-10-21） · **强度**：ponytail full
+
+---
+
+## 0.1 增量交付（2026-10-21 · 公网部署子路径 + 门户权限菜单逻辑矫正）
+
+### A. 公网外网前缀路由 base（用户裁定，照搬 lumen-ui-science-pc@3059111 的 /tid 方案）
+
+外层网关把 `https://edu.itic-sci.com/{前缀}/` 剥前缀转发内网 NodePort 并对响应体注入前缀，但 SPA history base 为 `/`，前缀被当未知路由 → 404。改为**运行时按浏览器地址判定 base，一份构建同时服务内网根路径与外网前缀**：
+
+| 仓 | 外网前缀 | 改动 | 验证 |
+|---|---|---|---|
+| lumen-ui-topic | `/tts/svcz/` | `src/router/base.ts`（新增 resolveHistoryBase/stripHistoryBase）；router history 接入；authRedirect 兜底剥前缀；`base.selfcheck.mjs` | 本地 preview 双路径 + 公网实测 ✅；commit `f1825fe` 已推，CI 部署后公网全链路（首页/深链/登录 redirect）通过 |
+| demo-ui-topic | `/tts/ptts/` | `src/app/routerBase.ts`（新增）；routes.tsx `createBrowserRouter(..., { basename })`；`tests/router-base.test.mjs` | 本地构建 + preview 双路径实测 ✅ |
+| lumen-ui-science-mobile | `/tid/mobile/` | `src/router/base.ts`（新增）；router history 接入；request.ts 401 登录跳转剥/拼前缀；遗留 hash 迁移补前缀；`scripts/router-base.test.mjs` | 自检 ✅（本地无依赖，CI type-check 兜底） |
+| lumen-ui-topic-mobile | `/tts/msvcz/` | 同上 | 同上 |
+| demo-ui-science | `/tid/ptid/` | **免改**（自研 hash 路由 `#/topic/...`，前缀无关；公网实测 124 元素全渲染） | ✅ |
+
+背景：此前 `/tts/ptts/`、`/tid/mobile/`、`/tts/msvcz/` 公网跑的是**手工改 base 的临时构建**（JS 写死 basename），仓内 dev 无此改动，CI 一发即回退 404；本次正式接入后 CI 发布安全。base.ts 字面量用单引号（网关只重写双引号 `"/api"`/`"/assets/"` 模式，单引号原样存活，已实测确认）。
+
+### B. 门户权限菜单逻辑矫正（依据 get-permission-info 实测定制 payload）
+
+诊断链路补强（`perms.ts`/`guard.ts`）：原始 payload / 菜单反查明细（逐 URL ✓/✗）/ 拦截原因全部改**单行字符串日志**（门户 iframe 控制台对象折叠点不开）。据此定位并修正：
+
+1. **菜单树全桶合并**（`pickMenuTree`）：原"首个非空桶短路"会漏授权——实测 `appPermissions.menus` 只有 LDM 菜单，topic 菜单在 `orgPermissions.menus`（机构角色授权）。改为 all+org 合并（菜单授权 = URL 反查本地 navItem，其他子系统 URL 天然不命中，Set 去重）。
+2. **忽略 appPermissions**（用户裁定 2026-10-21）：应用维度授权（LDM 等直挂应用）与本子系统无关，从菜单树 / 按钮码 / 角色名三个消费点全部移除；`roleMenuList` 留作三桶全空时兜底（实测 null）。
+3. 实测 payload 预期：`orgPermissions` 的科技专题系统树（企业查询 / 重点企业类型分析）反查命中 → `owned=[menu:topic:ent:search, menu:topic:ent:type]`，企业查询页放行，不再误发 `no.permission`。
+
+验证：`portal.selfcheck.mjs` ✅（含合并语义复算块：app 桶被忽略、org 桶 topic 菜单树存活）；`vue-tsc --build` ✅；生产构建 ✅。
+
+.env.development 联调值（API_URL→30895 内网网关、MOCK_AUTH=false）为本次实嵌联调临时改动，随本次一并提交。
 
 ---
 
