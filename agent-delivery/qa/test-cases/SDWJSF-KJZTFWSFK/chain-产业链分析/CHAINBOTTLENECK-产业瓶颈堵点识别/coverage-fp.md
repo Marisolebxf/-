@@ -2,7 +2,7 @@
 
 > catalog `chain.bottleneck` · path `#/chain/bottleneck`  
 > A 线真源：`fp-split-by-api-run/work/L22.md`  
-> B 线用例：`API-产业瓶颈堵点识别-用例.md`（第二轮 **API-01270**～**01273**）
+> B 线用例：`FUNC-产业瓶颈堵点识别-用例.md`（第三轮 **FUNC-00467**～**00472**；历史 API-01270～01273 作废）
 
 ---
 
@@ -10,8 +10,8 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| chain.bottleneck.main | GET | /innov/v1/industry/{chainId}/bottlenecks | API-01270、01271 | unavailable |
-| chain.bottleneck.m_chain_deep_125_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute | API-01272、01273 | available |
+| chain.bottleneck.main | GET | /innov/v1/industry/{chainId}/bottlenecks | FUNC-00467、00468 | unavailable |
+| chain.bottleneck.m_chain_deep_125_1 | POST | /innov/v1/industry/chainan/metric/M_CHAIN_DEEP_125_1/compute | FUNC-00469、00470 | available |
 
 ---
 

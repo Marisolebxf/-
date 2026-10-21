@@ -2,7 +2,7 @@
 
 > catalog `chain.strategic-importance` · path `/chain/strategic-importance`  
 > A 线：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `chain.strategic-importance`（60 条无对应六级）。不改 `work/`。  
-> B 线用例：`API-产业战略重要性分析-用例.md`（第二轮 **API-01312**～**01313**）
+> B 线用例：`FUNC-产业战略重要性分析-用例.md`（第三轮 **FUNC-00527**～**00530**；历史 API-01312～01313 作废）
 
 ---
 
@@ -10,7 +10,7 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| chain.strategic-importance.main | GET | /innov/v1/industry/{chainId}/strategic-importance | API-01312、01313 | unavailable |
+| chain.strategic-importance.main | GET | /innov/v1/industry/{chainId}/strategic-importance | FUNC-00527、00528 | unavailable |
 
 ---
 

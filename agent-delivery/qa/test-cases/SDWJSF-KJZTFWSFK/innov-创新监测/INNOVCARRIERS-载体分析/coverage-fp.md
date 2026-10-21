@@ -2,8 +2,9 @@
 
 > **catalog_page_id**：`innov.carriers` · path `/innov/carriers`  
 > **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
-> **用例册**：`API-载体分析-用例.md`（第二轮 **API-01867**～**01874**，共 8 条）  
+> **用例册**：`FUNC-载体分析-用例.md`（第三轮 **FUNC-01131**～**01140**，共 10 条）  
 > **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.carriers`  
+> **联调台**：https://edu.itic-sci.com/dma/algovwz/（FUNC 联调台步骤）
 
 ---
 
@@ -11,9 +12,11 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| innov.carriers.rank | GET | /innov/v1/carriers/rank | API-01867、API-01868、API-01869、API-01870、API-01871 | running |
-| innov.carriers.detail | GET | /innov/v1/carriers/{carrierId} | API-01872、API-01873 | running |
-| innov.carriers.method | GET | /innov/v1/carriers/index-method | API-01874 | running |
+| innov.carriers.rank | GET | /innov/v1/carriers/rank | FUNC-01131～01135 | running |
+| innov.carriers.detail | GET | /innov/v1/carriers/{carrierId} | FUNC-01136、FUNC-01137 | running |
+| innov.carriers.method | GET | /innov/v1/carriers/index-method | FUNC-01138 | running |
+
+页面清单：**FUNC-01139**（接口信息）、**FUNC-01140**（算法测试）。
 
 ---
 
@@ -23,9 +26,10 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| （无 Lxx） \| innov.carriers.rank \| 载体排行 | API-01867、API-01868、API-01869、API-01870、API-01871 | 无对应功能点 | 01867 主流程 sampleRequest pageNum=1、pageSize=20，断言 total、period、list（carrierId、name、carrierType、indexScore、rankTotal、subScores.output/quality/activity/performance）；01868 不传 pageNum；01869 不传 pageSize；01870 非法 pageNum=not-a-page；01871 非法 pageSize=not-a-size |
-| （无 Lxx） \| innov.carriers.detail \| 载体详情 | API-01872、API-01873 | 无对应功能点 | 01872 主流程 path carrierId=CAR-01，断言 info（carrierId、name、carrierType）、trend（statPeriod、indexScore、rankTotal）、radar（成果产出、成果质量、创新活跃、转化绩效）；01873 省略必填 carrierId |
-| （无 Lxx） \| innov.carriers.method \| 指数方法与权重 | API-01874 | 无对应功能点 | 01874 无参主流程，断言 weightVersion、methodDesc、weights（k、desc、w） |
+| （无 Lxx） \| innov.carriers.rank \| 载体排行 | FUNC-01131～01135 | 无对应功能点 | 01131 主流程 sampleRequest pageNum=1、pageSize=20 金样 RNK-01；01132 不传 pageNum；01133 不传 pageSize；01134 非法 pageNum=not-a-page；01135 非法 pageSize=not-a-size |
+| （无 Lxx） \| innov.carriers.detail \| 载体详情 | FUNC-01136、FUNC-01137 | 无对应功能点 | 01136 主流程 path carrierId=CAR-01；01137 省略必填 carrierId |
+| （无 Lxx） \| innov.carriers.method \| 指数方法与权重 | FUNC-01138 | 无对应功能点 | 01138 无参主流程 |
+| （页面清单） | FUNC-01139、FUNC-01140 | 无对应功能点 | 三接口页接口信息 / 算法测试 tab 清单 |
 
 ---
 
@@ -35,9 +39,11 @@
 |----|-----|
 | catalog endpoint 数 | 3 |
 | title 数 | 3 |
-| API 用例数 | 8 |
-| 主流程 | 3（01867 载体排行、01872 载体详情、01874 指数方法与权重） |
-| 备选-参数组合 | 2（01868、01869） |
-| 反向 | 3（01870、01871、01873） |
-| 编号 | API-01867～01874 连续 |
+| FUNC 用例数 | 10 |
+| 主流程 | 3（01131 载体排行、01136 载体详情、01138 指数方法与权重） |
+| 备选-参数组合 | 2（01132、01133） |
+| 反向 | 3（01134、01135、01137） |
+| 清单 | 2（01139、01140） |
+| 编号 | FUNC-01131～01140 连续 |
 | A 线 Lxx | 无 |
+| 已作废 | API-01867～01874（第二轮 API 册已删） |

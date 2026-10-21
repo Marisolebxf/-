@@ -3,7 +3,7 @@
 > catalog `policy.focus-one` · path `/policy/focus-one`  
 > A 线真源：`fp-split-by-api-run/work/L35.md`（现行稿只挂 `policy.focus`，path 为 GET `/policy/v1/policy/analysis/focus`）  
 > 挂接：`fp-split-by-api-run/_l6-to-catalog-map.yaml` `catalog_skip` · `policy.focus-one` = L35 的单政策变体，挂 L35 时按 path 去重  
-> B 线用例：`API-焦点识别(单个政策)-用例.md`（第二轮 **API-01409**～**01418**）  
+> B 线用例：`FUNC-焦点识别(单个政策)-用例.md`（第三轮 **FUNC-00611**～**00622**）  
 > 不改 `work/L35.md`。不把 `policy.focus` 的 field 再灌成一套用例。
 
 ---
@@ -12,9 +12,10 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| policy.focus-one.main | POST | /policy/v1/policy/analysis/focus-one | API-01409～01418 | unavailable（备注注明未交付；用例仍按文档返回体写） |
+| policy.focus-one.main | POST | /policy/v1/policy/analysis/focus-one | FUNC-00611～00620 | unavailable（备注注明未交付；用例仍按文档返回体写） |
+| （页面清单） | — | — | FUNC-00621、00622 | — |
 
-下拉 title 仅 **单条焦点识别**。主流程 API-01409；备选（省略 mode / title / execution / aux）API-01410～01413；反向（缺 text、非法 mode / title / execution / aux）API-01414～01418。
+下拉 title 仅 **单条焦点识别**。主流程 FUNC-00611；备选（省略 mode / title / execution / aux）FUNC-00612～00615；反向（缺 text、非法 mode / title / execution / aux）FUNC-00616～00620；清单 FUNC-00621（接口信息）、FUNC-00622（算法测试）。
 
 ---
 
@@ -54,15 +55,15 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| （L35 未列） \| policy.focus-one.main \| mode \| 算法输入-mode | API-01409、01410、01415 | 无对应功能点 | 01409 传 sample mode=rule；01410 不传；01415 mode=__invalid__ |
-| （L35 未列） \| policy.focus-one.main \| title \| 算法输入-title | API-01409、01411、01416 | 无对应功能点 | 01409 传 sample 标题；01411 不传；01416 title 为 number |
-| （L35 未列） \| policy.focus-one.main \| text \| 算法输入-text | API-01409、01414 | 无对应功能点 | 01409 传 sample 政策文本；01414 不传必填 text |
-| （L35 未列） \| policy.focus-one.main \| execution \| 算法输入-execution | API-01409、01412、01417 | 无对应功能点 | 01409 传 sample 执行数据；01412 不传；01417 execution 为 number |
-| （L35 未列） \| policy.focus-one.main \| aux \| 算法输入-aux | API-01409、01413、01418 | 无对应功能点 | 01409 传 sample 辅助数据；01413 不传；01418 aux 为 number |
-| （L35 未列） \| policy.focus-one.main \| focus_list \| 算法输出-focus_list | API-01409～01413 | 无对应功能点 | 正向预期逐字段含 focus_list 及元素 term、score、evidence |
-| （L35 未列） \| policy.focus-one.main \| bottleneck_list \| 算法输出-bottleneck_list | API-01409～01413 | 无对应功能点 | 正向预期含 bottleneck_list 及元素 item、evidence |
-| （L35 未列） \| policy.focus-one.main \| suggestions \| 算法输出-suggestions | API-01409～01413 | 无对应功能点 | 正向预期含 suggestions 及元素 item、reason |
-| （L35 未列） \| policy.focus-one.main \| persisted \| sampleResponse-persisted | API-01409～01413 | 无对应功能点 | sampleResponse 多出字段，随主流程与备选断言；responseFields 未列 |
+| （L35 未列） \| policy.focus-one.main \| mode \| 算法输入-mode | FUNC-00611、00612、00617 | 无对应功能点 | 00611 传 sample mode=rule；00612 不传；00617 mode=__invalid__ |
+| （L35 未列） \| policy.focus-one.main \| title \| 算法输入-title | FUNC-00611、00613、00618 | 无对应功能点 | 00611 传 sample 标题；00613 不传；00618 title 为 number |
+| （L35 未列） \| policy.focus-one.main \| text \| 算法输入-text | FUNC-00611、00616 | 无对应功能点 | 00611 传 sample 政策文本；00616 不传必填 text |
+| （L35 未列） \| policy.focus-one.main \| execution \| 算法输入-execution | FUNC-00611、00614、00619 | 无对应功能点 | 00611 传 sample 执行数据；00614 不传；00619 execution 为 number |
+| （L35 未列） \| policy.focus-one.main \| aux \| 算法输入-aux | FUNC-00611、00615、00620 | 无对应功能点 | 00611 传 sample 辅助数据；00615 不传；00620 aux 为 number |
+| （L35 未列） \| policy.focus-one.main \| focus_list \| 算法输出-focus_list | FUNC-00611～00615 | 无对应功能点 | 正向预期逐字段含 focus_list 及元素 term、score、evidence |
+| （L35 未列） \| policy.focus-one.main \| bottleneck_list \| 算法输出-bottleneck_list | FUNC-00611～00615 | 无对应功能点 | 正向预期含 bottleneck_list 及元素 item、evidence |
+| （L35 未列） \| policy.focus-one.main \| suggestions \| 算法输出-suggestions | FUNC-00611～00615 | 无对应功能点 | 正向预期含 suggestions 及元素 item、reason |
+| （L35 未列） \| policy.focus-one.main \| persisted \| sampleResponse-persisted | FUNC-00611～00615 | 无对应功能点 | sampleResponse 多出字段，随主流程与备选断言；responseFields 未列 |
 
 ---
 
@@ -71,8 +72,8 @@
 | 项 | 数 |
 |----|----|
 | 本页接口 | 1 |
-| 用例 | 10（主流程 1 + 备选 4 + 反向 5） |
-| 编号 | API-01409～API-01418 |
+| 用例 | 12（主流程 1 + 备选 4 + 反向 5 + 清单 2） |
+| 编号 | FUNC-00611～FUNC-00622 |
 | L35 GET path 行 | 6（无对应功能点，不灌用例） |
 | L35 req_only | 10（无对应功能点） |
-| 本页 B 线 field | 9（无对应功能点，挂在上述 10 条上） |
+| 本页 B 线 field | 9（无对应功能点，挂在上述 10 条接口向用例上） |

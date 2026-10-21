@@ -2,7 +2,7 @@
 
 > catalog `entan.attract` · path `#/entan/attract`  
 > A 线真源：`fp-split-by-api-run/work/L33.md`  
-> B 线用例：`API-招引企业综合推荐-用例.md`（第二轮 **API-00984**～**00987**）
+> B 线用例：`../ENTANATTRACT-企业招引潜力评估/FUNC-企业招引潜力评估-用例.md`（第三轮 **FUNC-00153**～**00158**；旧 API-00984～00987 作废）
 
 ---
 
@@ -10,8 +10,8 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| entan.attract.recommend | POST | /entan/v1/entan/metric/M_ENT_ATTRACTION_INDEX/compute | API-00984、00985 | unavailable |
-| entan.attract.recommend.m_ent_policy_match_score | POST | /entan/v1/entan/metric/M_ENT_POLICY_MATCH_SCORE/compute | API-00986、00987 | available |
+| entan.attract.recommend | POST | /entan/v1/entan/metric/M_ENT_ATTRACTION_INDEX/compute | FUNC-00153、00154 | unavailable |
+| entan.attract.recommend.m_ent_policy_match_score | POST | /entan/v1/entan/metric/M_ENT_POLICY_MATCH_SCORE/compute | FUNC-00155、00156 | available |
 
 ---
 
@@ -19,10 +19,10 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| L33 \| entan.attract.recommend \| enterprise_codes \| 算法输入-enterprise_codes企业编码集合 | API-00984、00985 | 已覆盖 | 合法集合 + 缺 enterprise_codes |
-| L33 \| entan.attract.recommend \| rankings \| 算法输出-rankings招引推荐排名体 | API-00984 | 已覆盖 | 主流程断言 value.result.rankings 及元素字段 |
+| L33 \| entan.attract.recommend \| enterprise_codes \| 算法输入-enterprise_codes企业编码集合 | FUNC-00153、00154 | 已覆盖 | 合法集合 + 缺 enterprise_codes |
+| L33 \| entan.attract.recommend \| rankings \| 算法输出-rankings招引推荐排名体 | FUNC-00153 | 已覆盖 | 主流程断言 value.result.rankings 及元素字段 |
 | L33 \| entan.attract.recommend \| _empty \| 招引推荐无数据空态 | — | 未覆盖 | 无稳定空结果构造条件 |
-| L33 \| entan.attract.recommend \| _fail \| 招引推荐计算失败 | API-00985 | 部分覆盖 | 仅缺 enterprise_codes 反向 |
+| L33 \| entan.attract.recommend \| _fail \| 招引推荐计算失败 | FUNC-00154 | 部分覆盖 | 仅缺 enterprise_codes 反向 |
 
 ---
 
@@ -30,7 +30,7 @@
 
 | endpoint_id | title | 用例编号 | 标记 |
 |-------------|-------|----------|------|
-| entan.attract.recommend.m_ent_policy_match_score | 政策匹配度 | API-00986、00987 | 无对应功能点 |
+| entan.attract.recommend.m_ent_policy_match_score | 政策匹配度 | FUNC-00155、00156 | 无对应功能点 |
 
 catalog 有该接口（status=available），L33 未挂 field 行，不按 field 拆用例。
 

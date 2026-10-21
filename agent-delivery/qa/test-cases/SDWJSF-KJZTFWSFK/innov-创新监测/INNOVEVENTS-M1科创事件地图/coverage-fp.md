@@ -2,8 +2,9 @@
 
 > **catalog_page_id**：`innov.events` · path `/innov/events`  
 > **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
-> **用例册**：`API-科创事件地图-用例.md`（第二轮 **API-01826**～**01852**，共 27 条）  
+> **用例册**：`FUNC-科创事件地图-用例.md`（第三轮 **FUNC-01086**～**01114**，共 29 条）  
 > **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.events`  
+> **联调台**：https://edu.itic-sci.com/dma/algovwz/（FUNC 联调台步骤）
 
 ---
 
@@ -11,14 +12,14 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| innov.events.list | GET | /innov/v1/events | API-01826～01840 | running |
-| innov.events.geo | GET | /innov/v1/events | API-01841、API-01842 | running |
-| innov.events.heatmap | GET | /innov/v1/events/heatmap | API-01843～01847 | running |
-| innov.events.detail | GET | /innov/v1/events/{eventId} | API-01848、API-01849 | running |
-| innov.events.relations | GET | /innov/v1/events/{eventId}/relations | API-01850、API-01851 | running |
-| innov.events.types | GET | /innov/v1/dict/event-types | API-01852 | running |
+| innov.events.list | GET | /innov/v1/events | FUNC-01086～01100 | running |
+| innov.events.geo | GET | /innov/v1/events | FUNC-01101、FUNC-01102 | running |
+| innov.events.heatmap | GET | /innov/v1/events/heatmap | FUNC-01103～01107 | running |
+| innov.events.detail | GET | /innov/v1/events/{eventId} | FUNC-01108、FUNC-01109 | running |
+| innov.events.relations | GET | /innov/v1/events/{eventId}/relations | FUNC-01110、FUNC-01111 | running |
+| innov.events.types | GET | /innov/v1/dict/event-types | FUNC-01112 | running |
 
-列表与点位同 path，验收以 `endpoint_id` 区分，用例都留在本页。
+列表与点位同 path，验收以 `endpoint_id` 区分，用例都留在本页。页面清单：**FUNC-01113**（接口信息）、**FUNC-01114**（算法测试）。
 
 ---
 
@@ -28,12 +29,13 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| （无 Lxx） \| innov.events.list \| 事件列表 | API-01826～01840 | 无对应功能点 | 01826 主流程 sampleRequest（pageNum=1、pageSize=20），断言 total、list 及元素 eventId、title、importanceLevel、importanceScore、eventTime、eventType、cityCode；01827～01831 分别补传 startTime、endTime、eventTypes、importanceLevels、keyword；01832 省略 pageNum；01833 省略 pageSize；01834～01840 分别非法 startTime、endTime、eventTypes、importanceLevels、keyword、pageNum、pageSize |
-| （无 Lxx） \| innov.events.geo \| 地图点位 | API-01841、API-01842 | 无对应功能点 | 01841 主流程 mode=geo，断言 type、features 及元素 type、geometry、coordinates、properties；01842 省略必填 mode。与列表同 path |
-| （无 Lxx） \| innov.events.heatmap \| 热力聚合 | API-01843～01847 | 无对应功能点 | 01843 主流程不传时间，断言 lng、lat、weight；01844 补传 startTime；01845 补传 endTime；01846 非法 startTime；01847 非法 endTime |
-| （无 Lxx） \| innov.events.detail \| 事件详情 | API-01848、API-01849 | 无对应功能点 | 01848 主流程 eventId=EVT-001，断言 eventId、importanceDetail 及 title、eventType、eventTime、importanceLevel、importanceScore、summary、k、v；01849 省略必填 eventId |
-| （无 Lxx） \| innov.events.relations \| 关联分析 | API-01850、API-01851 | 无对应功能点 | 01850 主流程 eventId=EVT-001，断言 relType、relName 及 relId、relDesc、score；01851 省略必填 eventId |
-| （无 Lxx） \| innov.events.types \| 事件类型字典 | API-01852 | 无对应功能点 | 01852 无参主流程，断言 eventType、nameZh、color |
+| （无 Lxx） \| innov.events.list \| 事件列表 | FUNC-01086～01100 | 无对应功能点 | 01086 主流程 sampleRequest（pageNum=1、pageSize=20）金样 LST-01；01087～01091 分别补传 startTime、endTime、eventTypes、importanceLevels、keyword；01092 省略 pageNum；01093 省略 pageSize；01094～01100 分别非法 startTime、endTime、eventTypes、importanceLevels、keyword、pageNum、pageSize |
+| （无 Lxx） \| innov.events.geo \| 地图点位 | FUNC-01101、FUNC-01102 | 无对应功能点 | 01101 主流程 mode=geo；01102 省略必填 mode。与列表同 path |
+| （无 Lxx） \| innov.events.heatmap \| 热力聚合 | FUNC-01103～01107 | 无对应功能点 | 01103 主流程不传时间；01104 补传 startTime；01105 补传 endTime；01106 非法 startTime；01107 非法 endTime |
+| （无 Lxx） \| innov.events.detail \| 事件详情 | FUNC-01108、FUNC-01109 | 无对应功能点 | 01108 主流程 eventId=EVT-001；01109 省略必填 eventId |
+| （无 Lxx） \| innov.events.relations \| 关联分析 | FUNC-01110、FUNC-01111 | 无对应功能点 | 01110 主流程 eventId=EVT-001；01111 省略必填 eventId |
+| （无 Lxx） \| innov.events.types \| 事件类型字典 | FUNC-01112 | 无对应功能点 | 01112 无参主流程 |
+| （页面清单） | FUNC-01113、FUNC-01114 | 无对应功能点 | 六接口页接口信息 / 算法测试 tab 清单 |
 
 ---
 
@@ -43,9 +45,10 @@
 |----|-----|
 | catalog endpoint 数 | 6 |
 | title 数 | 6 |
-| API 用例数 | 27 |
-| 主流程 | 6（01826 事件列表、01841 地图点位、01843 热力聚合、01848 事件详情、01850 关联分析、01852 事件类型字典） |
-| 备选-参数组合 | 9（01827～01833、01844、01845） |
-| 反向 | 12（01834～01840、01842、01846、01847、01849、01851） |
-| 编号 | API-01826～01852 连续 |
+| FUNC 用例数 | 29 |
+| 主流程 | 6（01086 事件列表、01101 地图点位、01103 热力聚合、01108 事件详情、01110 关联分析、01112 事件类型字典） |
+| 备选-参数组合 | 9（01087～01093、01104、01105） |
+| 反向 | 12（01094～01100、01102、01106、01107、01109、01111） |
+| 清单 | 2（01113 接口信息、01114 算法测试） |
+| 编号 | FUNC-01086～01114 连续 |
 | A 线 Lxx | 无 |

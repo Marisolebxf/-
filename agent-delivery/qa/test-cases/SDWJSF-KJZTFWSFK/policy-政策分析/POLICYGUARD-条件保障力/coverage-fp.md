@@ -1,8 +1,8 @@
 # 条件保障力 · A 线功能点覆盖（policy.guard）
 
-> **catalog_page_id**：`policy.guard` · path `/policy/guard`  
+> **catalog_page_id**：`policy.guard` · path `#/policy/guard`  
 > **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `policy.guard`（原因：不扩六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
-> **用例册**：`API-条件保障力-用例.md`（第二轮 **API-01508**～**01512**，共 5 条）  
+> **B 线用例**：`FUNC-条件保障力-用例.md`（第三轮 **FUNC-00732**～**FUNC-00738**）  
 > **契约**：`repos/lumen-ui-algo-apiview/src/catalog/policy.json` 页 `policy.guard`  
 
 ---
@@ -11,7 +11,7 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| policy.guard.main | GET | /policy/v1/policy/analysis/guard | API-01508、API-01509、API-01510、API-01511、API-01512 | unavailable |
+| policy.guard.main | GET | /policy/v1/policy/analysis/guard | FUNC-00732～00736 | unavailable |
 
 ---
 
@@ -21,7 +21,8 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| （无 Lxx） \| policy.guard.main \| 保障力 | API-01508、API-01509、API-01510、API-01511、API-01512 | 无对应功能点 | 01508 主流程 sampleRequest（limit=20、不传 scope_code），断言 model_id、count、rows 及行内 scope_name、effect_score、metric_id；01509 传入 scope_code=440000；01510 省略 limit；01511、01512 分别非法 scope_code、limit。文档标记未交付 |
+| （无 Lxx） \| policy.guard.main \| 保障力 | FUNC-00732、00733、00734、00735、00736 | 无对应功能点 | 00732 主流程 sampleRequest（limit=20、不传 scope_code），断言 model_id、count、rows 及行内 scope_name、effect_score、metric_id；00733 传入 scope_code=440000；00734 省略 limit；00735、00736 分别非法 scope_code、limit。文档标记未交付 |
+| （页面清单） \| policy.guard \| 接口信息 / 算法测试 | FUNC-00737、00738 | 已覆盖 | 单接口页清单 2 条 |
 
 ---
 
@@ -31,9 +32,11 @@
 |----|-----|
 | catalog endpoint 数 | 1 |
 | title 数 | 1 |
-| API 用例数 | 5 |
+| FUNC 用例数 | 7 |
 | 主流程 | 1 |
 | 备选-参数组合 | 2 |
 | 反向 | 2 |
-| 编号 | API-01508～01512 连续 |
+| 清单 | 2 |
+| 编号 | FUNC-00732～00738 |
 | A 线 Lxx | 无 |
+| 旧 API 册 | API-01508～01512 作废，见 FUNC 册 §4 |

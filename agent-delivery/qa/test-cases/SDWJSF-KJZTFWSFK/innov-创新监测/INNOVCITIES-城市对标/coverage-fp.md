@@ -2,8 +2,9 @@
 
 > **catalog_page_id**：`innov.cities` · path `/innov/cities`  
 > **A 线**：**无对应 Lxx**。`fp-split-by-api-run/_l6-to-catalog-map.yaml` 的 `catalog_skip` 登记 `innov.*`（原因：创新监测不在本轮 60 六级）。L01–L60 的 `pages` 均未挂本页。不改 `work/`。  
-> **用例册**：`API-城市对标-用例.md`（第二轮 **API-01875**～**01882**，共 8 条）  
+> **用例册**：`FUNC-城市对标-用例.md`（第三轮 **FUNC-01141**～**01150**，共 10 条：接口 8 + 清单 2）  
 > **契约**：`repos/lumen-ui-algo-apiview/src/catalog/innov.json` 页 `innov.cities`  
+> **联调台**：https://edu.itic-sci.com/dma/algovwz/（FUNC 联调台步骤）
 
 ---
 
@@ -11,10 +12,11 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| innov.cities.rank | GET | /innov/v1/cities/rank | API-01875、API-01876、API-01877 | running |
-| innov.cities.compare | GET | /innov/v1/cities/compare | API-01878、API-01879 | running |
-| innov.cities.advice | GET | /innov/v1/cities/{cityCode}/advice | API-01880、API-01881 | running |
-| innov.cities.method | GET | /innov/v1/cities/index-method | API-01882 | running |
+| innov.cities.rank | GET | /innov/v1/cities/rank | FUNC-01141、FUNC-01142、FUNC-01143 | running |
+| innov.cities.compare | GET | /innov/v1/cities/compare | FUNC-01144、FUNC-01145 | running |
+| innov.cities.advice | GET | /innov/v1/cities/{cityCode}/advice | FUNC-01146、FUNC-01147 | running |
+| innov.cities.method | GET | /innov/v1/cities/index-method | FUNC-01148 | running |
+| （页面清单） | — | — | FUNC-01149、FUNC-01150 | — |
 
 ---
 
@@ -24,10 +26,11 @@
 
 | 功能点键 | 对应用例编号 | 状态 | 说明 |
 |----------|--------------|------|------|
-| （无 Lxx） \| innov.cities.rank \| 城市排名 | API-01875、API-01876、API-01877 | 无对应功能点 | 01875 主流程 sampleRequest scope=global，断言 period、list（cityCode、nameZh、indexScore、rankGlobal、rankDomestic、isBenchmark、subScores）；01876 不传 scope；01877 非法 scope=__invalid__ |
-| （无 Lxx） \| innov.cities.compare \| 城市对标 | API-01878、API-01879 | 无对应功能点 | 01878 主流程 sampleRequest cityCodes=440300,110000，断言 list（cityCode、nameZh、indexScore、rankGlobal、resource、institution、output、environment）与 radar；01879 省略必填 cityCodes |
-| （无 Lxx） \| innov.cities.advice \| 政策建议 | API-01880、API-01881 | 无对应功能点 | 01880 主流程 path cityCode=440300，断言 title、contentMd 以及 sampleResponse 的 reportId、generateMode；01881 省略必填 cityCode（path 空段 `/innov/v1/cities//advice`） |
-| （无 Lxx） \| innov.cities.method \| 指数方法与权重 | API-01882 | 无对应功能点 | 01882 无参主流程，断言 weightVersion、methodDesc、weights（k、desc、w） |
+| （无 Lxx） \| innov.cities.rank \| 城市排名 | FUNC-01141、FUNC-01142、FUNC-01143 | 无对应功能点 | 01141 主流程 sampleRequest scope=global，断言 period、list（cityCode、nameZh、indexScore、rankGlobal、rankDomestic、isBenchmark、subScores）；01142 不传 scope；01143 非法 scope=__invalid__ |
+| （无 Lxx） \| innov.cities.compare \| 城市对标 | FUNC-01144、FUNC-01145 | 无对应功能点 | 01144 主流程 sampleRequest cityCodes=440300,110000，断言 list（cityCode、nameZh、indexScore、rankGlobal、resource、institution、output、environment）与 radar；01145 省略必填 cityCodes |
+| （无 Lxx） \| innov.cities.advice \| 政策建议 | FUNC-01146、FUNC-01147 | 无对应功能点 | 01146 主流程 path cityCode=440300，断言 title、contentMd 以及 sampleResponse 的 reportId、generateMode；01147 省略必填 cityCode（path 空段 `/innov/v1/cities//advice`） |
+| （无 Lxx） \| innov.cities.method \| 指数方法与权重 | FUNC-01148 | 无对应功能点 | 01148 无参主流程，断言 weightVersion、methodDesc、weights（k、desc、w） |
+| （页面清单） \| 接口信息 / 算法测试 | FUNC-01149、FUNC-01150 | 无对应功能点 | §6.1 清单：4 接口下拉与 method/path 切换刷新 |
 
 ---
 
@@ -37,9 +40,11 @@
 |----|-----|
 | catalog endpoint 数 | 4 |
 | title 数 | 4 |
-| API 用例数 | 8 |
-| 主流程 | 4（01875 城市排名、01878 城市对标、01880 政策建议、01882 指数方法与权重） |
-| 备选-参数组合 | 1（01876） |
-| 反向 | 3（01877、01879、01881） |
-| 编号 | API-01875～01882 连续 |
+| FUNC 用例数 | 10 |
+| 主流程 | 4（01141 城市排名、01144 城市对标、01146 政策建议、01148 指数方法与权重） |
+| 备选-参数组合 | 1（01142） |
+| 反向 | 3（01143、01145、01147） |
+| 清单 | 2（01149、01150） |
+| 编号 | FUNC-01141～01150 连续 |
 | A 线 Lxx | 无 |
+| 作废 API 号 | API-01875～01882 不复用 |

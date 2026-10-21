@@ -1,9 +1,9 @@
 # 区域产业创新成果综合评价 · 功能点覆盖（comp.industry-outcome / L52）
 
-> catalog `comp.industry-outcome` · path `#/industry-comp/industry-outcome`  
+> catalog `comp.industry-outcome` · path `/industry-comp/industry-outcome`  
 > A 线真源：`fp-split-by-api-run/work/L52.md`（只读，未改）  
-> B 线用例：`API-区域产业创新成果综合评价-用例.md`（第二轮 **API-01777**～**01781**）  
-> 契约：`repos/lumen-ui-algo-apiview/src/catalog/comp.json` 页 `comp.industry-outcome`  
+> B 线用例：`FUNC-区域产业创新成果综合评价-用例.md`（第三轮 **FUNC-01019**～**01025**；旧 API-01777～01781 作废）  
+> 契约：`lumen-ui-algo-apiview/src/catalog/comp.json` 页 `comp.industry-outcome`  
 
 ---
 
@@ -11,7 +11,7 @@
 
 | endpoint_id | METHOD | path | 用例编号 | catalog status |
 |-------------|--------|------|----------|----------------|
-| comp.industry-outcome.main | GET | /comp/v1/comp/region-industry-outcome | API-01777、01778、01779、01780、01781 | unavailable |
+| comp.industry-outcome.main | GET | /comp/v1/comp/region-industry-outcome | FUNC-01019～01023 | unavailable |
 
 ---
 
@@ -19,19 +19,20 @@
 
 | 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
 |----------|----------|--------------|------|------|
-| L52 \| comp.industry-outcome.main \| region \| 算法输入-region区域标签 | catalog region | API-01777、01778、01780 | 已覆盖 | 主路径 region=440300 + 省略可选 region + 非法 region=__invalid__ |
-| L52 \| comp.industry-outcome.main \| year \| 算法输入-year年份 | catalog year | API-01777、01779、01781 | 已覆盖 | 主路径 year=2025 + 省略可选 year + 非法 year=0 |
-| L52 \| comp.industry-outcome.main \| index \| 算法输出-index产业创新成果指数 | catalog index | API-01777、01778、01779 | 已覆盖 | 主流程与两条备选断言 index（number，示例 66.3）及 sampleResponse 同层字段 |
+| L52 \| comp.industry-outcome.main \| region \| 算法输入-region区域标签 | catalog region | FUNC-01019、01020、01022 | 已覆盖 | 主路径 region=440300 + 省略可选 region + 非法 region=__invalid__ |
+| L52 \| comp.industry-outcome.main \| year \| 算法输入-year年份 | catalog year | FUNC-01019、01021、01023 | 已覆盖 | 主路径 year=2025 + 省略可选 year + 非法 year=0 |
+| L52 \| comp.industry-outcome.main \| index \| 算法输出-index产业创新成果指数 | catalog index | FUNC-01019、01020、01021 | 已覆盖 | 主流程与两条备选断言 index（number，示例 66.3）及 sampleResponse 同层字段 |
 | L52 \| comp.industry-outcome.main \| _empty \| 产业成果评价无数据空态 | 契约空结果 | — | 未覆盖 | 无稳定空结果构造条件，不单开空态用例 |
-| L52 \| comp.industry-outcome.main \| _fail \| 产业成果评价查询失败 | 契约错误态 | API-01780、01781 | 已覆盖 | 非法 region、非法 year；预期 message 或 msg 指出该参数非法 |
+| L52 \| comp.industry-outcome.main \| _fail \| 产业成果评价查询失败 | 契约错误态 | FUNC-01022、01023 | 已覆盖 | 非法 region、非法 year；预期 message 或 msg 指出该参数非法 |
+| L52 \| comp.industry-outcome \| 接口信息 / 算法测试 | 页面清单 | FUNC-01024、01025 | 已覆盖 | 单接口页清单 2 条，不点击调用 |
 
-sampleResponse 另有 `rank`、`yoy`、`adv`、`radar`（产品服务、企业创新、服务机构）、`bar_items`、`pie_items`、`rows`（name、score、rank、tag、note），已写入 01777～01779 正向预期；A 线未单列这些 field_key。responseFields 仅声明 `index`。
+sampleResponse 另有 `rank`、`yoy`、`adv`、`radar`（产品服务、企业创新、服务机构）、`bar_items`、`pie_items`、`rows`（name、score、rank、tag、note），已写入 01019～01021 正向预期；A 线未单列这些 field_key。responseFields 仅声明 `index`。
 
 ---
 
 ## req_only 行（无 endpoint 挂接）
 
-L52.md 中下列 11 行 `endpoint_id` 为空、`catalog_status=req_only`，B 线记 **无对应功能点**，不单独开 API 用例。
+L52.md 中下列 11 行 `endpoint_id` 为空、`catalog_status=req_only`，B 线记 **无对应功能点**，不单独开 FUNC 用例。
 
 | 功能点键 | 规则来源 | 对应用例编号 | 状态 | 说明 |
 |----------|----------|--------------|------|------|
@@ -53,8 +54,8 @@ L52.md 中下列 11 行 `endpoint_id` 为空、`catalog_status=req_only`，B 线
 
 | 状态 | 条数 |
 |------|------|
-| 已覆盖 | 4（`region`、`year`、`index`、`_fail`） |
+| 已覆盖 | 5（`region`、`year`、`index`、`_fail`、页面清单） |
 | 未覆盖 | 1（`_empty`） |
 | req_only 无对应功能点 | 11 |
-| API 用例 | 5（01777～01781；主流程 1、备选 2、反向 2） |
-| 金样 | API-01777 |
+| FUNC 用例 | 7（01019～01025；主流程 1、备选 2、反向 2、清单 2） |
+| 金样 | FUNC-01019（RIO-01） |
