@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
 
-- url: http://111.198.38.90:50892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+- url: http://10.50.69.111:30892/enterprise/attraction?workspace=attraction&recommendation_tab=attraction
 - title: 招引企业推荐分析 - 科技专题服务系统
 - h1: 招引企业推荐分析
 - screenshot: page.png

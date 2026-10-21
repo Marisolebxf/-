@@ -12,7 +12,7 @@ const require = createRequire(
   path.resolve(__dirname, '../../../../../../tools/package.json'),
 );
 const { chromium } = require('playwright');
-const base = 'http://111.198.38.90:50892/';
+const base = 'http://10.50.69.111:30892/';
 const deep =
   base + 'enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation';
 const out = (name, data) =>

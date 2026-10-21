@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const outDir = __dirname;
 
 const browser = await chromium.launch({ headless: true });

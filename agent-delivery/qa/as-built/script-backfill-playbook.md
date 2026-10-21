@@ -1,8 +1,8 @@
 # As-built 脚本编排手册（FUNC ↔ scripts 1:1）
 
 > **当前波（2026-10-19）**：专题用例册已对照重写。脚本按**现行用例号**重写，不沿用旧 `P0-*.yaml`。  
-> **环境**：`https://edu.itic-sci.com/tts/svcz/`（部署带 path 前缀 `/tts/svcz`）。禁止再写 `http://10.50.69.111:30888/` 或 `http://111.198.38.90:50892/`。  
-> **路径**：`fixtures.base_url` = 上址；步骤 `goto` 写应用内相对路径，由 runner 拼成 `base_url + target`。拼绝对 URL 时用 assert 上下文里的 `baseUrl`，禁止只用 `location.origin`（会丢掉前缀）。  
+> **环境**：`http://10.50.69.111:30892/`（无 path 前缀）。禁止再写 `https://edu.itic-sci.com/tts/svcz/`、`http://10.50.69.111:30888/` 或 `http://111.198.38.90:50892/`。  
+> **路径**：`fixtures.base_url` = 上址；步骤 `goto` 写应用内相对路径，由 runner 拼成 `base_url + target`。  
 > **路由真源**：`catalog/KJZTFWXT.yaml` 该 `entry_id` 的 `path`（有 `fixtures/entry-seed.yaml` 时以其 `catalog_path` 为准）。**禁止**用探针猜到的 URL 覆盖 catalog（教训：企业查询曾误写成 `/development/search`）。  
 > **单条写法**：[`prompts/_script.md`](prompts/_script.md)。双档 / expect 双层仍读 [`retro/20261014-batch32-method-patch.md`](retro/20261014-batch32-method-patch.md) + [`schema.md`](schema.md)。  
 > **下文 §2～§8** 是上一波「补齐缺口 + 写验分离」的记录。和文首冲突时，以文首为准。
@@ -101,7 +101,7 @@ forbidden_paths:
 【身份】qa-agent 父控。只编排和改编排表。不写脚本，不跑 run-scripts，不判断步骤对不对。
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
 【必读】agent-delivery/qa/as-built/script-backfill-playbook.md 文首「重写波」（含「循环为什么会停」）
-【环境】https://edu.itic-sci.com/tts/svcz/
+【环境】http://10.50.69.111:30892/
 【派单表】agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv
 【循环】pending 或可回炉 fail 还在，就继续。禁止用「下一批从某某起 / 说继续再派 / 段小结」结束本轮。本轮最后一个动作必须是派出子 agent，使 running 回到 6（不足 6 条就全派完）。系统若提示 no follow-up needed：只要待派>0，就还有后续，必须派。
 【落表】子 agent 自己改自己那一行。禁止在子 agent 提示词里写 no ledger。父控被唤醒时若发现 running 但 run 目录已有 result.yaml：按 verdict 补记这一行，再补派。环境缺口（ENV-、D3、现场无数据，脚本已落盘）保持 blocked，不回炉。同一条脚本错误最多回炉 1 次。
@@ -124,7 +124,7 @@ forbidden_paths:
 ```text
 【身份】qa-agent。专题脚本重写。本任务只做一条用例，做完即停。
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【环境】https://edu.itic-sci.com/tts/svcz/  账号 admin / 123456
+【环境】http://10.50.69.111:30892/  账号 admin / 123456
 【本条】FUNC_ID=【FUNC_ID】
 【用例册】agent-delivery/qa/test-cases/KJZTFWXT/【CASE_MD】 里这一行
 【脚本目录】agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】/
@@ -159,7 +159,7 @@ forbidden_paths:
     layout: cases-v1
     gold: []
     all: []
-  fixtures/testdata.yaml 的 base_url 必须是 https://edu.itic-sci.com/tts/svcz/ （含 /tts/svcz 前缀）。没有这个文件就只写 base_url、login、route(=catalog_path)。goto 写相对路径；assert 里拼完整地址用 baseUrl，不要用 location.origin。
+  fixtures/testdata.yaml 的 base_url 必须是 http://10.50.69.111:30892/ （无 path 前缀）。没有这个文件就只写 base_url、login、route(=catalog_path)。goto 写相对路径。
   fixtures/entry-seed.yaml 仅当不存在时新建；禁止改已有 catalog_path。
 
 【试跑】
@@ -440,4 +440,4 @@ python3 agent-delivery/qa/as-built/tools/health-cases.py --system KJZTFWXT --wri
 - 现行用例主表约 1579 行。编排表与之对齐，状态全是 `pending` 表示还没写新脚本。
 - 旧 `cases/P0-*.yaml` 留在目录里，重写波不读、不改、不回炉。
 - 中断后续跑：打开 `script-rewrite-ledger-KJZTFWXT.csv`。`running` 且没有 `result.yaml` 的改回 `pending`；已有 verdict 的按 verdict 补记。再按文首 Kickoff 派。不要在子 agent 提示词里写 `no ledger`。
-- 环境只认 `https://edu.itic-sci.com/tts/svcz/`（含 path 前缀；旧内网 `10.50.69.111:30888` 作废）。
+- 环境只认 `http://10.50.69.111:30892/`（无 path 前缀；`edu.itic-sci.com/tts/svcz` 与内网 `10.50.69.111:30888`、`111.198.38.90:50892` 作废）。

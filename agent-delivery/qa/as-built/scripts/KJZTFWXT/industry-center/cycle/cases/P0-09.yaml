@@ -18,7 +18,7 @@ steps:
 expect:
 - note: 未来产业预测含关键驱动因素、潜在拐点与决策摘要
   assert: |-
-    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('SKIP: 无已完成结果可恢复'); await view.click(); await page.waitForTimeout(2500); const t = await page.locator('main').innerText(); for (const w of ['关键驱动因素','潜在拐点','决策摘要']) { if (!t.includes(w)) throw new Error('缺预测块: ' + w) }
+    await page.goto('http://10.50.69.111:30892/industry-center/diagnosis?workspace=cycle&tab=cycle', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); await page.getByRole('tab', { name: '诊断记录' }).click(); await page.waitForTimeout(1000); const view = page.getByRole('button', { name: '查看结果' }).first(); if (!(await view.count())) throw new Error('SKIP: 无已完成结果可恢复'); await view.click(); await page.waitForTimeout(2500); const t = await page.locator('main').innerText(); for (const w of ['关键驱动因素','潜在拐点','决策摘要']) { if (!t.includes(w)) throw new Error('缺预测块: ' + w) }
 - note: 界面无「已完成实时全网检索」完成态表述且降级说明可见
   assert: |-
     const t = await page.locator('main').innerText(); if (t.includes('已完成实时全网检索')) throw new Error('出现禁止的实时全网检索完成态表述'); if (!/降级|未返回|不伪造|检索快照/.test(t)) throw new Error('未见诚实降级/快照说明')

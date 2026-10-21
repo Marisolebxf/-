@@ -1,7 +1,7 @@
 # 对比篮浮层实勘（probe）
 
 - opened: true
-- url: http://111.198.38.90:50892/enterprise/search
+- url: http://10.50.69.111:30892/enterprise/search
 - title: 企业详情 - 科技专题服务系统
 
 ## headings

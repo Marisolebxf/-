@@ -16,7 +16,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const ROUTE = '/service/chain-analysis?workspace=graph&tab=graph';
 const OUT = {};
 const dump = (n, d) => { fs.writeFileSync(path.join(__dirname, n), JSON.stringify(d, null, 2), 'utf8'); };

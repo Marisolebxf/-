@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/key-enterprise-analysis?view=domain
 
-- url: http://111.198.38.90:50892/enterprise/key-enterprise-analysis?view=domain
+- url: http://10.50.69.111:30892/enterprise/key-enterprise-analysis?view=domain
 - title: 重点企业领域分析 - 科技专题服务系统
 - h1: 重点企业领域分析
 - screenshot: page.png

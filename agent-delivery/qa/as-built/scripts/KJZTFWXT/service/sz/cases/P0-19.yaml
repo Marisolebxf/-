@@ -51,7 +51,7 @@ expect:
       page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p019Posts.push(r.url().slice(0,120)); });
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
-      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
       await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
       const sel=page.locator('.industry-catalog-select').first();
       await expect(sel).toBeVisible({ timeout: 8000 });
@@ -74,7 +74,7 @@ expect:
     assert: |-
       const ind0=String(globalThis.__p019Industry||'');
       if (!ind0) throw new Error('前置缺失：未捕获 sz industry 码');
-      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(2800);
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
@@ -96,7 +96,7 @@ expect:
       console.log('[P0-19 observed] chain 直切落位 OK；title='+title+'；[role=tab] 名单='+JSON.stringify(tabNames)+'（含对比篮浮层 Tab 混采，如实记录）');
   - note: 用例步骤2 + 预期③第一次切回——切回深圳现状工作区后：URL 落 workspace=shenzhen&tab=shenzhen（同路由参数区分复证）；产业集群选定保留（回显「新一代信息技术」不重置）+ URL industry= 参数保留且码值不变；现场实测 URL query 驱动无草稿存储→切回即丢（探针 _probe-p019.json 实证 back1 回显空+industry 丢失），按用例口径写保留断言、跑必红挂 D3-SVCSZ-WS-SWITCH-STATE-LOST（与 D3-SVCSHORT-WS-SWITCH-STATE-LOST / D3-SVCGRAPH-WS-SWITCH-STATE-LOST 姊妹票同根因：生态包三工作区菜单/URL 切换 query 整体替换，产业参数纯 URL 驱动无草稿存储）
     assert: |-
-      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(2800);
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
@@ -115,7 +115,7 @@ expect:
     assert: |-
       const ind1=String(globalThis.__p019Industry||'');
       if (!ind1) throw new Error('前置缺失：未捕获 sz industry 码');
-      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=graph&tab=graph', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=graph&tab=graph', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(2800);
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
@@ -137,7 +137,7 @@ expect:
       console.log('[P0-19 observed] graph 直切落位 OK；title='+title2+'；[role=tab] 名单='+JSON.stringify(tabNames2)+'（含对比篮浮层 Tab 混采）');
   - note: 用例步骤4 + 预期③第二次切回——再切回深圳现状工作区后：URL 落 workspace=shenzhen&tab=shenzhen；产业集群选定保留（回显「新一代信息技术」）+ URL industry= 保留码不变；现场同第一次切回形态（丢态），红挂同一票 D3-SVCSZ-WS-SWITCH-STATE-LOST（两次切回均保留=预期③；两次均丢=同根因双实证）
     assert: |-
-      await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(2800);
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }

@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/panorama
 
-- url: http://111.198.38.90:50892/industry-center/panorama
+- url: http://10.50.69.111:30892/industry-center/panorama
 - title: 产业链全景图谱 - 科技专题服务系统
 - h1: 半导体与集成电路全景图谱
 - screenshot: page.png

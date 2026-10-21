@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/evaluation?workspace=technology&mode=technology
 
-- url: http://111.198.38.90:50892/enterprise/evaluation?workspace=technology&mode=technology
+- url: http://10.50.69.111:30892/enterprise/evaluation?workspace=technology&mode=technology
 - title: 企业技术力评估对比分析 - 科技专题服务系统
 - h1: 企业技术力评估对比分析
 - screenshot: page.png

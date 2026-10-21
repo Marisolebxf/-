@@ -2,7 +2,7 @@
 
 > 先 /login 再深链；2026-10-14 headless
 
-- url: http://111.198.38.90:50892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
+- url: http://10.50.69.111:30892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
 - title: 培育企业推荐分析 - 科技专题服务系统
 - h1: ["培育企业推荐分析"]
 

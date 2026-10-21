@@ -2,7 +2,7 @@
 // 验证：模型区标题/说明行、四维度名与顺序、四权重初值（inputValue+aria-valuenow 双口径）、上下调节钮存在性
 import { chromium } from '/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration/agent-delivery/qa/as-built/tools/node_modules/playwright/index.mjs';
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const out = { route: BASE + '/service/institution-decision?workspace=cultivate&tab=cultivate', steps: [] };
 
 const browser = await chromium.launch({ headless: true });

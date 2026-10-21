@@ -20,7 +20,7 @@ function arg(name, def) {
   return def;
 }
 
-const baseUrl = (arg('base-url', 'http://10.50.69.111:30888/') || '').replace(/\/?$/, '/');
+const baseUrl = (arg('base-url', 'http://10.50.69.111:30892/') || '').replace(/\/?$/, '/');
 const pagePath = arg('path', '/');
 const user = arg('user', 'admin');
 const pass = arg('pass', '123456');

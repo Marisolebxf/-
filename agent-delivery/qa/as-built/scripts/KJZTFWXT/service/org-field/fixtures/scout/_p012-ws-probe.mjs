@@ -13,7 +13,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const fieldRoute = '/service/institution-judgment?workspace=field&tab=coverage';
 const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
 const outDir = __dirname;
@@ -172,7 +172,7 @@ async function main() {
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(400);
       await page.goto(
-        `http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=${knownOrg}`,
+        `http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=${knownOrg}`,
         { waitUntil: 'domcontentloaded', timeout: 60000 },
       );
       await page.waitForTimeout(2000);
@@ -206,7 +206,7 @@ async function main() {
     } catch (e) {
       switchMode.trend = 'goto_fallback:' + String(e.message || e).slice(0, 80);
       await page.goto(
-        'http://111.198.38.90:50892/service/institution-judgment?workspace=trend&tab=trend',
+        'http://10.50.69.111:30892/service/institution-judgment?workspace=trend&tab=trend',
         { waitUntil: 'domcontentloaded', timeout: 60000 },
       );
       await page.waitForTimeout(2000);
@@ -223,7 +223,7 @@ async function main() {
     } catch (e) {
       switchMode.capability = 'goto_fallback:' + String(e.message || e).slice(0, 80);
       await page.goto(
-        'http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability',
+        'http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability',
         { waitUntil: 'domcontentloaded', timeout: 60000 },
       );
       await page.waitForTimeout(2000);
@@ -240,7 +240,7 @@ async function main() {
     } catch (e) {
       switchMode.fieldBack = 'goto_fallback:' + String(e.message || e).slice(0, 80);
       await page.goto(
-        'http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage',
+        'http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage',
         { waitUntil: 'domcontentloaded', timeout: 60000 },
       );
       await page.waitForTimeout(2000);

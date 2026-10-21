@@ -9,7 +9,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(HERE, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
 const OUT = path.join(HERE, 'scout-p017-observed.json');
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const URL0 = BASE + '/service/institution-decision?workspace=cultivate&tab=cultivate';
 
 const browser = await chromium.launch({ headless: true });

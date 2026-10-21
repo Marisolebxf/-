@@ -30,7 +30,7 @@ expect:
       page.on('request', (r)=>{ if (r.method()==='POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p021Posts.push(r.url().slice(0,120)); });
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
-      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) };
       const mainText=async()=>((await page.locator('main').first().innerText().catch(()=>''))||'');
       const visPopsHead=async()=>{ const p=page.locator('.arco-trigger-popup:visible, .arco-popover:visible'); const n=await p.count(); return n?(((await p.nth(0).innerText().catch(()=>''))||'').replace(/\s+/g,' ').slice(0,60)):'' };
       const dismissOverlay=async()=>{ for (let i=0;i<3;i++) { if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return true; await page.mouse.click(1500, 600).catch(()=>{}); await page.waitForTimeout(600); if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return true; await page.mouse.click(960, 950).catch(()=>{}); await page.waitForTimeout(600) } return !(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count()) };
@@ -66,7 +66,7 @@ expect:
       const dismissOverlay=async()=>{ for (let i=0;i<3;i++) { if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return; await page.mouse.click(1500, 600).catch(()=>{}); await page.waitForTimeout(600); if (!(await page.locator('.arco-trigger-popup:visible, .arco-popover:visible').count())) return; await page.mouse.click(960, 950).catch(()=>{}); await page.waitForTimeout(600) } };
       const pops=[];
       for (const lb of labels) {
-        await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' });
+        await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(1800);
         const closeX=page.locator('button[aria-label="关闭对比篮"]');
         if (await closeX.count() && await closeX.first().isVisible().catch(()=>false) && await closeX.first().isEnabled().catch(()=>false)) { try { await closeX.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };

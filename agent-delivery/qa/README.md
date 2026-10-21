@@ -30,7 +30,7 @@
 
 ## 用例库
 
-执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`http://10.50.69.111:30888/`）。
+执行仓：**lumen-ui-topic**（`VITE_APP_USE_MOCK=false`，走 Java `/topic/v1`；INTEG：`http://192.168.88.50:30892`；B 线环境：`http://10.50.69.111:30892/`）。
 
 | 模块 | 文件 | 编号 | 状态 | 入口 |
 |------|------|------|------|------|
@@ -41,7 +41,7 @@
 ## 算法库 QA 路由
 
 - **总索引（A 线 F0～F4 + B 线 S1～S5）**：[`algo-lib-playbook-index.md`](algo-lib-playbook-index.md)
-- **B 线编排真源（接口入参/出参，50897）**：[`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md)
+- **B 线编排真源（algovwz 页面操作，FUNC，2026-10-19）**：[`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md)
 - **专题/展示 B 线**：[`func-test-playbook-index.md`](func-test-playbook-index.md)（算法库 S1 勿套用其页面场景 Kickoff）
 
 ## 总集拆分（A 线）
@@ -77,8 +77,8 @@
 
 **算法库 `SDWJSF-KJZTFWSFK`**
 
-1. 按 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) §编写方法论 + §长任务返工。接口文档只读 apiview catalog JSON；不写登录/Token；第一轮 `API-00001`～`00888` 作废
-2. 落盘 `test-cases/SDWJSF-KJZTFWSFK/…/API-{页}-用例.md` + `coverage-fp.md`；矩阵对照 `fp-split-by-api-run/work/Lxx.md`
+1. 按 [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) §编写方法论 + §长任务返工。联调台 `https://edu.itic-sci.com/dma/algovwz/`；步骤写页面操作；模块列用需规三至六级；编号 FUNC 从 `00001` 起；`API-00001`～`02210` 作废
+2. 落盘 `test-cases/SDWJSF-KJZTFWSFK/…/FUNC-{页}-用例.md` + `coverage-fp.md`，并删除同目录旧 `API-*-用例.md`；矩阵对照 `fp-split-by-api-run/work/Lxx.md`
 3. 总路由与 Kickoff：[`algo-lib-playbook-index.md`](algo-lib-playbook-index.md) §5～§6
 
 ## 待决策清单（PM 级，未处理）

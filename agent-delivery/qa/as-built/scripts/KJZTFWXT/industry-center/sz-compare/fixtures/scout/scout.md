@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/shenzhen?workspace=comparison&tab=comparison
 
-- url: http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison
+- url: http://10.50.69.111:30892/industry-center/shenzhen?workspace=comparison&tab=comparison
 - title: 深圳产业情况分析对比 - 科技专题服务系统
 - h1: 深圳产业情况分析对比
 - screenshot: page.png

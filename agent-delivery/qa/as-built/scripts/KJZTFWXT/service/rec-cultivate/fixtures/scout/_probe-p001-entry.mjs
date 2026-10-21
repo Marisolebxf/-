@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const PATH = '/service/institution-decision?workspace=cultivate&tab=cultivate';
 
 const browser = await chromium.launch({ headless: true });

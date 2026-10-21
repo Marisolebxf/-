@@ -11,13 +11,13 @@ steps:
 expect:
 - note: 超限对象不被静默截断为 2 家
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 3) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await sels.nth(1).click(); await sels.nth(2).click(); await page.waitForTimeout(400); await expect(page.getByText(/已选 3 家|当前已选择 3 家/).first()).toBeVisible({ timeout: 8000 })
+    await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await page.getByRole('button', { name: '前往对比篮选择企业' }).click({ timeout: 8000 }); await page.waitForTimeout(800); const sels = page.locator('[aria-label^="选择 "]'); if (await sels.count() < 3) throw new Error('SKIP_NO_BASKET'); await sels.nth(0).click(); await sels.nth(1).click(); await sels.nth(2).click(); await page.waitForTimeout(400); await expect(page.getByText(/已选 3 家|当前已选择 3 家/).first()).toBeVisible({ timeout: 8000 })
 - note: 预检区显示数量超限（最多 2 家）原因
   assert: |-
     const ok = page.getByRole('button', { name: '确定' }); if (!(await ok.isDisabled())) throw new Error('勾选 3 家后确定未禁用'); /* as-built：超限提示在浮层门控，不进入配置页预检 */
 - note: 「开始分析」保持禁用
   assert: |-
-    await page.keyboard.press('Escape'); await page.waitForTimeout(400); await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByRole('button', { name: '开始分析' }).isDisabled())) throw new Error('空态/未回填时开始分析应禁用')
+    await page.keyboard.press('Escape'); await page.waitForTimeout(400); await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; if (!(await page.getByRole('button', { name: '开始分析' }).isDisabled())) throw new Error('空态/未回填时开始分析应禁用')
 on_fail: 截图 + X-Trace-Id + C1~C6
 allow_skip: 对比篮不足 3 家时记 Pass-N/A
 as_built_note: 浮层勾选第 3 家后「确定」禁用且可看到「已选 3 家」——不静默截断为 2；无法把 3 家带回配置页预检。

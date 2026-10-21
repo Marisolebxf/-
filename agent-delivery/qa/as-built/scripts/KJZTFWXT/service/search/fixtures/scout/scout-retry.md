@@ -1,6 +1,6 @@
 # 二次无头实勘 /service-center/search
 
-- url: http://111.198.38.90:50892/service-center/search
+- url: http://10.50.69.111:30892/service-center/search
 - title: 服务机构查询 - 科技专题服务系统
 
 ## body sample

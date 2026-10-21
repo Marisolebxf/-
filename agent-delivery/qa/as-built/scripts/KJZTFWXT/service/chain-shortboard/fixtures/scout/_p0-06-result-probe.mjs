@@ -15,7 +15,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const baseRoute = '/service/chain-analysis?workspace=chain&tab=chain';
 const outDir = __dirname;
 

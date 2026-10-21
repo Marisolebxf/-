@@ -14,7 +14,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 // 已知机构 id（scout-p010 / scout-after-start）；search/orgs 空名单时用深链回填配置态，绕过弹窗
 const KNOWN_ORG = '79bbcfc0e68027808f1f4caf1b6f0469';
 const ROUTE_CONFIG =

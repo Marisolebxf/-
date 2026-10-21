@@ -17,7 +17,7 @@ steps:
 expect:
 - note: 浮层含企业集合 Tab
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const opener = page.locator('button[aria-label*="打开对比篮"]'); if (await opener.count()) await opener.first().click(); await page.waitForTimeout(800); await expect(page.getByRole('tab', { name: /企业/ }).or(page.locator('#compare-basket-tab-enterprise')).first()).toBeVisible({ timeout: 8000 })
+    await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=pain-points&tab=pain-points', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const opener = page.locator('button[aria-label*="打开对比篮"]'); if (await opener.count()) await opener.first().click(); await page.waitForTimeout(800); await expect(page.getByRole('tab', { name: /企业/ }).or(page.locator('#compare-basket-tab-enterprise')).first()).toBeVisible({ timeout: 8000 })
 - note: 未勾选时「发起分析」不可用
   assert: |-
     const launch = page.getByRole('button', { name: '发起分析' }); await expect(launch).toBeVisible({ timeout: 8000 }); if (!(await launch.isDisabled())) { /* 若已有勾选残留，先取消选择 */ const clear = page.getByRole('button', { name: '取消选择' }); if (await clear.count() && !(await clear.isDisabled())) await clear.click(); await page.waitForTimeout(400) }; await expect(page.getByRole('button', { name: '发起分析' })).toBeDisabled({ timeout: 8000 })

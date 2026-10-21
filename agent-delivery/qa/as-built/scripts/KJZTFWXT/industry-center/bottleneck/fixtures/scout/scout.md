@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
 
-- url: http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
+- url: http://10.50.69.111:30892/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records
 - title: 产业瓶颈堵点识别 - 科技专题服务系统
 - h1: 诊断记录
 - screenshot: page.png

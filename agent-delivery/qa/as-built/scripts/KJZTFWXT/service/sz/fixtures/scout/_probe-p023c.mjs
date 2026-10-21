@@ -10,7 +10,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const SZ = '/service/chain-analysis?workspace=shenzhen&tab=shenzhen';
 const injectCities = [
   { city: '深圳', scale: 9, tech: 80, density: 0.4 },

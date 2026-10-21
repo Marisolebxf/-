@@ -50,8 +50,8 @@ steps:
 expect:
   - note: 开启内部评审模式后「服务机构分析工作区」「分析配置」两枚需求追溯按钮可见可点（aria-label 定位；壳层共享追溯多出不计泄漏）；自含构造已选 1 家 + 领域筛选「新一代」
     assert: |-
-      await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
-      if (/org_ids|view=/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }
+      await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+      if (/org_ids|view=/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }
       const close=page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
       const main0=((await page.locator('main').first().innerText().catch(()=>''))||'');
@@ -64,7 +64,7 @@ expect:
       for (let i=0;i<20 && !(await boxes.count());i++) { const body=dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first(); if (await body.count()) { try { await body.evaluate((el)=>{ el.scrollTop=(el.scrollTop||0)+240 }) } catch {} } await page.waitForTimeout(400) }
       if (!(await boxes.count())) {
         await page.keyboard.press('Escape').catch(()=>{}); await page.waitForTimeout(400);
-        await page.goto('http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000);
+        await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000);
         globalThis.__p013_select='deeplink_fallback';
       } else {
         try { await boxes.first().scrollIntoViewIfNeeded() } catch {};

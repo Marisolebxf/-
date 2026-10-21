@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/diagnosis?workspace=cycle&tab=cycle
 
-- url: http://111.198.38.90:50892/industry-center/diagnosis?workspace=cycle&tab=cycle
+- url: http://10.50.69.111:30892/industry-center/diagnosis?workspace=cycle&tab=cycle
 - title: 产业周期分析 - 科技专题服务系统
 - h1: 产业周期分析
 - screenshot: page.png

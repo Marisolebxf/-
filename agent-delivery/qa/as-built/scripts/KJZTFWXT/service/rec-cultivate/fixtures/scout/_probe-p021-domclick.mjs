@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const out = { probed_at: new Date().toISOString(), purpose: 'P0-21 X4 DOM-event click for 2nd/3rd trace buttons under persistent popover overlay' };
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });

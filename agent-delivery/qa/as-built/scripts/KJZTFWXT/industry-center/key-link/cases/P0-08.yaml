@@ -17,7 +17,7 @@ steps:
 expect:
 - note: 阶段文案含全链路环节结构化拆解（研发/设计/制造/销售/服务）能力词
   assert: |-
-    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析禁用'); await start.click(); await page.waitForTimeout(4000); const t = await page.locator('main').innerText(); if (!/全链路环节结构化拆解|研发.*设计.*制造.*销售.*服务|结构化图谱（五环节/.test(t) && !/产业关键环节识别结果/.test(t)) throw new Error('ALLOW_SKIP: 未见过程/结果阶段文案（同条件复用或瞬时无过程 UI）')
+    await page.goto('http://10.50.69.111:30892/industry-center/diagnosis?workspace=key_link&tab=key-link', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; const start = page.getByRole('button', { name: '开始分析' }); if (await start.isDisabled()) throw new Error('ALLOW_SKIP: 开始分析禁用'); await start.click(); await page.waitForTimeout(4000); const t = await page.locator('main').innerText(); if (!/全链路环节结构化拆解|研发.*设计.*制造.*销售.*服务|结构化图谱（五环节/.test(t) && !/产业关键环节识别结果/.test(t)) throw new Error('ALLOW_SKIP: 未见过程/结果阶段文案（同条件复用或瞬时无过程 UI）')
 - note: 阶段文案含附加值率、技术壁垒、市场集中度与高端化指数计算能力词
   assert: |-
     const t = await page.locator('main').innerText(); if (!/附加值率/.test(t) || !/技术壁垒/.test(t) || !/市场集中度/.test(t)) throw new Error('未见三因子能力词'); if (!/高端化/.test(t) && !/产业关键环节识别结果/.test(t)) { /* 过程态可能仅配置区含因子名；结果态含高端化 */ }

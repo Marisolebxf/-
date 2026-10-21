@@ -1,7 +1,7 @@
 # 无头实勘 /industry-center/shenzhen?workspace=development&tab=development
 
 - surveyed_at: 2026-10-14（BATCH32 · chain-sz-dev）
-- url: http://111.198.38.90:50892/industry-center/shenzhen?workspace=development&tab=development
+- url: http://10.50.69.111:30892/industry-center/shenzhen?workspace=development&tab=development
 - title: 深圳产业发展分析 - 科技专题服务系统
 - h1: 深圳产业发展分析
 - screenshot: page.png

@@ -2,7 +2,7 @@
 
 ```json
 {
-  "url": "http://111.198.38.90:50892/industry-center/diagnosis?workspace=key_link&tab=key-link",
+  "url": "http://10.50.69.111:30892/industry-center/diagnosis?workspace=key_link&tab=key-link",
   "title": "产业关键环节识别 - 科技专题服务系统",
   "starts": [
     {

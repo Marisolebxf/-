@@ -12,7 +12,7 @@ steps:
 expect:
   - note: 关系范围区含供应商、客户、合作伙伴三个复选项且默认可见
     assert: |-
-      await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await expect(page.getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 8000 }); for (const n of ['供应商','客户','合作伙伴']) { const box = page.locator('main .arco-checkbox').filter({ hasText: n }).first(); await expect(box).toBeVisible({ timeout: 8000 }); const cls = (await box.getAttribute('class')) || ''; if (!/arco-checkbox-checked/.test(cls)) throw new Error(n + ' 默认未勾选') }
+      await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=supply-chain&tab=supply-chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(() => false)) { await close.first().click(); await page.waitForTimeout(300) }; await expect(page.getByText('关系范围', { exact: true }).first()).toBeVisible({ timeout: 8000 }); for (const n of ['供应商','客户','合作伙伴']) { const box = page.locator('main .arco-checkbox').filter({ hasText: n }).first(); await expect(box).toBeVisible({ timeout: 8000 }); const cls = (await box.getAttribute('class')) || ''; if (!/arco-checkbox-checked/.test(cls)) throw new Error(n + ' 默认未勾选') }
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: 蓝本 FUNC-01035；关系范围三复选（供应商/客户/合作伙伴）默认均为 checked（observed）。对比篮先关。list 相对父键 2 空格缩进。A 档零 allow_skip。
 tier: A

@@ -15,10 +15,10 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const ROUTE = '/service/chain-analysis?workspace=chain&tab=chain';
 const DEEP =
-  'http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain&industry=INB1701&view=result&demo_state=result&task_id=SVC-20261015-066';
+  'http://10.50.69.111:30892/service/chain-analysis?workspace=chain&tab=chain&industry=INB1701&view=result&demo_state=result&task_id=SVC-20261015-066';
 const OUT = {
   probed_at: new Date().toISOString(),
   entry: 'svc-chain-shortboard',

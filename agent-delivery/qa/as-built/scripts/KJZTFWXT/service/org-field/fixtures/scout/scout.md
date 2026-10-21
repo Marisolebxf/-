@@ -1,6 +1,6 @@
 # 无头实勘 /service/institution-judgment?workspace=field&tab=coverage
 
-- url: http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage
+- url: http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage
 - title: 服务机构产业领域分析 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

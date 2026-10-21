@@ -2,7 +2,7 @@
 
 - surveyed_at: 2026-10-14（`survey-page.mjs` + `_probe.mjs` + `_env-gate-probe.mjs`）
 - **env-gate**: `env-gate.json` overall=**pass**（截图 `env-gate-*.png`）
-- url: http://111.198.38.90:50892/service-portal/overview（入口 `/service-portal` 重定向）
+- url: http://10.50.69.111:30892/service-portal/overview（入口 `/service-portal` 重定向）
 - title: 专题服务 - 科技专题服务系统
 - h1: 全球服务机构概况
 - screenshot: page.png / page-*.png / env-gate-*.png

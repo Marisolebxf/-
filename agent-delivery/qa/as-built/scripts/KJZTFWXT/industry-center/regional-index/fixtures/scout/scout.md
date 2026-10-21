@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/regional?workspace=index&tab=index
 
-- url: http://111.198.38.90:50892/industry-center/regional?workspace=index&tab=index
+- url: http://10.50.69.111:30892/industry-center/regional?workspace=index&tab=index
 - title: 区域产业指数评价 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

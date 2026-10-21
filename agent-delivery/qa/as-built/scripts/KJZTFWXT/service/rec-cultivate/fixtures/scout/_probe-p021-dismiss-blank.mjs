@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const URL_CULT = baseUrl + 'service/institution-decision?workspace=cultivate&tab=cultivate';
 const out = { probed_at: new Date().toISOString(), purpose: 'P0-21 popup persists across goto? blank-click dismiss? then native click 2nd/3rd' };
 const browser = await chromium.launch({ headless: true });

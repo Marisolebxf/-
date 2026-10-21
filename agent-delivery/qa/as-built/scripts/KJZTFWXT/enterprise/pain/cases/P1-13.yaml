@@ -14,7 +14,7 @@ steps:
 expect:
 - note: 任务列表含任务标识、分析类型、对象、时间与状态类字段
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; const t = await page.locator('main.content-shell-layout').innerText(); for (const h of ['任务名称','分析类型','企业摘要','创建时间','状态']) { if (!t.includes(h)) throw new Error('缺列表列: ' + h) }; if (!/RISK-\d{8}-\d{3}/.test(t)) throw new Error('未见 RISK 任务标识')
+    await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(()=>false); if (vis) await close.first().click() }; const t = await page.locator('main.content-shell-layout').innerText(); for (const h of ['任务名称','分析类型','企业摘要','创建时间','状态']) { if (!t.includes(h)) throw new Error('缺列表列: ' + h) }; if (!/RISK-\d{8}-\d{3}/.test(t)) throw new Error('未见 RISK 任务标识')
 - note: 任务类型字段可辨识痛难点任务（口径与发起弹窗一致）
   assert: 'await expect(page.getByText(''企业发展痛点分析'').first()).toBeVisible({ timeout: 8000 })'
 - note: 恢复已完成任务复用同一任务不新建任务不覆盖旧任务快照

@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const out = { probed_at: new Date().toISOString(), entry: 'svc-rec-cultivate', purpose: 'P0-15 expect[4] round-2 back-to-config behavior' };
 
 const browser = await chromium.launch({ headless: true });

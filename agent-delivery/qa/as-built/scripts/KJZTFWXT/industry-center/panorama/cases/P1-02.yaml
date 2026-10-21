@@ -19,7 +19,7 @@ steps:
 expect:
 - note: 两视图互斥，同一时刻仅一态呈现
   assert: |-
-    await page.goto('http://111.198.38.90:50892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(700); const checked = page.locator('.arco-radio-button.arco-radio-checked'); await expect(checked.filter({ hasText: '结构列表' })).toHaveCount(1); await expect(page.locator('.arco-radio-button.arco-radio-checked').filter({ hasText: /^图谱$/ })).toHaveCount(0)
+    await page.goto('http://10.50.69.111:30892/industry-center/panorama', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(300) }; await page.getByText('结构列表', { exact: true }).click(); await page.waitForTimeout(700); const checked = page.locator('.arco-radio-button.arco-radio-checked'); await expect(checked.filter({ hasText: '结构列表' })).toHaveCount(1); await expect(page.locator('.arco-radio-button.arco-radio-checked').filter({ hasText: /^图谱$/ })).toHaveCount(0)
 - note: 结构列表以列表形式展示当前发布结构，环节数与图谱口径一致
   assert: |-
     await expect(page.getByText('环节').first()).toBeVisible({ timeout: 8000 }); await expect(page.getByText('关系').first()).toBeVisible({ timeout: 8000 }); const sum = (await page.locator('main').innerText()).match(/当前产业链图谱包含 (\d+) 个链位环节/); if (sum && Number(sum[1]) < 1) throw new Error('摘要环节数异常')

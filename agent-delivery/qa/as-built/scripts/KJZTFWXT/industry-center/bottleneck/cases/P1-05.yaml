@@ -11,7 +11,7 @@ steps:
 expect:
 - note: 侧栏切周期/关键环节再回瓶颈，五维仍在
   assert: |-
-    await page.goto('http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await page.getByRole('menuitem', { name: '产业周期分析' }).click(); await page.waitForTimeout(1200); await expect(page).toHaveURL(/workspace=cycle/); await page.getByRole('menuitem', { name: '产业关键环节识别' }).click(); await page.waitForTimeout(1200); await expect(page).toHaveURL(/workspace=key_link|tab=key-link/); await page.getByRole('menuitem', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/workspace=bottleneck/); await expect(page.locator('[role=spinbutton]')).toHaveCount(5)
+    await page.goto('http://10.50.69.111:30892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000); await page.getByRole('menuitem', { name: '产业周期分析' }).click(); await page.waitForTimeout(1200); await expect(page).toHaveURL(/workspace=cycle/); await page.getByRole('menuitem', { name: '产业关键环节识别' }).click(); await page.waitForTimeout(1200); await expect(page).toHaveURL(/workspace=key_link|tab=key-link/); await page.getByRole('menuitem', { name: '产业瓶颈堵点识别' }).click(); await page.waitForTimeout(1500); await expect(page).toHaveURL(/workspace=bottleneck/); await expect(page.locator('[role=spinbutton]')).toHaveCount(5)
 - note: 本页不出现周期参数类控件
   assert: |-
     const t = await page.locator('main').first().innerText(); if (/市场规模|市场增长率|利润率/.test(t) && /周期参数|时间范围/.test(t)) throw new Error('本页串入周期参数类控件'); if (!t.includes('五维诊断维度') && !t.includes('注册诊断维度')) throw new Error('本页五维区缺失')

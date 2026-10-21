@@ -1,7 +1,7 @@
 # 深勘二次探针
 
 ## initial-shell
-- url: http://111.198.38.90:50892/service-center/search
+- url: http://10.50.69.111:30892/service-center/search
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[true] | 查机构[false] | 高级筛选[false]
 - inputs: 用一句话描述机构需求，如「深圳 检验检测」 | 按企业名称搜索 | 全部企业类型
@@ -49,7 +49,7 @@ INNO
 ```
 
 ## after-example-click
-- url: http://111.198.38.90:50892/service-center/search
+- url: http://10.50.69.111:30892/service-center/search
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[true] | 查机构[false] | 高级筛选[false]
 - inputs: 用一句话描述机构需求，如「深圳 检验检测」 | 按企业名称搜索 | 全部企业类型
@@ -97,7 +97,7 @@ INNO
 ```
 
 ## empty-search-click
-- url: http://111.198.38.90:50892/service-center/search?mode=smart
+- url: http://10.50.69.111:30892/service-center/search?mode=smart
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[true] | 查机构[false] | 高级筛选[false]
 - inputs: 用一句话描述机构需求，如「深圳 检验检测」 | 按企业名称搜索 | 全部企业类型
@@ -145,7 +145,7 @@ INNO
 ```
 
 ## tab-org
-- url: http://111.198.38.90:50892/service-center/search?mode=org
+- url: http://10.50.69.111:30892/service-center/search?mode=org
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[false] | 查机构[true] | 高级筛选[false]
 - inputs: 输入机构名称、城市或行业关键词 | 按企业名称搜索 | 全部企业类型
@@ -194,7 +194,7 @@ INNO
 ```
 
 ## tab-advanced
-- url: http://111.198.38.90:50892/service-center/search?mode=advanced
+- url: http://10.50.69.111:30892/service-center/search?mode=advanced
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[false] | 查机构[false] | 高级筛选[true]
 - inputs: 搜索字段名称 / key | 按企业名称搜索 | 全部企业类型 | 模板名称
@@ -264,7 +264,7 @@ INNO
 ```
 
 ## keyword-search
-- url: http://111.198.38.90:50892/service-center/search?mode=smart&kw=%E7%9F%A5%E8%AF%86%E4%BA%A7%E6%9D%83+%E5%B9%BF%E4%B8%9C
+- url: http://10.50.69.111:30892/service-center/search?mode=smart&kw=%E7%9F%A5%E8%AF%86%E4%BA%A7%E6%9D%83+%E5%B9%BF%E4%B8%9C
 - title: 服务机构查询 - 科技专题服务系统
 - tabs: 智能检索[true] | 查机构[false] | 高级筛选[false]
 - inputs: 用一句话描述机构需求，如「深圳 检验检测」 | 按企业名称搜索 | 全部企业类型

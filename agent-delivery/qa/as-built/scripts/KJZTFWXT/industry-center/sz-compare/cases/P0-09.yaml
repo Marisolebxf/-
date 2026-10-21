@@ -15,7 +15,7 @@ steps:
 expect:
 - note: 对比维度共 4 行，对应企业、专利、政策、人才四维
   assert: |-
-    await page.goto('http://111.198.38.90:50892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.locator('[role=spinbutton]')).toHaveCount(4, { timeout: 8000 }); const t = await page.locator('main').innerText(); for (const d of ['企业', '专利', '政策', '人才']) { if (!t.includes(d)) throw new Error('缺维度: ' + d) }
+    await page.goto('http://10.50.69.111:30892/industry-center/shenzhen?workspace=comparison&tab=comparison', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500); const cb = page.locator('[aria-label="关闭对比篮"]'); if (await cb.count() && await cb.first().isVisible()) { await cb.first().click(); await page.waitForTimeout(400) }; await expect(page.locator('[role=spinbutton]')).toHaveCount(4, { timeout: 8000 }); const t = await page.locator('main').innerText(); for (const d of ['企业', '专利', '政策', '人才']) { if (!t.includes(d)) throw new Error('缺维度: ' + d) }
 - note: 各行数值不可被修改
   assert: |-
     const spins = page.locator('[role=spinbutton]'); for (let i = 0; i < 4; i++) { const el = spins.nth(i); await expect(el).toBeDisabled(); const before = await el.inputValue(); await el.fill('99').catch(()=>{}); if ((await el.inputValue()) !== before) throw new Error('第' + (i+1) + '行可被改写') }

@@ -1,6 +1,6 @@
 # 无头实勘 /service/institution-judgment?workspace=capability&tab=capability
 
-- url: http://111.198.38.90:50892/service/institution-judgment?workspace=capability&tab=capability
+- url: http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability
 - title: 服务机构技术力评估分析 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

@@ -1,6 +1,6 @@
 # 无头实勘 /service/institution-decision?workspace=attract&tab=attract
 
-- url: http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract
+- url: http://10.50.69.111:30892/service/institution-decision?workspace=attract&tab=attract
 - title: 引入服务机构推荐分析 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

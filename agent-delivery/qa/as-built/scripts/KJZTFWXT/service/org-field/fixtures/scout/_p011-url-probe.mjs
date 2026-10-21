@@ -13,7 +13,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const route = '/service/institution-judgment?workspace=field&tab=coverage';
 const outDir = __dirname;
 
@@ -147,7 +147,7 @@ async function main() {
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(500);
       const known =
-        'http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469';
+        'http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469';
       await page.goto(known, { waitUntil: 'domcontentloaded', timeout: 60000 });
       await page.waitForTimeout(2000);
       await closeBasket(page);
@@ -200,7 +200,7 @@ async function main() {
     ).catch(async () => {
       const ids = (out.afterReload?.orgIds || out.afterDirect?.orgIds || []).map((id) => `org_ids[]=${id}`).join('&');
       await page.goto(
-        `http://111.198.38.90:50892/service/institution-judgment?workspace=field&tab=coverage${ids ? '&' + ids : ''}`,
+        `http://10.50.69.111:30892/service/institution-judgment?workspace=field&tab=coverage${ids ? '&' + ids : ''}`,
         { waitUntil: 'domcontentloaded', timeout: 60000 },
       );
     });

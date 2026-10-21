@@ -15,7 +15,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const route = '/service/maintenance';
 const outDir = __dirname;
 const FEEDBACK_RE = /错误|失败|不可用|网络|重试|异常|加载失败|服务不可用|offline|ERR_|timed?\s*out|无法访问|连接/i;

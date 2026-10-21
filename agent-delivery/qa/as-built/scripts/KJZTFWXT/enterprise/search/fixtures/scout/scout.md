@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/enterprise-search
 
-- url: http://111.198.38.90:50892/enterprise/enterprise-search
+- url: http://10.50.69.111:30892/enterprise/enterprise-search
 - title: 企业查询 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

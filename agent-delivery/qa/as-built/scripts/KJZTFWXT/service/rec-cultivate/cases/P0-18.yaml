@@ -36,7 +36,7 @@ expect:
   - note: 前置构造（用例前置「当天已有一条同条件已成功分析记录」+ 同条件口径权重默认首发）——恢复默认权重、机构类型三项全选、选定「新一代信息技术」后显式点「开始分析」首发；双形态容错：复用失效世界=新建停过程页引导态「分析结果已生成」（捕获 task_id 与 POST 基准），复用生效世界=当天既有任务拦截直达结果态（0 新 POST，firstShotReuse 记实证）
     assert: |-
       const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
-      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) }
       if (!globalThis.__p018Hooked) { globalThis.__p018Hooked = true; globalThis.__p018Posts = []; page.on('response', (r) => { if (r.request().method() === 'POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) globalThis.__p018Posts.push(r.status()) }) }
       await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
       await page.getByRole('button', { name: '恢复默认权重', exact: true }).click({ timeout: 5000 }); await page.waitForTimeout(700);

@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/search
 
-- url: http://111.198.38.90:50892/industry-center/search
+- url: http://10.50.69.111:30892/industry-center/search
 - title: 产业查询 - 科技专题服务系统
 - h1: 产业查询
 - screenshot: page.png

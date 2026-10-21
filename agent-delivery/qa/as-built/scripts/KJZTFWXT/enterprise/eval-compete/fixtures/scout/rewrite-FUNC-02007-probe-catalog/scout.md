@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
 
-- url: https://edu.itic-sci.com/tts/svcz/enterprise/evaluation?workspace=competitiveness&mode=competitiveness&view=history
+- url: http://10.50.69.111:30892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness&view=history
 - title: 企业综合竞争力评估 - 科技专题服务系统
 - h1: 企业综合竞争力评估
 - screenshot: page.png

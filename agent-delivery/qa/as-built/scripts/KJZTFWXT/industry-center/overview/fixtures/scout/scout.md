@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/overview
 
-- url: http://111.198.38.90:50892/industry-center/overview
+- url: http://10.50.69.111:30892/industry-center/overview
 - title: 专题全景 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

@@ -1,6 +1,6 @@
 # 无头实勘 /service/chain-analysis?workspace=graph&tab=graph
 
-- url: http://111.198.38.90:50892/service/chain-analysis?workspace=graph&tab=graph
+- url: http://10.50.69.111:30892/service/chain-analysis?workspace=graph&tab=graph
 - title: 服务链图谱分析 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

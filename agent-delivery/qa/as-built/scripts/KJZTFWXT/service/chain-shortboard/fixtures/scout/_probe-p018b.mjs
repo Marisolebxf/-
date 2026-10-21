@@ -15,7 +15,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 const prev = JSON.parse(fs.readFileSync(path.join(__dirname, '_probe-p018.json'), 'utf8'));
 const taskId = prev.s1_fresh_to_result && prev.s1_fresh_to_result.task_id;
 if (!taskId) { console.error('no taskId in _probe-p018.json'); process.exit(1); }

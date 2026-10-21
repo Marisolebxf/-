@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const base = 'http://111.198.38.90:50892/';
+const base = 'http://10.50.69.111:30892/';
 const target = base + 'industry-center/regional?workspace=index&tab=index';
 const out = __dirname;
 const dump = (n, d) => fs.writeFileSync(path.join(out, n), JSON.stringify(d, null, 2));

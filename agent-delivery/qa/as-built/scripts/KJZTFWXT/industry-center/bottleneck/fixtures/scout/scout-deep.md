@@ -2,7 +2,7 @@
 
 ```json
 {
-  "url": "http://111.198.38.90:50892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck",
+  "url": "http://10.50.69.111:30892/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck",
   "title": "产业瓶颈堵点识别 - 科技专题服务系统",
   "spins": [
     {

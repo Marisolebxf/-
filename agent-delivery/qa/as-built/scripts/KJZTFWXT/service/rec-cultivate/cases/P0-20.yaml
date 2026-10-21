@@ -28,7 +28,7 @@ expect:
       await page.waitForTimeout(1500);
       const close0=page.locator('button[aria-label="关闭对比篮"]');
       if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
-      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500) };
       const mainText=async()=>((await page.locator('main').first().innerText().catch(()=>''))||'');
       let m0=await mainText();
       if (!/培育综合分未入/.test(m0)) {
@@ -54,7 +54,7 @@ expect:
       globalThis.__p020Base={ url: page.url(), badgeCnt: badgeCnt, spinCount: n0, weights: w0 };
   - note: 预期①②——路由 workspace 参数改写至 attract 后，招引工作区为招引侧内容（页标题「引入服务机构推荐分析」+主题锚点「招引推荐模型」），且无培育评估模型区、无培育综合分角标与培育口径长提示（评审开启态下正向对照后的缺席=真隔离）
     assert: |-
-      await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=attract&tab=attract', { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{});
       await page.waitForTimeout(1500);
       const closeA=page.locator('button[aria-label="关闭对比篮"]');
@@ -71,7 +71,7 @@ expect:
       console.log('[P0-20 observed attract]', JSON.stringify(globalThis.__p020Attract));
   - note: 预期③——回切 workspace=cultivate&tab=cultivate 后培育配置区完整（分析配置/重点产业方向/机构类型 3 项/服务环节/培育评估模型四维）、权重读数与「合计 100%」声明正常、双 Tab 状态正常（主 Tab 选中/分析记录未选）、无过程/结果态残留、无招引内容泄漏（互不串扰）
     assert: |-
-      await page.goto('http://111.198.38.90:50892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' });
+      await page.goto('http://10.50.69.111:30892/service/institution-decision?workspace=cultivate&tab=cultivate', { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(()=>{});
       await page.waitForTimeout(1800);
       const closeC=page.locator('button[aria-label="关闭对比篮"]');

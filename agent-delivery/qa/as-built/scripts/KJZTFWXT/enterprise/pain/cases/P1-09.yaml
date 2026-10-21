@@ -14,7 +14,7 @@ steps:
 expect:
 - note: 数据不足的结论显示「数据不足，暂不判断」类提示
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page.getByText(/数据不足，暂不判断|数据不足/).first()).toBeVisible({ timeout: 8000 })
+    await page.goto('http://10.50.69.111:30892/enterprise/risk?workspace=pain-points&tab=pain-points&view=history', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const restore = page.getByRole('button', { name: '恢复结果' }); if (!(await restore.count())) throw new Error('ALLOW_SKIP: 无已完成任务'); await restore.first().click(); await page.waitForTimeout(3000); await expect(page.getByText(/数据不足，暂不判断|数据不足/).first()).toBeVisible({ timeout: 8000 })
 - note: 缺失值不显示为零或正式结论
   assert: |-
     const t = await page.locator('main.content-shell-layout').innerText(); if (/数据不足/.test(t) && /暂不判断/.test(t)) { /* ok */ } else if (!/数据不足/.test(t)) throw new Error('ALLOW_SKIP: 本任务无数据不足条目')

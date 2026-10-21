@@ -10,7 +10,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const recordsUrl = '/industry-center/diagnosis?workspace=bottleneck&tab=records&view=records&demo_state=records';
 
 async function ensureLogin(page) {

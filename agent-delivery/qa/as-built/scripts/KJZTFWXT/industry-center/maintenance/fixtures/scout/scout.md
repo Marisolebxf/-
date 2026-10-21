@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/maintenance
 
-- url: http://111.198.38.90:50892/industry-center/maintenance
+- url: http://10.50.69.111:30892/industry-center/maintenance
 - title: 维护管理 - 科技专题服务系统
 - h1: 维护管理
 - screenshot: page.png

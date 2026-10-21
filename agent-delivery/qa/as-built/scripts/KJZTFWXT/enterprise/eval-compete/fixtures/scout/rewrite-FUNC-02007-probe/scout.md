@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
 
-- url: https://edu.itic-sci.com/tts/svcz/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
+- url: http://10.50.69.111:30892/enterprise-center/evaluation?workspace=competitiveness&mode=competitiveness
 - title: 404 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

@@ -32,7 +32,7 @@ expect:
       await page.waitForTimeout(1500);
       const close0=page.locator('button[aria-label="关闭对比篮"]');
       if (await close0.count() && await close0.first().isVisible().catch(()=>false) && await close0.first().isEnabled().catch(()=>false)) { try { await close0.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} };
-      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
+      if (/view=processing|view=result/.test(page.url())) { await page.goto('http://10.50.69.111:30892/service/chain-analysis?workspace=chain&tab=chain', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) };
       const rec=page.getByRole('tab', { name: '分析记录', exact: true });
       await expect(rec).toBeVisible({ timeout: 8000 });
       await rec.click({ timeout: 8000 });
@@ -57,7 +57,7 @@ expect:
         clicked=await pickView();
       }
       if (!clicked) {
-        const deep='http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain&industry=INB1701&view=result&demo_state=result&task_id=SVC-20261015-066';
+        const deep='http://10.50.69.111:30892/service/chain-analysis?workspace=chain&tab=chain&industry=INB1701&view=result&demo_state=result&task_id=SVC-20261015-066';
         console.log('[P0-22 observed] hist 无可用查看结果 → 深链已完成任务 '+deep);
         await page.goto(deep, { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(3500);
@@ -77,7 +77,7 @@ expect:
       const taskId=mTask?mTask[1]:'SVC-20261015-066';
       const ind=mInd?mInd[1]:'INB1701';
       globalThis.__p022TaskId=taskId;
-      const rebuilt='http://111.198.38.90:50892/service/chain-analysis?workspace=chain&tab=chain&industry='+ind+'&view=result&demo_state=result&task_id='+taskId+'&segment=INVALID-SEGMENT-404';
+      const rebuilt='http://10.50.69.111:30892/service/chain-analysis?workspace=chain&tab=chain&industry='+ind+'&view=result&demo_state=result&task_id='+taskId+'&segment=INVALID-SEGMENT-404';
       globalThis.__p022SegUrl=rebuilt;
       console.log('[P0-22 observed] 前置完成 taskId='+taskId+' stations='+(await page.locator('[data-stage-id], .svc-eco-metro-station').count().catch(()=>0))+' segUrl='+rebuilt);
   - note: 步骤①②「复制含环节参数的 URL→将环节参数改为不存在标识后新标签页打开」——goto 含 segment=INVALID-SEGMENT-404 的结果态 URL（新标签页 as-built=同 page 完整导航冷加载，SPA 重新 bootstrap，语义等价；graph P0-23 / P0-18 同款），12s 观察窗轮询「环节不存在」类提示与 URL segment 清参（本步只观察记 observed，判定归 expect[2]①机检 / expect[3]② manual+ticket）

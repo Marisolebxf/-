@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const target = baseUrl + 'service/institution-decision?workspace=cultivate&tab=cultivate';
 const out = { probed_at: new Date().toISOString(), entry: 'svc-rec-cultivate', purpose: 'fresh POST gate for P0-12 / FUNC-01271' };
 

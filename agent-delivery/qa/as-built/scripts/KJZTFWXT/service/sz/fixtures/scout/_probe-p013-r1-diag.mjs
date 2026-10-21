@@ -14,7 +14,7 @@ const out = {};
 const flush = () => fs.writeFileSync(path.join(__dirname, 'scout-p013-r1-diagnosis.json'), JSON.stringify(out, null, 2));
 const log = (tag, data) => { out[tag] = data; flush(); console.log('[' + tag + ']', typeof data === 'object' ? JSON.stringify(data).slice(0, 200) : data); };
 
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const route = '/service/chain-analysis?workspace=shenzhen&tab=shenzhen';
 process.on('uncaughtException', (e) => { log('uncaught', String(e).slice(0, 300)); process.exit(1); });
 process.on('unhandledRejection', (e) => { log('unhandled', String(e).slice(0, 300)); process.exit(1); });

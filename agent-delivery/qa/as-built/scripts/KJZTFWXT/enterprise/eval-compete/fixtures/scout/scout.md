@@ -1,7 +1,7 @@
 # 无头实勘 /enterprise/evaluation?workspace=competitiveness&mode=competitiveness
 
 - surveyed_at: 2026-10-14（headless Chromium · survey-page + 二次探针）
-- url: http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness
+- url: http://10.50.69.111:30892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness
 - title: 企业综合竞争力评估 - 科技专题服务系统
 - h1: 企业综合竞争力评估
 - screenshot: scout.png / page.png

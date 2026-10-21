@@ -17,7 +17,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const BASE = 'http://111.198.38.90:50892';
+const BASE = 'http://10.50.69.111:30892';
 /** P0-08 探针实测模式②当日任务（见 _probe-p008-fresh.json；可能被清理） */
 const MODE2_CANDIDATES = [
   '/service/chain-analysis?workspace=graph&tab=graph&industry=INB1701&eco_filter=orgs_and_actors&view=result&demo_state=result&task_id=SVC-20261015-014',

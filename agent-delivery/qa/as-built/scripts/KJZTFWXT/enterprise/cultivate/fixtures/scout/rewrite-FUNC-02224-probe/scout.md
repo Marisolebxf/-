@@ -1,6 +1,6 @@
 # 无头实勘 /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=history
 
-- url: https://edu.itic-sci.com/tts/svcz/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=history
+- url: http://10.50.69.111:30892/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=history
 - title: 培育企业推荐分析 - 科技专题服务系统
 - h1: 培育企业推荐分析
 - screenshot: page.png

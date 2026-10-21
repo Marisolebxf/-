@@ -10,7 +10,7 @@ const toolsDir = path.resolve(__dirname, '../../../../../../tools');
 const require = createRequire(path.join(toolsDir, 'package.json'));
 const { chromium } = require('playwright');
 
-const base = 'http://111.198.38.90:50892/';
+const base = 'http://10.50.69.111:30892/';
 const out = { surveyed_at: new Date().toISOString(), purpose: 'P0-15-REWORK-fresh-task-timing' };
 
 const browser = await chromium.launch({ headless: true });

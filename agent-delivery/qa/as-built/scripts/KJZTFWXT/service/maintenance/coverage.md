@@ -57,7 +57,7 @@ USM 口径 = E7 README as-built（「维护管理 L4；复用 ENT-OPS 三组 15 
 ## 补齐纪要（2026-10-15 P0-08 波）
 
 - **本波新建**：`cases/P0-08.yaml`（01358 备选-跨目录兄弟模块隔离，tier B；用例优先级 P2 与脚本 id 前缀独立勿混读）——原「不自动化」清单 01358 行移出（操作面经动态枚举收窄为可机检：探针实证页面内可点入口仅 1 个）。
-- **写前探针**：`fixtures/scout/_probe-p008.mjs` → `probe-p008.json` + `probe-p008-final.png`——页面全部可点元素共 3 个：全局导航 2（header 内人设菜单「专 创新工作台 INNO 未付费」+ 折叠按钮，`closest('aside, header, nav, [class*=sidebar], [class*=menu]')` 命中）+ 页面内唯一入口=对比篮悬浮球 `button[aria-label^="打开对比篮"]`（40×40 在屏，aria「打开对比篮，共 12 项」）；点击后 `stayedOnPage=true`、终态 `routeKept=true`、`h1Kept=true`；URL 全程 `http://111.198.38.90:50892/service/maintenance` 无漂移。
+- **写前探针**：`fixtures/scout/_probe-p008.mjs` → `probe-p008.json` + `probe-p008-final.png`——页面全部可点元素共 3 个：全局导航 2（header 内人设菜单「专 创新工作台 INNO 未付费」+ 折叠按钮，`closest('aside, header, nav, [class*=sidebar], [class*=menu]')` 命中）+ 页面内唯一入口=对比篮悬浮球 `button[aria-label^="打开对比篮"]`（40×40 在屏，aria「打开对比篮，共 12 项」）；点击后 `stayedOnPage=true`、终态 `routeKept=true`、`h1Kept=true`；URL 全程 `http://10.50.69.111:30892/service/maintenance` 无漂移。
 - **分层口径（任务书 §3 落地）**：「页面内可点元素」= 主区动态枚举（排除全局导航容器）纳入断言逐一点击；「全局导航」（人设菜单/折叠按钮/侧栏菜单）跳别页属预期行为不算缺陷，记 observed 不纳入断言范围；侧栏菜单项为自定义 div 结构不落入 a/button/menuitem/tab 标准选择器集，且属全局导航，不点击。对比篮浮层开合不算路由漂移（P0-07 已验开合壳逐字不变，本探针复验）；浮层内深交互（清空/移除/发起分析）归 COMPARE 用例集，DANGER 词表排除且枚举前先回收浮层防混入点击面。
 - **动态枚举设计**：脚本运行时实时枚举（与探针同逻辑同选择器集），后续 US-SVC-* 叶交付业务区块新增按钮自动纳入点击面，无需改脚本；href 型真跳转入口若指向非 `/service/maintenance` 前缀即 fail（承载用例预期②）。
 - **实跑**：`runs/20261015-50892-svc-maintenance-p0-08-r1/`（--only P0-08，headless）→ **pass，4 项机检断言通过**（observed：页面内入口=对比篮悬浮球 1 个、已点=1、URL 保持、H1 保持）；`check-run-consistency.py` 四方一致性 ✓（1 条）。

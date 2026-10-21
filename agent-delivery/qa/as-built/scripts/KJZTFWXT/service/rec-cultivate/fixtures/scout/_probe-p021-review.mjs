@@ -14,7 +14,7 @@ import fileURLToPathShim from 'node:url';
 const __dirname = path.dirname(fileURLToPathShim.fileURLToPath(import.meta.url));
 const require = createRequire(path.join(path.resolve(__dirname, '../../../../../../tools'), 'package.json'));
 const { chromium } = require('playwright');
-const baseUrl = 'http://111.198.38.90:50892/';
+const baseUrl = 'http://10.50.69.111:30892/';
 const out = { probed_at: new Date().toISOString(), entry: 'svc-rec-cultivate', purpose: 'P0-21 / FUNC-01281 review-mode zero-leak pre-evidence (trace buttons aria-labels, unregistered badge form, long hint fulltext, popup behavior, draft baseline)' };
 const posts = [];
 const browser = await chromium.launch({ headless: true });

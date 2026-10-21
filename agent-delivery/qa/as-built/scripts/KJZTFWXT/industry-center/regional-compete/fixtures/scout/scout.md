@@ -1,6 +1,6 @@
 # 无头实勘 /industry-center/regional?workspace=competitiveness&tab=competitiveness
 
-- url: http://111.198.38.90:50892/industry-center/regional?workspace=competitiveness&tab=competitiveness
+- url: http://10.50.69.111:30892/industry-center/regional?workspace=competitiveness&tab=competitiveness
 - title: 区域产业竞争力评价 - 科技专题服务系统
 - h1: (无)
 - screenshot: page.png

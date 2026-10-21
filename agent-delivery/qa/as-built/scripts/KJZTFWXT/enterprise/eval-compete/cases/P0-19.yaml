@@ -12,7 +12,7 @@ steps:
 expect:
 - note: 抽屉展示指标目的、维度、业务口径、单位、方向、范围、状态与缺失影响
   assert: |-
-    await page.goto('http://111.198.38.90:50892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(400) }; await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); if (!/(目的|口径|维度|单位)/.test(t)) throw new Error('抽屉缺业务口径字段: ' + t.slice(0, 200))
+    await page.goto('http://10.50.69.111:30892/enterprise/evaluation?workspace=competitiveness&mode=competitiveness', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1000); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { await close.first().click(); await page.waitForTimeout(400) }; await page.getByRole('button', { name: '查看' }).first().click({ timeout: 8000 }); await page.waitForTimeout(800); const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); await expect(d).toBeVisible({ timeout: 8000 }); const t = await d.innerText(); if (!/(目的|口径|维度|单位)/.test(t)) throw new Error('抽屉缺业务口径字段: ' + t.slice(0, 200))
 - note: 技术 / 市场 / 组织三类维度有映射项或显式缺口标注
   assert: |-
     const d = page.locator('.arco-drawer:visible, .arco-drawer').first(); const t = await d.innerText(); /* 组织能力缺口允许显式缺口文案；三类词命中或缺口占位均可 */ if (!/(技术|市场|组织|创新|经营|成长|缺口|缺失)/.test(t)) throw new Error('抽屉未见维度映射/缺口语义')
