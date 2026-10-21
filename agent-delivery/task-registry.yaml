@@ -33930,3 +33930,48 @@ tasks:
       - "文档写明统计数字的 metric_id 映射（D9）、ADS 先行与 Mock 填充策略；写操作（筛选方案、项目归档、预约、咨询）单列未决项，不在本单实现 Java 接口"
       - "handoff 含范围、未决项、会签记录与 cost；本单不含 Java 实现与 ADS 落库"
     update_time: "2026-10-21T17:45:51+08:00"
+  - id: POL-CLAUSE-BATCH-L01
+    cost_warn: "green"
+    actual_cost: 0.76
+    model_used: "grok-4.7"
+    actual_tokens: 140000
+    evidence: "agent-handoffs/产品整体定义/跨系统-向量库/POL-CLAUSE-BATCH-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-21T13:03:47.918Z"
+    last_seen_at: "2026-10-21T13:03:47.918Z"
+    lock_until: "2026-10-21T17:03:47.918Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策条款结构化跑批（联调台菜单 + 限 100 规则切条）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-ALGO-LIB-DEMO"
+    priority: "P1"
+    repo: "demo-ui-system-test"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: "handoff 已交，代码已推 origin/dev。单测通过。现网网关与浏览器走查未做，停在联调待验。"
+    depends_on: []
+    collaborators:
+      - "algorithm-agent"
+    touched_files:
+      - "repos/demo-ui-system-test/src/views/policy/policyMenuConfig.ts"
+      - "repos/demo-ui-system-test/src/views/policy/pages/ClausePage.vue"
+      - "repos/demo-ui-system-test/src/router/index.ts"
+      - "repos/demo-ui-system-test/src/api/policy/index.ts"
+      - "repos/demo-algo-ent-analysis/polan/clause_job.py"
+      - "repos/demo-algo-ent-analysis/api/policy_clause_routes.py"
+      - "repos/demo-algo-ent-analysis/tests/test_policy_clause_job.py"
+    design_refs:
+      - "agent-delivery/bid-reference/srs/04-科技专题服务系统/科技专题战略分析/政策分析.md#序号112"
+      - "agent-delivery/bid-reference/srs/02-科技信息展示系统/政策对比功能升级（核增需求）/智能政策拆解.md#序号607-608"
+      - "agent-delivery/metrics/request/专题系统/pages/E7-POLICY.yaml#POL-D10"
+    definition_of_done:
+      - "政策分析算法库左侧「抽取产业」下新增菜单「条款结构化」，路由 /policy/clauses"
+      - "页面可按 policy_id 抽单条/多条，也可增量/全量跑批，limit 封顶 100，正式库禁用"
+      - "算法只按正文「第X条」切分，归类补贴标准/准入条件/扶持措施等；没有条款号不编造条款，失败不填假数"
+      - "写入 ads.policy_text_parse.structured_elements.clauses，不 TRUNCATE 全表；增量跳过已有条款，force 才重跑"
+      - "tests/test_policy_clause_job.py 覆盖切条、禁假条款号、limit>100"
+    update_time: "2026-10-21T21:42:53+08:00"
