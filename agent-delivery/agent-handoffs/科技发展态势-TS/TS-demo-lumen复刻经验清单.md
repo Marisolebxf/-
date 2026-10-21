@@ -50,6 +50,7 @@
 3. **新图表类型检查 `src/config/echarts.ts` 按需注册**（demo 全量 `window.echarts` 无此问题；M9 漏 SankeyChart 教训）。
 4. **Leaflet 层级冲突**：原生控件 z 800–1000 / pane 200–700 压自定义控件 → 地图 frame `isolation: isolate` 圈住层级 + 自定义控件/图例/预览卡抬升 z（M1 v2.1 修 4/7）。
 5. **地图容器塌陷**：grid cell 高度链（`.map-section{flex:1;min-height:0}` → frame → `.ts-map{height:100%}`）+ `@vue:mounted` 调 `invalidateSize()`（M1 修 1、M9 Tab2）。
+6. **vue-echarts 8 内部 host 高度链断裂（`.echarts-host` 中间层）**：组件根是 `<x-vue-echarts style="height:100%;min-height:Npx">`，canvas 实际挂内部 `.echarts-host{height:100%}`——参照 `height:auto` 的父级解析为 0（CSS 规范：min-height 撑起的高度不参与子元素百分比解析），canvas init 0 高且 ResizeObserver 无变化永不恢复（TA-02A 深圳 pane 三 tab 全空白根因）。修法：`.arco-tabs-pane > x-vue-echarts > .echarts-host { min-height: 280px }` 传导 min-height，保留 demo `height:auto` 自适应语义。**附带坑**：Arco 类名是 `arco-tabs-pane` 不是 antd 的 `arco-tabs-tabpane`，从 antd CSS 移植 `.arco-tabs-tabpane` 选择器全部静默失效。
 
 ## 5. 数据与状态
 
