@@ -1,4 +1,4 @@
-> **【GDF-ENT-WORKPACK-v4.0 · Mapping 施工真源】** 日期 2026-10-20。基线切换至 **10-19 三方承诺清单**（架构师入仓 `GKX数据源表差异分析摘要-20261019.md` + live 实证核验）。本版变更：① `dwd_org_stock_base` 移出（10-19 清单不再收录；ES/extra 上市字段改源，见 §3.1.2 v4 注）；② 国外母子换源 `dwd_agg_subsidiary_info`（新 §3.21；eid 体系与主档命中率 6.3% 实测，精确匹配+治理清单）；③ 专利 5 张新侧表 mirror_only（无承接列不 ADD）；④ 融资/投资/并购改挂金融要素库（表名不变）。列契约以 `00` §8 / §9 为准。  
+> **【GDF-ENT-WORKPACK-v4.0.1 · Mapping 施工真源】** 日期 2026-10-21（v4.0.1：GDF round1 响应合并，变更见 CHANGELOG）。原基线日期 2026-10-20。基线切换至 **10-19 三方承诺清单**（架构师入仓 `GKX数据源表差异分析摘要-20261019.md` + live 实证核验）。本版变更：① `dwd_org_stock_base` 移出（10-19 清单不再收录；ES/extra 上市字段改源，见 §3.1.2 v4 注）；② 国外母子换源 `dwd_agg_subsidiary_info`（新 §3.21；eid 体系与主档命中率 6.3% 实测，精确匹配+治理清单）；③ 专利 5 张新侧表 mirror_only（无承接列不 ADD）；④ 融资/投资/并购改挂金融要素库（表名不变）。列契约以 `00` §8 / §9 为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
 > **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装全部表已对完。**v3.1.6 起对施工表启动逐字段复验（拍板④；v4.0 基线 62 张），发现项回写本文件。**
@@ -81,6 +81,26 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 依赖顺序：CHAIN `B3-ENTITY-REL` 等 ENT `enterprise_base`；ENT `enterprise_industry_summary` 等 `enterprise_industry_chain`。**Wave B 顺序：先 ENT base → 链树 B1 可并行 → 挂接 B3 最后。**
 
+### 1.7 本期不洗目标表清单（v4.0.1 集中声明，GDF round1 P-08/P-04①③）
+
+**以下 23 张目标表本期不洗**（有 DDL、无源或无口径；DDL 保留、数据管道不建、下游返回空）：
+
+- **风险 15 张**：risk_limit_high / risk_lawsuit(+party) / risk_court_filed(+party) / risk_court_notice(+party) / risk_court_announcement(+party) / risk_equity_freeze / risk_equity_pledge / risk_zhongben / risk_chattel_mortgage / risk_judicial_sale(+party)
+- **指标 8 张**：industry_distribution / growth_trend / stat_summary / type_scale_stats / shenzhen_enterprise_summary / distribution / sz_city_benchmark / org_type
+
+**洗的**：风险 9 张（§3.13）、指标 3 条（§4.1/4.2/4.3）+ patent_history（§3.14.2）。签字：human:徐滕强（2026-10-21，GDF round1 P-08/P-04①③ 书面确认）。
+
+**base 32 列**（is_high_tech/patent_*_count/rd_*/revenue_latest/brand_score 等）：第 4 类 KPI 待核口径本期不写（Q-WP3-29 既有拍板）。**财务 6 比率列**：口径涉业务定义升级甲方，拍板前返回空。
+
+### 1.8 行过滤落点与脏数据规则（v4.0.1 新增，GDF round1 P-09）
+
+| 规则 | 落点 | 说明 |
+|---|---|---|
+| `is_deleted = 0` | ODS **不过滤**（镜像保真含删除行）；DWD 洗数时过滤 | 增量抽取也不过滤（对账口径一致） |
+| §3.6 LIKE / §3.20 sybj 过滤 | 映射层（Wave B） | ODS 全量保留 |
+| 零日期 0000-00-00 / 1900-01-01 / 未来日期 | 映射层置 NULL + 治理清单 | ODS 原样镜像 |
+| 占位值（无/-//） | 金额类 NULL + 治理清单；文本类原样 | 既有单位门禁 |
+
 搜索时 `name_cn` 和 `name_en` 是 OR 关系——keyword 搜索同时匹配两个字段，任一命中即可。
 
 ---
@@ -136,6 +156,18 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | 4 | `enterprise_base` + `enterprise_industry_chain` | `enterprise_industry_summary` | 按 `chain_code + stat_year` 聚合 |
 
 ### 2.4 暂不映射（4 条）
+
+### 2.4.1 指路表（v4.0.1 新增，GDF round1 P-03：映射实际位置索引）
+
+| 源表 | 映射位置 | 说明 |
+|---|---|---|
+| `dwd_bid_win_candidate_out` / `dwd_bid_base_out` | §3.12 招投标 → enterprise_bid | 含字段表与金额换算 |
+| `dwd_special_hongkong/taiwan/aomen_company` | §3.18 港澳台企业 → enterprise_base | 三表合一映射 + 地区常量 |
+| `dwd_patent_title/abstract/legal/cited` | §3.14.1.2~1.5（v4.0.1 新增） | → 宽列 |
+| `dwd_industry_chain_info` | §1.6 归 CHAIN 包 | CHAIN 09 §3.1-3.3 有逐列 |
+| `dwd_patent_applicants/assignees` | §1.2 + §3.14.1.1 | org_rel 关联 |
+| `dwd_org_org_product_info` | §3.1.3（v4.0.1 新增独立小节） | extra 补充列 |
+
 
 | 源表 | 原因 |
 |---|---|
@@ -222,6 +254,19 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `dwd_org_org_product_info.main_activities` | `main_activities` | 关联 | 从经营信息表补充 |
 | `dwd_org_org_product_info.main_prod` | `main_prod` | 关联 | 从经营信息表补充 |
 | `dwd_org_org_product_info.description` | `description` | 关联 | 从经营信息表补充 |
+
+#### 3.1.3 `dwd_org_org_product_info` → `enterprise_extra`（经营范围/产品补充；v4.0.1 新增独立小节，GDF round1 P-03）
+
+| 源字段 | 目标字段（enterprise_extra） | 转换 |
+|---|---|---|
+| `org_id` | `org_id`（关联键） | JOIN enterprise_extra.org_id（extra 主行由 §3.1.2 建立；本节只 UPDATE 补充列） |
+| `main_activities` | `main_activities` | 直接；空则不覆盖 |
+| `main_prod` | `main_prod` | 直接；空则不覆盖 |
+| `description` | `description` | 直接；空则不覆盖 |
+| `external_id` | （校验列） | 与主档 external_id 不一致时进治理清单，不覆盖 |
+| 技术列 | — | 不映射 |
+
+UK：`uk_org_id_main_prod`（源表业务唯一键）冲突时取 `updated_time` 最新。无对应 extra 主行的行进治理清单。
 
 ### 3.2 `dwd_org_executive_info` → `enterprise_executive`
 
@@ -681,6 +726,64 @@ GROUP BY org_id, YEAR(filing_date)
 
 本期不贴不洗。`enterprise_chain_patent` 保持空表。专利明细 / `patent_org_rel` / `enterprise_patent_history` 不受影响。表到位后再按源表字段直映，未命中企业不造 `org_id`。
 
+
+#### 3.14.1.2 `dwd_patent_title` → `enterprise_patent_detail` 宽列（v4.0.1 新增，GDF round1 P-03）
+
+| 源字段 | 目标字段 | 转换 |
+|---|---|---|
+| `patent_id` | （关联键） | JOIN `enterprise_patent_detail.patent_id` |
+| `titles`（json） | `title_zh` | JSON 内原文标题（优先 zh 项）；解析失败原样存入并进治理清单 |
+| `title_en` | `title_en` | 直接；空则不覆盖 |
+| `title_trans_cn` | （备用） | `title_zh` 为空时回填；两列都有以 `titles` zh 项优先 |
+| 技术列 | — | 不映射 |
+
+> 09 原文「`patent_name` 可与 `title_zh` 同义回填」不变：`patent_name`（现网窄列）为空时用 `title_zh` 回填。
+
+#### 3.14.1.3 `dwd_patent_abstract` → `enterprise_patent_detail` 宽列（v4.0.1 新增，GDF round1 P-03）
+
+> 供应方源列注释笔误备案：`abstracts`/`abstract_en`/`abstract_trans_cn` 注释写"标题"，按表语义（摘要分表）取"摘要"理解施工；已向 GDF round2 备案。
+
+| 源字段 | 目标字段 | 转换 |
+|---|---|---|
+| `patent_id` | （关联键） | 同上 |
+| `abstracts`（json） | `abstract_zh` | JSON 内原文摘要 |
+| `abstract_en` | — | 目标无英文摘要列，不落（分表备查） |
+| `abstract_trans_cn` | （备用） | `abstract_zh` 为空时回填 |
+| 技术列 | — | 不映射 |
+
+#### 3.14.1.4 `dwd_patent_legal` → `enterprise_patent_detail` 宽列（v4.0.1 新增，GDF round1 P-03）
+
+| 源字段 | 目标字段 | 转换 |
+|---|---|---|
+| `patent_id` | （关联键） | 同上 |
+| `status` | `legal_status` | 直接 |
+| `isdt` | `grant_date` | varchar(10) YYYY-MM-DD → date；解析失败 NULL |
+| `isdt_year` | `grant_year` | varchar → int；失败 NULL |
+| `legal_events`（json） | `detail_json` | 并入 detail_json 键 `legal_events` |
+| `patent_legal`（json） | `detail_json` | 并入键 `patent_legal` |
+| `anticipated_expiration` / `expiration_year` | — | 不映射（目标无列） |
+| 技术列 | — | 不映射 |
+
+#### 3.14.1.5 `dwd_patent_cited` → `enterprise_patent_detail` 宽列（v4.0.1 新增，GDF round1 P-03）
+
+| 源字段 | 目标字段 | 转换 |
+|---|---|---|
+| `patent_id` | （关联键） | 同上 |
+| `reference_cited_count` | `citation_count` | 直接 |
+| `cited_by_nums` | `cited_by_count` | 直接 |
+| `cited_by`（json） | `detail_json` | 并入键 `cited_by` |
+| `patent_citations`（json） | `detail_json` | 并入键 `patent_citations` |
+| 其余 json（cited_by_date/patent_citation_date/non_patent_*/country/region/kd） | — | 不映射（目标无列，分表备查） |
+| 技术列 | — | 不映射 |
+
+**四分表公共规则**：
+1. 宽列写入 = UPDATE（主行先由 §3.14.1 主映射建立；分表只 UPDATE 宽列，不 INSERT 主行）
+2. UPDATE 只填当前为 NULL 的字段，禁止覆盖主映射已写值
+3. 分表行主表无对应 `patent_id` → 进治理清单（乱序到达正常，重跑可补）
+4. `detail_json` 合并顺序：legal_events → patent_legal → cited_by → patent_citations（后写覆盖同键）
+5. 每分表洗后输出命中/未命中/UPDATE 行数统计
+
+
 ### 3.15 国外机构字段级映射
 
 > 源字段以 md-extract 国外机构要素库及 live ODS DDL 为准（源表位于 `gkxlumenx_ods`）；目标 DDL 以 `DWD表结构设计-企业工商表-MySQL-v3.1.md` §6 为准。
@@ -903,25 +1006,28 @@ ES / 图谱本波无下游；只洗 MySQL DWD。
 > 同表其余两张（`dwd_org_annual_report_base` / `dwd_org_income_statement`）**本期 mirror_only 只贴不洗**（见 `02` v3.1.6）；如后续需要补 `main_activities`（年报 base `qyzyywhd`）或上市财务缺口，另开 mapping 增补。
 
 
-### 3.21 `dwd_agg_subsidiary_info` → `enterprise_forg_parent_subsidiary`（v4.0 换源）
+### 3.21 `dwd_agg_subsidiary_info` → `enterprise_forg_parent_subsidiary`（v4.0.1 修订：目标列对齐正式库 DDL）
 
 > v4.0 换源：10-19 清单以 `dwd_agg_subsidiary_info`（live 19,810 行，国外母子）替代从未存在的 `dwd_forg_subsidiary_info`，A1 阻塞解除。
-> **诚实声明（live 实测 2026-10-20）**：源 `eid`/`sub_eid` 为第三方数字 ID；`eid` → `dwd_forg_base_info.org_id` 精确命中率仅 **6.3%**（952/15,112 去重 eid），`ename` → `name_en` 命中 941 同量级。采用与专利一致策略：**精确匹配 + 未命中进治理清单，禁止自造 org_id、禁止模糊匹配**。行过滤：`is_deleted = 0`。
+> **诚实声明（live 实测 2026-10-20）**：源 `eid`/`sub_eid` 为第三方数字 ID；`eid` → `dwd_forg_base_info.org_id` 精确命中率仅 **6.3%**（952/15,112 去重 eid）。策略：**精确匹配 + 未命中进治理清单，禁止自造 org_id、禁止模糊匹配**。行过滤：`is_deleted = 0`。
+> **v4.0.1 修订（GDF round1 P-05）**：原目标列名取自设计稿命名，与正式库实际列不一致（GDF 实查证实 6 列不存在）。本版目标列**逐列对齐正式库 `enterprise_forg_parent_subsidiary` 实际 8 列**（information_schema 2026-10-20 实查）。
 
-| 源字段 | 目标字段（`enterprise_forg_parent_subsidiary`） | 转换逻辑 |
+| 源字段 | 目标字段（正式库实际列） | 转换逻辑 |
 |---|---|---|
-| `eid` | `parent_org_id` | 精确 JOIN `dwd_forg_base_info.org_id`；命中写 org_id，未命中 NULL + 治理清单（带 eid/ename） |
-| `ename` | `parent_name_en` | 直接；作为治理清单辅助匹配线索 |
+| `eid` | `org_id` | 精确 JOIN `dwd_forg_base_info.org_id`；命中写 org_id，未命中 NULL + 治理清单（带 eid/ename 证据） |
 | `sub_eid` | `sub_org_id` | 尝试 JOIN 同表 org_id；未命中 NULL + 治理清单（母子同源体系，子命中率同量级） |
-| `sub_name` | `sub_name_en` | 直接 |
-| `sub_country_code` / `sub_country` | `sub_country_code` / `sub_country` | 直接 |
-| `create_time` | `start_date` | 直接（关系可考起始；语义近似，无更优源） |
-| `source_table` | `data_source` | 直接（留证） |
-| `created_time` | `create_time` | 直接 |
-| `updated_time` | `update_time` | 直接 |
-| `pk_id` 类 / `dwd_id` / 技术列 | — | 不映射 |
+| `sub_name` | `sub_name` | 直接 |
+| `sub_country_code` | `sub_country_code` | 直接 |
+| `sub_country` | `sub_country_name` | 直接 |
+| — | `create_time` | 正式库 NOT NULL：取源 `create_time`，源空取 `created_time` 兜底，再空 `NOW()` |
+| — | `update_time` | 正式库 NOT NULL：取源 `updated_time` |
+| `ename` | （治理清单） | 不落独立列（正式库无 ename 列）；作为未命中行匹配辅助证据 |
+| `source_table` | （治理清单） | 不落独立列；留证 |
+| `create_time`（源业务列） | — | 正式库无对应业务列，不落 |
+| `dwd_id` / 技术列 | — | 不映射（`is_deleted` 仅过滤） |
 
-**UK 冲突规则**：目标表若有 (parent_org_id, sub_org_id) 唯一键，双双命中且重复的行取 `updated_time` 最新一条，其余进治理清单。
+**UK 冲突规则**：同一 `(org_id, sub_org_id)` 多行取 `updated_time` 最新一条，其余进治理清单。
+**治理清单字段**：org_id(源 eid) / sub_eid / ename / sub_name / 未命中原因 / etl_batch_id。
 **ES / 图谱**：`forg_relations` 母子段按本表 success 后触发（`12`/`14` 不变）；低命中率为已知现状写入交付说明，不阻塞关单。
 
 ---

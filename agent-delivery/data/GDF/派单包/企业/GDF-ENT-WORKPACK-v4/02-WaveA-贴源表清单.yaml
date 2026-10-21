@@ -18,7 +18,16 @@ mapping_authority: 09-企业域-ETL-Mapping明细-源表到DWD.md
 source_db: gkx
 target_db: gkxlumenx_ods
 mirror_mode: isomorphic
-default_filter: "is_deleted = 0"
+# v4.0.1：default_filter 废止——抽取层不过滤 is_deleted（删除行也镜像进 ODS，保证对账口径一致）
+# 过滤落点改为 Wave B 洗数层（见 09 §1.8）；对账口径 = 双侧 COUNT(*) WHERE is_deleted=0
+# v4.0.1 抽取策略（GDF round1 S-06）：全部表统一——首次全量重灌；日常 T+1 每日增量
+#   updated_time >= 上次成功水位 - 1 天（回看覆盖迟到）；主键 upsert 幂等
+#   增量不过滤 is_deleted（删除行也镜像进 ODS，保证对账口径一致）
+#   水位落点：GDF 调度侧每表 last_success_watermark；对账：每周 COUNT(*) 双侧 is_deleted=0，偏差>1% 告警
+extract_mode: "full_first_then_incremental"
+watermark_column: "updated_time"
+lookback: "1d"
+schedule: "T+1 daily"
 priority_status: team_default
 
 exclude:
@@ -115,7 +124,7 @@ groups:
       - { name: dwd_forg_shareholder_info, priority: P1, cn: 国外股东穿透, mapping: wash, note: "Q-WP3-20 维持 → enterprise_forg_invest（股东当投资；无单独国外投资表）" }
       - { name: dwd_foreign_org_annual_financial_info, priority: P1, cn: 国外/美股港股年报, mapping: wash }
       - { name: dwd_agg_subsidiary_info, priority: P1, cn: 机构子公司信息（国外母子·新源）, mapping: wash, note: "v4.0 换源：10-19 清单以 dwd_agg_subsidiary_info（19,810 行 live 实证）替代旧 dwd_forg_subsidiary_info（从未存在）；eid/sub_eid 为第三方数字 ID，与 forg_base_info.org_id 实测命中率仅 6.3%（952/15,112）——采用与专利同款精确匹配+未命中治理清单，禁造 org_id；mapping 见 09 §3.21" }
-      - { name: dwd_forg_college_org_info, priority: P2, cn: 国外高校, mapping: mirror_only, note: 本期 Mapping 未列洗入 }
+      # v4.0.1 移出（S-04）：dwd_forg_college_org_info 源库无表，移入 pending_source_requests
       - { name: dwd_forg_university_org_info, priority: P2, cn: 国外高校, mapping: mirror_only }
       - { name: dwd_forg_research_org_info, priority: P2, cn: 国外科研, mapping: mirror_only }
 
@@ -171,6 +180,9 @@ removed_vs_v1_1:
     - dwd_merger_acquisition_events_party_info  # 要素库没收；Q-WP3-21 不贴
 
 pending_source_requests:
+  - name: dwd_forg_college_org_info
+    reason: "v4.0.1（S-04）：live 无表，从 P2 清单移入待供应方核验；不计完成数"
+    interim: "与 05 口径一致：本期不贴不洗"
   - name: dwd_org_industry_chain_dtl
     reason: "2026-09-02 live gkx 与全可见 schema 实查不存在；继续向供应方索取/核实名"
     interim: "Wave B 先用 dwd_org_industry_tags 施工产业/环节/企业代码字段；chain_score/segment_key 保持 NULL"

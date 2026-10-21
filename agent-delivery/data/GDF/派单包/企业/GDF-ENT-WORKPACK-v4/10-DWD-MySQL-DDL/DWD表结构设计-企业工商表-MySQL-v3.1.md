@@ -820,3 +820,22 @@ CREATE TABLE `enterprise_shareholder` (
 ```
 
 > 现网大量自然人股东无 `inv_org_id`，唯一键不含 `shareholder_org_id`。`owners_name` 空行跳过。
+
+### as-built：`enterprise_patent_org_rel`（v4.0.1 补录，GDF round1 P-06）
+
+> 正式库已建空表（2026-09-02），information_schema 实查与 GDF describe 一致。此前包内仅 README 一行唯一键，本段补完整 DDL 文字。
+
+```sql
+CREATE TABLE `enterprise_patent_org_rel` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `patent_id` varchar(255) NOT NULL COMMENT '专利记录逻辑主键',
+  `org_id` varchar(64) NOT NULL COMMENT '匹配所得机构id',
+  `party_role` varchar(20) NOT NULL COMMENT 'APPLICANT/ASSIGNEE',
+  `party_sequence` int DEFAULT NULL COMMENT '源列表排列序号',
+  `source_name` varchar(255) DEFAULT NULL COMMENT '源名称（匹配前）',
+  `match_type` varchar(20) DEFAULT 'EXACT_NAME' COMMENT '匹配方式',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_patent_org_role_seq` (`patent_id`,`org_id`,`party_role`,`party_sequence`),
+  KEY `idx_org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='专利-企业关系（多申请人/权利人）';
+```

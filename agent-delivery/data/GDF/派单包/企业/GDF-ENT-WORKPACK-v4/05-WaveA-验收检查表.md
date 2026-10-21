@@ -14,11 +14,12 @@
 **本侧验收签字**：________ 日期：________
 
 列：`src/tgt`=有效行数；`ddl/sample`=Y/N；`batch`=最近成功批次；`unit_evidence`=财务单位证据；`done/sign`=回签。
+> **v4.0.1 新增列**：`extract_mode`（全量/增量）、`watermark`（水位列，默认 updated_time）、`last_wm`（最近成功水位时间）——随每表回签填写。
 
 ## P0（关单必填，15）
 
-| # | table_name | cn | src | tgt | ddl | sample | batch | unit_evidence | done | sign | note |
-|---:|---|---|---:|---:|---|---|---|---|---|---|---|
+| # | table_name | cn | src | tgt | ddl | sample | batch | unit_evidence | extract_mode | watermark | last_wm | done | sign | note |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
 | 1 | dwd_org_base_info | 国内机构信息 | | | | | | | | | 主数据；非 reg_info |
 | 2 | dwd_org_shareholder_info | 股东信息 | | | | | | | | | |
 | 3 | dwd_org_executive_info | 高管信息 | | | | | | | | | |
@@ -39,8 +40,8 @@
 
 ## P1（双周进度，33）
 
-| # | table_name | cn | src | tgt | ddl | sample | batch | unit_evidence | done | sign | note |
-|---:|---|---|---:|---:|---|---|---|---|---|---|---|
+| # | table_name | cn | src | tgt | ddl | sample | batch | unit_evidence | extract_mode | watermark | last_wm | done | sign | note |
+|---:|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
 | 1 | dwd_org_changerecord_info | 工商变更 | | | | | | | | | |
 | 2 | dwd_org_recruit_info | 招聘 | | | | | | | | | |
 | 3 | dwd_org_heis_info | 高校机构 | | | | | | | | | mirror_only |
