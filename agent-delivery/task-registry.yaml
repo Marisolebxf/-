@@ -32866,6 +32866,10 @@ tasks:
       - "handoff 落盘 + registry 收口"
     update_time: "2026-10-20T17:05:20+08:00"
   - id: GDF-ENT-WORKPACK-V4-L01
+    cost_warn: "yellow"
+    actual_cost: 8.5
+    model_used: "glm-5.3"
+    actual_tokens: 850000
     evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V4-L01.md"
     title: "企业维 GDF 派单包 v4 — 10-19 基线切换（stock_base 移出/国外母子换源/专利侧表+5）"
     status: "done"
@@ -32893,6 +32897,10 @@ tasks:
       - "投递 zip 重打（v4/v2 基线）并通知 GDF"
       - "ODS 结构按 02 v4.0 重跑差集（-stock_base +6 张），DDL 交人工执行"
       - "handoff：agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V4-L01.md（含拍板记录与 live 实证证据）"
+    model_used: "glm-5.3"
+    cost_warn: "green"
+    actual_cost: 2.5
+    actual_tokens: 250000
     update_time: "2026-10-21T12:58:24+08:00"
   - id: GDF-CHAIN-WORKPACK-V2-L01
     evidence: "agent-delivery/agent-handoffs/产业链分析-CHAIN/GDF-CHAIN-WORKPACK-V2-L01.md"
@@ -33514,3 +33522,31 @@ tasks:
       - "回顾记录里标明记录当时的旧地址不改"
       - "handoff 写明改动范围与未改的历史 run 目录名"
     update_time: "2026-10-21T11:36:09+08:00"
+    update_time: "2026-10-20T23:16:54+08:00"
+  - id: LUMEN-SVC-SEARCH-ES-SWITCH-L01
+    supervised_by: "human:淮政琎"
+    claimed_at: "2026-10-20T15:14:17.746Z"
+    last_seen_at: "2026-10-20T15:14:17.746Z"
+    lock_until: "2026-10-20T19:14:17.746Z"
+    claimed_by: "human:徐滕强"
+    title: "服务机构检索切 ES 引擎 — dev 灰度切换 + engine 埋点补接 + 双 tab/弹框回归"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-topic-py"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 80000
+    note: |
+      建单背景：LUMEN-SVC-SEARCH-ES-L01 已签收（done，2026-10-20），三仓推 dev（etl a17a2a4 / topic-py db68cf7 / ui-topic 5f583db）。遗留 engine 灰度埋点按用户裁定待灰度窗口一并接，本单即该窗口。前端零改动（S3 filters DSL/sort/新字段已在 ui-topic 5f583db 交付，弹框走同一接口）。范围：切 SVC_SEARCH_ENGINE=es（K8s dev）+ 三 tab/弹框回归 + Python engine 埋点补接 + 回退验证。
+    definition_of_done:
+      - "K8s dev 环境 SVC_SEARCH_ENGINE=es 切换完成（helm/env 配置变更，含回退方案），重启后服务健康"
+      - "灰度埋点补接：Python 侧 engine 打点落日志/可观测（ES-L01 遗留项），mysql/es 均可从日志区分引擎"
+      - "回归：三 tab 示例词在 ES 引擎下命中数对照表（对照 ES-L01 S4 基线），无退化"
+      - "回归：服务机构查询页 + 对比篮新增弹框（svcSearchOrgs 路径）在 ES 引擎下实走通过，keyword/高筛 filters/排序均正常"
+      - "回退验证：切回 mysql 后接口行为与切前一致"
+      - "handoff 文档 + cost 回填"
+    update_time: "2026-10-20T23:14:17+08:00"
