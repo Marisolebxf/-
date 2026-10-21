@@ -28685,7 +28685,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 350000
     note: |
-      2026-10-17 澄清：门户 Cookie portal_access_token 实际 Domain = .itic-sci.com（非之前误记的 .edu.itic-sci.com），覆盖 topic.itic-sci.com，Cookie 登录态链路成立，无需改 token 传递方案。本地联调环境已就绪（topic.itic-sci.com 域名/证书/dev server/网关代理全通）。待门户侧配菜单（URL=https://topic.itic-sci.com:3000/...?embed=true，origin 白名单带端口）后即可实嵌联调。
+      2026-10-21 增量交付（详见 handoff §0.1）：A. 外网前缀 base 正式接入四仓（lumen-ui-topic /tts/svcz commit e7c19d0、demo-ui-topic /tts/ptts b198de5、lumen-ui-science-mobile /tid/mobile 86a82b9、lumen-ui-topic-mobile /tts/msvcz 3e5d054，均 origin/dev ✅；demo-ui-science 免改），替换此前手工改 base 的临时构建，CI 发布不再回退 404；B. 门户权限菜单矫正：pickMenuTree 改 all+org 全桶合并、忽略 appPermissions（用户裁定），topic 菜单经 URL 反查命中 menu:topic:ent:search/type，不再误发 no.permission；portal.selfcheck ✅、vue-tsc ✅、生产构建 ✅；handoff 已补 §0.1（orchestration 9e47268b）。待门户侧配菜单后实嵌复验。
     depends_on: []
     touched_files:
       - "src/App.vue"
@@ -28701,7 +28701,7 @@ tasks:
       - "安全配置（方案 §12.4/§10.1）：部署侧配置 CSP frame-ancestors 仅允许门户域名嵌入，禁止 X-Frame-Options ALLOWALL/DENY"
       - "页面适配（方案 §12.6）：html/body/#app 100% 宽高自适应门户内容区，不强依赖浏览器全屏高度"
       - "联调验收：与门户体验环境 https://edu.itic-sci.com/portal 完成实际嵌入联调（PAGE_READY/路由/登录态/异常场景），handoff 附截图或录屏证据"
-    update_time: "2026-10-17T09:57:12+08:00"
+    update_time: "2026-10-21T17:27:32+08:00"
   - id: LUMEN-UAC-JAVA-FACADE-L01
     feishu_bitable_record_id: reczz28MTKaQhMH9
     claimed_at: "2026-10-12T10:11:09.972Z"
@@ -33649,3 +33649,236 @@ tasks:
       - "Design.md §14 + UX-UE 规范 §19 清单对照通过；type-check/build 三绿"
       - "handoff + cost；受人工验收闸门约束：走查修正后停本地等监管人确认"
     update_time: "2026-10-21T14:40:37+08:00"
+  - id: FE-ACH-S01
+    cost_warn: "green"
+    actual_cost: 4.5
+    actual_tokens: 180000
+    model_used: "glm-5.3"
+    evidence: "agent-handoffs/科技成果展示-ACH/FE-ACH-S01-前端模块基座.md"
+    supervised_by: "human:孔东"
+    claimed_at: "2026-10-21T10:02:06.969Z"
+    last_seen_at: "2026-10-21T10:02:06.969Z"
+    lock_until: "2026-10-21T14:02:06.969Z"
+    claimed_by: "agent:frontend-agent"
+    title: "科技成果展示 — 前端模块基座（路由挂接/共享壳/mock 冻结骨架/D9 挂点）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "人工验收通过（human:孔东 2026-10-21），授权 commit/push dev；三绿：type-check 0 错 / achievement.test.mjs 全过 / build 22.45s；种子脚本提取自 demo 冻结，_shared 复用 MetricSpecHint+MockBadge"
+    touched_files:
+      - "src/router/menu.ts"
+      - "src/views/achievement/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+      - "src/types/achievement.ts"
+    design_refs:
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/FE-DISPLAY-ACHIEVE-ALIGN-L01.md"
+      - "agent-delivery/Design.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "menu.ts 五个科技成果菜单（soft-science-achievements / innovation-ecology / tech-time-evolution / instrument-sharing / innovation-carrier）从 DevelopingView 接到模块页壳，并标记 fullBleed；菜单标题沿用现有正式名（不带 New）"
+      - "复用已有 StatCard / MetricSpecHint / MockBadge / PageTabFrame / TiandituMap；不足部分在 src/views/achievement/_shared 补页壳与分区卡，样式自含，不另起一套 UI"
+      - "src/types/achievement.ts、src/api/achievement/、src/mock/modules/ 建立 defineApi 双轨骨架：种子冻结自 demo achievement-preview-new/*/mockData.js，头注释标真源路径与任务 ID；USE_MOCK=false 零 fixture"
+      - "D9 评审层门控与 observability（createTraceId + trackInteraction）挂点就位；关闭评审模式后 DOM 不泄漏 metric_id"
+      - "handoff 含范围、架构合规、cost、ponytail 行；pnpm type-check 与 pnpm build 绿；改动停本地工作区，不自动 commit/push"
+    update_time: "2026-10-21T19:06:06+08:00"
+  - id: FE-ACH-01A
+    title: "软科学成果展示 — 整页复刻：组合筛选/五级地图/智能检索/五 Tab"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "13"
+    difficulty: "XL"
+    estimated_tokens: 400000
+    note: |
+      demo 真源：src/pages/achievement-preview-new/soft-science-new/（SoftScienceNewPage.jsx 460 + MapSection.jsx 337 + BottomTabs.jsx 1084 + mockData.js 244 + utils/test）。对应 lumen 路由 soft-science-achievements。强度：ponytail full。依赖 FE-ACH-S01。写操作（筛选方案/互动）保持会话级或 localStorage，不替后端拍板契约。完工停本地等人工验收。
+    depends_on:
+      - "FE-ACH-S01"
+    touched_files:
+      - "src/views/achievement/soft-science/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "整页复刻 demo SoftScienceNewPage + MapSection + BottomTabs：左侧组合筛选（年度范围/单位类型/课题主题/成果标签/省市区 Cascader/筛选方案 localStorage 保存复用重置）"
+      - "五级地图（国家/省/市/区/单位）逐级下钻、热力层、列表悬停与地图节点联动高亮；地图复用 TiandituMap，瓦片不被 preflight 压缩"
+      - "智能检索列表：7 种排序、难题类型优选、热词与新兴主题点击回填、课题详情 Modal"
+      - "底部 5 Tab 全部落点：成果详情与案例、多维统计分析、互动传播中心、导出与报告管理、进展跟踪监控；对齐需规 §1.1.1.1.4.6 软科学 a–g"
+      - "KPI 全挂 metricId + ℹ + 🧪；mock 种子冻结自 soft-science-new/mockData.js；softScienceNewUtils 自检按 demo test.mjs 断言摘选移植"
+      - "Arco Vue 替换原生控件；图表容器显式高度且类型已在 echarts.ts 注册；与 demo 逐区块对照进 handoff；type-check / 自检 / build 三绿；停本地不自动 push"
+    update_time: "2026-10-21T17:44:49+08:00"
+  - id: FE-ACH-02A
+    title: "科技创新生态展示 — 整页复刻：载体增量/人才态势/协作关系"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      demo 真源：src/pages/achievement-preview-new/innovation-ecosystem-new/（InnovationEcosystemNewPage.jsx 1207 + EcoMap.jsx 100 + mockData.js 278）。对应 lumen 路由 innovation-ecology。强度：ponytail full。依赖 FE-ACH-S01。可与 01A/03A/04A/05A 并行，但共享壳以 S01 为准。完工停本地等人工验收。
+    depends_on:
+      - "FE-ACH-S01"
+    touched_files:
+      - "src/views/achievement/innovation-ecology/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "整页复刻 InnovationEcosystemNewPage 三 Tab：创新载体地图与增量分析（粤港澳/深圳/行政区视口、点位/热力/增量三模式、类型筛选、季度年度新增图、载体详情 Drawer）"
+      - "人才态势分析 Tab：人才点位/聚集热力、学科分布、岗位层次、技术领域雷达（对全国基准）、人才详情 Drawer"
+      - "载体人才协作关系 Tab：载体/人才热力/热点/连线叠加图层、协同项目进展、影响力雷达与联合产出 KPI"
+      - "地图复用 TiandituMap（含热力与视口飞行）；图表用已注册 ECharts；KPI 全挂 ℹ/🧪；mock 冻结自 innovation-ecosystem-new/mockData.js"
+      - "与 demo 逐区块对照进 handoff；type-check / build 绿；停本地不自动 push"
+    update_time: "2026-10-21T17:45:01+08:00"
+  - id: FE-ACH-03A
+    title: "科技时空演进展示 — 整页复刻：全球时空/主题分析/流动协同"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 350000
+    note: |
+      demo 真源：src/pages/achievement-preview-new/space-time-evolution-new/（SpaceTimeEvolutionNewPage.jsx 1441 + WorldEvolutionMap.jsx 200 + mockData.js 485）。对应 lumen 路由 tech-time-evolution。强度：ponytail full。依赖 FE-ACH-S01。数据模型必须保持确定性生成，不能改成随机数。完工停本地等人工验收。
+    depends_on:
+      - "FE-ACH-S01"
+    touched_files:
+      - "src/views/achievement/space-time/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "整页复刻 SpaceTimeEvolutionNewPage：时空控制台（主题多选/四维度/国家省州市层级/时间轴选择播放暂停回放/热力与密度轨迹开关/两区域与两时段对比）"
+      - "世界视口地图复用 TiandituMap：点位、热力、流动路径、视口飞行与尺寸刷新"
+      - "三 Tab 全部落点：热点预警与趋势报告、主题时空分析（论文/专利/资金/人员/演化路径/前沿报告）、流动与协同网络"
+      - "mock 种子按 demo mockData.js 确定性生成规则冻结（20 城市 × 9 年 × 4 维度，禁 Math.random）；同一输入得到同一输出；KPI 全挂 ℹ/🧪"
+      - "与 demo 逐区块对照进 handoff；时间轴播放卸载清理定时器；type-check / build 绿；停本地不自动 push"
+    update_time: "2026-10-21T17:45:13+08:00"
+  - id: FE-ACH-04A
+    title: "大型科学仪器共享 — 整页复刻：仪器盘点/预约服务/服务机构"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 300000
+    note: |
+      demo 真源：src/pages/achievement-preview-new/instrument-sharing-new/（InstrumentSharingNewPage.jsx 1057 + InstrumentMap.jsx 158 + mockData.js 247），另读旧模块 orgAnalysisReport.js 仅作报告语义对照。对应 lumen 路由 instrument-sharing。强度：ponytail full。依赖 FE-ACH-S01。完工停本地等人工验收。
+    depends_on:
+      - "FE-ACH-S01"
+    touched_files:
+      - "src/views/achievement/instrument-sharing/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "整页复刻 InstrumentSharingNewPage 三 Tab：仪器盘点（入网/开放共享/有效订单等 KPI、三态着色地图、类别与状态筛选、图表）"
+      - "预约服务 Tab：服务清单、订单状态追踪、预约与评价交互按 demo 演示态落地，不替后端拍板落库"
+      - "服务机构 Tab：机构分类地图、机构列表与机构分析报告；报告生成语义从 demo modules/instrument-sharing/orgAnalysisReport.js 移植，不引用 demo 仓代码"
+      - "地图复用 TiandituMap；KPI 保留 demo 真实口径数值并全挂 ℹ/🧪；mock 冻结自 instrument-sharing-new/mockData.js"
+      - "与 demo 逐区块对照进 handoff；type-check / build 绿；停本地不自动 push"
+    update_time: "2026-10-21T17:45:23+08:00"
+  - id: FE-ACH-05A
+    title: "创新载体孵化载体 — 整页复刻：全景/入驻成果/政策联动/绩效监控"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 350000
+    note: |
+      demo 真源：src/pages/achievement-preview-new/incubation-carrier-new/（IncubationCarrierNewPage.jsx 1471 + CarrierMap.jsx 116 + mockData.js 833）。对应 lumen 路由 innovation-carrier。强度：ponytail full。依赖 FE-ACH-S01。图文报告与项目归档保持演示态，不替后端拍板。完工停本地等人工验收。
+    depends_on:
+      - "FE-ACH-S01"
+    touched_files:
+      - "src/views/achievement/incubation-carrier/"
+      - "src/api/achievement/"
+      - "src/mock/modules/"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/agent-handoffs/科技发展态势-TS/TS-demo-lumen复刻经验清单.md"
+      - "agent-delivery/Design.md"
+    definition_of_done:
+      - "整页复刻 IncubationCarrierNewPage 四 Tab：分布全景（层级地图、载体类型与行业筛选、增长趋势与势能指数）"
+      - "入驻企业与成果 Tab：企业列表、行业聚集、项目亮点与投资人图文报告（生成、预览、下载、localStorage 归档）"
+      - "政策资源联动 Tab：政策筛选、申报流程与材料、咨询互动；绩效监控 Tab：满意度、毕业率、运营指标"
+      - "载体详情 Modal 四 Pane（详细资料/图片/视频/资讯）与地图联动；地图复用 TiandituMap；KPI 全挂 ℹ/🧪"
+      - "mock 冻结自 incubation-carrier-new/mockData.js；与 demo 逐区块对照进 handoff；type-check / build 绿；停本地不自动 push"
+    update_time: "2026-10-21T17:45:34+08:00"
+  - id: BE-ACH-CONTRACT-01
+    title: "科技成果展示 — Java 接口契约定义与数据需求评审（五子模块，出 API-ACH 文档）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E-FE-ACHIEVEMENT"
+    priority: "P0"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "执行与监管：human:李伟。只出五个子模块的 Java 接口契约文档，不写实现、不拆算法单。前端先按 FE-ACH-* 用冻结 mock 复刻，契约冻结后只改 api 层 real 路径。路径与 DTO 由 Java 侧定义，前端不自行猜。"
+    collaborators:
+      - "frontend-agent"
+    touched_files:
+      - "agent-delivery/agent-handoffs/科技成果展示-ACH/API-ACH.md"
+      - "agent-delivery/agent-handoffs/科技成果展示-ACH/BE-ACH-CONTRACT-01.md"
+    design_refs:
+      - "agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md"
+      - "agent-delivery/agent-handoffs/展示对齐-DISPLAY/符合度评估-科技成果展示.md"
+      - "agent-delivery/data-lineage-policy.md"
+    definition_of_done:
+      - "以 demo achievement-preview-new 五页 mock 数据结构为输入，由 Java 侧定义路径/DTO/枚举，出具一份接口文档 agent-delivery/agent-handoffs/科技成果展示-ACH/API-ACH.md，覆盖五个子模块"
+      - "软科学：组合筛选后的课题列表与 KPI、五级区划聚合落点、课题详情、多维统计、进展监控"
+      - "创新生态：载体空间与增量、人才态势、协作网络与协同项目、影响力"
+      - "时空演进：全球研究主体按年/层级/维度的统计与热点预警、主题时空序列、流动与协同边"
+      - "仪器共享：仪器盘点与 KPI、预约订单与服务、服务机构与分析报告；孵化载体：载体全景、入驻企业与成果、政策资源、绩效监控"
+      - "文档写明统计数字的 metric_id 映射（D9）、ADS 先行与 Mock 填充策略；写操作（筛选方案、项目归档、预约、咨询）单列未决项，不在本单实现 Java 接口"
+      - "handoff 含范围、未决项、会签记录与 cost；本单不含 Java 实现与 ADS 落库"
+    update_time: "2026-10-21T17:45:51+08:00"
