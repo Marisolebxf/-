@@ -18,6 +18,8 @@
    - `<label>` 包裹 `a-select` 致下拉**闪开即关** → label 与控件分离，用 `<div>` 包裹 + 独立 `<label>`（M9 b2c7a0d）。
    - `a-select` 弹层「闪现消失」：优先排查层叠上下文边界（`isolation`/`transform`/`backdrop-filter` 祖先）与 Trigger 挂载容器，而非换原生。
    - cascader **无 `popup-render` 插槽**（只消费 empty/label/prefix）：多选一律标准 Arco cascader 多选 + 原生 `allow-clear`，**禁自绘 footer/确认按钮/防误关**（M8 ComparisonCascadeSelect 自绘版两轮回退教训，f008cdb 终版收敛）。
+   - **`a-progress` 的 `percent` 是 0–1 小数**（antd 是 0–100；Arco 源码 `text = percent × 100`、bar 宽 `percent × 100%`）：demo 的 0–100 值直接照抄 → `9900%` + 进度条恒满，须 `/100`；且顶层组件**无 `format` prop**（仅内部 line 有未透传的 `formatText`），antd `format` → Arco `#text` 插槽等价（FE-TA-03A 走查，talent 模块 12 处同源修复）。
+   - **`a-tag` 默认 24px 定高 / 2px 圆角 / 8px padding**（antd Tag 自适应高 / 4px 圆角 / 7px padding）：demo 视觉对齐需在样式层加 `.arco-tag { height:auto; min-height:22px; line-height:20px; padding:0 7px; border-radius:4px }` 等价覆盖（FE-TA-03A 技术标签列走查）。
    - 收窄自定义选择器范围（如 `.tien-field button`），避免覆盖 Arco 内部清除图标（M7）。
 3. **Arco 图标必须显式 import**：`@arco-design/web-vue/es/icon`；unplugin ArcoResolver 在本仓不接管 `icon-*` 标签，未导入会渲染为未知元素（M1 v2.1 修 6）。
 4. **控件 token**：控件高 32px（`.gi-btn--sm` 同理）、按钮圆角 4px（M8 3200adc）、主色 `#165DFF`；年份范围选择统一 `a-range-picker mode="year"`（M4 沉淀标准，防 `[Date, undefined]` 半选 NaN 需守卫）。

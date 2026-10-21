@@ -188,6 +188,15 @@ type-check 门被 04A 存量错误挡住，一并修齐（非 03A 范围但同�
 3. **合作网络 18s 同步**：为 mock 权重轻抖动（`edgeBump`），真实链路应对接成果增量接口（代码注释已标 ponytail 天花板）。
 4. 上次会话遗留的 `talent.value[0]!` 非空断言依赖「mock 种子必有 ≥1 条」前提（模板 loading 兜底）；真数据接入时若空集需补空态页。
 
+## 走查修正记录
+
+### 走查 1（2026-10-21 09:53，孔东）：领域图谱 Tab 两处
+
+1. **匹配度进度条 `9900%`**：根因是 Arco `a-progress` 的 `percent` 语义为 **0–1 小数**（antd 为 0–100，Arco 源码 `text = percent × 100`、bar 宽 `percent × 100%`），demo 值直接照抄导致。**全 talent 模块同源 bug 一并修复**（12 处 ÷100）：画像页 5 处（FieldMap 匹配度+置信度 / Analysis 影响力 / BasicPanel 影响力条 / Governance 准确度 / Honors 公众指数）+ 推荐页 6 处（Compare 协同 / Contribution 增益 / Cost 占比 / ContributionMatch 五维 / DueDiligence 评分 / ReportTab 维度）+ Difficulty 阻力评分；Difficulty 的 antd `format` → Arco `#text` 插槽（顶层组件无 format prop，原 `:format` 是死代码）。教训已沉淀复刻经验清单 §1。
+2. **技术标签样式对齐**：Arco `a-tag` 默认 24px 定高 / 2px 圆角（antd Tag 自适应高 / 4px 圆角），在 `demo-talent-profile.css` `.tl-tp-nlp-tags .arco-tag` 加等价尺寸覆盖（`height:auto; min-height:22px; line-height:20px; padding:0 7px; border-radius:4px; white-space:nowrap`）。教训同步沉淀。
+
+修正后三绿复测：type-check 0 错 / talent.test.mjs ok / build ✓ 21.16s。
+
 ## 产物清单
 
 - 代码（本地未提交，等验收）：`src/views/talent/profile/`（index + 10 组件）、`src/views/talent/models/profileRelation.ts` / `profileMetrics.ts` / `profileReportExport.ts` / `fieldMapReportExport.ts`、`src/views/talent/styles/demo-talent-profile.css`、`src/views/talent/talent.test.mjs`（第 12 节）
