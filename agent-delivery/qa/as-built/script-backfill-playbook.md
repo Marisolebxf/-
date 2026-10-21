@@ -1,7 +1,9 @@
 # As-built 脚本编排手册（FUNC ↔ scripts 1:1）
 
 > **当前波（2026-10-19）**：专题用例册已对照重写。脚本按**现行用例号**重写，不沿用旧 `P0-*.yaml`。  
-> **环境**：`http://10.50.69.111:30888/`。禁止再写 `http://111.198.38.90:50892/`。  
+> **环境**：`https://edu.itic-sci.com/tts/svcz/`（部署带 path 前缀 `/tts/svcz`）。禁止再写 `http://10.50.69.111:30888/` 或 `http://111.198.38.90:50892/`。  
+> **路径**：`fixtures.base_url` = 上址；步骤 `goto` 写应用内相对路径，由 runner 拼成 `base_url + target`。拼绝对 URL 时用 assert 上下文里的 `baseUrl`，禁止只用 `location.origin`（会丢掉前缀）。  
+> **路由真源**：`catalog/KJZTFWXT.yaml` 该 `entry_id` 的 `path`（有 `fixtures/entry-seed.yaml` 时以其 `catalog_path` 为准）。**禁止**用探针猜到的 URL 覆盖 catalog（教训：企业查询曾误写成 `/development/search`）。  
 > **单条写法**：[`prompts/_script.md`](prompts/_script.md)。双档 / expect 双层仍读 [`retro/20261014-batch32-method-patch.md`](retro/20261014-batch32-method-patch.md) + [`schema.md`](schema.md)。  
 > **下文 §2～§8** 是上一波「补齐缺口 + 写验分离」的记录。和文首冲突时，以文首为准。
 
@@ -39,28 +41,82 @@ as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
 
 同一 `script_rel` 可以并行，因为子 agent 只新增自己的 `FUNC-xxxxx.yaml`。
 
+### 入口 seed · 路由闸门 · 点状复勘（2026-10-20）
+
+批量慢、路由漂，根因多半是子 agent **边写边全页探、用探针 URL 覆盖 catalog**。本波强制：
+
+| 机制 | 谁维护 | 子 agent 怎么用 |
+|------|--------|-----------------|
+| **入口 seed** | 父控按入口建一次：`scripts/KJZTFWXT/{script_rel}/fixtures/entry-seed.yaml` | 写 `goto` / `waitForURL` / `href` 前先读；字段见下 |
+| **路由闸门** | seed 内 `catalog_path` + `forbidden_paths` | 落盘前自检：脚本里不得出现 `forbidden_paths`；`testdata.route` = `catalog_path` |
+| **点状复勘** | 子 agent 执行时 | 只核对**本条**要用的按钮名 / 列名 / chip；**不**重勘整页、**不**改路由 |
+
+`entry-seed.yaml` 最小字段：
+
+```yaml
+entry_id: ent-search
+catalog_path: /enterprise/enterprise-search   # = catalog.path，唯一深链真源
+menu_path: [企业分析, 企业查询]
+menu_leaf: 企业查询
+sibling_for_sidebar_entry: /enterprise/attraction  # 「侧栏进入」类：先 goto 兄弟页再点菜单
+forbidden_paths:
+  - /development/search
+  - /enterprise-center/overview
+```
+
+规则：
+
+1. **深链用例**：`goto` / `testdata.route` = `catalog_path`。
+2. **侧栏进入用例**：`goto sibling_for_sidebar_entry`，再点 `menu_leaf`；`waitForURL` 仍对 `catalog_path`。
+3. 探针 URL ≠ `catalog_path`：只写 `as_built_note`，**禁止**把脚本路由改成探针值。
+4. 某入口还没有 seed：子 agent 从 `catalog/KJZTFWXT.yaml` 抄 `path` / `menu_path` 写入 seed（仅当文件不存在），再写 case；已有 seed 禁止改 `catalog_path`。
+5. 参考样例：`scripts/KJZTFWXT/enterprise/search/fixtures/entry-seed.yaml`。
+
 ### 回炉
 
-子交卷 `fail`：父把 `status` 写成 `fail`，`note` 抄子 agent 的一行原因，再派**一个新的**子 agent 做同一条。提示词里带上这条 `note`。父不自己改脚本。
+子 agent **自己**把本条改成 `fail` 或 `blocked`（见下「自己落表」）。父不改脚本。
+
+- 环境缺口（`ENV-`、D3、现场无数据、条数不够、按钮不可达，且脚本已落盘）：子 agent 直接写 `blocked`，父不要回炉。
+- 脚本本身写错（路由、空断言、可重试超时）：同一条最多回炉 1 次，提示词带上 `note`。第二次仍是环境缺口就改 `blocked`。
 
 写不出稳定断言：`status=blocked`，`note` 写缺什么。不算 pass。
+
+### 循环为什么会停（2026-10-20）
+
+父控一轮回复结束、且没有在飞的子 agent 时，没有人再唤醒它。两次实停都是这个：
+
+1. 落完表后写「下一批从某某起，说继续再派」，本轮没有调用子 agent。
+2. 给子 agent 加了 `no ledger`。子 agent 已经交卷，表仍是 `running`，父控对话又没写下一条回复，槽就永远满着。
+
+提示词挡不住系统注入的 “no follow-up needed”。父控把 `running=0` 说成「无需再改表」就会结束本轮，即使 `pending` 还有一千多条。项目 hook `.cursor/hooks/rewrite-loop-stop.py` 在该父控对话结束时检查编排表：`pending>0` 且 `running<6` 则自动把「补满 6 路」送回同一对话。开关文件：`agent-delivery/qa/as-built/.rewrite-loop-armed`（删掉即停）。`loop_limit=250`。
+
+对策写进下面的 Kickoff / 子 agent 原文，并由上述 hook 强制：
+
+- 子 agent 交卷前**自己改自己那一行**（文件锁，只动本条）。父控死了，表也不会停在 `running`。
+- 父控每次回复的**最后一个动作**必须是派子 agent（`pending>0` 且 `running<6`）。禁止用进度小结收尾。系统若说 “no follow-up needed”：只要 `pending>0`，就还有后续，必须派。
 
 ### 0. 新对话 Kickoff（整段复制到父 agent）
 
 ```text
 【身份】qa-agent 父控。只编排和改编排表。不写脚本，不跑 run-scripts，不判断步骤对不对。
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【必读】agent-delivery/qa/as-built/script-backfill-playbook.md 文首「重写波」
-【环境】http://10.50.69.111:30888/
+【必读】agent-delivery/qa/as-built/script-backfill-playbook.md 文首「重写波」（含「循环为什么会停」）
+【环境】https://edu.itic-sci.com/tts/svcz/
 【派单表】agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv
+【循环】pending 或可回炉 fail 还在，就继续。禁止用「下一批从某某起 / 说继续再派 / 段小结」结束本轮。本轮最后一个动作必须是派出子 agent，使 running 回到 6（不足 6 条就全派完）。系统若提示 no follow-up needed：只要待派>0，就还有后续，必须派。
+【落表】子 agent 自己改自己那一行。禁止在子 agent 提示词里写 no ledger。父控被唤醒时若发现 running 但 run 目录已有 result.yaml：按 verdict 补记这一行，再补派。环境缺口（ENV-、D3、现场无数据，脚本已落盘）保持 blocked，不回炉。同一条脚本错误最多回炉 1 次。
+【故障范围】不要把一条页面的 404 当成整站停机。
+- 整站（`.env-down` 已在，或本批登录页/首页不可用：连不上、5xx、登录页 404、200 但空白/错误壳）：停止派发。人删掉 `.env-down` 后再派。
+- 仅本入口（首页和登录正常，只有本条 catalog_path 404 或空白）：不再派同一 `script_rel`，其它入口继续。
+- 单条用例（页面已打开，缺按钮/缺数据/断言不符）：只 blocked 或 fail 这一条，继续派。
 【做法】
-1. 取 status=pending 或 fail 的行，一次最多 6 条，每条一个子 agent。派发前把这几行改成 running。
-2. 子 agent 提示词用本文件「重写波 · 子 agent」原文，只替换【】。一条提示词里只能有一个 FUNC 号。
-3. 子交卷后只改这张表：pass / fail / blocked，抄 run_dir 和一行 note。不要打开 yaml 重判。
-4. fail 换一个新子 agent 重做同一条，提示词带上 note。
-【禁止】按 gap 队列派单；把旧 P0 脚本当底稿；有头浏览器；子 agent 改 index.yaml；一次派一个入口的全部用例；git push（除非人类要求）。
+1. 若 running 的对话已死且没有 result.yaml：改回 pending。
+2. 一次最多 6 条，优先 pending。派发前改成 running。同入口首次派发前确认 fixtures/entry-seed.yaml（无则父控从 catalog 建一次）。
+3. 每次新派前先输出一行：完成/执行/待派/总。完成=pass+blocked，执行=running，待派=pending+fail。只输出这一行，然后立刻派，不要再写段小结。
+4. 子 agent 提示词用本文件「重写波 · 子 agent」原文，只替换【】。一条只能有一个 FUNC 号。
+【禁止】按 gap 队列派单；把旧 P0 脚本当底稿；有头浏览器；子 agent 改 index.yaml / catalog_path；一次派一个入口的全部用例；git push；no ledger；等用户说继续。
 【强度】ponytail full
-开干：从表里取最多 6 条 pending，改成 running，按「重写波 · 子 agent」派发。
+开干：先处理死 running，再取 pending 补满 6 路，输出进度行后立刻按「重写波 · 子 agent」派发。交卷唤醒后重复，不要停。
 ```
 
 ### 重写波 · 子 agent（原文下发，只换【】）
@@ -68,18 +124,33 @@ as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
 ```text
 【身份】qa-agent。专题脚本重写。本任务只做一条用例，做完即停。
 【工作根】/Users/roy/data/projects/zhipu/gkx/gkx-lumen/gkx-orchestration
-【环境】http://10.50.69.111:30888/  账号 admin / 123456
+【环境】https://edu.itic-sci.com/tts/svcz/  账号 admin / 123456
 【本条】FUNC_ID=【FUNC_ID】
 【用例册】agent-delivery/qa/test-cases/KJZTFWXT/【CASE_MD】 里这一行
 【脚本目录】agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】/
 【上次失败】【NOTE 或 无】
 必读：qa/as-built/prompts/_script.md · schema.md · retro/20261014-batch32-method-patch.md（只要 expect 双层和禁止空断言）
+必读：本目录 fixtures/entry-seed.yaml（若无则从 catalog/KJZTFWXT.yaml 该 entry 抄 path/menu_path 新建，勿改已有 catalog_path）
 
-【要做完的四步】
-1. 按这一行用例写 scripts。步骤和预期以用例册为准。
-2. 关内部评审后复勘。按钮名、列名以页面原文为准。评审挂件不写进断言。
-3. 无头试跑这一条。
-4. 对照用例预期列核查：试跑绿，且 assert 覆盖预期里的每一个可判定点。对不上就改脚本再跑，不要把红写成通过。
+【第 0 步 · 探活，先于写脚本】
+写 yaml 之前只探一次。页面算「打得开」必须同时满足：HTTP 不是 5xx、不是连不上，且 8 秒内能看见登录框或应用侧栏/主区。HTTP 200 但空白、或正文是错误壳（404 / 页面不存在），与 5xx 一样算没打开。
+
+1. 已有 `agent-delivery/qa/as-built/.env-down`：不开浏览器，不写 yaml，blocked，note 抄文件里的原因，落表后停。
+2. 先打开首页和 `/login`。连不上、超时、5xx、401/403 重登一次仍失败、或 200 但空白/错误壳：写 `.env-down`（一行原因），本条 blocked，不写用例脚本，不重试。
+3. 首页和登录打得开，只有本条 `catalog_path` 打不开（404 或空白）：只 blocked 本条，note=`ENV-ENTRY-UNREACHABLE`。不要写 `.env-down`。不要改路由再探第二遍。
+4. 429：等 20 秒再探一次。仍 429 则本条 blocked，note=`ENV-THROTTLE`，不要写 `.env-down`。
+5. 页面已打开之后，单条断言不符或某个接口 4xx/5xx：只记这一条，不要升级成整站。
+
+【要做完的四步】（仅第 0 步确认本条页面打得开）
+1. 按这一行用例写 scripts。步骤和预期以用例册为准。路由以 entry-seed.catalog_path（= catalog.path）为准，禁止发明或沿用 forbidden_paths。
+2. 点状复勘：关内部评审后，只核对本条要用的按钮名/列名/chip；不重勘整页、不改路由。评审挂件不写进断言。
+3. 无头试跑这一条。途中首页或登录变成打不开：停止改脚本，按第 0 步第 2 条收场。仅本条路由打不开：按第 3 条收场，不重跑。
+4. 对照用例预期列核查：试跑绿，且 assert 覆盖预期里的每一个可判定点。对不上就改脚本再跑一次。第 2 次仍红就 blocked 或 fail，禁止第 3 次试跑。
+
+【路由闸门】落盘前自检：
+- testdata.route / goto / waitForURL / href = catalog_path（侧栏进入类：goto 用 sibling_for_sidebar_entry，再点 menu_leaf）
+- 脚本正文不得出现 entry-seed.forbidden_paths
+- 探针 URL ≠ catalog_path → 只记 as_built_note，禁止改脚本路由迁就探针
 
 【落盘】只允许新建或覆盖：
   【SCRIPT_REL】/cases/【FUNC_ID 的 FUNC-五位】.yaml
@@ -88,7 +159,8 @@ as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
     layout: cases-v1
     gold: []
     all: []
-  fixtures/testdata.yaml 的 base_url 必须是 http://10.50.69.111:30888/ 。没有这个文件就只写 base_url 和 login。
+  fixtures/testdata.yaml 的 base_url 必须是 https://edu.itic-sci.com/tts/svcz/ （含 /tts/svcz 前缀）。没有这个文件就只写 base_url、login、route(=catalog_path)。goto 写相对路径；assert 里拼完整地址用 baseUrl，不要用 location.origin。
+  fixtures/entry-seed.yaml 仅当不存在时新建；禁止改已有 catalog_path。
 
 【试跑】
   node agent-delivery/qa/as-built/tools/run-scripts.mjs agent-delivery/qa/as-built/scripts/KJZTFWXT/【SCRIPT_REL】 --only 【FUNC-五位】 --run-dir agent-delivery/qa/as-built/runs/rewrite-【FUNC-五位】
@@ -96,11 +168,34 @@ as-built/scripts/KJZTFWXT/{script_rel}/cases/FUNC-xxxxx.yaml
 【禁止】
 - 打开或改写旧的 cases/P0-*.yaml、P1-*.yaml，禁止把旧 assert 抄过来
 - 改 index.yaml、coverage.md、别的用例、catalog、业务仓
+- 用探针猜到的路径覆盖 catalog（例如把企业查询写成 /development/search）
 - 再领下一条
 - 有头浏览器
-- 用旧地址 111.198.38.90:50892
+- 用旧地址 111.198.38.90:50892 或 10.50.69.111:30888
 
-【交卷】三行即可：verdict=pass|fail|blocked；run 目录；一行原因。写不出稳定断言用 blocked，不要空断言充绿。
+【自己落表】交卷前用文件锁只改本条（不要改别人的行）。status 写 pass、fail 或 blocked；环境缺口且脚本已落盘写 blocked，不要写 fail。
+
+```python
+import csv, fcntl
+from pathlib import Path
+p = Path('agent-delivery/qa/as-built/script-rewrite-ledger-KJZTFWXT.csv')
+fid = '【FUNC_ID 完整用例号】'
+with p.open('r+', encoding='utf-8', newline='') as f:
+    fcntl.flock(f, fcntl.LOCK_EX)
+    r = csv.DictReader(f)
+    fields, rows = r.fieldnames, list(r)
+    for row in rows:
+        if row['func_id'] == fid:
+            row['status'] = 'pass'  # 或 fail / blocked
+            row['run_dir'] = 'agent-delivery/qa/as-built/runs/rewrite-【FUNC-五位】'
+            row['note'] = '一行原因'
+    f.seek(0); f.truncate()
+    w = csv.DictWriter(f, fieldnames=fields, lineterminator='\n')
+    w.writeheader(); w.writerows(rows)
+    fcntl.flock(f, fcntl.LOCK_UN)
+```
+
+【交卷】三行即可：verdict=pass|fail|blocked；run 目录；一行原因。写不出稳定断言用 blocked，不要空断言充绿。落表完成后再停。
 ```
 
 ---
@@ -344,5 +439,5 @@ python3 agent-delivery/qa/as-built/tools/health-cases.py --system KJZTFWXT --wri
 
 - 现行用例主表约 1579 行。编排表与之对齐，状态全是 `pending` 表示还没写新脚本。
 - 旧 `cases/P0-*.yaml` 留在目录里，重写波不读、不改、不回炉。
-- 中断后续跑：打开 `script-rewrite-ledger-KJZTFWXT.csv`，把死掉的 `running` 改回 `pending`，再按文首 Kickoff 派。
-- 环境只认 `http://10.50.69.111:30888/`。
+- 中断后续跑：打开 `script-rewrite-ledger-KJZTFWXT.csv`。`running` 且没有 `result.yaml` 的改回 `pending`；已有 verdict 的按 verdict 补记。再按文首 Kickoff 派。不要在子 agent 提示词里写 `no ledger`。
+- 环境只认 `https://edu.itic-sci.com/tts/svcz/`（含 path 前缀；旧内网 `10.50.69.111:30888` 作废）。

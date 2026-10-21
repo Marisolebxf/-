@@ -2,7 +2,7 @@
 
 你是 qa-agent。本文件把 **已评审的测试用例** 译成 as-built **测试脚本**（yaml 过程 + locators + fixtures）。禁止改业务仓代码。禁止另起一套与用例冲突的判定。禁止按 A 线功能点或总集 FUNC 表一对一新编脚本。
 
-专题重写波（2026-10-19）：脚本文件名和 `id` 用用例号 `FUNC-xxxxx`，`func_id` 用完整用例号。不要改旧的 `P0`/`P1` 文件，也不要抄它们的断言。环境 `http://10.50.69.111:30888/`。编排见 `script-backfill-playbook.md` 文首，一条用例一个子 agent。
+专题重写波（2026-10-19）：脚本文件名和 `id` 用用例号 `FUNC-xxxxx`，`func_id` 用完整用例号。不要改旧的 `P0`/`P1` 文件，也不要抄它们的断言。环境 `https://edu.itic-sci.com/tts/svcz/`。编排见 `script-backfill-playbook.md` 文首，一条用例一个子 agent。
 
 本步覆盖矩阵的方向是 **脚本 → 用例**（不是脚本 → 功能点）。功能点覆盖已在第 1 步做完。
 
@@ -11,10 +11,20 @@
 1. 第 1 步产物：`qa/test-cases/.../FUNC-*-用例.md` + 用例对功能点矩阵
 2. `as-built/schema.md`、`as-built/README.md`
 3. 本文件；功能专属 `full.md` 只补充执行顺序
-4. catalog 目标 `entry_id`
+4. catalog 目标 `entry_id` 的 **`path`**；有则再读同目录 `fixtures/entry-seed.yaml`
 5. 指标 ⓘ 仍走 metric-registry MCP
 
 未完成第 1 步（没有人读用例文件）时：**停**。不要倒退成「直接写 yaml 再回头补用例」。企业查询就是这样漏的。
+
+## 路由闸门（P0，2026-10-20）
+
+路由真源顺序：`catalog.path` → `fixtures/entry-seed.yaml` 的 `catalog_path` → 用例册路由列。**探针猜到的 URL 不是真源。**
+
+1. `goto` / `testdata.route` / `waitForURL` / `href` 必须对齐 `catalog_path`。
+2. 「侧栏进入」类：先 `goto sibling_for_sidebar_entry`，再点 `menu_leaf`；落点 URL 仍验 `catalog_path`。
+3. 禁止写入 `forbidden_paths`（企业查询历史误勘：`/development/search`、`/enterprise-center/overview`）。
+4. 探针 URL ≠ catalog：只记 `as_built_note`，禁止改脚本路由迁就探针。
+5. 无 seed 时可从 catalog 新建；**禁止**改已有 seed 的 `catalog_path`。
 
 ## 禁止
 
@@ -29,6 +39,7 @@
 9. **收到含编号母表的任务书，禁止直接照抄落笔**（见「编号母表闸门」）。
 10. **登录并关闭内部评审模式是 runner 的会话前置**（`ensureBusinessSession`）：每条脚本的步骤开始前执行一次，每次 `goto` 后再执行一次，本条结束后再确认一次。整段测试过程保持关闭，不是写在某条 `assert` 里的检查。单条 `cases/*.yaml` **不要**再写登录或开关步骤。禁止出现「开启内部评审」。评审专有控件不写 `assert`。
 11. **禁止空断言当通过。** `assert` 里出现空分支（例如任务变多也什么都不验）= 脚本不合格。`allow_skip` 不能代替用例要的那一个终态；金样（A 档）禁止 `allow_skip`。
+12. **禁止用探针 URL 覆盖 catalog 路由**（见「路由闸门」）。
 
 ---
 
@@ -61,9 +72,11 @@
 
 ## 过程
 
-### 0. 复勘（写 locator 之前）
+### 0. 点状复勘（写 locator 之前）
 
-对照用例核对文案和 selector 时，与第 1 步勘察相同：**先关闭内部评审模式，再看页面**。用手开的浏览器时先关，复勘过程中不要打开。用 `tools/survey-page.mjs` 时，探针在抽控件和截图之前关闭。关着看不见的评审挂件（指标说明、Q0xx 角标、需求追溯、评审态模拟下拉）不进 `locators`，也不进 `assert`。
+对照用例核对文案和 selector 时：**先关闭内部评审模式，再看页面**。用手开的浏览器时先关，复勘过程中不要打开。用 `tools/survey-page.mjs` 时，探针在抽控件和截图之前关闭。关着看不见的评审挂件（指标说明、Q0xx 角标、需求追溯、评审态模拟下拉）不进 `locators`，也不进 `assert`。
+
+**点状**：只核对**本条用例**会点到的按钮名、列名、chip、占位符；不要为整页重做路由勘察。路由以入口 seed / catalog 为准，复勘发现 URL 与 catalog 不一致时记 note，不改 `goto` 目标。
 
 ### 1. 从用例翻译（默认 1:1）
 
