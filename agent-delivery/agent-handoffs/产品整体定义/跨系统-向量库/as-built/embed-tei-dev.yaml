@@ -1,22 +1,25 @@
-# as-built 快照 · CROSS-VEC-EMBED-DEPLOY-L01（2026-09-11 实际 apply 到 K8s ns dev 的清单）
+# as-built 快照 · CROSS-VEC-EMBED-DEPLOY-L01
 #
+# 2026-09-11 首版 apply 在已下线的 ns dev。2026-10-21 起目标命名空间改为 zhipu-tts
+# （现网 demo / lumen 都在该 ns，集群里已无 dev）。
 # 这是 as-built 留痕，不是 GitOps 真源：本叶按派单「不改业务仓代码」，清单以 kubectl apply 落地，
 # 节点副本在 htsvr050:/root/gkx-embed/tei.yaml。收编进 lumen-algo-py/k8s/ 或 helm chart 见 handoff 开放项 H1。
 #
-# 端点契约（对外唯一）：POST http://gkxlumen-embed-tei.dev.svc.cluster.local:8080/v1/embeddings
+# 端点契约（对外唯一）：POST http://gkxlumen-embed-tei.zhipu-tts.svc.cluster.local:8080/v1/embeddings
+# 同命名空间内可短名 http://gkxlumen-embed-tei:8080/v1/embeddings
 # 模型：BAAI/bge-base-zh-v1.5（dim 768，CLS pooling，返回向量已 L2 归一 → 配 COSINE）
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: gkxlumen-embed-tei-cache
-  namespace: dev
+  namespace: zhipu-tts
   labels:
     app: gkxlumen-embed-tei
     gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
 spec:
   accessModes: ["ReadWriteOnce"]
-  storageClassName: local-path
+  storageClassName: nfs-client
   resources:
     requests:
       storage: 5Gi
@@ -25,7 +28,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gkxlumen-embed-tei
-  namespace: dev
+  namespace: zhipu-tts
   labels:
     app: gkxlumen-embed-tei
     gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
@@ -41,12 +44,16 @@ spec:
       labels:
         app: gkxlumen-embed-tei
     spec:
+      # 镜像已在 node01 ctr import（ghcr blob CDN 在本集群约 26KB/s 且会卡死），所以钉在 node01。
+      # 权重在 PVC /data/bge-base-zh-v1.5。Pod 访问 huggingface.co 走 IPv6 会被 RST，不能靠在线下载。
+      nodeSelector:
+        kubernetes.io/hostname: node01
       containers:
         - name: tei
           image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.8
           imagePullPolicy: IfNotPresent
           args:
-            - "--model-id=BAAI/bge-base-zh-v1.5"
+            - "--model-id=/data/bge-base-zh-v1.5"
             - "--port=8080"
             - "--auto-truncate"           # 超 512 token 截断而非 413，rebuild 批量不会中途炸
             - "--max-client-batch-size=64"
@@ -91,7 +98,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gkxlumen-embed-tei
-  namespace: dev
+  namespace: zhipu-tts
   labels:
     app: gkxlumen-embed-tei
     gkx.owner: "CROSS-VEC-EMBED-DEPLOY-L01"
