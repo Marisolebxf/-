@@ -16,8 +16,9 @@
 - FUNC-00024 / FUNC-00025 是页面清单，不用 `algo_*`，不点「执行接口」。
 - 五条用例只回填了「自动化用例ID」。
 - `node run-apiview.mjs .../chain-basic --check`：5 条，编译错误 0。
+- 脚本在 `origin/dev`：首版 `80c6e618`，点击口径修订 `a7d697d0`。
 
-未做：联调台试跑，其余 20 条脚本，其它 catalog 页。
+本单不做联调台试跑。试跑在 `QA-KJZTFWSFK-SCRIPT-TRIAL-L01`。其余 20 条脚本和其它 catalog 页未写。
 
 ## 偏离
 
@@ -27,12 +28,12 @@ runner 单 `QA-KJZTFWSFK-RUNNER-APIVIEW-L01` 仍是待签收，代码已在 `ori
 
 - `agent-delivery/qa/as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/`
 - `FUNC-产业链基础指标-用例.md` 五条自动化用例ID
-- playbook §S2 与索引 S2 行改为金样已写、试跑未开
+- playbook §S2 与索引 S2 行：金样已写；试跑结论写在试跑单
 
 ## 验收证据
 
 - `--check` 完成：5 条脚本，assert 编译错误 0
-- 未对 `https://edu.itic-sci.com/dma/algovwz/` 试跑
+- 目录只有这五条；`fixtures/testdata.yaml` 的 `base_url` 带 `/dma/algovwz/`；五条 `tier: A`，无 `allow_skip`
 
 ## 架构合规自检
 
@@ -40,7 +41,7 @@ runner 单 `QA-KJZTFWSFK-RUNNER-APIVIEW-L01` 仍是待签收，代码已在 `ori
 - 调用链未改，脚本只描述联调台页面操作 ✅
 - 未使用 Neo4j ✅
 - 未改业务可观测埋点 ✅
-- 未 push，未改 CI ✅
+- 已 push `origin/dev`，未改 CI ✅
 - 未把 demo 并进 lumen ✅
 - 未写对象存储桶 ✅
 - 未让 lumen 前端调用 demo 服务 ✅
