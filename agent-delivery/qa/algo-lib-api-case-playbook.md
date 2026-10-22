@@ -605,7 +605,7 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 开干：按 §S2 表改 runner，改完停。
 ```
 
-金样五条的父控包等试跑单再发。上面这段 runner 父控包已在 2026-10-22 做完（`QA-KJZTFWSFK-RUNNER-APIVIEW-L01`），不要再派一遍。
+金样五条已由 `QA-KJZTFWSFK-SCRIPT-GOLD-L01` 落盘，试跑仍另开，不要和编写单混在一起。上面这段 runner 父控包已在 2026-10-22 做完（`QA-KJZTFWSFK-RUNNER-APIVIEW-L01`），不要再派一遍。
 
 ---
 

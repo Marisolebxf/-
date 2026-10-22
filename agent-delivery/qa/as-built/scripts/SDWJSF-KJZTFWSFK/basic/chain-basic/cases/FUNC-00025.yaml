@@ -1,0 +1,26 @@
+id: FUNC-00025
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00025
+priority: P0
+title: 产业链基础指标算法测试清单
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 产业投融资规模
+expect:
+  - note: 算法测试下拉 10 项；切换后调用区为 GET /innov/v1/industry/investment-stats
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET')
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/investment-stats')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(10)
+      for (const name of ['产业链列表','产业市场规模','产业企业规模','产业机构规模','产业投融资规模','全球产业区域分布','全国产业分布','产业动态资讯','深圳产业要素','深圳产业分布']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name)
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog 该页 autoRun=true，进入算法测试后页面可能自行请求；本条只核下拉和 method/path。

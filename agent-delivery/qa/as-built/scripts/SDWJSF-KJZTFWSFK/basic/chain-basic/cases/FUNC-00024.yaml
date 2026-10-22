@@ -1,0 +1,30 @@
+id: FUNC-00024
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00024
+priority: P0
+title: 产业链基础指标接口信息清单
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: assert_visible
+    target: 10 个接口
+  - action: assert_visible
+    target: /innov/v1/industry/list
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 产业市场规模
+expect:
+  - note: 停留接口信息；切换后概览为产业市场规模 GET /innov/v1/industry/market-stats；下拉 10 项与 catalog 标题一致
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET')
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/industry/market-stats')
+      await expect(page.locator('.api-info-grid header')).toContainText('产业市场规模')
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(10)
+      for (const name of ['产业链列表','产业市场规模','产业企业规模','产业机构规模','产业投融资规模','全球产业区域分布','全国产业分布','产业动态资讯','深圳产业要素','深圳产业分布']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name)
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认是接口信息，默认项用步骤确认产业链列表的 path。

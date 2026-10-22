@@ -1,0 +1,11 @@
+# chain.basic 金样覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00001 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00001 | 产业链列表，无参 |
+| FUNC-00002 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00002 | 产业市场规模，chainId=INB1701，statYear=2025 |
+| FUNC-00004 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00004 | 产业市场规模，不传 chainId |
+| FUNC-00024 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00024 | 接口信息清单 |
+| FUNC-00025 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00025 | 算法测试清单 |
+
+其余 FUNC-00003、00005–00023 未写。试跑未做。

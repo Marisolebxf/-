@@ -1,0 +1,21 @@
+id: FUNC-00004
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00004
+priority: P1
+title: 产业市场规模不传 chainId
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业市场规模
+  - action: algo_fill
+    set: { statYear: 2025 }
+    omit: [chainId]
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 chainId，且不出现 total_revenue
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.innerText() : ''); if (!/chainId/.test(text)) throw new Error('结果未说明 chainId'); if (/total_revenue/.test(text)) throw new Error('结果含 total_revenue')"
+as_built_note: 用例写不传 chainId。脚本用 omit 清空级联，statYear 仍填 2025。只看运行结果和错误提示，不看参数说明。
