@@ -412,20 +412,20 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🟡 金样五条已写。无头试跑 3 过 2 败：FUNC-00001 缺 `cluster_name`、`map_status`；FUNC-00004 空 `chainId` 仍出数。人看截图前不铺第二页 |
+| 成熟度 | 🟡 金样五条已写。无头试跑 3 过 2 败：FUNC-00001 缺 `cluster_name`、`map_status`；FUNC-00004 空 `chainId` 仍出数。2026-10-22 人已看这五条截图，确认 selector 与断言对得上页面，允许按页编写 |
 | 驱动 | 联调台页面，Playwright **无头**（`run-apiview.mjs` 默认 `--headless true`） |
 | 不抄 | 专题的内部评审、`30892`、`P0-xx`。文件形状和判定方式照抄，见「两套脚本」 |
 | 产物 | runner 档 + 调用模板；然后才是 `as-built/scripts/SDWJSF-KJZTFWSFK/{module}/{page}/` |
-| 顺序 | 1. runner 档 → 2. `chain.basic` 金样五条 → 3. 无头试跑这五条 → 4. 人看截图后再铺页 |
+| 顺序 | 1. runner 档 → 2. `chain.basic` 金样五条 → 3. 无头试跑这五条 → 4. 人看截图（2026-10-22 已确认）→ 5. 先补本页其余脚本，再按 catalog 页铺开 |
 
 ### 现在差什么
 
 | 已有 | 还没有 |
 |------|--------|
-| 1500 条 FUNC 册，步骤里已有 `参数名=值` | 金样以外的脚本 |
-| catalog `base_url` + `chain.basic` 金样五条 yaml | 第二页脚本 |
-| `run-apiview.mjs`，以及 §S2「点击从源码定」 | 人看过金样截图之前的铺页 |
-| 联调台控件类名稳定（见翻译表） | `gap-func-vs-scripts.py` 只有 `KJZTFWXT` 映射 |
+| 1500 条 FUNC 册，步骤里已有 `参数名=值` | `chain.basic` 其余脚本：FUNC-00003、00005–00023 |
+| catalog `base_url` + `chain.basic` 金样五条 yaml | 第二页及以后的脚本 |
+| `run-apiview.mjs`，以及 §S2「点击从源码定」 | `gap-func-vs-scripts.py` 的算法库映射（铺开时再加） |
+| 2026-10-22 人已看金样截图 | 全库执行波次（S3 仍不开） |
 
 专题入口是 `tools/run-scripts.mjs`（基址 `http://10.50.69.111:30892/`，每条脚本调用 `ensureReviewOff`）。算法库入口是 `tools/run-apiview.mjs`，不往专题文件里加分支。两边共用 `runner-core.mjs` 的读册、断言、截图和 `result.yaml`。
 
@@ -544,7 +544,7 @@ node run-apiview.mjs ../scripts/SDWJSF-KJZTFWSFK/basic/chain-basic \
   --run-dir ../runs/金样-algovwz-chain-basic
 ```
 
-试跑失败先看截图和 steps。selector 错了改 runner 或这条 yaml，不改用例册，不改断言把红变成绿。人看过这五条的截图之前，不派第二页。
+试跑失败先看截图和 steps。selector 错了改 runner 或这条 yaml，不改用例册，不改断言把红变成绿。2026-10-22 人已看过这五条截图，允许按页派编写。FUNC-00001、FUNC-00004 保持失败。
 
 ### 可复用（只这三条）
 
@@ -607,7 +607,7 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 
 ### 金样之后才许铺开
 
-人确认五条的 selector 和断言能对上页面之后，按 catalog 页派子：一页一个子 agent，每批最多 4 页。子 agent 只写本页 `cases/*.yaml` 和本页 `coverage.md`，并回填本页「自动化用例ID」。不跑批，不改用例步骤。`gap-func-vs-scripts.py` 的系统映射放到铺开时再加，金样用 `coverage.md` 看。
+2026-10-22 人已确认五条的 selector 和断言对得上页面。先补 `chain.basic` 的 FUNC-00003、00005–00023，不改已有五条。然后按 catalog 页派子：一页一个子 agent，每批最多 4 页。子 agent 只写本页 `cases/*.yaml` 和本页 `coverage.md`，并回填本页「自动化用例ID」。不跑批，不改用例步骤。`gap-func-vs-scripts.py` 的系统映射放到铺开时再加。
 
 ### 父控先做 runner（复制即用）
 
@@ -629,7 +629,7 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🔴 全库未开。金样五条已无头试跑（3 过 2 败）。全库波次仍走 `script-batch-run-playbook.md`（串行、禁止改脚本充绿）。人看截图前不铺页 |
+| 成熟度 | 🔴 全库未开。金样截图已于 2026-10-22 确认，编写可以按页铺开。全库波次仍走 `script-batch-run-playbook.md`（串行、禁止改脚本充绿），等脚本落盘后再开 |
 | 环境 | `https://edu.itic-sci.com/dma/algovwz/`；波次目录建议 `as-built/runs/{日}-algovwz-{wave}/` |
 | 编排 | 试跑通过后再按专题波次手册串行铺开。一条波次同时只跑一个 runner |
 
@@ -730,4 +730,4 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 
 - B 线阶段变更：**先改本文件**，再改 `algo-lib-playbook-index.md` §1 B 线表一行。  
 - 不在 `func-test-playbook-index.md` 复制算法库长 Kickoff；该索引仅保留就绪门 + 跳转。  
-- 2026-10-22：算法库入口是 `run-apiview.mjs`，专题入口仍是 `run-scripts.mjs`。共用 `runner-core.mjs`。金样五条已写。同日无头试跑 3 过 2 败；下拉只点弹层选项，`chainId` 点级联单选框。见 §S2「点击从源码定」。
+- 2026-10-22：算法库入口是 `run-apiview.mjs`，专题入口仍是 `run-scripts.mjs`。共用 `runner-core.mjs`。金样五条已写。同日无头试跑 3 过 2 败；下拉只点弹层选项，`chainId` 点级联单选框。见 §S2「点击从源码定」。同日人已看金样截图，编写按页放行，全库执行仍不开。
