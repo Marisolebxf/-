@@ -47,3 +47,16 @@
 - `agent-delivery/qa/delivery/README.md`（条数记录更新）
 
 ponytail: full —— 复用模板与册主表结构，未新建任何中间格式；缺陷修复落在真源（册 md）而非导出层打补丁。
+
+## 7. 2026-10-22 现行册产物挂到本单
+
+上文 §1–§6 是 774 条 v2.0 那一版，保留。本单状态仍是 `backlog`，标题和验收条文仍写 774。登记工具改不了标题和验收条文，所以不改状态，不标 done。
+
+现行册合表已落在同一份 xlsx 的「功能测试用例」sheet：1579 行，功能点已填 562、留空 1017，是否通过列空。其它 sheet 未改。覆盖扫描「待改 0」之后，下列五份覆盖表与这份 xlsx 挂到本单：
+
+- `agent-delivery/qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYDOM-重点企业领域分析/coverage-fp.md`
+- `agent-delivery/qa/test-cases/KJZTFWXT/enterprise-企业分析/KEYENT-重点企业类型分析/coverage-fp.md`
+- `agent-delivery/qa/test-cases/KJZTFWXT/industry-center-产业链分析/OVERVIEW-专题全景/coverage-fp.md`
+- `agent-delivery/qa/test-cases/KJZTFWXT/service-产业服务链分析/SVCGRAPH-服务链图谱分析/coverage-fp.md`
+- `agent-delivery/qa/test-cases/KJZTFWXT/service-产业服务链分析/SVCSEARCH-服务机构查询/coverage-fp.md`
+- `agent-delivery/qa/delivery/KJZTFWXT/6.国际科技信息中心项目_科技专题服务系统_测试用例.xlsx`
