@@ -12,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { algoFill, algoPick, algoRun, algoTab, ensureApiviewLogin } from './apiview-session.mjs';
+import { algoFill, algoPick, algoRun, algoTab, clickPopupOption, ensureApiviewLogin } from './apiview-session.mjs';
 import {
   checkAsserts, evalExpects, judgeRun, loadCasesV1, readFailText, shotStep, writeCaseRecord, yamlDump, yamlLoad,
 } from './runner-core.mjs';
@@ -77,7 +77,12 @@ async function clickTarget(page, target) {
     await page.getByRole(role[1], { name: role[2] }).click({ timeout: 8000 });
     return;
   }
-  await page.getByText(t.replace(/「|」/g, '')).first().click({ timeout: 8000 });
+  const name = t.replace(/「|」/g, '');
+  if (await page.locator('.arco-trigger-popup:visible').count()) {
+    await clickPopupOption(page, name);
+    return;
+  }
+  await page.getByText(name, { exact: true }).click({ timeout: 5000 });
 }
 
 async function runScript(page, script) {
@@ -98,7 +103,9 @@ async function runScript(page, script) {
       shotIdx += 1;
       try {
         if (action === 'goto') {
-          await page.goto(resolveGoto(step.target), { waitUntil: 'domcontentloaded' });
+          const url = resolveGoto(step.target);
+          if (page.url() === url) await page.reload({ waitUntil: 'domcontentloaded' });
+          else await page.goto(url, { waitUntil: 'domcontentloaded' });
           await ensureApiviewLogin(page);
           logStep('goto', step.target, true);
         } else if (action === 'click') {

@@ -5,10 +5,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// ponytail: 名称表抄自 lumen-ui-algo-apiview industryCascade.js 的 CLUSTER_SEED。
-// 新的 INB id 不在表里时按原文字搜索；选不中就失败，不猜。
+// ponytail: 名称表抄自 industryCascade.js 的 CLUSTER_SEED，外加该文件里的 CATALOG_L1。
+// 不在表里的 id 不猜名字，搜索失败就停。
 const CHAIN_L0 = {
   INB1701: '新一代信息技术',
+  INB170101: '半导体与集成电路',
   INB1702: '生物',
   INB1703: '新能源',
   INB1704: '新材料',
@@ -24,6 +25,25 @@ const CHAIN_L0 = {
   INB1804: '未来空间',
   INB1805: '未来健康',
 };
+
+function escapeRegExp(text) {
+  return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// 搜索结果是「集群 / 产业 / 子产业」。同名时取最后一段等于目标、且路径最长的那条。
+export function pickChainOptionIndex(texts, leaf) {
+  let best = -1;
+  let bestLen = -1;
+  texts.forEach((text, i) => {
+    const parts = String(text).replace(/\s+/g, '').split('/').filter(Boolean);
+    if (parts.at(-1) !== leaf) return;
+    if (parts.length > bestLen) {
+      bestLen = parts.length;
+      best = i;
+    }
+  });
+  return best;
+}
 
 export function formatExchange({ pathLine, requestUrl, params, response }) {
   const body = String(response ?? '').trim();
@@ -41,17 +61,23 @@ export function formatExchange({ pathLine, requestUrl, params, response }) {
 }
 
 export async function ensureApiviewLogin(page) {
-  if (!page.url().includes('/login')) return;
+  const card = page.locator('.login-card');
+  const workspace = page.getByRole('tab', { name: '接口信息' });
+  // 联调台先打开目标 hash，路由守卫随后才切到登录页。只看地址会在卡片出现前返回。
+  await Promise.race([
+    card.waitFor({ state: 'visible', timeout: 15000 }),
+    workspace.waitFor({ state: 'visible', timeout: 15000 }),
+  ]).catch(() => {});
+  if (!(await card.isVisible().catch(() => false))) return;
   const username = process.env.ALGO_LOGIN_USER;
   const password = process.env.ALGO_LOGIN_PASSWORD;
   if (!username || !password) {
     throw new Error('需要环境变量 ALGO_LOGIN_USER 与 ALGO_LOGIN_PASSWORD');
   }
-  const card = page.locator('.login-card');
   await card.locator('input').first().fill(username);
   await card.locator('input[type=password]').fill(password);
   await page.getByRole('button', { name: '进入算法库' }).click();
-  await page.waitForURL((u) => !String(u).includes('/login'), { timeout: 15000 });
+  await workspace.waitFor({ state: 'visible', timeout: 15000 });
 }
 
 function formItem(page, name) {
@@ -63,27 +89,50 @@ export async function algoTab(page, target) {
   await page.getByRole('tab', { name }).click();
 }
 
+export async function clickPopupOption(page, title) {
+  const name = String(title).replace(/「|」/g, '');
+  const popup = page.locator('.arco-trigger-popup:visible');
+  const option = popup.locator('.arco-select-option').filter({
+    hasText: new RegExp(`^\\s*${escapeRegExp(name)}\\s*$`),
+  }).first();
+  await option.scrollIntoViewIfNeeded({ timeout: 5000 });
+  await option.click({ timeout: 5000 });
+}
+
 export async function algoPick(page, title) {
   const root = page.locator('.tab-endpoint-select').filter({ visible: true }).first();
   await root.locator('.arco-select-view').click();
-  await page.locator('.arco-trigger-popup:visible').getByText(String(title), { exact: true }).click();
+  await clickPopupOption(page, title);
 }
 
 async function selectChain(page, item, id) {
-  const leaf = CHAIN_L0[id] || id;
   const box = item.locator('.chain-cascader');
-  await box.locator('.arco-cascader-view').click();
-  await box.locator('input').first().fill(leaf);
-  const option = page.locator('.arco-trigger-popup:visible').locator('.arco-cascader-option, .arco-cascader-search-option').filter({ hasText: leaf }).last();
-  await option.click();
+  const tag = box.locator('.arco-tag').first();
+  if (await tag.isVisible().catch(() => false) && (await tag.innerText()).trim() === id) return;
+  const leaf = CHAIN_L0[id];
+  if (!leaf) throw new Error(`级联名称表没有 ${id}，不按 id 原文去点`);
+  await box.locator('.arco-select-view').click({ timeout: 5000 });
+  await box.locator('.arco-select-view input').first().fill(leaf);
+  const options = page.locator('.arco-trigger-popup:visible .arco-cascader-search-option');
+  await options.first().waitFor({ state: 'visible', timeout: 5000 });
+  const texts = await options.allInnerTexts();
+  const index = pickChainOptionIndex(texts, leaf);
+  if (index < 0) throw new Error(`级联搜索没有以「${leaf}」结尾的项`);
+  const chosen = options.nth(index);
+  await chosen.scrollIntoViewIfNeeded({ timeout: 5000 });
+  const radio = chosen.locator('.arco-radio');
+  if (await radio.count()) await radio.click({ timeout: 5000 });
+  else await chosen.click({ timeout: 5000 });
   await box.locator('.arco-tag').filter({ hasText: id }).waitFor({ state: 'visible', timeout: 8000 });
 }
 
 async function clearChain(item) {
   const box = item.locator('.chain-cascader');
-  if (!(await box.locator('.arco-tag').count())) return;
-  await box.hover();
-  await box.locator('.arco-cascader-view-clear-btn, .arco-icon-close').first().click({ timeout: 3000 });
+  const tag = box.locator('.arco-tag');
+  if (!(await tag.count())) return;
+  await box.locator('.arco-select-view').hover();
+  await box.locator('.arco-select-view-clear-btn').click({ timeout: 3000 });
+  await tag.first().waitFor({ state: 'hidden', timeout: 3000 });
 }
 
 async function setField(page, name, value) {
@@ -95,7 +144,7 @@ async function setField(page, name, value) {
   }
   if (await item.locator('.arco-select').count()) {
     await item.locator('.arco-select-view').click();
-    await page.locator('.arco-trigger-popup:visible').getByText(String(value), { exact: true }).click();
+    await clickPopupOption(page, value);
     return;
   }
   if (await item.locator('.arco-radio').count()) {
@@ -209,8 +258,18 @@ if (self) {
   let threw = false;
   try { formatExchange({ pathLine: 'GET /x', requestUrl: '无', params: '无', response: '  ' }); }
   catch { threw = true; }
-  if (!ok || !threw) {
-    console.error('formatExchange self-check failed');
+  const chainPick = pickChainOptionIndex([
+    '新一代信息技术',
+    '新一代信息技术 / 新一代信息技术',
+    '新一代信息技术 / 新一代信息技术 / 半导体与集成电路',
+  ], '新一代信息技术');
+  const bioPick = pickChainOptionIndex([
+    '生物产业',
+    '生物产业 / 生物',
+  ], '生物');
+  const miss = pickChainOptionIndex(['生物产业'], '生物');
+  if (!ok || !threw || chainPick !== 1 || bioPick !== 1 || miss !== -1) {
+    console.error('apiview-session self-check failed');
     process.exit(1);
   }
   console.log('apiview-session ok');

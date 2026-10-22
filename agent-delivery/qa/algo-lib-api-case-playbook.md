@@ -412,7 +412,7 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🟡 runner 档已落地。金样 yaml 和试跑仍未开 |
+| 成熟度 | 🟡 金样五条已写。无头试跑 3 过 2 败：FUNC-00001 缺 `cluster_name`、`map_status`；FUNC-00004 空 `chainId` 仍出数。人看截图前不铺第二页 |
 | 驱动 | 联调台页面，Playwright **无头**（`run-apiview.mjs` 默认 `--headless true`） |
 | 不抄 | 专题的内部评审、`30892`、`P0-xx`。文件形状和判定方式照抄，见「两套脚本」 |
 | 产物 | runner 档 + 调用模板；然后才是 `as-built/scripts/SDWJSF-KJZTFWSFK/{module}/{page}/` |
@@ -422,9 +422,9 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 | 已有 | 还没有 |
 |------|--------|
-| 1500 条 FUNC 册，步骤里已有 `参数名=值` | `as-built/scripts/SDWJSF-KJZTFWSFK/` 目录本身 |
-| catalog `base_url` + hash path（`#/chain/basic`） | 任何一条算法库 `cases/*.yaml` |
-| 专题 cases-v1 的文件形状、`expect: {note, assert}`；`run-apiview.mjs` | 金样 yaml 与无头试跑 |
+| 1500 条 FUNC 册，步骤里已有 `参数名=值` | 金样以外的脚本 |
+| catalog `base_url` + `chain.basic` 金样五条 yaml | 第二页脚本 |
+| `run-apiview.mjs`，以及 §S2「点击从源码定」 | 人看过金样截图之前的铺页 |
 | 联调台控件类名稳定（见翻译表） | `gap-func-vs-scripts.py` 只有 `KJZTFWXT` 映射 |
 
 专题入口是 `tools/run-scripts.mjs`（基址 `http://10.50.69.111:30892/`，每条脚本调用 `ensureReviewOff`）。算法库入口是 `tools/run-apiview.mjs`，不往专题文件里加分支。两边共用 `runner-core.mjs` 的读册、断言、截图和 `result.yaml`。
@@ -438,7 +438,7 @@ HTTP / Postman 不覆盖「接口信息-清单」「算法测试-清单」。S2 
 | 点 | 做法 |
 |----|------|
 | 无头 | 沿用现有 `--headless`，默认 true。正式试跑和以后的波次都无头。`--headless false` 只给人排查，不进波次命令 |
-| 登录 | 浏览器上下文里做一次。`goto` 之后地址含 `/login` 才填表：账号框、密码框、按钮「进入算法库」（`LoginView.vue`）。已离开登录页就跳过。yaml 里不写登录步骤 |
+| 登录 | 浏览器上下文里做一次。`goto` 之后出现 `.login-card` 才填表：账号框、密码框、按钮「进入算法库」（`LoginView.vue`）。已看到「接口信息」就跳过。不靠地址里有没有 `/login`，路由守卫可能晚于首次判断。yaml 里不写登录步骤 |
 | 口令 | 只读环境变量 `ALGO_LOGIN_USER`、`ALGO_LOGIN_PASSWORD`。缺了就停。不把口令写进 yaml、playbook 或 git |
 | 评审开关 | 本入口不调用 `ensureReviewOff` |
 | 路由 | `base_url` 保持 `https://edu.itic-sci.com/dma/algovwz/`（末尾 `/`）。`goto` 目标写 `#/chain/basic` 这种 catalog hash。拼接结果是 `{base_url}#/chain/basic`。`base_url` 不含 `/dma/algovwz/` 时退出码 2 |
@@ -469,8 +469,8 @@ HTTP / Postman 不覆盖「接口信息-清单」「算法测试-清单」。S2 
 | action | 参数 | runner 做什么 |
 |--------|------|----------------|
 | `algo_tab` | `test` 或 `api` | 点对应 tab。调用类固定 `test` |
-| `algo_pick` | 接口标题，如「产业市场规模」 | 点 `.tab-endpoint-select .arco-select-view`，在可见弹层里点该标题 |
-| `algo_fill` | `set`：要填的字段；`omit`：要留空的字段 | 按 extra 文案找到表单项。`chainId` 走级联：搜索并选中，旁边 tag 等于该 id（`INB1701` 对应产业集群「新一代信息技术」）。整数走 `a-input-number`。`omit` 点清除。禁止改「高级 JSON」 |
+| `algo_pick` | 接口标题，如「产业市场规模」 | 点可见的 `.tab-endpoint-select .arco-select-view`，再在可见弹层里滚到并点 `.arco-select-option` 全文。不整页搜文字 |
+| `algo_fill` | `set`：要填的字段；`omit`：要留空的字段 | 按 extra 文案找到表单项。`chainId` 走级联，见下方「点击从源码定」。整数走 `a-input-number`。`omit` 点清除。禁止改「高级 JSON」 |
 | `algo_run` | 无 | 点「执行接口」，等到 `.json-viewer` 或错误 `a-alert` 出现，截运行结果，并写 `exchange.txt` |
 
 调用类模板（复制后改标题、hash、接口名、参数和 assert）：
@@ -521,7 +521,7 @@ response:
 - `response` 优先用这次请求的响应体原文。页面未发业务 HTTP（前端本地示例）时，改为抄「运行结果」里实际展示的 JSON，并在 `request_url` 写「无」。禁止把 catalog 的 `sampleResponse` 填进这个文件。
 - 同一次重跑覆盖本条的 `exchange.txt`，不另加序号。
 
-**页面清单类（每页两条）** 不用 `algo_*`。步骤写成和专题一样的 `goto` / `click` / `assert`，selector 按上表自己写，因为要看的是页头数量、下拉项、method、path，不是出参。`FUNC-00024` 停在「接口信息」，`FUNC-00025` 切到「算法测试」再换一个接口，两条都不点「执行接口」。
+**页面清单类（每页两条）** 不用 `algo_*`。步骤写成 `goto` / `click` / `assert`。`FUNC-00024` 停在「接口信息」，`FUNC-00025` 切到「算法测试」再换一个接口，两条都不点「执行接口」。换接口时：先点本 tab 的 `.tab-endpoint-select .arco-select-view`，下一步 `target` 写选项标题。runner 发现弹层已开，就只点弹层里的 `.arco-select-option`。不要把标题写成整页文字选择器。
 
 ### 金样五条（runner 落地之后才写）
 
@@ -550,7 +550,23 @@ node run-apiview.mjs ../scripts/SDWJSF-KJZTFWSFK/basic/chain-basic \
 
 1. 一条用例一个 `cases/{脚本id}.yaml`，禁止大包 `scripts.yaml`。
 2. `expect[]` 用 `{note, assert}`。`note` 译自该条预期。`assert` 必须落到这一问，禁止空断言、禁止用 `allow_skip` 把失败记成通过。
-3. 下拉点 `.arco-select-view`，选项在 `.arco-trigger-popup:visible`。禁止点宽度为 0 的隐藏 input。
+3. 下拉先点 `.arco-select-view`，再点 `.arco-trigger-popup:visible` 里的 `.arco-select-option`。禁止整页 `getByText`，禁止点宽度为 0 的隐藏 input。
+
+### 点击从源码定
+
+写 selector 之前读联调台 Vue，不靠试跑去猜。对照文件见上面「前端对照」。
+
+**接口下拉。** `EndpointSelect.vue` 是 `a-select`，选项挂在 `body` 的 `.arco-trigger-popup` 上，不在页面正文里。Arco 下拉列表 `.arco-select-dropdown-list-wrapper` 最大高度 200px，每一项行高 36px，大约只露出 5 项，再往下被裁切。点法：先打开下拉，把目标 `.arco-select-option` 滚进这块可视区，再点该项。超时 5 秒。
+
+不要用整页 `getByText().first()`。算法测试页会挂上 `ModelFlowPanel`（`ApiTestPanel` 在 `testVisited` 之后才存在）。`modelFlowRegistry.json` 里该页 `dims` 会和部分接口标题相同，例如产业链基础指标的「产业市场规模」「产业企业规模」「产业机构规模」。整页第一个匹配会落到流程图节点上，而节点正被打开的弹层挡住，点击会空等。接口信息 tab 不挂流程图，所以停在该 tab 时整页文字有时能碰巧点中，不能当成写法。金样「产业投融资规模」不在这三项维度里，但它是下拉第 5 项，贴着 200px 底边，下一项在截图里已被裁掉。整页 click 没有滚到 `.arco-select-option`，8 秒后调用区仍停在「产业链列表」。
+
+**chainId 级联。** `ChainCascader.vue` 是 `a-cascader`，同时开了 `path-mode`、`check-strictly`、`allow-search`。选项树在 `industryCascade.js`：很多集群名和它下面的 L0 产业同名，例如集群「新一代信息技术」下面的 `INB1701` 也叫「新一代信息技术」，而且 L0 还有子节点，不是叶子。Arco 在 `check-strictly` 下，点行文字只是展开，真正写入值的是该项上的单选框（`.arco-radio`）。`chainIdFromPath` 只认 `INB` 开头的 id，点中集群（`CL-*`）不会得到 chainId。
+
+点法：
+
+1. 旁边 `.arco-tag` 已经是目标 id，就不要再开面板。页面示例经常已经填好，再点一次只会空等。
+2. 否则点 `.chain-cascader .arco-select-view`（级联的可点层是 SelectView，没有 `.arco-cascader-view`），用名称表里的中文名搜索（表抄 `CLUSTER_SEED` 和 `CATALOG_L1`）。在 `.arco-cascader-search-option` 里，选「最后一段等于这个名字、且路径最长」的那条。这样会点到产业节点，而不是同名集群，也不会点到更深的子产业。
+3. 点这条上的 `.arco-radio`，再等 tag 变成该 id。点击超时 5 秒。名称表没有的 id 直接失败，不拿 id 原文去搜。
 
 ### 用例词和页面词
 
@@ -561,8 +577,8 @@ node run-apiview.mjs ../scripts/SDWJSF-KJZTFWSFK/basic/chain-basic \
 | 侧栏进入某页 | `goto` 完整地址 `{base_url}#/{catalog path}`。`chain.basic` 为 `https://edu.itic-sci.com/dma/algovwz/#/chain/basic`。不点侧栏去碰兄弟页 |
 | 停留「接口信息」 | 进页默认即该 tab。`role=tab`，名称「接口信息」，`aria-selected=true` |
 | 切换「算法测试」 | 点击 `role=tab`，名称「算法测试」 |
-| 接口下拉选择「某标题」 | `.tab-endpoint-select .arco-select-view`，点选项全文 |
-| 填写 `chainId=INB1701` | `algo_fill`。`chainId` 走 `.chain-cascader`，选中后 tag 显示该 id。其它字段按表单项 extra 的字段名填。禁止只改「高级 JSON」 |
+| 接口下拉选择「某标题」 | 先点本 tab 的 `.tab-endpoint-select .arco-select-view`，再点弹层里该标题的 `.arco-select-option`。不要整页搜标题 |
+| 填写 `chainId=INB1701` | `algo_fill`。tag 已是该 id 则跳过。否则按「点击从源码定」搜索并点单选框，直到 tag 等于该 id。其它字段按表单项 extra 的字段名填。禁止只改「高级 JSON」 |
 | 不传某参数 | 该输入留空，再点执行 |
 | 点击调用 | 按钮文案是 **执行接口** |
 | 返回面板 | 「运行结果」卡片里的 JSON。断言字段名出现，不钉死 sample 里的具体数字 |
@@ -605,7 +621,7 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 开干：按 §S2 表改 runner，改完停。
 ```
 
-金样五条已由 `QA-KJZTFWSFK-SCRIPT-GOLD-L01` 落盘，试跑仍另开，不要和编写单混在一起。上面这段 runner 父控包已在 2026-10-22 做完（`QA-KJZTFWSFK-RUNNER-APIVIEW-L01`），不要再派一遍。
+金样五条已由 `QA-KJZTFWSFK-SCRIPT-GOLD-L01` 落盘。无头试跑已由 `QA-KJZTFWSFK-SCRIPT-TRIAL-L01` 做完：3 过 2 败，不要和编写单混在一起，也不要为了变绿改断言。上面这段 runner 父控包已在 2026-10-22 做完（`QA-KJZTFWSFK-RUNNER-APIVIEW-L01`），不要再派一遍。
 
 ---
 
@@ -613,7 +629,7 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🔴 未开。runner 档落地后，先无头试跑金样五条；全库波次仍走 `script-batch-run-playbook.md`（串行、禁止改脚本充绿） |
+| 成熟度 | 🔴 全库未开。金样五条已无头试跑（3 过 2 败）。全库波次仍走 `script-batch-run-playbook.md`（串行、禁止改脚本充绿）。人看截图前不铺页 |
 | 环境 | `https://edu.itic-sci.com/dma/algovwz/`；波次目录建议 `as-built/runs/{日}-algovwz-{wave}/` |
 | 编排 | 试跑通过后再按专题波次手册串行铺开。一条波次同时只跑一个 runner |
 
@@ -714,4 +730,4 @@ as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
 
 - B 线阶段变更：**先改本文件**，再改 `algo-lib-playbook-index.md` §1 B 线表一行。  
 - 不在 `func-test-playbook-index.md` 复制算法库长 Kickoff；该索引仅保留就绪门 + 跳转。  
-- 2026-10-22：算法库入口是 `run-apiview.mjs`，专题入口仍是 `run-scripts.mjs`。共用 `runner-core.mjs`。金样 yaml 与试跑仍未开。
+- 2026-10-22：算法库入口是 `run-apiview.mjs`，专题入口仍是 `run-scripts.mjs`。共用 `runner-core.mjs`。金样五条已写。同日无头试跑 3 过 2 败；下拉只点弹层选项，`chainId` 点级联单选框。见 §S2「点击从源码定」。

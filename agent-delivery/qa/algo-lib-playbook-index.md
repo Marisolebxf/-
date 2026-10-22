@@ -38,7 +38,7 @@
 | 阶段 | 人话命令（同义） | 成熟度 | 任务说明（必读） | 产物 | 父控做什么 |
 |------|------------------|--------|------------------|------|------------|
 | **S1 用例编写** | 算法库用例编写 / 第三轮 FUNC 重写 / B 线 S1 | ✅ 可开 | ① [`algo-lib-api-case-playbook.md`](algo-lib-api-case-playbook.md) **§编写方法论 + §长任务返工** ② §S1 ③ `qa-test-case-spec.md` ④ `code-registry` 的 **`next_seq.FUNC`** ⑤ `_case.md` 仅文字红线 ⑥ `01-task-list.md` + `_l6-to-catalog-map.yaml` | `FUNC-*-用例.md` + `coverage-fp.md`（删同目录旧 API 册） | 按 catalog 页派子；验收 §细则 I |
-| **S2 脚本** | 算法库测试脚本 / 金样已写 | 🟡 试跑未开 | playbook §S2 | `as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/` | 人看试跑截图前不铺第二页 |
+| **S2 脚本** | 算法库测试脚本 / 金样已写 | 🟡 试跑 3 过 2 败 | playbook §S2 | `as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/` | 人看试跑截图前不铺第二页。00001、00004 按文档口径保持失败 |
 | **S3 执行** | 算法库冒烟/全量 | 🔴 未开 | playbook §S3 | `as-built/runs/*-algovwz-*` | 等 S2 金样被人看过，且 runner 有算法库档 |
 | **S4 交付用例簿** | 算法库 6.x 测试用例 | ✅ 已出表（2026-10-20，FUNC-00001～01500） | playbook §S4 | `delivery/SDWJSF-KJZTFWSFK/6.国际科技信息中心项目_科技专题服务算法库_测试用例.xlsx` | 不重出，除非用例册又改 |
 | **S5 测试记录** | 算法库 7.x 测试记录 | 🟡 骨架 | playbook §S5 + `record-delivery-playbook.md` | 同上 | 待 S3 正式轮次 |
