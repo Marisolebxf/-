@@ -412,13 +412,200 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🟡 待建（无专题式 Playwright 金样） |
-| 方向 | HTTP 集合（`qa/tools/postman/`）或联调台驱动脚本；**不**默认 Playwright 点 UI |
-| 必读（暂定） | `as-built/prompts/_script.md` 三角色纪律；`schema.md` 仅采纳 **结果落盘/禁止充绿** 等与 UI 无关条款 |
-| 产物 | `as-built/scripts/SDWJSF-KJZTFWSFK/{module}/{page}/`（待首建） |
-| 映射 | 用例「自动化用例ID」回填脚本 id；缺口工具 `gap-func-vs-scripts.py` 需扩展系统码后使用 |
+| 成熟度 | 🟡 runner 档已落地。金样 yaml 和试跑仍未开 |
+| 驱动 | 联调台页面，Playwright **无头**（`run-apiview.mjs` 默认 `--headless true`） |
+| 不抄 | 专题的内部评审、`30892`、`P0-xx`。文件形状和判定方式照抄，见「两套脚本」 |
+| 产物 | runner 档 + 调用模板；然后才是 `as-built/scripts/SDWJSF-KJZTFWSFK/{module}/{page}/` |
+| 顺序 | 1. runner 档 → 2. `chain.basic` 金样五条 → 3. 无头试跑这五条 → 4. 人看截图后再铺页 |
 
-父控开 S2 前：在总索引确认 playbook 本节已更新成熟度。
+### 现在差什么
+
+| 已有 | 还没有 |
+|------|--------|
+| 1500 条 FUNC 册，步骤里已有 `参数名=值` | `as-built/scripts/SDWJSF-KJZTFWSFK/` 目录本身 |
+| catalog `base_url` + hash path（`#/chain/basic`） | 任何一条算法库 `cases/*.yaml` |
+| 专题 cases-v1 的文件形状、`expect: {note, assert}`；`run-apiview.mjs` | 金样 yaml 与无头试跑 |
+| 联调台控件类名稳定（见翻译表） | `gap-func-vs-scripts.py` 只有 `KJZTFWXT` 映射 |
+
+专题入口是 `tools/run-scripts.mjs`（基址 `http://10.50.69.111:30892/`，每条脚本调用 `ensureReviewOff`）。算法库入口是 `tools/run-apiview.mjs`，不往专题文件里加分支。两边共用 `runner-core.mjs` 的读册、断言、截图和 `result.yaml`。
+
+HTTP / Postman 不覆盖「接口信息-清单」「算法测试-清单」。S2 不走那条。
+
+### 执行框架（run-apiview.mjs）
+
+入口 `as-built/tools/run-apiview.mjs`。登录和四个调用动作在 `as-built/tools/apiview-session.mjs`。不改 `run-scripts.mjs` 的登录和评审开关，不改 `session-preflight.mjs`。
+
+| 点 | 做法 |
+|----|------|
+| 无头 | 沿用现有 `--headless`，默认 true。正式试跑和以后的波次都无头。`--headless false` 只给人排查，不进波次命令 |
+| 登录 | 浏览器上下文里做一次。`goto` 之后地址含 `/login` 才填表：账号框、密码框、按钮「进入算法库」（`LoginView.vue`）。已离开登录页就跳过。yaml 里不写登录步骤 |
+| 口令 | 只读环境变量 `ALGO_LOGIN_USER`、`ALGO_LOGIN_PASSWORD`。缺了就停。不把口令写进 yaml、playbook 或 git |
+| 评审开关 | 本入口不调用 `ensureReviewOff` |
+| 路由 | `base_url` 保持 `https://edu.itic-sci.com/dma/algovwz/`（末尾 `/`）。`goto` 目标写 `#/chain/basic` 这种 catalog hash。拼接结果是 `{base_url}#/chain/basic`。`base_url` 不含 `/dma/algovwz/` 时退出码 2 |
+| 会话 | 一次 `run-apiview.mjs` 共用一个浏览器上下文，多条脚本不用重复登录。单条 yaml 不写 Token |
+| 截图 | 沿用现在每步一张：`runs/.../scripts/{id}/screenshots/{序号}-{步骤}.png`。`algo_run` 后再截「运行结果」卡片 |
+| 调用记录 | 仅 `algo_run` 的脚本。每次执行后写 `runs/.../scripts/{id}/exchange.txt`（UTF-8 文本）。页面清单类不写 |
+| 判定 | 沿用 `expect: {note, assert}`、pass/fail/blocked。禁止改断言充绿。调用类没有 `exchange.txt`，或其中的返回是空的，不得判 pass |
+
+前端对照（写 selector 时允许读，禁止读 `lumen-algo-py` / `demo-algo-*`）：
+
+| 要找的控件 | 文件 |
+|------------|------|
+| 登录 | `lumen-ui-algo-apiview/src/views/LoginView.vue` |
+| 未登录跳转 | `src/router/index.ts`（无 token 去 `/login?redirect=`） |
+| 两个 tab | `src/views/AlgoWorkspaceView.vue`（`role=tab`：接口信息 / 算法测试） |
+| 当前接口下拉 | `src/components/algo/EndpointSelect.vue`（`.tab-endpoint-select`） |
+| 入参 | `src/components/algo/ParamForm.vue`（`.param-form`，表单项 extra 文案是 `字段名 · 类型`） |
+| 产业选择 | `src/components/common/ChainCascader.vue`（`.chain-cascader`）。`chainId` 一律是级联，不是文本框（`isChainCascaderField`） |
+| 执行与结果 | `src/components/algo/ApiTestPanel.vue`（按钮「执行接口」，结果区「运行结果」+ `.json-viewer`） |
+| 接口概览 | `src/components/algo/ApiInfoPanel.vue`（method 标签、`.endpoint-path`） |
+
+参数名和示例值仍以 `src/catalog/*.json` 为准。Vue 只用来定怎么点。
+
+### 两套脚本
+
+**调用类（绝大多数）** 用下面四个 action，selector 写在 runner 里，yaml 只填业务值：
+
+| action | 参数 | runner 做什么 |
+|--------|------|----------------|
+| `algo_tab` | `test` 或 `api` | 点对应 tab。调用类固定 `test` |
+| `algo_pick` | 接口标题，如「产业市场规模」 | 点 `.tab-endpoint-select .arco-select-view`，在可见弹层里点该标题 |
+| `algo_fill` | `set`：要填的字段；`omit`：要留空的字段 | 按 extra 文案找到表单项。`chainId` 走级联：搜索并选中，旁边 tag 等于该 id（`INB1701` 对应产业集群「新一代信息技术」）。整数走 `a-input-number`。`omit` 点清除。禁止改「高级 JSON」 |
+| `algo_run` | 无 | 点「执行接口」，等到 `.json-viewer` 或错误 `a-alert` 出现，截运行结果，并写 `exchange.txt` |
+
+调用类模板（复制后改标题、hash、接口名、参数和 assert）：
+
+```yaml
+id: FUNC-00002
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00002
+entry_id: chain.basic
+tier: A
+title: 产业市场规模主流程
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业市场规模
+  - action: algo_fill
+    set: { chainId: INB1701, statYear: 2025 }
+  - action: algo_run
+expect:
+  - note: 运行结果 data 为数组，元素含 stat_year、total_revenue、growth_rate
+    assert: "await expect(page.locator('.json-viewer')).toContainText('total_revenue')"
+```
+
+缺参把字段放进 `omit`，不放进 `set`。无参接口不写 `algo_fill`。断言只要求字段名出现，不钉死 sample 里的具体数字。
+
+`algo_run` 落盘的文本由 runner 写，不由 yaml 抄 catalog 示例。文件在该条结果目录，与 `result.yaml`、`screenshots/` 同级：
+
+```text
+runs/…/scripts/FUNC-00002/exchange.txt
+```
+
+三段固定，UTF-8：
+
+```text
+path: GET /innov/v1/industry/market-stats
+request_url: <本次浏览器实际发出的完整 URL；未发出业务 HTTP 时写「无」>
+params:
+chainId=INB1701
+statYear=2025
+response:
+<响应体原文；失败则写 a-alert 的错误文案>
+```
+
+- `path` 取运行结果上方展示的 method 和 path（`.test-source`），不是页面 hash。
+- `params` 取提交当时表单里的值。留空的参数写 `chainId=`。无参接口这一段写「无」。
+- `response` 优先用这次请求的响应体原文。页面未发业务 HTTP（前端本地示例）时，改为抄「运行结果」里实际展示的 JSON，并在 `request_url` 写「无」。禁止把 catalog 的 `sampleResponse` 填进这个文件。
+- 同一次重跑覆盖本条的 `exchange.txt`，不另加序号。
+
+**页面清单类（每页两条）** 不用 `algo_*`。步骤写成和专题一样的 `goto` / `click` / `assert`，selector 按上表自己写，因为要看的是页头数量、下拉项、method、path，不是出参。`FUNC-00024` 停在「接口信息」，`FUNC-00025` 切到「算法测试」再换一个接口，两条都不点「执行接口」。
+
+### 金样五条（runner 落地之后才写）
+
+| 脚本 id | 用例 | 用哪套 |
+|---------|------|--------|
+| FUNC-00001 | 产业链列表，无参 | 调用模板，无 `algo_fill` |
+| FUNC-00002 | chainId=INB1701、statYear=2025 | 调用模板 |
+| FUNC-00004 | 不传 chainId | 调用模板，`omit: [chainId]` |
+| FUNC-00024 | 接口信息清单 | 页面清单 |
+| FUNC-00025 | 算法测试清单 | 页面清单 |
+
+`fixtures/testdata.yaml` 只写 `base_url`。金样 `tier: A`，禁止 `allow_skip`。
+
+试跑命令（无头，只这五条）：
+
+```text
+cd agent-delivery/qa/as-built/tools
+node run-apiview.mjs ../scripts/SDWJSF-KJZTFWSFK/basic/chain-basic \
+  --only FUNC-00001,FUNC-00002,FUNC-00004,FUNC-00024,FUNC-00025 \
+  --run-dir ../runs/金样-algovwz-chain-basic
+```
+
+试跑失败先看截图和 steps。selector 错了改 runner 或这条 yaml，不改用例册，不改断言把红变成绿。人看过这五条的截图之前，不派第二页。
+
+### 可复用（只这三条）
+
+1. 一条用例一个 `cases/{脚本id}.yaml`，禁止大包 `scripts.yaml`。
+2. `expect[]` 用 `{note, assert}`。`note` 译自该条预期。`assert` 必须落到这一问，禁止空断言、禁止用 `allow_skip` 把失败记成通过。
+3. 下拉点 `.arco-select-view`，选项在 `.arco-trigger-popup:visible`。禁止点宽度为 0 的隐藏 input。
+
+### 用例词和页面词
+
+脚本按页面写，差异记在 `as_built_note`。S2 不回改用例册。
+
+| 用例里的说法 | 脚本怎么做 |
+|--------------|------------|
+| 侧栏进入某页 | `goto` 完整地址 `{base_url}#/{catalog path}`。`chain.basic` 为 `https://edu.itic-sci.com/dma/algovwz/#/chain/basic`。不点侧栏去碰兄弟页 |
+| 停留「接口信息」 | 进页默认即该 tab。`role=tab`，名称「接口信息」，`aria-selected=true` |
+| 切换「算法测试」 | 点击 `role=tab`，名称「算法测试」 |
+| 接口下拉选择「某标题」 | `.tab-endpoint-select .arco-select-view`，点选项全文 |
+| 填写 `chainId=INB1701` | `algo_fill`。`chainId` 走 `.chain-cascader`，选中后 tag 显示该 id。其它字段按表单项 extra 的字段名填。禁止只改「高级 JSON」 |
+| 不传某参数 | 该输入留空，再点执行 |
+| 点击调用 | 按钮文案是 **执行接口** |
+| 返回面板 | 「运行结果」卡片里的 JSON。断言字段名出现，不钉死 sample 里的具体数字 |
+
+### 落盘
+
+```text
+as-built/scripts/SDWJSF-KJZTFWSFK/basic/chain-basic/
+  index.yaml                 # layout: cases-v1；gold: 上面五个 id
+  cases/FUNC-00001.yaml      # 其余四条同名
+  fixtures/testdata.yaml     # base_url 用 catalog 那条，带 /dma/algovwz/
+  coverage.md                # 脚本 id → 用例编号 → 场景
+```
+
+`id` 与 `func_id` 尾号都是 `FUNC-00001` 这种，不用 `P0-01`。`entry_id: chain.basic`。`tier: A`。金样禁止 `allow_skip`。
+
+断言口径：
+
+- 主流程：运行结果 JSON 里出现用例点名的字段（如 `chain_id`、`total_revenue`）。
+- 反向：结果或错误提示里出现该参数名，且不出现用例禁止的成功字段。
+- 清单：页头接口个数、下拉标题、method 与 path 文案与该条预期一致。
+
+写完只回填这五条用例的「自动化用例ID」列。其余 1495 条不动。`runs/` 只在试跑时由 runner 生成，不提交。不改专题脚本，不跑 `KJZTFWXT`。
+
+`catalog_status=unavailable` 的接口不进金样。铺开时照样写：页面是「Java REST 未发布」且结果里没有用例要的字段，记失败。禁止改断言去迎合未发布。
+
+### 金样之后才许铺开
+
+人确认五条的 selector 和断言能对上页面之后，按 catalog 页派子：一页一个子 agent，每批最多 4 页。子 agent 只写本页 `cases/*.yaml` 和本页 `coverage.md`，并回填本页「自动化用例ID」。不跑批，不改用例步骤。`gap-func-vs-scripts.py` 的系统映射放到铺开时再加，金样用 `coverage.md` 看。
+
+### 父控先做 runner（复制即用）
+
+```text
+【身份】qa-agent。只做算法库 runner 档，不写金样 yaml，不试跑。
+【任务说明】agent-delivery/qa/algo-lib-api-case-playbook.md §S2「执行框架」
+【改】新增 as-built/tools/run-apiview.mjs 与 apiview-session.mjs。读册和结果文件走 runner-core.mjs。
+【行为】无头默认开；/login 用环境变量登录一次；不关内部评审；goto 支持 #/path；实现 algo_tab / algo_pick / algo_fill / algo_run。algo_run 之后在该条结果目录写 exchange.txt（path、params、response 三段）。
+【不改】run-scripts.mjs 的登录、评审开关和 goto。不读 lumen-algo-py。不把口令写进文件。
+【验收】node run-apiview.mjs --check 对一份最小 fixtures 能解析；专题目录仍用 run-scripts.mjs。
+开干：按 §S2 表改 runner，改完停。
+```
+
+金样五条的父控包等试跑单再发。上面这段 runner 父控包已在 2026-10-22 做完（`QA-KJZTFWSFK-RUNNER-APIVIEW-L01`），不要再派一遍。
 
 ---
 
@@ -426,9 +613,9 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 | 项 | 内容 |
 |----|------|
-| 成熟度 | 🟡 待建 |
+| 成熟度 | 🔴 未开。runner 档落地后，先无头试跑金样五条；全库波次仍走 `script-batch-run-playbook.md`（串行、禁止改脚本充绿） |
 | 环境 | `https://edu.itic-sci.com/dma/algovwz/`；波次目录建议 `as-built/runs/{日}-algovwz-{wave}/` |
-| 编排 | 待 S2 就绪后对齐 `script-batch-run-playbook.md` 精神（串行、Excel 收口、禁止改脚本充绿） |
+| 编排 | 试跑通过后再按专题波次手册串行铺开。一条波次同时只跑一个 runner |
 
 ---
 
@@ -527,4 +714,4 @@ MKT-03 与 MKT-04 不要并成一条。省略可选参数属于正向备选，�
 
 - B 线阶段变更：**先改本文件**，再改 `algo-lib-playbook-index.md` §1 B 线表一行。  
 - 不在 `func-test-playbook-index.md` 复制算法库长 Kickoff；该索引仅保留就绪门 + 跳转。  
-- S2/S3 首版落地后更新本文件成熟度与产物路径。
+- 2026-10-22：算法库入口是 `run-apiview.mjs`，专题入口仍是 `run-scripts.mjs`。共用 `runner-core.mjs`。金样 yaml 与试跑仍未开。
