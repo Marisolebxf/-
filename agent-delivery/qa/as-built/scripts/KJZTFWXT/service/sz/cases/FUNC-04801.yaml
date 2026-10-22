@@ -1,0 +1,38 @@
+id: FUNC-04801
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04801
+priority: P1
+tier: B
+title: 备选-重新分析
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+    options:
+      first: true
+  - action: click
+    target: 生物产业 / 生物医药
+  - action: click
+    target: 海洋
+  - action: click
+    target: 重新分析
+  - action: click
+    target: 查看结果
+    options:
+      first: true
+expect:
+  - note: 新结果页已经打开，不再停在过程页
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' })).toBeHidden({ timeout: 30000 })
+  - note: 产业领域回显「海洋」
+    assert: |-
+      await expect(page.locator('.arco-select-view').filter({ hasText: '海洋' }).first()).toBeVisible({ timeout: 15000 })
+  - note: 结果页有「统一评价框架」
+    assert: |-
+      await expect(page.getByText('统一评价框架')).toBeVisible({ timeout: 15000 })
+on_fail: 截图 + 抄 X-Trace-Id

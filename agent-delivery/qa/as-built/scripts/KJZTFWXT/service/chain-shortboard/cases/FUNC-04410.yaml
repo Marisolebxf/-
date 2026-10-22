@@ -1,0 +1,107 @@
+id: FUNC-04410
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04410
+priority: P1
+tier: B
+title: 异常-失败记录 · 查看结果不可用
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 分析记录中存在状态为「失败」的记录
+locators:
+  tab_records: tab「分析记录」（[data-tab-key=records]）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、失败行的「查看结果」不可用（步骤：点击「分析记录」）
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      const btnUnavailable = async (btn) => {
+        if (!(await btn.count())) return true;
+        if (!(await btn.isVisible().catch(() => false))) return true;
+        const dis = await btn.isDisabled().catch(() => true);
+        const cls = (await btn.getAttribute('class').catch(() => '')) || '';
+        return dis || /arco-btn-disabled/.test(cls);
+      };
+      if (!page.url().includes('/service/chain-analysis') || !/workspace=chain/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await expect(page.getByRole('tab', { name: /服务链短板分析/ }).first()).toBeVisible({
+        timeout: 8000,
+      });
+      const rec = page
+        .locator('[role=tab][data-tab-key="records"]')
+        .or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      await rec.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(() => {});
+      if (!/tab=records/.test(page.url())) {
+        await page.goto(baseUrl + '/service/chain-analysis?workspace=chain&tab=records', {
+          waitUntil: 'domcontentloaded',
+        });
+        await page.waitForTimeout(1500);
+      }
+      const recordsPane = page.locator('[data-testid="svc-eco-analysis-records"]');
+      await expect(recordsPane).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('[data-testid="svc-eco-analysis-records"] .arco-table-td').first()).toBeVisible({
+        timeout: 20000,
+      });
+      const body = ((await recordsPane.locator('.arco-table').first().innerText().catch(() => '')) || '').trim();
+      if (!/失败/.test(body)) {
+        throw new Error('前置：分析记录未见状态「失败」: ' + body.slice(0, 360));
+      }
+      const row = page.locator('main tr').filter({ hasText: '失败' }).first();
+      if (!(await row.count())) {
+        throw new Error('前置：未定位到失败行: ' + body.slice(0, 360));
+      }
+      const viewResult = row.getByRole('button', { name: /查看结果/ }).first();
+      if (!(await viewResult.count())) {
+        await page.evaluate(() => {
+          window.__func04410RowReady = true;
+        });
+      } else if (!(await btnUnavailable(viewResult))) {
+        throw new Error('失败行「查看结果」仍可用（应 disabled 或不可点）');
+      } else {
+        await page.evaluate(() => {
+          window.__func04410RowReady = true;
+        });
+      }
+  - note: 2、同一行的「查看过程」可用
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04410RowReady).catch(() => false))) {
+        throw new Error('前置：失败行未就绪');
+      }
+      const row = page.locator('main tr').filter({ hasText: '失败' }).first();
+      const viewProc = row.getByRole('button', { name: /查看过程/ }).first();
+      if (!(await viewProc.count())) {
+        throw new Error('失败行未见「查看过程」按钮');
+      }
+      await expect(viewProc).toBeVisible({ timeout: 8000 });
+      const dis = await viewProc.isDisabled().catch(() => true);
+      const cls = (await viewProc.getAttribute('class').catch(() => '')) || '';
+      if (dis || /arco-btn-disabled/.test(cls)) {
+        throw new Error('失败行「查看过程」不可用（应可点）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  分析记录 Tab→定位状态「失败」行；「查看结果」按 isDisabled/arco-btn-disabled 判不可用（无按钮亦记不可用）；
+  同行「查看过程」须可见且 enabled。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04410。零 allow_skip。

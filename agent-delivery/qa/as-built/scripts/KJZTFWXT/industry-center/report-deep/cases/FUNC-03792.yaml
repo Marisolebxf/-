@@ -1,0 +1,21 @@
+id: FUNC-03792
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03792
+priority: P1
+tier: B
+title: 主流程-执行摘要
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261021-002
+expect:
+  - note: 执行摘要标题下方至少有一行说明文字
+    assert: |-
+      const heading = page.getByText('执行摘要', { exact: true }).last();
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible();
+      await expect(
+        heading.locator('xpath=following::*[normalize-space(string())!=""][1]').filter({ hasNotText: /^02$/ })
+      ).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

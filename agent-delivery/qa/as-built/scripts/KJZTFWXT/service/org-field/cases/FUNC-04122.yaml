@@ -1,0 +1,187 @@
+id: FUNC-04122
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04122
+priority: P1
+tier: B
+title: 异常-失败查看结果 · 失败说明非已生成
+story: US-SVC-ORG-02
+entry_id: svc-org-field
+preconditions:
+  - 分析记录中有状态为失败的行（用例备注：用记录里已有的失败任务，不断开服务）
+locators:
+  tab_records: tab「分析记录」
+  view_result: button「查看结果」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 前置：分析记录→失败行「查看结果」进入失败说明页（非成功结果态）
+    assert: |-
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const onConfig = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        return onConfig() && !(await bodyIs404());
+      };
+      const ensureFieldCoverage = async () => {
+        await dismissBasket();
+        if (!onConfig() || (await bodyIs404())) {
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onConfig() || (await bodyIs404())) {
+          const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
+          let ok = false;
+          for (const s of siblings) {
+            if (await enterViaSidebar(s)) {
+              ok = true;
+              break;
+            }
+          }
+          if (!ok) throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入 field/coverage url=' + page.url());
+        }
+        if (await bodyIs404()) throw new Error('ENV-EDU-TTS-SVCZ-404-001: 入口不可用 ' + page.url());
+      };
+      const failExplainRe =
+        /本次分析生成失败|任务错误详情|分析失败|生成失败|失败说明|任务失败|Job failed|未 succeeded|create 失败|该任务尚无可查看的结果|当前结果快照没有覆盖矩阵.*Job failed/;
+      await ensureFieldCoverage();
+      await expect(page.getByText('服务机构产业领域分析').first()).toBeVisible({ timeout: 12000 });
+      const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
+      await expect(recTab).toBeVisible({ timeout: 12000 });
+      await recTab.click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+      if (!/SVC-\d{8}-\d+/.test(mainRec)) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-RECORDS：分析记录无历史任务');
+      }
+      if (!/失败/.test(mainRec)) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-FAILED-RECORD：分析记录无失败行（用例要求既有失败任务）');
+      }
+      const rows = page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /失败/ }).filter({ hasText: /SVC-\d{8}-\d+/ });
+      const rowN = await rows.count();
+      if (!rowN) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-FAILED-RECORD：未定位到失败任务行');
+      }
+      let opened = false;
+      let taskId = '';
+      for (let i = 0; i < Math.min(rowN, 8) && !opened; i++) {
+        const row = rows.nth(i);
+        const rowTxt = ((await row.innerText().catch(() => '')) || '').trim();
+        const m = rowTxt.match(/SVC-\d{8}-\d+/);
+        if (!m) continue;
+        taskId = m[0];
+        const resBtn = row.getByRole('button', { name: /查看结果/ }).first();
+        if (!(await resBtn.count())) continue;
+        if (await resBtn.isDisabled().catch(() => false)) {
+          throw new Error('ENV-SVC-ORG-FIELD-VIEW-FAIL-RESULT-DISABLED：失败行「查看结果」不可用 task=' + taskId);
+        }
+        await resBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        let body = '';
+        for (let j = 0; j < 18; j++) {
+          body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+          if (/分析结果已生成/.test(body)) {
+            throw new Error('失败行「查看结果」出现「分析结果已生成」（伪装成功）task=' + taskId);
+          }
+          if (failExplainRe.test(body)) {
+            opened = true;
+            break;
+          }
+          if (/404|页面不存在/.test(body)) break;
+          await page.waitForTimeout(1000);
+        }
+        if (!opened) {
+          await recTab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1200);
+        }
+      }
+      if (!opened) {
+        throw new Error(
+          'ENV-SVC-ORG-FIELD-VIEW-FAIL-RESULT-UNREACHABLE：失败行点「查看结果」未见失败说明 task=' +
+            taskId +
+            ' url=' +
+            page.url(),
+        );
+      }
+      globalThis.__func04122 = { taskId };
+  - note: 1、页面出现失败说明
+    assert: |-
+      if (!globalThis.__func04122?.taskId) throw new Error('前置：未打开失败说明页');
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const failExplainRe =
+        /本次分析生成失败|任务错误详情|分析失败|生成失败|失败说明|任务失败|Job failed|未 succeeded|create 失败|该任务尚无可查看的结果|当前结果快照没有覆盖矩阵/;
+      if (!failExplainRe.test(main)) {
+        throw new Error('未见失败说明文案 body_head=' + main.slice(0, 240));
+      }
+      const alert = page.locator('.arco-alert, [class*="alert"]').filter({
+        hasText: /失败|错误|Job failed|生成失败|未 succeeded/,
+      });
+      const alertOk = await alert.first().isVisible().catch(() => false);
+      if (!alertOk && !/任务错误详情|本次分析生成失败/.test(main)) {
+        throw new Error('失败说明未见 alert/标题承载区');
+      }
+      if (globalThis.__func04122.taskId && !main.includes(globalThis.__func04122.taskId.replace(/\s+/g, ''))) {
+        const tid = globalThis.__func04122.taskId;
+        if (!main.includes(tid)) {
+          /* task_id 在结果失败页可能只在 URL，放宽 */
+          const u = page.url();
+          if (!u.includes(tid)) {
+            throw new Error('失败说明页任务号与所点行不一致: ' + tid);
+          }
+        }
+      }
+  - note: 2、不出现「分析结果已生成」
+    assert: |-
+      if (!globalThis.__func04122) throw new Error('前置：未打开失败说明页');
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+      if (/分析结果已生成/.test(main)) {
+        throw new Error('失败记录「查看结果」泄漏成功引导文案「分析结果已生成」');
+      }
+      if (/任务快照已固化/.test(main) && /请点击「查看结果」进入结果页/.test(main)) {
+        throw new Error('失败记录「查看结果」呈现过程页成功引导态（伪装已生成）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04122=分析记录失败行「查看结果」→失败说明（非「分析结果已生成」/非过程页成功引导态）。
+  对齐 FUNC-04120 记录入口 helper；无失败行→ENV-SVC-ORG-FIELD-NO-FAILED-RECORD（用例依赖环境既有失败任务，不构造断链）。
+  catalog_path=/service/institution-judgment?workspace=field&tab=coverage（entry-seed）。B 档零 allow_skip。

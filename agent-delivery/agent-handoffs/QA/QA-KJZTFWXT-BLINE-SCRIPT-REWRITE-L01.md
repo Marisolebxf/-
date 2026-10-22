@@ -1,6 +1,26 @@
-# QA-KJZTFWXT-BLINE-SCRIPT-REWRITE-L01 · 专题脚本重写中途交接
+# QA-KJZTFWXT-BLINE-SCRIPT-REWRITE-L01 · 专题脚本编写轮收口
 
-> 2026-10-21 晚：写法已改到提示词文件。任务未完成，状态保持 `in_progress`。算法库不在本单。下文「叫停时进度」是凌晨快照，不要按那段的地址和并发续跑。
+> 2026-10-22：编写轮收口。登记表无 pending、无 running。fail 与 blocked 留在表里，不在本单清零，另开任务处理。本单不标 done。算法库不在本单。
+
+## 编写轮收口（2026-10-22）
+
+登记表 `script-rewrite-ledger-KJZTFWXT.csv` 1580 行，号唯一：
+
+| status | 条数 | 本单 |
+|--------|------|------|
+| pass | 1016 | 都有试跑目录 |
+| blocked | 300 | 都有一行原因。留下 |
+| fail | 264 | 都有脚本、试跑目录和一行原因。留下 |
+| pending | 0 | — |
+| running | 0 | — |
+
+完成口径按用户 2026-10-22 确认：本单是写脚本。pending、running 才是没做完。fail 是试跑不通过，blocked 是有原因停住，都消不掉，也不为了收口改绿。任务卡上「无 fail」比这严，签收时以这段为准。
+
+试跑环境 `http://10.50.69.111:30892/`。edu、30888、50892 作废。
+
+下一张任务再处理留下的 fail 和 blocked（改用例、改脚本或维持停住）。本文件不派那张任务。不要用 `rewrite-wave-parent.md` 把 fail 重新派回本单。
+
+下文「续跑」「叫停时进度」是 2026-10-21 的历史，不要按那里的 361 条 pending 或 edu 地址再开写。
 
 ## 续跑（新对话先读这段）
 
@@ -69,7 +89,7 @@ pending 头：`service/rec-cultivate` 36，`service/org-capability` 34，`servic
 | claimed_by | `agent:qa-agent` |
 | supervised_by | `human:黄敬洲` |
 | claim_type | 长任务父控编排（registry 已是 `in_progress`，本交接不改状态） |
-| 说明 | DoD 未满足：表中仍有 pending/fail。不要把本文件当成签收。 |
+| 说明 | 2026-10-22 编写轮已收口，状态 `ready_to_sign`。fail 264、blocked 300 留给下一张任务。done 仍要淮政玮签。 |
 
 ## Ponytail
 

@@ -1,0 +1,28 @@
+id: FUNC-05197
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05197
+priority: P0
+tier: B
+title: 主流程-基本信息三项
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    assert: |-
+      await page.getByText('分析画像', { exact: true }).first().click()
+expect:
+  - note: 基本信息中有机构类型
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('机构类型')).toBeVisible()
+  - note: 基本信息中有所在地
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('所在地')).toBeVisible()
+  - note: 基本信息中有行业
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('行业')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

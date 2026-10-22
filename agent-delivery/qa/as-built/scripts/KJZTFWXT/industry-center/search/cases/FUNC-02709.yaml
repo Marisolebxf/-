@@ -69,12 +69,11 @@ expect:
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
       const tools = region.locator('.industry-search-result-tools');
       await expect(tools).toBeVisible({ timeout: 8000 });
-      const sortBar = tools.locator('.flex.shrink-0.items-center').filter({
-        has: page.getByRole('button', { name: '切换排序方向' }),
-      });
-      const sortSelect = sortBar.locator('.arco-select').first();
-      await expect(sortSelect).toBeVisible({ timeout: 8000 });
-      await sortSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      const sortDirBtn = tools.getByRole('button', { name: '切换排序方向' });
+      await expect(sortDirBtn).toBeVisible({ timeout: 8000 });
+      const sortSelectView = sortDirBtn.locator('xpath=..').locator('.arco-select-view');
+      await expect(sortSelectView).toBeVisible({ timeout: 8000 });
+      await sortSelectView.click({ timeout: 8000 });
       await page.waitForTimeout(300);
       const pop = page.locator('.arco-trigger-popup:visible');
       await expect(pop).toBeVisible({ timeout: 8000 });

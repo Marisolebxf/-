@@ -1,0 +1,27 @@
+id: FUNC-04608
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04608
+priority: P1
+tier: B
+title: 备选-当天再次开始
+entry_id: svc-rec-attract
+preconditions:
+  - 当天已有一次相同条件的成功结果
+  - 已回到分析配置且条件未改
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 生成招引名单
+  - action: click
+    target: 分析配置
+  - action: click
+    target: 生成招引名单
+expect:
+  - note: 打开已有结果页
+    assert: |-
+      await expect(page.getByRole('button', { name: '重新分析' })).toBeVisible()
+  - note: 不新增分析任务
+    assert: |-
+      await expect(page.getByText('分析中')).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,43 @@
+id: FUNC-04599
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04599
+priority: P1
+tier: B
+title: 主流程-导出名单
+entry_id: svc-rec-attract
+preconditions:
+  - 结果页已选中一个产业集群
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    text: 生成招引名单
+expect:
+  - note: 1、下载文件名含当前产业名称
+    assert: |-
+      await expect(page.getByRole('button', { name: '导出名单' })).toBeVisible({ timeout: 60000 });
+      const industryRaw = await page.locator('.arco-select-view-value, .arco-cascader-view-value').first().innerText();
+      const industryName = (industryRaw.split('/').pop() || industryRaw).trim();
+      const downloadPromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: '导出名单' }).click();
+      const download = await downloadPromise;
+      const fileName = download.suggestedFilename();
+      await expect(fileName).toContain(industryName);
+  - note: 2、表头依次为名次、机构、城市、综合分、招引指数、推荐理由
+    assert: |-
+      const downloadPromise = page.waitForEvent('download');
+      await page.getByRole('button', { name: '导出名单' }).click();
+      const download = await downloadPromise;
+      const path = await download.path();
+      const fs = require('fs');
+      const text = fs.readFileSync(path, 'utf8');
+      const headers = ['名次', '机构', '城市', '综合分', '招引指数', '推荐理由'];
+      const firstLine = text.split(/\r?\n/)[0].replace(/^\uFEFF/, '');
+      const cols = firstLine.split(/,|\t/);
+      for (let i = 0; i < headers.length; i++) {
+        await expect(cols[i]?.trim()).toBe(headers[i]);
+      }
+  - note: 3、页面提示已导出
+    assert: |-
+      await expect(page.getByText(/已导出/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

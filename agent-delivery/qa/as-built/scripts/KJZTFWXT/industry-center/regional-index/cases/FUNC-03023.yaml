@@ -6,114 +6,54 @@ entry_id: chain-regional-index
 tier: B
 preconditions:
   - 分析记录中有状态为失败的任务
-locators:
-  tab_records: tab「分析记录」
-  view_result: button「查看结果」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
   - action: evaluate
-    note: 侧栏兜底进入→分析记录→失败行「查看结果」；落点在 expect
+    note: 切到分析记录 tab=records，失败行点「查看结果」
 expect:
   - note: 1、仍停留在分析记录
     assert: |-
       const main = () => page.locator('main').first();
-      const recordsSection = () => main().locator('.diagnosis-records').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
-      };
-      const throwEnv404 = (where) => {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 @' + where + ' ' + page.url());
-      };
-      const enterViaSidebar = async () => {
-        const u = new URL('/industry-center/search', baseUrl);
+      const openRecords = async () => {
+        const u = new URL(page.url());
+        u.searchParams.set('workspace', 'index');
+        u.searchParams.set('tab', 'records');
         await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await dismissBasket();
-        if (await bodyIs404()) throwEnv404('sibling-search');
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
-        const expandChain = async () => {
-          if (await leaf().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await expandChain();
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=index/);
-        await expect(page).toHaveURL(/tab=index/);
+        await expect(page).toHaveURL(/tab=records/, { timeout: 15000 });
+        await expect(main().getByRole('heading', { name: '分析记录' })).toBeVisible({ timeout: 10000 });
       };
-      const scrollRecordActions = async () => {
-        const bodies = recordsSection().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
-        const bn = await bodies.count();
-        for (let i = 0; i < bn; i++) {
-          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
-        }
-        await page.waitForTimeout(400);
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        await enterViaSidebar();
-      }
-      if (await bodyIs404()) throwEnv404('catalog-deep-link');
-      await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
-      await page.waitForTimeout(1500);
-      await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
+      await openRecords();
       const failRow = page.locator('tr').filter({ hasText: /CHAIN-/ }).filter({ hasText: '失败' }).first();
-      if (!(await failRow.count())) {
-        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-FAIL-TASK: 分析记录无失败行');
+      await expect(failRow).toBeVisible({ timeout: 10000 });
+      const taskId = ((await failRow.innerText().catch(() => '')) || '').match(/CHAIN-\d{8}-\d{3}/)?.[0] || '';
+      const bodies = main().locator('.arco-table-body, .arco-table-content');
+      const bn = await bodies.count();
+      for (let i = 0; i < bn; i++) {
+        await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
       }
-      const rowTextBefore = ((await failRow.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      const taskId = (rowTextBefore.match(/CHAIN-\d{8}-\d{3}/) || [])[0] || '';
-      await scrollRecordActions();
       const viewBtn = failRow.getByRole('button', { name: '查看结果' }).first();
+      await viewBtn.scrollIntoViewIfNeeded();
       await expect(viewBtn).toBeVisible({ timeout: 8000 });
       await viewBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(2500);
-      if (await bodyIs404()) throwEnv404('after-fail-view-result');
+      await page.waitForTimeout(2000);
       await expect(page).toHaveURL(/tab=records/, { timeout: 8000 });
-      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible({ timeout: 8000 });
-      const tabSelected = await page.getByRole('tab', { name: '分析记录' }).getAttribute('aria-selected');
-      if (tabSelected === 'false') {
-        throw new Error('点击失败行查看结果后未停留在分析记录 Tab');
-      }
-      await expect(recordsSection().getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+      await expect(main().getByRole('heading', { name: '分析记录' })).toBeVisible({ timeout: 8000 });
       if (taskId) {
         const rowAfter = page.locator('tr').filter({ hasText: taskId }).first();
-        if (await rowAfter.count()) {
-          const rt = ((await rowAfter.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (!/失败/.test(rt)) {
-            throw new Error('该行状态不再是失败（task=' + taskId + '）');
-          }
-        }
+        await expect(rowAfter).toBeVisible({ timeout: 5000 });
+        const rt = ((await rowAfter.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        expect(/失败/.test(rt)).toBeTruthy();
       }
       globalThis.__func03023 = true;
   - note: 2、不进入「区域产业指数评价结果」
     assert: |-
       if (!globalThis.__func03023) throw new Error('前置：未完成分析记录停留断言');
       const resultTitle = page.locator('main').getByText('区域产业指数评价结果').first();
-      const vis = await resultTitle.isVisible().catch(() => false);
-      if (vis) {
-        throw new Error('缺陷候选：失败行点查看结果进入了区域产业指数评价结果页');
-      }
+      await expect(resultTitle).not.toBeVisible();
       const url = page.url();
       if (/view=result/.test(url) && !/tab=records/.test(url)) {
         throw new Error('缺陷候选：URL 进入结果深链且不在分析记录 tab=' + url);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index；edu 深链冷启动 404 时 assert 侧栏 sibling /industry-center/search 进入（同 FUNC-03019）。步骤=分析记录→首条失败 CHAIN 行「查看结果」。用例=仍留列表且不进入成功结果壳（现场无单独失败原因页，误入结果页记缺陷候选）。无失败行→ENV-CHAIN-REGIONAL-INDEX-NO-FAIL-TASK。登录关评审 runner 前置。
+on_fail: 截图 + X-Trace-Id

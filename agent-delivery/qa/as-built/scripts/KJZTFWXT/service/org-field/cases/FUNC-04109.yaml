@@ -3,168 +3,78 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04109
 priority: P1
 tier: B
 title: 备选-弹窗清空
-story: US-SVC-ORG-01
 entry_id: svc-org-field
 preconditions:
   - 弹窗内已勾选至少 1 家（runner 会话前置：已登录且内部评审模式关闭）
-locators:
-  pick_btn: button「选择机构」
-  modal: data-testid=svc-org-picker-modal
-  modal_clear: 弹窗 footer button「清空」
-  footer_count: .svc-org-picker-footer__count
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 前置：打开「选择服务机构」并在弹窗内勾选至少 1 家
+  - note: 前置：弹窗内已勾选至少 1 家
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const assertNotSso = () => {
-        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) {
-          throw new Error('ENV-EDU-TTS-SVCZ-AUTH-001: 会话跳 SSO url=' + page.url());
-        }
-      };
-      const enterViaSidebar = async () => {
-        await dismissBasket();
-        assertNotSso();
-        await page.goto(spaUrl('/service-portal/overview/overview'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(1000);
-        assertNotSso();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/service-portal/overview'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1000);
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling 门户 SPA404 url=' + page.url());
-        }
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
-        if (!(await leaf().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(leaf().first()).toBeVisible({ timeout: 15000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 25000 });
-        await expect(page).toHaveURL(/workspace=field/);
-        await expect(page).toHaveURL(/tab=coverage/);
-      };
-      const resetConfig = async () => {
-        if (/view=result|view=processing|org_ids|task_id/.test(page.url())) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1200);
-        }
-        const main = page.locator('main').first();
-        const t = ((await main.innerText().catch(() => '')) || '');
-        if (/已选机构（[1-9]/.test(t)) {
-          const clr = main.getByRole('button', { name: '清空' });
-          if (await clr.count()) {
-            await clr.first().click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(500);
-          }
-        }
-      };
-      const parseFooterCount = async (dialog) => {
-        const foot = dialog.locator('.svc-org-picker-footer__count').first();
-        const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const panel = () => page.locator('[data-system-surface-id="compare-basket"]');
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 15000 });
+      const openBtn = page
+        .locator('[data-testid="svc-org-open-compare-basket"], [data-testid="svc-org-empty-open-basket"]')
+        .first();
+      await expect(openBtn).toBeVisible({ timeout: 10000 });
+      await openBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      await expect(panel()).toBeVisible({ timeout: 15000 });
+      const scope = panel();
+      if (await scope.getByText('对比篮暂无服务机构').isVisible().catch(() => false)) {
+        await scope.getByRole('button', { name: '新增' }).first().click({ timeout: 8000 });
+        const addModal = page.locator('[data-testid="compare-basket-add-modal"]');
+        await expect(addModal).toBeVisible({ timeout: 12000 });
+        const joinBtn = addModal.getByRole('button', { name: '加入对比篮' }).first();
+        await expect(joinBtn).toBeVisible({ timeout: 15000 });
+        await joinBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
+      }
+      await expect(scope.locator('[data-testid="service-org-compare-basket-workspace"]')).toBeVisible({
+        timeout: 12000,
+      });
+      const bar = scope.locator('[data-testid="compare-basket-action-bar"]');
+      await expect(bar).toBeVisible({ timeout: 10000 });
+      const parseSel = async () => {
+        const txt = ((await bar.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         const m = txt.match(/已选\s*(\d+)\s*家/);
         return m ? parseInt(m[1], 10) : -1;
       };
-      await dismissBasket();
-      assertNotSso();
-      if (await bodyIs404()) {
-        await enterViaSidebar();
-      } else {
-        await resetConfig();
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog 深链 SPA404 url=' + page.url());
-      }
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
-      const pickBtn = page
-        .locator('[data-testid="svc-org-open-picker"]')
-        .or(page.getByRole('button', { name: '选择机构', exact: true }))
-        .first();
-      await expect(pickBtn).toBeVisible({ timeout: 10000 });
-      await pickBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(900);
-      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-        .filter({ hasText: '选择服务机构' })
-        .first();
-      await expect(dialog).toBeVisible({ timeout: 12000 });
-      let countBefore = await parseFooterCount(dialog);
+      let countBefore = await parseSel();
       if (countBefore < 1) {
-        const checks = dialog.locator('.svc-org-picker-card .arco-checkbox:not(.arco-checkbox-disabled), .arco-checkbox:not(.arco-checkbox-disabled)');
-        const n = await checks.count();
-        if (n < 1) throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗无可勾选机构');
-        await checks.first().click({ timeout: 8000 });
+        const cb = scope
+          .locator('[data-testid="service-org-compare-basket-workspace"] .arco-checkbox:not(.arco-checkbox-disabled)')
+          .first();
+        await expect(cb).toBeVisible({ timeout: 8000 });
+        await cb.click({ timeout: 8000 });
         await page.waitForTimeout(400);
-        countBefore = await parseFooterCount(dialog);
+        countBefore = await parseSel();
       }
-      if (countBefore < 1) throw new Error('前置：弹窗已选仍 <1，count=' + countBefore);
+      if (countBefore < 1) throw new Error('前置：对比篮 picker 已选仍 <1');
       globalThis.__p04109 = { countBefore };
-  - note: 1、点击弹窗中的「清空」后，弹窗「已选」变为 0 家（无二次确认框）
+  - note: 1、弹窗「已选」变为 0 家
     assert: |-
       const snap = globalThis.__p04109;
       if (!snap || snap.countBefore < 1) throw new Error('前置：弹窗未勾选机构');
-      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-        .filter({ hasText: '选择服务机构' })
-        .first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      const modalClear = dialog
-        .locator('.svc-org-picker-footer, .arco-modal-footer')
-        .getByRole('button', { name: '清空', exact: true })
-        .first();
-      await expect(modalClear).toBeVisible({ timeout: 5000 });
-      await modalClear.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const confirm = page.locator('.arco-modal:visible').filter({ hasText: /确认|二次|确定要/ });
-      if (await confirm.count()) {
-        const extra = await confirm.count();
-        if (extra > 1) throw new Error('出现二次确认框（用例要求无确认）：count=' + extra);
-      }
-      const foot = dialog.locator('.svc-org-picker-footer__count').first();
-      const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const scope = page.locator('[data-system-surface-id="compare-basket"]');
+      await expect(scope).toBeVisible({ timeout: 8000 });
+      const bar = scope.locator('[data-testid="compare-basket-action-bar"]');
+      const clearBtn = bar.getByRole('button', { name: '取消选择' });
+      await expect(clearBtn).toBeVisible({ timeout: 5000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const confirm = page.locator('.arco-modal:visible').filter({ hasText: /确认|确定要/ });
+      if (await confirm.count()) throw new Error('出现二次确认框（用例要求无确认）');
+      const txt = ((await bar.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       const m = txt.match(/已选\s*(\d+)\s*家/);
       const countAfter = m ? parseInt(m[1], 10) : -1;
       if (countAfter !== 0) {
-        throw new Error('弹窗清空后已选应为 0 家：前=' + snap.countBefore + ' 后=' + countAfter + ' foot=' + txt);
+        throw new Error('弹窗清空后已选应为 0 家：前=' + snap.countBefore + ' 后=' + countAfter + ' bar=' + txt);
       }
-      await expect(foot).toContainText('已选');
-      await expect(foot).toContainText('0');
-      const cards = dialog.locator('.svc-org-picker-card');
-      const cardN = await cards.count();
-      for (let i = 0; i < Math.min(cardN, 8); i++) {
-        const card = cards.nth(i);
-        const box = card.locator('.arco-checkbox').first();
-        const cls = (await box.getAttribute('class').catch(() => '')) || '';
-        if (/arco-checkbox-checked/.test(cls)) {
-          throw new Error('清空后仍有勾选卡片 index=' + i);
-        }
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  04109=选择服务机构 Modal footer「清空」（scout-p006 footerBtns 含全选所有/清空/取消/确定；与配置区 main「清空」区分，断言限定 dialog 内）。
-  pending 勾选后 footer .svc-org-picker-footer__count「已选 N 家」；无二次确认。catalog_path 同 entry-seed。B 档零 allow_skip。
-  深链 SPA404 补进勿点「返回首页」（易跳 SSO）；直 goto sibling。2026-10-20 edu 机跑：404 后 goto overview 仍 ENV-AUTH-001 SSO。
+      await expect(bar).toContainText('已选');
+      await expect(bar).toContainText('0');
+on_fail: 截图 + 抄 X-Trace-Id

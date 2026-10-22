@@ -1,0 +1,23 @@
+id: FUNC-03695
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03695
+priority: P1
+tier: B
+title: 主流程-全景深链
+entry_id: chain-result-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/results/CHAIN-20260910-001
+expect:
+  - note: 浏览器标题为「产业链全景图谱 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle('产业链全景图谱 - 科技专题服务系统');
+  - note: 页面正文不回显该任务编号
+    assert: |-
+      await expect(page.getByText('CHAIN-20260910-001')).not.toBeVisible();
+  - note: 结果区是默认快照
+    assert: |-
+      await expect(page.getByText('最新快照').first()).toBeVisible();
+
+on_fail: 截图 + 抄 X-Trace-Id

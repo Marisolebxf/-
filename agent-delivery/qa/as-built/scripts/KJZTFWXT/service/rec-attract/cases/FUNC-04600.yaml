@@ -1,0 +1,55 @@
+id: FUNC-04600
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04600
+priority: P0
+tier: B
+title: 主流程-机构画像
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 抽屉标题以「机构画像」开头并含该机构名
+    assert: |-
+      const viewResult = page.getByRole('button', { name: '查看结果' });
+      if (await viewResult.isVisible().catch(() => false)) {
+        await viewResult.click();
+      } else {
+        await page.getByRole('button', { name: '生成招引名单' }).click();
+        await page.getByRole('button', { name: '查看结果' }).click({ timeout: 60000 });
+      }
+      const firstRow = page.locator('table tbody tr').first();
+      await expect(firstRow).toBeVisible({ timeout: 60000 });
+      const nameCell = firstRow.locator('td').nth(1);
+      const orgName = (await nameCell.innerText()).trim().split('\n')[0].trim();
+      const nameLink = nameCell.getByRole('link').first();
+      if (await nameLink.isVisible().catch(() => false)) {
+        await nameLink.click();
+      } else {
+        await nameCell.click();
+      }
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible({ timeout: 15000 });
+      const title = drawer.locator('.arco-drawer-header-title, .arco-drawer-title').first();
+      await expect(title).toBeVisible();
+      const titleText = (await title.innerText()).trim();
+      await expect(titleText.startsWith('机构画像')).toBeTruthy();
+      await expect(titleText).toContain(orgName);
+  - note: 可见「基本信息」「技术力五维」「近三年新增服务记录」
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('基本信息', { exact: true })).toBeVisible();
+      await expect(drawer.getByText('技术力五维', { exact: true })).toBeVisible();
+      await expect(drawer.getByText('近三年新增服务记录', { exact: true })).toBeVisible();
+  - note: 基本信息含机构类型、所在地、行业、领域覆盖细分
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      for (const label of ['机构类型', '所在地', '行业', '领域覆盖细分']) {
+        const item = drawer.locator('.arco-descriptions-item').filter({ hasText: label }).first();
+        await expect(item).toBeVisible();
+        const value = item.locator('.arco-descriptions-item-value');
+        await expect(value).toBeVisible();
+        await expect(value).not.toHaveText(/^[\s-]*$/);
+      }
+on_fail: 截图 + 抄 X-Trace-Id

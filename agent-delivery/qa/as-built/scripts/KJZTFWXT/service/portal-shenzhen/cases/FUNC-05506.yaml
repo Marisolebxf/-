@@ -1,0 +1,25 @@
+id: FUNC-05506
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05506
+priority: P1
+tier: B
+title: 异常-历年趋势空态
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: scroll
+    target: 产业服务机构数量 · 历年趋势
+expect:
+  - note: 标题为「产业服务机构数量 · 历年趋势」
+    assert: |-
+      await page.locator('main').getByText('产业服务机构数量 · 历年趋势').scrollIntoViewIfNeeded();
+      await expect(page.locator('main').getByText('产业服务机构数量 · 历年趋势')).toBeVisible()
+  - note: 文案含「暂无深圳历年独立 series」
+    assert: |-
+      await expect(page.locator('main').getByText(/暂无深圳历年独立 series/)).toBeVisible()
+  - note: 文案含「不展示折线」
+    assert: |-
+      await expect(page.locator('main').getByText('暂无深圳历年独立 series。不展示折线')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,23 @@
+id: FUNC-05303
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05303
+priority: P1
+tier: B
+title: 备选-页签往返
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen?industry=CL-SEI-10
+  - action: click
+    target: 全球服务机构概况
+  - action: click
+    target: 深圳产业服务介绍
+expect:
+  - note: 主标题为「深圳产业服务介绍」
+    assert: |-
+      await expect(page.locator('main').getByRole('heading', { level: 1, name: '深圳产业服务介绍' })).toBeVisible()
+  - note: 产业回显为「海洋」
+    assert: |-
+      await expect(page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first()).toContainText('海洋')
+on_fail: 截图 + 抄 X-Trace-Id

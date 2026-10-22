@@ -1,0 +1,120 @@
+id: FUNC-04290
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04290
+priority: P0
+tier: A
+title: 主流程-核心结论空态 · 三块说明
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - env-gate overall=fail（只打开已完成任务结果视图，不点「开始评估」）
+  - 分析记录存在 ≥1 条已完成任务；GET result 无 score / dimension_scores / 遴选建议
+locators:
+  rec_tab: tab「分析记录」
+  view_btn: 「查看结果」
+  core_section: 「核心结论」
+  top3_heading: 「综合技术力 TOP3」
+  advantage_heading: 「各机构核心优势」
+  pick_heading: 「遴选建议（演示口径）」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 分析记录打开无分数结果页（真实操作在 expect 内）
+expect:
+  - note: 1、「综合技术力 TOP3」说明本次没有可排名的签发分
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const openNoScoreResult = async () => {
+        await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click();
+            await page.waitForTimeout(300);
+          }
+        }
+        await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 8000 });
+        const vb = page.getByRole('button', { name: '查看结果' });
+        const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first();
+        await view.click({ timeout: 5000 });
+        await page.waitForTimeout(2000);
+        await expect(page).toHaveURL(/view=result/);
+        await expect(page.getByText('核心结论').first()).toBeVisible({ timeout: 8000 });
+        await expect(page.getByText('暂无技术力评估结果').first()).toBeVisible({ timeout: 8000 });
+      };
+      await openNoScoreResult();
+      await expect(page.getByText('综合技术力 TOP3').first()).toBeVisible({ timeout: 8000 });
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const iTop = main.indexOf('综合技术力 TOP3');
+      if (iTop < 0) throw new Error('主区未见「综合技术力 TOP3」');
+      const slice = main.slice(iTop, iTop + 120);
+      if (!/可排名/.test(slice) || !/签发分/.test(slice)) {
+        throw new Error('TOP3 块未说明无可排名签发分: ' + slice);
+      }
+  - note: 2、「各机构核心优势」说明本次没有维度分
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const vb = page.getByRole('button', { name: '查看结果' });
+      const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first();
+      await view.click({ timeout: 5000 });
+      await page.waitForTimeout(2000);
+      await expect(page.getByText('各机构核心优势').first()).toBeVisible({ timeout: 8000 });
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const iAdv = main.indexOf('各机构核心优势');
+      if (iAdv < 0) throw new Error('主区未见「各机构核心优势」');
+      const slice = main.slice(iAdv, iAdv + 160);
+      if (!/dimension_scores|维度分/.test(slice)) {
+        throw new Error('核心优势块未说明无维度分: ' + slice);
+      }
+  - note: 3、「遴选建议（演示口径）」说明本次没有遴选建议
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      const vb = page.getByRole('button', { name: '查看结果' });
+      const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first();
+      await view.click({ timeout: 5000 });
+      await page.waitForTimeout(2000);
+      await expect(page.getByText('遴选建议（演示口径）').first()).toBeVisible({ timeout: 8000 });
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const iPick = main.indexOf('遴选建议（演示口径）');
+      if (iPick < 0) throw new Error('主区未见「遴选建议（演示口径）」');
+      const slice = main.slice(iPick, iPick + 140);
+      if (!/未给出.*遴选建议|没有.*遴选建议|遴选建议字段/.test(slice)) {
+        throw new Error('遴选建议块未说明无遴选建议: ' + slice);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  蓝本 FUNC-04290（主流程-核心结论空态·三块说明）。entry-seed catalog_path；env-gate fail 不发起评估。
+  前置=分析记录打开已完成无签发分结果；阅读「核心结论」三块诚实空文案（scout-p008：未给出可排名签发分 / dimension_scores / 遴选建议字段）。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04290。零 allow_skip。

@@ -73,9 +73,11 @@ expect:
         await expect(page).toHaveURL(/tab=comparison/);
       };
       const readBenchmarkTags = async () => {
-        const BENCH_PH = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
-        const view = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + BENCH_PH + '"]') }).first();
-        const tags = view.locator('.arco-tag');
+        const benchField = main()
+          .locator('.arco-form-item')
+          .filter({ hasText: /标杆区域/ })
+          .first();
+        const tags = benchField.locator('.arco-tag');
         const n = await tags.count();
         const out = [];
         for (let i = 0; i < n; i++) {
@@ -133,22 +135,23 @@ expect:
         throw new Error('产业未回显，现场=' + industry);
       }
       const benchmarks = Array.isArray(snap.benchmarks) ? snap.benchmarks : [];
-      if (benchmarks.length < 1) {
-        const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!/(上海|北京|广州|杭州|苏州|南京|成都)/.test(mainTxt)) {
-          throw new Error('标杆城市未回显：tags 空且主区无城市名');
-        }
-      } else {
-        const joined = benchmarks.join(' ');
-        if (!/(市|区)/.test(joined) && benchmarks.length < 1) {
-          throw new Error('标杆 tag 文案异常：' + joined);
-        }
+      const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const benchEcho =
+        benchmarks.length > 0
+          ? benchmarks.join(' ')
+          : mainTxt;
+      if (!/(上海|北京|广州|杭州|苏州|南京|成都|shanghai|beijing|suzhou|guangzhou|hangzhou|nanjing|chengdu)/i.test(benchEcho)) {
+        throw new Error('标杆城市未回显：tags=' + JSON.stringify(benchmarks));
       }
       await expect(page.locator('.arco-select-view[aria-label="产业"]').first()).toBeVisible({ timeout: 8000 });
   - note: 3、「开始分析」可点击
     assert: |-
       const start = page.getByRole('button', { name: '开始分析' }).first();
       await expect(start).toBeVisible({ timeout: 8000 });
+      const warn = page.getByText('存在无法识别的标杆区域').first();
+      if (await warn.isVisible().catch(() => false)) {
+        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCH-INVALID-03313：复制配置后标杆无法识别，开始分析保持禁用');
+      }
       await expect(start).toBeEnabled({ timeout: 8000 });
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-

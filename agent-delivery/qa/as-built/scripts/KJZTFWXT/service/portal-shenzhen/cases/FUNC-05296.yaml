@@ -1,0 +1,26 @@
+id: FUNC-05296
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05296
+priority: P1
+tier: B
+title: 主流程-抽屉概况已填
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: click
+    note: 点击任一重点机构卡片
+    target: 按钮 查看东莞富尚科技有限公司重点机构详情
+expect:
+  - note: 1、机构名称有内容
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible();
+      await expect(drawer.locator('.svc-portal-keyorg-row').filter({ hasText: '机构名称' }).getByText('东莞富尚科技有限公司')).toBeVisible();
+  - note: 2、机构类型、所在地、行业有内容
+    assert: |-
+      const overview = page.locator('.arco-drawer .svc-portal-keyorg-block').filter({ hasText: '机构概况' });
+      await expect(overview.locator('.svc-portal-keyorg-row').filter({ hasText: '机构类型' })).toContainText('科技创新服务');
+      await expect(overview.locator('.svc-portal-keyorg-row').filter({ hasText: '所在地' })).toContainText('东莞');
+      await expect(overview.locator('.svc-portal-keyorg-row').filter({ hasText: '行业' })).toContainText('其他科技推广服务业');

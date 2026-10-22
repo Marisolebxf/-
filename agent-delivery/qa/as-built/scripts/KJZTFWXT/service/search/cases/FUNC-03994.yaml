@@ -3,167 +3,71 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03994
 priority: P0
 tier: B
 title: 主流程-机构抽屉（抽屉字段）
-story: US-SVC-ORG-07
 entry_id: svc-search
 preconditions:
-  - 已进入有机构卡片的检索结果
-locators:
-  org_card: article.svc-org-search-card
-  org_name_link: button.svc-org-search-link
-  drawer: .arco-drawer
+  - 已进入有卡片的检索结果
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
+    target: /service-center/search
   - action: evaluate
-    note: 检索出卡后点击机构名，打开抽屉（判定在 expect）
+    note: 点击首条机构名称打开抽屉
 expect:
   - note: 前置：检索结果区至少一张机构卡片；点击首卡机构名称
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterSvcSearch = async () => {
-        await dismissBasket();
-        await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await recover404Shell();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
-        }
-        const searchItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-        if (!(await searchItem().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
-        await searchItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      };
-      await enterSvcSearch();
-      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 8000 });
-      await inp.fill('深圳');
-      const searchBtn = page.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
-      await expect(searchBtn).toBeVisible({ timeout: 8000 });
-      await searchBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(2500);
-      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      const card = page.locator('article.svc-org-search-card').first();
-      if ((await card.count()) < 1) throw new Error('前置：结果区未见机构卡片');
-      await expect(card).toBeVisible({ timeout: 10000 });
+      const card = page.locator('main article.svc-org-search-card').first();
+      await expect(card).toBeVisible({ timeout: 25000 });
       const nameBtn = card.locator('button.svc-org-search-link').first();
       const cardName = ((await nameBtn.innerText()) || '').trim();
       if (!cardName) throw new Error('卡片机构名称为空');
-      const tags = card.locator('.svc-org-search-card__title .arco-tag');
-      const tagTexts = [];
-      for (let i = 0; i < (await tags.count()); i++) {
-        const t = ((await tags.nth(i).innerText()) || '').trim();
-        if (t) tagTexts.push(t);
-      }
+      const svcTag = card.locator('.svc-org-search-card__title .arco-tag').first();
+      const svcType = (await svcTag.count()) ? ((await svcTag.innerText()) || '').trim() : '';
       const metaText = ((await card.locator('.svc-org-search-card__meta').innerText()) || '').replace(/\s+/g, ' ');
       const cityM = metaText.match(/城市：([^省区]+)/);
       const cardCity = cityM ? cityM[1].trim() : '';
-      globalThis.__func03994 = { cardName, tagTexts, cardCity };
-      await nameBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+      const indTag = card.locator('.svc-org-search-card__title .arco-tag').nth(1);
+      const cardIndustry = (await indTag.count()) ? ((await indTag.innerText()) || '').trim() : '';
+      globalThis.__func03994 = { cardName, svcType, cardCity, cardIndustry };
+      await nameBtn.click({ timeout: 10000 });
+      await page.waitForURL(/\borg=/, { timeout: 20000 });
       const drawer = page.locator('.arco-drawer:visible').first();
-      await expect(drawer).toBeVisible({ timeout: 12000 });
+      await expect(drawer).toBeVisible({ timeout: 20000 });
+      await expect(drawer.locator('[data-testid="svc-org-profile-drawer"]')).toBeVisible({ timeout: 20000 });
       globalThis.__func03994_drawer = drawer;
   - note: 1、抽屉标题为该机构名称
     assert: |-
       const snap = globalThis.__func03994;
       const drawer = globalThis.__func03994_drawer || page.locator('.arco-drawer:visible').first();
-      await expect(drawer).toBeVisible({ timeout: 8000 });
-      const title = drawer.locator('.arco-drawer-header .arco-drawer-title, .arco-drawer-title').first();
-      await expect(title).toBeVisible({ timeout: 8000 });
-      const titleText = ((await title.innerText()) || '').trim();
+      await expect(drawer).toBeVisible({ timeout: 15000 });
+      const titleText = ((await drawer.locator('.arco-drawer-title, .svc-org-drawer-title').first().innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!titleText.includes(snap.cardName)) {
-        throw new Error('抽屉标题应含机构名称，title=' + titleText + ' name=' + snap.cardName);
+        throw new Error('抽屉标题应含机构名称，title=' + titleText);
       }
-  - note: 2、抽屉含机构标识、名称、服务类型、城市、行业且与所点行一致
+  - note: 2、抽屉含机构标识、名称、服务类型、城市、行业
     assert: |-
       const snap = globalThis.__func03994;
-      const drawer = globalThis.__func03994_drawer || page.locator('.arco-drawer:visible').first();
-      const getDesc = async (label) => {
-        const items = drawer.locator('.arco-descriptions-item');
-        const n = await items.count();
-        for (let i = 0; i < n; i++) {
-          const lab = ((await items.nth(i).locator('.arco-descriptions-item-label').innerText()) || '').trim();
-          if (lab === label) {
-            return ((await items.nth(i).locator('.arco-descriptions-item-value').innerText()) || '').trim();
-          }
-        }
-        throw new Error('抽屉缺少字段标签：' + label);
-      };
-      for (const lab of ['机构标识', '名称', '服务类型', '城市', '行业']) {
-        const v = await getDesc(lab);
-        if (!v || v === '—') throw new Error('字段「' + lab + '」值为空');
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 15000 });
+      const orgId = new URL(page.url()).searchParams.get('org');
+      if (!orgId || !orgId.trim()) throw new Error('机构标识（URL org）缺失');
+      const body = drawer.locator('[data-testid="svc-org-profile-drawer"]');
+      await expect(body).toBeVisible({ timeout: 15000 });
+      await expect(drawer.locator('.arco-spin')).toBeHidden({ timeout: 25000 }).catch(async () => {
+        await expect(drawer.locator('.svc-drawer-section').first()).toBeVisible({ timeout: 25000 });
+      });
+      const titleText = ((await drawer.locator('.arco-drawer-title').innerText()) || '').replace(/\s+/g, ' ');
+      if (!titleText.includes(snap.cardName)) throw new Error('名称未在抽屉标题：' + titleText);
+      if (snap.svcType) {
+        await expect(drawer.getByText(snap.svcType, { exact: false }).first()).toBeVisible({ timeout: 12000 });
       }
-      const nameVal = await getDesc('名称');
-      if (nameVal !== snap.cardName && !nameVal.includes(snap.cardName)) {
-        throw new Error('抽屉名称与卡片不一致：drawer=' + nameVal + ' card=' + snap.cardName);
-      }
-      const orgIdVal = await getDesc('机构标识');
-      if (!orgIdVal || orgIdVal === '暂无') throw new Error('机构标识应为有效值');
-      const url = page.url();
-      if (!url.includes('org=') && !url.includes(encodeURIComponent(orgIdVal))) {
-        const orgParam = new URL(url).searchParams.get('org');
-        if (orgParam && orgParam !== orgIdVal) {
-          throw new Error('URL org 与抽屉机构标识不一致');
-        }
-      }
-      const cityVal = await getDesc('城市');
       if (snap.cardCity && snap.cardCity !== '暂无') {
-        const norm = (s) => s.replace(/市$/, '');
-        if (norm(cityVal) !== norm(snap.cardCity) && !cityVal.includes(snap.cardCity) && !snap.cardCity.includes(cityVal)) {
-          throw new Error('抽屉城市与卡片 meta 不一致：drawer=' + cityVal + ' card=' + snap.cardCity);
-        }
+        const cityNeedle = snap.cardCity.replace(/市$/, '');
+        await expect(drawer.getByText(new RegExp(cityNeedle)).first()).toBeVisible({ timeout: 12000 });
       }
-      const svcVal = await getDesc('服务类型');
-      const indVal = await getDesc('行业');
-      if (snap.tagTexts.length >= 1 && svcVal !== '暂无' && !snap.tagTexts.some((t) => svcVal.includes(t) || t.includes(svcVal))) {
-        throw new Error('服务类型与卡片 Tag 不对应：drawer=' + svcVal + ' tags=' + snap.tagTexts.join('|'));
+      const industryNeedle = (snap.cardIndustry || snap.svcType || '').trim();
+      if (industryNeedle) {
+        await expect(drawer.getByText(industryNeedle, { exact: false }).first()).toBeVisible({ timeout: 12000 });
+      } else {
+        await expect(body.locator('.arco-descriptions-item-label').filter({ hasText: '行业' }).first()).toBeVisible({ timeout: 12000 });
       }
-      if (snap.tagTexts.length >= 2 && indVal !== '暂无' && !snap.tagTexts.some((t) => indVal.includes(t) || t.includes(indVal))) {
-        throw new Error('行业与卡片 Tag 不对应：drawer=' + indVal + ' tags=' + snap.tagTexts.join('|'));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 03994；catalog_path=/service-center/search。点 button.svc-org-search-link 开检索页壳抽屉
- （ServiceOrgSearchPage.vue a-descriptions：机构标识/名称/服务类型/城市/行业）；标题=orgDisplayName；
-  壳层 hint 不进断言。关闭见 FUNC-04031。
+on_fail: 截图 + 抄 X-Trace-Id

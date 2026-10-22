@@ -79,13 +79,17 @@ expect:
         if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
           throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无已完成任务');
         }
-        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-        const viewBtn = (await doneRow.count())
-          ? doneRow.first().getByRole('button', { name: '查看结果' })
-          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
-        if (!(await viewBtn.count()) || (await viewBtn.isDisabled())) {
+        const doneRow = page.locator('main tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
+        let viewBtn = doneRow.count().then((n) => (n ? doneRow.first().getByText('查看结果', { exact: true }) : null));
+        viewBtn = await viewBtn;
+        if (!viewBtn || !(await viewBtn.count())) {
+          const row = page.locator('main tr').filter({ hasText: '深圳产业发展分析' }).first();
+          viewBtn = row.getByText('查看结果', { exact: true });
+        }
+        if (!(await viewBtn.count()) || !(await viewBtn.first().isVisible().catch(() => false))) {
           throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无可用「查看结果」');
         }
+        viewBtn = viewBtn.first();
         await viewBtn.click({ timeout: 10000 });
         await page.waitForTimeout(2000);
         await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });

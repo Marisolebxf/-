@@ -1,0 +1,92 @@
+id: FUNC-02913
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02913
+priority: P1
+title: 超出范围参数收到边界
+story: US-CHAIN-DIAG-01
+entry_id: chain-cycle
+tier: B
+preconditions:
+  - 已打开产业关键参数表
+locators:
+  market_spin: 市场规模行 spinbutton
+  maturity_spin: 技术成熟度行 spinbutton
+  growth_spin: 市场增长率行 spinbutton
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
+  - action: evaluate
+    note: 依次填入超范围值并 Tab 失焦；边界值与校验文案在 expect
+expect:
+  - note: 前置：产业周期分析页与参数表可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=cycle/);
+      await expect(page).toHaveURL(/tab=cycle/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+      }
+      await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('产业关键参数').first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(4, { timeout: 8000 });
+      const spinInRow = (name) =>
+        page.getByRole('row').filter({ hasText: name }).first().locator('[role=spinbutton]').first();
+      globalThis.__func02913 = { spinInRow };
+  - note: 1、市场规模填入 100001 后变为 100000
+    assert: |-
+      const spinInRow = globalThis.__func02913?.spinInRow;
+      if (!spinInRow) throw new Error('前置：参数表未就绪');
+      const market = spinInRow('市场规模');
+      await market.click({ timeout: 8000 });
+      await market.fill('100001');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(500);
+      const v = await market.inputValue();
+      if (v !== '100000') throw new Error('市场规模应收到 100000，实际=' + v);
+      if (await page.getByText('分析中', { exact: false }).first().isVisible().catch(() => false)) {
+        throw new Error('仅改参数不应发起分析');
+      }
+  - note: 2、技术成熟度填入 101 后变为 100
+    assert: |-
+      const spinInRow = globalThis.__func02913?.spinInRow;
+      const maturity = spinInRow('技术成熟度');
+      await maturity.click({ timeout: 8000 });
+      await maturity.fill('101');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(500);
+      const v = await maturity.inputValue();
+      if (v !== '100') throw new Error('技术成熟度应收到 100，实际=' + v);
+  - note: 3、市场增长率填入 -80 后变为 -50；仍显示「参数范围校验通过」且无额外错误提示
+    assert: |-
+      const spinInRow = globalThis.__func02913?.spinInRow;
+      const growth = spinInRow('市场增长率');
+      await growth.click({ timeout: 8000 });
+      await growth.fill('-80');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(500);
+      const v = await growth.inputValue();
+      if (v !== '-50') throw new Error('市场增长率应收到 -50，实际=' + v);
+      await expect(page.getByText('参数范围校验通过').first()).toBeVisible({ timeout: 8000 });
+      const errToast = page.locator('.arco-message-error, .arco-notification-error');
+      if (await errToast.count() && (await errToast.first().isVisible().catch(() => false))) {
+        throw new Error('收到边界后出现错误提示');
+      }
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；四参数 spin 顺序与 scout：市场规模/市场增长率/利润率/技术成熟度。
+  超界失焦（Tab）后 Arco InputNumber 收到边界：100001→100000、101→100、-80→-50；用例备注仍显「参数范围校验通过」无另起错误 toast。登录关评审 runner 前置。B 档 P1 备选。

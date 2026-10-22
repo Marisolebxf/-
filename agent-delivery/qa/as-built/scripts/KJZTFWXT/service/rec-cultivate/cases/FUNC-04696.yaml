@@ -1,0 +1,25 @@
+id: FUNC-04696
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04696
+priority: P1
+tier: B
+title: 主流程-按比例归一
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 现有规模 25%
+  - action: fill
+    target: 现有规模
+    value: 40
+  - action: click
+    target: 按比例归一
+expect:
+  - note: 权重合计显示 100% 已对齐
+    assert: |-
+      const total = page.getByText('权重合计');
+      await expect(total).toBeVisible();
+      await expect(total.locator('..')).toContainText('100%');
+on_fail: 截图 + 抄 X-Trace-Id

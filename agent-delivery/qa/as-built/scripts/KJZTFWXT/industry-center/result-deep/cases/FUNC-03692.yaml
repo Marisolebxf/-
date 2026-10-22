@@ -1,0 +1,22 @@
+id: FUNC-03692
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03692
+priority: P1
+tier: B
+title: 异常-无结果
+entry_id: chain-result-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/results/CHAIN-20261014-004
+expect:
+  - note: 页面仍位于产业链分析结果深链
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/results\/CHAIN-20261014-004/);
+  - note: 标题为无法打开产业链分析深链
+    assert: |-
+      await expect(page.getByText('无法打开产业链分析深链', { exact: true })).toBeVisible();
+  - note: 说明文案为该任务尚无可查看的结果
+    assert: |-
+      await expect(page.getByText('该任务尚无可查看的结果', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

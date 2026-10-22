@@ -1,0 +1,30 @@
+id: FUNC-00785
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00785
+priority: P1
+tier: B
+title: 主流程-招引推荐模型区构成与默认权重
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 区块标题为「招引推荐模型（演示模型口径）」
+    assert: |-
+      await expect(page.getByText('招引推荐模型（演示模型口径）')).toBeVisible()
+  - note: 四指标为产业匹配度、技术领先性、发展潜力、对外合作意愿
+    assert: |-
+      await expect(page.getByText('产业匹配度')).toBeVisible();
+      await expect(page.getByText('技术领先性')).toBeVisible();
+      await expect(page.getByText('发展潜力')).toBeVisible();
+      await expect(page.getByText('对外合作意愿')).toBeVisible()
+  - note: 四权重初值为 35/30/20/15 且各带上下调节钮
+    assert: |-
+      const modelBlock = page.getByText('招引推荐模型', { exact: true }).locator('xpath=ancestor::div[contains(@class,"arco-card")][1]');
+      await expect(modelBlock.getByText('产业匹配度 35%')).toBeVisible();
+      await expect(modelBlock.getByText('技术领先性 30%')).toBeVisible();
+      await expect(modelBlock.getByText('发展潜力 20%')).toBeVisible();
+      await expect(modelBlock.getByText('对外合作意愿 15%')).toBeVisible();
+      await expect(modelBlock.locator('.arco-input-number-step-button')).toHaveCount(8)
+on_fail: 截图 + 抄 X-Trace-Id

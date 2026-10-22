@@ -1,0 +1,19 @@
+id: FUNC-04595
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04595
+priority: P0
+tier: B
+title: 主流程-配置区引导
+entry_id: svc-rec-attract
+preconditions:
+  - 当前在分析配置，且未见推荐名单
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 底部引导全文与附录 B 一致
+    assert: |-
+      await expect(
+        page.getByText('请先确认分析条件，再点击「生成招引名单」。切换 workspace 或产业不会自动创建任务。')
+      ).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

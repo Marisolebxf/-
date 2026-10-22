@@ -10,7 +10,7 @@ preconditions:
   - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
   - 脚本自含：同一家机构当天首发成功且配置区仍回显该 1 家（重建选首项=同指纹）
 locators:
-  org_picker: button「选择机构」
+  org_picker: button「打开对比篮」
   start: button「开始分析」
   selected_label: 已选机构（1 家）
 steps:
@@ -109,16 +109,27 @@ expect:
         const oneSelected = page.getByText(/已选机构（1\s*家）/).first();
         if (await oneSelected.isVisible().catch(() => false)) return;
         await expect(page.getByText(/已选机构（0\s*家）|未选择机构/).first()).toBeVisible({ timeout: 8000 });
-        const pick = page.getByRole('button', { name: '选择机构' }).first();
-        await pick.click({ timeout: 8000 });
-        await page.waitForTimeout(800);
-        const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
-        await expect(dialog).toBeVisible({ timeout: 8000 });
-        await dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 5000 });
-        await page.waitForTimeout(300);
-        await dialog.locator('.arco-modal-footer button:visible').filter({ hasText: /^确定$/ }).last().click({ timeout: 8000 });
+        const openBasket =
+          page.locator('[data-testid="svc-org-open-compare-basket"], [data-testid="svc-org-empty-open-basket"]').first();
+        if (await openBasket.isVisible().catch(() => false)) {
+          await openBasket.click({ timeout: 8000 });
+        } else {
+          await page.locator('main').getByRole('button', { name: /^打开对比篮$/ }).first().click({ timeout: 8000 });
+        }
         await page.waitForTimeout(1200);
-        await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+        await expect(page.getByText(/选择分析服务机构|从对比篮勾选本页分析对象/).first()).toBeVisible({
+          timeout: 12000,
+        });
+        const row = page.getByRole('row').filter({ hasText: /有限公司|智能科技|生物/ }).first();
+        if (await row.count()) {
+          await row.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 8000 });
+        } else {
+          await page.locator('.arco-table-body .arco-checkbox:not(.arco-checkbox-disabled)').first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(500);
+        await page.getByRole('button', { name: /^确定$/ }).last().click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+        await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 15000 });
       };
       const pollLand = async (ms) => {
         const toasts = [];

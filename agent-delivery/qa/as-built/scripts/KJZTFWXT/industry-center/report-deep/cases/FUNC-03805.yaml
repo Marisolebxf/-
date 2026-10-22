@@ -1,0 +1,19 @@
+id: FUNC-03805
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03805
+priority: P1
+tier: B
+title: 异常-无权访问
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-OTHER-ACCOUNT-03805
+expect:
+  - note: 页面提示标题为「无法打开产业链分析深链」
+    assert: |-
+      await expect(page.getByText('无法打开产业链分析深链')).toBeVisible()
+  - note: 说明为「无权访问该任务」
+    assert: |-
+      await expect(page.getByText('无权访问该任务')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

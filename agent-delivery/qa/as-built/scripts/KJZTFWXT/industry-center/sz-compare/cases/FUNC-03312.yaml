@@ -110,7 +110,10 @@ expect:
       const newBtn = page.getByRole('button', { name: '按此配置新建分析' }).first();
       await expect(newBtn).toBeVisible({ timeout: 10000 });
       await newBtn.click({ timeout: 12000 });
-      await page.waitForTimeout(1200);
+      for (let i = 0; i < 60; i++) {
+        if (await page.getByRole('button', { name: '重新分析' }).first().isVisible().catch(() => false)) break;
+        await page.waitForTimeout(500);
+      }
       globalThis.__func03312Clicked = true;
       const cmpTab = page.getByRole('tab', { name: '深圳产业情况分析对比' }).first();
       await expect(cmpTab).toBeVisible({ timeout: 10000 });
@@ -132,7 +135,7 @@ expect:
     assert: |-
       if (!globalThis.__func03312Clicked) throw new Error('前置：未执行按此配置新建分析');
       const rerun = page.getByRole('button', { name: '重新分析' }).first();
-      await expect(rerun).toBeVisible({ timeout: 10000 });
+      await expect(rerun).toBeVisible({ timeout: 5000 });
       globalThis.__func03312Rerun = rerun;
   - note: 3、「重新分析」为禁用
     assert: |-

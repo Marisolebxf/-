@@ -56,14 +56,15 @@ expect:
       }
   - note: 选定产业后下拉回显所选产业（实勘样例「集成电路」）
     assert: |-
-      await page.locator('.arco-select-view[aria-label="产业"]').click();
+      const cascader = page.locator('main .arco-cascader-view').first();
+      await cascader.click({ timeout: 8000 });
       await page.waitForTimeout(600);
-      const opt = page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: /^集成电路$/ }).first();
-      await opt.click({ force: true });
-      await page.waitForTimeout(1000);
-      const indText = (await page.locator('.arco-select-view[aria-label="产业"]').innerText()).trim();
-      if (indText !== '集成电路') {
-        throw new Error('产业未回显集成电路: ' + indText);
+      const popup = page.locator('.arco-trigger-popup:visible');
+      await popup.getByText('半导体与集成电路', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const indText = (await cascader.innerText()).trim();
+      if (!/集成电路/.test(indText)) {
+        throw new Error('产业未回显所选产业（含集成电路）: ' + indText);
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）。空态 placeholder 在 input；提示与 disabled 联动；选「集成电路」为 scout 固定样例。合法组合 enabled 归 FUNC-00570。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。

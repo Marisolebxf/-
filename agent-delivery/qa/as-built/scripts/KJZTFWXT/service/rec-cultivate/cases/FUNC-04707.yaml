@@ -1,0 +1,33 @@
+id: FUNC-04707
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04707
+priority: P1
+tier: B
+title: 备选-返回配置
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate&industry=CL-SEI-02.INB2503
+expect:
+  - note: 回到分析配置
+    assert: |-
+      await page.getByRole('button', { name: '生成培育名单' }).click();
+      for (let i = 0; i < 60; i++) {
+        const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+        if (/分析结果已生成/.test(body)) break;
+        await page.waitForTimeout(1000);
+      }
+      await expect(page.getByText('分析结果已生成')).toBeVisible();
+      await page.getByRole('button', { name: '查看结果', exact: true }).click();
+      await expect(page.getByText('本土机构培育名单')).toBeVisible({ timeout: 60000 });
+      await page.getByRole('button', { name: '返回配置' }).click();
+      await expect(page.getByTestId('svc-rec-cultivate-config')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '分析配置' })).toBeVisible();
+      await expect(page.getByText('本土机构培育名单')).not.toBeVisible();
+  - note: 重点产业方向仍为「生物」
+    assert: |-
+      const ctx = page.getByTestId('svc-rec-cultivate-context');
+      await expect(ctx.getByText('重点产业方向')).toBeVisible();
+      await expect(ctx.locator('.arco-select-view').filter({ hasText: '生物' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

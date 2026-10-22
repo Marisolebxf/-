@@ -1,0 +1,33 @@
+id: FUNC-05202
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05202
+priority: P1
+tier: B
+title: 备选-页签往返产业仍在
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    note: 选择产业「海洋」
+    target: |-
+      const main = page.locator('main');
+      await main.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-popup').getByText('海洋产业', { exact: true }).click();
+  - action: click
+    note: 点击「全球服务机构概况」页签
+    target: |-
+      await page.getByRole('tab', { name: '全球服务机构概况' }).click();
+  - action: click
+    note: 点击「服务机构技术能力」页签
+    target: |-
+      await page.getByRole('tab', { name: '服务机构技术能力' }).click();
+expect:
+  - note: 产业选择仍为「海洋」
+    assert: |-
+      await expect(page.locator('main').locator('.arco-cascader-view')).toContainText('海洋');
+  - note: 主标题为「服务机构技术能力」
+    assert: |-
+      await expect(page.getByRole('heading', { level: 1, name: '服务机构技术能力' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

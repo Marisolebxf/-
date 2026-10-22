@@ -1,0 +1,25 @@
+id: FUNC-04716
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04716
+priority: P1
+tier: B
+title: 异常-失败行不能看结果
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 分析记录
+expect:
+  - note: 失败行的「查看结果」不可用
+    assert: |-
+      await page.locator('.arco-select').filter({ hasText: '全部状态' }).locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '失败' }).click();
+      const failedRow = page.locator('tr').filter({ hasText: '失败' }).first();
+      await expect(failedRow.getByRole('button', { name: '查看结果' })).toBeDisabled();
+  - note: 同一行的「查看过程」可用
+    assert: |-
+      const failedRow = page.locator('tr').filter({ hasText: '失败' }).first();
+      await expect(failedRow.getByRole('button', { name: '查看过程' })).toBeEnabled();
+on_fail: 截图 + 抄 X-Trace-Id

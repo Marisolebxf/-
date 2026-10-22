@@ -1,0 +1,60 @@
+id: FUNC-05293
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05293
+priority: P1
+tier: B
+title: 主流程-区排行条形
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 滚动到「区排行」
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen');
+      }
+      const rank = page.locator('main').getByText('区排行', { exact: true }).first();
+      await rank.scrollIntoViewIfNeeded();
+      await expect(rank).toBeVisible({ timeout: 20000 });
+expect:
+  - note: 1、横向条共 9 个区，名称与顺序见附录 C
+    assert: |-
+      const names = await page.evaluate(() => {
+        const title = Array.from(document.querySelectorAll('*')).find(
+          (el) => (el.textContent ?? '').trim() === '区排行',
+        );
+        const panel =
+          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
+          title?.parentElement?.parentElement?.parentElement;
+        if (!panel) return [];
+        const chartEl = panel.querySelector('.svc-portal-chart');
+        if (!chartEl) return [];
+        const ec = window.echarts && window.echarts.getInstanceByDom(chartEl);
+        const data = ec && ec.getOption().yAxis && ec.getOption().yAxis[0] && ec.getOption().yAxis[0].data;
+        return Array.isArray(data) ? data.map(String) : [];
+      });
+      const expected = ['盐田区', '坪山区', '罗湖区', '光明区', '龙华区', '福田区', '龙岗区', '宝安区', '南山区'];
+      await expect(names.length === 9 && names.join('|') === expected.join('|')).toBeTruthy();
+  - note: 2、最上为南山区
+    assert: |-
+      const top = await page.evaluate(() => {
+        const title = Array.from(document.querySelectorAll('*')).find(
+          (el) => (el.textContent ?? '').trim() === '区排行',
+        );
+        const panel =
+          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
+          title?.parentElement?.parentElement?.parentElement;
+        const chartEl = panel && panel.querySelector('.svc-portal-chart');
+        if (!chartEl) return '';
+        const ec = window.echarts && window.echarts.getInstanceByDom(chartEl);
+        const data = ec && ec.getOption().yAxis && ec.getOption().yAxis[0] && ec.getOption().yAxis[0].data;
+        if (!Array.isArray(data) || !data.length) return '';
+        return String(data[data.length - 1]);
+      });
+      await expect(top === '南山区').toBeTruthy();
+  - note: 3、说明为「只排 Java 已给区行，不发明其余区。」
+    assert: |-
+      await expect(page.getByText('只排 Java 已给区行，不发明其余区。', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,35 @@
+id: FUNC-05201
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05201
+priority: P1
+tier: B
+title: 备选-改选产业清空产业链
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    assert: |-
+      const main = page.locator('main');
+      await main.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-option').filter({ hasText: /^生物$/ }).first().click();
+  - action: click
+    assert: |-
+      const main = page.locator('main');
+      await main.locator('.arco-select-view').click();
+      await page.locator('.arco-select-option').getByText('生物医药与生命健康').click();
+  - action: click
+    assert: |-
+      const main = page.locator('main');
+      await main.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-option').filter({ hasText: /^海洋$/ }).first().click();
+expect:
+  - note: 已选产业链名称被清空
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('生物医药与生命健康')).toHaveCount(0);
+  - note: 榜单标题为「海洋 · 技术力 Top30」
+    assert: |-
+      await expect(page.locator('main').getByText('海洋 · 技术力 Top30')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

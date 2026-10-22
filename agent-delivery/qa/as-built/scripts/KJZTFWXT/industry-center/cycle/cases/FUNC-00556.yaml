@@ -86,12 +86,22 @@ expect:
       await enterCyclePage();
       const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
+        throw new Error('产业周期分析 SPA 404 ' + page.url());
       }
       await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
       await expect(page.getByRole('tab', { name: '产业周期分析' }).first()).toBeVisible();
       await expect(page.getByRole('tab', { name: '诊断记录' }).first()).toBeVisible();
-      await pickSelect('集群', '生物产业');
+      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
+      if (await clusterView.isVisible().catch(() => false)) {
+        const clusterShown = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!clusterShown || clusterShown.includes('请选择')) {
+          await clusterView.click({ timeout: 8000 });
+          await page.waitForTimeout(450);
+          await page.locator(optSel).first().click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
+      }
+      await pickSelect('产业', '生物产业');
       await pickTimeRange('近3年');
       const spins = page.locator('[role=spinbutton]');
       await expect(spins).toHaveCount(4, { timeout: 8000 });
@@ -101,9 +111,12 @@ expect:
       if (maturity !== '77') {
         throw new Error('前置：技术成熟度应改为 77，实际=' + maturity);
       }
-      const clusterText = ((await page.locator('.arco-select-view[aria-label="集群"]').first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      const industryText = ((await page.locator('.arco-select-view[aria-label="产业"]').first().innerText()) || '').replace(/\s+/g, ' ').trim();
       const block = page.locator('text=分析时间范围').first();
       const timeText = ((await block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!industryText.includes('生物产业')) {
+        throw new Error('前置：分析对象应为生物产业，实际=' + industryText);
+      }
       await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
       await page.waitForTimeout(900);
       const nBefore = await countChainRows();
@@ -111,7 +124,7 @@ expect:
         nBefore,
         main,
         countChainRows,
-        draft: { clusterText, timeLabel: '近3年', maturity: '77' },
+        draft: { industryText, timeLabel: '近3年', maturity: '77' },
       };
   - note: 1、双页签均可见可互切
     assert: |-
@@ -130,8 +143,8 @@ expect:
       if (!ctx?.tabSwitched) throw new Error('前置：未完成 Tab 往返');
       const { draft } = ctx;
       await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
-      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
-      await expect(clusterView).toContainText('生物产业', { timeout: 8000 });
+      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industryView).toContainText('生物产业', { timeout: 8000 });
       const block = page.locator('text=分析时间范围').first();
       const timeTrigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
       await expect(timeTrigger).toContainText('近3年', { timeout: 8000 });

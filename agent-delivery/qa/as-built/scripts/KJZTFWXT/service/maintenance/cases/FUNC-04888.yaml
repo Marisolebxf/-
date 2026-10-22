@@ -1,0 +1,44 @@
+id: FUNC-04888
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04888
+priority: P1
+tier: B
+title: 主流程-侧栏菜单
+entry_id: svc-maintenance
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/maintenance
+  - action: evaluate
+    note: 展开左侧「产业服务链分析」
+expect:
+  - note: 该组 10 项菜单名称与附录 A 一致
+    assert: |-
+      const menuNames = [
+        '专题服务',
+        '服务机构查询',
+        '服务机构产业领域分析',
+        '服务机构新增趋势分析',
+        '服务机构技术力评估分析',
+        '服务链短板分析',
+        '服务链图谱分析',
+        '引入服务机构推荐分析',
+        '培育服务机构推荐分析',
+        '深圳服务链现状分析',
+      ];
+      const item = (name) =>
+        page.locator('.arco-menu-item, .layout-menu-item').filter({ hasText: new RegExp('^' + name + '$') });
+      const expandServiceGroup = async () => {
+        if (await item(menuNames[0]).first().isVisible().catch(() => false)) return;
+        const sub = page
+          .locator('.arco-menu-inline-header, .arco-menu-submenu-title')
+          .filter({ hasText: '产业服务链分析' });
+        await expect(sub.first()).toBeVisible({ timeout: 15000 });
+        await sub.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      await expandServiceGroup();
+      for (const name of menuNames) {
+        await expect(item(name).first()).toBeVisible({ timeout: 15000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id

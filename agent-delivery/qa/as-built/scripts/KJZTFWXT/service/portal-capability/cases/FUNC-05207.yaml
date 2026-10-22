@@ -1,0 +1,20 @@
+id: FUNC-05207
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05207
+priority: P1
+tier: B
+title: 备选-切到全球服务机构概况
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: evaluate
+    note: 点击「全球服务机构概况」页签
+expect:
+  - note: 主标题为「全球服务机构概况」
+    assert: |-
+      await page.locator('[aria-label="专题服务子导航"] [data-tab-key="overview"]').click();
+      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { level: 1, name: '全球服务机构概况' })).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

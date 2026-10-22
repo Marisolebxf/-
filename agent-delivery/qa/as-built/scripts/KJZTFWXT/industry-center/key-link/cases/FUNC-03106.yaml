@@ -134,24 +134,14 @@ expect:
       await expect(page.getByText('产业关键环节识别结果').first()).toBeVisible({ timeout: 20000 });
   - note: 1、点击环节「设计」
     assert: |-
-      const clickDesign = await page.evaluate(() => {
-        const pickNode = (name) => {
-          const cands = [...document.querySelectorAll('main div')].filter((el) => {
-            const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-            if (!t.includes(name) || !/高端化/.test(t)) return false;
-            const r = el.getBoundingClientRect();
-            return r.width >= 70 && r.width <= 130 && r.height >= 70 && r.height <= 130;
-          });
-          cands.sort((a, b) => a.getBoundingClientRect().width - b.getBoundingClientRect().width);
-          return cands[0] || null;
-        };
-        const el = pickNode('设计');
-        if (!el) return { err: '未定位到「设计」环节圆点' };
-        el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-        el.click();
-        return { ok: true };
-      });
-      if (clickDesign.err) throw new Error(clickDesign.err);
+      const main = page.locator('main').first();
+      const designNode = main
+        .locator('div')
+        .filter({ has: page.getByText('设计', { exact: true }) })
+        .filter({ hasText: /高端化/ })
+        .first();
+      await expect(designNode).toBeVisible({ timeout: 10000 });
+      await designNode.click({ timeout: 10000 });
       await page.waitForTimeout(600);
   - note: 1、「环节详情」为「该环节暂无详情说明」
     assert: |-

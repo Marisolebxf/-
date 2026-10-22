@@ -36,38 +36,47 @@ expect:
           throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深圳对比 SPA404 @' + where + ' ' + page.url());
         }
       };
-      const pickSelectOption = async (ariaLabel, re) => {
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+      const pickAnalysisObject = async () => {
+        const row = main().locator('[data-testid="shenzhen-compare-context-row"]');
+        const view = row.locator('.arco-cascader-view').first();
+        const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/人工智能与应用/.test(cur)) return;
         await expect(view).toBeVisible({ timeout: 10000 });
         await view.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
         await expect(pop).toBeVisible({ timeout: 8000 });
-        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
-        if (!(await opt.count())) {
-          throw new Error('ENV-CHAIN-SZ-COMPARE-03299：选项不可用 ' + ariaLabel + ' ' + String(re));
+        if (!/新一代信息技术/.test(cur)) {
+          const c1 = pop.locator('.arco-cascader-option').filter({ hasText: /^新一代信息技术$/ }).first();
+          await expect(c1).toBeVisible({ timeout: 8000 });
+          await c1.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
         }
-        await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(700);
-      };
-      const benchmarkView = () => {
-        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
-        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+        const c2 = pop.locator('.arco-cascader-option').filter({ hasText: /^人工智能与应用$/ }).first();
+        await expect(c2).toBeVisible({ timeout: 8000 });
+        await c2.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
       };
       const pickBenchmark = async (cityRe) => {
-        const view = benchmarkView();
+        const field = main().locator('[data-testid="shenzhen-benchmark-ready-check"]');
+        const view = field.locator('.arco-cascader-view').first();
         await expect(view).toBeVisible({ timeout: 10000 });
         await view.click({ timeout: 8000 });
         await page.waitForTimeout(600);
-        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
-        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const cascOpts = pop.locator('.arco-cascader-option');
+        if (!(await cascOpts.count())) {
+          const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
           await page.keyboard.press('Escape').catch(() => {});
+          if (/暂无数据|无数据|Q016/.test(popText) || !popText.trim()) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+          }
           throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
         }
-        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
+        const opt = cascOpts.filter({ hasText: cityRe }).first();
         if (!(await opt.count())) {
           await page.keyboard.press('Escape').catch(() => {});
           throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03299：标杆无「' + String(cityRe) + '」');
@@ -147,12 +156,7 @@ expect:
       }
       await assertNotSpa404('landing');
       await expect(page).toHaveURL(/workspace=comparison/);
-      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
-      const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (!/新一代信息技术/.test(clusterText)) {
-        await pickSelectOption('集群', /^新一代信息技术$/);
-      }
-      await pickSelectOption('产业', /^人工智能与应用$/);
+      await pickAnalysisObject();
       await pickBenchmark(/^上海市$/);
       await pickBenchmark(/^北京市$/);
       const start = page.getByRole('button', { name: '开始分析' }).first();

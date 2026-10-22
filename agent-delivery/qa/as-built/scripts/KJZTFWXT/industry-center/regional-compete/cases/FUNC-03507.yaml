@@ -144,10 +144,15 @@ expect:
       await ensureRegions(['深圳市', '上海市', '杭州市']);
       await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
       const start = page.getByRole('button', { name: '开始分析' }).first();
+      const rerun = page.getByRole('button', { name: '重新分析' }).first();
       if (await start.isDisabled()) {
         throw new Error('ENV-CHAIN-REG-COMPETE-03507：配齐后「开始分析」仍 disabled');
       }
-      await start.click({ timeout: 15000 });
+      if (await rerun.isVisible().catch(() => false)) {
+        await rerun.click({ timeout: 15000 });
+      } else {
+        await start.click({ timeout: 15000 });
+      }
       let onProcess = false;
       for (let i = 0; i < 24; i++) {
         await page.waitForTimeout(i < 4 ? 400 : 600);

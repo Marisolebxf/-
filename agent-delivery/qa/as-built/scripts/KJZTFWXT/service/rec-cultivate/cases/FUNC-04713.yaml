@@ -1,0 +1,38 @@
+id: FUNC-04713
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04713
+priority: P1
+tier: B
+title: 备选-机构画像抽屉
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    assert: |-
+      await page.getByRole('button', { name: '生成培育名单' }).click();
+      const firstRow = page.locator('.arco-table-body .arco-table-tr').first();
+      await firstRow.waitFor({ state: 'visible' });
+      const instLink = firstRow.getByRole('link').first();
+      await instLink.click();
+expect:
+  - note: 抽屉标题含「机构画像」与该机构名
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible();
+      await expect(drawer.getByText('机构画像')).toBeVisible();
+      const instName = await page.locator('.arco-table-body .arco-table-tr').first().getByRole('link').first().textContent();
+      await expect(drawer.getByText(instName.trim(), { exact: false })).toBeVisible();
+  - note: 可见基本信息、领域覆盖细分、技术力五维、近三年新增服务记录
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('基本信息')).toBeVisible();
+      await expect(drawer.getByText('领域覆盖细分')).toBeVisible();
+      await expect(drawer.getByText('技术力五维')).toBeVisible();
+      await expect(drawer.getByText('近三年新增服务记录')).toBeVisible();
+  - note: 抽屉内有对比篮按钮
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByRole('button', { name: '对比篮' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

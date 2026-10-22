@@ -11,7 +11,7 @@ preconditions:
 locators:
   tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
   use_plan: button 使用查询方案
-  plan_menuitem: menuitem → 深圳
+  plan_option: .arco-dropdown-option → 深圳
   result_heading: heading「检索结果」
   org_card_action: 结果卡片「加入对比篮」
 steps:
@@ -34,16 +34,12 @@ expect:
       };
       await dismissBasket();
       await expect(page).toHaveURL(/\/service-center\/search/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构查询深链 SPA 404 ' + page.url());
-      }
       const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
       await page.waitForTimeout(500);
       await expect(page).toHaveURL(/[?&]mode=advanced/);
-      const usePlanBtn = page.getByRole('button', { name: '使用查询方案' });
+      const usePlanBtn = page.locator('main').getByRole('button', { name: '使用查询方案' });
       await expect(usePlanBtn).toBeVisible({ timeout: 10000 });
       const disabled = await usePlanBtn.isDisabled().catch(() => true);
       if (disabled) {
@@ -51,24 +47,20 @@ expect:
       }
       await usePlanBtn.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const planItem = page.getByRole('menuitem', { name: '深圳' });
-      if ((await planItem.count()) === 0) {
+      const planOpt = page.locator('.arco-dropdown-option').filter({ hasText: /^深圳$/ });
+      if ((await planOpt.count()) === 0) {
         await page.keyboard.press('Escape');
         throw new Error('前置：使用查询方案下拉中应有「深圳」');
       }
-      await expect(planItem.first()).toBeVisible({ timeout: 8000 });
+      await expect(planOpt.first()).toBeVisible({ timeout: 8000 });
       globalThis.__func03991_planReady = true;
   - note: 1、出现「高级筛选结果」
     assert: |-
       if (!globalThis.__func03991_planReady) throw new Error('前置：方案下拉未就绪');
-      const planItem = page.getByRole('menuitem', { name: '深圳' }).first();
-      await planItem.click({ timeout: 8000 });
+      const planOpt = page.locator('.arco-dropdown-option').filter({ hasText: /^深圳$/ }).first();
+      await planOpt.click({ timeout: 8000 });
       await page.waitForTimeout(2000);
       await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
-      const hasAdvTag = (await page.getByText('高级筛选结果', { exact: true }).count()) > 0;
-      if (!hasAdvTag) {
-        throw new Error('套用方案后未见「高级筛选结果」摘要标签');
-      }
       await expect(page.getByText('高级筛选结果', { exact: true }).first()).toBeVisible({ timeout: 8000 });
   - note: 2、当前条件为「机构名称：深圳」
     assert: |-
@@ -82,7 +74,4 @@ expect:
       await expect(page.getByRole('button', { name: '加入对比篮' }).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
-  金样 03991；catalog_path=/service-center/search。高级筛选 Footer FilterTemplateManager compact：
-  「使用查询方案」Dropdown + menuitem「深圳」（与 Hub「我的方案」chip 同源 useFilterTemplates('service_org')）。
-  onApplyTemplate → applyAdvancedConditions 自动检索；摘要 QueryConditionSummary 蓝标「高级筛选结果」+ 当前条件「机构名称：深圳」。
-  登录与关内部评审由 runner 前置。对照重写新 id，不沿用旧 P0 脚本。
+  30892 重写：Arco Dropdown 用 .arco-dropdown-option 选「深圳」，非 menuitem。

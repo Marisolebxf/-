@@ -95,7 +95,7 @@ expect:
       const openExistingResult = async () => {
         if (/view=result/.test(page.url())) {
           const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-          if (/热力图|当前结果快照没有覆盖矩阵|服务机构产业领域服务广度/.test(main0)) return;
+          if (/当前结果快照没有覆盖矩阵/.test(main0)) return;
         }
         const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
         await expect(recTab).toBeVisible({ timeout: 12000 });
@@ -112,29 +112,39 @@ expect:
         const rows = page.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /已完成/ }).filter({ hasText: /SVC-\d{8}-\d+/ });
         const rowN = await rows.count();
         if (!rowN) throw new Error('ENV-SVC-ORG-FIELD-NO-DONE-RECORD：未定位到已完成任务行');
-        let opened = false;
-        for (let i = 0; i < Math.min(rowN, 8) && !opened; i++) {
+        let hasEmptyMatrix = false;
+        for (let i = 0; i < Math.min(rowN, 8) && !hasEmptyMatrix; i++) {
           const row = rows.nth(i);
           const resBtn = row.getByRole('button', { name: /查看结果/ }).first();
           if (!(await resBtn.count())) continue;
           if (await resBtn.isDisabled().catch(() => false)) continue;
           await resBtn.click({ timeout: 8000 });
           await page.waitForTimeout(2000);
+          let entered = false;
           for (let j = 0; j < 15; j++) {
             const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-            if (/view=result/.test(page.url()) || /服务机构产业领域服务广度|当前结果快照没有覆盖矩阵/.test(body)) {
-              opened = true;
+            if (/当前结果快照没有覆盖矩阵/.test(body)) {
+              hasEmptyMatrix = true;
+              entered = true;
+              break;
+            }
+            if (/view=result/.test(page.url()) || /服务机构产业领域服务广度/.test(body)) {
+              entered = true;
               break;
             }
             await page.waitForTimeout(1000);
           }
-          if (!opened) {
+          if (hasEmptyMatrix) break;
+          if (entered) {
+            await recTab.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1000);
+          } else {
             await recTab.click({ timeout: 8000 }).catch(() => {});
             await page.waitForTimeout(1000);
           }
         }
-        if (!opened) {
-          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+        if (!hasEmptyMatrix) {
+          throw new Error('ENV-SVC-ORG-FIELD-NO-EMPTY-MATRIX：已完成任务中未找到无覆盖矩阵的结果快照');
         }
       };
       await ensureOnFieldCoverage();

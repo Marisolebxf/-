@@ -1,0 +1,36 @@
+id: FUNC-04504
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04504
+priority: P0
+tier: B
+title: 主流程-过程页查看分析记录
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: 生物产业 / 生物医药
+  - action: click
+    target: 新一代信息技术
+  - action: click
+    target: 按钮 开始分析
+  - action: wait
+    timeout_ms: 8000
+  - action: click
+    target: 按钮 查看分析记录
+expect:
+  - note: 打开「分析记录」列表
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('任务号').first()).toBeVisible({ timeout: 10000 });
+      await expect(main.locator('.arco-table').first()).toBeVisible({ timeout: 10000 });
+  - note: 列表含刚产生的任务
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.locator('.arco-table-tbody tr').first()).toBeVisible({ timeout: 10000 });
+  - note: 该行状态为「已完成」
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.locator('.arco-table-tbody tr').filter({ hasText: '已完成' }).first()).toBeVisible({ timeout: 60000 });
+on_fail: 截图 + 抄 X-Trace-Id

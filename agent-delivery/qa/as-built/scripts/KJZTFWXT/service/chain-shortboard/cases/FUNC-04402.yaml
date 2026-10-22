@@ -1,0 +1,124 @@
+id: FUNC-04402
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04402
+priority: P0
+tier: A
+title: 备选-清空 · 恢复占位
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 分析配置已选中「生物」
+locators:
+  cluster_select: .industry-catalog-select / placeholder「选择产业集群」
+  clear: .industry-catalog-select .arco-select-view-clear-btn
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 步骤自含：选定「生物」→悬停产业领域选择框→点击清空图标
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      if (!page.url().includes('/service/chain-analysis') || /view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const ctx = page.locator('[data-testid="svc-eco-analysis-context"]');
+      const sel = ctx.locator('.industry-catalog-select').first();
+      if (!(await sel.isVisible().catch(() => false))) {
+        throw new Error(
+          'blocked: 配置区为 cascader 无 .industry-catalog-select，现场无悬停清空图标（需 allow-clear flat 选择器）'
+        );
+      }
+      await sel.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await page
+        .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option')
+        .filter({ hasText: /^(生物|生物产业)$/ })
+        .first()
+        .click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const viewTxt = (
+        (await sel.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+        (await sel.innerText().catch(() => '')) ||
+        ''
+      )
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (!/^生物$/.test(viewTxt) && !/^生物产业$/.test(viewTxt)) {
+        throw new Error('选定后未回显「生物」: ' + viewTxt);
+      }
+      await sel.hover();
+      await page.waitForTimeout(300);
+      const clr = ctx.locator(
+        '.industry-catalog-select .arco-select-view-clear-btn, .industry-catalog-select .arco-select-clear-icon'
+      );
+      if (!(await clr.count())) {
+        throw new Error('已选「生物」后悬停未见清空图标');
+      }
+      await clr.first().click({ force: true });
+      await page.waitForTimeout(1000);
+      await page.evaluate(() => {
+        window.__func04402Ready = true;
+      });
+  - note: 1、占位恢复为「选择产业集群」
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04402Ready).catch(() => false))) {
+        throw new Error('前置：未完成清空步骤');
+      }
+      await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+      const sel = page.locator('[data-testid="svc-eco-analysis-context"] .industry-catalog-select').first();
+      const after = (
+        (await sel.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+        (await sel.innerText().catch(() => '')) ||
+        ''
+      )
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (/^生物$|^生物产业$/.test(after)) {
+        throw new Error('清空后仍回显产业值: ' + after);
+      }
+  - note: 2、页面仍为「分析配置」
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04402Ready).catch(() => false))) {
+        throw new Error('前置：未完成清空步骤');
+      }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      if (/view=processing|view=result/.test(page.url())) {
+        throw new Error('清空后不应离开配置态: ' + page.url());
+      }
+  - note: 3、不出现「服务链短板分析生成中」
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04402Ready).catch(() => false))) {
+        throw new Error('前置：未完成清空步骤');
+      }
+      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/服务链短板分析生成中/.test(body)) {
+        throw new Error('清空后不应出现「服务链短板分析生成中」');
+      }
+      await page.waitForTimeout(1500);
+      const body2 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/服务链短板分析生成中/.test(body2)) {
+        throw new Error('等待后仍出现「服务链短板分析生成中」');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  对齐 P0-03/00687：flat .industry-catalog-select 选「生物」→悬停 .arco-select-view-clear-btn 清空；占位「选择产业集群」、停留分析配置、无「服务链短板分析生成中」。
+  30892 若仅 cascader（无 allow-clear）则步骤1 抛 blocked。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04402。零 allow_skip。

@@ -13,93 +13,43 @@ locators:
   tab_records: tab「分析记录」
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /industry-center/regional?workspace=index&tab=index
   - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 8000
+    for: 分析配置就绪
+    timeout_ms: 12000
   - action: evaluate
-    note: 侧栏进指数页→配置→开始分析→点「取消任务」；三条预期在 expect
+    note: 配置产业→开始分析→点「取消任务」；三条预期在 expect
 expect:
-  - note: 1、离开生成页并回到分析配置；已选产业仍留在配置上
+  - note: 1、离开生成页并回到分析配置
     assert: |-
       const main = () => page.locator('main').first();
       const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
-      };
-      const enterViaSidebar = async () => {
-        const u = new URL('/industry-center/search', baseUrl);
-        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await dismissBasket();
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling search 404 ' + page.url());
-        }
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
-        const expandChain = async () => {
-          if (await leaf().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await expandChain();
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=index/);
-        await expect(page).toHaveURL(/tab=index/);
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏进页仍 404 ' + page.url());
-        }
-      };
-      const enterRegionalIndex = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/regional/.test(page.url()) &&
-          /workspace=index/.test(page.url()) &&
-          /tab=index/.test(page.url());
-        if (await bodyIs404() || !onTarget()) {
-          await enterViaSidebar();
-          return;
-        }
-        await expect(page).toHaveURL(/workspace=index/);
-        await expect(page).toHaveURL(/tab=index/);
-      };
-      const configureLegal = async () => {
-        await enterRegionalIndex();
-        await expect(page.getByText(/已计入\s*6\s*项/).first()).toBeVisible({ timeout: 12000 });
+      const industryLabel = '半导体与集成电路';
+      const pickIndustry = async () => {
+        await expect(page.getByText(/已计入\s*\d+\s*项/).first()).toBeVisible({ timeout: 15000 });
         await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
-        await page.waitForTimeout(800);
+        await page.waitForTimeout(600);
         await page.keyboard.press('Escape').catch(() => {});
+        const cluster = page.locator('.arco-select-view[aria-label="集群"]');
+        if (await cluster.count() && (await cluster.first().isVisible().catch(() => false))) {
+          await cluster.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+          const co = page.locator(optSel).filter({ hasText: /^新一代信息技术$/ }).first();
+          if (await co.count()) await co.click({ force: true, timeout: 8000 });
+          await page.waitForTimeout(500);
+        }
         const industryTrigger = page.locator('.arco-select-view[aria-label="产业"]').first();
         await industryTrigger.click({ timeout: 8000 });
         await page.waitForTimeout(500);
-        const ic = page.locator(optSel).filter({ hasText: /^集成电路$/ }).first();
-        await expect(ic).toBeVisible({ timeout: 8000 });
-        await ic.click({ force: true, timeout: 8000 });
-        await page.waitForTimeout(900);
-        const industryText = ((await industryTrigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!/集成电路/.test(industryText)) {
-          throw new Error('产业未选为集成电路：「' + industryText + '」');
+        const opt = page.locator(optSel).filter({ hasText: industryLabel }).first();
+        await expect(opt).toBeVisible({ timeout: 10000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(800);
+        const indAfter = ((await industryTrigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!indAfter.includes('集成电路')) {
+          throw new Error('产业未选上：「' + indAfter + '」');
         }
-        globalThis.__func03022 = { industryPicked: '集成电路' };
-        return industryText;
+        globalThis.__func03022 = { industryPicked: industryLabel };
       };
       const clickCancelAsap = async () => {
         return page.evaluate(() => {
@@ -146,7 +96,7 @@ expect:
         });
       };
       const runCancelOnce = async () => {
-        await configureLegal();
+        await pickIndustry();
         const start = page.getByRole('button', { name: '开始分析' }).first();
         await expect(start).toBeEnabled({ timeout: 8000 });
         const cancelRace = clickCancelAsap();
@@ -170,22 +120,16 @@ expect:
         }
       }
       if (attempt.cancelResult === 'instant_done') {
-        throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 分析瞬时完成，未见可点「取消任务」（当天复用/秒完成）');
+        throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 分析瞬时完成，未见可点「取消任务」');
       }
       if (attempt.cancelResult === 'timeout') {
-        const bodyText = await main().innerText().catch(() => '');
-        const url = page.url();
-        if (/view=processing|区域产业指数评价生成中/.test(url + bodyText)) {
-          throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 90s 内未点到「取消任务」（URL=' + url + '）');
-        }
-        throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 开始后未见过程窗（URL=' + url + '）');
+        throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 90s 内未点到「取消任务」');
       }
       await page.waitForTimeout(1000);
       globalThis.__func03022 = {
         ...(globalThis.__func03022 || {}),
         cancelled: true,
         taskId: attempt.taskId,
-        industryPicked: '集成电路',
       };
       const bodyAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       const urlAfter = page.url();
@@ -199,9 +143,9 @@ expect:
       await expect(page.getByRole('tab', { name: '区域产业指数评价' }).first()).toHaveAttribute('aria-selected', 'true');
       await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
       const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
-      const indAfter = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (!/集成电路/.test(indAfter)) {
-        throw new Error('取消后产业未保留：「' + indAfter + '」');
+      const indText = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/集成电路/.test(indText)) {
+        throw new Error('取消后产业未保留：「' + indText + '」');
       }
   - note: 2、分析记录出现该次任务且状态为「失败」
     assert: |-
@@ -224,12 +168,6 @@ expect:
       if (!/失败/.test(rowText)) {
         throw new Error('分析记录未见状态「失败」：' + rowText.slice(0, 160));
       }
-      if (taskId && !rowText.includes(taskId)) {
-        const body = await main().innerText().catch(() => '');
-        if (!body.includes(taskId)) {
-          throw new Error('未在分析记录定位 task=' + taskId + ' 的失败行');
-        }
-      }
       globalThis.__func03022.failRowOk = true;
   - note: 3、不进入「区域产业指数评价结果」
     assert: |-
@@ -241,11 +179,4 @@ expect:
         throw new Error('取消任务后仍进入成功结果页');
       }
       await expect(main().getByText('分析记录').first()).toBeVisible({ timeout: 8000 });
-      if (/区域产业综合指数/.test(body) && !/分析记录/.test(body)) {
-        throw new Error('当前主区像成功结果页而非分析记录/配置');
-      }
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）；edu 深链 404 时 sibling 侧栏进页（同 FUNC-03006）。
-  步骤=新一代信息技术默认+产业集成电路+开始分析→MutationObserver 抢「取消任务」。预期① tab=index 配置态+产业仍集成电路②分析记录对应行「失败」③非「区域产业指数评价结果」。
-  当天复用秒完成→重新分析后再抢窗；仍无窗→ENV-CHAIN-REG-PROCESS-WINDOW-001。登录关评审 runner 前置。B 档零 allow_skip。

@@ -1,0 +1,44 @@
+id: FUNC-04598
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04598
+priority: P1
+tier: B
+title: 备选-结果页改选产业
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 下拉共 15 个选项，名称见附录 A
+    assert: |-
+      await page.getByRole('button', { name: '生成招引名单' }).click();
+      await expect(page.getByText('生成招引名单')).toBeHidden({ timeout: 60000 });
+      const selectWrap = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).locator('.arco-select-view').first();
+      await selectWrap.click();
+      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      await expect(options).toHaveCount(15);
+  - note: 候选家数与改选前一致
+    assert: |-
+      const countLine = page.locator('text=/候选.*家/').first();
+      await expect(countLine).toBeVisible();
+      const countBefore = await countLine.textContent();
+      const mBefore = countBefore?.match(/(\d+)/);
+      if (!mBefore) throw new Error('未找到改选前候选家数');
+      const selectWrap = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).locator('.arco-select-view').first();
+      await selectWrap.click();
+      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      const current = await selectWrap.textContent();
+      const picked = options.filter({ hasNotText: current?.trim() || '' }).first();
+      await picked.click();
+      await expect(countLine).toBeVisible();
+      const countAfter = await countLine.textContent();
+      const mAfter = countAfter?.match(/(\d+)/);
+      if (!mAfter) throw new Error('未找到改选后候选家数');
+      expect(mAfter[1]).toBe(mBefore[1]);
+  - note: 不进入分析过程页
+    assert: |-
+      await expect(page.getByText('分析过程', { exact: false })).toHaveCount(0);
+      await expect(page).toHaveURL(/workspace=attract/);
+      await expect(page).toHaveURL(/tab=attract/);
+on_fail: 截图 + 抄 X-Trace-Id

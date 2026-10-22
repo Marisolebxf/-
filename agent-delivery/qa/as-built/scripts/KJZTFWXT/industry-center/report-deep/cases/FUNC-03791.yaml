@@ -1,0 +1,20 @@
+id: FUNC-03791
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03791
+priority: P1
+tier: B
+title: 主流程-报告身份
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261021-002
+expect:
+  - note: 报告身份节写出所打开任务的编号
+    assert: |-
+      await expect(page.getByText('CHAIN-20261021-002', { exact: false }).first()).toBeVisible()
+  - note: 报告身份节写出该任务的对象名称
+    assert: |-
+      const identity = page.locator('text=报告身份').locator('..');
+      await expect(identity.getByText(/[\u4e00-\u9fa5]/).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

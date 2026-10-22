@@ -76,16 +76,13 @@ expect:
         await expect(recTab).toBeVisible({ timeout: 10000 });
         await recTab.click({ timeout: 10000 });
         await page.waitForTimeout(900);
-        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无成功发展分析结果');
-        }
-        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-        let viewBtn = (await doneRow.count())
-          ? doneRow.first().getByRole('button', { name: '查看结果' })
-          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
-        if (!(await viewBtn.count()) || (await viewBtn.isDisabled())) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无可用「查看结果」打开成功结果');
+        const viewBtn = page
+          .locator('main')
+          .getByRole('button', { name: '查看结果' })
+          .filter({ hasNot: page.locator('.arco-btn-disabled') })
+          .first();
+        if (!(await viewBtn.count()) || (await viewBtn.isDisabled().catch(() => true))) {
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无可用「查看结果」');
         }
         await viewBtn.click({ timeout: 10000 });
         await page.waitForTimeout(2000);

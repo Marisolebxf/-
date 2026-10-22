@@ -2,79 +2,19 @@ id: FUNC-03996
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03996
 priority: P0
 tier: B
-title: 主流程-加入分析集合（行按钮与加入提示）
-story: US-SVC-ORG-07
+title: 主流程-加入分析集合
 entry_id: svc-search
 preconditions:
   - 已进入有卡片的检索结果
-locators:
-  join_analysis_btn: button「加入分析集合」
-  org_card: article.svc-org-search-card
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
-  - action: evaluate
-    note: 检索出卡后点击首行「加入分析集合」（判定在 expect）
+    target: /service-center/search
 expect:
   - note: 前置：进入检索结果并存在「加入分析集合」行按钮
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterSvcSearch = async () => {
-        await dismissBasket();
-        await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await recover404Shell();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
-        }
-        const searchItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-        if (!(await searchItem().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
-        await searchItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      };
-      await enterSvcSearch();
       const inp = page.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 8000 });
+      await expect(inp).toBeVisible({ timeout: 15000 });
       await inp.fill('深圳');
       const searchBtn = page.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
       await expect(searchBtn).toBeVisible({ timeout: 8000 });
@@ -82,8 +22,6 @@ expect:
       await page.waitForTimeout(2500);
       await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
       await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      const joinCount = await page.getByRole('button', { name: '加入分析集合' }).count();
-      if (joinCount < 1) throw new Error('前置：结果区未见「加入分析集合」行按钮');
       const card = page
         .locator('article.svc-org-search-card')
         .filter({ has: page.getByRole('button', { name: '加入分析集合' }) })
@@ -96,8 +34,7 @@ expect:
   - note: 1.点击一行「加入分析集合」
     assert: |-
       const snap = globalThis.__func03996;
-      const card = snap.card;
-      const joinBtn = card.getByRole('button', { name: '加入分析集合' });
+      const joinBtn = snap.card.getByRole('button', { name: '加入分析集合' });
       await expect(joinBtn).toBeVisible({ timeout: 8000 });
       await joinBtn.click({ timeout: 8000 });
       await page.waitForTimeout(800);
@@ -115,7 +52,4 @@ expect:
           throw new Error('未见加入分析集合提示，期望含：已将「' + orgName + '」加入服务机构分析集合');
         }
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 03996；catalog_path=/service-center/search。行按钮文案恒为「加入分析集合」（无入集合后改态）；
-  成功提示现场「已将「{机构名}」加入服务机构分析集合」。再点已在集合中见 04030。
+on_fail: 截图 + 抄 X-Trace-Id

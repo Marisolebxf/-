@@ -1,0 +1,24 @@
+id: FUNC-00779
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00779
+priority: P1
+tier: B
+title: 主流程-入口与路由
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 路由为招引工作区直达态（workspace=attract、tab=attract）
+    assert: |-
+      await expect(page).toHaveURL(/workspace=attract/);
+      await expect(page).toHaveURL(/tab=attract/);
+  - note: 页标题为「引入服务机构推荐分析」
+    assert: |-
+      await expect(page.getByText('引入服务机构推荐分析', { exact: true }).first()).toBeVisible();
+  - note: 顶部为「引入服务机构推荐分析（选中）/ 分析记录」双 Tab
+    assert: |-
+      await expect(page.getByRole('tab', { name: '引入服务机构推荐分析', selected: true })).toBeVisible();
+      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

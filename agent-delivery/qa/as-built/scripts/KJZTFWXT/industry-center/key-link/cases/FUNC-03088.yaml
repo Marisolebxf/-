@@ -1,0 +1,182 @@
+id: FUNC-03088
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03088
+priority: P0
+title: 选齐新能源开始分析并进入成功结果页
+story: US-CHAIN-DIAG-03
+entry_id: chain-key-link
+tier: A
+preconditions:
+  - 已进入产业关键环节识别；当天尚未用「新能源 / 新能源 / 新能源」成功分析过（不满足时 assert 标 ENV-KEYLINK-PRECOND-03088）
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+  start: button「开始分析」
+  view_result: button「查看分析结果」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: wait
+    for: 侧栏 sibling 就绪
+    timeout_ms: 1500
+  - action: evaluate
+    note: 新能源三级→开始分析→查看分析结果→成功结果页（判定在 expect）
+expect:
+  - note: 1、页面出现「产业关键环节识别结果」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const main = () => page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const assertNotSpa404 = async (where) => {
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t)) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
+        }
+      };
+      const enterKeyLink = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/diagnosis/.test(page.url()) &&
+          /workspace=key_link/.test(page.url()) &&
+          /tab=key-link/.test(page.url());
+        if (!onTarget()) {
+          if (!/\/industry-center\/search/.test(page.url())) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+          }
+          await assertNotSpa404('sibling-search');
+          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
+          const expandChain = async () => {
+            if (await leaf().first().isVisible().catch(() => false)) return;
+            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+            if (await sub.count()) {
+              await sub.first().click({ timeout: 8000 });
+              await page.waitForTimeout(400);
+            }
+          };
+          await expandChain();
+          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+          await leaf().first().click({ timeout: 10000 });
+          await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
+          await assertNotSpa404('sidebar');
+        }
+        await expect(page).toHaveURL(/workspace=key_link/);
+        await expect(page).toHaveURL(/tab=key-link/);
+        await assertNotSpa404('key-link-landing');
+      };
+      const pickSelect = async (trigger, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const isKeyLinkResult = async () => {
+        const t = await main().innerText().catch(() => '');
+        return /产业关键环节识别结果/.test(t) || (await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false));
+      };
+      const applyNewEnergy = async () => {
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(500);
+        await pickSelect(page.locator('.arco-select-view[aria-label="集群"]').first(), '新能源');
+        await pickSelect(page.locator('.arco-select-view[aria-label="产业"]').first(), '新能源');
+        const seg = page.locator('.arco-select-view.industry-catalog-select').first();
+        await expect(seg).toBeVisible({ timeout: 8000 });
+        await pickSelect(seg, '新能源');
+      };
+      const backToConfigIfResult = async () => {
+        if (!(await isKeyLinkResult())) return;
+        const back = page.getByRole('button', { name: '返回配置' }).first();
+        if (await back.isVisible().catch(() => false)) {
+          await back.click({ timeout: 10000 });
+          await page.waitForTimeout(1200);
+        } else {
+          await page.getByRole('tab', { name: '产业关键环节识别' }).first().click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+        }
+      };
+      await enterKeyLink();
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      await backToConfigIfResult();
+      await applyNewEnergy();
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      await expect(start).toBeEnabled({ timeout: 20000 });
+      await start.click({ timeout: 15000 });
+      let clickedView = false;
+      let last = '';
+      for (let i = 0; i < 100; i++) {
+        await page.waitForTimeout(i < 6 ? 500 : 900);
+        last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/分析失败|本次分析生成失败|INPUT_OBJECT_INVALID/.test(last) && i >= 10) {
+          throw new Error('ENV-KEYLINK-ASYNC-FAIL-001：新能源组合分析失败');
+        }
+        if (/今日已分析过相同条件/.test(last) && (await isKeyLinkResult()) && !clickedView) {
+          throw new Error('ENV-KEYLINK-PRECOND-03088：当天已用新能源成功分析，无法走「开始分析→查看分析结果」金样路径');
+        }
+        const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+        if ((await viewBtn.isVisible().catch(() => false)) && (await viewBtn.isEnabled().catch(() => false))) {
+          if (/分析结果已生成|产业关键环节识别生成中/.test(last) || i >= 3) {
+            await viewBtn.click({ timeout: 12000 });
+            clickedView = true;
+            await page.waitForTimeout(1500);
+          }
+        }
+        if (clickedView && (await isKeyLinkResult())) break;
+        if ((await isKeyLinkResult()) && clickedView) break;
+      }
+      if (!clickedView) {
+        throw new Error('ENV-KEYLINK-PRECOND-03088：未见可点的「查看分析结果」（可能当天已复用直达结果），末态=' + last.slice(0, 240));
+      }
+      await expect(page.getByText('产业关键环节识别结果').first()).toBeVisible({ timeout: 20000 });
+      globalThis.__func03088 = {
+        body: ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' '),
+        url: page.url(),
+      };
+  - note: 2、任务号与任务 ID 为同一编号
+    assert: |-
+      const snap = globalThis.__func03088;
+      if (!snap?.body) throw new Error('前置：未到成功结果页');
+      const body = snap.body;
+      const urlTask = (() => {
+        try {
+          return new URL(snap.url || page.url()).searchParams.get('task_id') || '';
+        } catch {
+          return '';
+        }
+      })();
+      const taskNo =
+        (body.match(/任务号[：:]\s*(CHAIN-\d{8}-\d{3})/) || [])[1] ||
+        (body.match(/任务[：:]\s*(CHAIN-\d{8}-\d{3})/) || [])[1] ||
+        '';
+      const taskId = (body.match(/任务 ID[：:]\s*(CHAIN-\d{8}-\d{3})/) || [])[1] || '';
+      if (!taskNo && !taskId && !urlTask) {
+        throw new Error('结果页未见 CHAIN 任务编号，url=' + (snap.url || page.url()));
+      }
+      const canonical = taskId || taskNo || urlTask;
+      if (taskNo && taskId && taskNo !== taskId) {
+        throw new Error('任务号与任务 ID 不一致：任务号=' + taskNo + ' 任务 ID=' + taskId);
+      }
+      if (urlTask && canonical && urlTask !== canonical) {
+        throw new Error('URL task_id=' + urlTask + ' 与页面任务编号 ' + canonical + ' 不一致');
+      }
+      if (taskNo && canonical && taskNo !== canonical) {
+        throw new Error('任务号 ' + taskNo + ' 与主编号 ' + canonical + ' 不一致');
+      }
+      await expect(page.getByText(canonical).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  金样 03088：步骤=分析对象集群/产业/所属产业链均选「新能源」→「开始分析」→「查看分析结果」→「产业关键环节识别结果」；
+  预期=结果页任务号（任务/任务号）与「任务 ID」同 CHAIN 编号。现场 aria=集群/产业/.industry-catalog-select。
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；goto sibling /industry-center/search 再侧栏进入。
+  前置「当天尚未新能源成功」：若开始分析后当天复用直达结果且无「查看分析结果」可点→ENV-KEYLINK-PRECOND-03088。登录关评审 runner 前置。A 档零 allow_skip。

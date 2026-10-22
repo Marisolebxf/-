@@ -13,119 +13,32 @@ locators:
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
-  - action: evaluate
-    note: 前置打开结果页；步骤=看两张摘要卡（判定在 expect）
 expect:
-  - note: 前置：复制配置→开始分析→点「查看分析结果」进入结果页
+  - note: 前置：诊断记录点「查看结果」进入结果页
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
-      };
-      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
-      const enterBottleneck = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/diagnosis/.test(page.url()) &&
-          /workspace=bottleneck/.test(page.url()) &&
-          /tab=bottleneck/.test(page.url());
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (await bodyIs404()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) {
-            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
-            const expandChain = async () => {
-              if (await leaf().first().isVisible().catch(() => false)) return;
-              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-              if (await sub.count()) {
-                await sub.first().click({ timeout: 8000 });
-                await page.waitForTimeout(400);
-              }
-            };
-            await expandChain();
-            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-            await leaf().first().click({ timeout: 10000 });
-            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
-          }
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
-        }
-        await expect(page).toHaveURL(/workspace=bottleneck/);
-        await expect(page).toHaveURL(/tab=bottleneck/);
-      };
-      const openRecordsAndCopyStart = async () => {
-        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
-        await expect(tab).toBeVisible({ timeout: 10000 });
-        await tab.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
-        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /已完成|成功/ });
-        const n = await rows.count();
-        if (n < 1) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-TASK：诊断记录无已完成行，无法打开结果页');
-        }
-        let clicked = false;
-        for (let i = 0; i < Math.min(n, 12); i++) {
-          const row = rows.nth(i);
-          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (!/产业瓶颈堵点识别/.test(rowText)) continue;
-          const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
-          if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
-          await copyBtn.click({ timeout: 15000 });
-          clicked = true;
-          break;
-        }
-        if (!clicked) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-NO-COPY-03201：无已完成瓶颈任务可点「复制配置」');
-        }
-        await page.waitForTimeout(800);
-        const start = page.getByRole('button', { name: '开始分析' }).first();
-        await expect(start).toBeEnabled({ timeout: 20000 });
-        await start.click({ timeout: 15000 });
-      };
-      await enterBottleneck();
-      await openRecordsAndCopyStart();
-      let sawReady = false;
-      let last = '';
-      for (let i = 0; i < 90; i++) {
-        await page.waitForTimeout(i < 4 ? 600 : 1500);
-        last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/分析结果已生成/.test(last)) sawReady = true;
-        if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 10) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-ASYNC-FAIL-03201：复制配置后分析失败');
-        }
-        if (sawReady) break;
-        if (/今日已分析过相同条件/.test(last)) {
-          sawReady = true;
-          break;
-        }
+      const tabRecords = page.getByRole('tab', { name: '诊断记录' }).first();
+      await expect(tabRecords).toBeVisible({ timeout: 10000 });
+      await tabRecords.click({ timeout: 10000 });
+      await page.waitForTimeout(1000);
+      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' });
+      await expect(rows.first()).toBeVisible({ timeout: 15000 });
+      let opened = false;
+      const n = await rows.count();
+      for (let i = 0; i < Math.min(n, 12); i++) {
+        const row = rows.nth(i);
+        const btn = row.getByRole('button', { name: '查看结果' }).first();
+        if (!(await btn.count())) continue;
+        if (await btn.isDisabled().catch(() => true)) continue;
+        await btn.click({ timeout: 15000 });
+        opened = true;
+        break;
       }
-      if (!sawReady) {
-        throw new Error('过程页未见「分析结果已生成」，片段: ' + last.slice(0, 180));
+      if (!opened) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03201：诊断记录无可用「查看结果」，无法进入结果页');
       }
-      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
-      await expect(viewBtn).toBeVisible({ timeout: 15000 });
-      await viewBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(2000);
-      await expect(page.getByText('产业瓶颈堵点识别结果').first()).toBeVisible({ timeout: 20000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByText('瓶颈堵点数').first()).toBeVisible({ timeout: 20000 });
       const valueOk = (t) => {
         const s = (t || '').trim();
         if (!s) return false;
@@ -172,5 +85,5 @@ expect:
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-
   catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck；摘要卡 IndustryBottleneckResultBoard
-  + IndustryMetricCard（label 瓶颈堵点数/瓶颈严重度，strong 为值）。前置同 FUNC-03200 打开结果页；步骤=目视两张摘要卡。
-  无已完成→ENV-CHAIN-BOTTLENECK-NO-DONE-TASK。B 档零 allow_skip。
+  + IndustryMetricCard（label 瓶颈堵点数/瓶颈严重度，strong 为值）。前置=诊断记录首条可用「查看结果」。
+  无可用查看结果→ENV-CHAIN-BOTTLENECK-NO-RESULT-03201。B 档零 allow_skip。

@@ -67,7 +67,7 @@ expect:
           if (!(await bodyIs404())) await enterViaSidebar();
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404 ' + page.url());
+          throw new Error('ENV-30892-ENTRY-404: 深链与侧栏均 SPA404 ' + page.url());
         }
         await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 12000 });
         await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 10000 });
@@ -95,18 +95,26 @@ expect:
         const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
         return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
       };
+      const recordsSection = () => page.locator('section[data-frame-id="F-SZ-04"]');
       const readRecordCount = async () => {
         await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
-        const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const sec = recordsSection();
+        await expect(sec.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 12000 });
+        await expect(sec.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
+        await sec.locator('.arco-spin').first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        const pag = sec.locator('.arco-pagination');
+        if (await pag.count()) {
+          const pt = ((await pag.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const pm = pt.match(/共\s*(\d+)\s*条/);
+          if (pm) return Number(pm[1]);
+        }
+        const t = ((await sec.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         const m = t.match(/共\s*(\d+)\s*条/);
         if (m) return Number(m[1]);
-        const empty = page.getByText('暂无数据').first();
+        const empty = sec.getByText('暂无数据').first();
         if (await empty.isVisible().catch(() => false)) return 0;
-        const rows = page.locator('.arco-table-body tr.arco-table-tr');
-        const n = await rows.count();
-        return n;
+        return await sec.locator('.arco-table-body tr.arco-table-tr').count();
       };
       const goConfigTab = async () => {
         await page.getByRole('tab', { name: '深圳产业情况分析对比' }).first().click({ timeout: 10000 });
@@ -152,16 +160,26 @@ expect:
       const nBefore = globalThis.__szcmp03321_nBefore;
       if (typeof nBefore !== 'number') throw new Error('前置：未记录切换前条数');
       const main = () => page.locator('main').first();
+      const recordsSection = () => page.locator('section[data-frame-id="F-SZ-04"]');
       const nAfter = await (async () => {
         await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        await expect(page.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
-        const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const sec = recordsSection();
+        await expect(sec.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 12000 });
+        await expect(sec.getByText('任务状态').first()).toBeVisible({ timeout: 10000 });
+        await sec.locator('.arco-spin').first().waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+        await page.waitForTimeout(400);
+        const pag = sec.locator('.arco-pagination');
+        if (await pag.count()) {
+          const pt = ((await pag.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const pm = pt.match(/共\s*(\d+)\s*条/);
+          if (pm) return Number(pm[1]);
+        }
+        const t = ((await sec.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         const m = t.match(/共\s*(\d+)\s*条/);
         if (m) return Number(m[1]);
-        const empty = page.getByText('暂无数据').first();
+        const empty = sec.getByText('暂无数据').first();
         if (await empty.isVisible().catch(() => false)) return 0;
-        return await page.locator('.arco-table-body tr.arco-table-tr').count();
+        return await sec.locator('.arco-table-body tr.arco-table-tr').count();
       })();
       if (nAfter !== nBefore) {
         throw new Error('只改产业未点开始分析后条数变化：前=' + nBefore + ' 后=' + nAfter);

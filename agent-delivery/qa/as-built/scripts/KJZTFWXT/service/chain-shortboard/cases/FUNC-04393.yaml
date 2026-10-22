@@ -1,0 +1,181 @@
+id: FUNC-04393
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04393
+priority: P0
+tier: A
+title: 主流程-过程页 · 已完成抬头与当次产业
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已进入分析配置（chain 工作区配置区可见）
+locators:
+  industry_cascader: main .svc-portal-industry-cascader .arco-cascader-view
+  industry_select: main .industry-catalog-select
+  start: button「开始分析」
+  processing_title: 服务链短板分析生成中
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、标题为「服务链短板分析生成中」（步骤：选「新一代信息技术」→ 开始分析 → 等完成停过程页，不点查看结果）
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      const pickFlatIt = async () => {
+        const sel = page.locator('main .industry-catalog-select').first();
+        await expect(sel).toBeVisible({ timeout: 8000 });
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page
+          .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option')
+          .filter({ hasText: /^新一代信息技术$/ })
+          .first()
+          .click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const openIndustry = async () => {
+        const flat = page
+          .locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select')
+          .first();
+        if (await flat.isVisible().catch(() => false)) {
+          await flat.click({ timeout: 8000 });
+          return 'flat';
+        }
+        const cascader = page
+          .locator(
+            'main .svc-portal-industry-cascader .arco-cascader-view, main .sci-arco-cascader, main .arco-cascader-view'
+          )
+          .first();
+        if (await cascader.isVisible().catch(() => false)) {
+          await cascader.click({ timeout: 8000 });
+          return 'cascader';
+        }
+        const cfg = page.locator('main').filter({ hasText: '分析配置' }).first();
+        const near = cfg.getByText(/产业领域/).first();
+        if (await near.isVisible().catch(() => false)) {
+          const row = near.locator('xpath=ancestor::*[contains(@class,"arco-form-item") or contains(@class,"config")][1]');
+          const trigger = row.locator('.arco-select-view, .arco-cascader-view, .sci-arco-cascader').first();
+          if (await trigger.isVisible().catch(() => false)) {
+            await trigger.click({ timeout: 8000 });
+            return 'cascader';
+          }
+        }
+        const ph = page.getByText('选择产业集群', { exact: true }).first();
+        if (await ph.isVisible().catch(() => false)) {
+          await ph.click({ timeout: 8000 });
+          return 'cascader';
+        }
+        throw new Error('未见产业领域下拉（flat/cascader/选择产业集群）');
+      };
+      const pickIt = async (mode) => {
+        if (mode === 'flat' || (await page.locator('main .industry-catalog-select').first().isVisible().catch(() => false))) {
+          await pickFlatIt();
+          return;
+        }
+        await page.waitForTimeout(500);
+        const popup = page
+          .locator('.arco-trigger-popup:visible .svc-portal-industry-cascader-menu, .arco-trigger-popup:visible')
+          .first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const col1 = popup.locator('.arco-cascader-panel-column, .arco-cascader-column').first();
+        const row = col1
+          .locator('.arco-cascader-option')
+          .filter({ hasText: /^新一代信息技术/ })
+          .first();
+        if (await row.count()) {
+          const cb = row.locator('.arco-checkbox, .arco-radio');
+          if (await cb.count()) await cb.first().click({ timeout: 8000 });
+          else await row.click({ timeout: 8000 });
+        } else {
+          const flat = popup.locator('.arco-select-option').filter({ hasText: /^新一代信息技术$/ }).first();
+          if (await flat.count()) await flat.click({ timeout: 8000 });
+          else await popup.getByText(/^新一代信息技术/).first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(1000);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+        const cfgSlice = ((await page.locator('main').first().innerText().catch(() => '')) || '').split('开始分析')[0];
+        if (!/新一代信息技术/.test(cfgSlice || '')) {
+          throw new Error('选「新一代信息技术」后配置区未回显 url=' + page.url());
+        }
+      };
+      const clickStart = async () => {
+        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+      };
+      const waitProcessingComplete = async () => {
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 8 ? 1000 : 1500);
+          const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+          if (/任务失败|分析失败/.test(body)) throw new Error('分析任务失败: ' + body.slice(0, 200));
+          if (/已完成/.test(body) && (await vr.isVisible().catch(() => false)) && !(await vr.isDisabled().catch(() => true))) {
+            return;
+          }
+        }
+        throw new Error('过程页超时：未见已完成且可点「查看结果」 url=' + page.url());
+      };
+      if (!page.url().includes('/service/chain-analysis') || /view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const cfgHead = () =>
+        ((page.locator('main').first().innerText().catch(() => '')) || Promise.resolve('')).then((t) =>
+          (t || '').split('开始分析')[0]
+        );
+      let head = await cfgHead();
+      if (!/新一代信息技术/.test(head)) {
+        const mode = await openIndustry();
+        await pickIt(mode);
+        head = await cfgHead();
+        if (!/新一代信息技术/.test(head)) {
+          throw new Error('产业领域未回显「新一代信息技术」: ' + head.slice(0, 200) + ' url=' + page.url());
+        }
+      }
+      if (!/view=processing/.test(page.url())) {
+        await clickStart();
+      }
+      await waitProcessingComplete();
+      if (/view=result/.test(page.url())) {
+        throw new Error('不应自动进入结果态，应在过程页: ' + page.url());
+      }
+      await expect(page.getByText('服务链短板分析生成中', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await page.evaluate(() => {
+        window.__func04393Ready = true;
+      });
+  - note: 2、状态为「已完成」
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04393Ready).catch(() => false))) {
+        throw new Error('前置过程页未就绪');
+      }
+      const head = page.locator('main').filter({ hasText: '服务链短板分析生成中' }).first();
+      const scope = (await head.count()) ? head : page.locator('main').first();
+      await expect(scope.getByText('已完成', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、分析对象为「产业领域：新一代信息技术」
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/产业领域：新一代信息技术/.test(main)) {
+        throw new Error('过程页分析对象未见「产业领域：新一代信息技术」: ' + main.slice(0, 360));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  配置区选「新一代信息技术」→开始分析→生成结束停过程页（不点查看结果）；抬头标题固定「服务链短板分析生成中」+状态「已完成」+分析对象产业回显。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04393。零 allow_skip。

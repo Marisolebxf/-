@@ -1,0 +1,27 @@
+id: FUNC-04690
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04690
+priority: P1
+tier: B
+title: 主流程-选定产业回显
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已打开分析配置
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 选择框回显「生物」
+    assert: |-
+      const trigger = page.locator('.arco-select-view').filter({ hasText: /生物/ }).first();
+      await trigger.click();
+      await page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-cascader-popup:visible .arco-cascader-list-item').filter({ hasText: /^生物/ }).first().click();
+      await expect(page.locator('.arco-select-view').filter({ hasText: /生物/ }).first()).toBeVisible();
+  - note: 页面仍停留在分析配置
+    assert: |-
+      await expect(page.getByText('重点产业方向')).toBeVisible();
+      await expect(page.getByRole('button', { name: '生成培育名单' })).toBeVisible();
+  - note: 配置区仍提示切换产业不会自动创建任务
+    assert: |-
+      await expect(page.getByText('切换 workspace 或产业不会自动创建任务')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

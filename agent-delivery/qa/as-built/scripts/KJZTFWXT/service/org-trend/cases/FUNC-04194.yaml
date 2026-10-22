@@ -1,0 +1,127 @@
+id: FUNC-04194
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04194
+priority: P0
+tier: A
+title: 主流程-成功过程页 · 不自动跳转
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 配置区已回显一家机构（D2：弹窗空名单时用深链 org_ids 回填，见 fixtures/testdata known_org_id）
+  - 已进入服务机构新增趋势分析（catalog_path trend 工作区）
+locators:
+  start: button「开始分析」
+  view_result: button「查看结果」
+  process_shell: '[data-testid="svc-org-analysis-process"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend&industry=INB1701&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469
+  - action: click
+    target: 开始分析
+expect:
+  - note: 1、过程页状态为已完成（用例预期 1；深链一家机构后点击开始分析）
+    assert: |-
+      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
+      const resetConfig = async () => {
+        if (/view=processing|view=result/.test(page.url())) {
+          await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await resetConfig();
+      await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000);
+      const main = page.locator('main').first();
+      let bodyCfg = ((await main.innerText().catch(() => '')) || '');
+      const orgReady =
+        /已选机构（1\s*家）/.test(bodyCfg) ||
+        bodyCfg.includes(knownOrg.slice(0, 12)) ||
+        page.url().includes(knownOrg);
+      if (!orgReady) {
+        const pick = page.getByRole('button', { name: '选择机构', exact: true }).first();
+        if (await pick.isVisible().catch(() => false)) {
+          await pick.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+          await expect(dialog).toBeVisible({ timeout: 8000 });
+          const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+          if ((await checks.count()) < 1) throw new Error('ENV-SVC-ORG-TREND-NO-ORGS：弹窗与深链均无法回填一家机构');
+          await checks.first().click({ timeout: 5000 });
+          await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+          bodyCfg = ((await main.innerText().catch(() => '')) || '');
+        } else if (!page.url().includes('org_ids')) {
+          throw new Error('配置区未回显一家机构（无选择机构入口且无 org_ids 深链）');
+        }
+      }
+      const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await start.click({ timeout: 15000 });
+      let tid = null;
+      for (let i = 0; i < 30; i++) {
+        await page.waitForTimeout(1000);
+        const u = page.url();
+        const m = u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        if (m) tid = m[1];
+        const shell = page.locator('[data-testid="svc-org-analysis-process"]');
+        const body = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (/view=result/.test(u) && /服务机构新增数量趋势/.test(body) && !/分析结果已生成/.test(body)) {
+          throw new Error('生成结束自动打开结果页，违反用例「不自动跳转」');
+        }
+        if ((tid || /view=processing/.test(u)) && /分析结果已生成/.test(body)) break;
+        if ((tid || /view=processing/.test(u)) && /已完成/.test(body) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+      }
+      if (!tid) {
+        const m2 = page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        tid = m2 ? m2[1] : null;
+      }
+      if (!tid) throw new Error('开始分析后未进入过程态或未捕获任务 ID: ' + page.url());
+      let pbody = '';
+      let done = false;
+      for (let i = 0; i < 90; i++) {
+        await page.waitForTimeout(i < 6 ? 800 : 1200);
+        pbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (/view=result/.test(page.url()) && /服务机构新增数量趋势/.test(pbody) && !/分析结果已生成/.test(pbody)) {
+          throw new Error('生成结束自动打开结果页');
+        }
+        if (/分析结果已生成/.test(pbody) && /已完成/.test(pbody)) { done = true; break; }
+        if (/分析结果已生成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) {
+          done = true;
+          break;
+        }
+      }
+      if (!done) throw new Error('过程页未见已完成态（「分析结果已生成」）任务 ' + tid + ' 片段=' + pbody.slice(0, 280));
+      globalThis.__p04194 = { taskId: tid, orgMarker: knownOrg };
+  - note: 2、分析对象为该机构（用例预期 2）
+    assert: |-
+      const st = globalThis.__p04194;
+      if (!st?.taskId) throw new Error('前置：未完成开始分析');
+      await expect(page.locator('[data-testid="svc-org-analysis-process"]').first()).toBeVisible({ timeout: 8000 });
+      const body = ((await page.locator('main').last().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/分析对象/.test(body)) throw new Error('过程页未见「分析对象」描述项');
+      const short = st.orgMarker.slice(0, 12);
+      if (!body.includes(short) && !body.includes(st.orgMarker)) {
+        throw new Error('过程页「分析对象」未回显所选机构 id=' + st.orgMarker + ' 片段=' + body.slice(0, 320));
+      }
+  - note: 3、当前仍停在过程页（用例预期 3；不自动打开结果）
+    assert: |-
+      const st = globalThis.__p04194;
+      if (!st?.taskId) throw new Error('前置：未完成开始分析');
+      const url = page.url();
+      if (!/[?&]view=processing/.test(url)) throw new Error('未停在过程页 URL（缺 view=processing）: ' + url);
+      if (/[?&]view=result/.test(url)) throw new Error('已自动进入结果态 URL: ' + url);
+      const body = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+      if (/服务机构新增数量趋势/.test(body) && !/分析结果已生成/.test(body)) {
+        throw new Error('主区已进入结果壳标题，非过程页');
+      }
+      await expect(page.getByRole('button', { name: '查看结果', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      if (!url.includes(st.taskId)) throw new Error('过程页 URL 未携带任务 ' + st.taskId + ': ' + url);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04194；D2：30892 趋势主区可为产业级联空态，无「选择机构」时以深链 org_ids[]=known_org_id（testdata）满足「一家机构」前置（同 P0-15/scout-after-start）。
+  过程壳 svc-org-analysis-process；已完成=「已完成」+「分析结果已生成」+「查看结果」且 URL 仍 view=processing。进入结果归 04188。禁止断言有数折线（ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD）。A 档零 allow_skip。

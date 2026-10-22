@@ -1,0 +1,24 @@
+id: FUNC-04507
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04507
+priority: P0
+tier: B
+title: 备选-当天再次开始分析
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 打开该条件当天已有结果
+    assert: |-
+      await page.getByText('新一代信息技术', { exact: true }).click();
+      await page.getByText('① 仅机构', { exact: true }).click();
+      await page.getByRole('button', { name: '开始分析' }).click();
+      await expect(page.getByRole('button', { name: '重新分析' })).toBeVisible({ timeout: 60000 });
+  - note: 不新增分析任务
+    assert: |-
+      await expect(page.getByText('分析任务已创建')).toHaveCount(0);
+      await expect(page.getByText('正在分析')).toHaveCount(0);
+      await expect(page.getByText('分析进行中')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

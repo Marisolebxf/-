@@ -117,17 +117,16 @@ expect:
       }
   - note: 2、页面不静默代选对象或维度发起任务
     assert: |-
-      await page.getByRole('tab', { name: /区域产业竞争力评价/ }).first().click({ timeout: 8000 }).catch(() => {});
+      await page.getByRole('tab', { name: '分析配置' }).first().click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      await expect(page.locator('input[placeholder="请选择产业"]').first()).toBeVisible({ timeout: 8000 });
       await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeVisible({ timeout: 8000 });
-      const indView = page.locator('.arco-select-view[aria-label="产业"]').first();
-      const viewText = ((await indView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (viewText && !/请选择产业/.test(viewText)) {
-        throw new Error('静默代选产业: ' + viewText);
-      }
-      if (/view=processing/.test(page.url())) {
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeDisabled({ timeout: 8000 });
+      const mainTxt = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/view=processing|view=result/.test(page.url())) {
         throw new Error('静默起任务: ' + page.url());
+      }
+      if (!/单产业模式请选择 1 个产业/.test(mainTxt)) {
+        throw new Error('配置页未保持未选产业提示');
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-

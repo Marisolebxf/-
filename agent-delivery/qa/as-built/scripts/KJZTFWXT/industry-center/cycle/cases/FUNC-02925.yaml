@@ -96,7 +96,8 @@ expect:
         await page.waitForTimeout(900);
         return trigger;
       };
-      const pickCompletedDownload = async () => {
+      const listCompletedDownloadRows = async () => {
+        const hits = [];
         await scrollRecordActions();
         const rows = recordsTable().locator('tbody tr');
         const n = await rows.count();
@@ -116,14 +117,14 @@ expect:
           if (await dl.isDisabled().catch(() => true)) continue;
           const tidM = rowText.match(TID_RE);
           if (!tidM) continue;
-          return { dl, tid: tidM[0] };
+          hits.push({ dl, tid: tidM[0] });
         }
-        return null;
+        return hits;
       };
-      const pickCompletedWithPagination = async () => {
+      const collectAllCompletedDownloads = async () => {
+        const all = [];
         for (let guard = 0; guard < 20; guard++) {
-          const hit = await pickCompletedDownload();
-          if (hit) return hit;
+          all.push(...(await listCompletedDownloadRows()));
           const pag = recordsPagination();
           if (!(await pag.count()) || !(await pag.isVisible().catch(() => false))) break;
           const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
@@ -131,7 +132,37 @@ expect:
           await next.click({ timeout: 5000 });
           await page.waitForTimeout(800);
         }
-        return null;
+        return all;
+      };
+      const attemptDownload = async (picked) => {
+        const assetRespPromise = page.waitForResponse(
+          (r) => /\/tasks\/[^/]+\/asset/.test(r.url()) && r.request().method() === 'GET',
+          { timeout: 20000 },
+        ).catch(() => null);
+        const downloadPromise = page.waitForEvent('download', { timeout: 20000 }).catch(() => null);
+        await picked.dl.click({ timeout: 10000 });
+        await page.waitForTimeout(800);
+        const resp = await assetRespPromise;
+        const dl = await downloadPromise;
+        let fileOk = false;
+        let detail = 'tid=' + picked.tid;
+        if (resp) {
+          detail += ' assetStatus=' + resp.status();
+          if (resp.ok()) {
+            const buf = await resp.body().catch(() => null);
+            if (buf && buf.length > 0) fileOk = true;
+            detail += ' assetBytes=' + (buf ? buf.length : 0);
+          }
+        }
+        if (dl) {
+          const name = dl.suggestedFilename();
+          const path = await dl.path().catch(() => null);
+          if (name || path) {
+            fileOk = true;
+            detail += ' download=' + (name || path);
+          }
+        }
+        return { fileOk, detail };
       };
       await dismissBasket();
       if (!/\/industry-center\/search/.test(page.url())) {
@@ -155,45 +186,28 @@ expect:
       } catch (_) {
         /* 筛选用失败时仍从全量列表找「已完成」行 */
       }
-      const picked = await pickCompletedWithPagination();
-      if (!picked) {
+      const candidates = await collectAllCompletedDownloads();
+      if (!candidates.length) {
         const filtered = (await recordsSection().innerText().catch(() => '')).replace(/\s+/g, ' ');
         if (!/已完成/.test(filtered)) {
           throw new Error('环境闸门 ENV-CHAIN-CYCLE-NO-COMPLETED-001：诊断记录无已完成任务（前置 1 不满足）');
         }
         throw new Error('环境闸门 ENV-CHAIN-CYCLE-NO-DOWNLOAD-001：有已完成行但「下载报告」不可点或不可见');
       }
-      const assetRespPromise = page.waitForResponse(
-        (r) => /\/tasks\/[^/]+\/asset/.test(r.url()) && r.request().method() === 'GET',
-        { timeout: 20000 },
-      ).catch(() => null);
-      const downloadPromise = page.waitForEvent('download', { timeout: 20000 }).catch(() => null);
-      await picked.dl.click({ timeout: 10000 });
-      await page.waitForTimeout(800);
-      const resp = await assetRespPromise;
-      const dl = await downloadPromise;
       let fileOk = false;
-      let detail = 'tid=' + picked.tid;
-      if (resp) {
-        detail += ' assetStatus=' + resp.status();
-        if (resp.ok()) {
-          const buf = await resp.body().catch(() => null);
-          if (buf && buf.length > 0) fileOk = true;
-          detail += ' assetBytes=' + (buf ? buf.length : 0);
-        }
-      }
-      if (dl) {
-        const name = dl.suggestedFilename();
-        const path = await dl.path().catch(() => null);
-        if (name || path) {
+      let lastDetail = '';
+      for (const picked of candidates) {
+        const { fileOk: ok, detail } = await attemptDownload(picked);
+        if (ok) {
           fileOk = true;
-          detail += ' download=' + (name || path);
+          break;
         }
+        lastDetail = detail;
       }
       if (!fileOk) {
         const msg = ((await page.locator('.arco-message').innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (msg) detail += ' message=' + msg.slice(0, 120);
-        throw new Error('点「下载报告」后未得到可打开文件（无 download、无 /asset 成功响应或无有效字节）；' + detail + '。2026-10-18 现场：按钮可点但无请求无文件无提示');
+        if (msg) lastDetail += ' message=' + msg.slice(0, 120);
+        throw new Error('点「下载报告」后未得到可打开文件（无 download、无 /asset 成功响应或无有效字节）；' + lastDetail + '；已试 ' + candidates.length + ' 条已完成行');
       }
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-

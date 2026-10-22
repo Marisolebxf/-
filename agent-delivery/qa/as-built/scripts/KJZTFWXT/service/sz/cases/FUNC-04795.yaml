@@ -1,0 +1,38 @@
+id: FUNC-04795
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04795
+priority: P0
+tier: B
+title: 主流程-未发起引导
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/overview/overview
+  - action: evaluate
+    note: 点击侧栏「深圳服务链现状分析」
+    assert: |-
+      const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+      const leaf = page.locator('.arco-menu-item').filter({ hasText: /^深圳服务链现状分析$/ });
+      if (await sub.count() && !(await leaf.first().isVisible().catch(() => false))) {
+        await sub.first().click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+      }
+      await leaf.first().click({ timeout: 10000 });
+      await page.waitForURL(/\/service\/chain-analysis/, { timeout: 20000 });
+      await expect(page).toHaveURL(/workspace=shenzhen/);
+      await expect(page).toHaveURL(/tab=shenzhen/);
+      const mainText = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(mainText)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: catalog 主区 404 url=' + page.url());
+      }
+expect:
+  - note: 1、文案要求先定下产业条件，再点「开始分析」
+    assert: |-
+      await expect(page.locator('main')).toContainText('请先确认产业条件', { timeout: 12000 });
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+  - note: 2、文案写明切换产业不会自动创建任务
+    assert: |-
+      await expect(page.locator('main')).toContainText('切换产业', { timeout: 12000 });
+      await expect(page.locator('main')).toContainText('不会自动创建任务');
+on_fail: 截图 + 抄 X-Trace-Id

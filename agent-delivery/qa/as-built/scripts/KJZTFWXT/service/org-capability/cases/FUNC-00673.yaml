@@ -1,0 +1,45 @@
+id: FUNC-00673
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00673
+priority: P0
+tier: A
+title: 主流程-权重编辑与维度启停
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区且「技术力评价模型」区可见（配置态操作，不触发开始评估）
+locators:
+  model_panel: 模型面板 .ent-section-panel（hasText=技术力评价模型）
+  spin_row: 权重输入 [role=spinbutton] ×5（序=专利数量/研发投入/核心专家/成功案例/标准制定）
+  step_btn: 调节钮 .arco-input-number-step-button（第1行 nth(0)=增 / nth(1)=减）
+  dim_checkbox: 模型面板 .arco-checkbox ×5（点可见容器；nth(4)=标准制定）
+  dim_row: 维度行 .svc-org-cap-dim（hasText=标准制定）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 点击「专利数量」权重的调节钮（真实点击在 expect[0] 内，相对初值判定）
+  - action: evaluate
+    note: 把「专利数量」权重改为 30（真实操作在 expect[1] 内，验后还原）
+  - action: evaluate
+    note: 取消勾选「标准制定」（真实点击在 expect[2] 内，验后恢复）
+  - action: evaluate
+    note: 再勾选「标准制定」（真实点击在 expect[3] 内）
+expect:
+  - note: 1、调节钮使权重增减（上钮 +1、再点下钮回落；相对初值判定）
+    assert: |-
+      await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const v0 = Number(await spins.nth(0).inputValue()); const up = page.locator('.arco-input-number-step-button').nth(0); const down = page.locator('.arco-input-number-step-button').nth(1); await up.click({ timeout: 4000 }); await page.waitForTimeout(500); const vUp = Number(await spins.nth(0).inputValue()); await down.click({ timeout: 4000 }); await page.waitForTimeout(500); const vDown = Number(await spins.nth(0).inputValue()); if (vUp !== v0 + 1) throw new Error('上调节钮后 ' + v0 + '→' + vUp + '，未 +1'); if (vDown !== v0) throw new Error('下调节钮后 ' + vUp + '→' + vDown + '，未回落')
+  - note: 2、权重可改为 30（验后还原初值，防跨条污染）
+    assert: |-
+      await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const v0 = String(await spins.nth(0).inputValue()); await spins.nth(0).fill('30'); await page.keyboard.press('Tab'); await page.waitForTimeout(500); const v = String(await spins.nth(0).inputValue()); if (v !== '30') throw new Error('直改后权重=' + v + ' ≠ 30'); await spins.nth(0).fill(v0); await page.keyboard.press('Tab'); await page.waitForTimeout(400); const vBack = String(await spins.nth(0).inputValue()); if (vBack !== v0) throw new Error('还原失败 ' + vBack + ' ≠ ' + v0)
+  - note: 3、取消勾选后该维不再计入启用维度，其余权重保留（验后恢复启用，防跨条污染）
+    assert: |-
+      await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const row = page.locator('.svc-org-cap-dim', { hasText: '标准制定' }).first(); await row.scrollIntoViewIfNeeded(); const startCls = String(await row.getAttribute('class')); if (startCls.includes('is-disabled')) { await panel.locator('.arco-checkbox').nth(4).click({ timeout: 4000 }); await page.waitForTimeout(500) }; const before = []; for (let i = 0; i < 4; i++) before.push(String(await spins.nth(i).inputValue())); await panel.locator('.arco-checkbox').nth(4).click({ timeout: 4000 }); await page.waitForTimeout(700); const rowCls = String(await row.getAttribute('class')); if (!rowCls.includes('is-disabled')) throw new Error('停用后行未置灰: ' + rowCls); await expect(spins.nth(4)).toBeDisabled({ timeout: 4000 }); const after = []; for (let i = 0; i < 4; i++) after.push(String(await spins.nth(i).inputValue())); if (before.join(',') !== after.join(',')) throw new Error('其余维度权重被改: ' + before.join('/') + ' → ' + after.join('/')); try { await panel.locator('.arco-checkbox').nth(4).click({ timeout: 3000 }); await page.waitForTimeout(400) } catch {}
+  - note: 4、再勾选后该维权重仍是取消前的值
+    assert: |-
+      await page.goto('http://10.50.69.111:30892/service/institution-judgment?workspace=capability&tab=capability', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1200); const close = page.locator('[aria-label="关闭对比篮"]'); if (await close.count()) { const vis = await close.first().isVisible().catch(() => false); if (vis) { await close.first().click(); await page.waitForTimeout(300) } }; const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first(); const spins = page.locator('[role=spinbutton]'); await expect(spins).toHaveCount(5, { timeout: 8000 }); const row = page.locator('.svc-org-cap-dim', { hasText: '标准制定' }).first(); await row.scrollIntoViewIfNeeded(); await panel.locator('.arco-checkbox').nth(4).click({ timeout: 4000 }); await page.waitForTimeout(700); const before = String(await spins.nth(4).inputValue()); await panel.locator('.arco-checkbox').nth(4).click({ timeout: 4000 }); await page.waitForTimeout(700); const after = String(await spins.nth(4).inputValue()); if (after !== before) throw new Error('启用后回显 ' + after + ' ≠ 停用前 ' + before); const rowCls = String(await row.getAttribute('class')); if (rowCls.includes('is-disabled')) throw new Error('启用后行仍置灰: ' + rowCls); await expect(spins.nth(4)).toBeEnabled({ timeout: 4000 })
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  蓝本 FUNC-00673（catalog 深链 entry-seed catalog_path；P0-05 为同 fid 序号脚本）。
+  配置态权重编辑与维度启停，不点「开始评估」，不受 ENV-SVCCAP-BASKET-ORG-LT2-001 限制。
+  启停=行内 .arco-checkbox（nth(4)=标准制定）；四条 expect 自含 goto+关对比篮。零 allow_skip。

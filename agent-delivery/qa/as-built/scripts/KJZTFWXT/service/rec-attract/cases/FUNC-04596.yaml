@@ -1,0 +1,17 @@
+id: FUNC-04596
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04596
+priority: P0
+tier: B
+title: 主流程-结果页签发分提示
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 提示为「当前为后端签发分，页面权重仅演示配置，未改名单分数」
+    assert: |-
+      await page.getByRole('button', { name: '生成招引名单' }).click();
+      await expect(page.getByText('当前为后端签发分，页面权重仅演示配置，未改名单分数')).toBeVisible({ timeout: 60000 })
+on_fail: 截图 + 抄 X-Trace-Id

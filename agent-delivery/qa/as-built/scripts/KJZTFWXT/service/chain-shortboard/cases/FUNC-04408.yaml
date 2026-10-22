@@ -1,0 +1,79 @@
+id: FUNC-04408
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04408
+priority: P1
+tier: B
+title: 备选-工作区隔离 · 短板切图谱不落短板结果板
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 当前在服务链短板分析页
+locators:
+  menu_graph: 侧栏菜单「服务链图谱分析」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+  - action: click
+    target: 服务链图谱分析
+    note: 侧栏进入图谱工作区（步骤自含在 expect[0]）
+expect:
+  - note: 步骤1+预期1——侧栏点「服务链图谱分析」后进入图谱分析配置（workspace=graph）
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+        try {
+          await close.first().click({ timeout: 1500 });
+          await page.waitForTimeout(300);
+        } catch {}
+      }
+      if (!/workspace=chain/.test(page.url()) || !/tab=chain/.test(page.url())) {
+        await page.goto(baseUrl + '/service/chain-analysis?workspace=chain&tab=chain', {
+          waitUntil: 'domcontentloaded',
+        });
+        await page.waitForTimeout(1500);
+      }
+      await expect(page.getByRole('tab', { name: /服务链短板分析/ }).first()).toBeVisible({ timeout: 8000 });
+      const m1 = page.getByRole('menuitem', { name: /服务链图谱分析/ }).first();
+      if (await m1.isVisible().catch(() => false)) {
+        await m1.click({ timeout: 8000 });
+      } else {
+        await page
+          .locator('aside, nav, .arco-menu')
+          .getByText('服务链图谱分析', { exact: false })
+          .first()
+          .click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(2200);
+      const u = page.url();
+      if (!/workspace=graph/.test(u) || !/tab=graph/.test(u)) {
+        throw new Error('未进入服务链图谱分析工作区: ' + u);
+      }
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/分析配置/.test(main)) {
+        throw new Error('图谱工作区未见「分析配置」: ' + main.slice(0, 200));
+      }
+  - note: 2、不出现「全周期服务链路」
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/全周期服务链路/.test(main)) {
+        throw new Error('图谱配置态泄漏短板结果板「全周期服务链路」');
+      }
+      const chainBoard = page.locator('[data-testid="svc-eco-shortboard-board"]');
+      if (await chainBoard.count() && (await chainBoard.first().isVisible().catch(() => false))) {
+        throw new Error('主区仍挂载 svc-eco-shortboard-board');
+      }
+  - note: 3、不出现「瓶颈堵点识别」
+    assert: |-
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/瓶颈堵点识别/.test(main)) {
+        throw new Error('图谱配置态泄漏短板结果板「瓶颈堵点识别」');
+      }
+      const btl = page
+        .locator('section.ent-section-panel')
+        .filter({ has: page.getByText('瓶颈堵点识别', { exact: true }) });
+      if (await btl.count() && (await btl.first().isVisible().catch(() => false))) {
+        throw new Error('主区仍可见「瓶颈堵点识别」区块');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 04408：短板页侧栏进「服务链图谱分析」→图谱分析配置；零泄漏「全周期服务链路」「瓶颈堵点识别」。菜单定位同 P0-14 graph 段。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04408。零 allow_skip。

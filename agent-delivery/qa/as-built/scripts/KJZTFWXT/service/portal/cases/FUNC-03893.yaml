@@ -5,12 +5,8 @@ tier: B
 title: 选定产业链后结论条回显
 story: US-SVC-PT-01
 entry_id: svc-portal
-preconditions:
-  - 已进入门户概况；env-gate G3 pass
-locators:
-  industry: select placeholder 全部产业
-  chain: select placeholder 全部产业链
-  conclusion: .ent-judgment-strip
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/overview
@@ -19,25 +15,12 @@ steps:
 expect:
   - note: 1、结论条以「半导体与集成电路」起头
     assert: |-
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/overview SPA 404，结论条不可达');
-      }
-      const close = page.locator('button[aria-label="关闭对比篮"]');
-      if (await close.count()) {
-        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-      }
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await ind.click({ timeout: 8000 });
+      const main = page.locator('main');
+      await main.locator('.arco-cascader-view').first().click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await page.waitForTimeout(1000);
-      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
-      if (dis) throw new Error('选产业后产业链仍禁用');
-      await chain.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^半导体与集成电路$/ }).first().click();
+      await page.locator('.arco-trigger-popup:visible').getByText('新一代信息技术', { exact: true }).click();
+      await page.waitForTimeout(400);
+      await page.locator('.arco-trigger-popup:visible').getByText('半导体与集成电路', { exact: true }).click();
       await page.waitForTimeout(1200);
       const strip = page.locator('.ent-judgment-strip').first();
       await expect(strip).toBeVisible({ timeout: 8000 });
@@ -52,4 +35,3 @@ expect:
         throw new Error('结论条未写明 KPI 未按产业切片: ' + txt.slice(0, 160));
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: P7 点 .arco-select-view；结论条 .ent-judgment-strip（JudgmentStrip）。链名起头与 lumen-ui-topic ServicePortalOverviewPage industryLabel 一致。2026-10-21 edu.itic-sci.com/tts/svcz 机跑 goto overview SPA 404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 03893。

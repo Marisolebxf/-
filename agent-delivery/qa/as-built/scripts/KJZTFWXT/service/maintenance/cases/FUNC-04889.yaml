@@ -1,0 +1,22 @@
+id: FUNC-04889
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04889
+priority: P1
+tier: B
+title: 主流程-直链落点
+entry_id: svc-maintenance
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/maintenance
+expect:
+  - note: 地址为 /service-portal/overview
+    assert: |-
+      await expect(page).toHaveURL(/\/service-portal\/overview(?:\?.*)?$/)
+  - note: 页签标题为「专题服务 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle('专题服务 - 科技专题服务系统')
+  - note: 主标题为「全球服务机构概况」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '全球服务机构概况' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

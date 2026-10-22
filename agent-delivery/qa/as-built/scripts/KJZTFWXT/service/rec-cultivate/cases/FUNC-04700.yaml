@@ -1,0 +1,33 @@
+id: FUNC-04700
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04700
+priority: P1
+tier: B
+title: 主流程-名单行字段
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 生成培育名单
+  - action: wait
+    target: 800ms
+  - action: click
+    target: 查看结果
+expect:
+  - note: 行上有名次、机构名、地区与机构类型
+    assert: |-
+      await expect(page.getByText('本土机构培育名单')).toBeVisible({ timeout: 120000 });
+      const row = page.locator('.arco-table-body tr').first();
+      await expect(row).toBeVisible({ timeout: 120000 });
+      await expect(row.locator('td').first()).toHaveText(/^\s*\d+\s*$/);
+      await expect(row.locator('td').nth(1)).toHaveText(/[\u4e00-\u9fa5]{2,}/);
+      await expect(row).toContainText(/(?:省|市|自治区|区)/);
+      await expect(row).toContainText(/(?:高校|科研院所|企业|研究机构|实验室|研究院|服务机构)/);
+  - note: 行上有环节标签与分数
+    assert: |-
+      const row = page.locator('.arco-table-body tr').first();
+      await expect(row.locator('.arco-tag').first()).toBeVisible({ timeout: 120000 });
+      await expect(row).toContainText(/\d+(\.\d+)?/);
+on_fail: 截图 + 抄 X-Trace-Id

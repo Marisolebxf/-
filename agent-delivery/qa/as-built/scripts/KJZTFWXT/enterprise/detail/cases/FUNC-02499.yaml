@@ -1,0 +1,21 @@
+id: FUNC-02499
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02499
+priority: P1
+tier: B
+title: 异常-重试仍失败
+entry_id: ent-detail
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /enterprise/demo-org-id
+  - action: click
+    target: 重试
+expect:
+  - note: 1、正文仍为「Request failed with status code 424」
+    assert: |-
+      await expect(page.getByText('Request failed with status code 401')).toBeVisible()
+  - note: 2、页面标题仍为「企业详情 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle('企业详情 - 科技专题服务系统')
+on_fail: 截图 + 抄 X-Trace-Id

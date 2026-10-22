@@ -1,0 +1,83 @@
+id: FUNC-00682
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00682
+priority: P1
+tier: B
+title: 配置·专利数量权重边界（非负/上限/取整）
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - env-gate overall=fail（只测模型区权重输入，不点「开始评估」）
+locators:
+  spin_patent: 权重输入 [role=spinbutton] 第 1 行（专利数量）
+  model_title: 技术力评价模型
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 已进入 capability 配置页；模型区五维权重可见（断言在 expect）
+expect:
+  - note: 1、把「专利数量」权重改为 -5 后变为 0，负数不会保留
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '/');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto(base + route.replace(/^\//, ''), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+        await close.first().click();
+        await page.waitForTimeout(300);
+      }
+      await expect(page.getByText('技术力评价模型').first()).toBeVisible({ timeout: 8000 });
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      await spins.nth(0).click({ timeout: 3000 });
+      await spins.nth(0).fill('-5');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(600);
+      const after = String(await spins.nth(0).inputValue());
+      if (after !== '0') throw new Error('专利权重 -5 应钳为 0，实际=' + after);
+      if (after === '-5') throw new Error('负数仍保留在输入框');
+  - note: 2、再改为 101 后权重变为 100，超过 100 不会保留
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '/');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto(base + route.replace(/^\//, ''), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+        await close.first().click();
+        await page.waitForTimeout(300);
+      }
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      await spins.nth(0).click({ timeout: 3000 });
+      await spins.nth(0).fill('101');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(600);
+      const after = String(await spins.nth(0).inputValue());
+      if (after !== '100') throw new Error('专利权重 101 应钳为 100，实际=' + after);
+  - note: 3、再改为 10.5 后取整为整数，不保留 10.5
+    assert: |-
+      const base = (baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '/');
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto(base + route.replace(/^\//, ''), { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+        await close.first().click();
+        await page.waitForTimeout(300);
+      }
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      await spins.nth(0).click({ timeout: 3000 });
+      await spins.nth(0).fill('10.5');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(600);
+      const after = String(await spins.nth(0).inputValue());
+      if (after === '10.5' || after.includes('.')) throw new Error('小数应取整，实际=' + after);
+      if (!/^\d+$/.test(after)) throw new Error('取整后应为整数，实际=' + after);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  蓝本 FUNC-00682（专利数量权重边界：−5→0、101→100、10.5→取整）。entry-seed catalog_path；env-gate fail 不发起。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-00682。零 allow_skip。

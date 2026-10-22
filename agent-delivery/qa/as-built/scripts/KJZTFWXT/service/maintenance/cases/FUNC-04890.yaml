@@ -1,0 +1,19 @@
+id: FUNC-04890
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04890
+priority: P1
+tier: B
+title: 权限-无权提示
+entry_id: svc-maintenance
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/maintenance
+expect:
+  - note: 1、出现当前账号无权访问该页面的提示
+    assert: |-
+      await Promise.all([
+        expect(page.getByText('当前账号无权访问该页面')).toBeVisible({ timeout: 15000 }),
+        page.goto('/service/maintenance', { waitUntil: 'commit' }),
+      ])
+on_fail: 截图 + 抄 X-Trace-Id

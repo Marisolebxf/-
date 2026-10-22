@@ -1,0 +1,45 @@
+id: FUNC-04490
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04490
+priority: P0
+tier: B
+title: 主流程-刷新保留条件
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 产业领域仍为「新一代信息技术」
+    assert: |-
+      if (!globalThis.__func04490Setup) {
+        let clusterHost = page.locator('.industry-catalog-select').first();
+        if (!(await clusterHost.count())) {
+          clusterHost = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+        }
+        await clusterHost.locator('.arco-select-view').click({ timeout: 15000 });
+        const itOpt = page.getByText('新一代信息技术', { exact: true });
+        await itOpt.first().click({ timeout: 10000 });
+        if ((await itOpt.count()) > 1) await itOpt.nth(1).click({ timeout: 5000 });
+        await page.getByRole('button', { name: '① 仅机构' }).click();
+        await page.reload({ waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        globalThis.__func04490Setup = true;
+      }
+      let clusterHost = page.locator('.industry-catalog-select').first();
+      if (!(await clusterHost.count())) {
+        clusterHost = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      }
+      const domainText = await clusterHost.locator('.arco-select-view').innerText();
+      if (!/新一代信息技术/.test(domainText)) throw new Error('产业领域未保留「新一代信息技术」: ' + domainText);
+  - note: 图谱滤镜仍为「① 仅机构」
+    assert: |-
+      if (!globalThis.__func04490Setup) throw new Error('前置：未完成选产业与刷新');
+      const filterBtn = page.getByRole('button', { name: '① 仅机构' });
+      await expect(filterBtn).toBeVisible();
+      const cls = (await filterBtn.getAttribute('class')) || '';
+      if (!/(primary|checked|active)/i.test(cls)) {
+        const pressed = await filterBtn.getAttribute('aria-pressed');
+        if (pressed !== 'true') throw new Error('图谱滤镜未保留「① 仅机构」选中态');
+      }
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,23 @@
+id: FUNC-05096
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05096
+priority: P0
+tier: B
+title: 主流程-选定产业后的结论条
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 1、结论条以「生物」起头
+    assert: |-
+      const regionPage = page.locator('div').filter({ has: page.getByRole('heading', { name: '服务机构区域分布', exact: true }) }).last();
+      const selectView = regionPage.getByText('产业集群 / 产业').locator('..').locator('.arco-select-view').first();
+      await selectView.click({ timeout: 15000 });
+      await page.locator('.arco-select-popup').getByText('生物', { exact: true }).click();
+      await expect(regionPage.getByText(/^「?生物/).first()).toBeVisible({ timeout: 15000 });
+  - note: 2、主标题仍为「服务机构区域分布」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '服务机构区域分布', exact: true })).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

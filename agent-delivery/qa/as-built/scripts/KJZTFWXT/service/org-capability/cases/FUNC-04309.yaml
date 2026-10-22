@@ -1,0 +1,115 @@
+id: FUNC-04309
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04309
+priority: P1
+tier: A
+title: 备选-取消勾选机构 · 家数回退
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；对比篮已有服务机构（≥1）；不点「开始评估」
+locators:
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  count_head: .svc-org-cap-compare__head
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 已进入页面；勾选一家机构（真实操作在 expect 内）
+expect:
+  - note: 1、第一次点击后当前家数增加
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const parseHeadN = (head) => {
+        const m = String(head || '').replace(/\s+/g, '').match(/当前(\d+)家/);
+        return m ? Number(m[1]) : null;
+      };
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const seedOneOrgIfEmpty = async () => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const join = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        if (!(await join.count())) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：检索页无可入篮服务机构');
+        }
+        await join.click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await closeBasket();
+      let tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+      let tagN = await tags.count();
+      if (tagN < 1) {
+        await seedOneOrgIfEmpty();
+        tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        tagN = await tags.count();
+      }
+      if (tagN < 1) {
+        throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：对比篮服务机构不足 1 家，当前 tags=' + tagN);
+      }
+      for (let i = 0; i < tagN; i++) {
+        const cls = String((await tags.nth(i).getAttribute('class')) || '');
+        if (cls.includes('arco-tag-checked')) {
+          await tags.nth(i).click({ timeout: 4000 });
+          await page.waitForTimeout(280);
+        }
+      }
+      const headBefore = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      const nBefore = parseHeadN(headBefore);
+      if (nBefore === null) throw new Error('无法解析增加前计数行=' + headBefore);
+      const checkedBefore = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      const pickIdx = 0;
+      await tags.nth(pickIdx).click({ timeout: 5000 });
+      await page.waitForTimeout(500);
+      const headAfter = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      const nAfter = parseHeadN(headAfter);
+      if (nAfter === null) throw new Error('无法解析增加后计数行=' + headAfter);
+      if (nAfter !== nBefore + 1) {
+        throw new Error('第一次点击后家数未增加：前=' + nBefore + ' 后=' + nAfter + ' 行=' + headAfter);
+      }
+      const checkedAfter = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      if (checkedAfter !== checkedBefore + 1) {
+        throw new Error('第一次点击后选中 tags：前=' + checkedBefore + ' 后=' + checkedAfter);
+      }
+      globalThis.__func04309 = { nBefore, headBefore, pickIdx, tagN };
+  - note: 2、再次点击后当前家数回到增加前
+    assert: |-
+      if (!globalThis.__func04309) throw new Error('expect[0] 未执行或未写入 __func04309');
+      const { nBefore, headBefore, pickIdx } = globalThis.__func04309;
+      const parseHeadN = (head) => {
+        const m = String(head || '').replace(/\s+/g, '').match(/当前(\d+)家/);
+        return m ? Number(m[1]) : null;
+      };
+      const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+      await tags.nth(pickIdx).click({ timeout: 5000 });
+      await page.waitForTimeout(500);
+      const headBack = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      const nBack = parseHeadN(headBack);
+      if (nBack === null) throw new Error('无法解析回退后计数行=' + headBack);
+      if (nBack !== nBefore) {
+        throw new Error('再次点击后家数未回退：期望=' + nBefore + ' 实际=' + nBack + ' 原行=' + headBefore + ' 现行=' + headBack);
+      }
+      const checkedBack = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      if (checkedBack !== 0 && nBefore === 0) {
+        throw new Error('回退后仍有选中 tags=' + checkedBack);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<1 家→ENV-SVCCAP-BASKET-ORG-LT1-001
+as_built_note: >-
+  FUNC-04309；步骤：capability 配置态 → 点选一家机构 tag → 再次点同一 tag 取消勾选。
+  对比机构=篮内 .arco-tag toggle；两条 expect 验「当前 N 家」增减对称。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04309。零 allow_skip。

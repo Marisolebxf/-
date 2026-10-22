@@ -1,0 +1,38 @@
+id: FUNC-04692
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04692
+priority: P0
+tier: B
+title: 主流程-服务环节下拉
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已打开分析配置
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 选项共 11 个，名称见附录 A.2
+    assert: |-
+      await expect(page.getByText('分析配置').first()).toBeVisible();
+      const select = page.locator('.arco-select').filter({ hasText: '上游·研发' }).first();
+      await select.locator('.arco-select-view').click();
+      const dropdown = page.locator('.arco-select-dropdown:visible');
+      const options = dropdown.locator('.arco-select-option');
+      await expect(options).toHaveCount(11);
+      const names = [
+        '上游·研发',
+        '上游·标准',
+        '上游·知识产权',
+        '上游·科研合作',
+        '中游·中试',
+        '中游·检测',
+        '中游·孵化',
+        '中游·技术转移',
+        '下游·投融资',
+        '下游·人才',
+        '下游·数字化',
+      ];
+      for (const name of names) {
+        await expect(dropdown.getByText(name, { exact: true })).toBeVisible();
+      }
+on_fail: 截图 + 抄 X-Trace-Id

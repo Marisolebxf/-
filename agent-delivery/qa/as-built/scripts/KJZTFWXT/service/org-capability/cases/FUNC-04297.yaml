@@ -1,0 +1,174 @@
+id: FUNC-04297
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04297
+priority: P1
+tier: B
+title: 备选-篮内搜索 · 搜索与重置
+story: US-SVC-ORG-08
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已打开「返回对比篮」选择浮层；篮内服务机构多于 1 家
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  return_basket: '[data-testid="svc-org-cap-open-basket"]'
+  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
+  org_search: placeholder「按机构名称搜索」
+  reset_btn: button「重置」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 「从对比篮带入」→「返回对比篮」→按机构名称搜索→「重置」（真实操作在 expect 内）
+expect:
+  - note: 1、搜索后名单只保留名称匹配的机构
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const listOrgNames = async (ws) => {
+        const names = [];
+        const sels = ws.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        for (let i = 0; i < selN; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      const pickPartialFragment = (names) => {
+        if (names.length < 2) throw new Error('篮内须多于 1 家才能测部分命中');
+        for (const name of names) {
+          for (let len = 2; len <= Math.min(8, name.length); len++) {
+            for (let start = 0; start <= name.length - len; start++) {
+              const frag = name.slice(start, start + len);
+              const matched = names.filter((n) => n.includes(frag));
+              if (matched.length >= 1 && matched.length < names.length) {
+                return { frag, matched, all: names };
+              }
+            }
+          }
+        }
+        throw new Error('ENV-SVCCAP-BASKET-SEARCH-FRAG-001：无法推导部分命中搜索片段');
+      };
+      const openPickerAfterImport = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        if (tagN < 2) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：对比篮服务机构不足 2 家，当前 tags=' + tagN);
+        }
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        await expect(imp).toBeVisible({ timeout: 8000 });
+        await imp.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const ret = page.locator('[data-testid="svc-org-cap-open-basket"]').or(page.getByRole('button', { name: '返回对比篮', exact: true })).first();
+        await expect(ret).toBeVisible({ timeout: 8000 });
+        await ret.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await expect(page.getByText('选择分析服务机构', { exact: true }).first()).toBeVisible({ timeout: 10000 });
+        const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+        await expect(ws).toBeVisible({ timeout: 8000 });
+        return ws;
+      };
+      const ws = await openPickerAfterImport();
+      const beforeNames = await listOrgNames(ws);
+      if (beforeNames.length < 2) {
+        throw new Error('篮内服务机构应多于 1 家，列表可见=' + beforeNames.length);
+      }
+      const { frag, matched, all } = pickPartialFragment(beforeNames);
+      const search = ws.getByPlaceholder('按机构名称搜索');
+      await expect(search.first()).toBeVisible({ timeout: 8000 });
+      await search.first().fill(frag);
+      await page.waitForTimeout(500);
+      const afterSearch = await listOrgNames(ws);
+      const afterSorted = [...afterSearch].sort().join('|');
+      const matchedSorted = [...matched].sort().join('|');
+      if (afterSorted !== matchedSorted) {
+        throw new Error('搜索后名单不符：片段=' + frag + ' 期望=' + matched.join('、') + ' 实际=' + afterSearch.join('、'));
+      }
+      for (const n of afterSearch) {
+        if (!n.includes(frag)) throw new Error('可见机构名未含片段「' + frag + '」：' + n);
+      }
+      globalThis.__func04297 = { frag, beforeNames: all, matched, afterSearch, doneSearch: true };
+  - note: 2、重置后名单恢复
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const listOrgNames = async (ws) => {
+        const names = [];
+        const sels = ws.locator('[aria-label^="选择 "]');
+        const selN = await sels.count();
+        for (let i = 0; i < selN; i++) {
+          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
+          const m = aria.match(/^选择\s+(.+)$/);
+          if (m && m[1]) names.push(m[1].trim());
+        }
+        return names;
+      };
+      if (!globalThis.__func04297?.doneSearch) {
+        throw new Error('前置：未完成搜索断言');
+      }
+      const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+      if (!(await ws.isVisible().catch(() => false))) {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click().catch(() => {});
+          await page.waitForTimeout(300);
+        }
+        if ((await page.locator('.svc-org-cap-compare__tags .arco-tag').count()) < 2) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001');
+        }
+        await page.locator('[data-testid="svc-org-cap-import-basket"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.locator('[data-testid="svc-org-cap-open-basket"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const search = page.locator('[data-testid="service-org-compare-basket-workspace"]').getByPlaceholder('按机构名称搜索');
+        await search.first().fill(globalThis.__func04297.frag);
+        await page.waitForTimeout(500);
+      }
+      const reset = ws.getByRole('button', { name: '重置', exact: true });
+      await expect(reset.first()).toBeVisible({ timeout: 8000 });
+      await reset.first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const afterReset = await listOrgNames(ws);
+      const beforeSorted = [...globalThis.__func04297.beforeNames].sort().join('|');
+      const resetSorted = [...afterReset].sort().join('|');
+      if (resetSorted !== beforeSorted) {
+        throw new Error('重置后名单未恢复：打开前=' + globalThis.__func04297.beforeNames.join('、') + ' 重置后=' + afterReset.join('、'));
+      }
+      const searchVal = await ws.getByPlaceholder('按机构名称搜索').first().inputValue();
+      if (searchVal && searchVal.trim()) {
+        throw new Error('重置后搜索框仍有内容：' + searchVal);
+      }
+      globalThis.__func04297.doneReset = true;
+  - note: 3、没有进入过程页
+    assert: |-
+      if (!globalThis.__func04297?.doneReset) throw new Error('前置：未完成重置断言');
+      const url = page.url();
+      if (/view=processing/.test(url)) throw new Error('误入过程页 url=' + url);
+      if (/view=result/.test(url) && /task_id=SVC-/.test(url)) throw new Error('误入结果页 url=' + url);
+      await expect(page.getByText('选择分析服务机构', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+      await expect(ws).toBeVisible({ timeout: 8000 });
+      const procHeading = page.getByText('分析任务进行中', { exact: false });
+      if (await procHeading.count() && await procHeading.first().isVisible().catch(() => false)) {
+        throw new Error('浮层操作后出现过程页主文案');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<2 家→ENV-SVCCAP-BASKET-ORG-LT2-001
+as_built_note: >-
+  蓝本 FUNC-04297（篮内按机构名称搜索与重置，不发起评估）。前置=对比篮 tags≥2→「从对比篮带入」→「返回对比篮」
+  → workspace placeholder「按机构名称搜索」填部分命中片段→「重置」。三条 expect：过滤名单/恢复全量/无过程|结果页。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04297。零 allow_skip。

@@ -1,0 +1,68 @@
+id: FUNC-05300
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05300
+priority: P1
+tier: B
+title: 备选-清空产业
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点击产业下拉上的清空
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 8000 });
+      const cascader = filter.locator('.svc-portal-industry-cascader .arco-cascader-view, .arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 8000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await cascader.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const bioCluster = menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '生物' }).first();
+      await expect(bioCluster).toBeVisible({ timeout: 8000 });
+      await bioCluster.click();
+      await page.waitForTimeout(400);
+      const chainCol = menu.locator('.arco-cascader-column').nth(1);
+      if (await chainCol.locator('.arco-cascader-option').count()) {
+        const leaf = chainCol.locator('.arco-cascader-option').filter({ hasText: /生物医药/ }).first();
+        if (await leaf.count()) {
+          await leaf.click();
+        } else {
+          await chainCol.locator('.arco-cascader-option').first().click();
+        }
+      }
+      await page.waitForTimeout(800);
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+      await cascader.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const allIndustry = menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '全部产业' }).first();
+      if (await allIndustry.count()) {
+        await allIndustry.click({ timeout: 5000 });
+      } else {
+        await cascader.hover();
+        const clr = cascader.locator('.arco-icon-hover, .arco-cascader-view-clear-icon, .arco-select-view-clear-btn').first();
+        if (!(await clr.count()) || !(await clr.isVisible().catch(() => false))) {
+          throw new Error('产业级联无全部产业项且无清除图标');
+        }
+        await clr.click({ force: true, timeout: 5000 });
+      }
+      await page.waitForTimeout(800);
+expect:
+  - note: 1、产业占位回到「全部产业」
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      const cascader = filter.locator('.svc-portal-industry-cascader .arco-cascader-view, .arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 8000 });
+      await expect(cascader).toContainText('全部产业', { timeout: 8000 });
+  - note: 2、结论上下文为「全部产业」
+    assert: |-
+      await expect(page.locator('main')).toContainText('「全部产业」为上下文', { timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

@@ -64,18 +64,19 @@ expect:
   - note: 2、四力表列为「维度」「得分」，维度为支撑力、学术力、产业力、创新力
     assert: |-
       if (!globalThis.__func02989) throw new Error('前置：未打开结果页');
-      const main = await page.locator('main').innerText().catch(() => '');
+      const mainEl = page.locator('main').first();
+      const mainText = ((await mainEl.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       for (const h of ['维度', '得分']) {
-        if (!main.includes(h)) throw new Error('四力表缺列「' + h + '」');
+        if (!mainText.includes(h)) throw new Error('四力表缺列「' + h + '」');
       }
       for (const d of ['支撑力', '学术力', '产业力', '创新力']) {
-        if (!main.includes(d)) throw new Error('四力表缺维度「' + d + '」（结果页与配置区分组名不同）');
+        if (!mainText.includes(d)) throw new Error('四力表缺维度「' + d + '」（结果页与配置区分组名不同）');
       }
   - note: 3、同时有「优势」和「短板」
     assert: |-
       if (!globalThis.__func02989) throw new Error('前置：未打开结果页');
-      const main = await page.locator('main').innerText().catch(() => '');
-      if (!/优势/.test(main)) throw new Error('结果页未见「优势」区块');
-      if (!/短板/.test(main)) throw new Error('结果页未见「短板」区块');
+      const mainText = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/优势/.test(mainText)) throw new Error('结果页未见「优势」区块');
+      if (!/短板/.test(mainText)) throw new Error('结果页未见「短板」区块');
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index；步骤=分析记录首条「已完成」→「查看结果」。用例四力=支撑力/学术力/产业力/创新力（≠配置页商业力/技术力/学术力/支撑力）。不钉死分值。无已完成→ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK。edu 深链 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。A 档零 allow_skip。

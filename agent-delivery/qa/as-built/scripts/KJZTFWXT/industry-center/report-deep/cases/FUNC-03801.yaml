@@ -1,0 +1,21 @@
+id: FUNC-03801
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03801
+priority: P1
+tier: B
+title: 备选-返回首页
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261014-004
+  - action: click
+    target: 返回产业链分析
+expect:
+  - note: 地址进入专题全景
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/(?!reports\/)/)
+  - note: 页面展示一条产业链的全景内容
+    assert: |-
+      await expect(page.getByText(/产业链.*全景|全景.*产业链/).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

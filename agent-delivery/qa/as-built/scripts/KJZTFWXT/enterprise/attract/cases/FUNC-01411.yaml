@@ -1,0 +1,104 @@
+id: FUNC-01411
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01411
+priority: P0
+title: 条件筛选行业领域下拉共 8 项
+story: US-ENT-RECRUIT-A1
+entry_id: ent-attract
+tier: B
+preconditions:
+  - 已登录，可从企业分析进入招引企业推荐分析
+locators:
+  stack: recruit-tab-stack
+  field_label: 条件区文案「行业领域」
+  field_ph: placeholder「全部行业领域」
+steps:
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+  - action: wait
+    for: 条件区 SPA 渲染
+    timeout_ms: 2500
+  - action: evaluate
+    note: 展开行业领域下拉；选项个数与附录 B 名称在 expect 判定
+expect:
+  - note: 条件区含「行业领域」且行业领域下拉触发器可见
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const waitFilterReady = async () => {
+        for (let i = 0; i < 24; i++) {
+          const field = page.locator('input[placeholder="全部行业领域"]').first();
+          if (await field.isVisible().catch(() => false)) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('条件区未渲染（未见全部行业领域），url=' + page.url());
+      };
+      await dismissBasket();
+      await waitFilterReady();
+      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
+      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
+      await page.waitForTimeout(400);
+      const panel = page.locator('#recruit-condition-panel');
+      const fieldBlock = panel
+        .locator('.flex.flex-col')
+        .filter({ has: page.locator('span', { hasText: '行业领域' }) })
+        .first();
+      if ((await fieldBlock.count()) < 1) {
+        throw new Error('条件区未见行业领域区块（#recruit-condition-panel），url=' + page.url());
+      }
+      const fieldInput = page.locator('input[placeholder="全部行业领域"]').first();
+      await expect(fieldInput).toBeVisible({ timeout: 8000 });
+  - note: 展开行业领域下拉后选项共 8 个
+    assert: |-
+      await page.keyboard.press('Escape').catch(() => {});
+      const fieldView = page
+        .locator('input[placeholder="全部行业领域"]')
+        .first()
+        .locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      await fieldView.scrollIntoViewIfNeeded();
+      await fieldView.click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      const opts = popup.locator('.arco-select-option, li');
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const count = await opts.count();
+      if (count !== 8) {
+        const sample = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
+        throw new Error(`行业领域选项数为 ${count}，预期 8；样本=${sample.join('、')}`);
+      }
+  - note: 选项名称见附录 B（集成电路、生物医药、人工智能、新能源、低空经济、量子信息、海洋经济、智能机器人）
+    assert: |-
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      if (!(await popup.isVisible().catch(() => false))) {
+        throw new Error('行业领域下拉未展开');
+      }
+      const expected = [
+        '集成电路',
+        '生物医药',
+        '人工智能',
+        '新能源',
+        '低空经济',
+        '量子信息',
+        '海洋经济',
+        '智能机器人',
+      ];
+      const texts = (await popup.locator('.arco-select-option, li').allTextContents())
+        .map((t) => t.replace(/\s+/g, '').trim())
+        .filter(Boolean);
+      for (const name of expected) {
+        if (!texts.some((t) => t === name || t.includes(name))) {
+          throw new Error(`下拉未见「${name}」，实际=${texts.join('、')}`);
+        }
+      }
+      if (texts.length !== 8) {
+        throw new Error(`去重后项数 ${texts.length}，预期 8；实际=${texts.join('、')}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: D1·catalog /enterprise/attraction?workspace=attraction&recommendation_tab=attraction；步骤=条件筛选推荐→点 placeholder「全部行业领域」的 .arco-select-view→.arco-trigger-popup 选项。附录 B 八项为用例册真源，与 fixtures field_options 一致。点状复勘 2026-10-21 edu 30892 现场标签「行业领域」、占位「全部行业领域」。登录与关评审由 runner 前置。B 档零 allow_skip。

@@ -19,22 +19,7 @@ steps:
 expect:
   - note: 前置：已把「对象类型」加入条件行
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
-      }
       const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
@@ -52,13 +37,14 @@ expect:
   - note: 1、展开比较符后选项只有「等于」
     assert: |-
       if (!globalThis.__func02726_ready) throw new Error('前置：对象类型条件行未就绪');
-      const condRow = page.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
+      const main = page.getByRole('main');
+      const condRow = main.locator('.condition-builder').filter({ hasText: '对象类型' }).first();
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opSelect = condRow.locator('.condition-builder__op');
-      await expect(opSelect).toBeVisible({ timeout: 8000 });
-      await opSelect.locator('.arco-select-view').click({ timeout: 8000 });
-      await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
+      const opCombo = condRow.locator('.condition-builder__op [role=combobox]').first();
+      await expect(opCombo).toBeVisible({ timeout: 8000 });
+      await opCombo.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const pop = page.locator('.arco-select-dropdown:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });
       const opts = pop.locator('.arco-select-option');
       const count = await opts.count();

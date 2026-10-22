@@ -1,0 +1,25 @@
+id: FUNC-05502
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05502
+priority: P0
+tier: B
+title: 主流程-结论条居首
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: scroll
+    target: 深圳产业服务介绍
+expect:
+  - note: 1、结论条写出居首的区名
+    assert: |-
+      const strip = page.locator('main .ent-judgment-strip').filter({ hasText: '居首' });
+      await expect(strip).toBeVisible({ timeout: 20000 });
+      await strip.scrollIntoViewIfNeeded();
+      await expect(strip).toContainText('居首');
+  - note: 2、该区名旁有家数
+    assert: |-
+      const strip = page.locator('main .ent-judgment-strip').filter({ hasText: '居首' });
+      await expect(strip).toContainText('家）');
+on_fail: 截图 + 抄 X-Trace-Id

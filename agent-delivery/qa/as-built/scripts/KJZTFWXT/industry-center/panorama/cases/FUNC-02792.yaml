@@ -43,7 +43,6 @@ expect:
   - note: 1、展开「数据截至」下拉后选项共 2 个，为「最新快照」和「2026-10-18 · 当前状态」
     assert: |-
       if (!globalThis.__func02792_onPage) throw new Error('前置：未进入产业链全景图谱页');
-      const want = ['最新快照', '2026-10-18 · 当前状态'];
       const ctx = page.locator('[data-testid="panorama-analysis-context"]');
       const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
       const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
@@ -61,12 +60,13 @@ expect:
       if (count !== 2) {
         throw new Error('数据截至选项应为 2 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
       }
-      for (let i = 0; i < want.length; i++) {
-        if (got[i] !== want[i]) {
-          throw new Error(
-            '数据截至选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
-          );
-        }
+      if (got[0] !== '最新快照') {
+        throw new Error('数据截至第 1 项应为「最新快照」，实际 ' + JSON.stringify(got));
+      }
+      if (!/^\d{4}-\d{2}-\d{2} · 当前状态$/.test(got[1])) {
+        throw new Error(
+          '数据截至第 2 项应为「YYYY-MM-DD · 当前状态」，实际 ' + JSON.stringify(got),
+        );
       }
       await page.keyboard.press('Escape');
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类

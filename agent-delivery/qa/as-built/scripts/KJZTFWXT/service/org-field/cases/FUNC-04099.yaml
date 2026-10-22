@@ -93,8 +93,13 @@ expect:
       };
       const openExistingResult = async () => {
         if (/view=result/.test(page.url())) {
-          const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-          if (/服务深度 TOP 领域（按机构）|当前结果快照没有覆盖矩阵|服务机构产业领域服务广度/.test(main0)) return;
+          const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (
+            /服务深度 TOP 领域（按机构）/.test(main0) &&
+            /服务深度 TOP 领域（按机构）[\s\S]{0,160}暂无可排名机构/.test(main0)
+          ) {
+            return;
+          }
         }
         const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
         await expect(recTab).toBeVisible({ timeout: 12000 });
@@ -121,7 +126,10 @@ expect:
           await page.waitForTimeout(2000);
           for (let j = 0; j < 15; j++) {
             const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-            if (/view=result/.test(page.url()) || /服务深度 TOP 领域（按机构）|当前结果快照没有覆盖矩阵/.test(body)) {
+            const depthEmpty =
+              /服务深度 TOP 领域（按机构）/.test(body) &&
+              /服务深度 TOP 领域（按机构）[\s\S]{0,160}暂无可排名机构/.test(body.replace(/\s+/g, ' '));
+            if (depthEmpty) {
               opened = true;
               break;
             }
@@ -133,7 +141,7 @@ expect:
           }
         }
         if (!opened) {
-          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+          throw new Error('ENV-SVC-ORG-FIELD-NO-DEPTH-EMPTY-RECORD：分析记录无「无覆盖矩阵且深度摘要空态」的已完成结果 url=' + page.url());
         }
       };
       await ensureOnFieldCoverage();

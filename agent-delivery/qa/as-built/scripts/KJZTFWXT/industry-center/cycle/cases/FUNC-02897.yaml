@@ -189,8 +189,8 @@ expect:
       const m = body.match(/分析对象[：:]\s*([^\n\r\t]+)/);
       if (!m) throw new Error('结果页未见「分析对象」回显');
       const name = (m[1] || '').replace(/\s+/g, ' ').trim();
-      const bad = ['', '—', '-', '未选', '尚未选择分析对象', '未选分析对象', '空', '暂无'];
-      if (!name || bad.some((b) => name === b || name.startsWith(b))) {
+      const bad = ['—', '-', '未选', '尚未选择分析对象', '未选分析对象', '空', '暂无'];
+      if (!name || bad.some((b) => name === b || (b.length > 0 && name.startsWith(b)))) {
         throw new Error('分析对象名称为空或占位：「' + name + '」');
       }
       if (name.length < 2 && !/^INB\d+/.test(name)) {

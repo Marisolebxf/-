@@ -1,91 +1,44 @@
 id: FUNC-03389
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03389
 priority: P1
-title: 改条件不自动开始
-story: US-CHAIN-SZ-03
-entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 已进入分析配置
-locators:
-  industry: main .industry-catalog-select（placeholder「请选择产业」）
-  bind: main input[placeholder="请显式选择有效结构化结果"]
-  start: button「开始分析」
+title: 备选-操作区
+entry_id: chain-sz-dev
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 选产业与未置灰对比来源后仍停配置页；不自动进入生成中
+    note: 选择一个产业；选择一条未置灰的对比来源；停留在配置页
+    script: |-
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 15000 });
+      const main = page.locator('main').first();
+      const industryTrigger = main.locator('[data-testid="shenzhen-development-context-row"] .arco-cascader-view, [data-testid="shenzhen-development-context-row"] .arco-select-view').first();
+      await industryTrigger.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      const industryOpt = page.locator('.arco-trigger-popup:visible .arco-cascader-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first();
+      await industryOpt.click({ timeout: 10000 });
+      await page.waitForTimeout(700);
+      const bindTrigger = main.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="请显式选择有效结构化结果"]') }).first();
+      if (!(await bindTrigger.count())) {
+        await main.getByPlaceholder('请显式选择有效结构化结果').click({ timeout: 10000 });
+      } else {
+        await bindTrigger.click({ timeout: 10000 });
+      }
+      await page.waitForTimeout(500);
+      const enabled = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
+      const n = await enabled.count();
+      if (n < 1) throw new Error('ENV-CHAIN-SZ-DEV-NO-VALID-BIND: 绑定下拉无未置灰条目');
+      await enabled.first().click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
 expect:
   - note: 1、页面仍是分析配置
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
-      };
-      await dismissBasket();
-      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(1000);
-      if (!onTarget() || (await bodyIs404())) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (!(await bodyIs404())) await enterViaSidebar();
-      }
-      if (await bodyIs404() || !onTarget()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置 ' + page.url());
-      }
-      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-      const ind = page.locator('main .industry-catalog-select').filter({ has: page.locator('input[placeholder="请选择产业"]') }).first();
-      await ind.locator('.arco-select-view').first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await page.waitForTimeout(700);
-      await expect(ind).toContainText('新一代信息技术', { timeout: 8000 });
-      const bind = page.locator('main .arco-select-view').nth(1);
-      await bind.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
-      const n = await en.count();
-      if (n < 1) throw new Error('ENV-CHAIN-SZ-DEV-NO-VALID-BIND: 绑定下拉无未置灰条目，无法验改条件不自动开始');
-      await en.first().click();
-      await page.waitForTimeout(1500);
       await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 8000 });
-      await expect(page).toHaveURL(/tab=development/, { timeout: 8000 });
-      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toHaveCount(0);
+      await expect(page).toHaveURL(/tab=development/, { timeout: 8000 });
   - note: 2、不出现「深圳产业发展分析生成中」
     assert: |-
       const url = page.url();
@@ -94,13 +47,9 @@ expect:
       }
       const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (/深圳产业发展分析生成中/.test(body)) {
-        throw new Error('改产业与对比来源后不应自动出现「深圳产业发展分析生成中」');
+        throw new Error('不应自动出现「深圳产业发展分析生成中」');
       }
       if (/可视化分析过程/.test(body)) {
-        throw new Error('改条件后不应自动进入可视化分析过程页');
+        throw new Error('不应自动进入可视化分析过程页');
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  03389 只改产业+有效对比来源(CHAIN)须仍停分析配置；不自动 create 任务（见 03388 显式点开始）。
-  产业 industry-catalog-select；绑定 main .arco-select-view nth(1) 选非 disabled 项。无有效绑定→ENV-CHAIN-SZ-DEV-NO-VALID-BIND。
-  catalog_path=entry-seed。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

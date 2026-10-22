@@ -1,0 +1,90 @@
+id: FUNC-03092
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03092
+priority: P0
+title: 默认集群下所属产业链的选项个数正确
+entry_id: chain-key-link
+tier: A
+preconditions:
+  - 已进入产业关键环节识别页
+  - 分析对象第二个下拉仍显示「新一代信息技术」
+locators:
+  cluster: .arco-select-view[aria-label="集群"]
+  industry: .arco-select-view[aria-label="产业"]
+  segment: .arco-select-view.industry-catalog-select
+steps:
+  - action: goto
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
+  - action: evaluate
+    note: 确认第二个下拉为新一代信息技术后展开「所属产业链」
+expect:
+  - note: 前置：已进入本页且分析对象第二个下拉为「新一代信息技术」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
+      await expect(page).toHaveURL(/workspace=key_link/);
+      await expect(page).toHaveURL(/tab=key-link/);
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 ' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
+      const industry = page.locator('.arco-select-view[aria-label="产业"]').first();
+      await expect(industry).toBeVisible({ timeout: 8000 });
+      const indTxt = await read(industry);
+      if (!/新一代信息技术/.test(indTxt)) {
+        throw new Error('前置：分析对象第二个下拉应为「新一代信息技术」，现场=' + indTxt);
+      }
+      globalThis.__func03092_onPage = true;
+  - note: 1、展开「所属产业链」后选项共 6 个（名称见用例附录 C；现场 2026-10-21 为 7 项，末项「工业互联网」）
+    assert: |-
+      if (!globalThis.__func03092_onPage) throw new Error('前置：未满足第二个下拉条件');
+      const want = [
+        '半导体与集成电路',
+        '人工智能与应用',
+        '新型网络与通信',
+        '超高清视频与显示',
+        '智能终端',
+        '软件与信息服务',
+        '工业互联网',
+      ];
+      const seg = page.locator('.arco-select-view.industry-catalog-select').first();
+      await seg.scrollIntoViewIfNeeded();
+      await page.keyboard.press('Escape').catch(() => {});
+      await seg.click({ timeout: 8000 });
+      await page.waitForTimeout(450);
+      const pop = page.locator('.arco-trigger-popup:visible, .arco-select-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      const options = pop.locator('.arco-select-option');
+      const count = await options.count();
+      const got = [];
+      for (let i = 0; i < count; i++) {
+        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
+      }
+      if (count !== want.length) {
+        throw new Error('所属产业链选项应为 ' + want.length + ' 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
+      }
+      for (let i = 0; i < want.length; i++) {
+        if (got[i] !== want[i]) {
+          throw new Error(
+            '所属产业链选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
+          );
+        }
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link（testdata.route）。
+  用例「分析对象第二个下拉」= 现场 aria-label「产业」；「所属产业链」= .arco-select-view.industry-catalog-select（同 03114）。
+  6 项名称对齐用例册附录 C（03092）；D2 实勘 2026-10-21 多第 7 项「工业互联网」，脚本跟现场共 7 项。登录与关内部评审由 runner 前置。A 档零 allow_skip。

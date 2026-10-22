@@ -245,7 +245,11 @@ async function ensureBusinessSession(page) {
 // ---------------------------------------------------------------------------
 async function runScript(page, script) {
   const caseDir = path.join(runDir, 'scripts', script.id);
-  fs.mkdirSync(path.join(caseDir, 'screenshots'), { recursive: true });
+  const shotDir = path.join(caseDir, 'screenshots');
+  fs.mkdirSync(shotDir, { recursive: true });
+  for (const name of fs.readdirSync(shotDir)) {
+    if (name.endsWith('.png')) fs.unlinkSync(path.join(shotDir, name));
+  }
   const stepLog = [], warnings = [];
   let verdicts = [];
   let shotIdx = 0;
@@ -378,7 +382,9 @@ async function runScript(page, script) {
     }
 
     if (!skip) {
-      const judged = await evalExpects(page, script, baseUrl);
+      const shot = { dir: shotDir, idx: shotIdx };
+      const judged = await evalExpects(page, script, baseUrl, shot);
+      shotIdx = shot.idx;
       verdicts = judged.verdicts;
       warnings.push(...judged.warnings);
     }

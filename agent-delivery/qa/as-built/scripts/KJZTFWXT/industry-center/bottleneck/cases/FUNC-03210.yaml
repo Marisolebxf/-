@@ -93,20 +93,18 @@ expect:
   - note: 2、所属产业链已选文字被清空
     assert: |-
       if (!globalThis.__func03210_ready) throw new Error('前置：未完成集群切换');
+      const main = page.locator('main');
+      const chainItem = main.locator('.arco-form-item').filter({ hasText: /^所属产业链/ });
+      const chainView = chainItem.locator('.arco-select-view').first();
+      await expect(chainView).toBeVisible({ timeout: 8000 });
       const read = async (loc) =>
         ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
-      const chainSeg = page.locator('.industry-catalog-select .arco-select-view').first();
-      await expect(chainSeg).toBeVisible({ timeout: 8000 });
-      const seg = await read(chainSeg);
+      const seg = await read(chainView);
       if (/半导体与集成电路|人工智能与应用|新型网络与通信|超高清视频与显示|智能终端|软件与信息服务/.test(seg)) {
         throw new Error('更换集群后所属产业链应清空，现场仍显示=' + seg);
       }
-      if (seg && !/请选择|选择|产业链/.test(seg) && seg.length > 0) {
-        const knownDefault = ['半导体与集成电路'];
-        for (const k of knownDefault) {
-          if (seg.includes(k)) throw new Error('所属产业链未清空=' + seg);
-        }
-      }
+      await expect(chainItem.getByText('半导体与集成电路')).toHaveCount(0);
+      await expect(chainItem.getByText('人工智能与应用')).toHaveCount(0);
   - note: 1、产业选项变为 3 个，名称见附录A（03210）
     assert: |-
       if (!globalThis.__func03210_ready) throw new Error('前置：未完成集群切换');

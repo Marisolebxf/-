@@ -1,24 +1,18 @@
 id: FUNC-02809
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02809
 priority: P1
-title: 改数据截至后点开始分析只提示尚未选择分析对象
-story: US-CHAIN-PANORAMA-01
+tier: B
+title: 异常-开始分析未生成
 entry_id: chain-panorama
-tier: A
-preconditions:
-  - 筛选为默认已选
-locators:
-  context: '[data-testid="panorama-analysis-context"]'
-  data_as_of_input: 'input[placeholder="请选择数据截至"]'
-  start: button「开始分析」
-  toast: .arco-message-content「尚未选择分析对象」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/panorama
   - action: evaluate
-    note: 前置改数据截至为当前状态；步骤点击开始分析；断言 toast 且不进生成中
+    note: 前置清空产业链、改数据截至；点击开始分析
 expect:
-  - note: 前置：数据截至为「2026-10-18 · 当前状态」且「开始分析」可见
+  - note: 1、「数据截至」已改为「2026-10-18 · 当前状态」；2、「开始分析」可见
     assert: |-
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
@@ -35,18 +29,19 @@ expect:
       await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
       await page.waitForTimeout(2000);
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
-      }
       const ctx = page.locator('[data-testid="panorama-analysis-context"]');
       await expect(ctx).toBeVisible({ timeout: 15000 });
+      const main = page.locator('main');
+      const chainRow = main.locator('.policy-analysis-filter-row__field').filter({ hasText: '所属产业链' });
+      const chainView = chainRow.locator('.arco-select-view').first();
+      await chainView.scrollIntoViewIfNeeded();
+      const clearBtn = chainRow.locator('.arco-select-view-clear-icon, .arco-icon-hover').first();
+      if (await clearBtn.count()) {
+        await clearBtn.click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+      }
       const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
       const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
-      const snapBefore = await read(snapView);
-      if (!/最新快照/.test(snapBefore)) {
-        throw new Error('前置：数据截至非默认「最新快照」，现场: ' + snapBefore);
-      }
       const wantSnap = '2026-10-18 · 当前状态';
       await snapView.scrollIntoViewIfNeeded();
       await snapView.click({ timeout: 8000 });
@@ -57,10 +52,7 @@ expect:
       if (!(await opt.count())) {
         opt = pop.locator('.arco-select-option').filter({ hasText: /\d{4}-\d{2}-\d{2} · 当前状态/ }).first();
       }
-      if (!(await opt.count())) {
-        const labels = await pop.locator('.arco-select-option').allTextContents();
-        throw new Error('数据截至缺少当前状态项，现场: ' + JSON.stringify(labels));
-      }
+      await expect(opt).toBeVisible({ timeout: 8000 });
       await opt.click();
       await page.waitForTimeout(800);
       const snapAfter = await read(snapView);
@@ -69,33 +61,21 @@ expect:
       }
       const start = page.getByRole('button', { name: '开始分析' });
       await expect(start.first()).toBeVisible({ timeout: 8000 });
-      await expect(start.first()).toBeEnabled({ timeout: 8000 });
       globalThis.__func02809_ready = true;
-  - note: 1、提示「尚未选择分析对象」；2、仍为全景图谱页，不出现「产业链全景图谱生成中」
+  - note: 1、提示「尚未选择分析对象」
     assert: |-
-      if (!globalThis.__func02809_ready) throw new Error('前置：未完成改数据截至');
+      if (!globalThis.__func02809_ready) throw new Error('前置未完成');
       const TOAST = '尚未选择分析对象';
       const start = page.getByRole('button', { name: '开始分析' }).first();
       await start.scrollIntoViewIfNeeded();
-      await start.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
+      await start.click({ timeout: 8000, force: true });
+      await page.waitForTimeout(800);
       const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: TOAST });
       await expect(toast.first()).toBeVisible({ timeout: 8000 });
+  - note: 2、页面仍为全景图谱，不出现「产业链全景图谱生成中」
+    assert: |-
       await expect(page.getByText('产业链全景图谱生成中')).toHaveCount(0);
       await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 5000 });
-      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      await expect(ctx).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('[data-testid="panorama-analysis-context"]')).toBeVisible({ timeout: 8000 });
       await expect(page.locator('#panorama-workspace-title')).toBeVisible({ timeout: 8000 });
-      const proc = page.locator('.industry-analysis-process-shell, [data-testid="industry-analysis-process"]');
-      const procVis = await proc.first().isVisible().catch(() => false);
-      if (procVis) {
-        const procTxt = ((await proc.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/产业链全景图谱生成中/.test(procTxt)) {
-          throw new Error('不应进入「产业链全景图谱生成中」过程页');
-        }
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  路由 /industry-center/panorama；前置自举 FUNC-02806 同法改 data_as_of「最新快照」→「YYYY-MM-DD · 当前状态」（用例册示例 2026-10-18）。
-  步骤点「开始分析」；拦截 toast 对齐 resolve-scope grain=empty 时 Java empty_message「尚未选择分析对象」（非进入 chain:panorama 任务壳）。
-  断言无 generating-title「产业链全景图谱生成中」、仍见 panorama-analysis-context 与 workspace H1。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

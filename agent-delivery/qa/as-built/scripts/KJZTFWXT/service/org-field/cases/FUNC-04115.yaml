@@ -3,187 +3,65 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04115
 priority: P1
 tier: B
 title: 备选-刷新保留 · 已选家数
-story: US-SVC-ORG-01
 entry_id: svc-org-field
 preconditions:
-  - 配置区已确定 1 家机构（脚本自含：选 1 家并点「确定」）
-locators:
-  pick_btn: button「选择机构」
-  modal: data-testid=svc-org-picker-modal
-  confirm: .arco-modal-footer button「确定」（footer 内 last）
-  selected_label: 已选机构（1 家）
-  selected_tag: '[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'
+  - 配置区已确定 1 家机构
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 1、配置区已确认 1 家机构；2、刷新页面后已选机构仍为 1 家（家数与 tag 编码不变）
+  - note: 1、已选机构仍为 1 家
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const onTarget = () =>
-        /\/service\/institution-judgment/.test(page.url()) &&
-        /workspace=field/.test(page.url()) &&
-        /tab=coverage/.test(page.url());
-      const surfaceReady = async () => {
-        if (!onTarget() || (await bodyIs404())) return false;
-        const tab = page.locator('[role=tab][data-tab-key="coverage"]');
-        if (!(await tab.count()) || !(await tab.first().isVisible().catch(() => false))) return false;
-        return page.getByText('分析配置').first().isVisible().catch(() => false);
-      };
-      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
-      const expandSvcMenu = async () => {
-        if (await pickLeaf().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      const enterViaSidebar = async (siblingPath) => {
-        await dismissBasket();
-        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      const main = page.locator('main').first();
+      await expect(main.getByText('产业领域').first()).toBeVisible({ timeout: 15000 });
+      const oneLabel = () => main.getByText(/已选机构（1\s*家）/).first();
+      const pickTags = () =>
+        page.locator('[data-testid="svc-org-analysis-context-field"] .svc-org-pick-tag');
+      const ensureOneOrg = async () => {
+        if (await oneLabel().isVisible().catch(() => false)) return;
+        await main.getByTestId('svc-org-open-compare-basket').click({ timeout: 10000 });
         await page.waitForTimeout(1200);
-        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
-        if (await bodyIs404()) return false;
-        await expandSvcMenu();
-        const leaf = pickLeaf();
-        if (!(await leaf.first().isVisible().catch(() => false))) return false;
-        await leaf.first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=field/);
-        await expect(page).toHaveURL(/tab=coverage/);
-        return !(await bodyIs404());
-      };
-      const ensureOnFieldCoverage = async () => {
-        await dismissBasket();
-        if (page.url().includes('/login') || /sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) {
-          throw new Error('ENV-EDU-TTS-SVCZ-SESSION-001: 会话已掉线 url=' + page.url());
-        }
-        if (/view=result|view=processing|[?&]task_id=/.test(page.url())) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        const basket = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+        await expect(basket).toBeVisible({ timeout: 15000 });
+        if (await page.getByText('对比篮暂无服务机构').isVisible().catch(() => false)) {
+          await page.getByRole('button', { name: '新增', exact: true }).first().click({ timeout: 8000 });
           await page.waitForTimeout(1000);
-        }
-        if (!(await surfaceReady())) {
-          if (await bodyIs404()) {
-            await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForTimeout(800);
-            await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForTimeout(1200);
-          }
-          if (!(await surfaceReady())) {
-            const siblings = ['/service-portal/overview/overview', '/service-portal/overview', '/industry-center/search'];
-            let ok = false;
-            for (const s of siblings) {
-              if (await enterViaSidebar(s)) {
-                ok = true;
-                break;
-              }
-            }
-            if (!ok || !(await surfaceReady())) {
-              throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均 SPA404，无法进入分析配置 url=' + page.url());
-            }
+          const join = page.getByRole('button', { name: '加入对比篮' }).first();
+          await expect(join).toBeVisible({ timeout: 20000 });
+          await join.click({ timeout: 8000 });
+          await page.waitForTimeout(600);
+          const close = page.locator('.arco-modal:visible .arco-modal-close-icon').first();
+          if (await close.isVisible().catch(() => false)) {
+            await close.click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(400);
           }
         }
-        const cfgTab = page.locator('[role=tab][data-tab-key="coverage"]').or(page.getByRole('tab', { name: '服务机构产业领域分析', exact: true })).first();
-        if (await cfgTab.count()) {
-          const sel = await cfgTab.getAttribute('aria-selected').catch(() => 'true');
-          if (sel === 'false') {
-            await cfgTab.click({ timeout: 8000 });
-            await page.waitForTimeout(600);
-          }
+        const rowCheck = basket.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first();
+        await expect(rowCheck).toBeVisible({ timeout: 12000 });
+        const input = rowCheck.locator('input[type="checkbox"]');
+        if (!(await input.isChecked().catch(() => false))) {
+          await rowCheck.click({ timeout: 8000 });
+          await page.waitForTimeout(300);
         }
+        await page.getByRole('button', { name: '确定', exact: true }).click({ timeout: 10000 });
+        await page.waitForURL(/workspace=field/, { timeout: 20000 });
+        await expect(page).toHaveURL(/tab=coverage/);
+        await page.waitForTimeout(1200);
+        await expect(oneLabel()).toBeVisible({ timeout: 12000 });
       };
-      const resetConfig = async () => {
-        if (/[?&]org_ids/.test(page.url())) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1200);
-        }
-        const main = page.locator('main').first();
-        const t = ((await main.innerText().catch(() => '')) || '');
-        if (/已选机构（[1-9]/.test(t)) {
-          const clr = main.getByRole('button', { name: '清空' });
-          if (await clr.count()) {
-            await clr.first().click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(500);
-          }
-        }
-      };
-      const openPicker = async () => {
-        await page.getByRole('button', { name: '选择机构', exact: true }).first().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
-          .filter({ hasText: '选择服务机构' })
-          .first();
-        await expect(dialog).toBeVisible({ timeout: 12000 });
-        return dialog;
-      };
-      await ensureOnFieldCoverage();
-      await resetConfig();
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
-      const oneLabel = page.getByText(/已选机构（1\s*家）/).first();
-      if (!(await oneLabel.isVisible().catch(() => false))) {
-        const dialog = await openPicker();
-        const checks = dialog.locator('.svc-org-picker-card .arco-checkbox:not(.arco-checkbox-disabled), .arco-checkbox:not(.arco-checkbox-disabled)');
-        if (!(await checks.count())) throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗无可勾选机构');
-        await checks.first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        await dialog.locator('.arco-modal-footer button:visible').filter({ hasText: /^确定$/ }).last().click({ timeout: 8000 });
-        await page.waitForTimeout(1000);
-        await expect(oneLabel).toBeVisible({ timeout: 10000 });
-      }
-      const tags = page.locator('[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag');
-      await expect(tags).toHaveCount(1, { timeout: 8000 });
-      const confirmedCode = (await tags.first().innerText()).trim();
-      const orgIds = (() => {
-        const u = new URL(page.url());
-        const a = u.searchParams.getAll('org_ids[]');
-        return a.length ? a : u.searchParams.getAll('org_ids');
-      })();
+      await ensureOneOrg();
+      await expect(oneLabel()).toBeVisible({ timeout: 8000 });
+      await expect(pickTags()).toHaveCount(1, { timeout: 8000 });
+      const beforeName = (await pickTags().first().innerText()).trim();
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(2500);
-      const close = page.locator('[aria-label="关闭对比篮"]');
-      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) {
-        try {
-          await close.first().click({ timeout: 1500 });
-          await page.waitForTimeout(300);
-        } catch {}
-      }
       await expect(page).toHaveURL(/workspace=field/);
       await expect(page).toHaveURL(/tab=coverage/);
-      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 12000 });
-      await expect(tags).toHaveCount(1, { timeout: 8000 });
-      const afterCode = (await tags.first().innerText()).trim();
-      if (afterCode !== confirmedCode) {
-        throw new Error('刷新后已选机构编码变化: ' + afterCode + ' != ' + confirmedCode);
+      await expect(oneLabel()).toBeVisible({ timeout: 12000 });
+      await expect(pickTags()).toHaveCount(1, { timeout: 8000 });
+      const afterName = (await pickTags().first().innerText()).trim();
+      if (afterName !== beforeName) {
+        throw new Error('刷新后已选机构变化: ' + afterName + ' != ' + beforeName);
       }
-      const gotIds = (() => {
-        const u = new URL(page.url());
-        const a = u.searchParams.getAll('org_ids[]');
-        return a.length ? a : u.searchParams.getAll('org_ids');
-      })();
-      if (orgIds.length && gotIds.length && JSON.stringify(gotIds) !== JSON.stringify(orgIds)) {
-        throw new Error('刷新后 org_ids 漂移: ' + JSON.stringify(gotIds) + ' != ' + JSON.stringify(orgIds));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  04115=配置区已确认 1 家后整页 reload；刷新后「已选机构（1 家）」、svc-org-pick-tag 仍为 1 且编码不变（URL org_ids 有则一并验不漂移）。
-  入口预热同 FUNC-04108（深链 SPA404→sibling 侧栏补进）。AC-US-SVC-ORG-01-03 刷新保留子集（仅验家数，不含兄弟菜单 04116）。B 档。
+on_fail: 截图 + 抄 X-Trace-Id

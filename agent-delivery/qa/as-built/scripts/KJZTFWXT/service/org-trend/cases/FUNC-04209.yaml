@@ -1,0 +1,264 @@
+id: FUNC-04209
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04209
+priority: P1
+tier: B
+title: 异常-失败过程页 · 查看过程
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 分析记录中有失败任务（用例备注：用记录里已有的失败任务；无现场失败行时对齐 04121 hydrate 兜底，不测断链）
+locators:
+  tab_records: tab「分析记录」
+  view_process: button「查看过程」
+  back_retry: button「返回配置重试」
+  fail_banner: 本次分析生成失败
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 前置：分析记录失败行点「查看过程」进入失败过程页（用例步骤 1～2）
+    assert: |-
+      const catalogPath = '/service/institution-judgment?workspace=trend&tab=trend';
+      const configDeeplink =
+        catalogPath + '&industry=INB1701&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469';
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构新增趋势分析/.test(t);
+      };
+      const onTrend = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=trend/.test(page.url()) &&
+        /tab=trend|tab=records/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构新增趋势分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        return onTrend() && !(await bodyIs404());
+      };
+      const ensureTrendEntry = async () => {
+        await dismissBasket();
+        if (!onTrend() || (await bodyIs404())) {
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        if (!onTrend() || (await bodyIs404())) {
+          const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
+          let ok = false;
+          for (const s of siblings) {
+            if (await enterViaSidebar(s)) {
+              ok = true;
+              break;
+            }
+          }
+          if (!ok) throw new Error('ENV-ENTRY-UNREACHABLE: 无法进入 trend 工作区 url=' + page.url());
+        }
+        if (await bodyIs404()) throw new Error('ENV-ENTRY-UNREACHABLE: 服务机构新增趋势分析入口不可用 ' + page.url());
+      };
+      const shell = () => page.locator('[data-testid="svc-org-analysis-process"]');
+      const waitFailedProcessShell = async () => {
+        let last = '';
+        for (let i = 0; i < 40; i++) {
+          await page.waitForTimeout(i < 5 ? 800 : 1200);
+          last = ((await page.locator('main').last().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const back = page.getByRole('button', { name: '返回配置重试' }).first();
+          if (/本次分析生成失败/.test(last) && (await back.isVisible().catch(() => false))) {
+            return last;
+          }
+        }
+        throw new Error('未进入失败过程页（无「本次分析生成失败」+「返回配置重试」）片段=' + last.slice(0, 280));
+      };
+      const openProcessingDeepLink = async (taskId) => {
+        const dl = new URL(spaUrl(catalogPath));
+        dl.searchParams.set('workspace', 'trend');
+        dl.searchParams.set('tab', 'trend');
+        dl.searchParams.set('view', 'processing');
+        dl.searchParams.set('demo_state', 'processing');
+        dl.searchParams.set('task_id', taskId);
+        const ind = new URL(page.url()).searchParams.get('industry');
+        if (ind) dl.searchParams.set('industry', ind);
+        await page.goto(dl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(2000);
+      };
+      const syntheticFailedProcess = async () => {
+        await dismissBasket();
+        await page.goto(spaUrl(configDeeplink), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(2000);
+        const start0 = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start0).toBeVisible({ timeout: 12000 });
+        const main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+        if (!/已选机构（[1-9]/.test(main0) && !/org_ids/.test(page.url())) {
+          const pickOrg = page.getByRole('button', { name: '选择机构' }).first();
+          if (await pickOrg.count()) {
+            await pickOrg.click({ timeout: 8000 });
+            await page.waitForTimeout(800);
+            const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+            await expect(dialog).toBeVisible({ timeout: 8000 });
+            const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+            if (!(await checks.count())) throw new Error('ENV-SVC-ORG-TREND-NO-ORGS：机构弹窗无可勾选项');
+            await checks.first().click({ timeout: 5000 });
+            await dialog.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+            await page.waitForTimeout(1000);
+          }
+        }
+        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        for (let k = 0; k < 8 && !(await start.isEnabled().catch(() => false)); k++) {
+          await page.waitForTimeout(800);
+        }
+        await expect(start).toBeEnabled({ timeout: 20000 });
+        await start.click({ timeout: 10000 });
+        let taskId = null;
+        for (let i = 0; i < 25; i++) {
+          await page.waitForTimeout(1000);
+          const m = page.url().match(/task_id=(SVC-\d{8}-\d+)/);
+          if (m) {
+            taskId = m[1];
+            break;
+          }
+        }
+        if (!taskId) throw new Error('ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04209：无法取得 task_id 以 hydrate 失败过程页');
+        await page.unroute({ behavior: 'ignoreErrors' }).catch(() => {});
+        await page.route('**/topic/v1/analysis/tasks/' + taskId + '**', async (route) => {
+          const body = {
+            code: 0,
+            ok: true,
+            data: {
+              taskId,
+              status: 'failed',
+              taskName: taskId,
+              errorMsg: 'QA-04209 hydrate failed (no live failed record)',
+              createTime: new Date().toISOString(),
+            },
+          };
+          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+        });
+        await openProcessingDeepLink(taskId);
+        await waitFailedProcessShell();
+        globalThis.__func04209 = {
+          taskId,
+          path: 'synthetic_hydrate_failed',
+          ticket: 'ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04209',
+        };
+      };
+      const openViaFailedRowClick = async () => {
+        const recTab = page
+          .locator('[role=tab][data-tab-key="records"]')
+          .or(page.getByRole('tab', { name: '分析记录', exact: true }))
+          .first();
+        await expect(recTab).toBeVisible({ timeout: 12000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+        if (!/SVC-\d{8}-\d+/.test(mainRec)) {
+          throw new Error('ENV-SVC-ORG-TREND-NO-RECORDS：分析记录无历史任务');
+        }
+        if (!/失败/.test(mainRec)) return null;
+        const rows = page
+          .locator('tr, [role="row"], .arco-table-tr')
+          .filter({ hasText: /失败/ })
+          .filter({ hasText: /SVC-\d{8}-\d+/ });
+        const rowN = await rows.count();
+        if (!rowN) return null;
+        for (let i = 0; i < Math.min(rowN, 8); i++) {
+          const row = rows.nth(i);
+          const rowTxt = ((await row.innerText().catch(() => '')) || '').trim();
+          const m = rowTxt.match(/SVC-\d{8}-\d+/);
+          if (!m) continue;
+          const taskId = m[0];
+          const procBtn = row.getByRole('button', { name: /查看过程/ }).first();
+          if (!(await procBtn.count())) continue;
+          if (await procBtn.isDisabled().catch(() => false)) continue;
+          await procBtn.click({ timeout: 8000 });
+          try {
+            await waitFailedProcessShell();
+            globalThis.__func04209 = { taskId, path: 'records_click_view_process' };
+            return taskId;
+          } catch {
+            await openProcessingDeepLink(taskId);
+            try {
+              await waitFailedProcessShell();
+              globalThis.__func04209 = { taskId, path: 'records_deeplink_after_click' };
+              return taskId;
+            } catch {
+              await recTab.click({ timeout: 8000 }).catch(() => {});
+              await page.waitForTimeout(1200);
+            }
+          }
+        }
+        return null;
+      };
+      await ensureTrendEntry();
+      await expect(page.getByText('服务机构新增趋势分析').first()).toBeVisible({ timeout: 12000 });
+      const opened = await openViaFailedRowClick();
+      if (!opened) {
+        await syntheticFailedProcess();
+      }
+      await expect(shell().first()).toBeVisible({ timeout: 8000 });
+      console.log(
+        '[FUNC-04209 observed] path=' +
+          String(globalThis.__func04209?.path || '') +
+          ' task=' +
+          String(globalThis.__func04209?.taskId || '') +
+          ' ticket=' +
+          String(globalThis.__func04209?.ticket || 'none'),
+      );
+  - note: 1、过程页状态为「失败」（用例预期 1）
+    assert: |-
+      if (!globalThis.__func04209?.taskId) throw new Error('前置：未进入失败过程页');
+      const main = page.locator('main').last();
+      const failTag = main.locator('.arco-tag').filter({ hasText: /^失败$/ }).first();
+      const tagVisible = await failTag.isVisible().catch(() => false);
+      const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const statusOk = tagVisible || /(?:^|\s)失败(?:\s|$)/.test(body) || /任务状态[：:]\s*failed/.test(body);
+      if (!statusOk) {
+        throw new Error('过程页未见失败状态徽标/文案 body_head=' + body.slice(0, 240));
+      }
+      const tid = globalThis.__func04209.taskId;
+      if (tid && !body.includes(tid) && !page.url().includes(tid)) {
+        throw new Error('过程页任务号与所点行不一致: ' + tid);
+      }
+  - note: 2、文案含「本次分析生成失败」（用例预期 2）
+    assert: |-
+      if (!globalThis.__func04209) throw new Error('前置：未进入失败过程页');
+      await expect(page.getByText('本次分析生成失败').first()).toBeVisible({ timeout: 8000 });
+  - note: 3、可见「返回配置重试」（用例预期 3）
+    assert: |-
+      if (!globalThis.__func04209) throw new Error('前置：未进入失败过程页');
+      await expect(page.getByRole('button', { name: '返回配置重试' }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04209=分析记录失败行「查看过程」→过程壳 data-testid=svc-org-analysis-process：状态「失败」+「本次分析生成失败」+「返回配置重试」。
+  入口 catalog_path=entry-seed trend；优先现场失败行点「查看过程」，不落路由则同 task_id 深链；无失败行或深链仍非失败壳→
+  深链回填机构后开始分析取 task_id 后对 GET hydrate 置 status=failed（D4 ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04209，对齐 field 04121）。
+  对齐 FUNC-04208 入口 helper / FUNC-04120 失败过程断言。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04209。B 档零 allow_skip。

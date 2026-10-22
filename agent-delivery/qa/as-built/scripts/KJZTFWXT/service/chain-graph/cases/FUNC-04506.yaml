@@ -1,0 +1,21 @@
+id: FUNC-04506
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04506
+priority: P1
+tier: B
+title: 备选-未选产业仍发起
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: 开始分析
+expect:
+  - note: 进入过程页且状态为「已完成」
+    assert: |-
+      await expect(page.getByText('分析结果已生成')).toBeVisible()
+  - note: 分析对象为「产业领域：未选择（圈定 hang 全量）」
+    assert: |-
+      await expect(page.getByText('产业领域：未选择（圈定 hang 全量）')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

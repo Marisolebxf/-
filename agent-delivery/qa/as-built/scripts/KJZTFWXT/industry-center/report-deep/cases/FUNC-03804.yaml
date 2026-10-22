@@ -1,0 +1,19 @@
+id: FUNC-03804
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03804
+priority: P1
+tier: B
+title: 异常-任务不存在
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-NOT-EXIST-03804
+expect:
+  - note: 页面提示标题为「无法打开产业链分析深链」
+    assert: |-
+      await expect(page.getByText('无法打开产业链分析深链')).toBeVisible()
+  - note: 说明为「任务不存在」
+    assert: |-
+      await expect(page.getByText('任务不存在')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

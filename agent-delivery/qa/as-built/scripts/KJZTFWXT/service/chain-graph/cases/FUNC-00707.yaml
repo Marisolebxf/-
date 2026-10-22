@@ -1,0 +1,33 @@
+id: FUNC-00707
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00707
+priority: P0
+tier: A
+title: graph 工作区进入·路由与页头双 Tab
+story: US-SVC-ECO-03
+entry_id: svc-chain-graph
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate G1 pass
+locators:
+  title: document.title 含「服务链图谱分析」
+  tab_main: tab「服务链图谱分析」（默认选中）
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: assert_url
+    expect_contains: workspace=graph&tab=graph
+expect:
+  - note: 1、路由为 graph 工作区直达态（workspace=graph、tab=graph）
+    assert: |-
+      await expect(page).toHaveURL(/\/service\/chain-analysis/); await expect(page).toHaveURL(/workspace=graph/); await expect(page).toHaveURL(/tab=graph/)
+  - note: 2、页标题为「服务链图谱分析」
+    assert: await expect(page).toHaveTitle(/服务链图谱分析/)
+  - note: 3、顶部为「服务链图谱分析（选中）/ 分析记录」双 Tab
+    assert: |-
+      const main=page.getByRole('tab', { name: /服务链图谱分析/ }); const rec=page.getByRole('tab', { name: '分析记录', exact: true }); await expect(main).toBeVisible({ timeout: 8000 }); await expect(rec).toBeVisible({ timeout: 8000 }); const aria=await main.getAttribute('aria-selected'); const cls=await main.getAttribute('class'); if (aria!=='true' && !(cls||'').includes('active')) throw new Error('服务链图谱分析 Tab 未选中')
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  重写波 FUNC-00707；深链 fixtures/entry-seed catalog_path。
+  实勘 title=「服务链图谱分析 - 科技专题服务系统」；主 Tab aria-selected=true 且 class=active；
+  accessible name 含内嵌「需求追溯」故用 /服务链图谱分析/（禁 exact）。零 allow_skip。

@@ -1,0 +1,34 @@
+id: FUNC-05205
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05205
+priority: P1
+tier: B
+title: 备选-关闭机构画像
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: wait
+    for: 榜单加载
+    timeout_ms: 1500
+  - action: evaluate
+    note: 记录首行机构名供关闭后断言
+    assert: |-
+      const row = page.locator('main .svc-portal-org__name').first();
+      await row.waitFor({ state: 'visible', timeout: 15000 });
+      const orgName = (await row.innerText()).trim();
+      await page.evaluate((name) => { window.__FUNC05205_orgName = name; }, orgName);
+  - action: click
+    target: 按钮 分析画像
+  - action: click
+    target: .arco-drawer-close-btn
+expect:
+  - note: 机构画像抽屉关闭
+    assert: |-
+      await expect(page.locator('.arco-drawer')).toBeHidden();
+  - note: 该行机构仍在榜单中
+    assert: |-
+      const orgName = await page.evaluate(() => window.__FUNC05205_orgName);
+      await expect(page.locator('main .svc-portal-org__name').filter({ hasText: orgName }).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

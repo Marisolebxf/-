@@ -1,0 +1,32 @@
+id: FUNC-04802
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04802
+priority: P1
+tier: B
+title: 备选-返回配置
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: locator('.arco-select-view').filter({ hasText: '生物产业' }).first()
+  - action: click
+    target: getByText('生物', { exact: true })
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+  - action: click
+    target: 返回配置
+expect:
+  - note: 1、回到「分析配置」
+    assert: |-
+      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 15000 })
+  - note: 2、产业领域仍为「生物」
+    assert: |-
+      await expect(page.locator('.arco-select-view').filter({ hasText: '生物' }).filter({ hasNotText: '生物医药' }).first()).toBeVisible({ timeout: 15000 })
+  - note: 3、「开始分析」可见
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 15000 })
+on_fail: 截图 + 抄 X-Trace-Id

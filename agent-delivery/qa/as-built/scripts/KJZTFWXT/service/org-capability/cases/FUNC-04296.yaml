@@ -1,0 +1,31 @@
+id: FUNC-04296
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04296
+priority: P1
+tier: B
+title: 备选-清空对比篮
+entry_id: svc-org-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: click
+    target: 从对比篮带入
+  - action: click
+    target: 返回对比篮
+  - action: click
+    target: 清空对比篮
+  - action: assert_visible
+    target: 清空篮内全部服务机构
+  - action: evaluate
+    assert: |-
+      const dlg = page.locator('.arco-modal-wrapper').filter({ hasText: '清空篮内全部服务机构' });
+      await dlg.getByRole('button', { name: '取消' }).click();
+expect:
+  - note: 1、询问文案包含「清空篮内全部服务机构」
+    assert: |-
+      await expect(page.getByText(/确认清空篮内全部服务机构|清空篮内全部服务机构/)).toBeHidden({ timeout: 8000 })
+  - note: 2、「篮内服务机构」仍列出原机构
+    assert: |-
+      await expect(page.getByText('篮内服务机构')).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('东莞市同辉科创有限公司')).toBeVisible({ timeout: 8000 });

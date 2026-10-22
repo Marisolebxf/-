@@ -1,0 +1,25 @@
+id: FUNC-05092
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05092
+priority: P0
+tier: B
+title: 主流程-首位区域与结论条一致
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 首位区域卡展示省名与家数
+    assert: |-
+      await expect(page.getByText('首位区域', { exact: true })).toBeVisible();
+      const provinceLine = page.getByText('首位区域', { exact: true }).locator('xpath=following-sibling::*[1]');
+      await expect(provinceLine).toBeVisible();
+      const countLine = provinceLine.locator('xpath=following-sibling::*[1]');
+      await expect(countLine).toContainText('家');
+  - note: 结论条中的居首省名与该卡相同
+    assert: |-
+      const provinceLine = page.getByText('首位区域', { exact: true }).locator('xpath=following-sibling::*[1]');
+      const provinceName = (await provinceLine.innerText()).trim();
+      await expect(page.getByText(`「${provinceName}」居首`)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

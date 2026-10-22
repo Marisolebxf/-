@@ -1,0 +1,22 @@
+id: FUNC-03694
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03694
+priority: P1
+tier: B
+title: 异常-空参数
+entry_id: chain-result-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/results/CHAIN-20261021-002?taskId=
+expect:
+  - note: 标题为无法打开产业链分析深链
+    assert: |-
+      await expect(page.getByText('无法打开产业链分析深链')).toBeVisible()
+  - note: 说明文案为「深链未提供可读取的分析任务 ID」
+    assert: |-
+      await expect(page.getByText('深链未提供可读取的分析任务 ID')).toBeVisible()
+  - note: 页面有返回产业链分析按钮
+    assert: |-
+      await expect(page.getByRole('button', { name: '返回产业链分析' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

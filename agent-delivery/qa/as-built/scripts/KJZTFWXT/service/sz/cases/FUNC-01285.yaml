@@ -1,0 +1,53 @@
+id: FUNC-01285
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01285
+priority: P1
+tier: B
+title: 主流程-产业选定与清空
+entry_id: svc-sz
+preconditions:
+  - 已进入分析配置
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: evaluate
+    assert: |-
+      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      await item.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '新一代信息技术' }).click();
+  - action: evaluate
+    assert: |-
+      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      await item.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '生物' }).click();
+  - action: evaluate
+    assert: |-
+      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      await item.locator('.arco-select-allow-clear').click();
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 分析配置
+expect:
+  - note: 选定或改选后回显当前产业
+    assert: |-
+      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      await item.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '新一代信息技术' }).click();
+      await expect(item.locator('.arco-select-view')).toContainText('新一代信息技术');
+      await item.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '生物' }).click();
+      await expect(item.locator('.arco-select-view')).toContainText('生物');
+  - note: 清空后回到未选，不写回默认产业
+    assert: |-
+      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
+      await item.locator('.arco-select-allow-clear').click();
+      const view = item.locator('.arco-select-view');
+      await expect(view).not.toContainText('生物产业');
+      await expect(view).not.toContainText('新一代信息技术');
+      await expect(view).toContainText('请选择');
+  - note: 全程不自动发起分析
+    assert: |-
+      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

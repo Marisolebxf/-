@@ -1,0 +1,29 @@
+id: FUNC-04808
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04808
+priority: P1
+tier: B
+title: 异常-取消全部对比指标
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+  - action: click
+    target: 服务机构数量
+  - action: click
+    target: 平均技术力得分
+  - action: click
+    target: 服务网络密度
+expect:
+  - note: 出现「请至少选择一个对比指标」
+    assert: |-
+      await expect(page.getByText('请至少选择一个对比指标')).toBeVisible()
+  - note: 对比区仍显示无法绘制对比图
+    assert: |-
+      await expect(page.getByText('无法绘制对比图')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

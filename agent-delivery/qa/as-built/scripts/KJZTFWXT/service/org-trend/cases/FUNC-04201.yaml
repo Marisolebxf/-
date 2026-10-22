@@ -1,0 +1,150 @@
+id: FUNC-04201
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04201
+priority: P1
+tier: A
+title: 备选-分组全选 · 金融服务已选计数
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已打开「选择服务机构」（脚本：趋势页点「选择机构」打开弹窗并清空搜索）
+locators:
+  pick_btn: button「选择机构」
+  modal: data-testid=svc-org-picker-modal
+  group_finance: .svc-org-picker-group（标题含金融服务）
+  group_select_all: button「全选」（金融服务分组头内）
+  footer_count: .svc-org-picker-footer__count
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 1、点击「金融服务」一组「全选」后，弹窗已选家数等于该组标题括号中的数量
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (
+          await close.count() &&
+          (await close.first().isVisible().catch(() => false)) &&
+          (await close.first().isEnabled().catch(() => false))
+        ) {
+          try {
+            await close.first().click({ timeout: 1500 });
+            await page.waitForTimeout(300);
+          } catch {}
+        }
+      };
+      const parseFooterCount = async (dialog) => {
+        const foot = dialog.locator('.svc-org-picker-footer__count').first();
+        const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/已选\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : -1;
+      };
+      const clearModalSearch = async (dialog) => {
+        const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
+        await expect(search).toBeVisible({ timeout: 8000 });
+        let val = (await search.inputValue().catch(() => '')).trim();
+        if (val) {
+          const clearBtn = dialog.locator('.svc-org-picker-search .arco-input-clear-icon, .arco-input-clear-btn').first();
+          if (await clearBtn.count() && (await clearBtn.isVisible().catch(() => false))) {
+            await clearBtn.click({ timeout: 3000 });
+          } else {
+            await search.fill('');
+          }
+          await page.waitForTimeout(900);
+        }
+      };
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      if (/org_ids|[?&]view=/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await dismissBasket();
+      const main = page.locator('main').first();
+      const t0 = ((await main.innerText().catch(() => '')) || '');
+      if (/已选机构（[1-9]/.test(t0)) {
+        const clr = main.getByRole('button', { name: '清空', exact: true });
+        if (await clr.count()) {
+          try {
+            await clr.first().click({ timeout: 3000 });
+            await page.waitForTimeout(500);
+          } catch {}
+        }
+      }
+      const pick = page
+        .locator('[data-testid="svc-org-open-picker"]')
+        .or(page.getByRole('button', { name: '选择机构', exact: true }))
+        .first();
+      if (!(await pick.isVisible().catch(() => false))) {
+        throw new Error('D2-SVC-ORG-TREND-NO-ORG-PICKER：趋势配置区无「选择机构」入口');
+      }
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const dialog = page
+        .locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+        .filter({ hasText: '选择服务机构' })
+        .first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      await expect(dialog.getByText('选择服务机构', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      await clearModalSearch(dialog);
+      const groups = dialog.locator('.svc-org-picker-group');
+      await expect(groups.first()).toBeVisible({ timeout: 15000 });
+      let financeGroup = null;
+      let targetSize = 0;
+      const groupN = await groups.count();
+      for (let g = 0; g < Math.min(groupN, 12); g++) {
+        const group = groups.nth(g);
+        const headStrong = group.locator('.svc-org-picker-group__head strong').first();
+        const headTxt = ((await headStrong.innerText().catch(() => '')) || '').trim();
+        if (!/^金融服务/.test(headTxt) && !headTxt.includes('金融服务')) continue;
+        const m = headTxt.match(/（(\d+)）/);
+        targetSize = m ? parseInt(m[1], 10) : 0;
+        if (targetSize < 1) {
+          const alt = headTxt.match(/\((\d+)\)/);
+          targetSize = alt ? parseInt(alt[1], 10) : 0;
+        }
+        financeGroup = group;
+        break;
+      }
+      if (!financeGroup || targetSize < 1) {
+        throw new Error('ENV-SVC-ORG-TREND-NO-FINANCE-GROUP：弹窗未见「金融服务（N）」分组');
+      }
+      const countBefore = await parseFooterCount(dialog);
+      if (countBefore < 0) throw new Error('未能读取弹窗已选家数');
+      if (countBefore > 0) {
+        const modalClear = dialog
+          .locator('.svc-org-picker-footer')
+          .getByRole('button', { name: '清空', exact: true })
+          .first();
+        if (await modalClear.isVisible().catch(() => false)) {
+          await modalClear.click({ timeout: 5000 });
+          await page.waitForTimeout(600);
+        }
+      }
+      const countZero = await parseFooterCount(dialog);
+      if (countZero !== 0 && countZero > 0) {
+        throw new Error('前置：弹窗已选未归零，无法断言等于组括号数量 count=' + countZero);
+      }
+      const selectAllBtn = financeGroup
+        .locator('.svc-org-picker-group__head')
+        .locator('button, .arco-btn')
+        .filter({ hasText: /^全选$/ })
+        .first();
+      await expect(selectAllBtn).toBeVisible({ timeout: 8000 });
+      await selectAllBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(600);
+      const foot = dialog.locator('.svc-org-picker-footer__count').first();
+      const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const mAfter = txt.match(/已选\s*(\d+)\s*家/);
+      const countAfter = mAfter ? parseInt(mAfter[1], 10) : -1;
+      if (countAfter < 0) throw new Error('未能读取全选后已选家数: ' + txt);
+      if (countAfter !== targetSize) {
+        throw new Error(
+          '已选家数与组标题括号不一致：标题数=' + targetSize + ' 弹窗已选=' + countAfter + ' foot=' + txt,
+        );
+      }
+      await expect(foot).toContainText('已选 ' + targetSize);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04201；步骤：已开「选择服务机构」→ 金融服务分组头「全选」。断言 footer .svc-org-picker-footer__count「已选 N 家」N=组标题括号数（实勘金融服务（20）→20）。
+  catalog_path entry-seed trend；前置弹窗已选归零后点组全选。2026-10-21 30892 关评审后趋势主区无「选择机构」/分析配置壳（同 FUNC-00658/04200 D2），机检仍按用例册。A 档零 allow_skip。

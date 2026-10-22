@@ -1,0 +1,135 @@
+id: FUNC-04292
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04292
+priority: P0
+tier: A
+title: 主流程-从对比篮带入 · 家数超出
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；系统对比篮服务机构多于 5 家（不点「开始评估」）
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  count_head: .svc-org-cap-compare__head
+  start_btn: '[data-testid="svc-org-start-eval"]'
+  range_hint: 对比机构须为 2~5 家
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 对比篮>5 家时点击「从对比篮带入」（真实操作在 expect 内）
+expect:
+  - note: 1、提示已带入并写明家数
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const countCapBasketTags = async () =>
+        page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+      const seedBasketUntilGt5 = async (currentN) => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        let need = 6 - currentN;
+        if (need <= 0) return;
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const trySearch = async (kw) => {
+          const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+          if (!(await inp.count())) return;
+          await inp.fill(kw);
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true });
+          if (await searchBtn.count()) await searchBtn.first().click({ timeout: 15000 });
+          await page.waitForTimeout(2500);
+        };
+        let joins = page.getByRole('button', { name: '加入对比篮', exact: true });
+        if ((await joins.count()) < need) {
+          for (const kw of ['深圳', '广州', '东莞']) {
+            await trySearch(kw);
+            if ((await joins.count()) >= need) break;
+          }
+        }
+        while (need > 0) {
+          joins = page.getByRole('button', { name: '加入对比篮', exact: true });
+          if (!(await joins.count())) {
+            throw new Error('ENV-SVCCAP-BASKET-ORG-GT5-001：检索页无可入篮行，仍缺 ' + need + ' 家');
+          }
+          await joins.first().scrollIntoViewIfNeeded();
+          await joins.first().click({ timeout: 15000 });
+          await page.waitForTimeout(600);
+          need -= 1;
+        }
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      const prepBasketGt5 = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        let tagN = await countCapBasketTags();
+        if (tagN <= 5) {
+          await seedBasketUntilGt5(tagN);
+          tagN = await countCapBasketTags();
+        }
+        if (tagN <= 5) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-GT5-001：对比篮服务机构应多于 5 家，当前 tags=' + tagN);
+        }
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        for (let i = 0; i < tagN; i++) {
+          const cls = String((await tags.nth(i).getAttribute('class')) || '');
+          if (cls.includes('arco-tag-checked')) {
+            await tags.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(200);
+          }
+        }
+        return tagN;
+      };
+      const clickImport = async () => {
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        await expect(imp).toBeVisible({ timeout: 8000 });
+        await imp.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const tagN = await prepBasketGt5();
+      await clickImport();
+      const toastRe = new RegExp('已带入\\s*' + tagN + '\\s*家');
+      const msg = page.locator('.arco-message-content, .arco-message').filter({ hasText: toastRe });
+      await expect(msg.first()).toBeVisible({ timeout: 8000 });
+      globalThis.__func04292 = { tagN };
+  - note: 2、出现「对比机构须为 2~5 家」
+    assert: |-
+      const tagN = globalThis.__func04292?.tagN;
+      if (!tagN) throw new Error('expect[0] 未执行或未写入 __func04292.tagN');
+      const n = globalThis.__func04292.tagN;
+      const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      if (!head.includes('当前' + n + '家')) throw new Error('带入后计数行=' + head + '，预期含 当前' + n + '家');
+      const blockers = page.locator('.svc-org-cap-blockers');
+      await expect(blockers).toContainText('对比机构须为 2~5 家', { timeout: 8000 });
+      const blockerTxt = ((await blockers.innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      if (!blockerTxt.includes('对比机构须为2~5家')) {
+        throw new Error('门控区未见「对比机构须为 2~5 家」: ' + blockerTxt.slice(0, 80));
+      }
+  - note: 3、「开始评估」不可用
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      if (!globalThis.__func04292?.tagN) throw new Error('expect[0] 未执行或未写入 __func04292.tagN');
+      const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮≤5 家→ENV-SVCCAP-BASKET-ORG-GT5-001
+as_built_note: >-
+  蓝本 FUNC-04292（整篮带入超过五家后不能开始评估）。importCapBasket 全量 writeSelection；
+  n>5 时 Message.warning「已带入 N 家；请勾选 2~5 家后再开始评估」+ blocker orgs_out_of_range 文案「对比机构须为 2~5 家」+ start disabled。
+  前置篮 tags>5；现场仅 5 家时 expect[0] 经服务机构检索「加入对比篮」造数至 ≥6。三条 expect 链式依赖 __func04292（同 run 顺序执行）。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04292。零 allow_skip。

@@ -1,0 +1,140 @@
+id: FUNC-03391
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03391
+priority: P1
+title: 分析对象产业搜索收窄选项（输入「生物」）
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 已进入深圳产业发展分析页
+locators:
+  industry: main .industry-catalog-select（placeholder「请选择产业」；allow-search）
+steps:
+  - action: goto
+    target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 展开分析对象下拉；在搜索框输入「生物」；选项收窄在 expect 判定
+expect:
+  - note: 1、下拉只留下名称含「生物」的选项
+    assert: |-
+      const keyword = '生物';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=development/.test(page.url()) &&
+        /tab=development/.test(page.url());
+      const enterViaSidebar = async () => {
+        const leafItem = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
+        const expandChainGroup = async () => {
+          if (await leafItem().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
+        await leafItem().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
+      };
+      const resetIfVisible = async () => {
+        const reset = page.getByRole('button', { name: '重置参数' });
+        if (await reset.count() && (await reset.first().isVisible().catch(() => false))) {
+          await reset.first().click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(600);
+        }
+      };
+      await dismissBasket();
+      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1000);
+      if (await bodyIs404() || !onTarget()) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (!(await bodyIs404())) {
+          await enterViaSidebar();
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法验分析对象产业搜索 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=development/);
+      await expect(page).toHaveURL(/tab=development/);
+      const tabMain = page.getByRole('tab', { name: '深圳产业发展分析' });
+      if (await tabMain.count() && (await tabMain.first().getAttribute('aria-selected')) !== 'true') {
+        await tabMain.first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      await resetIfVisible();
+      await dismissBasket();
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(200);
+      const indView = page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select .arco-select-view').first();
+      await expect(indView).toBeVisible({ timeout: 10000 });
+      const ph = await indView.locator('input').first().getAttribute('placeholder').catch(() => '');
+      if (ph !== '请选择产业') {
+        throw new Error('首个分析对象下拉占位应为「请选择产业」，实际 placeholder=' + ph);
+      }
+      await indView.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const beforeCount = await popup.locator('.arco-select-option').count();
+      if (beforeCount < 2) {
+        throw new Error('展开分析对象后应有多个产业选项供搜索收窄，实际 ' + beforeCount);
+      }
+      const searchInput = indView.locator('input').first();
+      await searchInput.fill(keyword);
+      await page.waitForTimeout(500);
+      const options = await popup.locator('.arco-select-option').allTextContents();
+      const normalized = [...new Set(options.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
+      if (normalized.length === 0) {
+        throw new Error('输入「' + keyword + '」后产业选项不应为空');
+      }
+      const notMatch = normalized.filter((name) => !name.includes(keyword));
+      if (notMatch.length) {
+        throw new Error(
+          '产业选项应全部含「' + keyword + '」，仍可见：' + notMatch.join('、') + '；现场：' + normalized.join('、')
+        );
+      }
+      const expectedWithKeyword = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ].filter((name) => name.includes(keyword));
+      const missing = expectedWithKeyword.filter((name) => !normalized.includes(name));
+      if (missing.length) {
+        throw new Error('应保留含「' + keyword + '」的附录 A 项：' + missing.join('、') + '；现场：' + normalized.join('、'));
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 分析对象 Arco Select allow-search；P7 点 .arco-select-view 后在同控件 input 键入关键字（非 popup 内独立搜索框）。现场「生物」仅匹配 1 项。路由 catalog_path=entry-seed。B 档零 allow_skip。

@@ -1,0 +1,27 @@
+id: FUNC-04602
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04602
+priority: P1
+tier: B
+title: 备选-返回配置
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 生成招引名单
+  - action: click
+    target: 返回配置
+expect:
+  - note: 回到「分析配置」
+    assert: |-
+      await expect(page.getByText('分析配置').first()).toBeVisible();
+  - note: 重点产业方向与返回前一致
+    assert: |-
+      await expect(page.getByText('生物产业 / 生物医药')).toBeVisible();
+  - note: 不自动进入分析过程
+    assert: |-
+      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '生成招引名单' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

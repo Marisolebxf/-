@@ -1,0 +1,25 @@
+id: FUNC-04711
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04711
+priority: P1
+tier: B
+title: 备选-已完成行查看过程
+entry_id: svc-rec-cultivate
+preconditions:
+  - 分析记录中有已完成任务
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    assert: |-
+      await page.getByText('分析记录', { exact: true }).click();
+      const doneRow = page.locator('tr').filter({ hasText: '已完成' });
+      await doneRow.getByRole('button', { name: '查看过程' }).or(doneRow.getByRole('link', { name: '查看过程' })).first().click();
+expect:
+  - note: 过程页状态为已完成
+    assert: |-
+      await expect(page.getByText('已完成', { exact: true }).first()).toBeVisible()
+  - note: 页面提供「查看结果」
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

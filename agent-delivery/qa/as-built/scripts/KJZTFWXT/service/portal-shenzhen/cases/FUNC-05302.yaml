@@ -1,0 +1,24 @@
+id: FUNC-05302
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05302
+priority: P1
+tier: B
+title: 备选-改选产业
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+expect:
+  - note: 1、结论上下文为「海洋」
+    assert: |-
+      const filter = page.locator('.svc-portal-filter');
+      await filter.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-panel').getByText('海洋', { exact: true }).first().click();
+      const main = page.locator('main');
+      await expect(main.getByText(/「[^」]*海洋[^」]*」为上下文/)).toBeVisible({ timeout: 15000 });
+  - note: 2、产业链占位回到「全部产业链」
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.locator('.arco-select-view').filter({ hasText: '全部产业链' }).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

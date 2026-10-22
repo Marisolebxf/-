@@ -46,27 +46,41 @@ expect:
         await opt.click({ timeout: 8000 });
         await page.waitForTimeout(700);
       };
-      const benchmarkView = () => {
-        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
-        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
+      const benchmarkCascaderView = () =>
+        page.locator('[data-testid="shenzhen-benchmark-ready-check"] .arco-cascader-view').first();
+      const waitBenchmarkOptions = async () => {
+        for (let i = 0; i < 60; i++) {
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.waitForTimeout(200);
+          const view = benchmarkCascaderView();
+          await expect(view).toBeVisible({ timeout: 10000 });
+          await view.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+          const panel = page.locator('.arco-cascader-panel:visible').last();
+          const n = await panel.locator('.arco-cascader-option').count().catch(() => 0);
+          await page.keyboard.press('Escape').catch(() => {});
+          if (n > 0) return;
+          await page.waitForTimeout(500);
+        }
+        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
       };
-      const pickBenchmark = async (cityRe) => {
-        const view = benchmarkView();
-        await expect(view).toBeVisible({ timeout: 10000 });
+      const pickBenchmark = async (cityLabel) => {
+        const view = benchmarkCascaderView();
         await view.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
-        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
-          await page.keyboard.press('Escape').catch(() => {});
-          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
+        await page.waitForTimeout(400);
+        const panel = () => page.locator('.arco-cascader-panel:visible').last();
+        await expect(panel()).toBeVisible({ timeout: 10000 });
+        const national = panel().locator('.arco-cascader-option').filter({ hasText: /^全国$/ }).first();
+        if (await national.count()) {
+          await national.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
         }
-        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
-        if (!(await opt.count())) {
+        const city = panel().locator('.arco-cascader-option').filter({ hasText: new RegExp('^' + cityLabel + '$') }).first();
+        if (!(await city.count())) {
           await page.keyboard.press('Escape').catch(() => {});
-          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03302：标杆无「' + String(cityRe) + '」');
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03302：标杆无「' + cityLabel + '」');
         }
-        await opt.click({ timeout: 8000 });
+        await city.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(300);
@@ -146,8 +160,9 @@ expect:
         await pickSelectOption('集群', /^新一代信息技术$/);
       }
       await pickSelectOption('产业', /^人工智能与应用$/);
-      await pickBenchmark(/^上海市$/);
-      await pickBenchmark(/^北京市$/);
+      await waitBenchmarkOptions();
+      await pickBenchmark('上海市');
+      await pickBenchmark('北京市');
       const start = page.getByRole('button', { name: '开始分析' }).first();
       if (await start.isDisabled()) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：选齐后「开始分析」仍 disabled');

@@ -1,0 +1,146 @@
+id: FUNC-04308
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04308
+priority: P1
+tier: B
+title: 备选-返回对比篮 · 新增服务机构弹窗
+story: US-SVC-ORG-08
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已打开「返回对比篮」选择浮层（不点「开始评估」）
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  return_basket: '[data-testid="svc-org-cap-open-basket"]'
+  add_btn: button「新增」
+  add_modal: '[data-testid="compare-basket-add-modal"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 已打开「返回对比篮」→点击「新增」（真实操作在 expect 内）
+expect:
+  - note: 1、弹窗标题为「新增服务机构」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const countBasketTags = async () =>
+        page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+      const seedOneOrgIfEmpty = async () => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const join = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        if (!(await join.count())) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：检索页无可入篮服务机构');
+        }
+        await join.click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      const waitBasketTagsAtLeast = async (min, budgetMs = 18000) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < budgetMs) {
+          const n = await countBasketTags();
+          if (n >= min) return n;
+          await page.waitForTimeout(350);
+        }
+        return await countBasketTags();
+      };
+      const openPickerPanel = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        let tagN = await waitBasketTagsAtLeast(1);
+        if (tagN < 1) {
+          await seedOneOrgIfEmpty();
+          tagN = await waitBasketTagsAtLeast(1, 12000);
+        }
+        if (tagN < 1) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：对比篮服务机构不足 1 家，当前 tags=' + tagN);
+        }
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        await expect(imp).toBeVisible({ timeout: 12000 });
+        await imp.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const ret = page.locator('[data-testid="svc-org-cap-open-basket"]').or(page.getByRole('button', { name: '返回对比篮', exact: true })).first();
+        await expect(ret).toBeVisible({ timeout: 12000 });
+        await ret.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const panel = page.locator('.system-compare-panel').filter({ hasText: '选择分析服务机构' }).first();
+        await expect(panel).toBeVisible({ timeout: 12000 });
+        await expect(page.locator('[data-testid="service-org-compare-basket-workspace"]').first()).toBeVisible({ timeout: 10000 });
+        return panel;
+      };
+      const panel = await openPickerPanel();
+      const addBtn = panel.getByRole('button', { name: '新增', exact: true }).first();
+      await expect(addBtn).toBeVisible({ timeout: 8000 });
+      await addBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const modal = page.locator('[data-testid="compare-basket-add-modal"]').or(
+        page.locator('.arco-modal:visible').filter({ hasText: '新增服务机构' })
+      ).last();
+      await expect(modal).toBeVisible({ timeout: 12000 });
+      const titleEl = modal.locator('.arco-modal-title, .arco-modal-header-title').first();
+      const titleText = ((await titleEl.innerText().catch(() => '')) || (await modal.innerText())).replace(/\s+/g, '');
+      if (!titleText.includes('新增服务机构')) {
+        throw new Error('弹窗标题非「新增服务机构」：' + titleText.slice(0, 80));
+      }
+      globalThis.__func04308 = { modalReady: true };
+  - note: 2、表头含名称、操作
+    assert: |-
+      if (!globalThis.__func04308?.modalReady) throw new Error('前置：未打开新增服务机构弹窗');
+      const modal = page.locator('[data-testid="compare-basket-add-modal"]').or(
+        page.locator('.arco-modal:visible').filter({ hasText: '新增服务机构' })
+      ).last();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const ths = modal.locator('thead th, .arco-table-th');
+      const n = await ths.count();
+      if (n < 2) throw new Error('表头列数不足：' + n);
+      const headers = [];
+      for (let i = 0; i < n; i++) {
+        headers.push(((await ths.nth(i).innerText()) || '').replace(/\s+/g, ''));
+      }
+      const joined = headers.join('|');
+      if (!joined.includes('名称') || !joined.includes('操作')) {
+        throw new Error('表头未含名称/操作：' + joined);
+      }
+  - note: 3、行上有「详情」，以及「加入对比篮」或「移出对比篮」
+    assert: |-
+      if (!globalThis.__func04308?.modalReady) throw new Error('前置：未打开新增服务机构弹窗');
+      const modal = page.locator('[data-testid="compare-basket-add-modal"]').or(
+        page.locator('.arco-modal:visible').filter({ hasText: '新增服务机构' })
+      ).last();
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      const empty = modal.getByText('暂无对象', { exact: true });
+      if (await empty.count() && await empty.first().isVisible().catch(() => false)) {
+        throw new Error('弹窗无数据行（暂无对象），无法校验行内操作');
+      }
+      const failLoad = modal.getByText('名单读取失败', { exact: false });
+      if (await failLoad.count() && await failLoad.first().isVisible().catch(() => false)) {
+        throw new Error('名单读取失败，未出表格行');
+      }
+      const bodyRow = modal.locator('tbody tr').first();
+      await expect(bodyRow).toBeVisible({ timeout: 15000 });
+      const rowText = (await bodyRow.innerText()).replace(/\s+/g, ' ');
+      if (!rowText.includes('详情')) throw new Error('首行无「详情」：' + rowText.slice(0, 120));
+      if (!rowText.includes('加入对比篮') && !rowText.includes('移出对比篮')) {
+        throw new Error('首行无「加入对比篮」或「移出对比篮」：' + rowText.slice(0, 120));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<1 家→ENV-SVCCAP-BASKET-ORG-LT1-001；名单空→C3
+as_built_note: >-
+  FUNC-04308（返回对比篮浮层点「新增」→CompareBasketAddModal）。前置=对比篮 tags≥1→「从对比篮带入」→「返回对比篮」
+  →workspace 内「新增」。三条 expect：弹窗标题 / 表头名称+操作 / 首行详情+入篮或移出。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04308。零 allow_skip。

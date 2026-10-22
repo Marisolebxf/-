@@ -1,0 +1,33 @@
+id: FUNC-04709
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04709
+priority: P1
+tier: B
+title: 备选-当天再次开始分析
+entry_id: svc-rec-cultivate
+preconditions:
+  - 当天已有一条培育分析成功记录
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 生成培育名单
+expect:
+  - note: 1、打开当天已有结果
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      await page.waitForTimeout(2000);
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      const url = page.url();
+      const opened =
+        /view=result/.test(url) ||
+        /本土机构培育名单/.test(main) ||
+        (await page.getByRole('button', { name: '重新分析' }).count()) > 0;
+      if (!opened) throw new Error('未打开当天已有结果 url=' + url + ' snippet=' + main.slice(0, 120));
+  - note: 2、分析记录不新增任务
+    assert: |-
+      await expect(page.getByText('分析中', { exact: false })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

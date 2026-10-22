@@ -1,0 +1,87 @@
+id: FUNC-04204
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04204
+priority: P1
+tier: B
+title: 备选-切换时间窗 · 近 3 年
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已打开一条已完成结果且当前为近 5 年
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: button「查看结果」
+  time_window: '[data-testid=svc-org-trend-window]'
+  window_near3: .arco-radio-button「近 3 年」
+  window_near5: .arco-radio-button「近 5 年」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 前置：结果壳可达且「近 5 年」为当前选中；步骤 1：点击「近 3 年」
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      let url0 = page.url();
+      let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/服务机构新增数量趋势/.test(body0) && /view=result/.test(url0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 });
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        url0 = page.url();
+        body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!/view=result/.test(url0) && !/服务机构新增数量趋势/.test(body0)) {
+        throw new Error('未打开已完成任务的结果页 url=' + url0 + ' body=' + body0.slice(0, 280));
+      }
+      const win = page.locator('[data-testid="svc-org-trend-window"]');
+      await expect(win).toBeVisible({ timeout: 8000 });
+      const beforeNorm = ((await win.locator('.arco-radio-button.arco-radio-checked, .arco-radio-checked').first().innerText().catch(() => '')) || '').replace(/\s+/g, '').trim();
+      if (beforeNorm !== '近5年') {
+        throw new Error('前置应为近5年选中，实际=' + beforeNorm);
+      }
+      const btn3 = win.locator('.arco-radio-button').filter({ hasText: '近 3 年' }).first();
+      await expect(btn3).toBeVisible({ timeout: 5000 });
+      await btn3.click({ timeout: 5000 });
+      await page.waitForTimeout(800);
+  - note: 1、「近 3 年」变为选中
+    assert: |-
+      const win = page.locator('[data-testid="svc-org-trend-window"]');
+      await expect(win).toBeVisible({ timeout: 8000 });
+      const checked = ((await win.locator('.arco-radio-button.arco-radio-checked, .arco-radio-checked').first().innerText().catch(() => '')) || '').replace(/\s+/g, '').trim();
+      if (checked !== '近3年') {
+        throw new Error('点击后应为近3年选中，实际=' + checked);
+      }
+      await expect(win.locator('.arco-radio-checked').filter({ hasText: '近 3 年' }).first()).toBeVisible({ timeout: 5000 });
+  - note: 2、「近 5 年」不再是选中项
+    assert: |-
+      const win = page.locator('[data-testid="svc-org-trend-window"]');
+      const btn5 = win.locator('.arco-radio-button').filter({ hasText: '近 5 年' }).first();
+      await expect(btn5).toBeVisible({ timeout: 5000 });
+      const fiveChecked = await btn5.evaluate((el) => el.classList.contains('arco-radio-checked') || !!el.closest('.arco-radio-checked'));
+      if (fiveChecked) {
+        throw new Error('近5年仍为选中态');
+      }
+      const groupChecked = ((await win.locator('.arco-radio-button.arco-radio-checked, .arco-radio-checked').first().innerText().catch(() => '')) || '').replace(/\s+/g, '').trim();
+      if (groupChecked === '近5年') {
+        throw new Error('时间窗组选中项仍为近5年');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04204（结果页改选「近 3 年」：该项选中、「近 5 年」失选；无年序列时不验坐标变化）。
+  控件 data-testid=svc-org-trend-window，对齐 scout-p012-window.json 三档可切与 before_checked=近5年。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04204。

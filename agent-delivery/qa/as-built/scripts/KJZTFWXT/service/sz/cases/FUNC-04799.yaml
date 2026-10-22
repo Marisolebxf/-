@@ -1,0 +1,29 @@
+id: FUNC-04799
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04799
+priority: P1
+tier: B
+title: 备选-取消一项对比指标
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: getByText('分析记录', { exact: true })
+  - action: click
+    target: getByRole('button', { name: '查看结果' }).first()
+  - action: click
+    target: getByRole('checkbox', { name: '服务网络密度' })
+expect:
+  - note: 「服务网络密度」变为未勾选
+    assert: |-
+      await expect(page.getByRole('checkbox', { name: '服务网络密度' })).toHaveAttribute('aria-checked', 'false')
+  - note: 服务机构数量和平均技术力得分仍勾选
+    assert: |-
+      await expect(page.getByRole('checkbox', { name: '服务机构数量' })).toHaveAttribute('aria-checked', 'true')
+      await expect(page.getByRole('checkbox', { name: '平均技术力得分' })).toHaveAttribute('aria-checked', 'true')
+  - note: 不进入新的过程页
+    assert: |-
+      await expect(page.getByText('分析中', { exact: false })).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id

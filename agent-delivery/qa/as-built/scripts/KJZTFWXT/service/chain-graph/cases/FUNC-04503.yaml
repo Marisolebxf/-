@@ -1,0 +1,31 @@
+id: FUNC-04503
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04503
+priority: P0
+tier: B
+title: 主流程-记录查看过程
+entry_id: svc-chain-graph
+preconditions:
+  - 产业领域已选「新一代信息技术」
+  - 分析记录至少有一行已完成
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: 分析记录
+expect:
+  - note: 1、出现「可视化分析过程」
+    assert: |-
+      const row = page.locator('tr').filter({ hasText: '已完成' }).first();
+      const taskNo = (await row.locator('td').first().innerText()).trim();
+      await row.getByText('查看过程', { exact: true }).click();
+      await expect(page.locator('.arco-drawer').getByText('可视化分析过程')).toBeVisible();
+      await page.evaluate((id) => { window.__qaFunc04503TaskNo = id; }, taskNo);
+  - note: 2、任务号与所点行一致
+    assert: |-
+      const taskNo = await page.evaluate(() => window.__qaFunc04503TaskNo);
+      await expect(page.locator('.arco-drawer')).toContainText(taskNo);
+  - note: 3、状态为「已完成」
+    assert: |-
+      await expect(page.locator('.arco-drawer').getByText('已完成', { exact: true })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

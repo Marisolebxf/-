@@ -1,0 +1,26 @@
+id: FUNC-04494
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04494
+priority: P0
+tier: B
+title: 主流程-图谱空态
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 1、图谱区文案为「当前 hang 无可见点边。滤镜②切过去仍可空画；不造对端点，不用排名表冒充图谱。」
+    assert: |-
+      const domainRow = page.locator('.arco-form-item').filter({
+        has: page.locator('.arco-form-item-label', { hasText: '产业领域' }),
+      });
+      await domainRow.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: /新一代信息技术/ }).click();
+      await page.getByRole('button', { name: '开始分析' }).click();
+      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible({ timeout: 120000 });
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(
+        page.getByText('当前 hang 无可见点边。滤镜②切过去仍可空画；不造对端点，不用排名表冒充图谱。')
+      ).toBeVisible({ timeout: 120000 });
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,28 @@
+id: FUNC-05491
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05491
+priority: P0
+tier: B
+title: 主流程-技术能力表头与在库返回
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: 服务机构技术能力
+expect:
+  - note: 1、表头依次为排名、服务机构、综合得分、操作
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByRole('columnheader', { name: '排名' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '服务机构' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '综合得分' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '操作' })).toBeVisible();
+  - note: 2、榜单标题为「全部产业 · 技术力 Top30」
+    assert: |-
+      await expect(page.locator('main').getByText('全部产业 · 技术力 Top30')).toBeVisible();
+  - note: 3、页面展示「在库/返回」及家数
+    assert: |-
+      await expect(page.locator('main').getByText(/在库\/返回\s*\d+\s*家/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

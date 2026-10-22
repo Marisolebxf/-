@@ -111,20 +111,37 @@ expect:
         throw new Error('下拉未见选项 ' + textRe + '（' + ariaLabel + '）');
       };
       const pickRegions = async (names) => {
-        const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|请选择区域|广东/ }).first();
-        await regionMulti.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const field = page.locator('main .policy-analysis-filter-row__field').filter({ hasText: '评价区域' }).first();
+        const regionView = field.locator('.arco-select-view').first();
+        await regionView.waitFor({ state: 'visible', timeout: 8000 });
+        const clear = regionView.locator('.arco-select-view-clear-btn, .arco-icon-close').first();
+        if (await clear.isVisible().catch(() => false)) {
+          await clear.click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
         for (const name of names) {
-          const hit = pop.getByText(name, { exact: true }).first();
-          if (await hit.count()) await hit.click({ force: true, timeout: 5000 }).catch(() => {});
-          await page.waitForTimeout(350);
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.waitForTimeout(200);
+          await regionView.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          const pop = page.locator('.arco-trigger-popup:visible').last();
+          const core = name.replace(/市$/, '');
+          const opt = pop.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + core + '市?\\s*$') });
+          if (!(await opt.count())) {
+            const loose = pop.locator('.arco-select-option').filter({ hasText: core });
+            if (await loose.count()) await loose.first().click({ force: true, timeout: 8000 });
+            else throw new Error('评价区域下拉未见 ' + name);
+          } else {
+            await opt.first().click({ force: true, timeout: 8000 });
+          }
+          await page.waitForTimeout(500);
         }
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(500);
-        const shown = ((await regionMulti.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const shown = ((await regionView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         for (const name of names) {
-          if (!shown.includes(name.replace('市', '')) && !shown.includes(name)) {
+          const core = name.replace(/市$/, '');
+          if (!shown.includes(core)) {
             throw new Error('评价区域未选中 ' + name + '：' + shown);
           }
         }

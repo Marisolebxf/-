@@ -1,0 +1,26 @@
+id: FUNC-04793
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04793
+priority: P1
+tier: B
+title: 主流程-对比指标默认勾选
+entry_id: svc-sz
+preconditions:
+  - 过程页已出现「查看结果」
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 默认勾选服务机构数量、平均技术力得分、服务网络密度
+    assert: |-
+      await expect(page.locator('.arco-checkbox-checked').filter({ hasText: '服务机构数量' })).toBeVisible();
+      await expect(page.locator('.arco-checkbox-checked').filter({ hasText: '平均技术力得分' })).toBeVisible();
+      await expect(page.locator('.arco-checkbox-checked').filter({ hasText: '服务网络密度' })).toBeVisible();
+  - note: 服务链完整度不在这三项勾选中
+    assert: |-
+      await expect(page.locator('.arco-checkbox-checked').filter({ hasText: '服务链完整度' })).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

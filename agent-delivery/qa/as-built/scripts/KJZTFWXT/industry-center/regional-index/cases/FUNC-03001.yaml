@@ -1,0 +1,146 @@
+id: FUNC-03001
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03001
+priority: P0
+title: 官方模板下计入勾选和权重不能改
+story: US-CHAIN-REG-01
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 选择模板为「区域产业指数官方模板」
+locators:
+  template_official: .arco-select-view 含「区域产业指数官方模板」
+  checkbox: main .arco-checkbox
+  spins: main [role=spinbutton]
+  weight_step_up: main .arco-input-number-increase
+  weight_step_down: main .arco-input-number-decrease
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 官方模板下点计入勾选与权重加减（判定在 expect）
+expect:
+  - note: 1、计入勾选框保持原状不可改
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const html = (await page.content().catch(() => '')) || '';
+        if (/404|页面不存在|抱歉/.test(html)) return true;
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(500);
+        await dismissBasket();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await enterViaSidebar();
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+      }
+      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText(/已计入 6 项/).first()).toBeVisible({ timeout: 12000 });
+      const includedBefore = ((await page.getByText(/已计入 \d+ 项/).first().innerText()) || '').trim();
+      const checks = page.locator('main .arco-checkbox');
+      const n = Math.min(await checks.count(), 6);
+      if (n < 1) throw new Error('无计入勾选框');
+      const statesBefore = [];
+      for (let i = 0; i < n; i++) {
+        statesBefore.push(
+          await checks.nth(i).evaluate((el) => {
+            const input = el.querySelector('input[type=checkbox]');
+            return {
+              checked: !!input?.checked,
+              disabled: el.className.includes('disabled') || !!input?.disabled,
+            };
+          })
+        );
+      }
+      await checks.first().click({ force: true, timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      const statesAfter = [];
+      for (let i = 0; i < n; i++) {
+        statesAfter.push(
+          await checks.nth(i).evaluate((el) => {
+            const input = el.querySelector('input[type=checkbox]');
+            return { checked: !!input?.checked, disabled: el.className.includes('disabled') || !!input?.disabled };
+          })
+        );
+      }
+      for (let i = 0; i < n; i++) {
+        if (statesBefore[i].checked !== statesAfter[i].checked) {
+          throw new Error('计入勾选 #' + i + ' 可被切换 checked ' + statesBefore[i].checked + '→' + statesAfter[i].checked);
+        }
+      }
+      const includedAfter = ((await page.getByText(/已计入 \d+ 项/).first().innerText()) || '').trim();
+      if (includedBefore !== includedAfter) {
+        throw new Error('已计入项数变化: ' + includedBefore + ' → ' + includedAfter);
+      }
+      globalThis.__func03001 = { weightBefore: null };
+  - note: 2、权重数值保持原状不可改
+    assert: |-
+      if (!globalThis.__func03001) throw new Error('前置：计入勾选断言未完成');
+      const spins = page.locator('main [role=spinbutton]');
+      await expect(spins).toHaveCount(6, { timeout: 8000 });
+      const before = [];
+      for (let i = 0; i < 6; i++) before.push(await spins.nth(i).inputValue());
+      if (before.join(',') !== '16,16,16,16,16,20') {
+        throw new Error('官方模板默认权重异常: ' + before.join('/'));
+      }
+      globalThis.__func03001.weightBefore = before.join(',');
+      const inc = page.locator('main .arco-input-number-increase').first();
+      const dec = page.locator('main .arco-input-number-decrease').first();
+      if (await inc.count()) {
+        await inc.click({ force: true, timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      if (await dec.count()) {
+        await dec.click({ force: true, timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      const after = [];
+      for (let i = 0; i < 6; i++) after.push(await spins.nth(i).inputValue());
+      if (after.join(',') !== globalThis.__func03001.weightBefore) {
+        throw new Error('权重可被加减改动: before=' + globalThis.__func03001.weightBefore + ' after=' + after.join(','));
+      }
+      for (let i = 0; i < 6; i++) {
+        const dis = await spins
+          .nth(i)
+          .isDisabled()
+          .catch(async () => !!(await spins.nth(i).evaluate((el) => el.disabled || !!el.closest('.arco-input-number-disabled'))));
+        if (!dis) throw new Error('spinbutton #' + i + ' 未锁定（官方模板应只读）');
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  用例册 FUNC-03001：官方模板下点计入勾选与权重加减均不改变状态。catalog_path=entry-seed 深链；404 时 sibling 侧栏进页（同 FUNC-02991/02995）。
+  锁定以点击后 checked/权重值不变 + spin disabled 为准；「查看」「移除」可点不在本用例预期列。登录关评审 runner 前置。B 档零 allow_skip。

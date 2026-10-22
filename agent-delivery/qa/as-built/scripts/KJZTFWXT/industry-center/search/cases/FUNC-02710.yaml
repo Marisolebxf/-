@@ -37,10 +37,12 @@ expect:
         });
         return sortBar.locator('.arco-select').first();
       };
+      const firstResultCard = () =>
+        region().locator('.industry-search-result-list .industry-search-result-card').first();
       const getFirstCardName = async () => {
-        const first = region().locator('.industry-search-result-card').first();
-        await expect(first).toBeVisible({ timeout: 10000 });
-        const name = ((await first.locator('.industry-search-result-title h3').innerText()) || '')
+        const first = firstResultCard();
+        await expect(first).toBeVisible({ timeout: 15000 });
+        const name = ((await first.locator('h3').textContent({ timeout: 5000 })) || '')
           .replace(/\s+/g, ' ')
           .trim();
         if (!name) throw new Error('首条结果缺少名称 h3');
@@ -69,8 +71,10 @@ expect:
           await expect(region()).toBeVisible({ timeout: 5000 });
           const state = await region().getAttribute('data-search-state');
           const regionText = ((await region().innerText()) || '').replace(/\s+/g, ' ');
-          if (state === 'result' || state === 'permission') return regionText;
-          if (/产业查询返回\s*\d+\s*条/.test(regionText) || /高级筛选结果/.test(regionText)) return regionText;
+          const cardCount = await region()
+            .locator('.industry-search-result-list .industry-search-result-card')
+            .count();
+          if ((state === 'result' || state === 'permission') && cardCount >= 2) return regionText;
           await page.waitForTimeout(500);
         }
         throw new Error('点击「重点产业」后未进入检索结果态（仍可能是推荐引导）');
@@ -93,9 +97,12 @@ expect:
       }
       const sortSelect = getSortSelect();
       await expect(sortSelect).toBeVisible({ timeout: 8000 });
-      const triggerBefore = ((await sortSelect.locator('.arco-select-view').innerText()) || '').replace(/\s+/g, ' ');
-      if (!triggerBefore.includes('目录推荐顺序')) {
-        throw new Error('前置：排序应为「目录推荐顺序」，现场 trigger=' + triggerBefore);
+      const toolsText = ((await region().locator('.industry-search-result-tools').innerText()) || '').replace(
+        /\s+/g,
+        ' ',
+      );
+      if (!toolsText.includes('目录推荐顺序')) {
+        throw new Error('前置：排序应为「目录推荐顺序」，现场 tools=' + toolsText.slice(0, 120));
       }
       globalThis.__func02710_firstName = await getFirstCardName();
       globalThis.__func02710_ready = true;
@@ -111,7 +118,7 @@ expect:
         return sortBar.locator('.arco-select').first();
       };
       const sortSelect = getSortSelect();
-      await sortSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      await sortSelect.click({ timeout: 8000 });
       await page.waitForTimeout(300);
       const pop = page.locator('.arco-trigger-popup:visible');
       await expect(pop).toBeVisible({ timeout: 8000 });
@@ -119,9 +126,12 @@ expect:
       await expect(nameOpt).toBeVisible({ timeout: 8000 });
       await nameOpt.click({ timeout: 8000 });
       await page.waitForTimeout(900);
-      const triggerAfter = ((await sortSelect.locator('.arco-select-view').innerText()) || '').replace(/\s+/g, ' ');
-      if (!triggerAfter.includes('名称')) {
-        throw new Error('排序 trigger 应显示「名称」，现场=' + triggerAfter);
+      const toolsAfter = ((await region().locator('.industry-search-result-tools').innerText()) || '').replace(
+        /\s+/g,
+        ' ',
+      );
+      if (!toolsAfter.includes('名称')) {
+        throw new Error('排序应显示「名称」，现场 tools=' + toolsAfter.slice(0, 120));
       }
   - note: 2、首条与改前不同
     assert: |-
@@ -129,9 +139,9 @@ expect:
       const before = globalThis.__func02710_firstName;
       if (!before) throw new Error('缺少改前首条名称');
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      const first = region.locator('.industry-search-result-card').first();
+      const first = region.locator('.industry-search-result-list .industry-search-result-card').first();
       await expect(first).toBeVisible({ timeout: 10000 });
-      const after = ((await first.locator('.industry-search-result-title h3').innerText()) || '')
+      const after = ((await first.locator('h3').textContent({ timeout: 5000 })) || '')
         .replace(/\s+/g, ' ')
         .trim();
       if (!after) throw new Error('改后首条缺少名称');

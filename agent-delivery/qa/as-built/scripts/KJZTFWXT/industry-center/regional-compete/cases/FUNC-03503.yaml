@@ -6,9 +6,7 @@ entry_id: chain-regional-compete
 tier: B
 preconditions:
   - 已选好一个产业
-locators:
-  industry: '.arco-select-view[aria-label="产业"]'
-  dim_table: 三大一级维度权重
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
@@ -17,135 +15,53 @@ steps:
 expect:
   - note: 1、三行依次为企业能力、学术生态、配套生态力，数据状态均为「可用」
     assert: |-
-      const DIMS = ['企业能力', '学术生态', '配套生态力'];
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
+      const main = page.locator('main');
+      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      const pickSelectOption = async (view) => {
+        await view.click({ timeout: 8000, force: true });
+        await page.waitForTimeout(400);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const opt = pop.locator('.arco-select-option:not(.arco-select-option-disabled)').first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(500);
       };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const main = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(main) && !/三大一级维度权重/.test(main);
-      };
-      const onConfigReady = async () => {
-        if (await bodyIs404()) return false;
-        return await page.getByText('三大一级维度权重').first().isVisible().catch(() => false);
-      };
-      const dimWeightTable = () =>
-        page
-          .locator('main')
-          .locator('.arco-table')
-          .filter({ has: page.locator('th').filter({ hasText: '数据状态' }) })
-          .first();
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (await bodyIs404()) {
-          const home = page.getByRole('button', { name: '返回首页' });
-          if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-            await home.first().click({ timeout: 8000 });
-            await page.waitForTimeout(2000);
-          }
+      const clusterView = main.locator('.arco-select-view[aria-label="集群"]');
+      if (await clusterView.count()) {
+        const clusterText = ((await clusterView.first().innerText().catch(() => '')) || '').trim();
+        if (!clusterText || /请选择/.test(clusterText)) {
+          await pickSelectOption(clusterView.first());
         }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳（search 404） ' + page.url());
-        }
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-      };
-      const ensureLand = async () => {
-        await dismissBasket();
-        if (!(await onConfigReady())) {
-          if (await bodyIs404() || !/\/industry-center\/search/.test(page.url())) {
-            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForTimeout(800);
-          }
-          await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与 catalog 深链均 SPA404 ' + page.url());
-        }
-        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      };
-      const pickIndustry = async () => {
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
-        await expect(view).toBeVisible({ timeout: 12000 });
-        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (/集成电路/.test(shown)) return;
-        for (let i = 0; i < 8; i++) {
-          await view.click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(500);
-          const pop = page.locator('.arco-trigger-popup:visible').last();
-          const opt = pop.locator('.arco-select-option').filter({ hasText: /^集成电路$/ });
-          if (await opt.count()) {
-            await opt.first().click({ force: true, timeout: 8000 });
-            await page.waitForTimeout(700);
-            await page.keyboard.press('Escape').catch(() => {});
-            return;
-          }
-          await page.waitForTimeout(400);
-        }
-        throw new Error('无法选择产业「集成电路」');
-      };
-      await ensureLand();
-      await pickIndustry();
-      const table = dimWeightTable();
-      await expect(table).toBeVisible({ timeout: 10000 });
-      const rows = table.locator('.arco-table-tbody .arco-table-tr, tbody tr');
-      const rowCount = await rows.count();
-      if (rowCount < 3) {
-        throw new Error('维度表行数不足 3，实际 ' + rowCount);
       }
-      for (let i = 0; i < 3; i++) {
-        const rowText = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!rowText.includes(DIMS[i])) {
-          throw new Error('第 ' + (i + 1) + ' 行期望「' + DIMS[i] + '」，得：' + rowText);
-        }
-        if (!/可用/.test(rowText)) {
-          throw new Error('第 ' + (i + 1) + ' 行数据状态非「可用」：' + rowText);
-        }
+      const industryView = main.locator('.arco-select-view[aria-label="产业"]');
+      await expect(industryView.first()).toBeVisible({ timeout: 10000 });
+      const industryText = ((await industryView.first().innerText().catch(() => '')) || '').trim();
+      if (!industryText || /请选择|请先选择/.test(industryText)) {
+        await pickSelectOption(industryView.first());
+      }
+      await page.keyboard.press('Escape').catch(() => {});
+      const table = main.locator('[data-testid="regional-competitiveness-weight-table"] .arco-table');
+      await expect(table).toBeVisible({ timeout: 10000 });
+      const DIMS = ['企业能力', '学术生态', '配套生态力'];
+      for (const dim of DIMS) {
+        const row = table.locator('tr').filter({ hasText: dim }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        await expect(row.getByText('可用')).toBeVisible({ timeout: 8000 });
       }
       globalThis.__func03503 = { tableReady: true };
   - note: 2、默认权重为 40、35、25
     assert: |-
       if (!globalThis.__func03503?.tableReady) throw new Error('前置：维度表未就绪');
-      const spins = page.locator('main [role=spinbutton]');
-      await expect(spins).toHaveCount(3, { timeout: 8000 });
-      const vals = [];
-      for (let i = 0; i < 3; i++) {
-        vals.push(String(await spins.nth(i).inputValue()).trim());
-      }
+      const labels = ['企业能力', '学术生态', '配套生态力'];
       const expectW = ['40', '35', '25'];
-      if (vals.join(',') !== expectW.join(',')) {
-        throw new Error('默认权重应为 40/35/25，得 ' + vals.join('/'));
+      for (let i = 0; i < 3; i++) {
+        const spin = page.locator(`main [aria-label="${labels[i]}权重"]`);
+        await expect(spin).toBeVisible({ timeout: 8000 });
+        await expect(spin).toHaveValue(expectW[i], { timeout: 8000 });
       }
   - note: 3、文案为「权重合计：100% · 校验通过」
     assert: |-
-      await expect(page.getByText(/权重合计：100%\s*·\s*校验通过/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main .diagnosis-weight-footer.is-ok')).toContainText('权重合计：100% · 校验通过', {
+        timeout: 8000,
+      });
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  03503=选产业「集成电路」后「三大一级维度权重」表三行固定维度、数据状态「可用」、spin 默认 40/35/25、汇总「权重合计：100% · 校验通过」。
-  维度表为 Arco Table（th 含「数据状态」）；深链 SPA404→侧栏 search→区域产业竞争力评价（同 03504）。catalog_path=entry-seed。B 档零 allow_skip。

@@ -1,0 +1,25 @@
+id: FUNC-04718
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04718
+priority: P1
+tier: B
+title: 异常-返回配置重试
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: getByText('分析记录', { exact: true })
+  - action: click
+    target: getByRole('row').filter({ hasText: '失败' }).first()
+  - action: click
+    target: getByRole('button', { name: '返回配置重试' })
+expect:
+  - note: 回到分析配置
+    assert: |-
+      await expect(page.getByText('分析配置', { exact: true })).toBeVisible()
+  - note: 培育评估模型区仍在
+    assert: |-
+      await expect(page.getByText('培育评估模型', { exact: false })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

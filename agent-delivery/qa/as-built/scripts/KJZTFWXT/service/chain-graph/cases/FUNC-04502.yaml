@@ -1,0 +1,23 @@
+id: FUNC-04502
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04502
+priority: P0
+tier: B
+title: 主流程-记录查看结果
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 进入该行任务的结果页
+    assert: |-
+      await expect(page.getByRole('button', { name: '重新分析' })).toBeVisible({ timeout: 30000 })
+  - note: 页面出现「服务生态关系图谱」
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱')).toBeVisible({ timeout: 30000 })
+on_fail: 截图 + 抄 X-Trace-Id

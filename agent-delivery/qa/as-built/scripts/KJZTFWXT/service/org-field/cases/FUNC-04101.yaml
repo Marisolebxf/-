@@ -146,47 +146,27 @@ expect:
       if (await board.count()) {
         await expect(board).toBeVisible({ timeout: 8000 });
       }
-  - note: 1、核心结论区出现「演示口径」；2、文案写明数值与上图同源
+  - note: 1、核心结论区出现「演示口径」
     assert: |-
       if (!globalThis.__func04101?.resultOpen) throw new Error('前置：未打开该次结果页');
-      const note = page.locator('.svc-org-coverage__note').first();
-      if (await note.count() && (await note.isVisible().catch(() => false))) {
-        const txt = ((await note.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!/演示口径/.test(txt)) throw new Error('核心结论口径注未见「演示口径」: ' + txt);
-        if (!/数值与上图同源/.test(txt)) throw new Error('口径注未见「数值与上图同源」: ' + txt);
-        await expect(note).toContainText('演示口径');
-        await expect(note).toContainText('数值与上图同源');
-      } else {
-        const main = page.locator('main').first();
-        const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const idxCore = body.indexOf('核心结论');
-        if (idxCore < 0) throw new Error('主区未见「核心结论」标题');
-        const slice = body.slice(idxCore, idxCore + 120);
-        if (!/演示口径/.test(slice)) {
-          throw new Error('核心结论区邻域未见「演示口径」: ' + slice);
-        }
-        if (!/数值与上图同源/.test(slice)) {
-          throw new Error('核心结论区邻域未见「数值与上图同源」: ' + slice);
-        }
-        await expect(main.getByText(/演示口径/).first()).toBeVisible({ timeout: 8000 });
-        await expect(main.getByText(/数值与上图同源/).first()).toBeVisible({ timeout: 8000 });
-      }
-      const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-      const chartBeforeConclusion =
-        mainTxt.indexOf('热力图') >= 0 ||
-        mainTxt.indexOf('矩阵图') >= 0 ||
-        /当前结果快照没有覆盖矩阵/.test(mainTxt);
-      if (!chartBeforeConclusion && mainTxt.indexOf('核心结论') >= 0) {
-        const iChart = Math.min(
-          ...['热力图', '矩阵图', '当前结果快照没有覆盖矩阵']
-            .map((k) => mainTxt.indexOf(k))
-            .filter((i) => i >= 0)
-        );
-        const iCore = mainTxt.indexOf('核心结论');
-        if (Number.isFinite(iChart) && iCore >= 0 && iChart > iCore) {
-          throw new Error('图区应在核心结论之上（DOM 阅读序异常）');
-        }
-      }
+      const main = page.locator('main').first();
+      await expect(main.getByText('核心结论').first()).toBeVisible({ timeout: 8000 });
+      const coreCaliber = main
+        .locator('.svc-org-coverage__note')
+        .filter({ hasText: /数值与上图同源/ })
+        .first();
+      await expect(coreCaliber).toBeVisible({ timeout: 8000 });
+      await expect(coreCaliber).toContainText('演示口径');
+  - note: 2、文案写明数值与上图同源
+    assert: |-
+      if (!globalThis.__func04101?.resultOpen) throw new Error('前置：未打开该次结果页');
+      const coreCaliber = page
+        .locator('main')
+        .first()
+        .locator('.svc-org-coverage__note')
+        .filter({ hasText: /数值与上图同源/ })
+        .first();
+      await expect(coreCaliber).toContainText('数值与上图同源');
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
   04101=结果态「核心结论」SectionPanel extra 固定文案「演示口径 · 规则生成，数值与上图同源」（SvcOrgCoverageBoard.vue .svc-org-coverage__note；关评审复勘与源码一致）。

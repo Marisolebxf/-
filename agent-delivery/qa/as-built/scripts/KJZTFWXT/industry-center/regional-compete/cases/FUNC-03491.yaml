@@ -128,12 +128,8 @@ expect:
       await expect(root().getByText('三维得分热力图').first()).toBeVisible({ timeout: 8000 });
   - note: 2、说明含「色阶表示相对强弱，非地理分布」
     assert: |-
-      const root = page.locator('main.diagnosis-main').first();
-      const main = await root.innerText();
-      if (!/色阶表示相对强弱，非地理分布/.test(main)) {
-        throw new Error('未见三维得分热力图色阶说明原文');
-      }
-      await expect(root().getByText(/色阶表示相对强弱，非地理分布/).first()).toBeVisible();
+      const main = page.locator('main.diagnosis-main').first();
+      await expect(main.getByText(/色阶表示相对强弱，非地理分布/).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
   03491=结果页热力图区块标题+色阶说明（不要求矩阵 canvas 齐备；地理 GIS 归 03492）。

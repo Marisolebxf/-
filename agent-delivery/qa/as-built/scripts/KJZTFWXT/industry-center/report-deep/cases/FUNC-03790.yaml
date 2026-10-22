@@ -1,0 +1,53 @@
+id: FUNC-03790
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03790
+priority: P0
+tier: B
+title: 主流程-报告章节
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261021-002
+expect:
+  - note: 报告目录依次为报告身份、执行摘要、对象与范围、关键发现、证据与分析、数据来源与生成说明、局限性与使用边界
+    assert: |-
+      const tocOrder = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      await expect(page.getByText('报告目录', { exact: true })).toBeVisible({ timeout: 60000 });
+      const catalogText = await page.getByText('报告目录', { exact: true }).locator('..').innerText();
+      let lastIdx = -1;
+      for (const name of tocOrder) {
+        const idx = catalogText.indexOf(name);
+        if (idx < 0 || idx <= lastIdx) {
+          throw new Error(`目录顺序不符，缺失或乱序：${name}`);
+        }
+        lastIdx = idx;
+      }
+  - note: 正文各节标题与目录名称一致
+    assert: |-
+      const sectionTitles = [
+        '报告身份',
+        '执行摘要',
+        '对象与范围',
+        '关键发现',
+        '证据与分析',
+        '数据来源与生成说明',
+        '局限性与使用边界',
+      ];
+      const body = page.locator('main').first();
+      await expect(body).toBeVisible({ timeout: 60000 });
+      const bodyText = await body.innerText();
+      for (const title of sectionTitles) {
+        if (!bodyText.includes(title)) {
+          throw new Error(`正文缺少节标题：${title}`);
+        }
+      }
+on_fail: 截图 + 抄 X-Trace-Id

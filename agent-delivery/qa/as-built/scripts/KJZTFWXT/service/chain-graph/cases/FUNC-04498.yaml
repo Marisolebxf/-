@@ -1,0 +1,24 @@
+id: FUNC-04498
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04498
+priority: P0
+tier: B
+title: 主流程-可见子网密度
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: "text=生物产业 / 生物医药"
+  - action: click
+    target: "text=新一代信息技术"
+  - action: click
+    target: "text=开始分析"
+  - action: click
+    target: "text=查看结果"
+expect:
+  - note: 「可见子网密度」文案为「子网过小，不计算统计值」
+    assert: |-
+      await expect(page.getByText('子网过小，不计算统计值')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

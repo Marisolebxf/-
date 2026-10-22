@@ -1,0 +1,26 @@
+id: FUNC-05107
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05107
+priority: P1
+tier: B
+title: 备选-地图放大
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 地图视野放大
+    assert: |-
+      const zoomIn = page.getByText('+', { exact: true }).first();
+      await expect(zoomIn).toBeVisible();
+      const pane = page.locator('.leaflet-map-pane');
+      const before = await pane.evaluate((el) => getComputedStyle(el).transform);
+      await zoomIn.click();
+      await expect
+        .poll(async () => pane.evaluate((el) => getComputedStyle(el).transform))
+        .not.toBe(before);
+  - note: 地图区块标题仍为「全国视图 · 地理分布」
+    assert: |-
+      await expect(page.getByText('全国视图 · 地理分布')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

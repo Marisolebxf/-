@@ -131,21 +131,39 @@ expect:
           if (await resBtn.isDisabled().catch(() => false)) continue;
           await resBtn.click({ timeout: 8000 });
           await page.waitForTimeout(2000);
+          let onResult = false;
           for (let j = 0; j < 15; j++) {
             const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
             if (/view=result/.test(page.url()) || /合作建议|当前结果快照没有覆盖矩阵|服务广度 TOP3/.test(body)) {
-              opened = true;
+              onResult = true;
               break;
             }
             await page.waitForTimeout(1000);
           }
-          if (!opened) {
-            await recTab.click({ timeout: 8000 }).catch(() => {});
-            await page.waitForTimeout(1000);
+          if (onResult) {
+            const flat = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+            if (/集合内暂无可生成建议的机构/.test(flat)) {
+              opened = true;
+              break;
+            }
+            if (/当前结果快照没有覆盖矩阵/.test(flat)) {
+              opened = true;
+              break;
+            }
+            if (/合作建议/.test(flat) && /•/.test(flat)) {
+              await recTab.click({ timeout: 8000 }).catch(() => {});
+              await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+              await page.waitForTimeout(1000);
+              continue;
+            }
+            opened = true;
+            break;
           }
+          await recTab.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(1000);
         }
         if (!opened) {
-          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+          throw new Error('ENV-SVC-ORG-FIELD-NO-EMPTY-SUGGEST：分析记录中未找到无覆盖矩阵且合作建议空态的已完成结果');
         }
       };
       await ensureOnFieldCoverage();

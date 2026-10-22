@@ -1,0 +1,27 @@
+id: FUNC-05490
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05490
+priority: P0
+tier: B
+title: 主流程-区域视图与首位区域
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: click
+    target: page.locator('main').getByText('服务机构区域分布', { exact: true })
+expect:
+  - note: 「全国视图」为选中
+    assert: |-
+      await expect(page.getByText('全国视图 · 地理分布')).toBeVisible()
+  - note: 「全球视图」为禁用
+    assert: |-
+      await expect(page.getByRole('radio', { name: '全球视图' })).toBeDisabled()
+  - note: 首位区域展示名称与家数
+    assert: |-
+      const main = page.locator('main');
+      const topCard = main.locator('.svc-portal-kpi').filter({ hasText: '首位区域' });
+      await expect(topCard.locator('.svc-portal-kpi__value')).not.toHaveText('暂无');
+      await expect(topCard.locator('.svc-portal-kpi__hint')).toContainText('家');
+on_fail: 截图 + 抄 X-Trace-Id

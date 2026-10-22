@@ -1,0 +1,33 @@
+id: FUNC-04804
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04804
+priority: P1
+tier: B
+title: 备选-当天再次开始
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: locator('.arco-select-view').first()
+  - action: click
+    target: getByText('新一代信息技术', { exact: true })
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+  - action: click
+    target: 返回配置
+  - action: click
+    target: 开始分析
+expect:
+  - note: 打开当天已成功的结果
+    assert: |-
+      await expect(page.getByText('统一评价框架')).toBeVisible({ timeout: 15000 });
+      await expect(page).not.toHaveURL(/view=processing/);
+  - note: 不新增分析任务
+    assert: |-
+      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByText(/深圳服务链现状分析生成中/)).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

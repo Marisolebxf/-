@@ -1,0 +1,22 @@
+id: FUNC-03789
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03789
+priority: P1
+tier: B
+title: 主流程-报告页眉
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261018-020
+expect:
+  - note: 报告版本标签含日期与时间
+    assert: |-
+      await expect(page.getByText(/\d{4}[-/]\d{1,2}[-/]\d{1,2}.*\d{1,2}:\d{2}/).first()).toBeVisible()
+  - note: 类型标签与该任务的分析类型名称一致
+    assert: |-
+      await expect(page.getByText('产业链分析', { exact: false }).first()).toBeVisible()
+  - note: 对象摘要与该任务的分析对象一致
+    assert: |-
+      await expect(page.getByText('新能源汽车', { exact: false }).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

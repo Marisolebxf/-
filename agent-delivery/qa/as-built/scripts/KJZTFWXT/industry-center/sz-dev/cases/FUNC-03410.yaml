@@ -59,6 +59,15 @@ expect:
         await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
       };
       const readIndustry = async () => {
+        const devRow = main().locator('[data-testid="shenzhen-development-context-row"]');
+        if (await devRow.count()) {
+          const view = devRow.locator('.arco-select-view').first();
+          if (await view.count()) {
+            return ((await view.getAttribute('title')) || (await view.innerText()) || '')
+              .replace(/\s+/g, ' ')
+              .trim();
+          }
+        }
         const view = page.locator('.arco-select-view[aria-label="产业"]').first();
         if (await view.count()) {
           return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
@@ -68,6 +77,13 @@ expect:
         return ((await viaPh.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
       };
       const readBind = async () => {
+        const devRow = main().locator('[data-testid="shenzhen-development-context-row"]');
+        if (await devRow.count()) {
+          const views = devRow.locator('.arco-select-view');
+          if ((await views.count()) >= 2) {
+            return ((await views.nth(1).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          }
+        }
         const bindInp = page.locator('main input[placeholder="请显式选择有效结构化结果"]');
         if (!(await bindInp.count())) return '';
         const bindView = bindInp.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();

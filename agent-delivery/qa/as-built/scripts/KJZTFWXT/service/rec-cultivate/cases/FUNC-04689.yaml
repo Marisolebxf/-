@@ -1,0 +1,28 @@
+id: FUNC-04689
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04689
+priority: P1
+tier: B
+title: 主流程-重点产业方向下拉
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已打开分析配置
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 分析配置
+  - action: click
+    target: 重点产业方向
+expect:
+  - note: 选项共 15 个，名称见附录 A.1
+    assert: |-
+      const field = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await field.locator('.arco-select-view').click();
+      const opts = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      await expect(opts).toHaveCount(15);
+  - note: 未选时占位为「选择产业集群」
+    assert: |-
+      const field = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await expect(field.locator('.arco-select-view')).toContainText('选择产业集群');
+on_fail: 截图 + 抄 X-Trace-Id

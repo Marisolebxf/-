@@ -53,7 +53,8 @@ expect:
         throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
       }
       const ind = () => page.locator('.arco-select-view[aria-label="产业"]');
-      const region = () => page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first();
+      const region = () =>
+        page.locator('main .arco-form-item').filter({ has: page.getByText(/^评价区域/) }).locator('.arco-select-view').first();
       await page.getByText('多产业 × 单区域', { exact: true }).first().click();
       await page.waitForTimeout(800);
       await expect(page.getByText('分析对象（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
@@ -73,7 +74,8 @@ expect:
         throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
       }
       const ind = () => page.locator('.arco-select-view[aria-label="产业"]');
-      const region = () => page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first();
+      const region = () =>
+        page.locator('main .arco-form-item').filter({ has: page.getByText(/^评价区域/) }).locator('.arco-select-view').first();
       await page.getByText('多产业 × 单区域', { exact: true }).first().click();
       await page.waitForTimeout(600);
       if (await region().evaluate((el) => el.className.includes('mult'))) {
@@ -84,9 +86,9 @@ expect:
       await page.waitForTimeout(400);
       const popup = page.locator('.arco-trigger-popup:visible');
       await expect(popup.first()).toBeVisible({ timeout: 5000 });
-      const optBeijing = popup.locator('.arco-select-option').filter({ hasText: '北京市' }).first();
-      if (await optBeijing.count()) {
-        await optBeijing.click({ timeout: 3000 }).catch(() => {});
+      const optOther = popup.locator('.arco-select-option').filter({ hasText: '深圳市' }).first();
+      if (await optOther.count()) {
+        await optOther.click({ timeout: 3000 }).catch(() => {});
         await page.waitForTimeout(500);
         const tagCount = await regionView.locator('.arco-tag').count();
         if (tagCount > 1) throw new Error('多产业态区域出现多 tag，可多选区域');

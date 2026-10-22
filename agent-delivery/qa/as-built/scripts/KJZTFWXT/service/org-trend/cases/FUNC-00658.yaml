@@ -1,0 +1,91 @@
+id: FUNC-00658
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00658
+priority: P0
+tier: A
+title: 主流程-选择机构与回显 · 勾选确定回显
+story: US-SVC-ORG-01
+entry_id: svc-org-trend
+preconditions:
+  - 已进入服务机构新增趋势分析页（catalog_path trend 工作区）
+  - 配置区可见「选择机构」
+locators:
+  org_picker: button「选择机构」
+  modal_title: 选择服务机构
+  confirm: button「确定」
+  cancel: button「取消」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 关闭对比篮（可见且 enabled 时）
+  - action: click
+    target: 选择机构
+  - action: wait
+    for: 弹窗「选择服务机构」
+  - action: click
+    target: 弹窗内首个可勾选机构 checkbox
+  - action: click
+    target: 弹窗「确定」
+  - action: click
+    target: 选择机构
+  - action: click
+    target: 弹窗「取消」
+expect:
+  - note: 1、弹窗标题为「选择服务机构」
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const main = page.locator('main').first();
+      const t0 = await main.innerText().catch(() => '');
+      if (/已选机构（[1-9]/.test(t0 || '')) {
+        const clr = main.getByRole('button', { name: '清空' });
+        if (await clr.count()) { try { await clr.first().click({ timeout: 3000 }); await page.waitForTimeout(500); } catch {} }
+      }
+      const pick = page.getByRole('button', { name: '选择机构', exact: true }).first();
+      await expect(pick).toBeVisible({ timeout: 8000 });
+      await pick.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const dialog = page.locator('.arco-modal:visible, [role="dialog"]').filter({ hasText: '选择服务机构' }).first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      await expect(dialog.getByText('选择服务机构', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+  - note: 2、确定后配置区回显该已选机构
+    assert: |-
+      const dialog = page.locator('.arco-modal:visible, [role="dialog"]').filter({ hasText: '选择服务机构' }).first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)');
+      for (let i = 0; i < 20 && !(await checks.count()); i++) {
+        const body = dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first();
+        if (await body.count()) { try { await body.evaluate((el) => { el.scrollTop = (el.scrollTop || 0) + 240 }); } catch {} }
+        await page.waitForTimeout(400);
+      }
+      if ((await checks.count()) < 1) throw new Error('弹窗无可勾选机构');
+      try { await checks.first().scrollIntoViewIfNeeded(); } catch {}
+      await checks.first().click({ timeout: 5000 });
+      await page.waitForTimeout(300);
+      await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const main = page.locator('main').first();
+      await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const txt = await main.innerText();
+      if (/未选择机构/.test(txt) && !/已选机构（1/.test(txt)) throw new Error('确定后仍为未选择机构');
+  - note: 3、取消后原先选中的机构仍在
+    assert: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      const before = await main.innerText();
+      await page.getByRole('button', { name: '选择机构', exact: true }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const dialog = page.locator('.arco-modal:visible, [role="dialog"]').filter({ hasText: '选择服务机构' }).first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      await dialog.getByRole('button', { name: '取消', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(dialog).not.toBeVisible({ timeout: 8000 });
+      const after = await main.innerText();
+      if (!/已选机构（1\s*家）/.test(after)) throw new Error('取消后已选机构丢失: before=' + before.slice(0, 200) + ' after=' + after.slice(0, 200));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 用例册 FUNC-00658；弹窗标题「选择服务机构」；回显「已选机构（1 家）」。2026-10-21 点状复勘 30892 趋势配置区已无「选择机构」入口（对比篮对象流），与用例步骤不一致，机检预期仍按用例册。

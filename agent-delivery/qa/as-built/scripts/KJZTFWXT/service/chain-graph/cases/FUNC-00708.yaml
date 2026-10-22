@@ -1,0 +1,49 @@
+id: FUNC-00708
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00708
+priority: P0
+tier: B
+title: 主流程-配置区与产业集群下拉
+entry_id: svc-chain-graph
+preconditions: []
+locators:
+  config-cluster-select: .arco-cascader-view
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: config-cluster-select
+expect:
+  - note: 分析配置区含产业集群选择框与「开始分析」按钮
+    assert: |-
+      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('产业领域', { exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+  - note: 下拉选项共 15 个且与生产清单一致（附录 A）
+    assert: |-
+      const expected = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const col = page.locator('.arco-cascader-list-column').first();
+      const opts = col.locator('.arco-cascader-option');
+      await expect(opts).toHaveCount(15);
+      for (let i = 0; i < expected.length; i++) {
+        await expect(opts.nth(i)).toHaveText(expected[i]);
+      }
+  - note: 选择框占位提示为「选择产业集群」
+    assert: |-
+      await expect(page.getByPlaceholder('选择产业集群')).toBeAttached();
+on_fail: 截图 + 抄 X-Trace-Id

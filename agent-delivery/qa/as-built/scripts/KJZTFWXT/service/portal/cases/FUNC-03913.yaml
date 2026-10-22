@@ -2,85 +2,36 @@ id: FUNC-03913
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03913
 priority: P1
 tier: B
-title: 技术力榜已在对比篮行再点不取消且提示已在
-story: US-SVC-PT-04
+title: 备选-再点已在对比篮
 entry_id: svc-portal
-preconditions:
-  - 已打开服务机构技术能力且某一行按钮为「已在对比篮」
-locators:
-  tab_cap: tab「服务机构技术能力」
-  btn_in_basket: 行内 button「已在对比篮」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal
   - action: evaluate
-    note: 进入技术能力榜，确保一行处于已在对比篮后再次点击
+    note: 进入技术能力榜，点击一行「已在对比篮」
 expect:
-  - note: 1、该按钮仍为「已在对比篮」
+  - note: 1、按钮仍为「已在对比篮」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal 深链 SPA404，无法验已在对比篮 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
       const tablist = page.locator('[aria-label="专题服务子导航"]');
       await tablist.getByRole('tab', { name: '服务机构技术能力', exact: true }).click();
       await expect(page).toHaveURL(/service-portal\/capability-rank/, { timeout: 15000 });
       await expect(page.getByRole('heading', { name: '服务机构技术能力', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      const rowCount = await page.locator('main .arco-table tbody tr').count();
-      const emptyVisible = await page.getByText(/暂无覆盖机构入榜|暂无技术力入榜机构/).first().isVisible().catch(() => false);
-      if (rowCount === 0 && emptyVisible) {
-        throw new Error('ENV-SVC-PORTAL-TECH-RANK-EMPTY：榜诚实空，无行可验已在对比篮（Q060）');
+      let inBtn = page.locator('main').getByRole('button', { name: '已在对比篮', exact: true }).first();
+      if (!(await inBtn.isVisible().catch(() => false))) {
+        const join = page.locator('main').getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(join).toBeVisible({ timeout: 20000 });
+        await join.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        inBtn = page.locator('main').getByRole('button', { name: '已在对比篮', exact: true }).first();
       }
-      const rows = page.locator('main .arco-table tbody tr');
-      let inBtn = null;
-      let orgName = '';
-      const n = await rows.count();
-      for (let i = 0; i < n; i++) {
-        const row = rows.nth(i);
-        const already = row.getByRole('button', { name: '已在对比篮', exact: true });
-        if (await already.count()) {
-          inBtn = already;
-          orgName = ((await row.locator('.svc-portal-org__name').innerText().catch(async () => {
-            const cells = await row.locator('td').allTextContents();
-            return (cells[1] || '').split('\n')[0];
-          })) || '').replace(/\s+/g, ' ').trim();
-          break;
-        }
-      }
-      if (!inBtn) {
-        for (let i = 0; i < n; i++) {
-          const row = rows.nth(i);
-          const join = row.getByRole('button', { name: '加入对比篮', exact: true });
-          if (!(await join.count()) || !(await join.isEnabled().catch(() => false))) continue;
-          orgName = ((await row.locator('.svc-portal-org__name').innerText().catch(async () => {
-            const cells = await row.locator('td').allTextContents();
-            return (cells[1] || '').split('\n')[0];
-          })) || '').replace(/\s+/g, ' ').trim();
-          await join.click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-          inBtn = row.getByRole('button', { name: '已在对比篮', exact: true });
-          break;
-        }
-      }
-      if (!inBtn || !orgName) {
-        throw new Error('前置：榜内无可用机构行（可能全缺 orgId 或无法入篮）');
-      }
+      await expect(inBtn).toBeVisible({ timeout: 8000 });
       await inBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(300);
       await expect(inBtn).toHaveText('已在对比篮', { timeout: 8000 });
   - note: 2、提示该机构已在对比篮中
     assert: |-
       const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: /已在对比篮中/ });
       await expect(toast.first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  源码 ServicePortalCapabilityRankPage.vue addToBasket：已在篮 Message.info(`「${row.name}」已在对比篮中`)；按钮仍 primary「已在对比篮」，无移出。
-  前置可首点「加入对比篮」造态。Tab /service-portal/capability-rank；goto catalog /service-portal。诚实空榜同 03902 → ENV-SVC-PORTAL-TECH-RANK-EMPTY。
-  登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

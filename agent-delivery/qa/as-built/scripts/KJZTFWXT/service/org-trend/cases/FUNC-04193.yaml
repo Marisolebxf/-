@@ -1,0 +1,66 @@
+id: FUNC-04193
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04193
+priority: P0
+tier: A
+title: 主流程-结果主领域 · 未改产业领域为全部
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 发起分析时未改产业领域（默认全部）
+  - 已有一条已完成的分析（env-gate G7）
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: button「查看结果」
+  main_domain_label: 主领域：全部
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 1、结果页显示「主领域：全部」
+    assert: |-
+      await page.waitForTimeout(800);
+      let url0 = page.url();
+      let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      const openResultWithAllMain = async () => {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vr = page.getByRole('button', { name: '查看结果' });
+        const n = await vr.count();
+        if (n < 1) throw new Error('分析记录无「查看结果」');
+        for (let i = 0; i < n; i++) {
+          await recTab.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(600);
+          await vr.nth(i).click({ timeout: 8000 });
+          await page.waitForTimeout(2200);
+          const b = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          if (/主领域：全部/.test(b) && /view=result/.test(page.url())) return b;
+        }
+        await vr.first().click({ timeout: 8000 });
+        await page.waitForTimeout(2200);
+        return ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      };
+      if (!(/主领域：全部/.test(body0) && /view=result/.test(url0))) {
+        body0 = await openResultWithAllMain();
+        url0 = page.url();
+      }
+      if (!/view=result/.test(url0)) {
+        throw new Error('未打开已完成任务的结果页 url=' + url0 + ' body=' + body0.slice(0, 280));
+      }
+      await expect(page.getByText('主领域：全部', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/主领域：全部/.test(body)) {
+        const chip = (body.match(/主领域[：:][^\n]+/) || [])[0] || '(无)';
+        throw new Error('结果页主领域 chip 非「全部」: ' + chip + ' | body=' + body.slice(0, 280));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04193（发起未改产业领域时，结果页主领域回显「主领域：全部」）。
+  步骤：分析记录 → 查看结果。对齐 scout-p012-window.json body_snip「主领域：全部」。
+  2026-10-21 点状复勘 30892：关评审后已完成任务结果 chip 均为「主领域：生物医药」（URL industry=CL-SEI-02.INB2503），无「主领域：全部」；与 scout-p012（10-15）不一致，D2 待产品/用例对齐。

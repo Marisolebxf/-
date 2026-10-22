@@ -1,0 +1,25 @@
+id: FUNC-04695
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04695
+priority: P1
+tier: B
+title: 主流程-权重合计偏离
+entry_id: svc-rec-cultivate
+preconditions:
+  - 权重为默认 25/30/25/20
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: fill
+    target: 现有规模权重
+    value: "26"
+expect:
+  - note: 权重合计显示 101%（应为 100%，差 -1%）
+    assert: |-
+      await expect(page.getByText(/权重合计/)).toBeVisible();
+      await expect(page.getByText(/101%/)).toBeVisible();
+      await expect(page.getByText('（应为 100%，差 -1%）')).toBeVisible();
+  - note: 出现按钮「按比例归一」
+    assert: |-
+      await expect(page.getByRole('button', { name: /按比例归一/ })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

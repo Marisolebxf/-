@@ -1,0 +1,29 @@
+id: FUNC-05509
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05509
+priority: P1
+tier: B
+title: 异常-扩展档案空态
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: click
+    assert: |-
+      const card = page.getByRole('button', { name: /重点机构详情$/ }).first();
+      await card.scrollIntoViewIfNeeded();
+      await card.click();
+      await page.getByText('主要领导人').waitFor({ state: 'visible', timeout: 10000 });
+expect:
+  - note: 「主要领导人」为资料完善中
+    assert: |-
+      await expect(page.getByText('主要领导人').locator('..').getByText('资料完善中')).toBeVisible();
+  - note: 「当前规模」为资料完善中
+    assert: |-
+      await expect(page.getByText('当前规模').locator('..').getByText('资料完善中')).toBeVisible();
+  - note: 「业务服务领域」与「业务分布区域」为资料完善中
+    assert: |-
+      await expect(page.getByText('业务服务领域').locator('..').getByText('资料完善中')).toBeVisible();
+      await expect(page.getByText('业务分布区域').locator('..').getByText('资料完善中')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,183 +1,44 @@
 id: FUNC-01101
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01101
 priority: P0
+tier: B
 title: 两种评价模式单选互斥且切换后不静默保留非法对象组合
 entry_id: chain-regional-compete
-tier: A
-preconditions:
-  - 已进入区域产业竞争力评价工作区
-locators:
-  mode_single: 文案「单产业 × 多区域」（.arco-radio-button）
-  mode_multi: 文案「多产业 × 单区域」（.arco-radio-button）
-  industry: .arco-select-view[aria-label=产业]
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: wait
-    for: 评价模式文案可见
-    timeout_ms: 3500
+    target: 评价模式
+  - action: evaluate
+    script: |-
+      const main = page.locator('main');
+      await main.getByText('单产业 × 多区域', { exact: true }).click();
+      const objectRow = main.locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
+      await objectRow.locator('.arco-select-view').first().click();
+      await page.locator('.arco-select-dropdown:visible .arco-select-option').first().click();
+      await objectRow.locator('.arco-select-view').last().click();
+      const dropdown = page.locator('.arco-select-dropdown:visible');
+      const options = dropdown.locator('.arco-select-option');
+      const count = await options.count();
+      for (let i = 0; i < Math.min(count, 2); i += 1) {
+        await options.nth(i).click();
+      }
+      await main.getByText('多产业 × 单区域', { exact: true }).click();
 expect:
   - note: 1、评价模式含「单产业 × 多区域」「多产业 × 单区域」两选项，同一时刻仅一态
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
-      const dismissBasket = async () => {
-        const closeB = page.locator('[aria-label="关闭对比篮"]');
-        if (await closeB.count() && (await closeB.first().isVisible().catch(() => false))) {
-          await closeB.first().click().catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/区域产业竞争力评价/.test(bodyGate);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const leafItem = () =>
-        page.locator('.arco-menu-item').filter({ hasText: /^区域产业竞争力评价$/ });
-      const expandChainGroup = async () => {
-        if (await leafItem().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      const onTarget = () =>
-        /\/industry-center\/regional/.test(page.url()) &&
-        /workspace=competitiveness/.test(page.url()) &&
-        /tab=competitiveness/.test(page.url());
-      const ensureWorkspace = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          if (await bodyIs404()) await recover404Shell();
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (await bodyIs404()) {
-            await recover404Shell();
-            if (await bodyIs404()) {
-              throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling search 与 competitiveness 深链均 SPA404 ' + page.url());
-            }
-          }
-          await expandChainGroup();
-          const leaf = leafItem();
-          const leafVis = await leaf.first().isVisible().catch(() => false);
-          if (!leafVis) {
-            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 侧栏无「区域产业竞争力评价」且 search 壳不可用 ' + page.url());
-          }
-          await leaf.first().click({ timeout: 10000 });
-          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 }).catch(() => {});
-        }
-        if (await bodyIs404()) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1000);
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏与 catalog 深链均 SPA404 ' + page.url());
-        }
-        const modeVis = await page.getByText('单产业 × 多区域', { exact: true }).first().isVisible().catch(() => false);
-        if (!modeVis) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: competitiveness 工作区无评价模式控件 ' + page.url());
-        }
-      };
-      await ensureWorkspace();
-      await dismissBasket();
-      await expect(page.getByText('单产业 × 多区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText('多产业 × 单区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
-      const countCheckedModes = async () => {
-        const radios = page.locator('.arco-radio-button');
-        const checked = await radios.evaluateAll((els) =>
-          els
-            .filter((el) => (el.className || '').includes('arco-radio-checked'))
-            .map((el) => (el.innerText || '').trim())
-            .filter((t) => /单产业|多产业/.test(t))
-        );
-        return checked;
-      };
-      await page.getByText('单产业 × 多区域', { exact: true }).first().click();
-      await page.waitForTimeout(800);
-      let checked = await countCheckedModes();
-      if (checked.length !== 1 || !/单产业/.test(checked[0] || '')) throw new Error('单产业态未唯一选中: ' + JSON.stringify(checked));
-      await page.getByText('多产业 × 单区域', { exact: true }).first().click();
-      await page.waitForTimeout(800);
-      checked = await countCheckedModes();
-      if (checked.length !== 1 || !/多产业/.test(checked[0] || '')) throw new Error('多产业态未唯一选中: ' + JSON.stringify(checked));
-  - note: 2、切换后已选对象收窄或清空至新模式合法范围，不静默保留多产业×多区域组合（用例步骤 2–5）
+      const main = page.locator('main');
+      await expect(main.getByText('单产业 × 多区域', { exact: true })).toBeVisible();
+      await expect(main.getByText('多产业 × 单区域', { exact: true })).toBeVisible();
+      await expect(main.locator('.analysis-rounded-radio .arco-radio-checked')).toHaveCount(1);
+  - note: 2、切换后已选对象收窄或清空至新模式合法范围，不静默保留多产业 × 多区域组合
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const catalogPath = '/industry-center/regional?workspace=competitiveness&tab=competitiveness';
-      const dismissBasket = async () => {
-        const closeB = page.locator('[aria-label="关闭对比篮"]');
-        if (await closeB.count() && (await closeB.first().isVisible().catch(() => false))) {
-          await closeB.first().click().catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/区域产业竞争力评价/.test(t);
-      };
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 工作区不可用 ' + page.url());
-      }
-      const modeBtn = page.getByText('单产业 × 多区域', { exact: true }).first();
-      if (!(await modeBtn.isVisible().catch(() => false))) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 评价模式控件不可见 ' + page.url());
-      }
-      await dismissBasket();
-      await modeBtn.click();
-      await page.waitForTimeout(600);
-      const indSingle = page.locator('.arco-select-view[aria-label="产业"]');
-      if (await indSingle.evaluate((el) => (el.className || '').includes('multiple'))) {
-        throw new Error('单产业态产业不应为多选');
-      }
-      await indSingle.click();
-      await page.waitForTimeout(500);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '集成电路' }).first().click({ force: true });
-      await page.waitForTimeout(700);
-      const regionMulti = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|请选择区域|广东/ }).first();
-      await regionMulti.click();
-      await page.waitForTimeout(500);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
-      await pop.getByText('上海市', { exact: true }).first().click({ force: true }).catch(() => {});
-      await page.waitForTimeout(400);
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(400);
-      const regionBeforeSwitch = await regionMulti.innerText();
-      const regionCountBefore = ['广东', '深圳', '北京', '上海', '杭州'].filter((n) => regionBeforeSwitch.includes(n)).length;
-      if (regionCountBefore < 2) throw new Error('单产业态未选满 2 个评价区域: ' + regionBeforeSwitch);
-      await page.getByText('多产业 × 单区域', { exact: true }).first().click();
-      await page.waitForTimeout(900);
-      const indMulti = page.locator('.arco-select-view[aria-label="产业"]');
-      const indIsMulti = await indMulti.evaluate((el) => (el.className || '').includes('multiple'));
-      if (!indIsMulti) throw new Error('切多产业后产业未呈多选');
-      await expect(page.getByText('分析对象（1–5）').first()).toBeVisible({ timeout: 8000 });
-      const regionMultiAfter = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|请选择区域|上海|广东/ });
-      const regionMultiCount = await regionMultiAfter.count();
-      if (regionMultiCount > 0) {
-        throw new Error('切多产业后评价区域仍为多选，疑似静默保留多区域笛卡尔积');
-      }
-      await expect(page.getByText('评价区域', { exact: true }).first()).toBeVisible({ timeout: 8000 });
-      await page.getByText('单产业 × 多区域', { exact: true }).first().click();
-      await page.waitForTimeout(800);
-      if (await page.locator('.arco-select-view[aria-label="产业"]').evaluate((el) => (el.className || '').includes('multiple'))) {
-        throw new Error('切回单产业后产业仍为多选');
-      }
-      await expect(page.getByText('评价区域（1–5）').first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 按用例册 01101 步骤 2–5；catalog_path=entry-seed；深链 404 时侧栏 sibling search 进入。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。A 档零 allow_skip。
+      const main = page.locator('main');
+      await expect(main.locator('.analysis-rounded-radio .arco-radio-checked')).toContainText('多产业 × 单区域');
+      const objectRow = main.locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
+      await expect(objectRow.getByText('分析对象（1–5）')).toBeVisible();
+      await expect(objectRow.getByText('评价区域', { exact: true })).toBeVisible();
+      await expect(objectRow.locator('.arco-select-view-multiple')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

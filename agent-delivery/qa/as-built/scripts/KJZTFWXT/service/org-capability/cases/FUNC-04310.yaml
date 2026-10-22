@@ -1,0 +1,143 @@
+id: FUNC-04310
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04310
+priority: P0
+tier: A
+title: 主流程-过程页 · 任务信息与不自动进结果
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；对比篮已有服务机构（≥2）；五维启用且权重合计 100%
+locators:
+  start_btn: '[data-testid="svc-org-start-eval"]'
+  process_shell: '[data-testid="svc-org-analysis-process"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 对比机构勾选两家→开始评估（真实操作在 expect 内）
+expect:
+  - note: 1、过程页有任务号、分析类型、分析对象、已用时间；2、出现「暂无过程节点」（用例预期 1～2）
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const mainLast = () => page.locator('main').last();
+      const shell = page.locator('[data-testid="svc-org-analysis-process"]');
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const prepTwoOrgs = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const spins = page.locator('[role=spinbutton]');
+        await expect(spins).toHaveCount(5, { timeout: 8000 });
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 2) throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：对比篮服务机构不足 2 家，tags=' + tagN);
+        for (let i = 0; i < tagN; i++) {
+          const cls = String((await tags.nth(i).getAttribute('class')) || '');
+          if (cls.includes('arco-tag-checked')) {
+            await tags.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(280);
+          }
+        }
+        await tags.nth(0).click({ timeout: 5000 });
+        await tags.nth(1).click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+        if (!head.includes('当前2家')) throw new Error('勾选两家后计数行=' + head);
+        const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+      };
+      const readProcessText = async () => {
+        const shellTxt = ((await shell.first().innerText().catch(() => '')) || '');
+        const mainTxt = ((await mainLast().innerText().catch(() => '')) || '');
+        return (shellTxt + '\n' + mainTxt).replace(/\s+/g, ' ');
+      };
+      const clickStartAndWaitReady = async () => {
+        const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+        await expect(start).toBeVisible({ timeout: 8000 });
+        if (await start.isDisabled()) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：已选 2 家但「开始评估」仍 disabled');
+        }
+        await start.click({ timeout: 15000 });
+        let ok = false;
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(1000);
+          const url = page.url();
+          const body = await readProcessText();
+          if (/评估失败|任务失败/.test(body)) throw new Error('评估任务失败：' + body.slice(0, 200));
+          if (/分析结果已生成/.test(body)) {
+            ok = true;
+            break;
+          }
+          if (/view=processing/.test(url) && /已完成/.test(body) && /查看结果/.test(body)) {
+            ok = true;
+            break;
+          }
+        }
+        if (!ok) throw new Error('过程页超时未见「分析结果已生成」 url=' + page.url());
+        await expect(page.getByText('分析结果已生成', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      };
+      await prepTwoOrgs();
+      await clickStartAndWaitReady();
+      await expect(shell.first()).toBeVisible({ timeout: 8000 });
+      const body = await readProcessText();
+      const url = page.url();
+      const m = url.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/) || body.match(/SVC-\d{8}-\d{1,4}/);
+      if (!m) throw new Error('过程页未见任务号 SVC-* url=' + url);
+      const taskId = m[1] || m[0];
+      if (!body.includes('分析类型')) throw new Error('过程页缺「分析类型」 body_head=' + body.slice(0, 240));
+      if (!body.includes('分析对象')) throw new Error('过程页缺「分析对象」 body_head=' + body.slice(0, 240));
+      if (!/已用时间/.test(body)) throw new Error('过程页缺「已用时间」 body_head=' + body.slice(0, 240));
+      if (!body.includes(taskId) && !url.includes(taskId)) {
+        throw new Error('过程页任务号未展示 task=' + taskId);
+      }
+      const stepsEmpty = page.locator('[data-testid="svc-org-analysis-steps-empty"]');
+      const hasEmptyNode =
+        (await stepsEmpty.isVisible().catch(() => false)) || /暂无过程节点/.test(body);
+      const stepItems = page.locator('.svc-process-steps .arco-steps-item, .diagnosis-process-steps .arco-steps-item');
+      const hasProcessSteps =
+        (await stepItems.count()) > 0 ||
+        /可视化分析过程/.test(body) &&
+          (/任务提交与分析条件冻结|装载对比机构|计算维度得分/.test(body));
+      if (!hasEmptyNode && !hasProcessSteps) {
+        throw new Error('过程区既未见「暂无过程节点」亦无可视化步骤 body_head=' + body.slice(0, 280));
+      }
+      globalThis.__func04310 = { taskId, url: page.url() };
+  - note: 3、出现「分析结果已生成」时仍停在过程页（用例预期 3）
+    assert: |-
+      const st = globalThis.__func04310;
+      if (!st?.taskId) throw new Error('前置：未进入过程页');
+      const shell = page.locator('[data-testid="svc-org-analysis-process"]');
+      const body = ((await shell.first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/分析结果已生成/.test(body)) {
+        throw new Error('过程页未见「分析结果已生成」 task=' + st.taskId);
+      }
+      await expect(page.getByText('分析结果已生成', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const url = page.url();
+      if (/[?&]view=result/.test(url)) {
+        throw new Error('已自动进入结果页 view=result，应停在过程页: ' + url);
+      }
+      if (!/[?&]view=processing/.test(url) && !url.includes(st.taskId)) {
+        throw new Error('完成态未停在过程页 URL: ' + url);
+      }
+      const resultTitle = page.getByText('技术力横向对比结果', { exact: true });
+      const rtVis = await resultTitle.first().isVisible().catch(() => false);
+      if (rtVis && /[?&]view=result/.test(url)) {
+        throw new Error('结果页标题已展示，未停在过程页');
+      }
+      await expect(page.getByRole('button', { name: '查看结果', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(shell.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04310（两家机构「开始评估」→过程页任务信息+过程可视化区；「分析结果已生成」后仍 view=processing、须手动「查看结果」）。
+  events=[]→data-testid svc-org-analysis-steps-empty/「暂无过程节点」；events 有 node→arco-steps（30892 现网多为后者）。对比篮勾选同 FUNC-04288。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04310。

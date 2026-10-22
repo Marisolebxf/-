@@ -137,17 +137,24 @@ expect:
       const openFromRecords = async () => {
         await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 });
         await page.waitForTimeout(1200);
-        const rows = page.locator('tr').filter({ hasText: '区域产业竞争力评价' }).filter({ hasText: /已完成|成功/ });
+        const rows = page
+          .locator('main')
+          .locator('tr')
+          .filter({ hasText: '区域产业竞争力评价' })
+          .filter({ hasText: /已完成|成功/ });
         const n = await rows.count();
         for (let i = 0; i < Math.min(n, 12); i++) {
           const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
           if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
           await view.click({ timeout: 12000, force: true });
-          for (let j = 0; j < 24; j++) {
+          for (let j = 0; j < 40; j++) {
             await page.waitForTimeout(500);
             if (await isSuccessResult() && (await bodyHasShanghaiRows())) return true;
+            const viewResult = page.getByRole('button', { name: /查看分析结果|查看结果/ }).first();
+            if (await viewResult.count() && (await viewResult.isVisible().catch(() => false))) {
+              await viewResult.click({ timeout: 8000 }).catch(() => {});
+            }
           }
-          await ensureLand();
           await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 8000 }).catch(() => {});
           await page.waitForTimeout(800);
         }
@@ -193,28 +200,42 @@ expect:
         await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
         await page.waitForTimeout(800);
       };
-      const ensureLand = async () => {
+      const ensureRegionalModule = async () => {
         await dismissBasket();
         if (await bodyIs404()) await recover404Shell();
-        const onConfig =
-          /\/industry-center\/regional/.test(page.url()) &&
-          /workspace=competitiveness/.test(page.url()) &&
-          /tab=competitiveness/.test(page.url()) &&
-          (await page.getByText('三大一级维度权重').first().isVisible().catch(() => false));
-        if (!onConfig) {
+        if (!/\/industry-center\/regional/.test(page.url()) || !/workspace=competitiveness/.test(page.url())) {
           await enterViaSidebar();
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价侧栏仍 SPA404 ' + page.url());
+          throw new Error('ENV-30892-ENTRY-404: 区域产业竞争力评价侧栏 SPA404 ' + page.url());
         }
-        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
         await expect(page).toHaveURL(/tab=competitiveness/, { timeout: 8000 });
       };
-      await ensureLand();
+      const ensureConfigLand = async () => {
+        await ensureRegionalModule();
+        const onConfig =
+          /tab=competitiveness/.test(page.url()) &&
+          (await page.getByText('三大一级维度权重').first().isVisible().catch(() => false));
+        if (!onConfig) {
+          await page.getByRole('tab', { name: '分析配置' }).first().click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(800);
+        }
+        await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      };
+      await ensureRegionalModule();
       let ok = false;
       if (await isSuccessResult()) ok = await bodyHasShanghaiRows();
+      if (!ok && (await page.getByRole('button', { name: '查看结果' }).first().isVisible().catch(() => false))) {
+        ok = await openFromRecords();
+      }
+      if (!ok && (await isSuccessResult())) ok = await bodyHasShanghaiRows();
       if (!ok) {
-        for (const tid of ['CHAIN-20260911-010', 'CHAIN-20260907-001']) {
+        for (const tid of [
+          'CHAIN-20261022-030',
+          'CHAIN-20261022-029',
+          'CHAIN-20260911-010',
+          'CHAIN-20260907-001',
+        ]) {
           await openResultDeep(tid);
           if (await isSuccessResult() && (await bodyHasShanghaiRows())) {
             ok = true;
@@ -223,10 +244,10 @@ expect:
         }
       }
       if (!ok) {
-        await ensureLand();
         ok = await openFromRecords();
       }
       if (!ok) {
+        await ensureConfigLand();
         await applyMultiRegionConfig();
         const start = page.locator('main').getByRole('button', { name: '开始分析', exact: true }).first();
         await expect(start).toBeEnabled({ timeout: 25000 });

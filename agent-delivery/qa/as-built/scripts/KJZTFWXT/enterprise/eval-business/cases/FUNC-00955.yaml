@@ -182,15 +182,19 @@ expect:
           .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
           .or(page.getByPlaceholder(/企业名|产业|资质/))
           .first();
-        if (await searchInput.isVisible().catch(() => false)) {
-          await searchInput.fill('人工智能');
+        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
+        const keywords = ['华为', '人工智能', '科技', '有限公司'];
+        for (const kw of keywords) {
+          if ((await basketEntCount()) >= min) break;
+          if (!(await searchInput.isVisible().catch(() => false))) break;
+          await searchInput.fill(kw);
           const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
           if (await searchBtn.isVisible().catch(() => false)) {
             await searchBtn.click({ timeout: 8000 });
-            await page.waitForTimeout(1500);
+            await page.waitForTimeout(2000);
           }
+          if (await addBtns.count()) break;
         }
-        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
         let n = await basketEntCount();
         let clicks = 0;
         while (n < min && clicks < min + 4) {
@@ -235,8 +239,21 @@ expect:
         if (await start.isDisabled()) throw new Error('对象已回填但开始分析仍禁用');
         await start.click({ timeout: 8000 });
       };
+      const needsConfigFill = async () => {
+        const t = await main().innerText().catch(() => '');
+        return /请选择对比篮|前往对比篮选择企业/.test(t);
+      };
       let cBtn = null;
-      if (await tryResultWithReanalyze()) {
+      if (await needsConfigFill()) {
+        try {
+          await fillTwoAndStart();
+          cBtn = await waitCancelBtn(90000);
+        } catch (e) {
+          const msg = String(e && e.message ? e.message : e);
+          if (!/ENV-GATE|对比篮/.test(msg)) throw e;
+        }
+      }
+      if (!cBtn && (await tryResultWithReanalyze())) {
         cBtn = await clickReanalyzeAndWaitCancel();
       }
       if (!cBtn) {

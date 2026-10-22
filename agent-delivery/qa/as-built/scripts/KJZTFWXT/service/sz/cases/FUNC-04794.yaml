@@ -1,0 +1,23 @@
+id: FUNC-04794
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04794
+priority: P1
+tier: B
+title: 主流程-对比区空态
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 对比区显示「当前结果快照无城市场景，无法绘制对比图」
+    assert: |-
+      await expect(page.getByText('当前结果快照无城市场景，无法绘制对比图')).toBeVisible()
+  - note: 演示口径写明缺值显示「无数据」，不用 0 填充
+    assert: |-
+      await expect(page.getByText(/缺值.*无数据|无数据.*缺值|演示.*无数据/)).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

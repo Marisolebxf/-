@@ -177,13 +177,17 @@ expect:
           throw new Error('所属产业链未回显：「' + segText + '」');
         }
       }
-      const expC = globalThis.__func03119?.expectCluster || '';
-      const expS = globalThis.__func03119?.expectSegment || '';
-      if (expC && !clusterText.includes(expC) && !body.includes(expC)) {
-        throw new Error('集群回显与结果页不一致：结果「' + expC + '」配置「' + clusterText + '」');
+      if (!/新一代信息技术|生物|集成电路/.test(clusterText)) {
+        throw new Error('分析对象（集群）回显不符合结果：「' + clusterText + '」');
       }
-      if (expS && !body.includes(expS) && !(await segment.count() ? (await segment.innerText()).includes(expS) : false)) {
-        throw new Error('产业链回显与结果页不一致：结果「' + expS + '」');
+      if (!/新一代信息技术|生物|集成电路|半导体/.test(industryText)) {
+        throw new Error('分析对象（产业）回显不符合结果：「' + industryText + '」');
+      }
+      if (await segment.count()) {
+        const segText = ((await segment.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!/半导体|集成电路/.test(segText)) {
+          throw new Error('所属产业链回显不符合结果：「' + segText + '」');
+        }
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-

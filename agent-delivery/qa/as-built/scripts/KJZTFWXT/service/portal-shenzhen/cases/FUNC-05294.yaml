@@ -1,0 +1,21 @@
+id: FUNC-05294
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05294
+priority: P1
+tier: B
+title: 主流程-筛选说明
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: playwright
+    code: await page.locator('main .svc-portal-caliber').scrollIntoViewIfNeeded()
+expect:
+  - note: 说明含「不按产业切片」
+    assert: |-
+      await expect(page.locator('main .svc-portal-caliber')).toContainText('不按产业切片')
+  - note: 说明含「不按领域合计比例缩放深圳规模」
+    assert: |-
+      await expect(page.locator('main .svc-portal-caliber')).toContainText('不按领域合计比例缩放深圳规模')
+on_fail: 截图 + 抄 X-Trace-Id

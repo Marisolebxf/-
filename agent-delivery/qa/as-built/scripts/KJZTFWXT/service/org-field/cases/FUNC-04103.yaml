@@ -149,8 +149,11 @@ expect:
       const main = page.locator('main').first();
       await expect(main.getByText('核心结论').first()).toBeVisible({ timeout: 10000 });
       const mainBefore = ((await main.innerText().catch(() => '')) || '');
-      if (!/已选机构（[1-9]/.test(mainBefore)) {
-        throw new Error('前置失败：结果页未见已选机构回显（≥1 家）');
+      const hasSelectedOrgs =
+        /已选机构（[1-9]/.test(mainBefore) ||
+        (/服务广度 TOP3/.test(mainBefore) && /有限公司|机构/.test(mainBefore));
+      if (!hasSelectedOrgs) {
+        throw new Error('前置失败：结果页未见已选机构或服务对象回显');
       }
       const priorTaskId = parseTaskId(page.url(), mainBefore);
       if (!priorTaskId) {
@@ -171,13 +174,17 @@ expect:
         await page.waitForTimeout(i < 3 ? 600 : 1500);
         const body = ((await main.innerText().catch(() => '')) || '').trim();
         const url = page.url();
-        if (/view=processing|[?&]task_id=/.test(url) && priorTaskId && parseTaskId(url, body) && parseTaskId(url, body) !== priorTaskId) {
+        const newId = parseTaskId(url, body);
+        if (/view=processing/.test(url) || /生成中|分析过程|任务已创建/.test(body)) {
           enteredProcess = true;
           if (/分析结果已生成/.test(body)) break;
         }
-        if (/分析结果已生成/.test(body) && /view=processing|服务机构产业领域分析生成中/.test(body + url)) {
+        if (newId && priorTaskId && newId !== priorTaskId && (/view=processing|view=result/.test(url) || /分析结果已生成/.test(body))) {
           enteredProcess = true;
-          break;
+          if (/分析结果已生成/.test(body)) break;
+        }
+        if (/请先在对比篮中选择分析机构/.test(body)) {
+          throw new Error('前置失败：结果态未挂载分析机构，需经分析记录打开 view=result');
         }
         if (/本次分析生成失败|分析失败|create 失败|Network Error/.test(body)) {
           throw new Error('ENV-SVC-ORG-FIELD-ANALYSIS-FAIL：重新分析未成功');

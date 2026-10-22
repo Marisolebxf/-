@@ -1,0 +1,120 @@
+id: FUNC-04400
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04400
+priority: P1
+tier: B
+title: 备选-下拉检索 · 输入未来
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - 已进入分析配置
+locators:
+  config: 分析配置
+  cluster_select: .industry-catalog-select / .svc-portal-industry-cascader
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、展开产业领域下拉并在搜索框输入「未来」；2、选项只剩 5 个；3、五项为未来制造、未来信息、未来能源、未来空间、未来健康
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const keyword = '未来';
+      const need = ['未来制造', '未来信息', '未来能源', '未来空间', '未来健康'];
+      const noise = [
+        '外资企业',
+        '高新技术企业',
+        '小微企业',
+        '上市企业',
+        '专精特新',
+        '小巨人',
+        '链主龙头',
+      ];
+      const norm = (t) =>
+        t
+          .trim()
+          .replace(/\s+/g, ' ')
+          .replace(/\s*（[^）]*）\s*$/, '')
+          .trim();
+      const toClusterLabel = (t) => norm(String(t).split(/\s*[\/／]\s*/)[0]);
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      if (/view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const openIndustry = async () => {
+        const flat = page
+          .locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select')
+          .first();
+        if (await flat.isVisible().catch(() => false)) {
+          await flat.click({ timeout: 8000 });
+          return { mode: 'flat', host: flat };
+        }
+        const cascader = page
+          .locator(
+            'main .svc-portal-industry-cascader .arco-cascader-view, main .sci-arco-cascader, main .arco-cascader-view'
+          )
+          .first();
+        if (await cascader.isVisible().catch(() => false)) {
+          await cascader.click({ timeout: 8000 });
+          return { mode: 'cascader', host: page.locator('main .svc-portal-industry-cascader').first() };
+        }
+        throw new Error('未见产业领域下拉触发器');
+      };
+      const { mode, host } = await openIndustry();
+      await page.waitForTimeout(500);
+      const searchInput = host.locator('input').first();
+      await expect(searchInput).toBeVisible({ timeout: 8000 });
+      await searchInput.fill(keyword);
+      await page.waitForTimeout(600);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      let raw = [];
+      if (mode === 'flat') {
+        raw = await popup.locator('.arco-select-option').allTextContents();
+      } else {
+        const searchPanel = popup.locator('.arco-cascader-search-panel');
+        if (await searchPanel.count()) {
+          raw = await searchPanel.locator('.arco-cascader-list-item-label, .arco-cascader-option').allTextContents();
+        }
+        if (!raw.length) {
+          raw = await popup.locator('.arco-cascader-option').allTextContents();
+        }
+      }
+      let clean = [...new Set(raw.map(toClusterLabel).filter(Boolean))];
+      clean = clean.filter((t) => !noise.includes(t));
+      clean = clean.filter((t) => t.includes(keyword) || need.some((k) => t === k || t.includes(k)));
+      if (clean.length !== 5) {
+        throw new Error('检索「' + keyword + '」后选项数 ' + clean.length + ' ≠5 实见=' + clean.join(','));
+      }
+      for (const k of need) {
+        if (!clean.some((t) => t === k || t.includes(k) || k.includes(t))) {
+          throw new Error('缺未来类产业集群: ' + k + ' / 实见 ' + clean.join(','));
+        }
+      }
+      const extra = clean.filter((t) => !need.some((k) => t === k || t.includes(k) || k.includes(t)));
+      if (extra.length) {
+        throw new Error('检索后多余选项: ' + extra.join(',') + ' / 实见 ' + clean.join(','));
+      }
+      await page.keyboard.press('Escape');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  flat：.industry-catalog-select allow-search 键入「未来」；cascader：svc-portal-industry-cascader allow-search + 首列短名 norm（对齐 04392）。
+  检索后应剩 5 个未来类集群。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04400。B 档零 allow_skip。

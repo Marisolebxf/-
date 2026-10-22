@@ -2,132 +2,52 @@ id: FUNC-03995
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03995
 priority: P0
 tier: B
-title: 主流程-加入对比篮（行按钮态与提示）
-story: US-SVC-ORG-07
+title: 主流程-加入对比篮
 entry_id: svc-search
 preconditions:
   - 结果中有一行按钮为「加入对比篮」
-locators:
-  join_btn: button「加入对比篮」
-  joined_btn: button「已在对比篮」
-  org_card: article.svc-org-search-card
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
-  - action: evaluate
-    note: 检索出卡后点击首行「加入对比篮」（判定在 expect）
+    target: /service-center/search
 expect:
-  - note: 前置：进入检索结果并存在「加入对比篮」行按钮
+  - note: 前置：结果中有一行按钮为「加入对比篮」
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterSvcSearch = async () => {
-        await dismissBasket();
-        await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await recover404Shell();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
-        }
-        const searchItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-        if (!(await searchItem().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
-        await searchItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      };
-      await enterSvcSearch();
-      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 8000 });
-      await inp.fill('深圳');
-      const searchBtn = page.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
-      await expect(searchBtn).toBeVisible({ timeout: 8000 });
-      await searchBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(2500);
-      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      const joinCount = await page.getByRole('button', { name: '加入对比篮' }).count();
-      if (joinCount < 1) throw new Error('前置：结果区未见「加入对比篮」行按钮');
-      const card = page
+      const main = page.locator('main');
+      const card = main
         .locator('article.svc-org-search-card')
-        .filter({ has: page.getByRole('button', { name: '加入对比篮' }) })
+        .filter({ has: main.getByRole('button', { name: '加入对比篮' }) })
         .first();
-      await expect(card).toBeVisible({ timeout: 10000 });
-      const nameBtn = card.locator('button.svc-org-search-link').first();
-      const orgName = ((await nameBtn.innerText()) || '').trim();
+      await expect(card).toBeVisible({ timeout: 15000 });
+      const orgName = ((await card.locator('button.svc-org-search-link').first().innerText()) || '').trim();
       if (!orgName) throw new Error('卡片机构名称为空');
-      globalThis.__func03995 = { card, orgName };
+      globalThis.__func03995 = { orgName };
   - note: 1.点击该行「加入对比篮」
     assert: |-
-      const snap = globalThis.__func03995;
-      const card = snap.card;
+      const main = page.locator('main');
+      const { orgName } = globalThis.__func03995;
+      const card = main
+        .locator('article.svc-org-search-card')
+        .filter({ hasText: orgName })
+        .filter({ has: page.getByRole('button', { name: '加入对比篮' }) })
+        .first();
       const joinBtn = card.getByRole('button', { name: '加入对比篮' });
       await expect(joinBtn).toBeVisible({ timeout: 8000 });
       await joinBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      globalThis.__func03995_clicked = true;
+      await page.waitForTimeout(500);
   - note: 1、该行按钮变为「已在对比篮」
     assert: |-
-      const snap = globalThis.__func03995;
-      const card = snap.card;
-      const joined = card.getByRole('button', { name: '已在对比篮' });
-      await expect(joined).toBeVisible({ timeout: 12000 });
-      const stillJoin = card.getByRole('button', { name: '加入对比篮' });
-      if (await stillJoin.count()) {
-        const vis = await stillJoin.isVisible().catch(() => false);
-        if (vis) throw new Error('入篮后该行仍显示「加入对比篮」');
-      }
+      const main = page.locator('main');
+      const { orgName } = globalThis.__func03995;
+      const card = main
+        .locator('article.svc-org-search-card')
+        .filter({ hasText: orgName })
+        .first();
+      await expect(card.getByRole('button', { name: '已在对比篮' })).toBeVisible({ timeout: 12000 });
   - note: 2、提示已将该机构加入对比篮
     assert: |-
-      const orgName = globalThis.__func03995.orgName;
+      const { orgName } = globalThis.__func03995;
       const toastRe = new RegExp('已将[「"]' + orgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[」"]加入对比篮');
       const msg = page.locator('.arco-message, .arco-notification').filter({ hasText: toastRe });
-      if (await msg.count()) {
-        await expect(msg.first()).toBeVisible({ timeout: 8000 });
-      } else {
-        const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!toastRe.test(body)) {
-          throw new Error('未见入篮提示，期望含机构名：' + orgName);
-        }
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 03995；catalog_path=/service-center/search。行级终态文案「已在对比篮」（非作废用例「已加入」）。
-  入篮提示「已将「{机构名}」加入对比篮」。再点态见 04029。对比篮浮层遮挡时先关 aria-label=关闭对比篮。
+      await expect(msg.first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

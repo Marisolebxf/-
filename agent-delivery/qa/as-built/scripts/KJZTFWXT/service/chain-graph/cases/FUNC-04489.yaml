@@ -1,0 +1,29 @@
+id: FUNC-04489
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04489
+priority: P0
+tier: B
+title: 主流程-图谱滤镜互斥
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 同一时刻只有一个滤镜为选中
+    assert: |-
+      const filterBlock = page.locator('div').filter({ hasText: '图谱滤镜' }).first();
+      await filterBlock.getByText('② 机构+关联主体').click();
+      await expect(filterBlock.locator('.arco-radio-checked')).toHaveCount(1);
+      await expect(filterBlock.locator('.arco-radio-checked')).toContainText('② 机构+关联主体');
+      await filterBlock.getByText('① 仅机构').click();
+      await expect(filterBlock.locator('.arco-radio-checked')).toHaveCount(1);
+      await expect(filterBlock.locator('.arco-radio-checked')).toContainText('① 仅机构');
+  - note: 页面仍在分析配置，不出现「生成中」
+    assert: |-
+      await expect(page.getByText('分析配置')).toBeVisible();
+      await expect(page.getByText('生成中')).toHaveCount(0);
+  - note: 旁注含「切滤镜不自动创建任务」
+    assert: |-
+      await expect(page.getByText('切滤镜不自动创建任务')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

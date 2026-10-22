@@ -1,0 +1,212 @@
+id: FUNC-04117
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04117
+priority: P1
+tier: B
+title: 备选-两家回显 · 确定两家
+story: US-SVC-ORG-01
+entry_id: svc-org-field
+preconditions:
+  - 已打开「选择服务机构」（runner 会话前置：已登录且内部评审模式关闭）
+locators:
+  open_basket: '[data-testid="svc-org-empty-open-basket"], [data-testid="svc-org-open-compare-basket"], button「打开对比篮」'
+  pick_btn: button「选择机构」
+  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
+  modal: data-testid=svc-org-picker-modal
+  confirm: button「确定」
+  selected_label: 已选机构（N 家）
+  selected_tag: '[data-testid="svc-org-analysis-context-field"] .arco-tag.svc-org-pick-tag'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 前置：打开「选择服务机构」弹窗且至少 2 家可勾选
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=field/);
+        await expect(page).toHaveURL(/tab=coverage/);
+        return !(await bodyIs404());
+      };
+      const ensureConfigTab = async () => {
+        await dismissBasket();
+        if (/view=result|view=processing|[?&]task_id=|[?&]org_ids/.test(page.url())) {
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1000);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          if (await bodyIs404()) {
+            await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+            await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(1200);
+          }
+          if (!onTarget() || (await bodyIs404())) {
+            const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
+            let ok = false;
+            for (const s of siblings) {
+              if (await enterViaSidebar(s)) {
+                ok = true;
+                break;
+              }
+            }
+            if (!ok) {
+              throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均不可用 url=' + page.url());
+            }
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构产业领域分析入口不可用 ' + page.url());
+        }
+      };
+      const resetToZeroOrgs = async () => {
+        const main = page.locator('main').first();
+        const t = ((await main.innerText().catch(() => '')) || '');
+        if (/已选机构（[1-9]/.test(t)) {
+          const clr = main.getByRole('button', { name: '清空' });
+          if (await clr.count()) {
+            await clr.first().click({ timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(500);
+          }
+        }
+      };
+      const openOrgPicker = async () => {
+        const legacyPick = page
+          .locator('[data-testid="svc-org-open-picker"]')
+          .or(page.getByRole('button', { name: '选择机构', exact: true }))
+          .first();
+        if (await legacyPick.isVisible().catch(() => false)) {
+          await legacyPick.click({ timeout: 10000 });
+          await page.waitForTimeout(900);
+          const dialog = page
+            .locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+            .filter({ hasText: '选择服务机构' })
+            .first();
+          await expect(dialog).toBeVisible({ timeout: 12000 });
+          return { mode: 'legacy', shell: dialog };
+        }
+        const openBasket = page
+          .locator('[data-testid="svc-org-empty-open-basket"]')
+          .or(page.locator('[data-testid="svc-org-open-compare-basket"]'))
+          .or(page.getByRole('button', { name: '打开对比篮' }))
+          .first();
+        await expect(openBasket).toBeVisible({ timeout: 12000 });
+        await openBasket.click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 12000 });
+        const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+        await expect(ws).toBeVisible({ timeout: 12000 });
+        return { mode: 'basket', shell: ws };
+      };
+      await ensureConfigTab();
+      await resetToZeroOrgs();
+      await expect(page.locator('[data-testid="svc-org-analysis-config"]')).toBeVisible({ timeout: 12000 });
+      const opened = await openOrgPicker();
+      const shell = opened.shell;
+      const checks = shell.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+      for (let i = 0; i < 12 && (await checks.count()) < 2; i++) {
+        const body = shell.locator('.arco-modal-body, [data-testid="service-org-compare-basket-workspace"]').first();
+        if (await body.count()) {
+          try {
+            await body.evaluate((el) => {
+              el.scrollTop = (el.scrollTop || 0) + 280;
+            });
+          } catch {}
+        }
+        await page.waitForTimeout(400);
+      }
+      const n = await checks.count();
+      if (n < 2) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：选机构层可勾选不足 2 家 n=' + n);
+      }
+      globalThis.__p04117 = { dialogReady: true, mode: opened.mode, shellSelector: opened.mode === 'basket' ? 'basket' : 'legacy' };
+  - note: 1、勾选 2 家机构并点「确定」后，配置区已选机构为 2 家
+    assert: |-
+      const snap = globalThis.__p04117;
+      if (!snap?.dialogReady) throw new Error('前置：选择服务机构弹窗未打开');
+      const shell =
+        snap.mode === 'basket'
+          ? page.locator('[data-testid="service-org-compare-basket-workspace"]')
+          : page
+              .locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+              .filter({ hasText: '选择服务机构' })
+              .first();
+      await expect(shell).toBeVisible({ timeout: 8000 });
+      const checks = shell.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+      await checks.first().click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      const second = shell.locator('.arco-checkbox:not(.arco-checkbox-checked):not(.arco-checkbox-disabled)').first();
+      await expect(second).toBeVisible({ timeout: 8000 });
+      await second.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const footTxt = ((await shell.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!/已选\s*2\s*家/.test(footTxt)) {
+        throw new Error('选机构层已选计数非 2 家: ' + footTxt.slice(0, 160));
+      }
+      const confirm = shell.getByRole('button', { name: '确定', exact: true }).last();
+      await confirm.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      if (snap.mode === 'legacy') {
+        const gone = await page.evaluate(() => !document.querySelector('.arco-modal-container'));
+        if (!gone) throw new Error('点确定后弹窗未关闭');
+      } else {
+        await expect(page.getByText('选择分析服务机构').first()).toBeHidden({ timeout: 8000 });
+      }
+      const main = page.locator('main').first();
+      await expect(main.getByText(/已选机构（2\s*家）/).first()).toBeVisible({ timeout: 10000 });
+      const tags = page.locator('[data-testid="svc-org-analysis-context-field"] .arco-tag.svc-org-pick-tag');
+      await expect(tags).toHaveCount(2, { timeout: 8000 });
+      const codes = [];
+      for (let i = 0; i < 2; i++) {
+        const t = (await tags.nth(i).innerText()).trim();
+        if (!t) throw new Error('配置区 tag 文案为空 index=' + i);
+        if (codes.includes(t)) throw new Error('已选机构重复: ' + t);
+        codes.push(t);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04117=配置空态打开选机构层：legacy「选择机构」→ svc-org-picker-modal；现行对比篮「打开对比篮」→「选择分析服务机构」
+  workspace（data-testid=service-org-compare-basket-workspace）勾选 2 家后「确定」回填。配置区「已选机构（2 家）」+
+  svc-org-analysis-context-field 下 2 个 svc-org-pick-tag。用例册仍写「选择服务机构」；现场标题为选择分析服务机构（同层语义）。
+  catalog_path=/service/institution-judgment?workspace=field&tab=coverage（entry-seed）。B 档零 allow_skip。

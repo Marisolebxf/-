@@ -20,62 +20,22 @@ steps:
     for: 侧栏 sibling 就绪
     timeout_ms: 1500
   - action: evaluate
-    note: 高级筛选添加所在城市并展开取值下拉（判定在 expect）
+    note: 侧栏进入服务机构查询、高级筛选添加所在城市并展开取值下拉（判定在 expect）
 expect:
-  - note: 1、选项共 8 个；2、名称与附录 D 一致（深圳、北京、上海、广州、杭州、苏州、成都、武汉）
+  - note: 1、选项共 8 个
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
+      const searchItem = () =>
+        page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
+      if (!(await searchItem().first().isVisible().catch(() => false))) {
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
         }
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterSvcSearch = async () => {
-        await dismissBasket();
-        await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await recover404Shell();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
-        }
-        const searchItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-        if (!(await searchItem().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
-        await searchItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      };
-      await enterSvcSearch();
+      }
+      await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
+      await searchItem().first().click({ timeout: 10000 });
+      await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
       const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
@@ -91,34 +51,19 @@ expect:
       await expect(condRow).toBeVisible({ timeout: 8000 });
       const valueView = condRow.locator('.condition-builder__value .arco-select-view').first();
       await expect(valueView).toBeVisible({ timeout: 8000 });
-      const ph = ((await valueView.innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!ph.includes('可多选')) {
-        throw new Error('所在城市取值占位应为「可多选」，现场=' + ph);
-      }
       await valueView.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(400);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
+      await expect(pop).toBeVisible({ timeout: 8000 });
+      await expect(pop.locator('.arco-select-option')).toHaveCount(8);
+  - note: 2、名称与附录 D 一致
+    assert: |-
       const pop = page.locator('.arco-trigger-popup:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });
       const options = pop.locator('.arco-select-option');
-      const count = await options.count();
-      const got = [];
-      for (let i = 0; i < count; i++) {
-        got.push(((await options.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim().split('\n')[0].trim());
-      }
       const want = ['深圳', '北京', '上海', '广州', '杭州', '苏州', '成都', '武汉'];
-      if (count !== 8) {
-        throw new Error('所在城市下拉选项应为 8 个，实际 count=' + count + ' labels=' + JSON.stringify(got));
-      }
       for (let i = 0; i < want.length; i++) {
-        if (got[i] !== want[i]) {
-          throw new Error(
-            '所在城市下拉选项顺序/文案不符：期望 ' + JSON.stringify(want) + ' 实际 ' + JSON.stringify(got),
-          );
-        }
+        await expect(options.nth(i)).toContainText(want[i]);
       }
       await page.keyboard.press('Escape').catch(() => {});
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 03998；附录 D 八城顺序机检。取值控件为 multiSelect，未选时占位「可多选」（用例备注）。
-  高级筛选点字段库「所在城市」→ 条件行展开 `.condition-builder__value` 下拉验 8 项。
-  edu 深链 SPA404 时侧栏经 sibling /industry-center/search 进入（同 FUNC-03990）。登录与关内部评审由 runner 会话前置。

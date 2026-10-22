@@ -1,0 +1,19 @@
+id: FUNC-03799
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03799
+priority: P1
+tier: B
+title: 备选-任务参数
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-NOT-EXIST-03799?task_id=CHAIN-20261021-002
+expect:
+  - note: 进入该成功任务的报告阅读页
+    assert: |-
+      await expect(page).toHaveURL(/task_id=CHAIN-20261021-002.*view=report|view=report.*task_id=CHAIN-20261021-002/)
+  - note: 页眉文案为「产业链分析报告」
+    assert: |-
+      await expect(page.getByText('产业链分析报告', { exact: true }).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

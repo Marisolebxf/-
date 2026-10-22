@@ -1,0 +1,24 @@
+id: FUNC-01260
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01260
+priority: P1
+tier: B
+title: 主流程-入口与路由
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 路由为培育工作区直达态（workspace=cultivate、tab=cultivate）
+    assert: |-
+      await expect(page).toHaveURL(/[?&]workspace=cultivate/);
+      await expect(page).toHaveURL(/[?&]tab=cultivate/);
+  - note: 页标题为「培育服务机构推荐分析」
+    assert: |-
+      await expect(page).toHaveTitle(/培育服务机构推荐分析/);
+  - note: 顶部为「培育服务机构推荐分析（选中）/ 分析记录」双 Tab
+    assert: |-
+      await expect(page.getByRole('tab', { name: '培育服务机构推荐分析', selected: true })).toBeVisible();
+      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

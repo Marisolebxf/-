@@ -23,13 +23,6 @@ expect:
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const PROCESS_TITLE = '区域产业竞争力评价生成中';
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
       const bodyIs404 = async () => {
         const sorry = page.getByText('抱歉，页面不存在');
         if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
@@ -53,7 +46,6 @@ expect:
             await page.waitForTimeout(400);
           }
         };
-        await dismissBasket();
         await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForTimeout(800);
         if (await bodyIs404()) {
@@ -64,7 +56,7 @@ expect:
           }
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无可用侧栏壳 ' + page.url());
+          throw new Error('侧栏壳不可用 ' + page.url());
         }
         await expandChainGroup();
         await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
@@ -72,7 +64,6 @@ expect:
         await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
       };
       const ensureLand = async () => {
-        await dismissBasket();
         if (!(await onConfigReady())) {
           await enterViaSidebar();
         }
@@ -81,31 +72,34 @@ expect:
           await page.waitForTimeout(1200);
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业竞争力评价着陆失败 ' + page.url());
+          throw new Error('区域产业竞争力评价着陆失败 ' + page.url());
         }
         await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
       };
       const pickIndustry = async () => {
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(200);
-        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
-        await expect(view).toBeVisible({ timeout: 12000 });
-        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (/集成电路/.test(shown)) return;
+        const row = main().locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
+        const bodyBefore = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/单产业模式请选择/.test(bodyBefore)) return;
+        const views = row.locator('.arco-select-view');
+        await expect(views.first()).toBeVisible({ timeout: 12000 });
         for (let i = 0; i < 8; i++) {
-          await view.click({ timeout: 8000 }).catch(() => {});
+          const idx = (await views.count()) > 1 ? 1 : 0;
+          await views.nth(idx).click({ timeout: 8000 }).catch(() => views.last().click({ timeout: 8000 }));
           await page.waitForTimeout(500);
           const pop = page.locator('.arco-trigger-popup:visible').last();
-          const opt = pop.locator('.arco-select-option').filter({ hasText: /^集成电路$/ });
+          const opt = pop.locator('.arco-select-option').filter({ hasText: /半导体与集成电路/ });
           if (await opt.count()) {
             await opt.first().click({ force: true, timeout: 8000 });
             await page.waitForTimeout(700);
             await page.keyboard.press('Escape').catch(() => {});
-            return;
+            const bodyAfter = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+            if (!/单产业模式请选择/.test(bodyAfter)) return;
           }
           await page.waitForTimeout(400);
         }
-        throw new Error('ENV-CHAIN-REG-COMPETE-03519：无法选择产业「集成电路」');
+        throw new Error('ENV-CHAIN-REG-COMPETE-03519：无法选择分析对象产业');
       };
       const ensureOneRegion = async () => {
         const view = page.locator('main .arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();

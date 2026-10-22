@@ -1,0 +1,21 @@
+id: FUNC-05496
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05496
+priority: P1
+tier: B
+title: 备选-再点已在对比篮
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: 已在对比篮
+expect:
+  - note: 1、按钮仍为「已在对比篮」
+    assert: |-
+      await expect(page.locator('main').getByRole('button', { name: '已在对比篮' }).first()).toBeVisible();
+  - note: 2、提示该机构已在对比篮中
+    assert: |-
+      await expect(page.locator('.arco-message').filter({ hasText: /已在对比篮中/ }).first()).toBeVisible({ timeout: 12000 });
+on_fail: 截图 + 抄 X-Trace-Id

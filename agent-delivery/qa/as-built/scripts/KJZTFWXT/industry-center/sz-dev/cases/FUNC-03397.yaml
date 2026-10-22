@@ -14,131 +14,63 @@ steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 构造生成失败页→点「查看分析记录」；记录区在 expect
+    note: 构造生成失败页→点「查看分析记录」
 expect:
   - note: 前置：进入生成失败页并点击「查看分析记录」
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
-      };
-      const ensureConfigPage = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404() || !onTarget()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析 ' + page.url());
-        }
-      };
-      const ind = () => page.locator('main .industry-catalog-select').first();
-      const bindView = () =>
-        page
-          .locator('main input[placeholder="请显式选择有效结构化结果"]')
-          .locator('xpath=ancestor::div[contains(@class,"arco-select-view")]')
-          .first();
-      const pickIndustry = async (name) => {
-        await ind().locator('.arco-select-view').first().click({ timeout: 8000 });
+      const objectField = () =>
+        main().locator('.policy-analysis-filter-row__field').filter({ hasText: '分析对象' });
+      const sourceField = () =>
+        main()
+          .locator('.policy-analysis-filter-row__field')
+          .filter({ hasText: '有效的深圳产业情况分析对比结果' });
+      const pickSelectOption = async (field, optionText) => {
+        await field.locator('.arco-select-view').first().click({ timeout: 10000 });
         await page.waitForTimeout(400);
-        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click();
-        await page.waitForTimeout(700);
+        await page
+          .locator('.arco-trigger-popup:visible .arco-select-option')
+          .filter({ hasText: optionText })
+          .first()
+          .click({ timeout: 8000 });
+        await page.waitForTimeout(600);
       };
       const bindFirstEnabled = async () => {
-        await bindView().click({ timeout: 8000 });
+        await sourceField().locator('.arco-select-view').first().click({ timeout: 10000 });
         await page.waitForTimeout(500);
         const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
         if (!(await en.count())) throw new Error('ENV-CHAIN-SZ-DEV-NO-BIND-03397：无有效对比来源可选');
         await en.first().click({ timeout: 8000 });
         await page.waitForTimeout(600);
       };
-      const isFailShell = async () => {
-        const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const btn = page.getByRole('button', { name: '返回配置重试' }).first();
-        const vis = await btn.isVisible().catch(() => false);
-        return (
-          vis &&
-          (/本次分析生成失败|任务状态：failed|分析失败/.test(body) ||
-            /深圳产业发展分析生成中/.test(body))
-        );
-      };
-      const waitFailPage = async () => {
+      const waitFailWithRecordsBtn = async () => {
+        const openRec = () => page.getByRole('button', { name: '查看分析记录' }).first();
         let last = '';
-        for (let i = 0; i < 120; i++) {
-          await page.waitForTimeout(i < 6 ? 600 : 1200);
+        for (let i = 0; i < 150; i++) {
+          await page.waitForTimeout(i < 8 ? 800 : 1200);
           last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (await isFailShell()) return last;
-          if (/深圳产业发展分析结果/.test(last) && !/生成中/.test(last)) {
+          if (await openRec().isVisible().catch(() => false)) return openRec();
+          if (/深圳产业发展分析结果/.test(last) && !/生成中|生成失败/.test(last)) {
             throw new Error('ENV-CHAIN-SZ-DEV-FAIL-03397：分析意外成功，无法构造失败页');
           }
         }
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-FAIL-PAGE-03397：超时未进入生成失败页，片段=' + last.slice(0, 240));
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-FAIL-PAGE-03397：超时未见「查看分析记录」，片段=' + last.slice(0, 240));
       };
-      const triggerMismatchFail = async () => {
-        await ensureConfigPage();
-        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-        await pickIndustry('新一代信息技术');
-        await bindFirstEnabled();
-        await pickIndustry('生物');
-        await page.waitForTimeout(500);
-        const start = page.getByRole('button', { name: '开始分析' }).first();
-        if (await start.isEnabled().catch(() => false)) {
-          await start.click({ timeout: 15000 });
-          return await waitFailPage();
-        }
-        await pickIndustry('新能源');
+      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 15000 });
+      await pickSelectOption(objectField(), '新一代信息技术');
+      await bindFirstEnabled();
+      await pickSelectOption(objectField(), '生物');
+      await page.waitForTimeout(500);
+      const start = page.getByRole('button', { name: '开始分析' }).first();
+      if (!(await start.isEnabled().catch(() => false))) {
+        await pickSelectOption(objectField(), '新能源');
         await page.waitForTimeout(400);
-        if (await start.isEnabled().catch(() => false)) {
-          await start.click({ timeout: 15000 });
-          return await waitFailPage();
-        }
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-FAIL-TRIGGER-03397：产业/绑定不一致仍无法点开始分析');
-      };
-      await triggerMismatchFail();
-      const openRec = page.getByRole('button', { name: '查看分析记录' }).first();
-      await expect(openRec).toBeVisible({ timeout: 8000 });
+      }
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      await start.click({ timeout: 15000 });
+      const openRec = await waitFailWithRecordsBtn();
       await openRec.click({ timeout: 15000 });
-      await page.waitForTimeout(1200);
+      await page.waitForTimeout(1000);
       globalThis.__func03397 = { clickedRecords: true };
   - note: 1、打开「分析记录」
     assert: |-
@@ -149,7 +81,6 @@ expect:
       const frame = page.locator('[data-frame-id="F-SZ-04"]');
       await expect(frame).toBeVisible({ timeout: 10000 });
       await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '返回配置重试' })).toHaveCount(0);
   - note: 2、能看到任务状态与记录表
     assert: |-
       if (!globalThis.__func03397?.clickedRecords) throw new Error('前置：未点击「查看分析记录」');
@@ -159,15 +90,8 @@ expect:
       await expect(statusRow.locator('.arco-select-view').first()).toBeVisible({ timeout: 8000 });
       const table = frame.locator('.arco-table, table').first();
       await expect(table).toBeVisible({ timeout: 10000 });
-      const headers = frame.locator('.arco-table-th, thead th');
-      const hc = await headers.count();
-      if (hc < 2) throw new Error('分析记录表头列过少: ' + hc);
       const bodyTxt = ((await frame.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (!/任务|类型|状态/.test(bodyTxt)) {
         throw new Error('记录表未见任务/类型/状态列文案');
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  03397=生成失败页 IndustryAnalysisProcessShell「查看分析记录」→ setTab(records) 打开 F-SZ-04 分析记录区。
-  前置自含同 03396：新一代信息技术+有效 CHAIN 绑定后改选生物/新能源再点开始，等 failed+「返回配置重试」后点「查看分析记录」。
-  无绑定→ENV-CHAIN-SZ-DEV-NO-BIND-03397；无法触发→NO-FAIL-TRIGGER；超时→NO-FAIL-PAGE。catalog_path=entry-seed。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。

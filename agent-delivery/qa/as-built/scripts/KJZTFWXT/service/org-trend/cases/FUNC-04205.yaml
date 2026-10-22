@@ -1,0 +1,154 @@
+id: FUNC-04205
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04205
+priority: P1
+tier: B
+title: 备选-重新分析 · 新的一次结果
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 刚从过程页点「查看结果」进入结果页且该次带有已选机构
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  start: button「开始分析」
+  view_result: button「查看结果」
+  reanalyze: button「重新分析」
+  process_shell: '[data-testid="svc-org-analysis-process"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 前置：一家机构 → 开始分析 → 过程页「查看结果」进入结果页；步骤 1：点击「重新分析」
+    assert: |-
+      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
+      const parseTaskId = (u) => {
+        const m = String(u).match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        return m ? m[1] : null;
+      };
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      if (/view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000);
+      const main = page.locator('main').first();
+      let bodyCfg = ((await main.innerText().catch(() => '')) || '');
+      const orgReady =
+        /已选机构（[1-9]/.test(bodyCfg) ||
+        bodyCfg.includes(knownOrg.slice(0, 12)) ||
+        page.url().includes(knownOrg);
+      if (!orgReady) {
+        const pick = page.getByRole('button', { name: '选择机构', exact: true }).first();
+        if (await pick.isVisible().catch(() => false)) {
+          await pick.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+          await expect(dialog).toBeVisible({ timeout: 8000 });
+          const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+          if ((await checks.count()) < 1) throw new Error('配置区无法回填一家机构（无弹窗可选项且无 org_ids）');
+          await checks.first().click({ timeout: 5000 });
+          await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+        } else if (!page.url().includes('org_ids')) {
+          throw new Error('前置缺已选机构：无选择机构入口且无 org_ids 深链');
+        }
+      }
+      const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await start.click({ timeout: 15000 });
+      let tidFirst = null;
+      for (let i = 0; i < 45; i++) {
+        await page.waitForTimeout(1000);
+        const u = page.url();
+        tidFirst = parseTaskId(u) || tidFirst;
+        const pbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (/分析结果已生成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+        if (/已完成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+      }
+      if (!tidFirst) tidFirst = parseTaskId(page.url());
+      if (!tidFirst) throw new Error('首次开始分析未捕获任务 ID: ' + page.url());
+      const vr0 = page.getByRole('button', { name: '查看结果', exact: true }).first();
+      await expect(vr0).toBeVisible({ timeout: 12000 });
+      await vr0.click({ timeout: 8000 });
+      await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+      await page.waitForTimeout(2000);
+      const tidBefore = parseTaskId(page.url()) || tidFirst;
+      const rbody0 = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+      if (!/服务机构新增数量趋势/.test(rbody0)) throw new Error('前置结果页未见「服务机构新增数量趋势」: ' + rbody0.slice(0, 280));
+      const re = page.getByRole('button', { name: '重新分析', exact: true }).first();
+      await expect(re).toBeVisible({ timeout: 8000 });
+      await re.click({ timeout: 8000 });
+      let tidAfter = null;
+      for (let i = 0; i < 60; i++) {
+        await page.waitForTimeout(1000);
+        const u = page.url();
+        const cand = parseTaskId(u);
+        if (cand && cand !== tidBefore) { tidAfter = cand; break; }
+        if (/[?&]view=processing/.test(u) && cand) tidAfter = cand;
+        const pb = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (tidAfter && tidAfter !== tidBefore && /已完成|分析结果已生成/.test(pb)) break;
+      }
+      if (!tidAfter) tidAfter = parseTaskId(page.url());
+      if (!tidAfter) throw new Error('重新分析后未进入过程态或未捕获新任务 ID: ' + page.url());
+      globalThis.__func04205 = { taskIdBefore: tidBefore, taskIdAfter: tidAfter };
+      if (tidAfter === tidBefore) throw new Error('过程页任务标识未变化: ' + tidBefore);
+  - note: 1、过程页任务标识与进入前不同（用例预期 1）
+    assert: |-
+      const st = globalThis.__func04205;
+      if (!st?.taskIdBefore || !st?.taskIdAfter) throw new Error('前置：未记录任务 ID');
+      if (st.taskIdAfter === st.taskIdBefore) {
+        throw new Error('任务 ID 未变 before=' + st.taskIdBefore + ' after=' + st.taskIdAfter);
+      }
+      const url = page.url();
+      if (!url.includes(st.taskIdAfter)) throw new Error('过程页 URL 未携带新任务 ' + st.taskIdAfter + ': ' + url);
+      if (!/[?&]view=processing/.test(url)) throw new Error('重新分析后应停在过程页 view=processing: ' + url);
+  - note: 2、该次状态为已完成（用例预期 2）
+    assert: |-
+      const st = globalThis.__func04205;
+      if (!st?.taskIdAfter) throw new Error('前置：无新任务 ID');
+      let pbody = '';
+      let ok = false;
+      for (let i = 0; i < 30; i++) {
+        pbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (/已完成/.test(pbody) && /分析结果已生成/.test(pbody)) { ok = true; break; }
+        if (/已完成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) { ok = true; break; }
+        await page.waitForTimeout(1000);
+      }
+      if (!ok) throw new Error('新过程页未见已完成态 任务=' + st.taskIdAfter + ' 片段=' + pbody.slice(0, 280));
+      await expect(page.getByRole('button', { name: '查看结果', exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、步骤 2 点「查看结果」后新结果页显示「服务机构新增数量趋势」（用例预期 3）
+    assert: |-
+      const st = globalThis.__func04205;
+      if (!st?.taskIdAfter) throw new Error('前置：无新任务 ID');
+      const uProc = page.url();
+      if (!uProc.includes(st.taskIdAfter) || !/[?&]view=processing/.test(uProc)) {
+        throw new Error('点查看结果前过程页 URL 异常（应含新任务且 view=processing）: ' + uProc);
+      }
+      const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+      await vr.click({ timeout: 8000 });
+      await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+      await page.waitForTimeout(2000);
+      let rbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+      if (!/服务机构新增数量趋势/.test(rbody)) {
+        for (let i = 0; i < 8; i++) {
+          await page.waitForTimeout(1000);
+          rbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+          if (/服务机构新增数量趋势/.test(rbody)) break;
+        }
+      }
+      if (!/服务机构新增数量趋势/.test(rbody)) {
+        throw new Error('新结果页未见「服务机构新增数量趋势」 url=' + page.url() + ' body=' + rbody.slice(0, 280));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04205（结果页「重新分析」→ 新过程页「查看结果」：新 task_id、已完成、结果壳标题）。
+  前置一家机构对齐 FUNC-04194 深链 org_ids[]=testdata known_org_id；无「选择机构」时仅深链。
+  重新分析无确认框，提示「任务已创建，正在展示分析过程」。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04205。

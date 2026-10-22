@@ -76,7 +76,7 @@ expect:
         return await page.getByText('产业周期分析结果').first().isVisible().catch(() => false);
       };
       const openResultFromProcessing = async () => {
-        const btn = page.getByRole('button', { name: /查看分析结果/ });
+        const btn = main().getByRole('button', { name: /查看分析结果/ });
         for (let i = 0; i < 30; i++) {
           if (await isSuccessResult()) return;
           if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
@@ -172,7 +172,10 @@ expect:
         if (sawSameDay) {
           throw new Error('改参后仍触发当天同条件复用（应产生新任务，见 02890）');
         }
-        if (/分析结果已生成/.test(last)) break;
+        if (/分析结果已生成/.test(last)) {
+          await openResultFromProcessing();
+          if (await isSuccessResult()) break;
+        }
         if (await isSuccessResult()) break;
         if (/分析失败|本次分析失败/.test(last) && !/可视化分析过程/.test(last)) {
           throw new Error('ENV-CHAIN-CYCLE-REANALYSIS-FAIL-001：改参重跑失败');
@@ -181,9 +184,12 @@ expect:
       if (!/分析结果已生成/.test(last) && !(await isSuccessResult())) {
         throw new Error('改参重跑超时未见「分析结果已生成」：' + last.slice(0, 240));
       }
-      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
       if (!(await isSuccessResult())) {
-        await expect(viewBtn).toBeVisible({ timeout: 8000 });
+        await openResultFromProcessing();
+      }
+      const viewBtn = main().getByRole('button', { name: /查看分析结果/ }).first();
+      if (!(await isSuccessResult())) {
+        await expect(viewBtn).toBeVisible({ timeout: 15000 });
         await viewBtn.click({ timeout: 10000 });
         await page.waitForTimeout(1200);
       }

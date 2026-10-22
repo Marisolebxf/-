@@ -1,0 +1,175 @@
+id: FUNC-02713
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02713
+priority: P0
+title: 翻页后已选计数仍在
+entry_id: chain-search
+tier: A
+preconditions:
+  - 已打开「重点产业」结果
+  - 结果多于一页
+locators:
+  result_region: '[role=region][aria-label="产业查询结果"]'
+  hot_key_industry: button.enterprise-search-hot-button「重点产业」
+  selection_toolbar: .industry-search-selection-toolbar
+  result_pagination: .industry-search-pagination .arco-pagination
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 重点产业第 1 页勾选一行→翻第 2 页；预期在 expect
+expect:
+  - note: 前置：重点产业检索结果且超过一页，记录第 1 页首条名称
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const clearSelection = async () => {
+        const toolbar = page.locator('.industry-search-selection-toolbar');
+        if ((await toolbar.count()) && (await toolbar.first().isVisible().catch(() => false))) {
+          const cancel = toolbar.getByRole('button', { name: '取消选择', exact: true });
+          if ((await cancel.count()) && (await cancel.first().isVisible().catch(() => false))) {
+            await cancel.first().click({ timeout: 5000 });
+            await page.waitForTimeout(400);
+          }
+        }
+      };
+      const region = () => page.locator('[role=region][aria-label="产业查询结果"]');
+      const resultPagination = () => region().locator('.industry-search-pagination .arco-pagination').first();
+      const firstVisibleCardTitle = async () => {
+        const cards = region().locator('.industry-search-result-card');
+        const n = await cards.count();
+        for (let i = 0; i < n; i++) {
+          const card = cards.nth(i);
+          if (!(await card.isVisible().catch(() => false))) continue;
+          const h = card.getByRole('heading').first();
+          const title = ((await h.innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (title) return title;
+        }
+        return '';
+      };
+      await dismissBasket();
+      await clearSelection();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: 产业查询入口 SPA 404 ' + page.url());
+      }
+      const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^重点产业$/ }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.click();
+      await page.waitForTimeout(2000);
+      await expect(region()).toBeVisible({ timeout: 15000 });
+      const state = await region().getAttribute('data-search-state');
+      if (state !== 'result' && state !== 'permission') {
+        throw new Error('前置应为检索结果态 result/permission，实际 data-search-state=' + state);
+      }
+      const pag = resultPagination();
+      const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      const hasPage2 =
+        ((await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false))) ||
+        (await pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').count()) > 0;
+      if (!hasPage2) {
+        throw new Error('数据闸门：重点产业结果未超过一页，无法验翻页保留已选');
+      }
+      const page1First = await firstVisibleCardTitle();
+      if (!page1First) {
+        throw new Error('前置：第 1 页无可见结果标题');
+      }
+      globalThis.__func02713_page1First = page1First;
+      globalThis.__func02713_preReady = true;
+  - note: 步骤 1：勾选第 1 页一行
+    assert: |-
+      if (!globalThis.__func02713_preReady) throw new Error('前置未完成');
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const pag = region.locator('.industry-search-pagination .arco-pagination').first();
+      const active1 = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+      if (active1 !== '1' && active1 !== '') {
+        const btn1 = pag.locator('.arco-pagination-item').filter({ hasText: /^1$/ }).first();
+        if ((await btn1.count()) && (await btn1.isVisible().catch(() => false))) {
+          await btn1.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+        }
+      }
+      const cards = region.locator('.industry-search-result-card');
+      const cardCount = await cards.count();
+      let pickIdx = -1;
+      for (let i = 0; i < cardCount; i++) {
+        const card = cards.nth(i);
+        if (!(await card.isVisible().catch(() => false))) continue;
+        const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+        if ((await chk.count()) > 0) {
+          pickIdx = i;
+          break;
+        }
+      }
+      if (pickIdx < 0) {
+        throw new Error('第 1 页无可勾选行');
+      }
+      const card = cards.nth(pickIdx);
+      const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
+      await chk.scrollIntoViewIfNeeded().catch(() => {});
+      const cls = (await chk.getAttribute('class')) || '';
+      if (!cls.includes('arco-checkbox-checked')) {
+        await chk.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      }
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      await expect(toolbar.getByText(/已选\s*1/)).toBeVisible({ timeout: 5000 });
+      globalThis.__func02713_checked = true;
+  - note: 步骤 2：打开第 2 页
+    assert: |-
+      if (!globalThis.__func02713_checked) throw new Error('前置：尚未勾选第 1 页');
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const pag = region.locator('.industry-search-pagination .arco-pagination').first();
+      await expect(pag).toBeVisible({ timeout: 8000 });
+      const page2Btn = pag.locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
+      if ((await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false))) {
+        await page2Btn.click({ timeout: 8000 });
+      } else {
+        const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+        await expect(next).toBeVisible({ timeout: 8000 });
+        await next.click({ timeout: 8000 });
+      }
+      await page.waitForTimeout(800);
+      const active2 = ((await pag.locator('.arco-pagination-item-active').first().innerText()) || '').trim();
+      if (active2 !== '2') {
+        throw new Error('翻页后当前页应为 2，现场 active=' + (active2 || '(空)'));
+      }
+      globalThis.__func02713_onPage2 = true;
+  - note: 1、第 2 页首条与第 1 页不同；2、已选计数仍在
+    assert: |-
+      if (!globalThis.__func02713_onPage2) throw new Error('尚未翻到第 2 页');
+      const page1First = globalThis.__func02713_page1First;
+      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const cards = region.locator('.industry-search-result-card');
+      const n = await cards.count();
+      let page2First = '';
+      for (let i = 0; i < n; i++) {
+        const card = cards.nth(i);
+        if (!(await card.isVisible().catch(() => false))) continue;
+        const h = card.getByRole('heading').first();
+        page2First = ((await h.innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (page2First) break;
+      }
+      if (!page2First) {
+        throw new Error('第 2 页无可见结果首条标题');
+      }
+      if (page2First === page1First) {
+        throw new Error('第 2 页首条应与第 1 页不同（第1=' + page1First + ' 第2=' + page2First + '）');
+      }
+      const toolbar = page.locator('.industry-search-selection-toolbar');
+      await expect(toolbar).toBeVisible({ timeout: 8000 });
+      await expect(toolbar.getByText(/已选\s*1/)).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+as_built_note: >-
+  路由 catalog_path /industry-center/search；前置=智能检索热门「重点产业」出多页检索结果（分页 .industry-search-pagination，PAGE_SIZE=6）。
+  步骤=第 1 页勾选首条可勾选行→点分页 2；首条名称取结果卡片 heading；已选条 .industry-search-selection-toolbar 文案 /已选\s*1/（可带类型后缀）。
+  登录与关内部评审由 runner 前置。A 档零 allow_skip。

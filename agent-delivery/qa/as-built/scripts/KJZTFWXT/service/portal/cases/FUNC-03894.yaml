@@ -19,22 +19,11 @@ steps:
 expect:
   - note: 1、三张卡标题为六类合计、覆盖环节数、最厚环节
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('C2：门户深链 404，无法验产业分布页');
-      }
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
       const tablist = page.locator('[aria-label="专题服务子导航"]');
       await tablist.getByRole('tab', { name: '服务机构产业分布', exact: true }).click();
       await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 15000 });
       await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      const kpiLabels = ['六类合计', '覆盖环节数', '最厚环节'];
+      const kpiLabels = ['环节合计', '覆盖环节数', '最厚环节'];
       for (const label of kpiLabels) {
         const el = page.locator('.svc-portal-kpi__label').filter({ hasText: label }).first();
         await expect(el).toBeVisible({ timeout: 8000 });

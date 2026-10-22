@@ -1,0 +1,131 @@
+id: FUNC-04295
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04295
+priority: P1
+tier: B
+title: 备选-关闭选择浮层 · 取消
+story: US-SVC-ORG-08
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；对比机构已有当前家数（经「从对比篮带入」带入，不点「开始评估」）
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  return_basket: '[data-testid="svc-org-cap-open-basket"]'
+  picker_title: 选择分析服务机构
+  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  count_head: .svc-org-cap-compare__head
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 记录家数→「返回对比篮」→浮层内改勾选→「取消」（真实操作在 expect 内）
+expect:
+  - note: 1、浮层关闭
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const readCompareSnapshot = async () => {
+        const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+        const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+        const total = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        return { head, checked, total };
+      };
+      const prepImport = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 2) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：对比篮服务机构不足 2 家，当前 tags=' + tagN);
+        }
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        await expect(imp).toBeVisible({ timeout: 8000 });
+        await imp.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        const ret = page.locator('[data-testid="svc-org-cap-open-basket"]').or(page.getByRole('button', { name: '返回对比篮', exact: true })).first();
+        await expect(ret).toBeVisible({ timeout: 8000 });
+        return ret;
+      };
+      const retBtn = await prepImport();
+      const before = await readCompareSnapshot();
+      if (!before.head.includes('当前') || !before.head.includes('家')) {
+        throw new Error('前置对比机构计数行异常=' + before.head);
+      }
+      await retBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(page.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 10000 });
+      const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+      await expect(ws).toBeVisible({ timeout: 8000 });
+      const toggleOne = ws.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first();
+      if (await toggleOne.count()) {
+        await toggleOne.click({ timeout: 5000 });
+        await page.waitForTimeout(350);
+      }
+      const cancel = page.locator('[data-testid="compare-basket-action-bar"]').getByRole('button', { name: '取消', exact: true }).last();
+      await expect(cancel).toBeVisible({ timeout: 8000 });
+      await cancel.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      await expect(page.getByText('选择分析服务机构').first()).toBeHidden({ timeout: 8000 });
+      const panelOpen = page.locator('.system-compare-panel[data-panel-open="true"], .system-compare-panel:visible').filter({ hasText: '选择分析服务机构' });
+      if (await panelOpen.count() && await panelOpen.first().isVisible().catch(() => false)) {
+        throw new Error('点取消后选择浮层仍可见');
+      }
+      globalThis.__func04295 = { before, done: true };
+  - note: 2、当前家数与打开前相同
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      if (!globalThis.__func04295?.done) {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1200);
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false)) {
+          await close.first().click().catch(() => {});
+          await page.waitForTimeout(300);
+        }
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        if ((await tags.count()) < 2) throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001');
+        await page.locator('[data-testid="svc-org-cap-import-basket"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const before = {
+          head: ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, ''),
+          checked: await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count(),
+          total: await page.locator('.svc-org-cap-compare__tags .arco-tag').count(),
+        };
+        await page.locator('[data-testid="svc-org-cap-open-basket"]').first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const ws = page.locator('[data-testid="service-org-compare-basket-workspace"]');
+        const toggle = ws.locator('.arco-checkbox:not(.arco-checkbox-disabled)').first();
+        if (await toggle.count()) await toggle.click();
+        await page.waitForTimeout(350);
+        await page.locator('[data-testid="compare-basket-action-bar"]').getByRole('button', { name: '取消', exact: true }).last().click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        globalThis.__func04295 = { before, done: true };
+      }
+      const before = globalThis.__func04295.before;
+      const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      const total = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+      if (head !== before.head) throw new Error('计数行变化：打开前=' + before.head + ' 取消后=' + head);
+      if (checked !== before.checked) throw new Error('选中家数变化：打开前=' + before.checked + ' 取消后=' + checked);
+      if (total !== before.total) throw new Error('对比机构 tags 总数变化：打开前=' + before.total + ' 取消后=' + total);
+      const url = page.url();
+      if (/view=processing/.test(url)) throw new Error('取消后误入过程页 url=' + url);
+      if (/view=result/.test(url) && /task_id=SVC-/.test(url)) throw new Error('取消后误入结果页 url=' + url);
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<2 家→ENV-SVCCAP-BASKET-ORG-LT2-001
+as_built_note: >-
+  蓝本 FUNC-04295（选择浮层点取消，家数不变）。前置=对比篮 tags≥2→「从对比篮带入」→记录 .svc-org-cap-compare__head 与 tag-checked 数
+  →「返回对比篮」（testid=svc-org-cap-open-basket）→浮层内 toggle 一条勾选以验证取消不提交→compare-basket-action-bar「取消」。
+  两条 expect：浮层关闭 / head+checked+total 与打开前一致且无过程|结果页。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04295。零 allow_skip。

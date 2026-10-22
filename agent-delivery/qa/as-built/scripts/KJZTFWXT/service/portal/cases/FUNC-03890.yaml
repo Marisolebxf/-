@@ -9,23 +9,16 @@ preconditions:
   - 已进入门户概况；env-gate G2 qty chart_visible
 locators:
   tab_overview: tab「全球服务机构概况」
-  block_qty: heading「数量分析 · 历年总量趋势」
+  block_qty: text「数量分析 · 历年新增趋势」
   trend_chart: .svc-portal-chart（概况区首个折线图 canvas）
 steps:
   - action: goto
     target: /service-portal/overview
   - action: evaluate
-    note: 悬停「数量分析 · 历年总量趋势」折线图数据区
+    note: 悬停「数量分析 · 历年新增趋势」折线图数据区
 expect:
   - note: 1、提示中同时有年份与数量
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
       if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
         throw new Error('C2：/service-portal/overview 不可达（SPA404）');
       }
@@ -35,13 +28,13 @@ expect:
         await overviewTab.click({ timeout: 8000 });
         await page.waitForTimeout(400);
       }
-      const heading = page.getByRole('heading', { name: '数量分析 · 历年总量趋势', exact: true }).first();
-      await expect(heading).toBeVisible({ timeout: 8000 });
+      const blockTitle = page.getByText('数量分析 · 历年新增趋势', { exact: true }).first();
+      await expect(blockTitle).toBeVisible({ timeout: 8000 });
       const empty = page.getByText('暂无历年序列').first();
       if (await empty.isVisible().catch(() => false)) {
         throw new Error('趋势图为诚实空，无法悬停数据点（new_org_series 无序列）');
       }
-      const chartWrap = heading.locator('xpath=ancestor::*[.//canvas][1]');
+      const chartWrap = blockTitle.locator('xpath=ancestor::*[.//canvas][1]');
       const canvas = chartWrap.locator('canvas').first();
       await expect(canvas).toBeVisible({ timeout: 10000 });
       const readTip = () =>
@@ -103,7 +96,7 @@ expect:
       }
       if (!hasYearAndQty(tipText)) {
         throw new Error(
-          '悬停历年总量趋势后 tooltip 未同时含年份与数量；tip=' +
+          '悬停历年新增趋势后 tooltip 未同时含年份与数量；tip=' +
           (tipText || '（空）') +
           '；echarts=' + JSON.stringify(ecProbe),
         );

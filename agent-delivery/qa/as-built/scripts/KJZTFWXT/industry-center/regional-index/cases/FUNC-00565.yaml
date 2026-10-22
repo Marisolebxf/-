@@ -24,22 +24,12 @@ expect:
       if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
         throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
       }
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) await close.first().click({ timeout: 3000 }).catch(() => {});
-        }
-      };
-      await dismissBasket();
       await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
       await page.getByText('单产业 × 多区域', { exact: true }).first().click();
       await page.waitForTimeout(600);
       await expect(page.getByText('评价区域（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
       const region = () =>
-        page.locator('.arco-select-view-multiple').filter({
-          has: page.locator('input[placeholder="请选择区域"]'),
-        }).first().or(page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first());
+        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
       const rv = region();
       await expect(rv).toBeVisible({ timeout: 8000 });
       if (!(await rv.evaluate((el) => el.className.includes('mult')))) {
@@ -57,15 +47,15 @@ expect:
   - note: 2、同一区域不可重复添加且所选区域在汇总回显
     assert: |-
       const region = () =>
-        page.locator('.arco-select-view-multiple').filter({
-          has: page.locator('input[placeholder="请选择区域"]'),
-        }).first().or(page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first());
+        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
       const rv = region();
       const pick = async (name) => {
         await rv.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
-        await pop.getByText(name, { exact: true }).first().click();
+        const opt = pop.getByText(name, { exact: true }).first();
+        if (!(await opt.isVisible().catch(() => false))) return;
+        await opt.click();
         await page.waitForTimeout(350);
         await page.keyboard.press('Escape');
         await page.waitForTimeout(300);
@@ -91,16 +81,14 @@ expect:
   - note: 3、区域数量限制 1–5、超上限不可再加
     assert: |-
       const region = () =>
-        page.locator('.arco-select-view-multiple').filter({
-          has: page.locator('input[placeholder="请选择区域"]'),
-        }).first().or(page.locator('.arco-select-view').filter({ hasText: '深圳市' }).first());
+        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
       const rv = region();
       const pick = async (name) => {
         await rv.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         const pop = page.locator('.arco-trigger-popup:visible').last();
         const opt = pop.getByText(name, { exact: true }).first();
-        if (!(await opt.count())) return;
+        if (!(await opt.isVisible().catch(() => false))) return;
         await opt.click();
         await page.waitForTimeout(350);
         await page.keyboard.press('Escape');

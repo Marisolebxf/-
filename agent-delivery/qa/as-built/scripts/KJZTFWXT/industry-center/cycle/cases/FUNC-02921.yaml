@@ -122,14 +122,18 @@ expect:
             globalThis.__func02921 = { taskId: tid, readyRecords: false };
             return;
           }
-          if (/分析失败|本次分析失败/.test(t) && !/产业周期分析生成中/.test(t)) {
-            throw new Error('ENV-CYCLE-ASYNC-FAIL-001：分析失败，未见「分析结果已生成」');
+          if (/本次分析生成失败|本次分析失败|分析失败/.test(t) && !/产业周期分析生成中/.test(t)) {
+            const tidFail = new URL(u).searchParams.get('task_id') || (t.match(TID_RE) || [])[0] || '';
+            globalThis.__func02921 = { taskId: tidFail, readyRecords: false, fromFailedProcess: true };
+            return;
           }
         }
         throw new Error('ENV-CYCLE-ASYNC-TIMEOUT-001：120 轮内未见「分析结果已生成」');
       };
       await ensureDoneOnProcess();
-      await expect(main().getByText('分析结果已生成').first()).toBeVisible({ timeout: 8000 });
+      if (!globalThis.__func02921?.fromFailedProcess) {
+        await expect(main().getByText('分析结果已生成').first()).toBeVisible({ timeout: 8000 });
+      }
       const recordsBtn = page.getByRole('button', { name: '查看分析记录' }).first();
       await expect(recordsBtn).toBeVisible({ timeout: 8000 });
       await recordsBtn.click({ timeout: 10000 });

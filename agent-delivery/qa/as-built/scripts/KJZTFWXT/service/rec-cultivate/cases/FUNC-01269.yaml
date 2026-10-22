@@ -1,0 +1,24 @@
+id: FUNC-01269
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01269
+priority: P0
+tier: B
+title: 主流程-恢复默认权重一键复位
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 复位后四权重恢复 25/30/25/20
+    assert: |-
+      const model = page.locator('div, section').filter({ hasText: '培育评估模型' }).first();
+      await expect(model).toBeVisible();
+      await page.getByText('现有规模 25%', { exact: true }).click({ timeout: 8000 });
+      const spinInput = model.locator('.arco-input-number input').first();
+      await spinInput.fill('26', { timeout: 8000 });
+      await page.getByRole('button', { name: '恢复默认权重' }).click({ timeout: 8000 });
+      await expect(model.getByText('现有规模 25%')).toBeVisible();
+      await expect(model.getByText('技术创新能力 30%')).toBeVisible();
+      await expect(model.getByText('服务成效 25%')).toBeVisible();
+      await expect(model.getByText('市场缺口 20%')).toBeVisible();

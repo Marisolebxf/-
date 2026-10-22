@@ -1,0 +1,24 @@
+id: FUNC-04605
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04605
+priority: P1
+tier: B
+title: 备选-记录查看结果
+entry_id: svc-rec-attract
+preconditions:
+  - 分析记录中有已完成行
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 进入该任务的结果页
+    assert: |-
+      await expect(page.getByRole('button', { name: '生成招引名单' })).not.toBeVisible({ timeout: 15000 })
+  - note: 出现「外部机构引进推荐名单」
+    assert: |-
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

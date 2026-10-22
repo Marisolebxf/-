@@ -1,0 +1,33 @@
+id: FUNC-05508
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05508
+priority: P1
+tier: B
+title: 异常-环节分布空态
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+expect:
+  - note: 1、标题为「全部产业 · 深圳产业链环节分布」
+    assert: |-
+      const main = page.locator('main');
+      const cascader = main.locator('.arco-cascader-view').first();
+      if (await cascader.isVisible()) {
+        const clear = cascader.locator('.arco-icon-close').first();
+        if (await clear.isVisible().catch(() => false)) {
+          await clear.click();
+          await page.waitForTimeout(800);
+        }
+      }
+      const heading = main.getByText('深圳产业链环节分布', { exact: false }).first();
+      await heading.scrollIntoViewIfNeeded();
+      await expect(main.getByText('全部产业 · 深圳产业链环节分布')).toBeVisible();
+  - note: 2、文案含「无领域×环节矩阵」
+    assert: |-
+      await expect(page.locator('main').getByText(/本包络无环节分布/)).toBeVisible();
+  - note: 3、文案含「不填演示环节条」
+    assert: |-
+      await expect(page.locator('main').getByText(/不填演示环节条/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

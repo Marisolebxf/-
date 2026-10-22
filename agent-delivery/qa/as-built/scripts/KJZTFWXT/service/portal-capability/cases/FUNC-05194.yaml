@@ -1,0 +1,26 @@
+id: FUNC-05194
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05194
+priority: P1
+tier: B
+title: 主流程-选定产业链后榜单标题
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: evaluate
+    target: |-
+      const main = page.locator('main');
+      await main.locator('.arco-cascader-view').first().click();
+      await page.locator('.arco-cascader-panel-column').first().getByText('新一代信息技术', { exact: true }).click();
+      await main.locator('.arco-cascader-view').nth(1).click();
+      await page.locator('.arco-cascader-panel-column').first().getByText('半导体与集成电路', { exact: true }).click();
+expect:
+  - note: 1、榜单标题为「半导体与集成电路 · 技术力 Top30」
+    assert: |-
+      await expect(page.getByRole('main').getByText('半导体与集成电路 · 技术力 Top30')).toBeVisible()
+  - note: 2、上下文句子含「半导体与集成电路」
+    assert: |-
+      await expect(page.getByRole('main').getByText(/半导体与集成电路/)).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

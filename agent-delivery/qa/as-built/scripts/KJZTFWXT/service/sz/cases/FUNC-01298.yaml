@@ -1,0 +1,28 @@
+id: FUNC-01298
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01298
+priority: P1
+tier: B
+title: 备选-页签往返
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 1、两个页签都能进入
+    assert: |-
+      await page.getByText('新能源', { exact: true }).click();
+      await page.getByRole('tab', { name: '分析记录' }).click();
+      await expect(page.getByRole('tab', { name: '分析记录' })).toHaveAttribute('aria-selected', 'true');
+      await page.getByRole('tab', { name: '深圳服务链现状分析' }).click();
+      await expect(page.getByRole('tab', { name: '深圳服务链现状分析' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page).toHaveURL(/tab=shenzhen/);
+  - note: 2、回来后产业仍为「新能源」
+    assert: |-
+      await expect(page.locator('.arco-select-view').filter({ hasText: '新能源' }).first()).toBeVisible();
+  - note: 3、往返不创建分析任务
+    assert: |-
+      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

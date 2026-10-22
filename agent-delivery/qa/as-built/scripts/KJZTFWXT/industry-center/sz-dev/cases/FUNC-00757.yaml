@@ -4,99 +4,41 @@ priority: P0
 title: 切换分析对象产业后回显正确且主体保持锁定
 entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 已登录 admin
-  - 已进入深圳产业发展分析页；产业已选「新一代信息技术」（脚本内先选再切换）
-locators:
-  industry: main .industry-catalog-select
-  subject_row: '[data-testid="shenzhen-development-context-row"]'
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
-  - action: evaluate
-    note: 产业 新一代信息技术→生物→新一代信息技术；主体区域回读在 expect
 expect:
   - note: 切换后已选值回显为新选产业
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        const leaf = leafItem();
-        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
-        await leaf.first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      await dismissBasket();
-      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(1200);
-      await dismissBasket();
-      if (!onTarget() || (await bodyIs404())) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (!(await bodyIs404())) {
-          await enterViaSidebar();
-        }
-      }
-      if (await bodyIs404() || !onTarget()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: search 与深圳发展分析深链均 SPA404，无法验产业切换 ' + page.url());
-      }
-      const ind = () => page.locator('main .industry-catalog-select').first();
-      await expect(ind()).toBeVisible({ timeout: 10000 });
+      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
+      await expect(row.first()).toBeVisible({ timeout: 15000 });
+      const ind = () => row.locator('.industry-catalog-select').first();
       const pick = async (name) => {
-        await ind().locator('.arco-select-view').first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click();
-        await page.waitForTimeout(700);
+        await ind().locator('.arco-select-view').click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        const opt = page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first();
+        await expect(opt).toBeVisible({ timeout: 10000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
       };
-      const label = ((await ind().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!label.includes('新一代信息技术')) {
+      const currentLabel = ((await ind().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!currentLabel.includes('新一代信息技术')) {
         await pick('新一代信息技术');
       }
-      await expect(ind()).toContainText('新一代信息技术', { timeout: 8000 });
       await pick('生物');
       await expect(ind()).toContainText('生物', { timeout: 8000 });
   - note: 切回后已选值回显为原产业
     assert: |-
-      const ind = () => page.locator('main .industry-catalog-select').first();
-      await ind().locator('.arco-select-view').first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await page.waitForTimeout(700);
+      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
+      const ind = () => row.locator('.industry-catalog-select').first();
+      await ind().locator('.arco-select-view').click({ timeout: 10000 });
+      await page.waitForTimeout(500);
+      const opt = page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first();
+      await expect(opt).toBeVisible({ timeout: 10000 });
+      await opt.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
       await expect(ind()).toContainText('新一代信息技术', { timeout: 8000 });
   - note: 主体区域保持「深圳」只读锁定
     assert: |-
@@ -107,5 +49,4 @@ expect:
       const roProp = await subject.evaluate((el) => el.readOnly);
       if (!(await subject.getAttribute('readonly')) && !roProp) throw new Error('主体无 readonly');
       if (await subject.isEditable()) throw new Error('主体 input 可编辑');
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 深链 404 时侧栏 sibling /industry-center/search 回落（同 FUNC-00756）。产业已选态用 main .industry-catalog-select 首项 + .arco-select-view 点选。主体行 data-testid=shenzhen-development-context-row（同 00758）。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

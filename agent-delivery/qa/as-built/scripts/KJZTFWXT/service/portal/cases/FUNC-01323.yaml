@@ -58,8 +58,11 @@ expect:
       if (!orgId) {
         throw new Error('D3-SVCPORTAL-ORG-SHARE: 点卡后地址栏未见 ?org=，用例分享前提未承载');
       }
-      const sharePath = '/service-portal/shenzhen?org=' + encodeURIComponent(orgId);
-      await page.goto(sharePath, { waitUntil: 'domcontentloaded' });
+      const shareUrl = new URL(u1);
+      if (!shareUrl.searchParams.get('org')) {
+        shareUrl.searchParams.set('org', orgId);
+      }
+      await page.goto(shareUrl.href, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(1500);
       await dismissBasket();
       const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
@@ -88,12 +91,12 @@ expect:
       if (orgAfter) {
         throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后地址栏仍残留 org=' + orgAfter);
       }
+      await page.waitForTimeout(500);
       const active = await page.evaluate(() => {
         const el = document.activeElement;
-        if (!el) return { tag: null, isCard: false, aria: '' };
+        if (!el) return { isCard: false, aria: '' };
         return {
-          tag: el.tagName,
-          isCard: el.classList && el.classList.contains('svc-portal-keyorg-card'),
+          isCard: el.classList?.contains('svc-portal-keyorg-card') ?? false,
           aria: el.getAttribute('aria-label') || '',
         };
       });

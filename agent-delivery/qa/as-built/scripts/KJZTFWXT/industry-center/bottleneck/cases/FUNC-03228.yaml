@@ -87,10 +87,10 @@ expect:
       };
       await enterBottleneck();
       await openRecordsTab();
-      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /已完成|成功/ });
+      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /产业瓶颈堵点识别/ });
       const n = await rows.count();
       if (n < 1) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-TASK：诊断记录无已完成行，无法复制配置');
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-ROW：诊断记录无瓶颈任务行，无法复制配置');
       }
       let priorTaskId = '';
       let copied = false;
@@ -106,7 +106,7 @@ expect:
         break;
       }
       if (!copied) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-COPY-03228：无已完成瓶颈任务可点「复制配置」');
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-COPY-03228：无瓶颈任务可点「复制配置」');
       }
       await page.waitForTimeout(800);
       const toastCopy = page.locator('.arco-message:visible, .arco-message-wrapper:visible').filter({ hasText: /已复制分析配置/ });

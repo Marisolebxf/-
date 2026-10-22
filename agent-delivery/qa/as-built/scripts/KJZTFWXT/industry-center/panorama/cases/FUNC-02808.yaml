@@ -18,66 +18,51 @@ steps:
   - action: evaluate
     note: 前置清空所属产业链后在「所属产业链」选回「半导体与集成电路」
 expect:
-  - note: 1、主标题「半导体与集成电路全景图谱」；2、「开始分析」不再出现
+  - note: 1、主标题恢复为「半导体与集成电路全景图谱」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const readView = async (loc) =>
-        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
-      }
-      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      await expect(ctx).toBeVisible({ timeout: 10000 });
-      const segWrap = ctx.locator('.industry-catalog-select').first();
+      const main = page.locator('main');
+      await expect(main.getByText('所属产业链')).toBeVisible({ timeout: 15000 });
+      const chainField = main.locator('.policy-analysis-filter-row__field').nth(1);
+      const segWrap = chainField.locator('.industry-catalog-select');
       const segView = segWrap.locator('.arco-select-view').first();
-      await expect(segView).toBeVisible({ timeout: 8000 });
-      await segView.scrollIntoViewIfNeeded();
-      await segView.hover();
-      await page.waitForTimeout(400);
-      const clr = segWrap.locator('.arco-select-view-clear-btn, .arco-select-clear-icon').first();
-      if (!(await clr.count())) {
-        throw new Error('前置：所属产业链 hover 后未见清除控件');
+      await expect(segView).toBeVisible({ timeout: 15000 });
+      const readView = async () =>
+        ((await segView.getAttribute('title')) || (await segView.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const clearChain = async () => {
+        const clr = segWrap.locator('.arco-select-view-clear-btn').first();
+        if (await clr.count()) {
+          await clr.click({ force: true, timeout: 5000 });
+          return;
+        }
+        await segView.hover();
+        await segWrap.locator('.arco-select-view-clear-btn, .arco-select-clear-icon').first().click({
+          force: true,
+          timeout: 5000,
+        });
+      };
+      const pickChain = async (label) => {
+        await segView.click({ timeout: 8000 });
+        const dd = page.locator('.arco-select-dropdown:visible').last();
+        await expect(dd).toBeVisible({ timeout: 10000 });
+        await dd.locator('.arco-select-option').filter({ hasText: new RegExp(`^${label}$`) }).first().click({
+          timeout: 8000,
+        });
+        await page.waitForTimeout(600);
+      };
+      if (/半导体与集成电路/.test(await readView())) {
+        await clearChain();
+        await page.waitForTimeout(600);
       }
-      await clr.click({ force: true, timeout: 5000 });
-      await page.waitForTimeout(800);
-      const cleared = await readView(segView);
-      if (/半导体与集成电路/.test(cleared)) {
-        throw new Error('前置：清空所属产业链失败，现场: ' + cleared);
+      if (/半导体与集成电路/.test(await readView())) {
+        throw new Error('前置：清空所属产业链失败，现场: ' + (await readView()));
       }
-      await segView.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible');
-      await expect(pop).toBeVisible({ timeout: 8000 });
-      const opt = pop.locator('.arco-select-option').filter({ hasText: /^半导体与集成电路$/ }).first();
-      await expect(opt).toBeVisible({ timeout: 5000 });
-      await opt.click();
-      await page.waitForTimeout(800);
-      const after = await readView(segView);
-      if (!/半导体与集成电路/.test(after)) {
-        throw new Error('选回后所属产业链应为「半导体与集成电路」，现场: ' + after);
-      }
-      await expect(page.locator('#panorama-workspace-title')).toHaveText('半导体与集成电路全景图谱', {
-        timeout: 10000,
-      });
-      const start = page.getByRole('button', { name: '开始分析' });
-      const startVis = await start.first().isVisible().catch(() => false);
-      if (startVis) {
-        throw new Error('恢复默认已应用态后仍出现「开始分析」');
-      }
+      await pickChain('半导体与集成电路');
+      await expect(
+        page.getByRole('heading', { level: 1, name: '半导体与集成电路全景图谱' }),
+      ).toBeVisible({ timeout: 15000 });
+  - note: 2、「开始分析」不再出现
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toHaveCount(0);
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
-  路由 /industry-center/panorama；前置自举 02807 清空 chainId，再 industry-catalog-select 选「半导体与集成电路」；
-  断言 H1=细分链级 panoramaTitle、dirty 清除后 showStartAnalysis 不出现（默认秒开已应用态）。登录与关内部评审由 runner 前置。A 档零 allow_skip。
-  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；选回链断言仍依 scout-deep2 默认态。
+  路由 /industry-center/panorama；前置清空 chainId 后选回「半导体与集成电路」；断言主标题与无「开始分析」。

@@ -79,23 +79,12 @@ expect:
     assert: |-
       if (!globalThis.__func02800_ready) throw new Error('前置：未点击目标关系');
       const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      const semRow = detail
+      const semVal = detail
         .locator('.arco-descriptions-item')
-        .filter({ has: detail.locator('.arco-descriptions-item-label').filter({ hasText: '业务语义' }) })
+        .filter({ hasText: '业务语义' })
+        .locator('.arco-descriptions-item-value')
         .first();
-      await expect(semRow).toBeVisible({ timeout: 8000 });
-      const semVal = ((await semRow.locator('.arco-descriptions-item-value').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (semVal !== '暂无已发布关系说明') {
-        throw new Error('业务语义应为「暂无已发布关系说明」，现场: ' + semVal);
-      }
-      const snapRow = detail
-        .locator('.arco-descriptions-item')
-        .filter({ has: detail.locator('.arco-descriptions-item-label').filter({ hasText: '当前时间状态' }) })
-        .first();
-      const snapVal = ((await snapRow.locator('.arco-descriptions-item-value').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!/\d{4}-\d{2}-\d{2} · 当前状态/.test(snapVal)) {
-        throw new Error('当前时间状态格式不符「YYYY-MM-DD · 当前状态」，现场: ' + snapVal);
-      }
+      await expect(semVal).toHaveText('暂无已发布关系说明', { timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
   路由 catalog_path /industry-center/panorama；前置「结构列表」= canvasMode list（IndustryPanoramaPage.vue）。

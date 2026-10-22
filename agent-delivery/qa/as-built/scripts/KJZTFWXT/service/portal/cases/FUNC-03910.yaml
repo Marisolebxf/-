@@ -3,14 +3,9 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03910
 priority: P1
 tier: B
 title: 清除产业选择
-story: US-SVC-PT-02
 entry_id: svc-portal
-preconditions:
-  - 已进入门户；筛选区可见；env-gate G3 pass
-locators:
-  industry: select placeholder 全部产业
-  chain: select placeholder 全部产业链
-  industry_clear: .arco-select-view-clear-btn（产业下拉 hover 后出现）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/overview
@@ -19,53 +14,33 @@ steps:
 expect:
   - note: 1、产业恢复占位「全部产业」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        return false;
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/overview SPA404，筛选区不可达');
-      }
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await ind.click({ timeout: 8000 });
+      const main = page.locator('main');
+      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '生物' }).first().click();
-      await page.waitForTimeout(800);
-      const echoBio = ((await ind.locator('.arco-select-view-value').first().innerText().catch(() => '')) || '').trim();
-      if (!echoBio.includes('生物')) throw new Error('前置：产业未选中生物，现场=' + echoBio);
-      await ind.hover();
+      const col0 = page.locator('.arco-cascader-panel-column').first();
+      await col0.getByText(/生物/, { exact: false }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const label = ((await cascader.innerText().catch(() => '')) || '').trim();
+      if (!/生物/.test(label)) throw new Error('前置：产业未选中含「生物」，现场=' + label);
+      await cascader.hover();
       await page.waitForTimeout(300);
-      const clr = ind.locator('.arco-select-view-clear-btn, .arco-select-clear-icon').first();
-      if (!(await clr.count())) throw new Error('产业已选「生物」但 hover 后未见清除图标');
+      const clr = main.locator('.svc-portal-industry-cascader .arco-icon-close, .svc-portal-industry-cascader .arco-cascader-view-clear-icon').first();
+      if (!(await clr.count())) throw new Error('产业已选但未见清除图标（级联 allowClear）');
       await clr.click({ force: true, timeout: 5000 });
       await page.waitForTimeout(800);
-      const ph = await ind.locator('input').getAttribute('placeholder');
+      const ph = await main.locator('.svc-portal-industry-cascader input').first().getAttribute('placeholder');
       if (ph !== '全部产业') throw new Error('清除后 placeholder 非全部产业: ' + ph);
-      const valueInput = ind.locator('input.arco-select-view-input');
-      const val = (await valueInput.inputValue()).trim();
-      if (val) throw new Error('清除后 input 仍有值: ' + val);
-      const tag = ind.locator('.arco-select-view-value');
-      if (await tag.count()) {
-        const t = (await tag.first().innerText()).trim();
-        if (t && t !== '全部产业') throw new Error('清除后仍回显产业: ' + t);
-      }
+      const shown = ((await cascader.innerText().catch(() => '')) || '').trim();
+      if (shown && !/^全部产业$/.test(shown)) throw new Error('清除后仍回显产业: ' + shown);
   - note: 2、产业链下拉恢复禁用
     assert: |-
-      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
+      if (!(await chain.count())) throw new Error('页上无 placeholder「全部产业链」的产业链下拉');
       const dis = await chain.evaluate((el) => el.className.includes('disabled'));
       if (!dis) throw new Error('清除产业后产业链未恢复禁用');
       try { await chain.click({ timeout: 1500 }); } catch {}
       await page.waitForTimeout(300);
       const opts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
       if (opts > 0) throw new Error('产业链禁用态仍弹出选项');
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: P7 点 .arco-select-view；清除对齐 allowClear（hover + arco-select-view-clear-btn）。筛选项清除非业务名单清空。2026-10-21 edu.itic-sci.com/tts/svcz 机跑 goto overview SPA 404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 03910。
+on_fail: 截图 + 抄 X-Trace-Id

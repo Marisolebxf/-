@@ -1,0 +1,191 @@
+id: FUNC-04202
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04202
+priority: P1
+tier: A
+title: 备选-弹窗清空后取消 · 配置区原机构仍在
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 配置区已回显一家机构（D2：弹窗空名单时用深链 org_ids 回填，见 fixtures/testdata known_org_id）
+locators:
+  pick_btn: button「选择机构」
+  modal: data-testid=svc-org-picker-modal
+  group_select_all: button「全选」（任一分组头内）
+  modal_clear: 弹窗 footer button「清空」
+  modal_cancel: button「取消」
+  footer_count: .svc-org-picker-footer__count
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 1、清空后弹窗已选为 0 家；2、取消后配置区原机构仍在
+    assert: |-
+      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (
+          await close.count() &&
+          (await close.first().isVisible().catch(() => false)) &&
+          (await close.first().isEnabled().catch(() => false))
+        ) {
+          try {
+            await close.first().click({ timeout: 1500 });
+            await page.waitForTimeout(300);
+          } catch {}
+        }
+      };
+      const configShell = () =>
+        page.locator('[data-testid="svc-org-analysis-config"], main').first();
+      const mainText = async () => ((await configShell().innerText().catch(() => '')) || '').trim();
+      const parseFooterCount = async (dialog) => {
+        const foot = dialog.locator('.svc-org-picker-footer__count').first();
+        const txt = ((await foot.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        const m = txt.match(/已选\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : -1;
+      };
+      const clearModalSearch = async (dialog) => {
+        const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
+        if (!(await search.count())) return;
+        await expect(search).toBeVisible({ timeout: 8000 });
+        const val = (await search.inputValue().catch(() => '')).trim();
+        if (!val) return;
+        const clearBtn = dialog
+          .locator('.svc-org-picker-search .arco-input-clear-icon, .arco-input-clear-btn')
+          .first();
+        if (await clearBtn.count() && (await clearBtn.isVisible().catch(() => false))) {
+          await clearBtn.click({ timeout: 3000 });
+        } else {
+          await search.fill('');
+        }
+        await page.waitForTimeout(900);
+      };
+      const ensureOneOrg = async () => {
+        if (/view=processing|view=result/.test(page.url())) {
+          await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        await dismissBasket();
+        await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2500);
+        await expect(page.getByRole('tab', { name: '服务机构新增趋势分析', exact: true }).first()).toBeVisible({
+          timeout: 12000,
+        });
+        let body = await mainText();
+        if (!body) throw new Error('ENV-SVC-ORG-TREND-EMPTY-MAIN：趋势主区无文案');
+        const oneUi =
+          /已选机构（1\s*家）/.test(body) || body.includes(knownOrg.slice(0, 12));
+        if (!oneUi && page.url().includes(knownOrg)) {
+          await page.waitForTimeout(2000);
+          body = await mainText();
+        }
+        if (!/已选机构（1\s*家）/.test(body) && !body.includes(knownOrg.slice(0, 12))) {
+          const pick = configShell().getByRole('button', { name: '选择机构', exact: true }).first();
+          if (!(await pick.isVisible().catch(() => false))) {
+            throw new Error(
+              'D2-SVC-ORG-TREND-NO-ORG-PICKER：配置区无「选择机构」且深链未回显一家机构 body=' + body.slice(0, 240),
+            );
+          }
+          await pick.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          const dialog0 = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+          await expect(dialog0).toBeVisible({ timeout: 8000 });
+          const checks = dialog0.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+          if ((await checks.count()) < 1) throw new Error('ENV-SVC-ORG-TREND-NO-ORGS：弹窗与深链均无法回填一家机构');
+          await checks.first().click({ timeout: 5000 });
+          await dialog0.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+          await page.waitForTimeout(1000);
+          body = await mainText();
+        }
+        if (!/已选机构（1\s*家）/.test(body) && !body.includes(knownOrg.slice(0, 12))) {
+          throw new Error('前置未满足一家机构：body=' + body.slice(0, 280));
+        }
+        globalThis.__p04202 = { before: body, knownOrg };
+      };
+      const visiblePick = async () => {
+        const shells = [configShell(), page.locator('main').first()];
+        for (const shell of shells) {
+          const roleBtn = shell.getByRole('button', { name: '选择机构', exact: true });
+          const n = await roleBtn.count();
+          for (let i = 0; i < n; i++) {
+            const b = roleBtn.nth(i);
+            if (await b.isVisible().catch(() => false)) return b;
+          }
+        }
+        const tid = page.locator('[data-testid="svc-org-open-picker"]');
+        if (await tid.count() && (await tid.first().isVisible().catch(() => false))) return tid.first();
+        return null;
+      };
+      await ensureOneOrg();
+      const snap = globalThis.__p04202;
+      if (!snap?.before) throw new Error('前置：配置区未回显一家机构');
+      const pick = await visiblePick();
+      if (!pick) {
+        throw new Error('D2-SVC-ORG-TREND-NO-ORG-PICKER：趋势配置区无可见「选择机构」入口');
+      }
+      try {
+        await pick.scrollIntoViewIfNeeded();
+      } catch {}
+      await pick.click({ timeout: 12000 });
+      await page.waitForTimeout(800);
+      const dialog = page
+        .locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+        .filter({ hasText: '选择服务机构' })
+        .first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      await clearModalSearch(dialog);
+      const groups = dialog.locator('.svc-org-picker-group');
+      await expect(groups.first()).toBeVisible({ timeout: 15000 });
+      let selectAllBtn = null;
+      const groupN = await groups.count();
+      for (let g = 0; g < Math.min(groupN, 12); g++) {
+        const group = groups.nth(g);
+        const btn = group
+          .locator('.svc-org-picker-group__head')
+          .locator('button, .arco-btn')
+          .filter({ hasText: /^全选$/ })
+          .first();
+        if (await btn.isVisible().catch(() => false)) {
+          selectAllBtn = btn;
+          break;
+        }
+      }
+      if (!selectAllBtn) throw new Error('ENV-SVC-ORG-TREND-NO-GROUP-SELECT-ALL：弹窗未见任一分组「全选」');
+      try {
+        await selectAllBtn.scrollIntoViewIfNeeded();
+      } catch {}
+      await selectAllBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(600);
+      const countAfterSelectAll = await parseFooterCount(dialog);
+      if (countAfterSelectAll < 1) {
+        throw new Error('全选后弹窗已选仍为 0，无法验证清空 count=' + countAfterSelectAll);
+      }
+      const footer = dialog.locator('.svc-org-picker-footer, .arco-modal-footer').first();
+      const modalClear = footer.getByRole('button', { name: '清空', exact: true }).first();
+      await expect(modalClear).toBeVisible({ timeout: 8000 });
+      await modalClear.click({ timeout: 12000 });
+      await page.waitForTimeout(600);
+      const countAfterClear = await parseFooterCount(dialog);
+      if (countAfterClear !== 0) {
+        throw new Error('清空后弹窗已选未归零 count=' + countAfterClear);
+      }
+      await expect(dialog.locator('.svc-org-picker-footer__count').first()).toContainText(/已选\s*0\s*家/);
+      await footer.getByRole('button', { name: '取消', exact: true }).click({ timeout: 12000 });
+      await page.waitForTimeout(800);
+      await expect(dialog).not.toBeVisible({ timeout: 8000 });
+      const after = await mainText();
+      const stillOne =
+        /已选机构（1\s*家）/.test(after) || after.includes(snap.knownOrg.slice(0, 12));
+      if (!stillOne) {
+        throw new Error(
+          '取消后配置区原机构丢失: before=' + snap.before.slice(0, 200) + ' after=' + after.slice(0, 200),
+        );
+      }
+      if (/已选机构（0\s*家）/.test(after) && !/已选机构（1\s*家）/.test(after)) {
+        throw new Error('取消后配置区已选归零（弹窗清空被提交） body=' + after.slice(0, 280));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04202；步骤：配置区一家 →「选择机构」→ 任一分组「全选」→ 弹窗 footer「清空」→「取消」。断言弹窗已选 0 家后取消，配置区仍为 1 家（底部取消不改已确认集合）。
+  前置 D2：org_ids[]=testdata known_org_id 或弹窗选 1 家。2026-10-21 30892 趋势壳无「选择机构」/已选机构回显（对齐 04201）→ D2-SVC-ORG-TREND-NO-ORG-PICKER。catalog_path entry-seed trend。A 档零 allow_skip。

@@ -1,0 +1,69 @@
+id: FUNC-04196
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04196
+priority: P0
+tier: A
+title: 主流程-已完成结果 · 对比领域下拉不可选
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已有一条已完成的分析任务
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: button「查看结果」
+  compare_select: '[data-testid="svc-org-trend-compare"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 1、「对比领域」旁的下拉不可选
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      let url0 = page.url();
+      let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/服务机构新增数量趋势/.test(body0) && /view=result/.test(url0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 });
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        url0 = page.url();
+        body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!/view=result/.test(url0) && !/服务机构新增数量趋势/.test(body0)) {
+        throw new Error('未打开已完成任务的结果页 url=' + url0 + ' body=' + body0.slice(0, 280));
+      }
+      await expect(page.getByText('对比领域：').first()).toBeVisible({ timeout: 8000 });
+      const compare = page.locator('[data-testid="svc-org-trend-compare"]').first();
+      await expect(compare).toBeVisible({ timeout: 8000 });
+      const disabled = await compare.evaluate((el) => {
+        const root = el.classList.contains('arco-select') || el.classList.contains('arco-select-view') ? el : (el.closest('.arco-select') || el);
+        const input = el.querySelector('input.arco-select-view-input') || root.querySelector('input');
+        const viewDisabled = el.classList.contains('arco-select-view-disabled') || root.classList.contains('arco-select-disabled') || root.classList.contains('arco-select-view-disabled');
+        const inputDisabled = !!(input && (input.disabled || input.getAttribute('aria-disabled') === 'true'));
+        return viewDisabled || inputDisabled;
+      });
+      if (!disabled) throw new Error('对比领域下拉应为不可选（disabled）');
+  - note: 2、占位文案为「＋添加对比领域」
+    assert: |-
+      const compare = page.locator('[data-testid="svc-org-trend-compare"]').first();
+      await expect(compare).toBeVisible({ timeout: 8000 });
+      const ph = await compare.locator('input.arco-select-view-input').first().getAttribute('placeholder');
+      if (ph !== '＋添加对比领域') throw new Error('占位文案不符: ' + JSON.stringify(ph));
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例 FUNC-04196：已完成任务结果页「对比领域」旁 Arco Select（data-testid=svc-org-trend-compare）为 disabled，
+  placeholder 全角「＋添加对比领域」。步骤：分析记录 → 查看结果。30892 诚实空年序列现场与 scout-p011-switch.json 一致。

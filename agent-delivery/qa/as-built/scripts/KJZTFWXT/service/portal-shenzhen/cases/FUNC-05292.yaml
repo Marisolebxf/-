@@ -1,0 +1,32 @@
+id: FUNC-05292
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05292
+priority: P1
+tier: B
+title: 主流程-选定产业链
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen?industry=CL-SEI-01
+  - action: evaluate
+    note: 1.展开产业链下拉
+    run: |-
+      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
+      await page.locator('.svc-portal-industry-cascader-menu').waitFor({ state: 'visible' });
+  - action: evaluate
+    note: 2.选择「半导体与集成电路」
+    run: |-
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().hover();
+      await menu.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option').filter({ hasText: '半导体与集成电路' }).first().click();
+      await page.waitForURL(/industry=CL-SEI-01\./, { timeout: 15000 });
+      await expect(page.locator('main')).toContainText('「半导体与集成电路」为上下文', { timeout: 15000 });
+expect:
+  - note: 1、结论上下文为「半导体与集成电路」
+    assert: |-
+      await expect(page.locator('main')).toContainText('「半导体与集成电路」为上下文');
+  - note: 2、环节分布标题含「半导体与集成电路」
+    assert: |-
+      await expect(page.locator('main')).toContainText('半导体与集成电路 · 深圳产业链环节分布');
+on_fail: 截图 + 抄 X-Trace-Id

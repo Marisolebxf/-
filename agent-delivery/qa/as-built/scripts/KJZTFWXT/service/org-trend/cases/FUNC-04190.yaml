@@ -1,0 +1,69 @@
+id: FUNC-04190
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04190
+priority: P0
+tier: A
+title: 主流程-热度面板 · 无序列说明
+story: US-SVC-ORG-05
+entry_id: svc-org-trend
+preconditions:
+  - 已有一条已完成的分析（env-gate G7）
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: button「查看结果」
+  heat_panel: '[data-testid=svc-org-heat-panel]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 1、标题为「市场热度与趋势研判」
+    assert: |-
+      await page.waitForTimeout(800);
+      let url0 = page.url();
+      let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/市场热度与趋势研判/.test(body0) && /view=result/.test(url0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 });
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        url0 = page.url();
+        body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!/view=result/.test(url0) && !/市场热度与趋势研判/.test(body0)) {
+        throw new Error('未打开已完成任务的结果页 url=' + url0 + ' body=' + body0.slice(0, 280));
+      }
+      const main = page.locator('main').first();
+      await main.getByText(/市场热度与趋势研判/).first().scrollIntoViewIfNeeded().catch(() => {});
+      await expect(main.getByText(/市场热度与趋势研判/).first()).toBeVisible({ timeout: 12000 });
+  - note: 2、可见「演示口径：评级判读算法待定义，结果仅供参考」
+    assert: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText(/演示口径：评级判读算法待定义，结果仅供参考/).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、主领域行含「暂无趋势序列，无法给出热度研判」
+    assert: |-
+      const panel = page.locator('[data-testid="svc-org-heat-panel"]');
+      const main = page.locator('main').first();
+      const body = ((await main.innerText().catch(() => '')) || '');
+      const rating = panel.locator('.svc-org-heat__rating').first();
+      const ratingText = ((await rating.innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      const hasMsg = /暂无趋势序列，无法给出热度研判/.test(body) || /暂无趋势序列，无法给出热度研判/.test(ratingText);
+      if (!hasMsg) {
+        throw new Error('主领域行未见无序列热度说明 rating=' + ratingText.slice(0, 200) + ' body=' + body.slice(0, 320));
+      }
+      await expect(panel.getByText(/暂无趋势序列，无法给出热度研判/).first()).toBeVisible({ timeout: 8000 });
+      const starCount = await panel.locator('.arco-rate').count();
+      if (starCount > 0 && await panel.locator('.arco-rate').first().isVisible().catch(() => false)) {
+        throw new Error('无序列时不应出现星级控件');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04190（热度面板无趋势序列说明；现网已完成任务无年序列 payload，对齐 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD）。
+  步骤：分析记录 → 查看结果。断言跟 scout-p009-heat.json / scout-p014-honest-empty.json 现场文案；星级与依据行不出现（用例清单未覆盖项不验）。

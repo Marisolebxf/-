@@ -1,0 +1,114 @@
+id: FUNC-04299
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04299
+priority: P1
+tier: A
+title: 主流程-返回配置 · 结果页回模型区
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已从勾选两家的评估打开结果页
+  - 已进入 capability 工作区（catalog_path）
+locators:
+  back_config: button「返回配置」
+  model_panel: .ent-section-panel（技术力评价模型）
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 两家机构结果页→点击「返回配置」（真实操作在 expect 内）
+expect:
+  - note: 1、回到「技术力评价模型」
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const mainLast = () => page.locator('main').last();
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const snapCompare = async () => {
+        const head = ((await page.locator('.svc-org-cap-compare__head').innerText().catch(() => '')) || '').replace(/\s+/g, '');
+        const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+        return { head, checked };
+      };
+      const prepTwoOrgs = async () => {
+        if (!page.url().includes('workspace=capability')) {
+          await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1200);
+        }
+        await closeBasket();
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 2) throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：对比篮服务机构不足 2 家，tags=' + tagN);
+        for (let i = 0; i < tagN; i++) {
+          const cls = String((await tags.nth(i).getAttribute('class')) || '');
+          if (cls.includes('arco-tag-checked')) {
+            await tags.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(280);
+          }
+        }
+        await tags.nth(0).click({ timeout: 5000 });
+        await tags.nth(1).click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        const snap = await snapCompare();
+        if (!snap.head.includes('当前2家')) throw new Error('前置需勾选两家，计数行=' + snap.head);
+        globalThis.__func04299 = snap;
+      };
+      const reachResultPage = async () => {
+        if (/[?&]view=result/.test(page.url()) && /task_id=SVC-/.test(page.url())) {
+          const rb = ((await mainLast().innerText().catch(() => '')) || '');
+          if (/技术力横向对比结果/.test(rb)) return;
+        }
+        await prepTwoOrgs();
+        const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(1000);
+          const body = ((await mainLast().innerText().catch(() => '')) || '');
+          if (/分析结果已生成/.test(body) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+          if (/评估失败|任务失败/.test(body)) throw new Error('评估任务失败：' + body.slice(0, 200));
+        }
+        const vr0 = page.getByRole('button', { name: '查看结果', exact: true }).first();
+        await expect(vr0).toBeVisible({ timeout: 12000 });
+        await vr0.click({ timeout: 8000 });
+        await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+        await page.waitForTimeout(2000);
+        await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      };
+      await reachResultPage();
+      if (!globalThis.__func04299) {
+        await prepTwoOrgs();
+      }
+      const back = page.getByRole('button', { name: '返回配置', exact: true }).first();
+      await expect(back).toBeVisible({ timeout: 8000 });
+      await back.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      if (/[?&]view=result/.test(page.url())) {
+        throw new Error('点击返回配置后仍停在结果 view=result: ' + page.url());
+      }
+      const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first();
+      await expect(panel).toBeVisible({ timeout: 12000 });
+      await expect(page.getByText('技术力评价模型').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、对比机构当前家数仍为返回前的家数
+    assert: |-
+      const st = globalThis.__func04299;
+      if (!st?.head) throw new Error('前置：未记录返回前对比机构家数');
+      const headAfter = ((await page.locator('.svc-org-cap-compare__head').innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      const checkedAfter = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      if (headAfter !== st.head) {
+        throw new Error('对比机构计数行变化：前=' + st.head + ' 后=' + headAfter);
+      }
+      if (checkedAfter !== st.checked) {
+        throw new Error('勾选家数变化：前=' + st.checked + ' 后=' + checkedAfter);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04299（两家机构结果页点「返回配置」→ 技术力评价模型；对比机构当前家数不变）。
+  前置对齐 FUNC-04288/04298 对比篮勾选 2 家并进结果页。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04299。

@@ -1,0 +1,33 @@
+id: FUNC-05500
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05500
+priority: P1
+tier: B
+title: 主流程-三张指标卡
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: click
+    target: 深圳产业服务介绍
+  - action: wait
+    timeout_ms: 1200
+expect:
+  - note: 「深圳机构约数」展示家数
+    assert: |-
+      const kpi = page.locator('main .svc-portal-kpi').filter({ hasText: '深圳机构约数' });
+      await expect(kpi).toBeVisible();
+      await expect(kpi).toContainText('家');
+      await expect(kpi).not.toContainText('暂无');
+  - note: 「本年新增」为暂无
+    assert: |-
+      const kpi = page.locator('main .svc-portal-kpi').filter({ hasText: '本年新增' });
+      await expect(kpi).toBeVisible();
+      await expect(kpi).toContainText('暂无');
+  - note: 「覆盖领域数」为暂无
+    assert: |-
+      const kpi = page.locator('main .svc-portal-kpi').filter({ hasText: '覆盖环节数' });
+      await expect(kpi).toBeVisible();
+      await expect(kpi).toContainText('暂无');
+on_fail: 截图 + 抄 X-Trace-Id

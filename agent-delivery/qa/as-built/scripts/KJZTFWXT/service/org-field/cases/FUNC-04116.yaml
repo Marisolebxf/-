@@ -3,183 +3,42 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04116
 priority: P1
 tier: B
 title: 备选-兄弟菜单 · 不带出本页摘要
-story: US-SVC-ORG-01
 entry_id: svc-org-field
-preconditions:
-  - 当前在服务机构产业领域分析 field/coverage 配置态（脚本自含入口预热）
-locators:
-  menu_trend: 侧栏「服务机构新增趋势分析」
-  menu_capability: 侧栏「服务机构技术力评估分析」
-  breadth_heading: main 内「服务广度 TOP3」（field 结果核心结论块，兄弟页不应出现）
+preconditions: []
+locators: {}
 steps:
-  - action: goto
-    target: /
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 前置：当前在服务机构产业领域分析（catalog_path=entry-seed）
+  - note: 1、当前在服务机构产业领域分析
     assert: |-
       const spaUrl = (p) =>
         new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
       const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const tabsReady = async () => {
-        const m = page.locator('[role=tab][data-tab-key="coverage"]');
-        return (await m.count()) > 0 && (await m.first().isVisible().catch(() => false));
-      };
-      const clickMenuLeaf = async () => {
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
-        if (!(await leaf().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForTimeout(2500);
-      };
-      const enterViaSidebar = async (siblingPath) => {
-        await dismissBasket();
-        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+      if (!page.url().includes('workspace=field') || !page.url().includes('tab=coverage') || /view=result|view=processing|[?&]task_id=/.test(page.url())) {
+        await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForTimeout(1200);
-        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
-        if (await bodyIs404()) return false;
-        await clickMenuLeaf();
-        return (await tabsReady()) && !(await bodyIs404());
-      };
-      const ensureOnFieldCoverage = async () => {
-        await dismissBasket();
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: SPA 壳不可达（404）url=' + page.url());
-        }
-        if (page.url().includes('/login') || /sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) {
-          throw new Error('ENV-EDU-TTS-SVCZ-SESSION-001: 会话已掉线 url=' + page.url());
-        }
-        if (/view=result|view=processing|[?&]task_id=/.test(page.url())) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1200);
-        }
-        if (await bodyIs404() || !(await tabsReady())) {
-          await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1200);
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1500);
-        }
-        if ((await bodyIs404()) || !(await tabsReady())) {
-          const siblings = ['/service-portal/overview/overview', '/service-portal/overview', '/industry-center/search'];
-          let ok = false;
-          for (const s of siblings) {
-            if (await enterViaSidebar(s)) {
-              ok = true;
-              break;
-            }
-          }
-          if (!ok && !(await bodyIs404())) {
-            await clickMenuLeaf();
-            ok = (await tabsReady()) && !(await bodyIs404());
-          }
-          if (!ok) {
-            throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均不可达 field/coverage url=' + page.url());
-          }
-        }
-        await expect(page).toHaveURL(/\/service\/institution-judgment/, { timeout: 15000 });
-        await expect(page).toHaveURL(/workspace=field/);
-        await expect(page).toHaveURL(/tab=coverage/);
-        await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
-      };
-      const expandSvcChainMenu = async () => {
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) {
-          const open = await sub.first().getAttribute('aria-expanded').catch(() => null);
-          if (open !== 'true') {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-      };
-      const clickSiblingMenu = async (label) => {
-        await expandSvcChainMenu();
-        const leaf = page.locator('.arco-menu-item').filter({ hasText: new RegExp('^' + label + '$') });
-        if (await leaf.first().isVisible().catch(() => false)) {
-          await leaf.first().click({ timeout: 10000 });
-          return;
-        }
-        const m = page.getByRole('menuitem', { name: label }).first();
-        if (await m.isVisible().catch(() => false)) {
-          await m.click({ timeout: 8000 });
-          return;
-        }
-        await page.locator('aside, nav, .arco-menu').getByText(label).first().click({ timeout: 8000 });
-      };
-      globalThis.__p04116Click = clickSiblingMenu;
-      await ensureOnFieldCoverage();
-  - note: 1、点击侧栏「服务机构新增趋势分析」后，趋势页不出现「服务广度 TOP3」
-    assert: |-
-      const clickMenu = globalThis.__p04116Click || (async (label) => {
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) await sub.first().click({ timeout: 8000 }).catch(() => {});
-        await page.locator('.arco-menu-item').filter({ hasText: /^服务机构新增趋势分析$/ }).first().click({ timeout: 10000 });
-      });
-      await clickMenu('服务机构新增趋势分析');
-      await page.waitForTimeout(2200);
-      const close = page.locator('[aria-label="关闭对比篮"]');
-      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) {
-        try {
-          await close.first().click({ timeout: 1500 });
-          await page.waitForTimeout(300);
-        } catch {}
       }
+      if (!page.url().includes('workspace=field')) {
+        await page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ }).first().click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+      }
+      await expect(page).toHaveURL(/workspace=field/, { timeout: 15000 });
+      await expect(page).toHaveURL(/tab=coverage/);
+      await expect(page.locator('[data-testid="svc-org-analysis-config"]')).toBeVisible({ timeout: 12000 });
+      await expect(page.locator('[data-testid="svc-org-analysis-context-field"]')).toBeVisible({ timeout: 12000 });
+  - note: 1、趋势页不出现「服务广度 TOP3」
+    assert: |-
+      await page.locator('.arco-menu-item').filter({ hasText: /^服务机构新增趋势分析$/ }).first().click({ timeout: 10000 });
+      await page.waitForTimeout(2000);
       await expect(page).toHaveURL(/workspace=trend/, { timeout: 12000 });
       await expect(page).toHaveURL(/tab=trend/);
-      const main = page.locator('main').first();
-      const body = ((await main.innerText().catch(() => '')) || '');
-      if (/服务广度 TOP3/.test(body)) {
-        throw new Error('趋势页泄漏 field 核心结论「服务广度 TOP3」: ' + body.slice(0, 320));
-      }
-      await expect(main.getByText(/^服务广度 TOP3$/)).toHaveCount(0);
-  - note: 2、点击侧栏「服务机构技术力评估分析」后，技术力页不出现「服务广度 TOP3」
+      await expect(page.locator('main').getByText(/^服务广度 TOP3$/)).toHaveCount(0);
+  - note: 2、技术力页不出现「服务广度 TOP3」
     assert: |-
-      const clickMenu = globalThis.__p04116Click || (async (label) => {
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) await sub.first().click({ timeout: 8000 }).catch(() => {});
-        await page.locator('.arco-menu-item').filter({ hasText: /^服务机构技术力评估分析$/ }).first().click({ timeout: 10000 });
-      });
-      await clickMenu('服务机构技术力评估分析');
-      await page.waitForTimeout(2200);
-      const close = page.locator('[aria-label="关闭对比篮"]');
-      if ((await close.count()) && (await close.first().isVisible().catch(() => false))) {
-        try {
-          await close.first().click({ timeout: 1500 });
-          await page.waitForTimeout(300);
-        } catch {}
-      }
+      await page.locator('.arco-menu-item').filter({ hasText: /^服务机构技术力评估分析$/ }).first().click({ timeout: 10000 });
+      await page.waitForTimeout(2000);
       await expect(page).toHaveURL(/workspace=capability/, { timeout: 12000 });
       await expect(page).toHaveURL(/tab=capability/);
-      const main = page.locator('main').first();
-      const body = ((await main.innerText().catch(() => '')) || '');
-      if (/服务广度 TOP3/.test(body)) {
-        throw new Error('技术力页泄漏 field 核心结论「服务广度 TOP3」: ' + body.slice(0, 320));
-      }
-      await expect(main.getByText(/^服务广度 TOP3$/)).toHaveCount(0);
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  04116=field 配置态侧栏切 trend→capability；主区不得出现 field 结果块标题「服务广度 TOP3」（scout-p012 兄弟页 body 无该文案）。
-  入口预热同 FUNC-04115/04110；不测切回保留（归 04115/P0-12）。B 档零 allow_skip。
+      await expect(page.locator('main').getByText(/^服务广度 TOP3$/)).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

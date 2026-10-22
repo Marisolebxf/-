@@ -168,29 +168,44 @@ expect:
       const runFreshAnalysis = async () => {
         await ensureLand();
         const pickSelect = async (ariaLabel, textRe) => {
-          const view = page.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
-          await view.waitFor({ state: 'visible', timeout: 8000 });
+          const view = page.locator(`main [aria-label="${ariaLabel}"]`).first();
+          if (!(await view.count()) || !(await view.isVisible().catch(() => false))) return;
+          for (let i = 0; i < 40; i++) {
+            const dis = await view.getAttribute('aria-disabled');
+            if (dis !== 'true') break;
+            await page.waitForTimeout(400);
+          }
           await view.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-          const pop = page.locator('.arco-trigger-popup:visible').last();
-          const opt = pop.locator('.arco-select-option').filter({ hasText: textRe });
+          await page.waitForTimeout(600);
+          const pop = page.locator('.arco-select-popup-wrapper:visible, .arco-trigger-popup:visible').last();
+          await pop.waitFor({ state: 'visible', timeout: 10000 });
+          let opt = pop.locator('.arco-select-option').filter({ hasText: textRe });
+          if (!(await opt.count())) {
+            opt = pop.locator('.arco-select-option').filter({ hasText: /^(?!请选择)/ });
+          }
           if (!(await opt.count())) throw new Error('选项不可用 ' + ariaLabel);
           await opt.first().click({ force: true, timeout: 8000 });
-          await page.waitForTimeout(700);
+          await page.waitForTimeout(800);
         };
         await page.getByText('单产业 × 多区域', { exact: true }).first().click({ timeout: 8000 }).catch(() => {});
         await page.waitForTimeout(400);
-        await pickSelect('集群', /新一代信息技术|集成电路/);
-        await page.waitForTimeout(500);
-        await pickSelect('产业', /集成电路|传感器/);
-        await page.waitForTimeout(500);
-        const regionMulti = page.locator('main .arco-select-view-multiple').first();
-        await regionMulti.click({ timeout: 8000 });
+        await pickSelect('集群', /新一代信息技术|集成电路|生物/);
         await page.waitForTimeout(400);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
-        for (const name of ['深圳市', '上海市']) {
-          const hit = pop.getByText(name, { exact: true }).first();
-          if (await hit.count()) await hit.click({ force: true }).catch(() => {});
+        await pickSelect('产业', /新一代信息技术|集成电路|传感器|生物/);
+        await page.waitForTimeout(500);
+        const regionView = page
+          .locator('main')
+          .getByText(/评价区域/)
+          .first()
+          .locator('xpath=ancestor::*[contains(@class,"arco-form-item")][1]')
+          .locator('.arco-select-view')
+          .first();
+        await regionView.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const popR = page.locator('.arco-select-popup-wrapper:visible, .arco-trigger-popup:visible').last();
+        for (const name of ['深圳市', '上海市', '北京市']) {
+          const hit = popR.locator('.arco-select-option').filter({ hasText: name });
+          if (await hit.count()) await hit.first().click({ force: true }).catch(() => {});
           await page.waitForTimeout(300);
         }
         await page.keyboard.press('Escape').catch(() => {});

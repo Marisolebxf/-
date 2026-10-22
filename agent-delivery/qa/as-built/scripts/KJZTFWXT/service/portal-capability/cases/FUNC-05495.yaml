@@ -1,0 +1,20 @@
+id: FUNC-05495
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05495
+priority: P1
+tier: B
+title: 主流程-榜单加入对比篮
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: 加入对比篮
+expect:
+  - note: 该按钮变为「已在对比篮」
+    assert: |-
+      await expect(page.locator('.svc-portal-ops').nth(5).getByRole('button', { name: '已在对比篮' })).toBeVisible()
+  - note: 出现已加入该机构的提示
+    assert: |-
+      await expect(page.locator('.arco-message').filter({ hasText: /已将「.+」加入对比篮/ })).toBeVisible()

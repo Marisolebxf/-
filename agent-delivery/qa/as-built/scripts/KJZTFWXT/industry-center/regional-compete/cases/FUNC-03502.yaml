@@ -119,10 +119,22 @@ expect:
       }
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(500);
-      const shown = ((await region.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      await region.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const popVerify = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popVerify).toBeVisible({ timeout: 8000 });
+      const selectedLabels = await popVerify.locator('.arco-select-option').evaluateAll((els) =>
+        els
+          .filter((e) => (e.className || '').includes('selected'))
+          .map((e) => (e.innerText || '').replace(/\s+/g, ' ').trim())
+      );
+      await page.keyboard.press('Escape').catch(() => {});
+      if (selectedLabels.length !== 5) {
+        throw new Error('已选区域应为 5 个，实际 ' + selectedLabels.length + '：' + selectedLabels.join(' | '));
+      }
       for (const name of PICK_ORDER) {
-        if (!shown.includes(name)) {
-          throw new Error('五个区域未全部进入已选，缺「' + name + '」，现场=' + shown);
+        if (!selectedLabels.includes(name)) {
+          throw new Error('五个区域未全部进入已选，缺「' + name + '」，已选=' + selectedLabels.join(' | '));
         }
       }
 on_fail: 截图 + X-Trace-Id + C1~C6

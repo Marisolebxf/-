@@ -19,67 +19,12 @@ steps:
 expect:
   - note: 1、「全国视图」为选中
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        return (await homeBtn.count()) && (await homeBtn.first().isVisible().catch(() => false));
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal SPA404，无法验区域分布页');
-      }
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '服务机构区域分布', exact: true }).click();
       await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
       await expect(page.getByRole('heading', { name: '服务机构区域分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      const scopeState = await page.evaluate(() => {
-        const group = document.querySelector('.arco-radio-group');
-        if (!group) return { ok: false, reason: 'no-radio-group' };
-        const radios = [...group.querySelectorAll('label.arco-radio')];
-        const byText = (t) => radios.find((el) => (el.textContent || '').includes(t));
-        const globalLbl = byText('全球视图');
-        const chinaLbl = byText('全国视图');
-        const inputChecked = (lbl) => {
-          const inp = lbl?.querySelector('input[type="radio"]');
-          return Boolean(inp?.checked);
-        };
-        return {
-          ok: true,
-          chinaChecked: chinaLbl?.classList.contains('arco-radio-checked') || inputChecked(chinaLbl),
-          globalChecked: globalLbl?.classList.contains('arco-radio-checked') || inputChecked(globalLbl),
-        };
-      });
-      if (!scopeState.ok) throw new Error('区域视图 radio 组未找到');
-      if (!scopeState.chinaChecked) {
-        throw new Error('全国视图未选中；state=' + JSON.stringify(scopeState));
-      }
+      await expect(page.getByRole('radio', { name: '全国视图' })).toBeChecked({ timeout: 8000 });
   - note: 2、「全球视图」为禁用
     assert: |-
-      const globalDisabled = await page.evaluate(() => {
-        const group = document.querySelector('.arco-radio-group');
-        const radios = group ? [...group.querySelectorAll('label.arco-radio')] : [];
-        const globalLbl = radios.find((el) => (el.textContent || '').includes('全球视图'));
-        if (!globalLbl) return { ok: false, reason: 'no-global-label' };
-        const inp = globalLbl.querySelector('input[type="radio"]');
-        return {
-          ok: true,
-          disabled:
-            globalLbl.classList.contains('arco-radio-disabled') ||
-            inp?.disabled === true ||
-            globalLbl.getAttribute('aria-disabled') === 'true',
-        };
-      });
-      if (!globalDisabled.ok) throw new Error('全球视图控件未找到');
-      if (!globalDisabled.disabled) {
-        throw new Error('全球视图未禁用（现场 globalAvailable=true 时默认全球侧可用，与本用例「默认全国+全球禁用」前提不一致）');
-      }
+      await expect(page.getByRole('radio', { name: '全球视图' })).toBeDisabled({ timeout: 8000 });
   - note: 3、首位区域展示名称与家数
     assert: |-
       const topCard = page.locator('.svc-portal-kpi').filter({
@@ -89,19 +34,15 @@ expect:
       const name = ((await topCard.locator('.svc-portal-kpi__value').first().innerText()) || '').trim();
       const hint = ((await topCard.locator('.svc-portal-kpi__hint').first().innerText()) || '').trim();
       if (!name || name === '暂无') {
-        throw new Error('ENV-SVC-PORTAL-REGION-TOP-EMPTY：china 无已出省级行，首位区域为诚实空「暂无」');
+        throw new Error('首位区域无已出省级行');
       }
       if (!/[\u4e00-\u9fff]{2,}/.test(name)) {
         throw new Error('首位区域名称不可读：' + name.slice(0, 40));
       }
       const countInHint = /[\d,]+/.test(hint) && /家/.test(hint);
-      const countInValue = /[\d,]+/.test(name) && /家/.test(name);
-      if (!countInHint && !countInValue) {
+      if (!countInHint) {
         throw new Error('首位区域未展示家数；name=' + name + ' hint=' + hint);
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-
-  goto catalog_path /service-portal → 点 Tab 区域分布 → /service-portal/region-map。
-  断言：全国视图 arco-radio-checked；全球视图 arco-radio-disabled；首位区域 KPI 名称+「N 家」hint。
-  edu.itic-sci.com/tts/svcz 2026-10-21 实跑门户 SPA404 → ENV-EDU-TTS-SVCZ-404-001（同 03889/03896）。
-  china 无行时首位「暂无」→ ENV-SVC-PORTAL-REGION-TOP-EMPTY。金样 A 档零 allow_skip。
+  goto /service-portal → Tab 区域分布 → 全国视图 radio checked、全球视图 disabled、首位区域 KPI。

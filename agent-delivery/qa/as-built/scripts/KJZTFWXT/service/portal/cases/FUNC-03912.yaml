@@ -3,12 +3,9 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03912
 priority: P1
 tier: B
 title: 刷新后保留产业
-story: US-SVC-PT-02
 entry_id: svc-portal
-preconditions:
-  - 已选择产业「生物」（步骤内先选再刷新）
-locators:
-  industry: select placeholder 全部产业
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal
@@ -17,43 +14,22 @@ steps:
 expect:
   - note: 1、刷新后产业选择仍为「生物」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const readIndustry = async () => {
-        const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-        const indVal = ((await page.locator('input[placeholder="全部产业"]').first().inputValue().catch(() => '')) || '').trim();
-        const indView = ((await ind.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        return { indVal, indView, combined: indVal + indView };
-      };
-      const assertIndustryBio = async (phase) => {
-        const { combined } = await readIndustry();
-        if (!/生物/.test(combined)) {
-          throw new Error('[' + phase + '] 产业未保持「生物」；combined=' + combined);
-        }
-      };
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal SPA404，无法验刷新保留产业 url=' + page.url());
-      }
-      await dismissBasket();
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await expect(ind).toBeVisible({ timeout: 8000 });
-      await ind.click();
-      const popup = page.locator('.arco-trigger-popup:visible');
+      await expect(page).toHaveURL(/service-portal/, { timeout: 20000 });
+      const cascader = page.locator('.arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 8000 });
+      await cascader.click();
+      let popup = page.locator('.arco-trigger-popup:visible');
       await expect(popup).toBeVisible({ timeout: 8000 });
-      await popup.getByText('生物', { exact: true }).click();
+      await popup.getByText('生物产业', { exact: true }).click();
+      await page.waitForTimeout(300);
+      popup = page.locator('.arco-trigger-popup:visible');
+      if (await popup.getByText('生物医药', { exact: true }).isVisible().catch(() => false)) {
+        await popup.getByText('生物医药', { exact: true }).click();
+      }
       await page.waitForTimeout(400);
-      await assertIndustryBio('选产业后');
+      await expect(page.getByText(/生物产业/)).toBeVisible({ timeout: 8000 });
       await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
-      const indAfter = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await expect(indAfter).toBeVisible({ timeout: 8000 });
-      await assertIndustryBio('刷新后');
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  门户顶栏产业为全局筛选，刷新后应自 URL/session 恢复；步骤：选「生物」→ reload。goto catalog /service-portal。
-  edu SPA404 → ENV-EDU-TTS-SVCZ-404-001→ledger blocked。
+      await expect(page).toHaveURL(/service-portal/, { timeout: 20000 });
+      await expect(page.getByText(/生物产业/)).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/生物医药/)).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

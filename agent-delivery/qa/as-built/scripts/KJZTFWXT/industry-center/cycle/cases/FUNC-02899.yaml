@@ -154,11 +154,10 @@ expect:
         await waitSuccessAfterStart();
       }
       await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 15000 });
-      const body = await main().innerText().catch(() => '');
-      globalThis.__func02899 = { body };
+      await expect(page.getByText('投资节奏').first()).toBeVisible({ timeout: 15000 });
   - note: 1、有「投资节奏」一段说明
     assert: |-
-      const body = globalThis.__func02899?.body || (await page.locator('main.content-shell-layout, main').first().innerText().catch(() => ''));
+      const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
       if (!/决策摘要/.test(body)) throw new Error('结果页未见「决策摘要」区块');
       await expect(page.getByText('投资节奏').first()).toBeVisible({ timeout: 8000 });
       const i = body.indexOf('投资节奏');
@@ -168,7 +167,7 @@ expect:
       if (para.length < 10) throw new Error('「投资节奏」下缺少说明段落，实际=' + JSON.stringify(para.slice(0, 80)));
   - note: 2、有「政策窗口期」一段说明
     assert: |-
-      const body = globalThis.__func02899?.body || (await page.locator('main.content-shell-layout, main').first().innerText().catch(() => ''));
+      const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
       await expect(page.getByText('政策窗口期').first()).toBeVisible({ timeout: 8000 });
       const i = body.indexOf('政策窗口期');
       if (i < 0) throw new Error('正文缺少「政策窗口期」');

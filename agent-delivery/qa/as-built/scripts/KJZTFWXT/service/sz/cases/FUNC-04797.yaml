@@ -1,0 +1,25 @@
+id: FUNC-04797
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04797
+priority: P1
+tier: B
+title: 主流程-记录打开结果
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+    options:
+      first: true
+expect:
+  - note: 进入该任务的结果页
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' })).toBeHidden({ timeout: 15000 })
+  - note: 页面出现「统一评价框架」
+    assert: |-
+      await expect(page.getByText('统一评价框架')).toBeVisible({ timeout: 15000 })
+on_fail: 截图 + 抄 X-Trace-Id

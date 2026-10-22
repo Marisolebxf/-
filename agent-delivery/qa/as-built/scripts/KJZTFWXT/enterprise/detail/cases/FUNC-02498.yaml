@@ -1,0 +1,21 @@
+id: FUNC-02498
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02498
+priority: P1
+tier: B
+title: 异常-页头对比篮未离开
+entry_id: ent-detail
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /enterprise/demo-org-id
+  - action: click
+    target: 对比篮
+expect:
+  - note: 地址仍是当前企业详情
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/demo-org-id/)
+  - note: 正文失败说明仍在
+    assert: |-
+      await expect(page.getByText('Request failed with status code 424')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

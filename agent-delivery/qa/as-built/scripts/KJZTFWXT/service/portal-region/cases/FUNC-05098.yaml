@@ -1,0 +1,52 @@
+id: FUNC-05098
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05098
+priority: P0
+tier: B
+title: 主流程-选定产业后家数不变
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 1、三张卡的家数与选择前相同
+    assert: |-
+      const readCardCounts = () =>
+        page.evaluate(() => {
+          const labels = ['中国机构约数', '已出省级行政区合计', '首位区域'];
+          return labels.map((label) => {
+            const title = [...document.querySelectorAll('*')].find(
+              (n) => n.children.length === 0 && n.textContent?.trim() === label,
+            );
+            if (!title) return '';
+            let node = title.parentElement;
+            for (let i = 0; i < 6 && node; i += 1) {
+              const m = (node.textContent || '').match(/([\d,]+)\s*家/);
+              if (m) return m[1];
+              node = node.parentElement;
+            }
+            return '';
+          });
+        });
+      const industrySelect = page
+        .locator('.arco-select-view')
+        .filter({ hasText: /产业/ })
+        .first();
+      await industrySelect.click();
+      await page.getByRole('option', { name: '全部产业' }).click();
+      await page.waitForTimeout(500);
+      const before = await readCardCounts();
+      await expect(before[0]).not.toBe('');
+      await expect(before[1]).not.toBe('');
+      await expect(before[2]).not.toBe('');
+      await industrySelect.click();
+      await page.getByRole('option', { name: '生物产业 / 生物医药' }).click();
+      await page.waitForTimeout(500);
+      const after = await readCardCounts();
+      await expect(after[0]).toBe(before[0]);
+      await expect(after[1]).toBe(before[1]);
+      await expect(after[2]).toBe(before[2]);
+  - note: 2、结论条仍写明不按产业切片
+    assert: |-
+      await expect(page.getByText(/不按产业切片/)).toBeVisible()

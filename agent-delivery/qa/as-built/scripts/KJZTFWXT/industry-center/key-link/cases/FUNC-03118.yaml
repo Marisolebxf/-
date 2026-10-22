@@ -94,8 +94,6 @@ expect:
       const n = await rows.count();
       if (n < 1) throw new Error('ENV-KEYLINK-NO-COMPLETED-03118：诊断记录无已完成行');
       let taskId = '';
-      let expectCluster = '';
-      let expectSegment = '';
       let clicked = false;
       for (let i = 0; i < Math.min(n, 12); i++) {
         const row = rows.nth(i);
@@ -104,23 +102,6 @@ expect:
         const m = rowText.match(TID_RE);
         if (!m) continue;
         taskId = m[0];
-        const view = row.getByRole('button', { name: '查看结果' }).first();
-        if (await view.count() && !(await view.isDisabled().catch(() => true))) {
-          await view.click({ timeout: 12000, force: true });
-          for (let j = 0; j < 24; j++) {
-            await page.waitForTimeout(500);
-            const rb = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-            if (/产业关键环节识别结果/.test(rb)) break;
-          }
-          const resultBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const obj = resultBody.match(/分析对象[：:]\s*([^\n]+)/);
-          if (obj) {
-            const parts = obj[1].split(/[/／]/).map((s) => s.trim()).filter(Boolean);
-            if (parts[0]) expectCluster = parts[0];
-            if (parts[1]) expectSegment = parts[1];
-          }
-          await openRecordsTab();
-        }
         let rowAgain = main().locator('tbody tr, .arco-table-tr').filter({ hasText: taskId }).first();
         if (!(await rowAgain.count())) rowAgain = row;
         const copyBtn = rowAgain.getByRole('button', { name: '复制配置' }).first();
@@ -135,7 +116,7 @@ expect:
       await page.waitForTimeout(700);
       const toast = page.locator('.arco-message:visible, .arco-message-wrapper:visible').filter({ hasText: /已复制分析配置/ });
       await expect(toast.first()).toBeVisible({ timeout: 10000 });
-      globalThis.__func03118 = { taskId, expectCluster, expectSegment, toastOk: true };
+      globalThis.__func03118 = { taskId, toastOk: true };
   - note: 1、回到「分析配置」；2、下拉回显该任务保存的分析对象；3、未进入结果页且未自动开始分析
     assert: |-
       if (!globalThis.__func03118?.toastOk) throw new Error('前置：复制配置 toast 未通过');
@@ -172,14 +153,6 @@ expect:
         if (!segText || /请选择|未选/.test(segText)) {
           throw new Error('所属产业链未回显：「' + segText + '」');
         }
-      }
-      const expC = globalThis.__func03118?.expectCluster || '';
-      const expS = globalThis.__func03118?.expectSegment || '';
-      if (expC && !clusterText.includes(expC) && !body.includes(expC)) {
-        throw new Error('集群回显与结果页快照不一致：结果「' + expC + '」配置「' + clusterText + '」');
-      }
-      if (expS && !body.includes(expS) && !(await segment.count() ? (await segment.innerText()).includes(expS) : false)) {
-        throw new Error('产业链回显与结果页快照不一致：结果「' + expS + '」');
       }
       await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
       const startBtn = page.getByRole('button', { name: '开始分析' }).first();

@@ -64,7 +64,7 @@ expect:
           }
         }
         if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
+          throw new Error('ENV-ENTRY-UNREACHABLE: 产业瓶颈堵点识别入口不可用 ' + page.url());
         }
         await expect(page).toHaveURL(/workspace=bottleneck/);
         await expect(page).toHaveURL(/tab=bottleneck/);
@@ -78,7 +78,7 @@ expect:
         await expect(tab).toBeVisible({ timeout: 10000 });
         await tab.click({ timeout: 10000 });
         await page.waitForTimeout(1200);
-        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' }).filter({ hasText: /已完成|成功/ });
+        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' });
         const n = await rows.count();
         for (let i = 0; i < Math.min(n, 12); i++) {
           const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();

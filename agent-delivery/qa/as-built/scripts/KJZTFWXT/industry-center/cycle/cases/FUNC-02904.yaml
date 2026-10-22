@@ -134,10 +134,10 @@ expect:
       globalThis.__func02904 = { body: await main().innerText().catch(() => '') };
   - note: 1、出现「叙述能力不可用，已按规则结果诚实降级。」
     assert: |-
-      const body = globalThis.__func02904?.body || (await page.locator('main.content-shell-layout, main').first().innerText().catch(() => ''));
       const needle = '叙述能力不可用，已按规则结果诚实降级。';
+      const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
       if (!body.includes(needle)) {
-        if (/周期旅程|阶段旅程|产业周期阶段判断/.test(body) && !/叙述能力不可用/.test(body)) {
+        if (/产业周期阶段判断|阶段旅程已/.test(body) && !body.includes('周期旅程未返回')) {
           throw new Error('ENV-CHAIN-CYCLE-NARRATIVE-LIVE-001：叙述能力已返回，本用例验降级说明');
         }
         throw new Error('结果页应出现叙述降级说明，实际摘要=' + JSON.stringify(body.slice(0, 280)));

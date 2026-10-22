@@ -1,0 +1,25 @@
+id: FUNC-05196
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05196
+priority: P0
+tier: B
+title: 主流程-综合得分有分数
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+expect:
+  - note: 综合得分列每行都有分数
+    assert: |-
+      const rows = page.locator('.arco-table tbody tr');
+      await expect(rows.first()).toBeVisible({ timeout: 15000 });
+      const scoreIdx = await page.evaluate(() => {
+        const ths = [...document.querySelectorAll('.arco-table thead th')];
+        return ths.findIndex((th) => (th.textContent || '').includes('综合得分'));
+      });
+      const n = await rows.count();
+      for (let i = 0; i < n; i++) {
+        const scoreCell = rows.nth(i).locator('td').nth(scoreIdx);
+        await expect(scoreCell.getByText(/\d+/).first()).toBeVisible();
+      }

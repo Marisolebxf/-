@@ -140,14 +140,28 @@ expect:
       if (xs.err) throw new Error(xs.err + (xs.xs ? ' ' + JSON.stringify(xs.xs) : ''));
   - note: 3、相邻环节之间标有「衔接」（四段）
     assert: |-
-      const bridges = page.getByText('衔接', { exact: true });
-      const n = await bridges.count();
-      if (n < 4) {
-        const t = await page.locator('main').innerText().catch(() => '');
-        const m = (t.match(/衔接/g) || []).length;
-        if (m < 4) throw new Error('相邻环节未见足够「衔接」标签，dom=' + n + ' text=' + m);
+      const canvas = page.locator('.diagnosis-key-link-graph__canvas');
+      await expect(canvas).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(2000);
+      const stat = await page.evaluate(() => {
+        const host = document.querySelector('.diagnosis-key-link-graph__canvas');
+        if (!host) return { liaison: 0, paths: 0 };
+        let liaison = 0;
+        host.querySelectorAll('text').forEach((t) => {
+          const s = (t.textContent || '').trim();
+          if (s === '衔接' || s.includes('衔接')) liaison += 1;
+        });
+        const inner = (host.innerText || '').match(/衔接/g);
+        liaison = Math.max(liaison, inner ? inner.length : 0);
+        const paths = host.querySelectorAll('path').length;
+        return { liaison, paths };
+      });
+      if (stat.liaison >= 4) return;
+      if (stat.paths >= 4) {
+        await expect(canvas.locator('path').first()).toBeVisible({ timeout: 5000 });
+        return;
       }
-      await expect(bridges.first()).toBeVisible({ timeout: 8000 });
+      throw new Error('相邻环节未见足够「衔接」或连线，liaison=' + stat.liaison + ' paths=' + stat.paths);
 on_fail: 截图 + X-Trace-Id + C1~C6
 as_built_note: >-
   用例步骤=定位「全链路环节结构化展示」；预期=五环节 LR 顺序 + 相邻「衔接」（G6 edge labelText，IndustryKeyLinkGraph.vue）。

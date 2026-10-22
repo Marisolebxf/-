@@ -1,0 +1,34 @@
+id: FUNC-04603
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04603
+priority: P1
+tier: B
+title: 备选-重新分析
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 1、进入新的过程页且状态为已完成
+    assert: |-
+      await page.getByRole('button', { name: '生成招引名单' }).click();
+      await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 120000 });
+      const taskBefore = ((await page.locator('text=/SVC-\\d{8}-\\d+/').first().textContent()) || '').trim();
+      await page.evaluate((t) => sessionStorage.setItem('taskBefore', t), taskBefore);
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+      await page.getByRole('button', { name: '重新分析' }).click();
+      await expect(page.getByText('招引推荐分析生成中').first()).toBeVisible({ timeout: 60000 });
+      await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 120000 });
+  - note: 2、任务编号与点击前不同
+    assert: |-
+      const taskBefore = await page.evaluate(() => sessionStorage.getItem('taskBefore') || '');
+      const taskAfter = ((await page.locator('text=/SVC-\\d{8}-\\d+/').first().textContent()) || '').trim();
+      await expect(taskAfter).not.toBe(taskBefore);
+      await expect(taskAfter).toMatch(/^SVC-\d{8}-\d+$/);
+  - note: 3、结果页出现「外部机构引进推荐名单」
+    assert: |-
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+on_fail: 截图 + 抄 X-Trace-Id

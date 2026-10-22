@@ -58,14 +58,16 @@ expect:
       const nameInput = modal.getByPlaceholder('模板名称');
       await expect(nameInput).toBeVisible({ timeout: 8000 });
       await expect(nameInput).toHaveValue('');
-      globalThis.__func02730_modal = modal;
   - note: 1、点击「确定」后对话框保持打开
     assert: |-
-      const modal = globalThis.__func02730_modal || page.locator('.arco-modal').filter({ has: page.locator('.arco-modal-title', { hasText: '保存筛选模板' }) }).first();
-      await modal.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
-      await page.waitForTimeout(500);
+      const modal = page.getByRole('dialog', { name: '保存筛选模板' });
       await expect(modal).toBeVisible({ timeout: 8000 });
-      await expect(modal.locator('.arco-modal-title')).toHaveText('保存筛选模板');
+      const okBtn = modal.locator('.arco-modal-footer .arco-btn-primary');
+      await expect(okBtn).toHaveText(/确定/);
+      await okBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      await expect(modal).toBeVisible({ timeout: 8000 });
+      await expect(modal.getByPlaceholder('模板名称')).toBeVisible();
       await expect(modal.getByPlaceholder('模板名称')).toHaveValue('');
 on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
 as_built_note: >-

@@ -118,18 +118,14 @@ expect:
       await expect(boxes).toHaveCount(3, { timeout: 8000 });
       for (let i = 0; i < 3; i++) {
         const box = boxes.nth(i);
-        const cls = (await box.getAttribute('class')) || '';
-        if (!/arco-checkbox-disabled/.test(cls)) {
-          throw new Error('第' + (i + 1) + '个行首选择应 disabled，class=' + cls);
-        }
-        if (!/arco-checkbox-checked/.test(cls)) {
-          throw new Error('第' + (i + 1) + '个行首选择应为选中态，class=' + cls);
-        }
-        const before = await box.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
-        const target = box.locator('.arco-checkbox-target, input[type=checkbox]').first();
-        await target.click({ timeout: 5000, force: true }).catch(() => box.click({ force: true }));
+        const input = box.locator('input[type=checkbox]').first();
+        const state = await input.evaluate((el) => ({ checked: el.checked, disabled: el.disabled }));
+        if (!state.disabled) throw new Error('第' + (i + 1) + '个行首选择应 disabled');
+        if (!state.checked) throw new Error('第' + (i + 1) + '个行首选择应为选中态');
+        const before = state.checked;
+        await box.locator('.arco-checkbox-target, input[type=checkbox]').first().click({ timeout: 5000, force: true }).catch(() => box.click({ force: true }));
         await page.waitForTimeout(200);
-        const after = await box.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
+        const after = await input.evaluate((el) => el.checked);
         if (before !== after) {
           throw new Error('第' + (i + 1) + '个行首选择点击后状态变化 before=' + before + ' after=' + after);
         }

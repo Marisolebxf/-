@@ -93,21 +93,54 @@ expect:
       if (n < 1) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03315：分析记录无已完成深圳对比任务');
       }
+      const ymd = new Date().toISOString().slice(0, 10);
+      const todayRows = rows.filter({ hasText: ymd });
+      const tryOrder = (await todayRows.count()) > 0 ? [todayRows, rows] : [rows];
       let copied = false;
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
-        const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
-        if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
-        await copyBtn.click({ timeout: 15000 });
-        copied = true;
-        break;
+      for (const set of tryOrder) {
+        const m = await set.count();
+        for (let i = 0; i < Math.min(m, 12); i++) {
+          const row = set.nth(i);
+          const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
+          if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
+          await copyBtn.click({ timeout: 15000 });
+          copied = true;
+          break;
+        }
+        if (copied) break;
       }
       if (!copied) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-NO-COPY-03315：无已完成行可点「复制配置」');
       }
       await page.waitForTimeout(800);
       await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-      const rerun = page.getByRole('button', { name: '重新分析' }).first();
+      if (await page.getByText(/无法识别的标杆区域/).isVisible().catch(() => false)) {
+        await page.getByRole('button', { name: '重置参数' }).click({ timeout: 10000 });
+        await page.waitForTimeout(800);
+      }
+      let rerun = page.getByRole('button', { name: '重新分析' }).first();
+      if (!(await rerun.isVisible().catch(() => false))) {
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (!(await start.isEnabled().catch(() => false))) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-NO-RERUN-03315：复制配置后未见「重新分析」且「开始分析」不可用');
+        }
+        await start.click({ timeout: 15000 });
+        const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+        for (let w = 0; w < 120; w++) {
+          await page.waitForTimeout(w < 4 ? 600 : 1200);
+          if (await viewBtn.isVisible().catch(() => false)) break;
+          const body = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(body) && w >= 8) {
+            throw new Error('ENV-CHAIN-SZ-COMPARE-ASYNC-FAIL-03315：种子「开始分析」失败');
+          }
+        }
+        const backCfg = page.getByRole('button', { name: '返回配置' }).first();
+        if (await backCfg.isVisible().catch(() => false)) {
+          await backCfg.click({ timeout: 10000 });
+          await page.waitForTimeout(600);
+        }
+        rerun = page.getByRole('button', { name: '重新分析' }).first();
+      }
       if (!(await rerun.isVisible().catch(() => false))) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-NO-RERUN-03315：复制配置后未见「重新分析」（需当日同指纹已有成功任务）');
       }

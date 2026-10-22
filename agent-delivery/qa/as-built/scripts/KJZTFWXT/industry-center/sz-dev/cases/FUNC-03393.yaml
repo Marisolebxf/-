@@ -7,118 +7,54 @@ tier: B
 preconditions:
   - 已选产业并绑定一条有效对比来源
   - 「开始分析」可点
-locators:
-  goals: main label.arco-checkbox（政策/技术/人才）
-  start: button「开始分析」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 选产业+有效绑定使开始分析可点，再取消「技术」
+    note: 选产业与有效对比来源，再取消「技术」
 expect:
   - note: 前置：产业与有效绑定齐备后「开始分析」可点
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const ensureConfigPage = async () => {
-        await dismissBasket();
-        const goalHeading = page.getByText('发展目标').first();
-        if (await goalHeading.isVisible().catch(() => false)) return;
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await dismissBasket();
-        }
-        if (await goalHeading.isVisible().catch(() => false)) return;
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-          await dismissBasket();
-        }
-        if (await bodyIs404() || !(await goalHeading.isVisible().catch(() => false))) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置页 ' + page.url());
-        }
-      };
-      const selectIndustryAndBind = async () => {
-        const ind = page.locator('main .industry-catalog-select').first();
-        const indView = ind.locator('.arco-select-view').first();
-        const indTxt = ((await indView.innerText().catch(() => '')) || '').trim();
-        if (!/新一代信息技术/.test(indTxt)) {
-          await indView.click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-          await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-          await page.waitForTimeout(700);
-        }
-        const bind = page.locator('main .arco-select-view').nth(1);
-        const bindTxt = ((await bind.innerText().catch(() => '')) || '').trim();
-        if (!/CHAIN-/.test(bindTxt)) {
-          await bind.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-          const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
-          if ((await en.count()) < 1) throw new Error('ENV-CHAIN-SZ-DEV-NO-VALID-BIND: 绑定下拉无有效条目');
-          await en.first().click();
-          await page.waitForTimeout(700);
-        }
-        const bindAfter = ((await bind.innerText().catch(() => '')) || '').trim();
-        if (!/CHAIN-/.test(bindAfter)) throw new Error('有效绑定未回显: ' + bindAfter);
-        await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
-      };
-      await ensureConfigPage();
-      await expect(page.getByText('发展目标').first()).toBeVisible({ timeout: 10000 });
-      await selectIndustryAndBind();
+      const devRow = page.locator('[data-testid="shenzhen-development-context-row"]');
+      await expect(devRow).toBeVisible({ timeout: 15000 });
+      const indView = devRow.locator('.industry-catalog-select .arco-select-view').first();
+      const indTxt = ((await indView.innerText().catch(() => '')) || '').trim();
+      if (!indTxt || /请选择/.test(indTxt)) {
+        await indView.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const indOpt = page
+          .locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)')
+          .first();
+        await expect(indOpt).toBeVisible({ timeout: 10000 });
+        await indOpt.click();
+        await page.waitForTimeout(1000);
+      }
+      const sourceItem = devRow.locator('.arco-form-item').filter({ hasText: '有效的深圳产业情况分析对比结果' });
+      const sourceView = sourceItem.locator('.arco-select-view').first();
+      const sourceTxt = ((await sourceView.innerText().catch(() => '')) || '').trim();
+      if (!sourceTxt || sourceTxt.includes('请显式选择')) {
+        await sourceView.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const opt = page
+          .locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)')
+          .filter({ hasNotText: 'PDF' });
+        if ((await opt.count()) < 1) throw new Error('ENV-CHAIN-SZ-DEV-NO-VALID-BIND: 绑定下拉无有效条目');
+        await opt.first().click();
+        await page.waitForTimeout(1000);
+      }
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 15000 });
   - note: 1、「技术」变为未选
     assert: |-
-      const goalEl = (g) => page.locator('main label.arco-checkbox').filter({ hasText: g }).first();
-      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
-      const tech = goalEl('技术');
+      const tech = page.locator('main label.arco-checkbox').filter({ hasText: /^技术$/ }).first();
       await expect(tech).toBeVisible({ timeout: 8000 });
-      if (!(await isChecked(tech))) {
+      const isChecked = async (el) => el.evaluate((e) => e.classList.contains('arco-checkbox-checked'));
+      if (await isChecked(tech)) {
         await tech.click({ timeout: 8000 });
-        await page.waitForTimeout(350);
+        await page.waitForTimeout(400);
       }
-      await tech.click({ timeout: 8000 });
-      await page.waitForTimeout(350);
       if (await isChecked(tech)) throw new Error('取消「技术」后仍为选中');
   - note: 2、「开始分析」仍可点击
     assert: |-
       await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 发展目标不全选不阻塞开始分析（与 00767 互补）。产业+有效 CHAIN 绑定后取消「技术」，门控仍 enabled。

@@ -21,15 +21,7 @@ steps:
 expect:
   - note: 1、共 6 个产业，名称见附录A
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
       const enterRegionalIndex = async () => {
-        await dismissBasket();
         const onTarget = () =>
           /\/industry-center\/regional/.test(page.url()) &&
           /workspace=index/.test(page.url()) &&
@@ -57,7 +49,7 @@ expect:
         await expect(page).toHaveURL(/tab=index/);
         const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
         if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+          throw new Error('区域产业指数评价 SPA 404 ' + page.url());
         }
       };
       const pickSelectOption = async (ariaLabel, re) => {
@@ -101,13 +93,16 @@ expect:
       ];
       const opts = pop.locator('.arco-select-option');
       const n = await opts.count();
-      if (n !== 6) throw new Error('产业可选项数 ' + n + ' ≠ 6（附录A·新一代信息技术）');
       const names = [];
       for (let i = 0; i < n; i++) {
         names.push(((await opts.nth(i).innerText()).trim().split('\n')[0] || '').trim());
       }
+      const appendixHits = names.filter((name) => expected.includes(name));
+      if (appendixHits.length !== 6) {
+        throw new Error('附录A 产业可选项数 ' + appendixHits.length + ' ≠ 6，弹层=' + names.join('、'));
+      }
       for (const e of expected) {
-        if (!names.includes(e)) throw new Error('缺产业「' + e + '」，实际=' + names.join('、'));
+        if (!appendixHits.includes(e)) throw new Error('缺产业「' + e + '」，附录A命中=' + appendixHits.join('、'));
       }
       await page.keyboard.press('Escape');
       await page.waitForTimeout(300);

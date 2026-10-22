@@ -1,0 +1,28 @@
+id: FUNC-05104
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05104
+priority: P1
+tier: B
+title: 备选-清除已选产业
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: evaluate
+    assert: |-
+      const industry = page.locator('.arco-select').first();
+      await industry.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: /生物/ }).first().click();
+      await industry.locator('.arco-select-clear-icon').click();
+expect:
+  - note: 1、产业恢复为「全部产业」
+    assert: |-
+      await expect(page.locator('.arco-select').first().locator('.arco-select-view')).toContainText('全部产业');
+  - note: 2、产业链下拉恢复禁用
+    assert: |-
+      const chainCls = await page.locator('.arco-select').nth(1).getAttribute('class');
+      if (!chainCls || !chainCls.includes('disabled')) {
+        throw new Error('产业链下拉未禁用');
+      }
+on_fail: 截图 + 抄 X-Trace-Id

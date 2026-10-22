@@ -1,0 +1,36 @@
+id: FUNC-00787
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00787
+priority: P1
+tier: B
+title: 主流程-权重调节与键入编辑
+entry_id: svc-rec-attract
+preconditions:
+  - 已进入页面
+  - 模型区可见
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 调节钮每次增减 1
+    assert: |-
+      await expect(page.getByText('招引推荐模型')).toBeVisible();
+      const row = page.locator('div').filter({ hasText: '产业匹配度' }).filter({ has: page.locator('.arco-input-number') }).first();
+      await expect(row).toBeVisible();
+      const inputNumber = row.locator('.arco-input-number').first();
+      const input = inputNumber.locator('input').first();
+      await expect(input).toBeVisible();
+      const before = Number((await input.inputValue()) || '0');
+      const up = inputNumber.locator('.arco-input-number-step-button').last();
+      const down = inputNumber.locator('.arco-input-number-step-button').first();
+      await up.click();
+      await expect(input).toHaveValue(String(before + 1));
+      await down.click();
+      await expect(input).toHaveValue(String(before));
+  - note: 权重值支持直接键入修改
+    assert: |-
+      const row = page.locator('div').filter({ hasText: '产业匹配度' }).filter({ has: page.locator('.arco-input-number') }).first();
+      const input = row.locator('.arco-input-number input').first();
+      await input.fill('42');
+      await expect(input).toHaveValue('42');
+on_fail: 截图 + 抄 X-Trace-Id

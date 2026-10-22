@@ -179,7 +179,7 @@ expect:
       if (!globalThis.__func03125?.taskPage2) throw new Error('前置：未完成翻页');
       const main = page.locator('main').first();
       const headers = ['任务', '类型', '状态', '创建时间', '操作'];
-      const table = main().locator('table, .arco-table').first();
+      const table = main.locator('table, .arco-table').first();
       if (await table.count()) {
         const thTexts = await table.locator('thead th, thead .arco-table-th').allInnerTexts();
         const joined = thTexts.join(' ');
@@ -187,7 +187,7 @@ expect:
           if (!joined.includes(h)) throw new Error('翻页后表头缺列「' + h + '」；thead=' + joined.replace(/\s+/g, ' '));
         }
       } else {
-        const body = await main().innerText().catch(() => '');
+        const body = await main.innerText().catch(() => '');
         for (const h of headers) {
           if (!body.includes(h)) throw new Error('翻页后表头缺列「' + h + '」；main=' + body.replace(/\s+/g, ' ').slice(0, 320));
         }

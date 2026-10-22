@@ -1,0 +1,109 @@
+id: FUNC-00674
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00674
+priority: P0
+tier: A
+title: 主流程-算分口径诚实性 · 改权重不本地算分
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - env-gate overall=fail（配置态改权重与只读打开已完成结果，不点「开始评估」）
+  - 分析记录存在 ≥1 条已完成任务
+locators:
+  spin_patent: 权重输入 [role=spinbutton] 第 1 行（专利数量）
+  rec_tab: tab「分析记录」
+  view_btn: 「查看结果」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 1.把「专利数量」权重由 25 改为 40；2.看模型区与结果区的分数（断言在 expect 内，验后还原）
+expect:
+  - note: 1、权重变更后没有当场冒出新的得分或名次
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto((baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '') + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      const v0 = String(await spins.nth(0).inputValue());
+      const snap = () =>
+        page.evaluate(() => {
+          const m = document.querySelector('main');
+          if (!m) return { text: '', canvas: -1 };
+          const c = m.cloneNode(true);
+          c.querySelectorAll('.ent-section-panel').forEach((e) => e.remove());
+          return { text: (c.innerText || '').replace(/\s+/g, ' ').trim(), canvas: m.querySelectorAll('canvas').length };
+        });
+      const scoreBurst = (t) => /排名第\s*\d+|综合得分|签发分\s*[:：]\s*\d|机构.*\d+(\.\d+)?\s*分/.test(t);
+      const a = await snap();
+      if (scoreBurst(a.text)) throw new Error('改权重前模型/结果区已出现得分或名次文案');
+      await spins.nth(0).fill('40');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(1200);
+      if (String(await spins.nth(0).inputValue()) !== '40') throw new Error('权重未改为 40');
+      const b = await snap();
+      if (a.text !== b.text) {
+        throw new Error('权重 40 后界面出现本地重算文本变化: [' + a.text.slice(0, 80) + '] → [' + b.text.slice(0, 80) + ']');
+      }
+      if (a.canvas !== b.canvas) throw new Error('权重 40 后图表节点数变化 ' + a.canvas + '→' + b.canvas);
+      if (scoreBurst(b.text) && b.text !== a.text) throw new Error('权重 40 后冒出新的得分或名次文案');
+      await spins.nth(0).fill(v0);
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(500);
+      if (String(await spins.nth(0).inputValue()) !== v0) throw new Error('还原专利权重失败');
+  - note: 2、分数只出现在已有评估结果里
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      await page.goto((baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '') + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        const vis = await close.first().isVisible().catch(() => false);
+        if (vis) {
+          await close.first().click();
+          await page.waitForTimeout(300);
+        }
+      }
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      await spins.nth(0).fill('40');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(800);
+      const cfgText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/排名第\s*\d+|综合得分\s*[:：]?\s*\d/.test(cfgText)) {
+        throw new Error('配置态改权重后模型区不应当场出现排名/综合得分');
+      }
+      await page.getByRole('tab', { name: '分析记录', exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 8000 });
+      const vb = page.getByRole('button', { name: '查看结果' });
+      const view = (await vb.count()) ? vb.first() : page.getByText('查看结果', { exact: true }).first();
+      await view.click({ timeout: 5000 });
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveURL(/view=result/);
+      await expect(page).toHaveURL(/task_id=SVC-/);
+      await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('暂无技术力评估结果').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('未给出可排名的签发分').first()).toBeVisible({ timeout: 8000 });
+      const canvas = await page.locator('main canvas').count();
+      if (canvas !== 0) throw new Error('已有结果无签发分列表时不应出现图表 canvas=' + canvas);
+      await page.goto((baseUrl || 'http://10.50.69.111:30892').replace(/\/?$/, '') + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      const spins2 = page.locator('[role=spinbutton]');
+      if (await spins2.count()) {
+        await spins2.nth(0).fill('25');
+        await page.keyboard.press('Tab');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  蓝本 FUNC-00674（P0-06 序号脚本对照）。entry-seed catalog_path；env-gate fail 不发起评估。
+  预期①改 40 前后 main 去对比篮后逐字等值且无 canvas 新增；预期②分数仅经分析记录打开已完成 task_id 结果视图呈现（诚实空态/签发分文案），配置态不当场出排名分。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-00674。零 allow_skip。

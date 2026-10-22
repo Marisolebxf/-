@@ -1,0 +1,30 @@
+id: FUNC-01284
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01284
+priority: P0
+tier: B
+title: 主流程-产业领域下拉
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 配置区有产业领域选择和「开始分析」
+    assert: |-
+      await expect(page.getByText('产业领域', { exact: true }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+  - note: 未选时占位为「选择产业集群」
+    assert: |-
+      const industrySelect = page.locator('.arco-select').filter({ has: page.getByText('产业领域', { exact: true }) }).first();
+      const clearIcon = industrySelect.locator('.arco-select-clear-icon');
+      if (await clearIcon.isVisible()) {
+        await clearIcon.click();
+      }
+      await expect(industrySelect.locator('.arco-select-view')).toContainText('选择产业集群');
+  - note: 选项共 15 个，名称见附录 A
+    assert: |-
+      const industrySelect = page.locator('.arco-select').filter({ has: page.getByText('产业领域', { exact: true }) }).first();
+      await industrySelect.locator('.arco-select-view').click();
+      await expect(page.locator('.arco-select-option')).toHaveCount(15);
+on_fail: 截图 + 抄 X-Trace-Id

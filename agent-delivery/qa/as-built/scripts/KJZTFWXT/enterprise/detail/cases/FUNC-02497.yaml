@@ -1,0 +1,29 @@
+id: FUNC-02497
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02497
+priority: P1
+tier: B
+title: 异常-对比篮路径仍为详情
+entry_id: ent-detail
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /enterprise/demo-org-id?from=compare
+  - action: evaluate
+    target: |-
+      await page.locator('.arco-breadcrumb').getByText('对比篮').click();
+expect:
+  - note: 地址以 /enterprise/enterprise-compare 结束
+    assert: |-
+      await expect(page).toHaveURL(/\/enterprise\/enterprise-compare$/)
+  - note: 页面标题仍为「企业详情 - 科技专题服务系统」
+    assert: |-
+      await expect(page).toHaveTitle('企业详情 - 科技专题服务系统')
+  - note: 正文仍为「Request failed with status code 424」
+    assert: |-
+      await expect(page.getByText('Request failed with status code 424')).toBeVisible()
+  - note: 面包屑变为「企业分析 / 企业画像」
+    assert: |-
+      await expect(page.locator('.arco-breadcrumb')).toContainText('企业分析')
+      await expect(page.locator('.arco-breadcrumb')).toContainText('企业画像')
+on_fail: 截图 + 抄 X-Trace-Id

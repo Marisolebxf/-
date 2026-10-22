@@ -1,0 +1,135 @@
+id: FUNC-04307
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04307
+priority: P1
+tier: A
+title: 备选-机构家数 · 勾选超过五家
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；对比篮服务机构多于 5 家；五维权重合计 100%（配置态，不点「开始评估」）
+locators:
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  count_head: .svc-org-cap-compare__head
+  blockers: .svc-org-cap-blockers
+  start_btn: '[data-testid="svc-org-start-eval"]'
+  range_hint: 对比机构须为 2~5 家
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 勾选机构直到当前为 6 家（真实操作在 expect 内）
+expect:
+  - note: 1、出现「对比机构须为 2~5 家」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const countCapBasketTags = async () =>
+        page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+      const seedBasketUntilAtLeast = async (minN, currentN) => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        let need = minN - currentN;
+        if (need <= 0) return;
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const trySearch = async (kw) => {
+          const inp = page.getByPlaceholder(/用一句话描述机构需求/);
+          if (!(await inp.count())) return;
+          await inp.fill(kw);
+          const searchBtn = page.getByRole('button', { name: '搜索', exact: true });
+          if (await searchBtn.count()) await searchBtn.first().click({ timeout: 15000 });
+          await page.waitForTimeout(2500);
+        };
+        let joins = page.getByRole('button', { name: '加入对比篮', exact: true });
+        if ((await joins.count()) < need) {
+          for (const kw of ['深圳', '广州', '东莞', '北京', '上海']) {
+            await trySearch(kw);
+            joins = page.getByRole('button', { name: '加入对比篮', exact: true });
+            if ((await joins.count()) >= need) break;
+          }
+        }
+        while (need > 0) {
+          joins = page.getByRole('button', { name: '加入对比篮', exact: true });
+          if (!(await joins.count())) {
+            throw new Error('ENV-SVCCAP-BASKET-ORG-GT5-001：检索页无可入篮行，仍缺 ' + need + ' 家');
+          }
+          await joins.first().scrollIntoViewIfNeeded();
+          await joins.first().click({ timeout: 15000 });
+          await page.waitForTimeout(600);
+          need -= 1;
+        }
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await closeBasket();
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      const vals = [];
+      for (let i = 0; i < 5; i++) vals.push(String(await spins.nth(i).inputValue()));
+      if (vals.join(',') !== '25,25,20,20,10') {
+        throw new Error('前置权重 ' + vals.join('/') + ' ≠ 25/25/20/20/10');
+      }
+      await expect(page.getByText(/权重合计：\s*100%/).first()).toBeVisible({ timeout: 8000 });
+      let tagN = await countCapBasketTags();
+      if (tagN < 6) {
+        await seedBasketUntilAtLeast(6, tagN);
+        tagN = await countCapBasketTags();
+      }
+      if (tagN < 6) {
+        throw new Error('ENV-SVCCAP-BASKET-ORG-GT5-001：对比篮服务机构应至少 6 家可勾选，当前 tags=' + tagN);
+      }
+      const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+      for (let i = 0; i < tagN; i++) {
+        const cls = String((await tags.nth(i).getAttribute('class')) || '');
+        if (cls.includes('arco-tag-checked')) {
+          await tags.nth(i).click({ timeout: 4000 });
+          await page.waitForTimeout(280);
+        }
+      }
+      const pickN = Math.min(6, tagN);
+      for (let i = 0; i < pickN; i++) {
+        const cls = String((await tags.nth(i).getAttribute('class')) || '');
+        if (!cls.includes('arco-tag-checked')) {
+          await tags.nth(i).click({ timeout: 5000 });
+          await page.waitForTimeout(350);
+        }
+      }
+      const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+      if (!head.includes('当前6家')) {
+        throw new Error('勾选六家后计数行=' + head);
+      }
+      const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+      if (checked !== 6) {
+        throw new Error('勾选六家后选中 tags=' + checked);
+      }
+      const blockers = page.locator('.svc-org-cap-blockers');
+      await expect(blockers).toContainText('对比机构须为 2~5 家', { timeout: 8000 });
+      const blockerTxt = ((await blockers.innerText().catch(() => '')) || '').replace(/\s+/g, '');
+      if (!blockerTxt.includes('对比机构须为2~5家')) {
+        throw new Error('门控区未见「对比机构须为 2~5 家」: ' + blockerTxt.slice(0, 80));
+      }
+      globalThis.__func04307 = { checked: 6, tagN };
+  - note: 2、「开始评估」不可用
+    assert: |-
+      if (!globalThis.__func04307?.checked) throw new Error('expect[0] 未执行或未写入 __func04307');
+      const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<6 家→ENV-SVCCAP-BASKET-ORG-GT5-001
+as_built_note: >-
+  FUNC-04307；步骤：篮内 tags≥6、五维权重 100% → 点选 tag 直至当前 6 家 → blocker「对比机构须为 2~5 家」+ start disabled。
+  与 04292（整篮带入>n）互补，本条只验页内 tag toggle 超五家门控。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04307。零 allow_skip。

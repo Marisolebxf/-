@@ -1,0 +1,33 @@
+id: FUNC-04592
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04592
+priority: P1
+tier: B
+title: 主流程-选定产业回显
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    text: 生物产业 / 生物医药
+  - action: click
+    text: 生物
+  - action: click
+    text: 生物产业 / 生物医药
+  - action: click
+    text: 新能源
+expect:
+  - note: 1、选择器回显「新能源」
+    assert: |-
+      const industryBlock = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await expect(industryBlock).toContainText('新能源');
+  - note: 2、仍停在分析配置
+    assert: |-
+      await expect(page.getByText('分析配置', { exact: true }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: '生成招引名单' })).toBeVisible();
+  - note: 3、不出现分析过程页
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' })).not.toBeVisible();
+      await expect(page.getByText('分析过程', { exact: true })).not.toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

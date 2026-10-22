@@ -1,0 +1,182 @@
+id: FUNC-04392
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04392
+priority: P0
+tier: A
+title: 主流程-产业下拉 · 15 个选项
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已登录 admin（已在业务页且 URL 不含 /login 则不重复登录）
+  - env-gate overall=pass
+  - 已进入分析配置；产业领域尚未选择
+locators:
+  config: 分析配置
+  cluster_select: .industry-catalog-select / .svc-portal-industry-cascader
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、已进入分析配置并展开产业领域下拉；2、选项共 15 个且名称与附录 A 一致
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      if (/view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const need = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const noise = [
+        '外资企业',
+        '高新技术企业',
+        '小微企业',
+        '上市企业',
+        '专精特新',
+        '小巨人',
+        '链主龙头',
+      ];
+      const norm = (t) =>
+        t
+          .trim()
+          .replace(/\s+/g, ' ')
+          .replace(/\s*（[^）]*）\s*$/, '')
+          .trim();
+      const openIndustry = async () => {
+        const flat = page
+          .locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select')
+          .first();
+        if (await flat.isVisible().catch(() => false)) {
+          await flat.click({ timeout: 8000 });
+          return 'flat';
+        }
+        const cascader = page
+          .locator(
+            'main .svc-portal-industry-cascader .arco-cascader-view, main .sci-arco-cascader, main .arco-cascader-view'
+          )
+          .first();
+        if (await cascader.isVisible().catch(() => false)) {
+          await cascader.click({ timeout: 8000 });
+          return 'cascader';
+        }
+        throw new Error('未见产业领域下拉触发器');
+      };
+      const mode = await openIndustry();
+      await page.waitForTimeout(600);
+      let clean = [];
+      if (mode === 'flat') {
+        const opts = page.locator(
+          '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option'
+        );
+        const texts = (await opts.allTextContents()).map(norm).filter(Boolean);
+        clean = texts.filter((t) => !noise.includes(t));
+      } else {
+        const popup = page
+          .locator('.arco-trigger-popup:visible .svc-portal-industry-cascader-menu, .arco-trigger-popup:visible')
+          .first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const col1 = popup.locator('.arco-cascader-panel-column, .arco-cascader-column').first();
+        const texts = (await col1.locator('.arco-cascader-option').allTextContents())
+          .map(norm)
+          .filter(Boolean);
+        clean = texts.filter((t) => !noise.includes(t));
+      }
+      if (clean.length !== 15) {
+        throw new Error('产业集群选项数 ' + clean.length + ' ≠15 实见=' + clean.join(','));
+      }
+      for (const k of need) {
+        if (!clean.some((t) => t === k || t.includes(k) || k.includes(t))) {
+          throw new Error('缺附录 A 产业集群: ' + k + ' / 实见 ' + clean.join(','));
+        }
+      }
+      const extra = clean.filter((t) => !need.some((k) => t === k || t.includes(k) || k.includes(t)));
+      if (extra.length) {
+        throw new Error('附录 A 外多余选项: ' + extra.join(',') + ' / 实见 ' + clean.join(','));
+      }
+      await page.keyboard.press('Escape');
+  - note: 3、产业领域尚未选择时占位为「选择产业集群」
+    assert: |-
+      const flat = page.locator('main .industry-catalog-select').first();
+      if (await flat.isVisible().catch(() => false)) {
+        const viewTxt = (
+          (await flat.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+          (await flat.innerText().catch(() => '')) ||
+          ''
+        )
+          .trim()
+          .replace(/\s+/g, ' ');
+        if (
+          viewTxt &&
+          !/选择产业集群|^$/.test(viewTxt) &&
+          /新一代|生物|新能源|新材料|高端装备|智能网联|绿色环保|低空|传统与创意|海洋|未来/.test(viewTxt)
+        ) {
+          await flat.hover();
+          await page.waitForTimeout(200);
+          const clr = page.locator(
+            '.industry-catalog-select .arco-select-view-clear-btn, .industry-catalog-select .arco-select-clear-icon'
+          );
+          if (await clr.count()) {
+            await clr.first().click({ force: true });
+            await page.waitForTimeout(800);
+          }
+        }
+        await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+        return;
+      }
+      const cascader = page.locator('main .svc-portal-industry-cascader').first();
+      if (await cascader.isVisible().catch(() => false)) {
+        const phVisible = await page.getByPlaceholder('选择产业集群').isVisible().catch(() => false);
+        const input = cascader.locator('input').first();
+        const ph = ((await input.getAttribute('placeholder').catch(() => '')) || '').trim();
+        const viewTxt = ((await cascader.locator('.arco-cascader-view').first().innerText().catch(() => '')) || '')
+          .trim()
+          .replace(/\s+/g, ' ');
+        if (!phVisible && ph !== '选择产业集群') {
+          throw new Error(
+            '未见占位「选择产业集群」（cascader input placeholder=' +
+              ph +
+              ' 回显=' +
+              viewTxt.slice(0, 80) +
+              '）'
+          );
+        }
+        await expect(page.getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+        return;
+      }
+      throw new Error('未见产业领域下拉（flat/cascader）');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  flat：.industry-catalog-select + placeholder「选择产业集群」（对齐 P0-02）；cascader：首列 15 集群短名含括号 hint 剥离；
+  对比篮 noise 去噪。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04392。A 档零 allow_skip。

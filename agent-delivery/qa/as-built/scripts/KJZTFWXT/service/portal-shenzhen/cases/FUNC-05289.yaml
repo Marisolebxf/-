@@ -1,0 +1,56 @@
+id: FUNC-05289
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05289
+priority: P0
+tier: B
+title: 主流程-产业下拉
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 1.展开产业下拉
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      const trigger = page.locator('main .svc-portal-filter .arco-cascader-view');
+      await trigger.click({ timeout: 8000 });
+      const popupCol = page.locator('.arco-cascader-column').first();
+      await expect(popupCol.locator('.arco-cascader-option').first()).toBeVisible({ timeout: 10000 });
+expect:
+  - note: 1、选项共 15 个
+    assert: |-
+      const firstCol = page.locator('.arco-cascader-column').first();
+      const options = firstCol.locator('.arco-cascader-option').filter({ hasNotText: '全部产业' });
+      await expect(options).toHaveCount(15, { timeout: 10000 });
+  - note: 2、名称与顺序见附录 A
+    assert: |-
+      const expected = [
+        '新一代信息技术',
+        '生物',
+        '新能源',
+        '新材料',
+        '高端装备',
+        '智能网联新能源汽车',
+        '绿色环保',
+        '低空经济与空天',
+        '传统与创意',
+        '海洋',
+        '未来制造',
+        '未来信息',
+        '未来能源',
+        '未来空间',
+        '未来健康',
+      ];
+      const options = page
+        .locator('.arco-cascader-column')
+        .first()
+        .locator('.arco-cascader-option')
+        .filter({ hasNotText: '全部产业' });
+      for (let i = 0; i < expected.length; i++) {
+        await expect(options.nth(i)).toContainText(expected[i], { timeout: 10000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,25 @@
+id: FUNC-04710
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04710
+priority: P1
+tier: B
+title: 备选-分析记录列表
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 分析记录
+expect:
+  - note: 表头为任务、类型、状态、创建时间、操作
+    assert: |-
+      const table = page.locator('.arco-table').first();
+      for (const name of ['任务号', '分析类型', '任务状态', '提交时间', '操作']) {
+        await expect(table.getByRole('columnheader', { name })).toBeVisible();
+      }
+  - note: 列表中能看到已完成和失败
+    assert: |-
+      await expect(page.locator('.arco-table').getByText('已完成').first()).toBeVisible();
+      await expect(page.locator('.arco-table').getByText('失败').first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,25 @@
+id: FUNC-04800
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04800
+priority: P1
+tier: B
+title: 备选-结果页改产业
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 1、对比区仍是无法绘制对比图的原快照
+    assert: |-
+      await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 60000 });
+      await page.getByRole('row').filter({ hasText: '查看结果' }).getByText('查看结果').first().click({ timeout: 60000 });
+      const industry = page.locator('.arco-form-item').filter({ hasText: '产业领域' }).locator('.arco-select-view').first();
+      await industry.click();
+      await page.getByRole('option', { name: '海洋' }).click();
+      await expect(page.getByText('无法绘制对比图')).toBeVisible();
+  - note: 2、不进入新的过程页
+    assert: |-
+      await expect(page).toHaveURL(/chain-analysis/);
+      await expect(page.getByText('无法绘制对比图')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

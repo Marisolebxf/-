@@ -1,0 +1,52 @@
+id: FUNC-05301
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05301
+priority: P1
+tier: B
+title: 备选-清空产业链
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen?industry=CL-SEI-02
+  - action: evaluate
+    note: 选择产业链「生物医药与生命健康」
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const chainRow = filter.filter({ hasText: '产业链' });
+      await expect(chainRow).toBeVisible({ timeout: 8000 });
+      const chainView = chainRow.locator('.arco-select-view').first();
+      await chainView.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const option = page.locator('.arco-select-dropdown:visible .arco-select-option').filter({ hasText: '生物医药与生命健康' }).first();
+      await expect(option).toBeVisible({ timeout: 8000 });
+      await option.click();
+      await page.waitForTimeout(800);
+  - action: evaluate
+    note: 点击产业链下拉上的清空
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const chainRow = filter.filter({ hasText: '产业链' });
+      const chainView = chainRow.locator('.arco-select-view').first();
+      await expect(chainView).toBeVisible({ timeout: 8000 });
+      const clearBtn = chainView.locator('.arco-select-view-clear-btn, .arco-icon-hover').first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(800);
+expect:
+  - note: 1、结论上下文回到「生物」
+    assert: |-
+      await expect(page.locator('main')).toContainText('「生物', { timeout: 15000 });
+      await expect(page.locator('main')).not.toContainText('生物医药与生命健康', { timeout: 5000 });
+  - note: 2、产业链占位为「全部产业链」
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      await expect(filter).toContainText('全部产业链', { timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

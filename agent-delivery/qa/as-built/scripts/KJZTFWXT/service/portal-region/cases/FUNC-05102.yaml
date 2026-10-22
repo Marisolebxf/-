@@ -1,0 +1,56 @@
+id: FUNC-05102
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05102
+priority: P0
+tier: B
+title: 主流程-排行省级个数
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 排行共 3 个省级行政区，名称见附录 C
+    assert: |-
+      const count = await page.evaluate(() => {
+        const title = Array.from(document.querySelectorAll('*')).find(
+          (el) => (el.textContent ?? '').trim() === '省级行政区排行',
+        );
+        const panel =
+          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
+          title?.parentElement?.parentElement;
+        if (!panel) return 0;
+        const rows = Array.from(panel.querySelectorAll('li, tr, [class*="rank"], [class*="list-item"]')).filter(
+          (el) => {
+            const t = (el.textContent ?? '').replace(/\s+/g, ' ');
+            return /[\u4e00-\u9fa5]{2,8}/.test(t) && /[\d,]+\s*家/.test(t);
+          },
+        );
+        if (rows.length) return rows.length;
+        const hits = (panel.innerText ?? '').match(/[\u4e00-\u9fa5]{2,10}\s*[\d,]+\s*家/g);
+        return hits ? hits.length : 0;
+      });
+      await expect(count === 3).toBeTruthy();
+  - note: 每个名称旁展示家数
+    assert: |-
+      const ok = await page.evaluate(() => {
+        const title = Array.from(document.querySelectorAll('*')).find(
+          (el) => (el.textContent ?? '').trim() === '省级行政区排行',
+        );
+        const panel =
+          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
+          title?.parentElement?.parentElement;
+        if (!panel) return false;
+        const rows = Array.from(panel.querySelectorAll('li, tr, [class*="rank"], [class*="list-item"]')).filter(
+          (el) => {
+            const t = (el.textContent ?? '').replace(/\s+/g, ' ');
+            return /[\u4e00-\u9fa5]{2,8}/.test(t) && /[\d,]+\s*家/.test(t);
+          },
+        );
+        if (rows.length >= 3) {
+          return rows.slice(0, 3).every((el) => /[\d,]+\s*家/.test(el.textContent ?? ''));
+        }
+        const hits = (panel.innerText ?? '').match(/[\u4e00-\u9fa5]{2,10}\s*[\d,]+\s*家/g) ?? [];
+        return hits.length >= 3 && hits.every((s) => /[\d,]+\s*家/.test(s));
+      });
+      await expect(ok).toBeTruthy();

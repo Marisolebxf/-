@@ -55,16 +55,13 @@ expect:
     assert: |-
       if (!globalThis.__func02799_ready) throw new Error('前置：未打开环节详情');
       const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      const tab = detail.getByRole('tab', { name: '市场规模' });
-      await expect(tab).toBeVisible({ timeout: 8000 });
-      await tab.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const selected =
-        (await tab.getAttribute('aria-selected')) === 'true' ||
-        ((await tab.getAttribute('class')) || '').includes('active');
-      if (!selected) {
-        throw new Error('步骤：「市场规模」页签未选中');
+      const tabNav = detail.locator('.arco-tabs-nav-tab').filter({ hasText: /^市场规模$/ });
+      if (await tabNav.count()) {
+        await tabNav.first().click({ timeout: 8000 });
+      } else {
+        await detail.getByText('市场规模', { exact: true }).first().click({ timeout: 8000 });
       }
+      await page.waitForTimeout(400);
   - note: 1、展示「暂无正式数据源」
     assert: |-
       if (!globalThis.__func02799_ready) throw new Error('前置：未打开环节详情');

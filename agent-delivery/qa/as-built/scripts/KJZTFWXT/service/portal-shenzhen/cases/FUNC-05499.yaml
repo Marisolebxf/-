@@ -1,0 +1,24 @@
+id: FUNC-05499
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05499
+priority: P1
+tier: B
+title: 异常-机构参数无效
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: goto
+    target: /service-portal/shenzhen?org=__INVALID_FUNC05499__
+expect:
+  - note: 1、提示「机构不存在或已下线」
+    assert: |-
+      await expect(page.locator('.arco-message').filter({ hasText: '机构不存在或已下线' })).toBeVisible()
+  - note: 2、不打开机构抽屉
+    assert: |-
+      await expect(page.locator('.arco-drawer')).toHaveCount(0)
+  - note: 3、地址中的机构参数被去掉
+    assert: |-
+      await expect(page).not.toHaveURL(/[?&]org=/)
+on_fail: 截图 + 抄 X-Trace-Id

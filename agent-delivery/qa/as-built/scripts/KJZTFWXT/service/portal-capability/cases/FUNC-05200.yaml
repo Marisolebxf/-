@@ -1,0 +1,21 @@
+id: FUNC-05200
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05200
+priority: P1
+tier: B
+title: 备选-未选产业时产业链禁用
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: 全部产业链
+expect:
+  - note: 「全部产业链」保持禁用
+    assert: |-
+      await expect(page.locator('main').getByText('全部产业链', { exact: true })).toBeDisabled();
+  - note: 不出现产业链选项
+    assert: |-
+      await expect(page.locator('main .arco-select-dropdown:visible, main .arco-cascader-panel:visible')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

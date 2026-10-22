@@ -71,21 +71,42 @@ expect:
         await expect(page).toHaveURL(/workspace=bottleneck/);
         await expect(page).toHaveURL(/tab=bottleneck/);
       };
+      const openResultFromRecords = async () => {
+        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
+        await expect(tab).toBeVisible({ timeout: 10000 });
+        await tab.click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        const viewBtns = main().getByRole('button', { name: '查看结果' });
+        const vn = await viewBtns.count();
+        for (let i = 0; i < Math.min(vn, 12); i++) {
+          const b = viewBtns.nth(i);
+          if (await b.isDisabled().catch(() => true)) continue;
+          await b.click({ timeout: 15000 });
+          await page.waitForTimeout(2000);
+          const t = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/多维度瓶颈综合分析/.test(t)) {
+            globalThis.__func03202 = { body: t };
+            return true;
+          }
+          const tab2 = page.getByRole('tab', { name: '诊断记录' }).first();
+          if (await tab2.isVisible().catch(() => false)) await tab2.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(800);
+        }
+        return false;
+      };
       const openRecordsAndCopyStart = async () => {
         const tab = page.getByRole('tab', { name: '诊断记录' }).first();
         await expect(tab).toBeVisible({ timeout: 10000 });
         await tab.click({ timeout: 10000 });
         await page.waitForTimeout(1200);
-        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /已完成|成功/ });
+        const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: /产业瓶颈堵点识别/ });
         const n = await rows.count();
         if (n < 1) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-TASK：诊断记录无已完成行，无法打开结果页');
+          throw new Error('ENV-CHAIN-BOTTLENECK-NO-ROW：诊断记录无瓶颈任务行');
         }
         let clicked = false;
         for (let i = 0; i < Math.min(n, 12); i++) {
           const row = rows.nth(i);
-          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (!/产业瓶颈堵点识别/.test(rowText)) continue;
           const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
           if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
           await copyBtn.click({ timeout: 15000 });
@@ -93,7 +114,7 @@ expect:
           break;
         }
         if (!clicked) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-NO-COPY-03202：无已完成瓶颈任务可点「复制配置」');
+          throw new Error('ENV-CHAIN-BOTTLENECK-NO-COPY-03202：无瓶颈任务可点「复制配置」');
         }
         await page.waitForTimeout(800);
         const start = page.getByRole('button', { name: '开始分析' }).first();
@@ -101,32 +122,37 @@ expect:
         await start.click({ timeout: 15000 });
       };
       await enterBottleneck();
-      await openRecordsAndCopyStart();
-      let sawReady = false;
-      let last = '';
-      for (let i = 0; i < 90; i++) {
-        await page.waitForTimeout(i < 4 ? 600 : 1500);
-        last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/分析结果已生成/.test(last)) sawReady = true;
-        if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 10) {
-          throw new Error('ENV-CHAIN-BOTTLENECK-ASYNC-FAIL-03202：复制配置后分析失败');
+      const opened = await openResultFromRecords();
+      if (!opened) {
+        await openRecordsAndCopyStart();
+        let sawReady = false;
+        let last = '';
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 4 ? 600 : 1500);
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/分析结果已生成/.test(last)) sawReady = true;
+          if (/分析失败|INPUT_OBJECT_INVALID|DIM_PACK_UNAVAILABLE/.test(last) && i >= 10) {
+            throw new Error('ENV-CHAIN-BOTTLENECK-ASYNC-FAIL-03202：复制配置后分析失败');
+          }
+          if (sawReady) break;
+          if (/今日已分析过相同条件/.test(last)) {
+            sawReady = true;
+            break;
+          }
         }
-        if (sawReady) break;
-        if (/今日已分析过相同条件/.test(last)) {
-          sawReady = true;
-          break;
+        if (!sawReady) {
+          throw new Error('过程页未见「分析结果已生成」，片段: ' + last.slice(0, 180));
         }
+        const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
+        await expect(viewBtn).toBeVisible({ timeout: 15000 });
+        await viewBtn.click({ timeout: 15000 });
+        await page.waitForTimeout(2000);
       }
-      if (!sawReady) {
-        throw new Error('过程页未见「分析结果已生成」，片段: ' + last.slice(0, 180));
-      }
-      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
-      await expect(viewBtn).toBeVisible({ timeout: 15000 });
-      await viewBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(2000);
       await expect(page.getByText('产业瓶颈堵点识别结果').first()).toBeVisible({ timeout: 20000 });
       await expect(page.getByText('多维度瓶颈综合分析').first()).toBeVisible({ timeout: 15000 });
-      globalThis.__func03202 = { body: await main().innerText().catch(() => '') };
+      if (!globalThis.__func03202?.body) {
+        globalThis.__func03202 = { body: await main().innerText().catch(() => '') };
+      }
   - note: 1、图例为「健康分档」，含稳健、关注、薄弱
     assert: |-
       const body = globalThis.__func03202?.body || (await page.locator('main').first().innerText().catch(() => ''));

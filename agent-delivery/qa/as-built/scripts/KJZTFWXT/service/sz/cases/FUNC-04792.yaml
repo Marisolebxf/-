@@ -1,0 +1,23 @@
+id: FUNC-04792
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04792
+priority: P1
+tier: B
+title: 主流程-服务链完整度
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+expect:
+  - note: 该行标注「不参与后续对比图」
+    assert: |-
+      await expect(page.getByText('不参与后续对比图')).toBeVisible()
+  - note: 说明中有「不输出伪完整度分数」
+    assert: |-
+      await expect(page.getByText('不输出伪完整度分数')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

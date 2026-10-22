@@ -1,0 +1,22 @@
+id: FUNC-05094
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05094
+priority: P0
+tier: B
+title: 主流程-产业集群下拉
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 选项共 15 个产业集群，名称见附录 A
+    assert: |-
+      const clusterRow = page
+        .locator('div')
+        .filter({ has: page.getByText('产业集群 / 产业', { exact: true }) })
+        .first();
+      await clusterRow.locator('.arco-select-view').click();
+      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      await expect(options).toHaveCount(15);
+on_fail: 截图 + 抄 X-Trace-Id

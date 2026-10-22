@@ -1,0 +1,32 @@
+id: FUNC-01268
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01268
+priority: P0
+tier: B
+title: 主流程-权重调节与键入编辑
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 调节钮每次增减 1（现有规模 25 上调一次变 26）
+    assert: |-
+      const row = page.locator('.arco-form-item, .arco-row').filter({ hasText: '现有规模' }).first();
+      await expect(row).toBeVisible();
+      const spin = row.getByRole('spinbutton');
+      await expect(spin).toBeVisible();
+      await expect(spin).toHaveValue('25');
+      await row.locator('.arco-input-number-step-button.up, .arco-icon-up').first().click();
+      await expect(spin).toHaveValue('26');
+      await row.locator('.arco-input-number-step-button.down, .arco-icon-down').first().click();
+      await expect(spin).toHaveValue('25');
+  - note: 权重值支持直接键入修改
+    assert: |-
+      const row = page.locator('.arco-form-item, .arco-row').filter({ hasText: '现有规模' }).first();
+      const spin = row.getByRole('spinbutton');
+      await spin.click();
+      await spin.fill('33');
+      await spin.press('Enter');
+      await expect(spin).toHaveValue('33');
+on_fail: 截图 + 抄 X-Trace-Id

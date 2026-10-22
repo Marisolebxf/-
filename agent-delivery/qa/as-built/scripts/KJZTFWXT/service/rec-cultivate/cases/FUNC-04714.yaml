@@ -1,0 +1,30 @@
+id: FUNC-04714
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04714
+priority: P1
+tier: B
+title: 备选-兄弟菜单隔离
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 引入服务机构推荐分析
+  - action: click
+    target: 培育服务机构推荐分析
+expect:
+  - note: 引入页标题为「引入服务机构推荐分析」
+    assert: |-
+      await page.getByText('引入服务机构推荐分析', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('引入服务机构推荐分析', { exact: true }).first()).toBeVisible();
+  - note: 引入页模型区为「招引推荐模型（演示模型口径）」
+    assert: |-
+      await expect(page.getByText('招引推荐模型')).toBeVisible();
+  - note: 回到培育页后模型区为「培育评估模型（演示模型口径）」
+    assert: |-
+      await page.getByText('培育服务机构推荐分析', { exact: true }).first().click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText('培育评估模型')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

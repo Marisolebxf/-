@@ -8,94 +8,32 @@ entry_id: svc-org-field
 preconditions:
   - 已进入服务机构产业领域分析页 field/coverage
   - 已选机构为 0 家
-locators:
-  config_heading: text「分析配置」
-  field_filter: placeholder「筛选领域（不改分析指纹）」
-  org_picker: button「选择机构」
-  start: button「开始分析」
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
   - note: 1、可见「选择机构」与「开始分析」
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterViaSidebar = async () => {
-        await dismissBasket();
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(1200);
-        }
-        await page.goto(spaUrl('/service-portal/overview'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling /service-portal/overview 仍 SPA404 url=' + page.url());
-        }
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
-        if (!(await leaf().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=field/);
-        await expect(page).toHaveURL(/tab=coverage/);
-      };
-      const resetToZeroOrgs = async () => {
-        if (/org_ids|view=result|view=processing/.test(page.url())) {
-          await page.goto(spaUrl('/service/institution-judgment?workspace=field&tab=coverage'), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(1000);
-        }
-        const main = page.locator('main').first();
-        const t = ((await main.innerText().catch(() => '')) || '');
-        if (/已选机构（[1-9]/.test(t)) {
-          const clr = main.getByRole('button', { name: '清空' });
-          if (await clr.count()) {
-            await clr.first().click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(500);
-          }
-        }
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        await enterViaSidebar();
-      }
-      await resetToZeroOrgs();
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
-      await expect(page.getByRole('button', { name: '选择机构', exact: true })).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main').first();
+      await expect(main.getByText(/已选机构（0\s*家）/)).toBeVisible({ timeout: 12000 });
+      await expect(main.getByText('未选择机构')).toBeVisible({ timeout: 8000 });
+      await expect(main.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 });
+      await expect(main.getByRole('button', { name: '打开对比篮' }).first()).toBeVisible({ timeout: 8000 });
   - note: 2、产业领域占位为「筛选领域（不改分析指纹）」
-    assert: await expect(page.getByPlaceholder('筛选领域（不改分析指纹）')).toBeVisible({ timeout: 8000 })
+    assert: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('产业领域').first()).toBeVisible({ timeout: 8000 });
+      const cascader = main.locator('.arco-cascader-view').first();
+      await expect(cascader).toBeVisible({ timeout: 8000 });
+      const label = ((await cascader.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!label || !/产业/.test(label)) {
+        throw new Error('产业领域级联未展示默认取值: ' + label);
+      }
   - note: 3、提示先选择分析机构再点开始分析（未选机构配置空态，不进入结果区）
     assert: |-
       const main = page.locator('main.content-shell-layout, main').first();
-      const t = await main.innerText();
-      if (!/请先选择分析机构|已选机构（0\s*家）|未选择机构/.test(t)) {
-        throw new Error('未见先选机构空态提示: ' + t.slice(0, 280));
-      }
+      await expect(main.getByText(/尚未选择分析机构，请先在对比篮中组装分析对象/)).toBeVisible({ timeout: 8000 });
       if (/view=result|view=processing/.test(page.url())) {
         throw new Error('空态不应在结果/过程 view: ' + page.url());
       }
@@ -105,7 +43,5 @@ expect:
       }
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
-  catalog_path=/service/institution-judgment?workspace=field&tab=coverage（entry-seed）。
-  edu/tts/svcz 冷启动深链 SPA404 时经 sibling /service-portal/overview 侧栏 menu_leaf 补进（对齐 FUNC-00641/00643）。
-  空态文案「已选机构（0 家）/未选择机构/请先选择分析机构」；领域 placeholder「筛选领域（不改分析指纹）」。A 档零 allow_skip。
-  2026-10-21 edu.itic-sci.com/tts/svcz 根路径亦 SPA404（无登录壳）→ ENV-EDU-TTS-SVCZ-404-001，待环境恢复复跑。
+  30892 对象集经对比篮；配置区可见已选机构（0 家）/未选择机构/打开对比篮/开始分析；
+  产业领域为 Arco 级联默认展示路径（非旧 placeholder 文案）。

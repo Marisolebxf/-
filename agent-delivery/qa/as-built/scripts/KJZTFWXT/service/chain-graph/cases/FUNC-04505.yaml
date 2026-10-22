@@ -1,0 +1,19 @@
+id: FUNC-04505
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04505
+priority: P0
+tier: B
+title: 主流程-配置区引导
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 出现「请先确认分析条件，再点击「开始分析」」
+    assert: |-
+      await expect(page.getByText('请先确认分析条件，再点击「开始分析」')).toBeVisible()
+  - note: 写明切换滤镜不会自动创建任务
+    assert: |-
+      await expect(page.getByText(/切换.*滤镜.*不会自动创建任务/)).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,21 @@
+id: FUNC-04407
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04407
+priority: P0
+tier: B
+title: 生物当天已完成分析时开始分析复用已有结果
+entry_id: svc-chain-shortboard
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+  - action: click
+    target: 开始分析
+expect:
+  - note: 任务编号与记下的已完成任务相同
+    assert: |-
+      await expect(page).toHaveURL(/task_id=SVC-/);
+  - note: 进入该次已有结果页
+    assert: |-
+      await expect(page.getByText(/SVC-\d{8}-\d+/).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

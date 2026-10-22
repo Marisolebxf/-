@@ -1,0 +1,30 @@
+id: FUNC-05108
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05108
+priority: P1
+tier: B
+title: 备选-地图缩小
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 地图视野缩小
+    assert: |-
+      const container = page.locator('.leaflet-container').first();
+      await expect(container).toBeVisible();
+      const zoomBefore = await container.evaluate((el) => {
+        const map = el._leaflet_map;
+        return map ? map.getZoom() : null;
+      });
+      await page.locator('a.leaflet-control-zoom-out').click();
+      await page.waitForTimeout(400);
+      const zoomAfter = await container.evaluate((el) => {
+        const map = el._leaflet_map;
+        return map ? map.getZoom() : null;
+      });
+      expect(zoomBefore).not.toBeNull();
+      expect(zoomAfter).not.toBeNull();
+      expect(zoomAfter).toBeLessThan(zoomBefore);
+on_fail: 截图 + 抄 X-Trace-Id

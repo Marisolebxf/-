@@ -1,0 +1,29 @@
+id: FUNC-04593
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04593
+priority: P1
+tier: B
+title: 主流程-权重合计门控
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 权重合计不再显示「100% 已对齐」，并写出与 100% 的差额
+    assert: |-
+      const matchSlider = page.locator('.arco-slider').first();
+      await matchSlider.locator('.arco-slider-button').focus();
+      await page.keyboard.press('Home');
+      for (let i = 0; i < 50; i++) {
+        await page.keyboard.press('ArrowRight');
+      }
+      await expect(page.getByText('100% 已对齐')).toHaveCount(0);
+      await expect(page.getByText(/差额|超出|\+15|115%/)).toBeVisible();
+  - note: 「开始分析」不可点击
+    assert: |-
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled();
+  - note: 出现「按比例归一」
+    assert: |-
+      await expect(page.getByText('按比例归一')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

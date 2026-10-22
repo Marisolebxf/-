@@ -1,0 +1,51 @@
+id: FUNC-04789
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04789
+priority: P1
+tier: B
+title: 主流程-过程页停住
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 1、标题为「深圳服务链现状分析生成中」
+    assert: |-
+      const close=page.locator('button[aria-label="关闭对比篮"]'); if (await close.count() && await close.first().isVisible().catch(()=>false) && await close.first().isEnabled().catch(()=>false)) { try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300) } catch {} }
+      if (/view=processing|view=result/.test(page.url())) { await page.goto(page.url().split('?')[0]+'?workspace=shenzhen&tab=shenzhen', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2000) }
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const sel=page.locator('.industry-catalog-select').first();
+      await expect(sel).toBeVisible({ timeout: 8000 });
+      let echo0=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+      if (!/新一代信息技术/.test(echo0)) {
+        await sel.locator('.arco-select-view').first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        echo0=((await sel.locator('.arco-select-view-value').first().innerText().catch(()=>''))||'').trim();
+        if (!/新一代信息技术/.test(echo0)) throw new Error('选定后未回显新一代信息技术: "'+echo0+'"');
+      }
+      const start=page.getByRole('button', { name: '开始分析', exact: true });
+      if (!await start.count()) throw new Error('未见「开始分析」按钮');
+      if (!await start.first().isEnabled()) throw new Error('「开始分析」不可用');
+      const pollUrl=async (ms) => { for (let i=0;i<Math.ceil(ms/1000);i++) { await page.waitForTimeout(1000); if (/[?&]view=processing/.test(page.url())) return true } return false };
+      await start.first().click({ timeout: 8000 });
+      let landed=await pollUrl(8000);
+      if (!landed) {
+        const s2=page.getByRole('button', { name: '开始分析', exact: true });
+        if (await s2.count() && await s2.first().isVisible().catch(()=>false) && await s2.first().isEnabled().catch(()=>false) && !/[?&]view=/.test(page.url())) { await s2.first().click({ timeout: 8000 }); landed=await pollUrl(12000) }
+      }
+      if (!landed) throw new Error('点击开始分析后未进入过程态: '+page.url());
+      await expect(page.getByText('深圳服务链现状分析生成中').first()).toBeVisible({ timeout: 15000 });
+  - note: 2、分析对象为「产业领域：新一代信息技术」
+    assert: |-
+      const body=((await page.locator('main').first().innerText().catch(()=>''))||'');
+      if (!/产业领域：\s*新一代信息技术/.test(body)) throw new Error('过程页分析对象非「产业领域：新一代信息技术」');
+  - note: 3、页面仍为过程页，其上有「查看结果」
+    assert: |-
+      const u=page.url();
+      if (!/[?&]view=processing/.test(u)) throw new Error('应停过程页，实际 URL: '+u);
+      if (/[?&]view=result/.test(u)) throw new Error('不应自动跳转结果态: '+u);
+      await expect(page.getByRole('button', { name: '查看结果', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

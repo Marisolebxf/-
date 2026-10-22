@@ -1,0 +1,103 @@
+id: FUNC-03422
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03422
+priority: P1
+title: 对比页不承载发展配置（菜单进入隔离）
+entry_id: chain-sz-dev
+tier: B
+preconditions:
+  - 系统可访问；已登录 admin
+  - 已能看到产业链分析菜单
+locators:
+  menu_group: 侧栏分组「产业链分析」
+  menu_compare: 侧栏项「深圳产业情况分析对比」
+steps:
+  - action: goto
+    target: /industry-center/search
+  - action: evaluate
+    note: 展开「产业链分析」并点击「深圳产业情况分析对比」
+expect:
+  - note: 1、该页是对比配置并含标杆区域
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const comparePath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        const sorry = page.getByText('抱歉，页面不存在');
+        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
+      };
+      const onCompare = () =>
+        /\/industry-center\/shenzhen/.test(page.url()) &&
+        /workspace=comparison/.test(page.url()) &&
+        /tab=comparison/.test(page.url());
+      const enterCompareViaSidebar = async () => {
+        const compareLeaf = () =>
+          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
+        const expandChainGroup = async () => {
+          if (await compareLeaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await dismissBasket();
+        await expandChainGroup();
+        await expect(compareLeaf().first()).toBeVisible({ timeout: 10000 });
+        await compareLeaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/workspace=comparison/, { timeout: 15000 });
+      };
+      await dismissBasket();
+      if (!onCompare() || (await bodyIs404())) {
+        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: /industry-center/search SPA404，无法侧栏进入对比页 ' + page.url());
+        }
+        await enterCompareViaSidebar();
+      }
+      if (await bodyIs404() || !onCompare()) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: 侧栏点击后未落到对比工作区 ' + page.url());
+      }
+      await expect(page).toHaveURL(/workspace=comparison/);
+      await expect(page).toHaveURL(/tab=comparison/);
+      await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main');
+      await expect(main.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const bench = main.locator('input[placeholder*="Q016"], input[placeholder*="标杆"]');
+      if (!(await bench.count())) {
+        const mt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/标杆/.test(mt)) throw new Error('对比配置区未见标杆区域控件或文案');
+      } else {
+        await expect(bench.first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 2、不出现「发展目标」
+    assert: |-
+      const main = page.locator('main');
+      const mt = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/发展目标/.test(mt)) {
+        const goals = main.locator('label.arco-checkbox').filter({ hasText: /政策|技术|人才/ });
+        if (await goals.count()) throw new Error('对比页出现发展分析「发展目标」勾选区');
+        throw new Error('对比页主区出现「发展目标」文案');
+      }
+      await expect(main.getByText('发展目标')).toHaveCount(0);
+  - note: 3、不出现「有效的深圳产业情况分析对比结果」（发展绑定控件）
+    assert: |-
+      const main = page.locator('main');
+      if (await main.getByText('有效的深圳产业情况分析对比结果').count()) {
+        throw new Error('对比页出现发展分析绑定标签「有效的深圳产业情况分析对比结果」');
+      }
+      const bindPh = main.locator('input[placeholder="请显式选择有效结构化结果"]');
+      if (await bindPh.count()) throw new Error('对比页出现发展绑定 placeholder');
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: 隔离用例；侧栏 goto sibling /industry-center/search 再点「深圳产业情况分析对比」；落点 workspace=comparison（非 entry-seed development catalog_path）。对比正向归 chain-sz-compare。作废 00774 后半句条件恢复。

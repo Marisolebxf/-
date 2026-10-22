@@ -1,0 +1,31 @@
+id: FUNC-04591
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04591
+priority: P0
+tier: B
+title: 主流程-重点产业方向下拉
+entry_id: svc-rec-attract
+preconditions:
+  - 已进入分析配置
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 未选择时占位为「选择产业集群」
+    assert: |-
+      await expect(page.getByText('重点产业方向', { exact: true })).toBeVisible();
+      const trigger = page.locator('.arco-select-view').first();
+      await expect(trigger).toContainText('选择产业集群');
+  - note: 产业只作上下文。Java rec-list 不按产业切片，前端也不假装过滤出另一套名单。
+    assert: |-
+      await expect(
+        page.getByText('产业只作上下文。Java rec-list 不按产业切片，前端也不假装过滤出另一套名单。')
+      ).toBeVisible();
+  - note: 选项共 15 个，名称见附录 A
+    assert: |-
+      const row = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).first();
+      const trigger = row.locator('.arco-select-view').first();
+      await trigger.click();
+      const opts = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      await expect(opts).toHaveCount(15);
+on_fail: 截图 + 抄 X-Trace-Id

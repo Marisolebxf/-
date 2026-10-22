@@ -3,114 +3,48 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03999
 priority: P0
 tier: B
 title: 主流程-所在城市运算符（下拉选项）
-story: US-SVC-ORG-07
 entry_id: svc-search
-preconditions:
-  - 已添加「所在城市」
-locators:
-  tab_adv: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
-  field_lib: region「高级筛选字段库」
-  field_city: 字段库 Tag「所在城市」
-  cond_row: .condition-builder（含所在城市）
-  cond_op: .condition-builder__op
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /service-center/search?mode=advanced
   - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
+    for: 高级筛选字段库就绪
+    timeout_ms: 12000
   - action: evaluate
-    note: 高级筛选添加所在城市并展开运算符下拉（判定在 expect）
+    note: 前置添加所在城市并展开运算符下拉
 expect:
   - note: 1、选项只有「属于」共 1 个
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const enterSvcSearch = async () => {
-        await dismissBasket();
-        await recover404Shell();
-        if (await bodyIs404()) {
-          await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await recover404Shell();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入服务机构查询壳 url=' + page.url());
-        }
-        const searchItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-        if (!(await searchItem().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(searchItem().first()).toBeVisible({ timeout: 10000 });
-        await searchItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      };
-      await enterSvcSearch();
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
-      await expect(advTab).toBeVisible({ timeout: 10000 });
-      await advTab.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await expect(page).toHaveURL(/[?&]mode=advanced/);
       const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
       await expect(fieldLib).toBeVisible({ timeout: 10000 });
-      const cityTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' }).first();
-      await expect(cityTag).toBeVisible({ timeout: 8000 });
-      await cityTag.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).first();
+      let condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).last();
+      if (!(await condRow.isVisible().catch(() => false))) {
+        const cityTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' }).first();
+        await cityTag.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).last();
+      }
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opSelect = condRow.locator('.condition-builder__op');
-      await expect(opSelect).toBeVisible({ timeout: 8000 });
-      await opSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      await condRow.scrollIntoViewIfNeeded();
+      const op = condRow.locator('.condition-builder__op');
+      await expect(op).toBeVisible({ timeout: 8000 });
+      const opView = op.locator('.arco-select-view');
+      await opView.click({ timeout: 8000 }).catch(async () => {
+        await op.click({ timeout: 8000 });
+      });
       await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
+      let pop = page.locator('.arco-trigger-popup:visible').last();
+      if (!(await pop.isVisible().catch(() => false))) {
+        await opView.focus();
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(200);
+        pop = page.locator('.arco-trigger-popup:visible').last();
+      }
       await expect(pop).toBeVisible({ timeout: 8000 });
       const opts = pop.locator('.arco-select-option');
-      const count = await opts.count();
-      const labels = [];
-      for (let i = 0; i < count; i++) {
-        labels.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
-      }
-      if (count !== 1) {
-        throw new Error('所在城市运算符应只有 1 个选项「属于」，实际 count=' + count + ' labels=' + JSON.stringify(labels));
-      }
-      const only = labels[0] || '';
-      if (only !== '属于' && !only.includes('属于')) {
-        throw new Error('运算符唯一选项应为「属于」，实际=' + only);
-      }
+      await expect(opts).toHaveCount(1, { timeout: 5000 });
+      await expect(opts.first()).toContainText('属于');
       await page.keyboard.press('Escape').catch(() => {});
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  B 档 03999；catalog_path=/service-center/search。前置=高级筛选 Tab + 字段库点「所在城市」Tag（对齐 FUNC-03990/03998）。
-  运算符=.condition-builder__op Arco Select；multiSelect 字段 operators 仅 in，展开后 .arco-select-option 应仅「属于」。
-  edu 深链 SPA404 时侧栏经 sibling /industry-center/search 进入。登录与关内部评审由 runner 会话前置。
+on_fail: 截图 + 抄 X-Trace-Id

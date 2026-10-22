@@ -1,0 +1,37 @@
+id: FUNC-05099
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05099
+priority: P0
+tier: B
+title: 主流程-选定产业链后的结论条
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: evaluate
+    assert: |-
+      const selects = page.locator('.arco-form-item').filter({ has: page.locator('.arco-select-view') });
+      const industryView = selects.nth(0).locator('.arco-select-view');
+      const cur = (await industryView.innerText()).replace(/\s/g, '');
+      if (!cur.includes('生物')) {
+        await industryView.click();
+        await page.getByRole('option', { name: '生物', exact: true }).click();
+      }
+  - action: evaluate
+    assert: |-
+      const selects = page.locator('.arco-form-item').filter({ has: page.locator('.arco-select-view') });
+      const chainView = selects.nth(1).locator('.arco-select-view');
+      await chainView.click();
+      await page.getByRole('option', { name: '生物医药与生命健康' }).click();
+expect:
+  - note: 结论条以「生物医药与生命健康」起头
+    assert: |-
+      const bar = page.getByText(/生物医药与生命健康/).filter({ hasText: /不按产业/ }).first();
+      await expect(bar).toBeVisible();
+      await expect(bar).toHaveText(/^「?生物医药与生命健康/);
+  - note: 结论条仍写明不按产业切片
+    assert: |-
+      const bar = page.getByText(/生物医药与生命健康/).filter({ hasText: /不按产业/ }).first();
+      await expect(bar).toContainText('不按产业切片');
+on_fail: 截图 + 抄 X-Trace-Id

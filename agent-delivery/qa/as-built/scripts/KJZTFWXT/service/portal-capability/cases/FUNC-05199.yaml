@@ -1,0 +1,24 @@
+id: FUNC-05199
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05199
+priority: P1
+tier: B
+title: 主流程-抽屉内加入对比篮
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: 分析画像
+  - action: evaluate
+    target: |-
+      await page.locator('.arco-drawer').getByRole('button', { name: '加入对比篮' }).click();
+expect:
+  - note: 抽屉按钮变为「已在对比篮」
+    assert: |-
+      await expect(page.locator('.arco-drawer').getByRole('button', { name: '已在对比篮' })).toBeVisible()
+  - note: 提示已将该机构加入对比篮
+    assert: |-
+      await expect(page.locator('.arco-message-success')).toContainText('加入对比篮')
+on_fail: 截图 + 抄 X-Trace-Id

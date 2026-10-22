@@ -49,22 +49,31 @@ expect:
       await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
       const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
+        throw new Error('产业查询入口 SPA 404 ' + page.url());
       }
       const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
       await expect(input).toBeVisible({ timeout: 8000 });
-      await input.fill('光刻');
+      await input.fill('人工智能');
       await page.getByRole('button', { name: '搜索', exact: true }).click();
       await page.waitForTimeout(800);
       const reg = region();
       await expect(reg).toBeVisible({ timeout: 15000 });
       const regionText = ((await reg.innerText()) || '').replace(/\s+/g, ' ');
       if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
-        throw new Error('前置：光刻检索为空');
+        throw new Error('前置：人工智能检索为空');
       }
       const cards = reg.locator('.industry-search-result-card');
       const n = await cards.count();
-      if (n < 2) throw new Error('前置：光刻当前页可见卡片应≥2');
+      if (n < 2) throw new Error('前置：人工智能当前页可见卡片应≥2');
+      for (let i = 0; i < n; i++) {
+        const card = cards.nth(i);
+        if (!(await card.isVisible().catch(() => false))) continue;
+        const inBasket = await card.getByText('已入篮', { exact: true }).isVisible().catch(() => false);
+        if (inBasket) {
+          await card.getByText('已入篮', { exact: true }).click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(400);
+        }
+      }
       const industryCards = [];
       for (let i = 0; i < n; i++) {
         const card = cards.nth(i);

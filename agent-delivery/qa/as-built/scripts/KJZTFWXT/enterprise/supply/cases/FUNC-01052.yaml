@@ -1,0 +1,137 @@
+id: FUNC-01052
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01052
+priority: P1
+title: 风险项显示建议提前制定备份方案提示且无方案编辑入口
+story: US-ENT-RISK-SUPPLY
+entry_id: ent-supply
+tier: B
+preconditions:
+  - 已完成 1 次分析；关键节点或断链风险区块有风险项（assert 自含最近分析恢复）
+locators:
+  section: 关键节点与断链风险
+  risk_tab: 断链风险
+  key_tab: 关键节点
+  restore: 恢复结果
+steps:
+  - action: goto
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: evaluate
+    note: 浏览关键节点与断链风险区块风险项；存在时浏览供应链报告区块
+expect:
+  - note: 1、风险项显示「建议提前制定备份方案」提示
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const supplyRoute = '/enterprise/risk?workspace=supply-chain&tab=supply-chain';
+      const main = () => page.locator('main.content-shell-layout, main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const openRecentTab = async () => {
+        const tab = page.locator('main [role=tab], main button').filter({ hasText: '最近分析' }).first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+      };
+      const clickRiskPanel = async () => {
+        await expect(page.getByText('关键节点与断链风险').first()).toBeVisible({ timeout: 15000 });
+        const grp = main()
+          .locator('.analysis-rounded-radio, .arco-radio-group')
+          .filter({ hasText: '断链风险' })
+          .first();
+        const riskOpt = grp.getByText('断链风险', { exact: true });
+        if (!(await riskOpt.count())) throw new Error('未见断链风险切换钮');
+        await riskOpt.scrollIntoViewIfNeeded().catch(() => {});
+        await riskOpt.click({ timeout: 12000 });
+        await page.waitForTimeout(600);
+      };
+      const riskHasItems = async () => {
+        const t = await main().innerText().catch(() => '');
+        if (/断链风险 · 0 项/.test(t) || /当前筛选下暂无断链风险/.test(t)) return false;
+        return /建议提前制定备份方案/.test(t) || /(节点异常|路径脆弱|单点依赖)/.test(t);
+      };
+      const assertBackupHint = async () => {
+        await expect(page.getByText(/建议提前制定备份方案/).first()).toBeVisible({ timeout: 8000 });
+      };
+      const tryRestoreRow = async (index) => {
+        await page.goto(origin + supplyRoute, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(800);
+        await dismissBasket();
+        await openRecentTab();
+        const restore = page.getByRole('button', { name: '恢复结果' });
+        if ((await restore.count()) <= index) return false;
+        await restore.nth(index).click({ timeout: 15000 });
+        await expect(page).toHaveURL(/view=result/, { timeout: 25000 });
+        await dismissBasket();
+        await clickRiskPanel();
+        if (!(await riskHasItems())) return false;
+        await assertBackupHint();
+        return true;
+      };
+      if (/view=result/.test(page.url())) {
+        await dismissBasket();
+        if (await page.getByText('任务摘要').count()) {
+          await clickRiskPanel();
+          if (await riskHasItems()) {
+            await assertBackupHint();
+            globalThis.__func01052_ready = true;
+            return;
+          }
+        }
+      }
+      await page.goto(origin + supplyRoute, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(800);
+      await dismissBasket();
+      await openRecentTab();
+      const restoreCount = await page.getByRole('button', { name: '恢复结果' }).count();
+      if (restoreCount < 1) throw new Error('ENV-SUPPLY-NO-COMPLETED-001');
+      for (let i = 0; i < Math.min(restoreCount, 5); i++) {
+        if (await tryRestoreRow(i)) {
+          globalThis.__func01052_ready = true;
+          return;
+        }
+      }
+      throw new Error('ENV-SUPPLY-RISK-EMPTY-001：已试多条已完成任务，断链风险无带提示项');
+  - note: 2、提示仅出现在已标注潜在风险的风险项上
+    assert: |-
+      const main = page.locator('main.content-shell-layout, main').first();
+      const t = await main.innerText();
+      if (!/建议提前制定备份方案/.test(t)) throw new Error('未见备份方案提示');
+      if (!/(节点异常|路径脆弱|单点依赖)/.test(t)) throw new Error('提示出现时未见风险类型标注');
+      const cards = main.locator('[role=button]').filter({ hasText: /建议提前制定备份方案/ });
+      const n = await cards.count();
+      if (n < 1) throw new Error('未见带备份提示的风险卡片');
+      const cardText = (await cards.first().innerText()).replace(/\s+/g, ' ');
+      if (!/(节点异常|路径脆弱|单点依赖)/.test(cardText)) {
+        throw new Error('备份提示卡片上未见风险类型：' + cardText.slice(0, 120));
+      }
+      const keyGrp = main.locator('.analysis-rounded-radio, .arco-radio-group').filter({ hasText: '关键节点' }).first();
+      const keyOpt = keyGrp.getByText('关键节点', { exact: true });
+      if (await keyOpt.count()) {
+        await keyOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const kt = await main.innerText();
+        if (/关键节点 · 0 项|当前筛选下暂无关键节点/.test(kt) && /建议提前制定备份方案/.test(kt)) {
+          throw new Error('空关键节点区不应单独出现备份提示');
+        }
+      }
+  - note: 3、页面无备份方案编辑器或制定入口
+    assert: |-
+      const main = page.locator('main.content-shell-layout, main').first();
+      const t = await main.innerText();
+      if (/制定备份方案|备份方案编辑|编辑备份方案|创建备份方案/.test(t)) {
+        throw new Error('出现备份方案编辑或制定入口');
+      }
+      const editorish = main.locator('button, a').filter({ hasText: /制定备份方案|编辑备份方案|保存备份方案/ });
+      if (await editorish.count()) throw new Error('存在备份方案操作按钮');
+      if (await page.getByText('供应链分析报告').count()) {
+        const report = main.locator('section, div').filter({ hasText: '供应链分析报告' }).first();
+        const rt = (await report.innerText().catch(() => t)).replace(/\s+/g, ' ');
+        if (/制定备份方案|备份方案编辑|编辑备份方案/.test(rt)) {
+          throw new Error('供应链报告区块出现备份方案编辑入口');
+        }
+      }
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: D1·风险项文案含「建议提前制定备份方案。」句号；断链风险 2 项样例带提示，关键节点 0 项时不应在空态单独出现该句。登录与关评审由 runner 前置。

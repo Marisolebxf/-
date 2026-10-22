@@ -1,0 +1,171 @@
+id: FUNC-04303
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04303
+priority: P1
+tier: A
+title: 主流程-过程页点查看分析记录回记录表
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 分析记录中有已完成行（env-gate 历史 tech_power 任务）
+  - 已进入某次评估的过程页（用例步骤 1）
+locators:
+  tab_records: tab「分析记录」
+  view_records_btn: button「查看分析记录」
+  process_shell: '[data-testid="svc-org-analysis-process"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 过程页点「查看分析记录」（判定在 expect）
+expect:
+  - note: 1、回到分析记录表（用例步骤 1～2；expect 自含进过程页并点「查看分析记录」）
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const shell = page.locator('[data-testid="svc-org-analysis-process"]');
+      const landedOnProcess = async (taskId) => {
+        const url0 = page.url();
+        const body = ((await page.locator('main').last().innerText().catch(() => '')) || '').trim();
+        return (
+          /[?&]view=processing/.test(url0) &&
+          (url0.includes(taskId) || body.includes(taskId)) &&
+          ((await shell.first().isVisible().catch(() => false)) ||
+            /分析结果已生成|服务机构技术力评估分析生成中|可视化分析过程/.test(body))
+        );
+      };
+      const openViaDeeplink = async (taskId) => {
+        const dl = new URL(route, origin + '/');
+        dl.searchParams.set('workspace', 'capability');
+        dl.searchParams.set('tab', 'capability');
+        dl.searchParams.set('view', 'processing');
+        dl.searchParams.set('task_id', taskId);
+        await page.goto(dl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(2000);
+      };
+      await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1500);
+      const close = page.locator('[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      let url0 = page.url();
+      let onProcess =
+        /[?&]view=processing/.test(url0) &&
+        (await shell.first().isVisible().catch(() => false));
+      let taskId = '';
+      if (!onProcess) {
+        const recTab = page
+          .locator('[role=tab][data-tab-key="records"]')
+          .or(page.getByRole('tab', { name: '分析记录', exact: true }))
+          .first();
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForURL(/tab=records|view=records/, { timeout: 12000 }).catch(() => {});
+        await page.waitForTimeout(1500);
+        const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
+        if (!/SVC-\d{8}-\d+/.test(mainRec)) {
+          throw new Error('ENV-SVCCAP-NO-RECORDS：分析记录无历史任务');
+        }
+        if (!/已完成/.test(mainRec)) {
+          throw new Error('ENV-SVCCAP-NO-COMPLETED-RECORD：分析记录无已完成行');
+        }
+        const rows = page
+          .locator('tr, [role="row"], .arco-table-tr')
+          .filter({ hasText: /已完成/ })
+          .filter({ hasText: /tech_power|SVC-\d{8}-\d+/ });
+        const rowN = await rows.count();
+        if (!rowN) {
+          throw new Error('ENV-SVCCAP-NO-COMPLETED-RECORD：未定位到已完成 tech_power 任务行');
+        }
+        let opened = false;
+        for (let i = 0; i < Math.min(rowN, 8) && !opened; i++) {
+          const row = rows.nth(i);
+          const rowTxt = ((await row.innerText().catch(() => '')) || '').trim();
+          const m = rowTxt.match(/SVC-\d{8}-\d+/);
+          if (!m || !/已完成/.test(rowTxt)) continue;
+          taskId = m[0];
+          const procBtn = row
+            .getByRole('button', { name: /查看过程/ })
+            .or(row.getByText(/^查看过程/))
+            .first();
+          if (await procBtn.count() && !(await procBtn.isDisabled().catch(() => false))) {
+            await procBtn.click({ timeout: 8000 });
+            for (let j = 0; j < 12; j++) {
+              await page.waitForTimeout(1000);
+              if (await landedOnProcess(taskId)) {
+                opened = true;
+                break;
+              }
+            }
+          }
+          if (!opened) {
+            await recTab.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(800);
+            await openViaDeeplink(taskId);
+            if (await landedOnProcess(taskId)) opened = true;
+          }
+          if (!opened) {
+            await recTab.click({ timeout: 8000 }).catch(() => {});
+            await page.waitForTimeout(1200);
+          }
+        }
+        if (!opened) {
+          throw new Error(
+            'ENV-SVCCAP-VIEW-PROCESS-UNREACHABLE：无法进入过程页 task=' + taskId + ' url=' + page.url(),
+          );
+        }
+      } else {
+        const m0 = url0.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        taskId = m0 ? m0[1] : '';
+        if (!taskId) {
+          const body0 = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+          const m1 = body0.match(/SVC-\d{8}-\d+/);
+          taskId = m1 ? m1[0] : '';
+        }
+      }
+      if (!taskId) throw new Error('过程页未解析到 task_id url=' + page.url());
+      globalThis.__func04303 = { taskId };
+      await expect(shell.first()).toBeVisible({ timeout: 8000 });
+      const viewRec = page.getByRole('button', { name: '查看分析记录', exact: true }).first();
+      await expect(viewRec).toBeVisible({ timeout: 8000 });
+      await viewRec.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      url0 = page.url();
+      if (!/tab=records/.test(url0) && !/view=records/.test(url0)) {
+        throw new Error('点「查看分析记录」后未回到记录视图 url=' + url0);
+      }
+      const shellAfter = await shell.first().isVisible().catch(() => false);
+      if (shellAfter && /view=processing/.test(url0)) {
+        throw new Error('点「查看分析记录」后仍停在过程页 url=' + url0);
+      }
+      const recTab = page
+        .locator('[role=tab][data-tab-key="records"]')
+        .or(page.getByRole('tab', { name: '分析记录', exact: true }))
+        .first();
+      await expect(recTab).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main').first();
+      const panelTxt = ((await main.innerText().catch(() => '')) || '').trim();
+      if (!/任务/.test(panelTxt) || !/类型/.test(panelTxt) || !/状态/.test(panelTxt)) {
+        throw new Error('未见分析记录表头 任务/类型/状态 panel_head=' + panelTxt.slice(0, 200));
+      }
+      if (/暂无符合条件的分析记录|暂无分析记录/.test(panelTxt) && !panelTxt.includes(taskId)) {
+        throw new Error('分析记录表空，无法验回表');
+      }
+  - note: 2、表中仍能看到该次任务（用例预期 2）
+    assert: |-
+      if (!globalThis.__func04303?.taskId) throw new Error('前置：未记录过程页 task_id');
+      const tid = globalThis.__func04303.taskId;
+      const main = page.locator('main').first();
+      const panelTxt = ((await main.innerText().catch(() => '')) || '').trim();
+      if (!panelTxt.includes(tid)) {
+        throw new Error('分析记录表未见该次任务 ' + tid + ' panel_head=' + panelTxt.slice(0, 280));
+      }
+      const row = page
+        .locator('tr, [role="row"], .arco-table-tr')
+        .filter({ hasText: tid })
+        .first();
+      await expect(row).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04303；步骤：已在过程页 → 点「查看分析记录」（expect 自含进过程页与点击）。openRecords 对齐 setTab(records)/view=records。
+  过程壳 svc-org-analysis-process；无已完成行→ENV-SVCCAP-NO-COMPLETED-RECORD。catalog_path=entry-seed。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04303。零 allow_skip。

@@ -1,0 +1,22 @@
+id: FUNC-05088
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05088
+priority: P0
+tier: B
+title: 主流程-深链进入区域分布
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 主标题为「服务机构区域分布」
+    assert: |-
+      await expect(page.getByRole('heading', { name: '服务机构区域分布', level: 1 })).toBeVisible()
+  - note: 「服务机构区域分布」页签呈选中
+    assert: |-
+      await expect(page.getByRole('tab', { name: '服务机构区域分布' })).toHaveAttribute('aria-selected', 'true')
+  - note: 面包屑末级为「服务机构区域分布」
+    assert: |-
+      await expect(page.getByText('专题服务 / 服务机构区域分布')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

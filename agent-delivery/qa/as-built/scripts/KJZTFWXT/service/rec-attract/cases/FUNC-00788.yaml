@@ -1,0 +1,26 @@
+id: FUNC-00788
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00788
+priority: P1
+tier: B
+title: 主流程-恢复默认权重一键复位
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+expect:
+  - note: 复位后四权重恢复 35/30/20/15
+    assert: |-
+      await page.getByText('分析配置', { exact: true }).click();
+      const weightInputs = page.locator('.arco-input-number input');
+      await weightInputs.first().waitFor({ state: 'visible' });
+      await weightInputs.nth(0).click();
+      await weightInputs.nth(0).fill('40');
+      await weightInputs.nth(0).press('Enter');
+      await page.getByRole('button', { name: '恢复默认权重' }).click();
+      await expect(weightInputs.nth(0)).toHaveValue('35');
+      await expect(weightInputs.nth(1)).toHaveValue('30');
+      await expect(weightInputs.nth(2)).toHaveValue('20');
+      await expect(weightInputs.nth(3)).toHaveValue('15');
+on_fail: 截图 + 抄 X-Trace-Id

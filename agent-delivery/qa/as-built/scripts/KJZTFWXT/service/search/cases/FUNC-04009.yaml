@@ -100,7 +100,12 @@ expect:
       }
       const opSelect = condRow.locator('.condition-builder__op');
       await expect(opSelect).toBeVisible({ timeout: 8000 });
-      await opSelect.locator('.arco-select-view').click({ timeout: 8000 });
+      const opTrigger = condRow.locator('.condition-builder__op .arco-select-view-single, .condition-builder__op .arco-select-view').first();
+      if (await opTrigger.count()) {
+        await opTrigger.click({ timeout: 8000 });
+      } else {
+        await condRow.getByRole('combobox').first().click({ timeout: 8000 });
+      }
       await page.waitForTimeout(300);
       const pop = page.locator('.arco-trigger-popup:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });

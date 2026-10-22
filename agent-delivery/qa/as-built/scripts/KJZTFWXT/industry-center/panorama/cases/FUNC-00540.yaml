@@ -15,37 +15,21 @@ locators:
 steps:
   - action: goto
     target: /industry-center/panorama
-  - action: evaluate
-    note: 点「结构列表」再点「图谱」；视图与三预期在 expect 判定
 expect:
   - note: 1、结构列表出现「环节」和「关系」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
-      }
       await expect(page.locator('canvas').first()).toBeVisible({ timeout: 12000 });
       const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
       await listRadio.click({ timeout: 10000 });
-      await page.waitForTimeout(600);
       const listCls = (await listRadio.getAttribute('class')) || '';
       if (!listCls.includes('arco-radio-checked')) {
         throw new Error('结构列表视图未选中: ' + listCls);
       }
-      await expect(page.getByText('环节').first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText('关系').first()).toBeVisible({ timeout: 8000 });
+      const structure = page.locator('[aria-label="产业链结构列表"]');
+      await expect(structure).toBeVisible({ timeout: 12000 });
+      await expect(structure.getByRole('heading', { name: '环节' })).toBeVisible({ timeout: 8000 });
+      await expect(structure.getByRole('heading', { name: '关系' })).toBeVisible({ timeout: 8000 });
   - note: 2、结构列表不出现「动态演进」
     assert: |-
       const evo = page.getByRole('heading', { name: '动态演进' });
@@ -62,7 +46,6 @@ expect:
     assert: |-
       const graphRadio = page.locator('.arco-radio-button').filter({ hasText: /^图谱$/ }).first();
       await graphRadio.click({ timeout: 10000 });
-      await page.waitForTimeout(600);
       const graphCls = (await graphRadio.getAttribute('class')) || '';
       if (!graphCls.includes('arco-radio-checked')) {
         throw new Error('切回图谱未选中: ' + graphCls);
@@ -71,6 +54,5 @@ expect:
       await expect(page.getByRole('heading', { name: '动态演进' })).toBeVisible({ timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
 as_built_note: >-
-  路由 catalog_path /industry-center/panorama；步骤与用例册一致（结构列表→图谱，交互在 expect 内完成）。
-  预期①②在结构列表态机检「环节」「关系」列/区标题，并确认动态演进 heading 与图控不可见；预期③切回图谱后 canvas +「动态演进」heading 恢复。
-  edu tts/svcz 深链现 SPA 404（ENV-EDU-TTS-SVCZ-404-001，同 FUNC-00535/02801）。对比篮可见才关；登录与关内部评审由 runner 前置。B 档零 allow_skip。
+  路由 catalog_path /industry-center/panorama；无 main 标签，全页级选择器。
+  结构列表 aria-label + h3；Arco 按钮组用 .arco-radio-button 点击。

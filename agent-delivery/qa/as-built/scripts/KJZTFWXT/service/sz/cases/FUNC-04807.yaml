@@ -1,0 +1,31 @@
+id: FUNC-04807
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04807
+priority: P2
+tier: B
+title: 备选-短板菜单往返
+entry_id: svc-sz
+preconditions:
+  - 本页已选定「生物」
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 1、中间页为「服务链短板分析」
+    assert: |-
+      await expect(page.locator('.arco-select-view').filter({ hasText: '生物' }).first()).toBeVisible({ timeout: 10000 });
+      await page.getByText('服务链短板分析', { exact: true }).click();
+      await expect(page.getByText('分析配置')).not.toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '服务链短板分析' })).toBeVisible({ timeout: 10000 });
+  - note: 2、回来后是本页分析配置
+    assert: |-
+      await page.getByText('深圳服务链现状分析', { exact: true }).first().click();
+      await expect(page).toHaveURL(/workspace=shenzhen/);
+      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 10000 });
+  - note: 3、产业领域为未选
+    assert: |-
+      const field = page.locator('.arco-form-item').filter({ hasText: '产业领域' }).locator('.arco-select-view').first();
+      await expect(field).toBeVisible();
+      await expect(field).not.toContainText('生物');
+      await expect(field).not.toContainText('医药');
+on_fail: 截图 + 抄 X-Trace-Id

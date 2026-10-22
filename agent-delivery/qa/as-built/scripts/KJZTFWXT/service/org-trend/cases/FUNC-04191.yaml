@@ -1,0 +1,75 @@
+id: FUNC-04191
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04191
+priority: P0
+tier: A
+title: 主流程-年度明细空态 · 无明细行
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已有一条已完成的分析（env-gate G7）
+  - 已进入服务机构新增趋势分析入口（catalog_path trend 工作区）
+locators:
+  tab_records: '[role=tab][data-tab-key=records]'
+  view_result: button「查看结果」
+  detail_title: 主领域年度明细（—）
+  honest_empty: 暂无主领域年度明细
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+expect:
+  - note: 1、标题为「主领域年度明细（—）」
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      let url0 = page.url();
+      let body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!(/主领域年度明细/.test(body0) && /view=result/.test(url0))) {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await expect(recTab).toBeVisible({ timeout: 8000 });
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const vr = page.getByRole('button', { name: '查看结果' }).first();
+        await expect(vr).toBeVisible({ timeout: 12000 });
+        await vr.click({ timeout: 8000 });
+        await page.waitForTimeout(2500);
+        url0 = page.url();
+        body0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      }
+      if (!/view=result/.test(url0) && !/主领域年度明细/.test(body0)) {
+        throw new Error('未打开已完成任务的结果页 url=' + url0 + ' body=' + body0.slice(0, 280));
+      }
+      await expect(page.getByText('主领域年度明细（—）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、正文为「暂无主领域年度明细」；无表头、无机构行
+    assert: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('暂无主领域年度明细', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const body = ((await main.innerText().catch(() => '')) || '');
+      if (!/暂无主领域年度明细/.test(body)) {
+        throw new Error('年度明细区未见诚实空说明: ' + body.slice(0, 320));
+      }
+      const rows = main.locator('table tbody tr');
+      const rowCount = await rows.count();
+      if (rowCount > 0) {
+        const firstTxt = ((await rows.first().innerText().catch(() => '')) || '').trim();
+        if (firstTxt && !/暂无/.test(firstTxt)) {
+          throw new Error('空态不应出现机构明细行 rowCount=' + rowCount + ' first=' + firstTxt.slice(0, 80));
+        }
+      }
+      const thCount = await main.locator('table thead th').count();
+      if (thCount > 0) {
+        throw new Error('空态不应出现明细表头 thCount=' + thCount);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04191（主领域年度明细诚实空；与 ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD 同源无年序列/无明细 payload）。
+  步骤：分析记录 → 查看结果。标题现场为「主领域年度明细（—）」全角括号。
+  2026-10-21 点状复勘 30892：scout-view-result / scout-p012 与关评审后主区文案一致。

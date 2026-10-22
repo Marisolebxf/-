@@ -10,8 +10,8 @@ preconditions:
 locators:
   growth_row: row「市场增长率」
   growth_spin: 市场增长率行 spinbutton
-  step_up: 市场增长率行 .arco-input-number-step-button 首个（加）
-  step_down: 市场增长率行 .arco-input-number-step-button 第二个（减）
+  step_up: 市场增长率行 .arco-input-number-step-button 第二个（加，mode=button 左减右加）
+  step_down: 市场增长率行 .arco-input-number-step-button 首个（减）
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=cycle&tab=cycle
@@ -50,7 +50,7 @@ expect:
     assert: |-
       const growthRow = () => page.getByRole('row').filter({ hasText: '市场增长率' }).first();
       const spin = () => growthRow().locator('[role=spinbutton]').first();
-      const up = growthRow().locator('.arco-input-number-step-button').first();
+      const up = growthRow().locator('.arco-input-number-step-button').nth(1);
       await up.click({ timeout: 8000 });
       await page.waitForTimeout(400);
       const v1 = await spin().inputValue();
@@ -62,7 +62,7 @@ expect:
     assert: |-
       const growthRow = () => page.getByRole('row').filter({ hasText: '市场增长率' }).first();
       const spin = () => growthRow().locator('[role=spinbutton]').first();
-      const down = growthRow().locator('.arco-input-number-step-button').nth(1);
+      const down = growthRow().locator('.arco-input-number-step-button').first();
       await down.click({ timeout: 8000 });
       await page.waitForTimeout(400);
       const v2 = await spin().inputValue();

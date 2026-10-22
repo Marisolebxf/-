@@ -1,20 +1,16 @@
 id: FUNC-02592
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02592
 priority: P0
-title: 默认条件下产业链选框给出可选产业链（共 6 项）
+tier: B
+title: 主流程-筛选区
 entry_id: chain-overview
-tier: A
-preconditions:
-  - 已进入专题全景
-  - 产业链当前为「半导体与集成电路」
-locators:
-  chain: .industry-overview-chain-select .arco-select-view（P7 点可见 view）
-  chain_popup: .arco-trigger-popup:visible .arco-select-option-content
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/overview
   - action: evaluate
-    note: 确认默认产业链后展开「产业链」选框；选项个数与附录 A 在 expect 判定
+    note: 展开「产业链」选框
 expect:
   - note: 1、选项共 6 个（名称见附录 A）
     assert: |-
@@ -26,39 +22,19 @@ expect:
         '智能终端',
         '软件与信息服务',
       ];
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('C2：专题全景深链 404，无法展开产业链选框');
-      }
-      const chainRoot = page.locator('.industry-overview-chain-select');
-      await expect(chainRoot).toBeVisible({ timeout: 15000 });
-      const chainDisabled = await chainRoot.evaluate((el) => el.classList.contains('arco-select-disabled'));
-      if (chainDisabled) {
-        throw new Error('前置：产业链选框禁用（产业未选或目录未加载）');
-      }
-      const chainVal = await chainRoot.locator('.arco-select-view-value').innerText().catch(async () => {
-        return (await chainRoot.innerText()).replace(/\s+/g, ' ').trim();
-      });
-      if (!/半导体与集成电路/.test(chainVal)) {
-        throw new Error('前置：产业链默认应为「半导体与集成电路」，实际：' + chainVal);
-      }
+      const chainView = page
+        .locator('.industry-overview-context__label')
+        .filter({ has: page.getByText('产业链', { exact: true }) })
+        .locator('.arco-select-view');
+      await expect(chainView).toBeVisible({ timeout: 15000 });
+      await expect(chainView).toContainText('半导体与集成电路', { timeout: 15000 });
+      await chainView.scrollIntoViewIfNeeded();
       await page.keyboard.press('Escape');
       await page.waitForTimeout(200);
-      await chainRoot.locator('.arco-select-view').click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const popup = page.locator('.arco-trigger-popup:visible').last();
-      await expect(popup).toBeVisible({ timeout: 8000 });
+      await chainView.click({ timeout: 15000, force: true });
+      const popup = page.locator('.arco-select-dropdown:visible').last();
+      await expect(popup).toBeVisible({ timeout: 10000 });
       const raw = await popup.locator('.arco-select-option').evaluateAll((nodes) =>
         nodes
           .map((n) => {
@@ -81,9 +57,4 @@ expect:
           '；现场：' + normalized.join('、'),
         );
       }
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
-as_built_note: >-
-  用例前置「产业链当前为半导体与集成电路」与 edu 默认 boot 一致（02589 同口径）。
-  展开 .industry-overview-chain-select 的 .arco-select-view（P7）；选项文案只读 .arco-select-option-content，避免 DOM 重复节点误计数。
-  期望 6 项与用例册附录 A（02592）一致；edu 若 catalog 多挂「工业互联网」等附录外链名 → C1 产品/数据缺陷，脚本不得改期望迁就现场。
-  路由 catalog_path /industry-center/overview。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

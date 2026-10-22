@@ -1,0 +1,181 @@
+id: FUNC-04300
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04300
+priority: P0
+tier: A
+title: 主流程-分析记录列 · 表头与行操作
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 系统正常（runner 会话前置：已登录且内部评审模式关闭）
+  - 已进入 capability 配置页；至少有一条评估记录（env-gate G7）
+locators:
+  tab_records: tab「分析记录」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: click
+    target: 分析记录
+expect:
+  - note: 1、表头依次为任务、类型、状态、创建时间、操作（用例预期 1）
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const catalogPath = '/service/institution-judgment?workspace=capability&tab=capability';
+      const expectedHeaders = ['任务', '类型', '状态', '创建时间', '操作'];
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构技术力评估分析|技术力评价模型/.test(t);
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=capability/.test(page.url()) &&
+        /tab=capability|tab=records/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构技术力评估分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(toUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=capability/);
+        return !(await bodyIs404());
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        await page.goto(toUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+      }
+      if (!onTarget() || (await bodyIs404())) {
+        const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
+        let ok = false;
+        for (const s of siblings) {
+          if (await enterViaSidebar(s)) {
+            ok = true;
+            break;
+          }
+        }
+        if (!ok) {
+          throw new Error('ENV-ENTRY-UNREACHABLE: 深链与侧栏 sibling 均不可达，无法验分析记录表头 url=' + page.url());
+        }
+      }
+      if (await bodyIs404()) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: 服务机构技术力评估分析深链与侧栏入口均不可用 ' + page.url());
+      }
+      const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(recTab.first()).toBeVisible({ timeout: 12000 });
+      await recTab.first().click({ timeout: 10000 });
+      await page.waitForURL(/tab=records/, { timeout: 15000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      const aria = await recTab.first().getAttribute('aria-selected');
+      const cls = (await recTab.first().getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('分析记录 Tab 未选中 url=' + page.url());
+      }
+      const panel = page.locator('[data-testid="svc-org-analysis-records"]').first();
+      await expect(panel).toBeVisible({ timeout: 12000 });
+      let panelReady = false;
+      for (let w = 0; w < 20; w++) {
+        const pt = ((await panel.innerText().catch(() => '')) || '');
+        if (/SVC-\d{8}-\d+/.test(pt)) {
+          panelReady = true;
+          break;
+        }
+        if (/暂无符合条件的分析记录|暂无分析记录/.test(pt)) break;
+        await page.waitForTimeout(500);
+      }
+      const readVisibleHeaders = async () => {
+        const thLoc = panel.locator('.arco-table thead .arco-table-th').filter({ visible: true });
+        const n = await thLoc.count();
+        if (n < 1) return [];
+        const raw = await thLoc.allTextContents();
+        return raw.map((s) => (s || '').replace(/\s+/g, ' ').trim()).filter(Boolean);
+      };
+      let headers = await readVisibleHeaders();
+      if (headers.length < expectedHeaders.length) {
+        const reset = page.getByRole('button', { name: '重置筛选' }).first();
+        if (await reset.isVisible().catch(() => false)) {
+          await reset.click({ timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1500);
+          headers = await readVisibleHeaders();
+        }
+      }
+      if (headers.length < expectedHeaders.length) {
+        const panelTxt = ((await panel.innerText().catch(() => '')) || '').slice(0, 400);
+        if (/暂无符合条件的分析记录|暂无分析记录/.test(panelTxt)) {
+          throw new Error('ENV-SVC-ORG-CAP-NO-RECORDS：分析记录列表空，无法验五列表头');
+        }
+        throw new Error('表头列数不足: ' + JSON.stringify(headers) + ' panel=' + panelTxt.slice(0, 200));
+      }
+      for (let i = 0; i < expectedHeaders.length; i++) {
+        if (headers[i] !== expectedHeaders[i]) {
+          throw new Error('第' + (i + 1) + '列应为「' + expectedHeaders[i] + '」，实际「' + headers[i] + '」；全部=' + JSON.stringify(headers));
+        }
+      }
+  - note: 2、已完成行的操作是「查看过程」和「查看结果」（用例预期 2）
+    assert: |-
+      const panel = page.locator('[data-testid="svc-org-analysis-records"]').first();
+      await expect(panel).toBeVisible({ timeout: 8000 });
+      const panelTxt = ((await panel.innerText().catch(() => '')) || '');
+      if (/暂无符合条件的分析记录|暂无分析记录/.test(panelTxt)) {
+        throw new Error('ENV-SVC-ORG-CAP-NO-RECORDS：分析记录无历史任务行');
+      }
+      const ids = [...new Set(panelTxt.match(/SVC-\d{8}-\d+/g) || [])];
+      if (!ids.length) {
+        throw new Error('ENV-SVC-ORG-CAP-NO-RECORDS：分析记录无历史任务行');
+      }
+      const rows = panel.locator('tr, [role="row"], .arco-table-tr').filter({ hasText: /SVC-\d{8}-\d+/ });
+      const rc = Math.min(await rows.count(), 12);
+      if (rc < 1) throw new Error('无 SVC 任务行 DOM（文本有但行结构缺失）');
+      let doneRow = null;
+      for (let i = 0; i < rc; i++) {
+        const t = ((await rows.nth(i).innerText().catch(() => '')) || '');
+        if (/已完成/.test(t)) {
+          doneRow = rows.nth(i);
+          break;
+        }
+      }
+      if (!doneRow) {
+        throw new Error('ENV-SVC-ORG-CAP-NO-COMPLETED-RECORD：分析记录无已完成行（前置不满足）');
+      }
+      const rowTxt = ((await doneRow.innerText().catch(() => '')) || '');
+      const vp = doneRow.getByRole('button', { name: '查看过程', exact: true });
+      const vr = doneRow.getByRole('button', { name: '查看结果', exact: true });
+      const hasVpBtn = (await vp.count()) > 0;
+      const hasVrBtn = (await vr.count()) > 0;
+      if (!hasVpBtn && !/查看过程/.test(rowTxt)) {
+        throw new Error('已完成行缺「查看过程」: ' + rowTxt.slice(0, 160));
+      }
+      if (!hasVrBtn && !/查看结果/.test(rowTxt)) {
+        throw new Error('已完成行缺「查看结果」: ' + rowTxt.slice(0, 160));
+      }
+      if (hasVpBtn) await expect(vp.first()).toBeVisible({ timeout: 5000 });
+      if (hasVrBtn) await expect(vr.first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04300=技术力 capability catalog_path 着陆→点 Tab「分析记录」；五列表头任务/类型/状态/创建时间/操作；
+  已完成行含「查看过程」「查看结果」（对齐 scout-p006/scout-records/env-gate G7）。须从本页点页签进入。
+  sibling entry-seed /service-portal/overview/overview 侧栏补进；fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04300。零 allow_skip。

@@ -1,0 +1,28 @@
+id: FUNC-04803
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04803
+priority: P1
+tier: B
+title: 备选-记录中的返回配置
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+  - action: click
+    target: 返回配置
+expect:
+  - note: 回到分析记录列表
+    assert: |-
+      await expect(page.getByText('重置筛选')).toBeVisible();
+  - note: 该任务行仍在
+    assert: |-
+      await expect(page.locator('.arco-table-body tr').first()).toBeVisible();
+  - note: 该行仍有「查看结果」
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' }).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

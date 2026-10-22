@@ -311,7 +311,7 @@ export function checkAsserts(selected) {
   return bad;
 }
 
-export async function evalExpects(page, script, baseUrl) {
+export async function evalExpects(page, script, baseUrl, shot) {
   const verdicts = [];
   const warnings = [];
   for (const exp of script.expect || []) {
@@ -336,6 +336,20 @@ export async function evalExpects(page, script, baseUrl) {
           verdicts.push({ note: exp.note, status: 'fail', detail: String(e.message).split('\n')[0] + ' | assert: ' + String(exp.assert).slice(0, 120) });
         }
       } else verdicts.push({ note: exp.note, status: 'warn', detail: '无 assert 且非 manual（待补）' });
+    }
+    if (shot) {
+      shot.idx++;
+      const spin = page.locator('main .arco-spin-loading');
+      if (await spin.first().isVisible().catch(() => false)) {
+        await spin.first().waitFor({ state: 'hidden', timeout: 8000 }).catch(() => {});
+      } else {
+        await page.waitForTimeout(2000);
+      }
+      const last = verdicts[verdicts.length - 1];
+      const note = last?.note || (typeof exp === 'string' ? exp : 'expect');
+      await page.screenshot({
+        path: path.join(shot.dir, `${String(shot.idx).padStart(2, '0')}-expect-${last?.status || 'na'}-${slug(note)}.png`),
+      }).catch(() => {});
     }
   }
   return { verdicts, warnings };

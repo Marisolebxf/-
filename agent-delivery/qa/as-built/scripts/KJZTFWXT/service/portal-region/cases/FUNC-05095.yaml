@@ -1,0 +1,22 @@
+id: FUNC-05095
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05095
+priority: P0
+tier: B
+title: 主流程-产业链初始禁用
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: click
+    target: 产业集群
+expect:
+  - note: 产业链下拉呈禁用
+    assert: |-
+      const chainWrap = page.locator('.arco-form-item, .filter-row, .arco-space').filter({ hasText: /产业链|产业集群/ }).first();
+      await expect(chainWrap.locator('.arco-select-disabled, .arco-select.arco-select-disabled')).toBeVisible();
+  - note: 不出现选项浮层
+    assert: |-
+      await expect(page.locator('.arco-select-dropdown:visible')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

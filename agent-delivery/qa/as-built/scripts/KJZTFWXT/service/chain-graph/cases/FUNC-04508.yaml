@@ -1,0 +1,27 @@
+id: FUNC-04508
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04508
+priority: P1
+tier: B
+title: 备选-结果页切换滤镜
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+expect:
+  - note: 1、图谱滤镜变为「② 机构+关联主体」
+    assert: |-
+      await page.getByText('产业领域').locator('..').locator('.arco-cascader-view, .arco-select-view').first().click();
+      await page.getByText('新一代信息技术', { exact: true }).click();
+      await page.getByRole('button', { name: '开始分析' }).click();
+      await page.getByRole('button', { name: '查看结果' }).click({ timeout: 120000 });
+      await page.getByText('② 机构+关联主体').click();
+      await expect(page.locator('.arco-radio-checked').filter({ hasText: '② 机构+关联主体' })).toBeVisible();
+  - note: 2、不出现「生成中」
+    assert: |-
+      await expect(page.getByText('生成中')).not.toBeVisible();
+  - note: 3、仍显示「服务生态关系图谱」
+    assert: |-
+      await expect(page.getByText('服务生态关系图谱')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

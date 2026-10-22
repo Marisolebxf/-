@@ -122,7 +122,10 @@ expect:
           throw new Error('第二个下拉缺「' + w + '」，实际=' + JSON.stringify(indPop.labels));
         }
       }
-      await pickSelect(industry, '新能源');
+      const exactNewEnergy = page.locator(optSel).filter({ hasText: /^新能源$/ }).first();
+      await expect(exactNewEnergy).toBeVisible({ timeout: 8000 });
+      await exactNewEnergy.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
       globalThis.__func03114_industryOk = true;
   - note: 2、「所属产业链」只有「新能源」，共 1 个
     assert: |-

@@ -1,0 +1,28 @@
+id: FUNC-05501
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05501
+priority: P0
+tier: B
+title: 主流程-重点机构卡片
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: scroll
+    target: 重点产业服务机构
+expect:
+  - note: 1、卡片含机构名、名次、类型与城市、技术力
+    assert: |-
+      const main = page.locator('main');
+      const card = main.locator('.svc-portal-keyorg-card').first();
+      await expect(card).toBeVisible({ timeout: 20000 });
+      await expect(card.locator('.svc-portal-keyorg-card__name')).not.toHaveText('');
+      await expect(card.locator('.svc-portal-rank')).toBeVisible();
+      await expect(card.locator('.svc-portal-keyorg-card__meta span').first()).not.toHaveText('—');
+      await expect(card.getByText(/技术力/)).toBeVisible();
+  - note: 2、卡片含「查看详情（概况/规模/领域/业务分布）」
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('查看详情（概况/规模/领域/业务分布）').first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

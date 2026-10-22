@@ -1,0 +1,35 @@
+id: FUNC-05297
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05297
+priority: P0
+tier: B
+title: 主流程-地图放大
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+expect:
+  - note: 1、地图较点击前更近
+    assert: |-
+      const main = page.locator('main');
+      await main.getByText('产业机构区域分布', { exact: true }).scrollIntoViewIfNeeded();
+      const section = main.locator('.svc-portal-map--sz');
+      const pane = section.locator('.leaflet-map-pane').first();
+      const readScale = async () =>
+        pane.evaluate((el) => {
+          const tr = getComputedStyle(el).transform;
+          if (!tr || tr === 'none') return 0;
+          const m = tr.match(/matrix\(([^,]+)/);
+          return m ? parseFloat(m[1]) : 0;
+        });
+      const zoomIn = section.locator('a.leaflet-control-zoom-in');
+      await expect(zoomIn).toBeVisible();
+      const before = await readScale();
+      await zoomIn.click();
+      await page.waitForTimeout(200);
+      const after = await readScale();
+      if (!(after > before)) {
+        throw new Error(`地图未放大：scale ${before} -> ${after}`);
+      }
+on_fail: 截图 + 抄 X-Trace-Id

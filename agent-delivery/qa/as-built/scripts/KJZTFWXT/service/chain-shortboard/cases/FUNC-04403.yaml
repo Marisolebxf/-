@@ -1,0 +1,200 @@
+id: FUNC-04403
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04403
+priority: P1
+tier: B
+title: 备选-未选产业 · 仍会发起
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 分析配置的产业领域为空
+locators:
+  cluster_placeholder: 选择产业集群
+  start: button「开始分析」
+  view_result: button「查看结果」
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、过程页分析对象为「产业领域：未选择（短板跟产业走，*）」（步骤：产业为空→开始分析）
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      const cfg = () => page.locator('[data-testid="svc-eco-analysis-config"]').first();
+      const industryEchoRe =
+        /新一代|生物|新能源|新材料|高端装备|智能网联|绿色环保|低空|传统与创意|海洋|未来|生物医药|生物产业/;
+      const ensureConfigEmpty = async () => {
+        await expect(cfg()).toBeVisible({ timeout: 8000 });
+        const sel = cfg().locator('.industry-catalog-select').first();
+        if (await sel.isVisible().catch(() => false)) {
+          const viewTxt = (
+            (await sel.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+            (await sel.innerText().catch(() => '')) ||
+            ''
+          )
+            .trim()
+            .replace(/\s+/g, ' ');
+          if (viewTxt && !/选择产业集群|^$/.test(viewTxt) && industryEchoRe.test(viewTxt)) {
+            await sel.hover();
+            await page.waitForTimeout(200);
+            const clr = page.locator(
+              '.industry-catalog-select .arco-select-view-clear-btn, .industry-catalog-select .arco-select-clear-icon'
+            );
+            if (await clr.count()) {
+              await clr.first().click({ force: true });
+              await page.waitForTimeout(800);
+            }
+          }
+          await expect(cfg().getByPlaceholder('选择产业集群')).toBeVisible({ timeout: 8000 });
+          return;
+        }
+        const cascader = cfg().locator('.svc-portal-industry-cascader').first();
+        if (!(await cascader.isVisible().catch(() => false))) return;
+        const readCas = async () => {
+          const view = (
+            (await cascader.locator('.arco-cascader-view').first().innerText().catch(() => '')) || ''
+          )
+            .trim()
+            .replace(/\s+/g, ' ');
+          const inputPh = (
+            (await cascader.locator('input').first().getAttribute('placeholder').catch(() => '')) || ''
+          ).trim();
+          if (view) return view;
+          if (inputPh && inputPh !== '选择产业 / 细分产业') return inputPh;
+          return '';
+        };
+        const casHasValue = async () => {
+          const t = await readCas();
+          return t && !/选择产业|选择产业集群|^$/.test(t) && industryEchoRe.test(t);
+        };
+        if (await casHasValue()) {
+          await cascader.hover();
+          await page.waitForTimeout(200);
+          const clr = cascader.locator(
+            '.arco-icon-close, .arco-select-view-clear-btn, .arco-cascader-view-clear-icon'
+          );
+          if (await clr.count()) {
+            await clr.first().click({ force: true });
+            await page.waitForTimeout(800);
+          }
+          if (/[?&]industry=/.test(page.url())) {
+            await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+            await page.waitForTimeout(1200);
+          }
+          if (await casHasValue()) {
+            throw new Error(
+              '配置区 cascader 无法置空（DEFAULT 指纹/清空回弹，无法构造「产业领域为空」）: ' + (await readCas())
+            );
+          }
+        }
+      };
+      const clickStart = async () => {
+        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+      };
+      const waitProcessingDone = async () => {
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 8 ? 1000 : 1500);
+          const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+          if (/分析结果已生成/.test(body) && (await vr.isVisible().catch(() => false))) {
+            const disabled = await vr.isDisabled().catch(() => true);
+            if (!disabled) return;
+          }
+          if (/已完成/.test(body) && (await vr.isVisible().catch(() => false))) {
+            const disabled = await vr.isDisabled().catch(() => true);
+            if (!disabled) return;
+          }
+        }
+        throw new Error('过程页超时：未见可点的「查看结果」 url=' + page.url());
+      };
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await closeBasket();
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      for (let w = 0; w < 24; w++) {
+        if (await cfg().locator('.industry-catalog-select').isVisible().catch(() => false)) break;
+        await page.waitForTimeout(500);
+      }
+      await ensureConfigEmpty();
+      const cfgHead = ((await cfg().innerText().catch(() => '')) || '').split('开始分析')[0];
+      if (industryEchoRe.test(cfgHead) && !/请先确认产业条件/.test(cfgHead)) {
+        throw new Error('前置：配置区仍含产业回显，非空态: ' + cfgHead.slice(0, 240));
+      }
+      if (!/view=processing/.test(page.url())) {
+        await clickStart();
+      }
+      await waitProcessingDone();
+      if (/view=result/.test(page.url())) {
+        throw new Error('应先停过程页再点查看结果: ' + page.url());
+      }
+      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/产业领域：未选择（短板跟产业走，\*）/.test(main)) {
+        throw new Error('过程页分析对象未见「产业领域：未选择（短板跟产业走，*）」: ' + main.slice(0, 400));
+      }
+      await page.evaluate(() => {
+        window.__func04403ProcReady = true;
+      });
+  - note: 2、结果页标题为「全周期服务链路」（步骤：点击「查看结果」）
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04403ProcReady).catch(() => false))) {
+        throw new Error('前置：过程页未就绪');
+      }
+      if (!/view=result/.test(page.url())) {
+        const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+        await expect(vr).toBeEnabled({ timeout: 8000 });
+        await vr.click({ timeout: 15000 });
+        await page.waitForTimeout(1500);
+      }
+      if (!/view=result/.test(page.url())) {
+        throw new Error('点查看结果后未进结果页 url=' + page.url());
+      }
+      await expect(page.locator('[data-testid="svc-eco-shortboard-board"]')).toBeVisible({ timeout: 15000 });
+      const chainSection = page
+        .locator('section.ent-section-panel')
+        .filter({ has: page.getByText('全周期服务链路', { exact: true }) })
+        .first();
+      await expect(chainSection).toBeVisible({ timeout: 8000 });
+      const h3 = chainSection.locator('h3.ent-section-panel__title').first();
+      const titleTxt = ((await h3.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (!/^全周期服务链路$/.test(titleTxt)) {
+        throw new Error('结果页板块标题非「全周期服务链路」: ' + titleTxt);
+      }
+      if (/·\s*全周期服务链路/.test(titleTxt)) {
+        throw new Error('未选产业时不应带产业前缀: ' + titleTxt);
+      }
+      await page.evaluate(() => {
+        window.__func04403ResultReady = true;
+      });
+  - note: 3、结果页提示「该产业服务供给数据不足，暂无法判定」
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04403ResultReady).catch(() => false))) {
+        throw new Error('前置：结果页未就绪');
+      }
+      const chainSection = page
+        .locator('section.ent-section-panel')
+        .filter({ has: page.getByText('全周期服务链路', { exact: true }) })
+        .first();
+      const chainAlert = chainSection.locator('[data-testid="svc-eco-shortboard-no-stages"]').first();
+      await expect(chainAlert).toBeVisible({ timeout: 8000 });
+      await expect(chainAlert).toContainText('该产业服务供给数据不足，暂无法判定', { timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  配置态产业为空（flat 清空至「选择产业集群」）→开始分析→过程对象「产业领域：未选择（短板跟产业走，*）」→查看结果→板标题「全周期服务链路」+全周期区诚实空提示。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04403。零 allow_skip。

@@ -1,0 +1,33 @@
+id: FUNC-04806
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04806
+priority: P1
+tier: B
+title: 备选-过程页回记录
+entry_id: svc-sz
+preconditions:
+  - 过程页已显示分析结果已生成
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 开始分析
+  - action: wait
+    target: 分析结果已生成
+  - action: click
+    target: 查看分析记录
+expect:
+  - note: 1、进入分析记录列表
+    assert: |-
+      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible();
+      await expect(page.getByText('任务号')).toBeVisible();
+  - note: 2、列表中有本次任务
+    assert: |-
+      const row = page.locator('.arco-table-tbody tr').first();
+      await expect(row).toBeVisible();
+      await expect(row.getByText(/SVC-\d{8}-\d{3}/)).toBeVisible();
+  - note: 3、该行状态为「已完成」
+    assert: |-
+      const row = page.locator('.arco-table-tbody tr').first();
+      await expect(row.getByText('已完成', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

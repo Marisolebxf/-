@@ -1,0 +1,30 @@
+id: FUNC-04791
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04791
+priority: P1
+tier: B
+title: 主流程-框架指标清单
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+expect:
+  - note: 依次为服务机构数量、平均技术力得分、服务网络密度、服务链完整度
+    assert: |-
+      const labels = ['服务机构数量', '平均技术力得分', '服务网络密度', '服务链完整度'];
+      for (const label of labels) {
+        await expect(page.getByText(label, { exact: false }).first()).toBeVisible();
+      }
+      const text = await page.locator('body').innerText();
+      let pos = -1;
+      for (const label of labels) {
+        const idx = text.indexOf(label, pos + 1);
+        expect(idx).toBeGreaterThan(pos);
+        pos = idx;
+      }
+on_fail: 截图 + 抄 X-Trace-Id

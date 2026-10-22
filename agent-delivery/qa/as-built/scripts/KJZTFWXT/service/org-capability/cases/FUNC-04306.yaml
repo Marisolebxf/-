@@ -1,0 +1,176 @@
+id: FUNC-04306
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04306
+priority: P1
+tier: A
+title: 主流程-当天同条件复用 · 两家再点开始评估
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 当天已用同一组两家机构成功评估过（脚本自含首发兜底）
+locators:
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  start_btn: '[data-testid="svc-org-start-eval"]'
+  back_config: button「返回配置」
+  result_title: 技术力横向对比结果
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 首发两家成功→返回配置→再次勾选同一组→开始评估（真实操作在 expect 内）
+expect:
+  - note: 1、打开已有结果（直达结果页，task_id 与当天首发一致）
+    assert: |-
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const mainLast = () => page.locator('main').last();
+      const taskFromUrl = (u) => {
+        const m = String(u).match(/[?&]task_id=(SVC-\d+-\d+)/);
+        return m ? m[1] : '';
+      };
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const prepWeights = async () => {
+        const spins = page.locator('[role=spinbutton]');
+        await expect(spins).toHaveCount(5, { timeout: 8000 });
+        const vals = [];
+        for (let i = 0; i < 5; i++) vals.push(String(await spins.nth(i).inputValue()));
+        if (vals.join(',') !== '25,25,20,20,10') throw new Error('前置权重 ' + vals.join('/') + ' ≠ 25/25/20/20/10');
+        await expect(page.getByText(/权重合计：\s*100%/).first()).toBeVisible({ timeout: 8000 });
+      };
+      const selectTwoTags = async () => {
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 2) throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：对比篮服务机构不足 2 家，当前 tags=' + tagN);
+        for (let i = 0; i < tagN; i++) {
+          const cls = String((await tags.nth(i).getAttribute('class')) || '');
+          if (cls.includes('arco-tag-checked')) {
+            await tags.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(280);
+          }
+        }
+        await tags.nth(0).click({ timeout: 5000 });
+        await tags.nth(1).click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+        if (!head.includes('当前2家')) throw new Error('勾选两家后计数行=' + head);
+        const checked = await page.locator('.svc-org-cap-compare__tags .arco-tag-checked').count();
+        if (checked !== 2) throw new Error('勾选两家后选中 tags=' + checked);
+      };
+      const clickStart = async () => {
+        const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+        await expect(start).toBeVisible({ timeout: 8000 });
+        if (await start.isDisabled()) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT2-001：已选 2 家但「开始评估」仍 disabled');
+        }
+        await start.click({ timeout: 15000 });
+      };
+      const waitResultReady = async () => {
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(1000);
+          const url = page.url();
+          const body = ((await mainLast().innerText().catch(() => '')) || '');
+          if (/[?&]view=result/.test(url) && taskFromUrl(url)) return { mode: 'direct-result', task: taskFromUrl(url) };
+          if (/分析结果已生成/.test(body) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) {
+            await page.getByRole('button', { name: '查看结果', exact: true }).first().click({ timeout: 8000 });
+            await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+            await page.waitForTimeout(800);
+            const t = taskFromUrl(page.url());
+            if (t) return { mode: 'via-process', task: t };
+          }
+          if (/评估失败|任务失败/.test(body)) throw new Error('评估任务失败：' + body.slice(0, 200));
+        }
+        throw new Error('超时未见结果就绪 url=' + page.url());
+      };
+      globalThis.__func04306_posts = [];
+      page.on('request', (r) => {
+        try {
+          if (r.method() === 'POST' && /\/tasks\/?(\?|$)/.test(r.url()) && !/\/list|\/running/.test(r.url())) {
+            globalThis.__func04306_posts.push(r.url());
+          }
+        } catch {}
+      });
+      await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await page.waitForTimeout(1200);
+      await closeBasket();
+      await prepWeights();
+      await selectTwoTags();
+      const posts0 = globalThis.__func04306_posts.length;
+      await clickStart();
+      const firstLand = await waitResultReady();
+      await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 15000 });
+      const firstTask = firstLand.task || taskFromUrl(page.url());
+      if (!firstTask) throw new Error('首发结果页缺 task_id：' + page.url());
+      const back = page.getByRole('button', { name: '返回配置', exact: true }).first();
+      await expect(back).toBeVisible({ timeout: 8000 });
+      await back.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      if (/[?&]view=result/.test(page.url())) throw new Error('返回配置后仍停在结果页：' + page.url());
+      await selectTwoTags();
+      const postsBeforeSecond = globalThis.__func04306_posts.length;
+      await clickStart();
+      let secondTask = '';
+      for (let i = 0; i < 45; i++) {
+        await page.waitForTimeout(1000);
+        const url = page.url();
+        const procTask = taskFromUrl(url);
+        if (/[?&]view=result/.test(url)) {
+          secondTask = procTask;
+          const body = ((await mainLast().innerText().catch(() => '')) || '');
+          if (secondTask && /技术力横向对比结果/.test(body)) break;
+        }
+        const body = ((await mainLast().innerText().catch(() => '')) || '');
+        if (/分析结果已生成/.test(body)) {
+          if (procTask && procTask !== firstTask) {
+            throw new Error('D3-SVCCAP-SAME-DAY-REUSE-MISSING：再发起为新任务 ' + procTask + ' ≠ 当天既有 ' + firstTask);
+          }
+          if (await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) {
+            await page.getByRole('button', { name: '查看结果', exact: true }).first().click({ timeout: 8000 });
+            await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+            secondTask = taskFromUrl(page.url());
+            break;
+          }
+        }
+        if (/任务已创建/.test(body) && procTask && procTask !== firstTask) {
+          throw new Error('D3-SVCCAP-SAME-DAY-REUSE-MISSING：toast 新建任务 ' + procTask + ' ≠ ' + firstTask);
+        }
+      }
+      if (!/[?&]view=result/.test(page.url())) {
+        throw new Error('再次开始评估未打开结果页 url=' + page.url());
+      }
+      await expect(page.getByText('技术力横向对比结果', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+      secondTask = secondTask || taskFromUrl(page.url());
+      if (!secondTask) throw new Error('复用结果页缺 task_id：' + page.url());
+      if (secondTask !== firstTask) {
+        throw new Error('应打开既有结果 task=' + firstTask + ' 实际=' + secondTask);
+      }
+      globalThis.__func04306 = {
+        firstTask,
+        secondTask,
+        postsFirst: globalThis.__func04306_posts.length - posts0,
+        postsSecond: globalThis.__func04306_posts.length - postsBeforeSecond,
+        firstMode: firstLand.mode,
+      };
+  - note: 2、不新增分析任务（第二次点击零 POST /tasks 创建）
+    assert: |-
+      const st = globalThis.__func04306;
+      if (!st?.firstTask) throw new Error('前置：未完成首发结果构造');
+      if (st.postsSecond > 0) {
+        throw new Error('第二次开始评估仍 POST 新建任务 ×' + st.postsSecond + '（应 0，直接复用既有结果）');
+      }
+      if (st.postsFirst > 1) {
+        throw new Error('首发 POST 异常 ×' + st.postsFirst + '（应 ≤1）');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04306；步骤：当天同组两家已成功（自含首发）→返回配置→再勾选同一组→开始评估。
+  预期①直达 view=result 且 task_id 与首发一致；预期②第二次零 POST /tasks 创建（Q-ANALYSIS-01 当天复用）。
+  catalog_path=entry-seed；篮<2→ENV-SVCCAP-BASKET-ORG-LT2-001。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04306。零 allow_skip。

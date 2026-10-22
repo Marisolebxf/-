@@ -1,0 +1,30 @@
+id: FUNC-04588
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04588
+priority: P1
+tier: B
+title: 主流程-选定产业并看到名单
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: select
+    target: 重点产业方向
+    value: 生物
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+expect:
+  - note: 结果页出现「外部机构引进推荐名单」
+    assert: |-
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible();
+  - note: 重点产业方向回显「生物」
+    assert: |-
+      const industryBlock = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await expect(industryBlock.locator('.arco-select-view')).toContainText('生物');
+  - note: 名单至少有一行机构
+    assert: |-
+      await expect(page.locator('.arco-table-body tbody tr').first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,27 @@
+id: FUNC-04406
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04406
+priority: P1
+tier: B
+title: 分析记录已完成任务可查看过程页
+entry_id: svc-chain-shortboard
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看过程
+    within_row_status: 已完成
+expect:
+  - note: 进入该任务的过程页
+    assert: |-
+      await expect(page).toHaveURL(/view=processing/)
+  - note: 状态为「已完成」
+    assert: |-
+      await expect(page.getByText('已完成', { exact: true }).first()).toBeVisible()
+  - note: 可见「查看结果」
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

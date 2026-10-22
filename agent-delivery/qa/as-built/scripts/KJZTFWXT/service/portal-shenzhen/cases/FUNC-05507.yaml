@@ -1,0 +1,24 @@
+id: FUNC-05507
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05507
+priority: P1
+tier: B
+title: 异常-类型统计空态
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+expect:
+  - note: 标题为「产业机构类型统计」
+    assert: |-
+      const title = page.locator('main').getByText('产业机构类型统计').first();
+      await title.scrollIntoViewIfNeeded();
+      await expect(title).toBeVisible();
+  - note: 文案含「无类型分布矩阵」
+    assert: |-
+      await expect(page.locator('main').getByText(/无类型分布矩阵/)).toBeVisible();
+  - note: 文案含「内容暂无」
+    assert: |-
+      await expect(page.locator('main').getByText(/内容暂无/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

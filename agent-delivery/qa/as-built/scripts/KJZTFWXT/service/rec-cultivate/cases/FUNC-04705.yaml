@@ -1,0 +1,31 @@
+id: FUNC-04705
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04705
+priority: P1
+tier: B
+title: 备选-结果页切换产业
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 生成培育名单
+  - action: assert_visible
+    target: 本土机构培育名单
+expect:
+  - note: 首行机构名与切换前相同
+    assert: |-
+      const firstRow = page.locator('tbody tr').first();
+      await expect(firstRow).toBeVisible();
+      const nameCell = firstRow.locator('td').first();
+      const nameBefore = (await nameCell.innerText()).trim();
+      await expect(nameBefore.length).toBeGreaterThan(0);
+      const industryItem = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await industryItem.locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '新能源' }).click();
+      await expect(nameCell).toHaveText(nameBefore);
+  - note: 标题仍为「本土机构培育名单」
+    assert: |-
+      await expect(page.getByText('本土机构培育名单', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

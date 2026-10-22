@@ -1,0 +1,22 @@
+id: FUNC-03802
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03802
+priority: P1
+tier: B
+title: 异常-无报告
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261014-004
+expect:
+  - note: 页面提示标题为「无法打开产业链分析深链」
+    assert: |-
+      await expect(page.getByText('无法打开产业链分析深链')).toBeVisible()
+  - note: 说明为「该任务尚无可查看的报告」
+    assert: |-
+      await expect(page.getByText('该任务尚无可查看的报告')).toBeVisible()
+  - note: 提供「返回产业链分析」
+    assert: |-
+      await expect(page.getByRole('button', { name: '返回产业链分析' })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,30 @@
+id: FUNC-05299
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05299
+priority: P1
+tier: B
+title: 备选-产业链未启用
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen?industry=CL-SEI-02
+expect:
+  - note: 1、产业链下拉不可用
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const chainRow = filter.filter({ hasText: '产业链' });
+      await expect(chainRow).toBeVisible();
+      const chainSelect = chainRow.locator('.arco-select');
+      await expect(chainSelect).toHaveClass(/arco-select-disabled/);
+  - note: 2、没有选项列表弹出
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const chainRow = filter.filter({ hasText: '产业链' });
+      const chainView = chainRow.locator('.arco-select-view');
+      await chainView.click({ force: true });
+      await page.waitForTimeout(300);
+      await expect(page.locator('.arco-select-dropdown:visible')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

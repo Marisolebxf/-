@@ -59,13 +59,16 @@ expect:
         '软件与信息服务',
       ];
       const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      const seg = ctx.locator('.industry-catalog-select .arco-select-view, .industry-catalog-select').first();
-      await seg.scrollIntoViewIfNeeded();
-      await seg.click({ timeout: 8000 });
+      const chainField = ctx
+        .locator('.policy-analysis-filter-row__field')
+        .filter({ has: page.getByText('所属产业链', { exact: true }) });
+      const segClick = chainField.locator('.arco-select-view').first();
+      await segClick.scrollIntoViewIfNeeded();
+      await segClick.click({ timeout: 8000 });
       await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible');
+      const pop = page.locator('.arco-select-dropdown:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });
-      const options = pop.locator('.arco-select-option');
+      const options = pop.locator('.arco-select-option:not(.arco-select-option-disabled)');
       const count = await options.count();
       const got = [];
       for (let i = 0; i < count; i++) {

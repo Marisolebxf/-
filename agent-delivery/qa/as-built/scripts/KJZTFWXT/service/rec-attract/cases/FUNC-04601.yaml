@@ -1,0 +1,27 @@
+id: FUNC-04601
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04601
+priority: P0
+tier: B
+title: 主流程-加入对比篮
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 生成招引名单
+  - action: wait
+    target: 5000
+  - action: click
+    target: 查看画像
+  - action: click
+    target: 加入对比篮
+expect:
+  - note: 提示该机构已加入对比篮
+    assert: |-
+      await expect(page.getByText(/已加入对比篮/)).toBeVisible();
+  - note: 按钮变为「已在对比篮」
+    assert: |-
+      await expect(page.getByRole('button', { name: '已在对比篮' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

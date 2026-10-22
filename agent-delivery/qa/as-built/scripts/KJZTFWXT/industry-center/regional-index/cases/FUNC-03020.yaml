@@ -1,0 +1,155 @@
+id: FUNC-03020
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03020
+priority: P1
+title: 生成页点查看分析记录进入分析记录列表
+entry_id: chain-regional-index
+tier: B
+preconditions:
+  - 已点「开始分析」并出现生成页（assert 自含：合法配置→开始分析→等生成页）
+locators:
+  start: button「开始分析」
+  view_records: button「查看分析记录」
+steps:
+  - action: goto
+    target: /industry-center/regional?workspace=index&tab=index
+  - action: wait
+    for: 已计入 6 项
+    timeout_ms: 12000
+  - action: evaluate
+    note: 配置→开始分析→生成页点「查看分析记录」（判定在 expect）
+expect:
+  - note: 1、进入「分析记录」列表
+    assert: |-
+      const main = () => page.locator('main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
+      };
+      const enterViaSidebar = async () => {
+        const u = new URL('/industry-center/search', baseUrl);
+        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await dismissBasket();
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling search 404 ' + page.url());
+        }
+        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
+        const expandChain = async () => {
+          if (await leaf().first().isVisible().catch(() => false)) return;
+          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
+          if (await sub.count()) {
+            await sub.first().click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+          }
+        };
+        await expandChain();
+        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
+        await leaf().first().click({ timeout: 10000 });
+        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=index/);
+        await expect(page).toHaveURL(/tab=index/);
+      };
+      const ensureIndexTab = async () => {
+        await dismissBasket();
+        const onTarget = () =>
+          /\/industry-center\/regional/.test(page.url()) &&
+          /workspace=index/.test(page.url()) &&
+          /tab=index/.test(page.url());
+        if (await bodyIs404() || !onTarget()) {
+          await enterViaSidebar();
+        } else {
+          await expect(page).toHaveURL(/workspace=index/);
+          await expect(page).toHaveURL(/tab=index/);
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
+      const pickSelectOption = async (ariaLabel, re) => {
+        const view = page.locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        await expect(opt).toBeVisible({ timeout: 10000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+      };
+      const configureAndStart = async () => {
+        await ensureIndexTab();
+        await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
+        await expect(page.getByText(/已计入 \d+ 项/).first()).toBeVisible({ timeout: 12000 });
+        const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
+        const industryText = ((await industryView.innerText().catch(() => '')).trim().split('\n')[0] || '').trim();
+        if (/请选择产业|^$|未选产业/.test(industryText) || !/集成|半导体|软件|传感|人工|智能/.test(industryText)) {
+          let picked = false;
+          for (const re of [/^半导体与集成电路$/, /^集成电路$/, /^传感器$/, /^软件与信息服务$/]) {
+            try {
+              await pickSelectOption('产业', re);
+              picked = true;
+              break;
+            } catch (_) {}
+          }
+          if (!picked) throw new Error('ENV-CHAIN-REG-INDUSTRY-001: 产业下拉未见可选项');
+        }
+        await expect(page.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 15000 });
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 10000 });
+        await start.click({ timeout: 10000 });
+      };
+      await configureAndStart();
+      let onGen = false;
+      for (let i = 0; i < 90; i++) {
+        await page.waitForTimeout(i === 0 ? 400 : 500);
+        const url = page.url();
+        const t = await main().innerText().catch(() => '');
+        if (/view=processing|区域产业指数评价生成中/.test(url + t)) {
+          onGen = true;
+          break;
+        }
+        const viewRec = page.getByRole('button', { name: '查看分析记录' }).first();
+        if (await viewRec.isVisible().catch(() => false)) {
+          onGen = true;
+          break;
+        }
+        if (/分析结果已生成/.test(t)) {
+          throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 分析已秒完成，未见生成页「查看分析记录」入口');
+        }
+        if (/分析失败|INPUT_OBJECT_INVALID/.test(t) && i >= 6) {
+          throw new Error('ENV-CHAIN-REG-ASYNC-FAIL-001: 开始分析后失败，未见生成页');
+        }
+      }
+      if (!onGen) {
+        throw new Error('ENV-CHAIN-REG-PROCESS-WINDOW-001: 45s 内未见生成页（processing/生成中/查看分析记录）');
+      }
+      const viewRecordsBtn = page.getByRole('button', { name: '查看分析记录' }).first();
+      await expect(viewRecordsBtn).toBeVisible({ timeout: 15000 });
+      await viewRecordsBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1200);
+      await expect(page).toHaveURL(/tab=records/, { timeout: 15000 });
+      await expect(main().getByText('分析记录').first()).toBeVisible({ timeout: 10000 });
+      const headerText = await main().innerText().catch(() => '');
+      for (const col of ['任务', '类型', '状态', '创建时间', '操作']) {
+        if (!headerText.includes(col)) {
+          throw new Error('分析记录列表缺列「' + col + '」');
+        }
+      }
+      await expect(page.getByRole('tab', { name: '分析记录' }).first()).toHaveAttribute('aria-selected', 'true');
+on_fail: 截图 + X-Trace-Id + C1~C6
+as_built_note: >-
+  catalog_path=/industry-center/regional?workspace=index&tab=index（entry-seed）。步骤=集成电路+开始分析→生成页点「查看分析记录」（scout-after-start）。
+  预期=tab=records 且主区「分析记录」列表表头含任务/类型/状态/创建时间/操作。edu 深链 404→侧栏 sibling 进页。秒完成无生成窗→ENV-CHAIN-REG-PROCESS-WINDOW-001。登录关评审 runner 前置。B 档零 allow_skip。

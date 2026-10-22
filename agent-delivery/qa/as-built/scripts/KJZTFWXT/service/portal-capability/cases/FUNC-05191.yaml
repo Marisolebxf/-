@@ -1,0 +1,18 @@
+id: FUNC-05191
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05191
+priority: P0
+tier: B
+title: 主流程-产业集群选项个数
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+expect:
+  - note: 选项共 15 个（名称见附录A）
+    assert: |-
+      await page.locator('main .arco-select-view').first().click();
+      const dropdown = page.locator('.arco-select-dropdown:visible');
+      await expect(dropdown.locator('.arco-select-option')).toHaveCount(15);
+on_fail: 截图 + 抄 X-Trace-Id

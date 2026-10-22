@@ -1,0 +1,124 @@
+id: FUNC-04293
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04293
+priority: P1
+tier: B
+title: 备选-返回对比篮 · 选择浮层
+story: US-SVC-ORG-08
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已进入 capability 工作区；系统对比篮至少有 1 家服务机构（不点「开始评估」）
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  return_basket: '[data-testid="svc-org-cap-open-basket"]'
+  picker_title: 选择分析服务机构
+  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 已「从对比篮带入」→点击「返回对比篮」打开选择浮层（真实操作在 expect 内）
+expect:
+  - note: 1、浮层标题为「选择分析服务机构」
+    assert: |-
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const countBasketTags = async () =>
+        page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+      const seedOneOrgIfEmpty = async () => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const join = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        if (!(await join.count())) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：检索页无可入篮服务机构');
+        }
+        await join.click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      const waitBasketTagsAtLeast = async (min, budgetMs = 18000) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < budgetMs) {
+          const n = await countBasketTags();
+          if (n >= min) return n;
+          await page.waitForTimeout(350);
+        }
+        return await countBasketTags();
+      };
+      const openPickerAfterImport = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(800);
+        await closeBasket();
+        let tagN = await waitBasketTagsAtLeast(1);
+        if (tagN < 1) {
+          await seedOneOrgIfEmpty();
+          tagN = await waitBasketTagsAtLeast(1, 12000);
+        }
+        if (tagN < 1) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：对比篮服务机构不足 1 家，当前 tags=' + tagN);
+        }
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        await expect(imp).toBeVisible({ timeout: 12000 });
+        await imp.scrollIntoViewIfNeeded().catch(() => {});
+        await imp.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const ret = page.locator('[data-testid="svc-org-cap-open-basket"]').or(page.getByRole('button', { name: '返回对比篮', exact: true })).first();
+        await expect(ret).toBeVisible({ timeout: 15000 });
+        globalThis.__func04293_urlBefore = page.url();
+        await ret.scrollIntoViewIfNeeded().catch(() => {});
+        await ret.click({ timeout: 8000 });
+        await page.waitForTimeout(1500);
+      };
+      const pickerPanel = () =>
+        page.locator('.system-compare-panel').filter({ hasText: '选择分析服务机构' }).first();
+      await openPickerAfterImport();
+      const panel = pickerPanel();
+      await expect(panel).toBeVisible({ timeout: 15000 });
+      await expect(page.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('[data-testid="service-org-compare-basket-workspace"]').first()).toBeVisible({ timeout: 12000 });
+      await expect(panel.getByText('篮内服务机构').first()).toBeVisible({ timeout: 12000 });
+      globalThis.__func04293 = { pickerOpen: true };
+  - note: 2、说明点击「确定」会回填所选机构
+    assert: |-
+      if (!globalThis.__func04293?.pickerOpen) throw new Error('前置：未打开选择分析服务机构浮层');
+      const panel = page.locator('.system-compare-panel').filter({ hasText: '选择分析服务机构' }).first();
+      const txt = (await panel.innerText().catch(() => '')) || '';
+      if (!/点击「确定」回填/.test(txt)) {
+        throw new Error('浮层说明未见「点击「确定」回填」: ' + txt.slice(0, 200));
+      }
+      if (!/分析对象|服务机构|所选/.test(txt)) {
+        throw new Error('浮层说明未交代回填对象语义');
+      }
+  - note: 3、说明不会发起分析任务
+    assert: |-
+      if (!globalThis.__func04293?.pickerOpen) throw new Error('前置：未打开选择分析服务机构浮层');
+      const panel = page.locator('.system-compare-panel').filter({ hasText: '选择分析服务机构' }).first();
+      await expect(panel.getByText(/不会发起分析任务/).first()).toBeVisible({ timeout: 8000 });
+      const url = page.url();
+      if (/view=processing/.test(url)) throw new Error('打开浮层后误入过程态：' + url);
+      if (/view=result/.test(url) && /task_id=SVC-/.test(url)) throw new Error('打开浮层后误入结果态：' + url);
+      const proc = page.locator('[data-testid="svc-org-analysis-process"]');
+      if (await proc.count() && await proc.first().isVisible().catch(() => false)) {
+        throw new Error('出现过程壳，未停在评价模型配置态');
+      }
+      await expect(page.getByText('技术力评价模型').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<1 家→ENV-SVCCAP-BASKET-ORG-LT1-001
+as_built_note: >-
+  蓝本 FUNC-04293（返回对比篮打开选择浮层文案）。前置=对比篮 tags≥1→「从对比篮带入」→「返回对比篮」
+  （testid=svc-org-cap-open-basket）→系统篮 picker 标题「选择分析服务机构」+ workspace「篮内服务机构」。
+  副标题对齐 EnterpriseCompareBasketView picker 态：点击「确定」回填；不会发起分析任务。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04293。B 档零 allow_skip。

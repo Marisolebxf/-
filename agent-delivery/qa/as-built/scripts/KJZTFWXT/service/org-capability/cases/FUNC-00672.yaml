@@ -1,0 +1,49 @@
+id: FUNC-00672
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00672
+priority: P0
+tier: A
+title: 主流程-五维模型展示 · 名称与默认权重
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - env-gate overall=fail（本条只验配置态模型区，不测开始评估放行）
+locators:
+  model_heading: 「技术力评价模型」
+  dims: 专利数量 / 研发投入 / 核心专家 / 成功案例 / 标准制定
+  weight_sum: 「权重合计： 100% 已对齐」
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+expect:
+  - note: 1、区块标题为「技术力评价模型」
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      await page.waitForTimeout(600);
+      await expect(page.getByText('技术力评价模型', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、五维为专利数量、研发投入、核心专家、成功案例、标准制定
+    assert: |-
+      for (const n of ['专利数量', '研发投入', '核心专家', '成功案例', '标准制定']) {
+        await expect(page.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      }
+  - note: 3、默认权重依次为 25、25、20、20、10，合计显示 100% 已对齐
+    assert: |-
+      const spins = page.locator('[role=spinbutton]');
+      await expect(spins).toHaveCount(5, { timeout: 8000 });
+      const vals = [];
+      for (let i = 0; i < 5; i++) vals.push(String(await spins.nth(i).inputValue()));
+      if (vals.join(',') !== '25,25,20,20,10') throw new Error('默认权重 ' + vals.join('/') + ' ≠ 25/25/20/20/10');
+      const sum = vals.reduce((a, b) => a + Number(b), 0);
+      if (sum !== 100) throw new Error('权重和 ' + sum);
+      await expect(page.getByText(/权重合计：\s*100%/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/已对齐/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  蓝本 FUNC-00672（catalog 深链；P0-02 为同 fid 序号脚本）。entry-seed catalog_path；
+  env-gate overall=fail 不影响模型区。汇总文案「权重合计： 100% 已对齐」。零 allow_skip。

@@ -1,0 +1,26 @@
+id: FUNC-05103
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05103
+priority: P0
+tier: B
+title: 主流程-悬停广东省排行条
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+expect:
+  - note: 提示含「广东省」
+    assert: |-
+      const section = page.locator('div').filter({ hasText: '省级行政区排行' }).last();
+      await section.getByText('广东省', { exact: true }).hover();
+      const tip = page.locator('div').filter({ hasText: '广东省' }).filter({ hasText: '家' }).last();
+      await expect(tip).toBeVisible({ timeout: 15000 });
+  - note: 提示含家数与占比
+    assert: |-
+      const tip = page.locator('div').filter({ hasText: '广东省' }).filter({ hasText: '家' }).last();
+      await expect(tip).toContainText(/\d/);
+      await expect(tip).toContainText(/家/);
+      await expect(tip).toContainText(/占比|%|％/);
+
+on_fail: 截图 + 抄 X-Trace-Id

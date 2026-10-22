@@ -1,0 +1,32 @@
+id: FUNC-04717
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04717
+priority: P1
+tier: B
+title: 异常-失败过程页
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 分析记录
+  - action: click
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await drawer.waitFor({ state: 'visible' });
+      await page.locator('.arco-select').filter({ hasText: '全部状态' }).locator('.arco-select-view').click();
+      await page.getByRole('option', { name: '失败' }).click();
+      const failedRow = drawer.locator('.arco-table-tbody tr').filter({ hasText: '失败' }).first();
+      await failedRow.getByRole('button', { name: '查看过程' }).click();
+expect:
+  - note: 过程页状态为失败
+    assert: |-
+      await expect(page.locator('.arco-tag').filter({ hasText: /^失败$/ }).first()).toBeVisible();
+  - note: 页面出现「本次分析生成失败」
+    assert: |-
+      await expect(page.getByText('本次分析生成失败')).toBeVisible();
+  - note: 页面提供「返回配置重试」
+    assert: |-
+      await expect(page.getByRole('button', { name: '返回配置重试' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

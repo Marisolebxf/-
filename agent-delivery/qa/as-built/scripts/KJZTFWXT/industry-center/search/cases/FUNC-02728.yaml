@@ -7,77 +7,31 @@ tier: B
 preconditions:
   - 高级筛选已打开
   - 使用查询方案中有「集成电路」
-locators:
-  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
-  use_plan: button 使用查询方案
-  plan_menuitem: menuitem → 集成电路
-  result_region: '[role=region][aria-label="产业查询结果"]'
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
   - action: evaluate
-    note: 高级筛选 Tab、使用查询方案点「集成电路」；两条预期在 expect 分步判定
+    note: 高级筛选 Tab、使用查询方案点「集成电路」
 expect:
-  - note: 前置：高级筛选已打开且下拉含「集成电路」方案
+  - note: 1、出现「检索结果」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
-      }
       const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await expect(page).toHaveURL(/[?&]mode=advanced/);
-      const usePlanBtn = page.getByRole('button', { name: '使用查询方案' });
-      await expect(usePlanBtn).toBeVisible({ timeout: 10000 });
-      const disabled = await usePlanBtn.isDisabled().catch(() => true);
-      if (disabled) {
-        throw new Error('前置：使用查询方案应有已存方案（含「集成电路」），当前按钮 disabled');
-      }
+      await page.waitForURL(/[?&]mode=advanced/, { timeout: 10000 });
+      const usePlanBtn = page.getByRole('button', { name: /使用查询方案/ });
+      await expect(usePlanBtn).toBeEnabled({ timeout: 10000 });
       await usePlanBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const planItem = page.getByRole('menuitem', { name: '集成电路' });
-      if ((await planItem.count()) === 0) {
-        await page.keyboard.press('Escape');
-        throw new Error('前置：使用查询方案下拉中应有「集成电路」');
-      }
-      await expect(planItem.first()).toBeVisible({ timeout: 8000 });
-      globalThis.__func02728_planReady = true;
-  - note: 1、步骤：点击「集成电路」后出现「检索结果」
-    assert: |-
-      if (!globalThis.__func02728_planReady) throw new Error('前置：方案下拉未就绪');
-      const planItem = page.getByRole('menuitem', { name: '集成电路' }).first();
-      await planItem.click({ timeout: 8000 });
-      await page.waitForTimeout(1500);
+      const planOpt = page.locator('.arco-dropdown-option').filter({ hasText: /^集成电路$/ }).first();
+      await expect(planOpt).toBeVisible({ timeout: 8000 });
+      await planOpt.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
       await expect(region).toBeVisible({ timeout: 15000 });
       await expect(region.getByRole('heading', { name: '检索结果' })).toBeVisible({ timeout: 15000 });
-      const state = await region.getAttribute('data-search-state');
-      if (state === 'guide' || state === 'idle') {
-        throw new Error('套用方案后应进入结果态，data-search-state=' + state);
-      }
   - note: 2、摘要中出现「当前条件」
     assert: |-
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
       await expect(region.getByText('当前条件', { exact: true }).first()).toBeVisible({ timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
-as_built_note: >-
-  路由 catalog_path /industry-center/search；高级筛选 Footer FilterTemplateManager compact 变体：
-  「使用查询方案」Arco Dropdown + menuitem 方案名（与 Hub「我的方案」chip 同源 useFilterTemplates('industry')）。
-  onApplyTemplate 源码 applyDsl + applyAdvanced 自动检索，结果 h2「检索结果」+ QueryConditionSummary「当前条件」；
-  条件正文随方案 DSL 变化，本条不钉死字段字面（用例册备注）。前置方案名「集成电路」与 scout-tab-高级筛选 一致。
-  2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout+FilterTemplateManager/IndustrySearchPage 源码。
-  登录与关内部评审由 runner 前置。B 档零 allow_skip。

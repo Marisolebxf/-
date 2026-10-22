@@ -1,0 +1,22 @@
+id: FUNC-05106
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05106
+priority: P1
+tier: B
+title: 备选-点击全球视图
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: click
+    target: 全球视图
+    force: true
+expect:
+  - note: 「全国视图」仍为选中
+    assert: |-
+      await expect(page.getByRole('radio', { name: '全国视图' })).toHaveAttribute('aria-checked', 'true')
+  - note: 「全球视图」仍为禁用
+    assert: |-
+      await expect(page.getByRole('radio', { name: '全球视图' })).toBeDisabled()
+on_fail: 截图 + 抄 X-Trace-Id

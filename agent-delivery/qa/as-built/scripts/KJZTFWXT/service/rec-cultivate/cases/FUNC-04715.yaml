@@ -1,0 +1,30 @@
+id: FUNC-04715
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04715
+priority: P1
+tier: B
+title: 备选-未选产业仍可发起
+entry_id: svc-rec-cultivate
+preconditions:
+  - 重点产业方向为空
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 分析记录出现新任务
+    assert: |-
+      const industryItem = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
+      await industryItem.locator('.arco-cascader-view').hover();
+      const clearBtn = industryItem.locator('.arco-cascader-clear-icon');
+      if (await clearBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await clearBtn.click();
+      }
+      await page.getByRole('button', { name: '开始分析' }).click();
+      await page.getByText('分析记录', { exact: true }).click();
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible();
+      await expect(drawer.locator('.arco-table-tbody .arco-table-tr').first()).toBeVisible();
+  - note: 该任务变为已完成
+    assert: |-
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer.getByText('已完成').first()).toBeVisible({ timeout: 120000 });

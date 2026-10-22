@@ -1,0 +1,24 @@
+id: FUNC-05204
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05204
+priority: P1
+tier: B
+title: 备选-画像空态文案
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: wait
+    for: 榜单加载
+    timeout_ms: 1500
+  - action: click
+    target: 按钮 分析画像
+expect:
+  - note: 领域覆盖细分展示「暂无覆盖数据」
+    assert: |-
+      await expect(page.getByText('暂无覆盖数据')).toBeVisible()
+  - note: 近三年新增服务记录展示「暂无服务记录」
+    assert: |-
+      await expect(page.getByText('暂无服务记录')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

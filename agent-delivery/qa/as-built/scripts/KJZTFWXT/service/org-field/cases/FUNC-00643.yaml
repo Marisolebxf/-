@@ -3,133 +3,54 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00643
 priority: P0
 tier: A
 title: 主流程-选择机构回显
-story: US-SVC-ORG-01
 entry_id: svc-org-field
-preconditions:
-  - 已进入分析配置（runner 会话前置：已登录且内部评审模式关闭）
-locators:
-  pick_btn: button「选择机构」
-  modal_title: 选择服务机构
-  confirm_btn: button「确定」
-  selected_count: 已选机构（1 家）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
   - note: 1、「选择服务机构」弹窗可勾选机构
     assert: |-
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const assertNotSso = () => {
-        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) {
-          throw new Error('ENV-EDU-TTS-SVCZ-AUTH-001: 会话跳 SSO 无法进业务壳 url=' + page.url());
-        }
-      };
-      const enterViaSidebar = async () => {
-        await dismissBasket();
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(1200);
-        }
-        await page.goto(spaUrl('/service-portal/overview'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        assertNotSso();
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: sibling /service-portal/overview 仍 SPA404 url=' + page.url());
-        }
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
-        if (!(await leaf().first().isVisible().catch(() => false))) {
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        }
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=field/);
-        await expect(page).toHaveURL(/tab=coverage/);
-      };
-      const resetConfig = async () => {
-        if (/org_ids|view=/.test(page.url())) {
-          await page.goto(spaUrl('/service/institution-judgment?workspace=field&tab=coverage'), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(1200);
-        }
-        const main = page.locator('main').first();
-        const t = ((await main.innerText().catch(() => '')) || '');
-        if (/已选机构（[1-9]/.test(t)) {
-          const clr = main.getByRole('button', { name: '清空' });
-          if (await clr.count()) {
-            await clr.first().click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(500);
-          }
-        }
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        await enterViaSidebar();
-      } else {
-        await resetConfig();
-      }
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
-      await page.getByRole('button', { name: '选择机构', exact: true }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      const dialog = page.locator('.arco-modal:visible, .arco-modal').filter({ hasText: '选择服务机构' }).first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main').first();
+      await expect(main.getByText('已选机构（0 家）').first()).toBeVisible({ timeout: 12000 });
+      await main.locator('[data-testid=svc-org-open-compare-basket]').click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const dialog = page
+        .locator('.arco-modal:visible, .arco-drawer:visible')
+        .filter({ hasText: /选择服务机构|对比篮/ })
+        .first();
+      await expect(dialog).toBeVisible({ timeout: 12000 });
       const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
       const n = await checks.count();
-      if (n < 1) throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗无可勾选机构');
+      if (n < 1) throw new Error('弹窗无可勾选机构');
       await expect(checks.first()).toBeVisible({ timeout: 5000 });
-      globalThis.__func00643 = { dialogOpen: true, orgCount: n };
   - note: 2、确定后已选机构为 1 家
     assert: |-
-      if (!globalThis.__func00643?.dialogOpen) throw new Error('前置：弹窗未打开');
-      const dialog = page.locator('.arco-modal:visible, .arco-modal').filter({ hasText: '选择服务机构' }).first();
+      const dialog = page
+        .locator('.arco-modal:visible, .arco-drawer:visible')
+        .filter({ hasText: /选择服务机构|对比篮/ })
+        .first();
       await expect(dialog).toBeVisible({ timeout: 8000 });
       const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
-      if ((await checks.count()) < 1) throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗无可勾选机构');
       await checks.first().click({ timeout: 5000 });
       await page.waitForTimeout(300);
-      await dialog.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
+      const ok = dialog.getByRole('button', { name: '确定' });
+      if (await ok.count()) {
+        await ok.first().click({ timeout: 8000 });
+      } else {
+        await dialog.getByRole('button', { name: /确定|确认/ }).first().click({ timeout: 8000 });
+      }
       await page.waitForTimeout(1000);
       const main = page.locator('main').first();
-      await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      await expect(main.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 12000 });
   - note: 3、配置区出现该机构
     assert: |-
       const main = page.locator('main').first();
-      const ctx = main.locator('[data-testid=svc-org-analysis-context]');
-      const tags = ctx.locator('.arco-tag.svc-org-pick-tag, .svc-org-pick-tag');
-      if ((await tags.count()) >= 1) {
-        await expect(tags.first()).toBeVisible({ timeout: 5000 });
-        const label = (await tags.first().innerText()).trim();
-        if (!label || /未选择/.test(label)) throw new Error('机构芯片文案无效: ' + label);
-      } else {
-        const txt = await main.innerText();
-        if (!/已选机构（1\s*家）/.test(txt)) throw new Error('未见已选 1 家计数');
-        const chip = main.locator('.arco-tag').filter({ hasNotText: /已选机构|清空|筛选领域|产业领域/ });
-        if ((await chip.count()) < 1) throw new Error('配置区未见已选机构芯片');
-        await expect(chip.first()).toBeVisible({ timeout: 5000 });
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  catalog_path=/service/institution-judgment?workspace=field&tab=coverage；edu/tts/svcz 深链 SPA404 时经 sibling /service-portal/overview 侧栏补进（对齐 FUNC-00641）。
-  弹窗「选择服务机构」；回显「已选机构（1 家）」+ svc-org-pick-tag 芯片。A 档零 allow_skip。
+      const ctx = main.locator('[data-testid=svc-org-analysis-context-field]');
+      await expect(ctx).toBeVisible({ timeout: 8000 });
+      const tag = ctx.locator('.svc-org-pick-tag').first();
+      await expect(tag).toBeVisible({ timeout: 8000 });
+      const label = (await tag.innerText()).trim();
+      if (!label || /未选择/.test(label)) throw new Error('配置区机构芯片无效: ' + label);
+on_fail: 截图 + 抄 X-Trace-Id

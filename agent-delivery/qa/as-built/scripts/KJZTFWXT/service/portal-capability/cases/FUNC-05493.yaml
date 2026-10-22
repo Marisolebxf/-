@@ -1,0 +1,26 @@
+id: FUNC-05493
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05493
+priority: P0
+tier: B
+title: 主流程-前三名次标识
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: click
+    target: text:服务机构技术能力
+expect:
+  - note: 前三名名次标识彼此不同
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.locator('.svc-portal-rank--1')).toHaveCount(1);
+      await expect(main.locator('.svc-portal-rank--2')).toHaveCount(1);
+      await expect(main.locator('.svc-portal-rank--3')).toHaveCount(1);
+  - note: 第4名起名次标识一致
+    assert: |-
+      const main = page.locator('main');
+      const total = await main.locator('.svc-portal-rank').count();
+      await expect(main.locator('.svc-portal-rank--4')).toHaveCount(total - 3);
+on_fail: 截图 + 抄 X-Trace-Id

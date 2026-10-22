@@ -4,141 +4,68 @@ priority: P1
 title: 重置参数后对比来源清空且开始分析不可用
 entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 已登录 admin
-  - 已选产业并绑定一条有效对比来源
-locators:
-  industry: main .industry-catalog-select
-  bind_input: main input[placeholder="请显式选择有效结构化结果"]
-  reset: button「重置参数」
-  start: button「开始分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 选产业+绑定有效来源→点「重置参数」→回读绑定与开始分析
+    note: 选产业+绑定有效来源→点「重置参数」
 expect:
-  - note: 前置：产业已选且绑定有效 CHAIN 来源（重置参数不清产业，见用例备注）
-    assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const ensureConfigPage = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          await dismissBasket();
-        }
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-          await dismissBasket();
-        }
-        if (await bodyIs404() || !onTarget()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析配置页 ' + page.url());
-        }
-      };
-      const ind = () => page.locator('main .industry-catalog-select').first();
-      const bindInp = () => page.locator('main input[placeholder="请显式选择有效结构化结果"]');
-      const bindView = () => bindInp().locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
-      const readBind = async () => {
-        const viewTxt = ((await bindView().innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (/请显式选择有效结构化结果/.test(viewTxt) || !viewTxt) return 'UNBOUND';
-        return viewTxt;
-      };
-      const pickIndustry = async (name) => {
-        await ind().locator('.arco-select-view').first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click();
-        await page.waitForTimeout(700);
-      };
-      const bindValid = async () => {
-        await bindView().click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-        const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
-        if (!(await en.count())) throw new Error('D3: 无有效对比来源可选');
-        await en.first().click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      };
-      await ensureConfigPage();
-      await expect(page.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 8000 });
-      await expect(ind()).toBeVisible({ timeout: 10000 });
-      const indTxt = ((await ind().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!indTxt.includes('新一代信息技术')) await pickIndustry('新一代信息技术');
-      await expect(ind()).toContainText('新一代信息技术', { timeout: 8000 });
-      let bound = await readBind();
-      if (bound === 'UNBOUND') {
-        await bindValid();
-        bound = await readBind();
-      }
-      if (bound === 'UNBOUND' || !/CHAIN-/.test(bound)) {
-        throw new Error('前置：未绑定有效对比来源，当前=' + bound);
-      }
-      const startBtn = page.getByRole('button', { name: '开始分析' });
-      if (await startBtn.isDisabled()) {
-        throw new Error('前置：绑定后「开始分析」仍禁用，无法构造脏配置');
-      }
-      globalThis.__func03394_bound = bound;
   - note: 1、对比来源恢复为未选占位
     assert: |-
-      if (!globalThis.__func03394_bound) throw new Error('前置未完成');
+      const main = page.locator('main');
+      const industrySel = main.locator('.industry-catalog-select').first();
+      const sourceInput = main.locator('input[placeholder="请显式选择有效结构化结果"]');
+      const sourceView = sourceInput.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
+      const readSourceLabel = async () => {
+        const t = ((await sourceView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!t || /请显式选择有效结构化结果/.test(t)) return '';
+        return t;
+      };
+      const pickIndustry = async (name) => {
+        await industrySel.click({ timeout: 15000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
+      const bindFirstValid = async () => {
+        for (let i = 0; i < 12; i++) {
+          await sourceView.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(500);
+          const opt = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
+          if (await opt.count()) {
+            await opt.first().click({ timeout: 8000 });
+            await page.waitForTimeout(600);
+            return;
+          }
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.waitForTimeout(400);
+        }
+        throw new Error('D3: 无有效对比来源可选');
+      };
+      await expect(main.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 15000 });
+      await expect(industrySel).toBeVisible({ timeout: 15000 });
+      const indTxt = ((await industrySel.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!indTxt.includes('新一代信息技术')) await pickIndustry('新一代信息技术');
+      await expect(industrySel).toContainText('新一代信息技术', { timeout: 10000 });
+      let bound = await readSourceLabel();
+      if (!bound || !/CHAIN-/.test(bound)) {
+        await bindFirstValid();
+        bound = await readSourceLabel();
+      }
+      if (!bound || !/CHAIN-/.test(bound)) throw new Error('前置：未绑定有效对比来源');
+      await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
       await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
       await page.waitForTimeout(800);
-      const bindInp = page.locator('main input[placeholder="请显式选择有效结构化结果"]');
-      await expect(bindInp.first()).toBeVisible({ timeout: 8000 });
-      const ph = await bindInp.first().getAttribute('placeholder');
+      await expect(sourceInput.first()).toBeVisible({ timeout: 8000 });
+      const ph = await sourceInput.first().getAttribute('placeholder');
       if (ph !== '请显式选择有效结构化结果') throw new Error('绑定占位不符: ' + ph);
-      const bindView = bindInp.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
-      const viewTxt = ((await bindView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (/CHAIN-/.test(viewTxt)) throw new Error('重置后绑定未清: ' + viewTxt);
-      const ind = page.locator('main .industry-catalog-select').first();
-      const indAfter = ((await ind.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!indAfter.includes('新一代信息技术')) {
-        throw new Error('意外：重置后产业也被清空（用例预期产业仍留）: ' + indAfter);
-      }
+      const after = await readSourceLabel();
+      if (after && /CHAIN-/.test(after)) throw new Error('重置后绑定未清: ' + after);
+      const indAfter = ((await industrySel.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!indAfter.includes('新一代信息技术')) throw new Error('意外：重置后产业也被清空: ' + indAfter);
   - note: 2、「开始分析」不可点击
     assert: |-
       await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6 分类
-as_built_note: 作废 00768 对齐：重置清绑定+门控禁用；重置参数不清产业（须仍含已选产业名）。深链 404 侧栏回落同 00760。B 档零 allow_skip。
+on_fail: 截图 + X-Trace-Id

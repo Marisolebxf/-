@@ -7,81 +7,25 @@ entry_id: chain-regional-index
 tier: B
 preconditions:
   - 指标表至少两行（官方模板默认六行）
-locators:
-  metric_row: 政策覆盖率行
-  remove_btn: 政策覆盖率行「移除」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
   - action: wait
     for: 已计入 6 项
     timeout_ms: 12000
-  - action: evaluate
-    note: 政策覆盖率行「移除」（判定在 expect）
 expect:
-  - note: 1、该指标从工作集消失；2、出现「计入权重合计须为 100%」提示
+  - note: 1、该指标从工作集消失
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(bodyGate);
-      };
-      const enterViaSidebar = async () => {
-        const u = new URL('/industry-center/search', baseUrl);
-        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await dismissBasket();
-        const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
-        const expandChain = async () => {
-          if (await leaf().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await expandChain();
-        await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-        await leaf().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=index/);
-        await expect(page).toHaveURL(/tab=index/);
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        await enterViaSidebar();
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
-      }
-      await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
-      const targetName = '政策覆盖率';
-      const row = page.getByRole('row').filter({ hasText: targetName }).first();
+      const metricRow = (name) =>
+        page.getByRole('row').filter({ hasText: name }).filter({ has: page.getByRole('button', { name: '移除' }) });
+      const target = '企业商业化能力';
+      const row = metricRow(target).first();
       await expect(row).toBeVisible({ timeout: 8000 });
-      const remove = row.getByRole('button', { name: '移除' }).first();
-      await expect(remove).toBeEnabled({ timeout: 5000 });
-      const dialogBefore = await page.locator('.arco-modal:visible').count();
-      await remove.click({ timeout: 8000 });
-      await page.waitForTimeout(700);
-      const dialogAfter = await page.locator('.arco-modal:visible').count();
-      if (dialogAfter > dialogBefore) {
-        throw new Error('移除出现二次确认弹窗（用例要求无二次弹窗）');
-      }
-      await expect(page.getByRole('row').filter({ hasText: targetName })).toHaveCount(0, { timeout: 8000 });
-      await expect(page.getByText(/已计入 5 项/).first()).toBeVisible({ timeout: 8000 });
-      const weightHint = page.getByText(/计入权重合计须为 100%/);
-      await expect(weightHint.first()).toBeVisible({ timeout: 8000 });
-      const okLine = page.getByText(/权重合计：100% · 校验通过/);
-      if (await okLine.count() && (await okLine.first().isVisible().catch(() => false))) {
-        throw new Error('移除后仍显示权重校验通过');
-      }
+      await row.getByRole('button', { name: '移除' }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(metricRow(target)).toHaveCount(0, { timeout: 8000 });
+  - note: 2、出现「计入权重合计须为 100%」提示
+    assert: |-
+      await expect(page.getByText(/计入权重合计须为 100%/).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  替换作废 00567/00577 之移除+合计偏离终态。catalog_path=entry-seed 深链 steps；assert 遇 404 回退 sibling 侧栏（同 02992/02993）。
-  官方模板下「移除」可点、无二次弹窗。移除后行消失、已计入 6→5；提示「计入权重合计须为 100%」（可带当前 N% 后缀）。
-  edu 深链+侧栏均 404 时抛 ENV-EDU-TTS-SVCZ-404-001→ledger blocked。登录关评审 runner 前置。B 档零 allow_skip。

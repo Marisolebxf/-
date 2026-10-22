@@ -1,0 +1,76 @@
+id: FUNC-05498
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05498
+priority: P1
+tier: B
+title: 备选-机构参数直达
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点击任一重点机构卡片；用当前地址新开一页；点击抽屉右上角关闭
+expect:
+  - note: 1、新页自动打开该机构抽屉
+    assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen url=' + page.url());
+      }
+      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
+      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
+      await heading.scrollIntoViewIfNeeded();
+      await expect(heading).toBeVisible({ timeout: 8000 });
+      const cards = page.locator('button.svc-portal-keyorg-card');
+      const n = await cards.count();
+      if (n === 0) {
+        const empty = await page.getByText(/暂无重点机构/).first().isVisible().catch(() => false);
+        if (empty) {
+          throw new Error('ENV-SVC-PORTAL-KEY-ORG-EMPTY：重点机构墙诚实空，无法点卡验机构参数直达（Q060）');
+        }
+        throw new Error('重点产业服务机构无卡片，无法构造含 org 的分享地址');
+      }
+      await dismissBasket();
+      await cards.first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const u1 = page.url();
+      const orgId = (() => { try { return new URL(u1).searchParams.get('org'); } catch (e) { return null; } })();
+      if (!orgId) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 点卡后地址栏未见 ?org=');
+      }
+      const shareUrl = new URL(u1);
+      await page.goto(shareUrl.href, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await dismissBasket();
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      const u2 = page.url();
+      if (!/[?&]org=/.test(u2)) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 含 org 地址复进后参数丢失 url=' + u2);
+      }
+  - note: 2、关闭后抽屉消失
+    assert: |-
+      const drawer = page.locator('.arco-drawer').filter({ has: page.locator('[data-testid="svc-portal-keyorg-drawer"]') }).first();
+      await expect(drawer).toBeVisible({ timeout: 5000 });
+      const closeBtn = drawer.locator('.arco-drawer-close-btn, button[aria-label="关闭"]').first();
+      if (await closeBtn.count()) {
+        await closeBtn.click({ timeout: 5000 });
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await page.waitForTimeout(800);
+      await expect(drawer).toBeHidden({ timeout: 8000 });
+  - note: 3、地址不再带机构参数
+    assert: |-
+      const u = page.url();
+      const orgAfter = (() => { try { return new URL(u).searchParams.get('org'); } catch (e) { return null; } })();
+      if (orgAfter) {
+        throw new Error('D3-SVCPORTAL-ORG-SHARE: 关闭后地址栏仍残留 org=' + orgAfter);
+      }
+on_fail: 截图 + 抄 X-Trace-Id

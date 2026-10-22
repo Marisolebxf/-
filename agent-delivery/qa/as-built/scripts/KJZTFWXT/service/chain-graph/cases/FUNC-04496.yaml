@@ -1,0 +1,28 @@
+id: FUNC-04496
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04496
+priority: P0
+tier: B
+title: 主流程-生态网密度
+entry_id: svc-chain-graph
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    selector: '.arco-form-item:has(.arco-form-item-label:has-text("产业领域")) .arco-select-view'
+  - action: click
+    target: 新一代信息技术
+  - action: click
+    target: 开始分析
+  - action: click
+    target: 查看结果
+expect:
+  - note: 出现「生态网密度」
+    assert: |-
+      await expect(page.getByText('生态网密度', { exact: true })).toBeVisible()
+  - note: 数值为 0
+    assert: |-
+      const row = page.locator('*').filter({ has: page.getByText('生态网密度', { exact: true }) }).first();
+      await expect(row).toContainText('0');
+on_fail: 截图 + 抄 X-Trace-Id

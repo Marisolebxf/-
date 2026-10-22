@@ -1,0 +1,20 @@
+id: FUNC-03689
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03689
+priority: P1
+tier: B
+title: 备选-参数打开
+entry_id: chain-result-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/results/CHAIN-NOT-EXIST-03689?taskId=CHAIN-20260911-019
+expect:
+  - note: 页面位于该参数所指任务的分析结果页
+    assert: |-
+      await expect(page).toHaveURL(/\/industry-center\/results\//);
+      await expect(page).toHaveURL(/taskId=CHAIN-20260911-019/);
+  - note: 页面正文中的任务编号与该参数一致
+    assert: |-
+      await expect(page.getByText('CHAIN-20260911-019')).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,23 @@
+id: FUNC-01283
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01283
+priority: P0
+tier: B
+title: 主流程-入口与路由
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 页名为「深圳服务链现状分析」
+    assert: |-
+      await expect(page.getByText('深圳服务链现状分析', { exact: true }).first()).toBeVisible()
+  - note: 页签为「深圳服务链现状分析」和「分析记录」
+    assert: |-
+      await expect(page.getByRole('tab', { name: '深圳服务链现状分析' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: '分析记录' })).toBeVisible()
+  - note: 「深圳服务链现状分析」为当前页签
+    assert: |-
+      await expect(page.getByRole('tab', { name: '深圳服务链现状分析', selected: true })).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

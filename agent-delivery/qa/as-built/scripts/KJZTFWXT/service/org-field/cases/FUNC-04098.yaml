@@ -119,21 +119,30 @@ expect:
           if (await resBtn.isDisabled().catch(() => false)) continue;
           await resBtn.click({ timeout: 8000 });
           await page.waitForTimeout(2000);
+          let matched = false;
           for (let j = 0; j < 15; j++) {
             const body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-            if (/view=result/.test(page.url()) || /服务广度 TOP3|当前结果快照没有覆盖矩阵/.test(body)) {
+            const flat = body.replace(/\s+/g, ' ');
+            if (
+              /当前结果快照没有覆盖矩阵/.test(flat) &&
+              /服务广度 TOP3/.test(flat) &&
+              /服务广度 TOP3.{0,200}暂无可排名机构/.test(flat)
+            ) {
+              matched = true;
               opened = true;
               break;
             }
             await page.waitForTimeout(1000);
           }
-          if (!opened) {
+          if (!matched) {
             await recTab.click({ timeout: 8000 }).catch(() => {});
             await page.waitForTimeout(1000);
           }
         }
         if (!opened) {
-          throw new Error('ENV-SVC-ORG-FIELD-VIEW-RESULT-UNREACHABLE：已完成行点「查看结果」未进入结果页 url=' + page.url());
+          throw new Error(
+            'ENV-SVC-ORG-FIELD-NO-NOMATRIX-DONE：分析记录无「没有覆盖矩阵」且广度 TOP3 空态的已完成结果',
+          );
         }
       };
       await ensureOnFieldCoverage();

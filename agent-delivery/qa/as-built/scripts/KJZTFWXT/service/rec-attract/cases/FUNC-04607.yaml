@@ -1,0 +1,28 @@
+id: FUNC-04607
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04607
+priority: P1
+tier: B
+title: 备选-查看分析记录
+entry_id: svc-rec-attract
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 生成招引名单
+  - action: click
+    target: 查看分析记录
+expect:
+  - note: 进入分析记录列表
+    assert: |-
+      await expect(page.getByRole('heading', { name: '分析记录' }).or(page.getByText('分析记录').first())).toBeVisible({ timeout: 15000 })
+  - note: 能看到任务、类型、状态、创建时间、操作列
+    assert: |-
+      const header = page.locator('.arco-table-header');
+      await expect(header.getByText('任务号', { exact: true })).toBeVisible();
+      await expect(header.getByText('分析类型', { exact: true })).toBeVisible();
+      await expect(header.getByText('任务状态', { exact: true })).toBeVisible();
+      await expect(header.getByText('提交时间', { exact: true })).toBeVisible();
+      await expect(header.getByText('操作', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,26 @@
+id: FUNC-05105
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05105
+priority: P1
+tier: B
+title: 备选-刷新后保留产业
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: evaluate
+    assert: |-
+      const industryView = page.locator('.arco-select').filter({ has: page.getByText('产业', { exact: false }) }).first().locator('.arco-select-view');
+      await industryView.click();
+      await page.locator('.arco-select-option, [role="option"]').filter({ hasText: '生物' }).first().click();
+  - action: reload
+expect:
+  - note: 1、产业选择仍为「生物」
+    assert: |-
+      await expect(page.getByText('生物产业 / 生物医药').first()).toBeVisible();
+  - note: 2、结论条仍以「生物」起头
+    assert: |-
+      await expect(page.getByText(/^「生物/).first()).toBeVisible();
+
+on_fail: 截图 + 抄 X-Trace-Id

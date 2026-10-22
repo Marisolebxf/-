@@ -1,0 +1,21 @@
+id: FUNC-04702
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04702
+priority: P1
+tier: B
+title: 主流程-加入对比篮
+entry_id: svc-rec-cultivate
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+expect:
+  - note: 该行按钮变为「已在对比篮」
+    assert: |-
+      const addBtn = page.getByText('加入对比篮', { exact: true }).first();
+      await addBtn.click();
+      await expect(page.getByText('已在对比篮', { exact: true }).first()).toBeVisible();
+  - note: 页面提示已将该机构加入对比篮
+    assert: |-
+      await expect(page.getByText(/已将该机构加入对比篮/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,23 @@
+id: FUNC-03798
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03798
+priority: P1
+tier: B
+title: 备选-返回结果
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261021-002
+  - action: click
+    target: 返回分析结果
+expect:
+  - note: 结果区标题以「结果」结尾
+    assert: |-
+      await expect(page.getByRole('heading').filter({ hasText: /结果$/ })).toBeVisible()
+  - note: 结果区提供「查看报告」
+    assert: |-
+      await expect(page.getByRole('button', { name: '查看报告' })).toBeVisible()
+  - note: 地址含 view=result
+    assert: |-
+      await expect(page).toHaveURL(/view=result/)

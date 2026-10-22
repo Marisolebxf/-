@@ -1,0 +1,27 @@
+id: FUNC-05288
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05288
+priority: P1
+tier: B
+title: 主流程-从页头进入
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/overview
+  - action: click
+    target: 深圳产业服务介绍
+    role: tab
+expect:
+  - note: 主标题为「深圳产业服务介绍」
+    assert: |-
+      await expect(page.getByRole('heading', { level: 1, name: '深圳产业服务介绍' })).toBeVisible()
+  - note: 面包屑为「专题服务 / 深圳产业服务介绍」
+    assert: |-
+      const crumb = page.locator('nav[aria-label="面包屑"]')
+      await expect(crumb).toContainText('专题服务')
+      await expect(crumb).toContainText('深圳产业服务介绍')
+  - note: 页签「深圳产业服务介绍」为选中
+    assert: |-
+      await expect(page.getByRole('tab', { name: '深圳产业服务介绍' })).toHaveAttribute('aria-selected', 'true')
+on_fail: 截图 + 抄 X-Trace-Id

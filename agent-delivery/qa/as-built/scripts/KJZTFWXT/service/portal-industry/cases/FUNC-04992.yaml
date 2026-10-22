@@ -3,39 +3,19 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04992
 priority: P0
 tier: B
 title: 默认结论条
-story: US-SVC-PT-02
 entry_id: svc-portal-industry
 preconditions:
   - 已登录（runner 会话前置）
-locators:
-  conclusion: .ent-judgment-strip
-  industry_select: .svc-portal-filter .arco-select-view
+locators: {}
 steps:
   - action: goto
     target: /service-portal/industry-distribution
 expect:
   - note: 1、结论条以「全部产业」起头
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业分布/.test(t);
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链 industry-distribution SPA404，无法验默认结论条 url=' + page.url());
-      }
       await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
       await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
-      const strip = page.locator('.ent-judgment-strip').first();
+      const strip = page.locator('main .ent-judgment-strip, main .svc-portal-conclusion').first();
       await expect(strip).toBeVisible({ timeout: 15000 });
       const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!/^「全部产业」/.test(txt)) {
@@ -43,20 +23,16 @@ expect:
       }
   - note: 2、结论条写明本包络不按产业切片
     assert: |-
-      const strip = page.locator('.ent-judgment-strip').first();
+      const strip = page.locator('main .ent-judgment-strip, main .svc-portal-conclusion').first();
       const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!/本包络不按产业切片/.test(txt)) {
         throw new Error('结论条未写明本包络不按产业切片: ' + txt.slice(0, 160));
       }
   - note: 3、结论条以「待核验」收尾
     assert: |-
-      const strip = page.locator('.ent-judgment-strip').first();
+      const strip = page.locator('main .ent-judgment-strip, main .svc-portal-conclusion').first();
       const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!/待核验[。.]?$/.test(txt)) {
         throw new Error('结论条未以「待核验」收尾: ' + txt.slice(0, 200));
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  深链 catalog_path=/service-portal/industry-distribution。结论条 JudgmentStrip（.ent-judgment-strip），
-  默认 industryLabel=全部产业，文案含「本包络不按产业切片」与「待核验」（pending/Q-SVC-010/Q-SVCCHAIN-03）。
-  2026-10-21 edu tts/svcz 机跑 SPA404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言对齐用例 04992。
+on_fail: 截图 + X-Trace-Id

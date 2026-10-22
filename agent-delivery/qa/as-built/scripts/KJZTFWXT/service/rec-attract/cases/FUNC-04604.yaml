@@ -1,0 +1,29 @@
+id: FUNC-04604
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04604
+priority: P1
+tier: B
+title: 备选-分析记录列
+entry_id: svc-rec-attract
+preconditions:
+  - 当天至少有一条已完成记录
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 分析记录
+expect:
+  - note: 列名为任务、类型、状态、创建时间、操作
+    assert: |-
+      const table = page.locator('.arco-table');
+      await expect(table.getByText('任务', { exact: true }).first()).toBeVisible();
+      await expect(table.getByText('类型', { exact: true }).first()).toBeVisible();
+      await expect(table.getByText('状态', { exact: true }).first()).toBeVisible();
+      await expect(table.getByText('创建时间', { exact: true }).first()).toBeVisible();
+      await expect(table.getByText('操作', { exact: true }).first()).toBeVisible();
+  - note: 已完成行的操作含「查看过程」和「查看结果」
+    assert: |-
+      const completedRow = page.locator('.arco-table tbody tr').filter({ hasText: '已完成' }).first();
+      await expect(completedRow.getByRole('button', { name: '查看过程' })).toBeVisible();
+      await expect(completedRow.getByRole('button', { name: '查看结果' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

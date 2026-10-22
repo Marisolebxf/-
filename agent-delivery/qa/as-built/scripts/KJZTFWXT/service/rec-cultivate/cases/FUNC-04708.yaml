@@ -1,0 +1,26 @@
+id: FUNC-04708
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04708
+priority: P0
+tier: B
+title: 备选-重新分析
+entry_id: svc-rec-cultivate
+preconditions:
+  - 已打开某次培育名单结果
+locators: {}
+steps:
+  - action: goto
+    target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: click
+    target: 分析记录
+  - action: click
+    target: 查看结果
+  - action: click
+    target: 重新分析
+expect:
+  - note: 1、过程页为新的已完成任务
+    assert: |-
+      await expect(page.getByText('已完成', { exact: false }).first()).toBeVisible({ timeout: 15000 })
+  - note: 2、结果页出现「本土机构培育名单」
+    assert: |-
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(page.getByText('本土机构培育名单')).toBeVisible({ timeout: 15000 })

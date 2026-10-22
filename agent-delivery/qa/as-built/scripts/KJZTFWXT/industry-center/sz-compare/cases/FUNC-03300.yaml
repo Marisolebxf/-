@@ -45,27 +45,25 @@ expect:
         await opt.click({ timeout: 8000 });
         await page.waitForTimeout(700);
       };
-      const benchmarkView = () => {
-        const ph = 'Q016 未定，标杆清单为空；勿冒充沪/京/苏州';
-        return page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="' + ph + '"]') }).first();
-      };
-      const pickBenchmark = async (cityRe) => {
-        const view = benchmarkView();
+      const pickBenchmarkCascader = async (cityRe) => {
+        const field = main().locator('.diagnosis-benchmark-field');
+        const view = field.locator('.arco-cascader-view').first();
         await expect(view).toBeVisible({ timeout: 10000 });
         await view.click({ timeout: 8000 });
         await page.waitForTimeout(600);
-        const pop = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const pop = page.locator('.arco-cascader-popup:visible, .arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
         const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/暂无数据|无数据/.test(popText) && !(await pop.locator('.arco-select-option').count())) {
+        const option = pop.locator('.arco-cascader-option, .arco-cascader-column-item').filter({ hasText: cityRe }).first();
+        if (/暂无数据|无数据/.test(popText) && !(await option.count())) {
           await page.keyboard.press('Escape').catch(() => {});
           throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
         }
-        const opt = pop.locator('.arco-select-option').filter({ hasText: cityRe }).first();
-        if (!(await opt.count())) {
+        if (!(await option.count())) {
           await page.keyboard.press('Escape').catch(() => {});
           throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03300：标杆无「' + String(cityRe) + '」');
         }
-        await opt.click({ timeout: 8000 });
+        await option.click({ timeout: 8000 });
         await page.waitForTimeout(500);
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(300);
@@ -136,7 +134,7 @@ expect:
         if (!(await bodyIs404())) await enterViaSidebar();
       }
       if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03300 ' + page.url());
+        throw new Error('ENV-30892-ENTRY-404: 深链与侧栏均 SPA404 ' + page.url());
       }
       await expect(page).toHaveURL(/workspace=comparison/);
       const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
@@ -145,8 +143,8 @@ expect:
         await pickSelectOption('集群', /^新一代信息技术$/);
       }
       await pickSelectOption('产业', /^人工智能与应用$/);
-      await pickBenchmark(/^上海市$/);
-      await pickBenchmark(/^北京市$/);
+      await pickBenchmarkCascader(/^上海/);
+      await pickBenchmarkCascader(/^北京/);
       const start = page.getByRole('button', { name: '开始分析' }).first();
       if (await start.isDisabled()) {
         throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：选齐后「开始分析」仍 disabled');

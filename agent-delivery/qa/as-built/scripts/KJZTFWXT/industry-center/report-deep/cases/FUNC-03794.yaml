@@ -1,0 +1,26 @@
+id: FUNC-03794
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03794
+priority: P1
+tier: B
+title: 主流程-导出不可用
+entry_id: chain-report-deep
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /industry-center/reports/CHAIN-20261021-002
+  - action: hover
+    target: 导出
+expect:
+  - note: 「导出」不可点击
+    assert: |-
+      await expect(page.getByRole('button', { name: '导出' })).toBeDisabled()
+  - note: 按钮旁显示「付费」
+    assert: |-
+      await expect(page.getByText('付费', { exact: true }).first()).toBeVisible()
+  - note: 提示为「付费用户可导出报告 PDF（演示：顶栏打开「付费权益」）」
+    assert: |-
+      await page.getByRole('button', { name: '导出' }).hover();
+      await expect(page.getByText('付费用户可导出报告 PDF（演示：顶栏打开「付费权益」）')).toBeVisible()
+
+on_fail: 截图 + 抄 X-Trace-Id

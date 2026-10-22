@@ -1,0 +1,20 @@
+id: FUNC-05109
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05109
+priority: P1
+tier: B
+title: 备选-面包屑回到专题服务
+entry_id: svc-portal-region
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/region-map
+  - action: evaluate
+    assert: |-
+      await page.locator('.arco-breadcrumb-item').filter({ hasText: '专题服务' }).first().click();
+      await page.waitForURL(/\/service-portal\/overview/);
+expect:
+  - note: 1、主标题变为「全球服务机构概况」
+    assert: |-
+      await expect(page.locator('.arco-layout-content').getByText('全球服务机构概况', { exact: true }).first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

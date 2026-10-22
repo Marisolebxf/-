@@ -1,0 +1,116 @@
+id: FUNC-04199
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04199
+priority: P1
+tier: B
+title: 备选-只选产业领域 · 不创建任务
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 已进入分析配置（catalog_path trend 工作区）
+locators:
+  industry_flat: main .industry-catalog-select
+  industry_cascader: .svc-portal-industry-cascader
+  config_shell: '[data-testid="svc-org-analysis-config"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 1、产业领域回显「生物」
+    assert: |-
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      if (/org_ids|[?&]view=/.test(page.url())) {
+        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const configShell = page.locator('[data-testid="svc-org-analysis-config"]').first();
+      await expect(configShell).toBeVisible({ timeout: 12000 });
+      const pickBio = async () => {
+        const flat = page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select').first();
+        if (await flat.isVisible().catch(() => false)) {
+          await flat.click({ timeout: 8000 });
+          await page.waitForTimeout(500);
+          const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物$/ }).first();
+          await expect(opt).toBeVisible({ timeout: 8000 });
+          await opt.click({ timeout: 5000 });
+          globalThis.__func04199Ui = 'flat';
+          return;
+        }
+        const casc = page.locator('.svc-portal-industry-cascader, .svc-org-analysis-context__industry .arco-cascader').first();
+        await expect(casc).toBeVisible({ timeout: 8000 });
+        await casc.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        let picked = false;
+        const columns = page.locator('.arco-trigger-popup:visible .arco-cascader-list-column');
+        const colN = await columns.count();
+        for (let c = 0; c < colN && !picked; c++) {
+          const items = columns.nth(c).locator('.arco-cascader-list-item');
+          const n = await items.count();
+          for (let i = 0; i < n; i++) {
+            const label = ((await items.nth(i).innerText()) || '').trim();
+            if (label === '生物') {
+              await items.nth(i).click({ timeout: 5000 });
+              picked = true;
+              break;
+            }
+          }
+        }
+        if (!picked) {
+          const loose = page.locator('.arco-trigger-popup:visible .arco-cascader-list-item, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物$/ }).first();
+          if (await loose.count()) {
+            await loose.click({ timeout: 5000 });
+            picked = true;
+          }
+        }
+        if (!picked) {
+          throw new Error('D2-SVC-ORG-TREND-NO-BIO-OPTION：产业浮层无精确「生物」项（现网多为集群级联，见 FUNC-00657）');
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(500);
+        globalThis.__func04199Ui = 'cascader';
+      };
+      await pickBio();
+      const industryBox = page.locator('.svc-org-analysis-context__industry, [data-testid^="svc-org-analysis-context"]').first();
+      let echo = '';
+      if (globalThis.__func04199Ui === 'flat') {
+        const flat = page.locator('main .industry-catalog-select').first();
+        echo = ((await flat.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      } else {
+        const casc = page.locator('.svc-portal-industry-cascader').first();
+        echo = ((await casc.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!echo) {
+          echo = ((await industryBox.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        }
+      }
+      const bioEchoOk =
+        echo === '生物' ||
+        /^生物$/.test(echo) ||
+        /(^|\s|\/)生物(\s|\/|$)/.test(echo);
+      if (!bioEchoOk) {
+        throw new Error('产业领域未回显「生物」: echo=' + JSON.stringify(echo));
+      }
+      globalThis.__func04199Echo = echo;
+  - note: 2、页面仍为分析配置（不进入过程页）
+    assert: |-
+      if (!globalThis.__func04199Echo) throw new Error('前置：未完成产业「生物」选择');
+      await expect(page.locator('[data-testid="svc-org-analysis-config"]').first()).toBeVisible({ timeout: 8000 });
+      await expect(page).toHaveURL(/workspace=trend/, { timeout: 8000 });
+      const url = page.url();
+      if (/view=processing|view=result|[?&]task_id=/.test(url)) {
+        throw new Error('只选产业不应进入过程/结果态: ' + url);
+      }
+      const body = ((await page.locator('[data-testid="svc-org-analysis-config"]').first().innerText().catch(() => '')) || '');
+      if (/服务机构新增趋势分析生成中|分析结果已生成/.test(body)) {
+        throw new Error('配置区误入过程/结果主文案: ' + body.slice(0, 280));
+      }
+      await expect(page.getByRole('button', { name: '开始分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('产业领域').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  FUNC-04199；步骤：展开产业领域下拉 → 选「生物」。优先旧壳 .industry-catalog-select 平铺 15 项；现网 trend 多为 ServicePortalIndustryCascader（精确「生物」项可能不存在，红挂 D2）。
+  只改产业不创建任务；catalog_path 同 entry-seed。占位「不改分析指纹」由领域筛承担（旧壳）；未选机构点开始分析归 FUNC-04195。

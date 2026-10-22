@@ -1,0 +1,232 @@
+id: FUNC-04119
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04119
+priority: P1
+tier: B
+title: 备选-清空搜索 · 分组恢复
+story: US-SVC-ORG-01
+entry_id: svc-org-field
+preconditions:
+  - 已打开「选择服务机构」且搜索已使机构列表收窄（runner 会话前置：已登录且内部评审模式关闭）
+locators:
+  pick_btn: button「选择机构」
+  modal: data-testid=svc-org-picker-modal
+  org_search: placeholder「搜索机构名称 / 类型」
+  group_head: .svc-org-picker-group__head strong
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=field&tab=coverage
+expect:
+  - note: 前置：打开弹窗、键入关键字使类型分组未全部展示（列表收窄）
+    assert: |-
+      const spaUrl = (p) =>
+        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
+      const catalogPath = '/service/institution-judgment?workspace=field&tab=coverage';
+      const EXPECTED_GROUPS = ['金融服务', '科技创新服务', '咨询服务', '未分类'];
+      const groupLabels = async (dialog) => {
+        const groups = dialog.locator('.svc-org-picker-group');
+        const n = await groups.count();
+        const out = [];
+        for (let i = 0; i < n; i++) {
+          const t = ((await groups.nth(i).locator('.svc-org-picker-group__head strong').innerText().catch(() => '')) || '').trim();
+          if (t) out.push(t);
+        }
+        return out;
+      };
+      const labelMatches = (headText, name) => headText.startsWith(name) || headText.includes(name + '（');
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/服务机构产业领域分析/.test(t);
+      };
+      const onTarget = () =>
+        /\/service\/institution-judgment/.test(page.url()) &&
+        /workspace=field/.test(page.url()) &&
+        /tab=coverage/.test(page.url());
+      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构产业领域分析$/ });
+      const expandSvcMenu = async () => {
+        if (await pickLeaf().first().isVisible().catch(() => false)) return;
+        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
+        if (await sub.count()) {
+          await sub.first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+        }
+      };
+      const enterViaSidebar = async (siblingPath) => {
+        await dismissBasket();
+        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
+        if (await bodyIs404()) return false;
+        await expandSvcMenu();
+        const leaf = pickLeaf();
+        if (!(await leaf.first().isVisible().catch(() => false))) return false;
+        await leaf.first().click({ timeout: 10000 });
+        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
+        await expect(page).toHaveURL(/workspace=field/);
+        await expect(page).toHaveURL(/tab=coverage/);
+        return !(await bodyIs404());
+      };
+      const ensureConfigTab = async () => {
+        await dismissBasket();
+        if (/view=result|view=processing/.test(page.url())) {
+          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1000);
+        }
+        if (!onTarget() || (await bodyIs404())) {
+          if (await bodyIs404()) {
+            await page.goto(spaUrl('/'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+            await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(1200);
+          }
+          if (!onTarget() || (await bodyIs404())) {
+            const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
+            let ok = false;
+            for (const s of siblings) {
+              if (await enterViaSidebar(s)) {
+                ok = true;
+                break;
+              }
+            }
+            if (!ok) {
+              throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏 sibling 均不可用 url=' + page.url());
+            }
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 服务机构产业领域分析入口不可用 ' + page.url());
+        }
+      };
+      const resetToZeroOrgs = async () => {
+        const main = page.locator('main').first();
+        const t = ((await main.innerText().catch(() => '')) || '');
+        if (/已选机构（[1-9]/.test(t)) {
+          const clr = main.getByRole('button', { name: '清空' });
+          if (await clr.count()) {
+            await clr.first().click({ timeout: 5000 }).catch(() => {});
+            await page.waitForTimeout(500);
+          }
+        }
+      };
+      const pickKeyword = (names) => {
+        const src = names.find((n) => n && n.length >= 4) || names[0] || '';
+        if (!src || src.length < 2) return null;
+        for (let len = 2; len <= Math.min(6, src.length); len++) {
+          for (let i = 0; i <= src.length - len; i++) {
+            const kw = src.slice(i, i + len);
+            if (/^\d+$/.test(kw)) continue;
+            const hit = names.filter((n) => n.includes(kw));
+            if (hit.length >= 1 && hit.length < names.length) return kw;
+          }
+        }
+        return src.length >= 2 ? src.slice(0, 2) : null;
+      };
+      await ensureConfigTab();
+      await resetToZeroOrgs();
+      await expect(page.getByText('服务机构产业领域分析').first()).toBeVisible({ timeout: 12000 });
+      const pickTestId = await page.locator('[data-testid="svc-org-open-picker"]').count();
+      const pickRole = page.getByRole('button', { name: '选择机构', exact: true });
+      if (!pickTestId && !(await pickRole.count())) {
+        throw new Error(
+          'UI-BLOCKED：现场无「选择机构」/svc-org-open-picker（对比篮「打开对比篮」替代），选择服务机构分组弹窗不可达',
+        );
+      }
+      const pickBtn = page
+        .locator('[data-testid="svc-org-open-picker"]')
+        .or(pickRole)
+        .first();
+      await pickBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(900);
+      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+        .filter({ hasText: '选择服务机构' })
+        .first();
+      await expect(dialog).toBeVisible({ timeout: 12000 });
+      const fullLabels = await groupLabels(dialog);
+      if (fullLabels.length < 4) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗类型分组不足 4 个 n=' + fullLabels.length);
+      }
+      const nameEls = dialog.locator('.svc-org-picker-card__name');
+      let fullNames = (await nameEls.allTextContents()).map((s) => s.trim()).filter(Boolean);
+      if (fullNames.length < 2) {
+        fullNames = (await dialog.locator('.svc-org-picker-card').allTextContents())
+          .map((s) => s.replace(/\s+/g, ' ').trim())
+          .filter((s) => s.length > 2);
+      }
+      if (fullNames.length < 2) {
+        throw new Error('ENV-SVC-ORG-FIELD-NO-ORGS：弹窗机构不足 2 家');
+      }
+      const kw = pickKeyword(fullNames);
+      if (!kw) throw new Error('无法从现场名单抽取搜索关键词');
+      const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
+      await expect(search).toBeVisible({ timeout: 8000 });
+      await search.fill(kw, { timeout: 5000 });
+      await page.waitForTimeout(900);
+      const narrowedLabels = await groupLabels(dialog);
+      const narrowedCards = await dialog.locator('.svc-org-picker-card').count();
+      const missingGroup = EXPECTED_GROUPS.filter((g) => !narrowedLabels.some((h) => labelMatches(h, g)));
+      const listNarrowed = narrowedCards < fullNames.length || missingGroup.length > 0 || narrowedLabels.length < fullLabels.length;
+      if (!listNarrowed) {
+        throw new Error('搜索未收窄分组或列表 kw=' + kw + ' groups=' + narrowedLabels.join('|'));
+      }
+      globalThis.__p04119 = { kw, fullLabels, narrowedLabels };
+  - note: 1、清空「搜索机构名称 / 类型」后，类型分组恢复为金融服务、科技创新服务、咨询服务与未分类
+    assert: |-
+      const EXPECTED_GROUPS = ['金融服务', '科技创新服务', '咨询服务', '未分类'];
+      const snap = globalThis.__p04119;
+      if (!snap?.kw) throw new Error('前置：搜索收窄未完成');
+      const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal:visible')
+        .filter({ hasText: '选择服务机构' })
+        .first();
+      await expect(dialog).toBeVisible({ timeout: 8000 });
+      const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
+      await expect(search).toBeVisible({ timeout: 8000 });
+      let val = (await search.inputValue().catch(() => '')).trim();
+      if (!val) throw new Error('前置：搜索框应为非空 kw=' + snap.kw);
+      const clearBtn = dialog.locator('.svc-org-picker-search .arco-input-clear-icon, .arco-input-clear-btn').first();
+      if (await clearBtn.count() && (await clearBtn.isVisible().catch(() => false))) {
+        await clearBtn.click({ timeout: 5000 });
+      } else {
+        await search.fill('');
+      }
+      await page.waitForTimeout(900);
+      val = (await search.inputValue().catch(() => '')).trim();
+      if (val) throw new Error('清空后搜索框仍含「' + val + '」');
+      const groups = dialog.locator('.svc-org-picker-group');
+      await expect(groups.first()).toBeVisible({ timeout: 12000 });
+      const labels = [];
+      const n = await groups.count();
+      for (let i = 0; i < n; i++) {
+        const t = ((await groups.nth(i).locator('.svc-org-picker-group__head strong').innerText().catch(() => '')) || '').trim();
+        if (t) labels.push(t);
+      }
+      const labelMatches = (headText, name) => headText.startsWith(name) || headText.includes(name + '（');
+      for (const g of EXPECTED_GROUPS) {
+        const hit = labels.some((h) => labelMatches(h, g));
+        if (!hit) {
+          throw new Error('清空后缺少类型分组「' + g + '」当前=' + labels.join(' | '));
+        }
+        await expect(dialog.locator('.svc-org-picker-group__head strong').filter({ hasText: new RegExp('^' + g) })).toBeVisible({
+          timeout: 8000,
+        });
+      }
+      if (labels.length < 4) {
+        throw new Error('清空后类型分组数不足 4：' + labels.length + ' labels=' + labels.join('|'));
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  04119=选择服务机构 Modal：先键入机构名子串收窄（同 04106 pickKeyword），再点搜索框 allow-clear 或 fill('') 清空；
+  终态须见四个分组头「金融服务」「科技创新服务」「咨询服务」「未分类」（.svc-org-picker-group__head strong）。
+  2026-10-21 30892 实勘：field/coverage 仅「打开对比篮」，无 svc-org-open-picker/选择服务机构弹窗（lumen-ui-topic 已移除 SvcOrgPickerModal）。
+  catalog_path=/service/institution-judgment?workspace=field&tab=coverage（entry-seed）。B 档零 allow_skip。

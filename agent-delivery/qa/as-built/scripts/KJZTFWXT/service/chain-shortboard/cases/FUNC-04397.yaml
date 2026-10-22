@@ -1,0 +1,187 @@
+id: FUNC-04397
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04397
+priority: P0
+tier: A
+title: 主流程-过程页 · 查看分析记录
+story: US-SVC-ECO-01
+entry_id: svc-chain-shortboard
+preconditions:
+  - 已完成一次分析并停在过程页
+locators:
+  view_records_btn: button「查看分析记录」
+  tab_records: tab「分析记录」（[data-tab-key=records]）
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=chain&tab=chain
+expect:
+  - note: 1、离开过程页（步骤：过程页点「查看分析记录」；expect 自含进过程页并点击）
+    assert: |-
+      const route = '/service/chain-analysis?workspace=chain&tab=chain';
+      const closeBasket = async () => {
+        for (let i = 0; i < 3; i++) {
+          const close = page.locator('[aria-label="关闭对比篮"]');
+          if (
+            (await close.count()) &&
+            (await close.first().isVisible().catch(() => false)) &&
+            (await close.first().isEnabled().catch(() => false))
+          ) {
+            try {
+              await close.first().click({ timeout: 1500 });
+              await page.waitForTimeout(300);
+            } catch {}
+          } else break;
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+      };
+      const pickFlatIt = async () => {
+        const sel = page.locator('main .industry-catalog-select').first();
+        await expect(sel).toBeVisible({ timeout: 8000 });
+        await sel.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page
+          .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option')
+          .filter({ hasText: /^新一代信息技术$/ })
+          .first()
+          .click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+      };
+      const openIndustry = async () => {
+        const flat = page
+          .locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select')
+          .first();
+        if (await flat.isVisible().catch(() => false)) {
+          await flat.click({ timeout: 8000 });
+          return 'flat';
+        }
+        const cascader = page
+          .locator(
+            'main .svc-portal-industry-cascader .arco-cascader-view, main .sci-arco-cascader, main .arco-cascader-view'
+          )
+          .first();
+        if (await cascader.isVisible().catch(() => false)) {
+          await cascader.click({ timeout: 8000 });
+          return 'cascader';
+        }
+        throw new Error('未见产业领域下拉');
+      };
+      const pickIt = async (mode) => {
+        if (mode === 'flat' || (await page.locator('main .industry-catalog-select').first().isVisible().catch(() => false))) {
+          await pickFlatIt();
+          return;
+        }
+        await page.waitForTimeout(500);
+        const popup = page
+          .locator('.arco-trigger-popup:visible .svc-portal-industry-cascader-menu, .arco-trigger-popup:visible')
+          .first();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        const col1 = popup.locator('.arco-cascader-panel-column, .arco-cascader-column').first();
+        const row = col1
+          .locator('.arco-cascader-option')
+          .filter({ hasText: /^新一代信息技术/ })
+          .first();
+        if (await row.count()) {
+          const cb = row.locator('.arco-checkbox, .arco-radio');
+          if (await cb.count()) await cb.first().click({ timeout: 8000 });
+          else await row.click({ timeout: 8000 });
+        } else {
+          await popup.getByText(/^新一代信息技术/).first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(1000);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+      };
+      const clickStart = async () => {
+        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+      };
+      const waitProcessingComplete = async () => {
+        for (let i = 0; i < 90; i++) {
+          await page.waitForTimeout(i < 8 ? 1000 : 1500);
+          const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+          const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+          if (/任务失败|分析失败/.test(body)) throw new Error('分析任务失败: ' + body.slice(0, 200));
+          if (/分析结果已生成/.test(body) && (await vr.isVisible().catch(() => false)) && !(await vr.isDisabled().catch(() => true))) {
+            return;
+          }
+        }
+        throw new Error('过程页超时：未见「分析结果已生成」且「查看结果」可点 url=' + page.url());
+      };
+      const ensureOnProcessPage = async () => {
+        const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+        if (/分析结果已生成/.test(body) && /view=processing/.test(page.url())) return;
+        if (!page.url().includes('/service/chain-analysis') || /view=result/.test(page.url())) {
+          await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        await closeBasket();
+        await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+        const sel = page.locator('main .industry-catalog-select').first();
+        const viewVal = ((await sel.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
+          (await sel.innerText().catch(() => '')) ||
+          '')
+          .trim();
+        if (!/^新一代信息技术/.test(viewVal)) {
+          const mode = await openIndustry();
+          await pickIt(mode);
+        }
+        if (!/view=processing/.test(page.url())) {
+          await clickStart();
+        }
+        await waitProcessingComplete();
+      };
+      await ensureOnProcessPage();
+      const viewRec = page.getByRole('button', { name: '查看分析记录', exact: true }).first();
+      await expect(viewRec).toBeVisible({ timeout: 8000 });
+      await viewRec.click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
+      await page.waitForTimeout(1500);
+      const url0 = page.url();
+      const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/view=processing/.test(url0) && /分析结果已生成/.test(mainTxt) && /可视化分析过程/.test(mainTxt)) {
+        throw new Error('点「查看分析记录」后仍停在过程页 url=' + url0);
+      }
+      if (!/tab=records/.test(url0)) {
+        throw new Error('点「查看分析记录」后未离开过程路由到记录 Tab url=' + url0);
+      }
+      await page.evaluate(() => {
+        window.__func04397Ready = true;
+      });
+  - note: 2、进入标题为「分析记录」的列表
+    assert: |-
+      if (!(await page.evaluate(() => window.__func04397Ready).catch(() => false))) {
+        throw new Error('前置：未离开过程页或未点击「查看分析记录」');
+      }
+      const rec = page
+        .locator('[role=tab][data-tab-key="records"]')
+        .or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      const aria = await rec.first().getAttribute('aria-selected');
+      const cls = (await rec.first().getAttribute('class')) || '';
+      if (aria !== 'true' && !cls.includes('active')) {
+        throw new Error('「分析记录」Tab 未选中 aria=' + aria);
+      }
+      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (!/分析记录/.test(body)) {
+        throw new Error('主区未见「分析记录」标题/Tab 文案: ' + body.slice(0, 200));
+      }
+      const hasListShell =
+        /任务号/.test(body) &&
+        /分析类型/.test(body) &&
+        /操作/.test(body) &&
+        (/任务状态/.test(body) || /全部状态/.test(body));
+      if (!hasListShell) {
+        throw new Error('分析记录列表区表头/筛选缺失: ' + body.slice(0, 360));
+      }
+      const ids = [...new Set([...body.matchAll(/SVC-\d{8}-\d+/g)].map((x) => x[0]))];
+      if (ids.length < 1 || !/已完成/.test(body)) {
+        throw new Error('分析记录列表无已完成任务行');
+      }
+      if (/分析结果已生成/.test(body) && /可视化分析过程/.test(body)) {
+        throw new Error('仍在过程页正文，未进入分析记录列表');
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  新一代信息技术→开始分析→停过程页→点「查看分析记录」；tab=records、分析记录 Tab 选中+记录表（任务号/分析类型/操作 等现场列，非过程壳）。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04397。零 allow_skip。

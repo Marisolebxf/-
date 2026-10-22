@@ -1,0 +1,31 @@
+id: FUNC-04809
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04809
+priority: P1
+tier: B
+title: 主流程-过程页标识
+entry_id: svc-sz
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+expect:
+  - note: 1、过程页有「任务 ID」
+    assert: |-
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false)) await close.first().click();
+      const selectView = page.locator('text=产业领域').locator('..').locator('.arco-select-view').first();
+      await selectView.click();
+      await page.getByText('新一代信息技术', { exact: true }).click();
+      await page.getByRole('button', { name: '开始分析' }).click();
+      await page.waitForURL(/view=processing/, { timeout: 60000 });
+      await expect(page.getByText('任务 ID')).toBeVisible();
+      await expect(page.getByText(/SVC-\d{8}-\d+/)).toBeVisible();
+  - note: 2、过程页有「分析类型」
+    assert: |-
+      await expect(page.getByText('分析类型')).toBeVisible();
+  - note: 3、「已用时间」有读数
+    assert: |-
+      await expect(page.getByText('已用时间')).toBeVisible();
+      await expect(page.getByText(/\d+\s*秒/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,78 @@
+id: FUNC-04305
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04305
+priority: P1
+tier: A
+title: 配置态-评价维度至少启用 2 个门控
+story: US-SVC-ORG-06
+entry_id: svc-org-capability
+preconditions:
+  - 已进入服务机构技术力评估分析页
+  - 已勾选两家机构（脚本自含勾选）
+locators:
+  org_tags: .svc-org-cap-compare__tags .arco-tag
+  dim_gate_tip: '.svc-org-cap-blockers span'
+  start_btn: '[data-testid="svc-org-start-eval"]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=capability&tab=capability
+  - action: evaluate
+    note: 前置两家机构 + 取消评价维度至仅剩 1 个（真实操作在 expect 内）
+expect:
+  - note: 1、出现「至少启用 2 个评价维度」
+    assert: |-
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const selectTwoTags = async () => {
+        const tags = page.locator('.svc-org-cap-compare__tags .arco-tag');
+        const tagN = await tags.count();
+        if (tagN < 2) throw new Error('对比机构 tags 不足 2，当前=' + tagN);
+        for (let i = 0; i < tagN; i++) {
+          const cls = String((await tags.nth(i).getAttribute('class')) || '');
+          if (cls.includes('arco-tag-checked')) {
+            await tags.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(280);
+          }
+        }
+        await tags.nth(0).click({ timeout: 5000 });
+        await tags.nth(1).click({ timeout: 5000 });
+        await page.waitForTimeout(500);
+        const head = ((await page.locator('.svc-org-cap-compare__head').innerText()) || '').replace(/\s+/g, '');
+        if (!head.includes('当前2家')) throw new Error('勾选两家后计数行=' + head);
+      };
+      const leaveOneDimension = async () => {
+        const panel = page.locator('.ent-section-panel', { hasText: '技术力评价模型' }).first();
+        const cbs = panel.locator('.arco-checkbox');
+        await expect(cbs).toHaveCount(5, { timeout: 8000 });
+        for (let i = 4; i >= 1; i--) {
+          const cls = String((await cbs.nth(i).getAttribute('class')) || '');
+          if (/arco-checkbox-checked/.test(cls)) {
+            await cbs.nth(i).click({ timeout: 4000 });
+            await page.waitForTimeout(450);
+          }
+        }
+        await page.waitForTimeout(400);
+        const rows = page.locator('.svc-org-cap-dim');
+        let enabled = 0;
+        for (let i = 0; i < 5; i++) {
+          const rc = String((await rows.nth(i).getAttribute('class')) || '');
+          if (!rc.includes('is-disabled')) enabled++;
+        }
+        if (enabled !== 1) throw new Error('停用后启用维度数=' + enabled + '（期望 1）');
+      };
+      await closeBasket();
+      await selectTwoTags();
+      await leaveOneDimension();
+      await expect(page.locator('.svc-org-cap-blockers span').filter({ hasText: /至少启用\s*2\s*个评价维度/ }).first()).toBeVisible({ timeout: 8000 });
+  - note: 2、「开始评估」不可用
+    assert: |-
+      const start = page.locator('[data-testid="svc-org-start-eval"]').first();
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeDisabled({ timeout: 8000 });

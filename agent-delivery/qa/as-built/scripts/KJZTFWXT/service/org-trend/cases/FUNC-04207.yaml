@@ -1,0 +1,222 @@
+id: FUNC-04207
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04207
+priority: P1
+tier: B
+title: 备选-当天再次开始 · 不新增任务
+story: US-SVC-ORG-04
+entry_id: svc-org-trend
+preconditions:
+  - 当天已有该机构的已完成分析（assert 自含首次到达成功结果页）
+  - 配置区再次选中同一家机构（D2：深链 org_ids 回填，见 fixtures/testdata known_org_id）
+locators:
+  start: button「开始分析」
+  view_result: button「查看结果」
+  back_config: button「返回配置」
+  tab_records: '[role=tab][data-tab-key=records]'
+  tab_trend: '[role=tab][data-tab-key=trend]'
+steps:
+  - action: goto
+    target: /service/institution-judgment?workspace=trend&tab=trend
+expect:
+  - note: 前置当天同机构已成功 + 步骤再次「开始分析」；预期 1 打开当天已有结果
+    assert: |-
+      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
+      const route = '/service/institution-judgment?workspace=trend&tab=trend';
+      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
+      const TID_RE = /SVC-\d{8}-\d{1,4}/g;
+      const HINT_RE = /今日已分析过相同条件|已打开今天相同条件|已打开结果|当天已有/;
+      const parseTaskId = (u) => {
+        const m = String(u).match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        return m ? m[1] : null;
+      };
+      const closeBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      const mainLast = () => page.locator('main').last();
+      const isResultShell = async () => {
+        const body = ((await mainLast().innerText().catch(() => '')) || '');
+        const url = page.url();
+        return /服务机构新增数量趋势/.test(body) && (/view=result/.test(url) || !/分析结果已生成/.test(body));
+      };
+      const ensureOrgConfig = async () => {
+        await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(2000);
+        await closeBasket();
+        const main = page.locator('main').first();
+        let bodyCfg = ((await main.innerText().catch(() => '')) || '');
+        const orgReady =
+          /已选机构（[1-9]/.test(bodyCfg) ||
+          bodyCfg.includes(knownOrg.slice(0, 12)) ||
+          page.url().includes(knownOrg);
+        if (!orgReady) {
+          const pick = page.getByRole('button', { name: '选择机构', exact: true }).first();
+          if (await pick.isVisible().catch(() => false)) {
+            await pick.click({ timeout: 8000 });
+            await page.waitForTimeout(800);
+            const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
+            await expect(dialog).toBeVisible({ timeout: 8000 });
+            const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+            if ((await checks.count()) < 1) throw new Error('配置区无法回填一家机构');
+            await checks.first().click({ timeout: 5000 });
+            await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+            await page.waitForTimeout(1000);
+          } else if (!page.url().includes('org_ids')) {
+            throw new Error('前置缺已选机构：无选择机构入口且无 org_ids 深链');
+          }
+        }
+      };
+      const reachTodaySuccessOnce = async () => {
+        if (await isResultShell()) return;
+        await ensureOrgConfig();
+        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+        await expect(start).toBeVisible({ timeout: 8000 });
+        await start.click({ timeout: 15000 });
+        let tid = null;
+        for (let i = 0; i < 45; i++) {
+          await page.waitForTimeout(1000);
+          tid = parseTaskId(page.url()) || tid;
+          const pbody = ((await mainLast().innerText().catch(() => '')) || '');
+          if (await isResultShell()) return;
+          if (HINT_RE.test(pbody) && /view=result/.test(page.url())) return;
+          if (/分析结果已生成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+          if (/已完成/.test(pbody) && await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false)) break;
+        }
+        const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
+        if (await vr.isVisible().catch(() => false)) {
+          await vr.click({ timeout: 8000 });
+          await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 }).catch(() => {});
+          await page.waitForTimeout(2000);
+        }
+        if (!(await isResultShell())) {
+          throw new Error('前置：当天同机构首次分析未到达结果页 url=' + page.url());
+        }
+      };
+      const backToConfig = async () => {
+        const back = page.getByRole('button', { name: '返回配置', exact: true }).first();
+        if (await back.isVisible().catch(() => false)) {
+          await back.click({ timeout: 8000 });
+          await page.waitForTimeout(1500);
+        } else {
+          await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+        }
+        await closeBasket();
+      };
+      const countSvcRows = async () => {
+        const recTab = page.locator('[role=tab][data-tab-key="records"]');
+        await recTab.click({ timeout: 8000 });
+        await page.waitForTimeout(1200);
+        const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+        const ids = body.match(/SVC-\d{8}-\d{1,4}/g) || [];
+        return new Set(ids).size;
+      };
+      if (/view=processing|view=result/.test(page.url())) {
+        await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await closeBasket();
+      await reachTodaySuccessOnce();
+      const taskFirst = parseTaskId(page.url()) || ((await mainLast().innerText().catch(() => '')).match(TID_RE) || [])[0];
+      if (!taskFirst) throw new Error('首次成功未见 SVC 任务号');
+      await backToConfig();
+      await ensureOrgConfig();
+      const nBefore = await countSvcRows();
+      const trendTab = page.locator('[role=tab][data-tab-key="trend"]');
+      await trendTab.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      await ensureOrgConfig();
+      let createPosts = 0;
+      const onReq = (req) => {
+        if (req.method() !== 'POST') return;
+        const u = req.url();
+        if (/\/analysis\/tasks/.test(u) && !/\/list|\/running/.test(u)) createPosts += 1;
+      };
+      page.on('request', onReq);
+      const start2 = page.getByRole('button', { name: '开始分析', exact: true }).first();
+      await expect(start2).toBeVisible({ timeout: 8000 });
+      await start2.click({ timeout: 15000 });
+      let taskSecond = null;
+      let openedResult = false;
+      let sawNewTaskToast = false;
+      for (let i = 0; i < 30; i++) {
+        await page.waitForTimeout(i < 4 ? 600 : 900);
+        const url = page.url();
+        const body = ((await mainLast().innerText().catch(() => '')) || '');
+        taskSecond = parseTaskId(url) || taskSecond;
+        if (/任务已创建/.test(body)) sawNewTaskToast = true;
+        if (await isResultShell()) { openedResult = true; break; }
+        if (HINT_RE.test(body) && /view=result/.test(url)) { openedResult = true; break; }
+        if (/view=processing/.test(url) && !/分析结果已生成/.test(body) && i >= 10 && !openedResult) {
+          break;
+        }
+      }
+      page.off('request', onReq);
+      globalThis.__func04207 = {
+        taskFirst,
+        taskSecond: taskSecond || parseTaskId(page.url()),
+        nBefore,
+        createPosts,
+        openedResult,
+        sawNewTaskToast,
+      };
+      if (!openedResult) {
+        if (/view=processing/.test(page.url()) && !/view=result/.test(page.url())) {
+          throw new Error('二次开始仍停过程页未打开已有结果（Q-ANALYSIS-01 口径）');
+        }
+        await expect(page.getByText('服务机构新增数量趋势').first()).toBeVisible({ timeout: 12000 });
+      }
+  - note: 2、任务号与当天已成功相同；不新增分析任务（Q-ANALYSIS-01）
+    assert: |-
+      const ctx = globalThis.__func04207;
+      if (!ctx?.taskFirst) throw new Error('前置：未完成二次开始分析');
+      const body = ((await page.locator('main').last().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const url = page.url();
+      const taskSecond =
+        ctx.taskSecond ||
+        (url.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/) || [])[1] ||
+        '';
+      const errs = [];
+      if (/view=processing/.test(url) && !/view=result/.test(url)) {
+        errs.push('仍停在 view=processing 未直开结果');
+      }
+      if (ctx.sawNewTaskToast) {
+        errs.push('出现「任务已创建」类提示（当天复用应不新建）');
+      }
+      if (taskSecond && ctx.taskFirst && taskSecond !== ctx.taskFirst) {
+        errs.push('task_id 变化 ' + ctx.taskFirst + ' -> ' + taskSecond + '（应复用当天已有）');
+      }
+      if (ctx.createPosts > 0) {
+        errs.push('二次开始触发 create POST 次数=' + ctx.createPosts);
+      }
+      if (!/服务机构新增数量趋势/.test(body)) {
+        errs.push('未见结果壳「服务机构新增数量趋势」');
+      }
+      if (errs.length) {
+        throw new Error('Q-ANALYSIS-01 当天同机构再次开始应打开已有结果且不新增任务：' + errs.join('；'));
+      }
+  - note: 3、分析记录 Tab 不新增 SVC 任务行
+    assert: |-
+      const ctx = globalThis.__func04207;
+      if (!ctx) throw new Error('前置：未完成二次开始分析');
+      const recTab = page.locator('[role=tab][data-tab-key="records"]');
+      await recTab.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      const ids = body.match(/SVC-\d{8}-\d{1,4}/g) || [];
+      const nAfter = new Set(ids).size;
+      if (nAfter > ctx.nBefore) {
+        throw new Error(
+          '分析记录 SVC 条数增加 ' + ctx.nBefore + ' -> ' + nAfter + '（当天复用应不新增；Q-ANALYSIS-01）'
+        );
+      }
+      if (ctx.taskFirst && !body.includes(ctx.taskFirst)) {
+        throw new Error('分析记录未见原任务 ' + ctx.taskFirst);
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+as_built_note: >-
+  用例册 FUNC-04207：当天同机构已完成后再点「开始分析」应直开已有结果、task_id 不变、分析记录不增。
+  前置一家机构对齐 FUNC-04194 深链 org_ids[]=testdata known_org_id。缺陷候选：现场「任务已创建，正在展示分析过程」并新建任务 → fail 并注 Q-ANALYSIS-01。
+  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04207。B 档零 allow_skip。

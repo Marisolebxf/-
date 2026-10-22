@@ -8,48 +8,57 @@ entry_id: svc-portal-industry
 preconditions:
   - 已打开服务机构产业分布
   - 产业为全部产业
-locators:
-  industry: .svc-portal-filter input[placeholder="全部产业"]
-  chain: .svc-portal-filter .arco-select-view（placeholder 全部产业链）
+locators: {}
 steps:
   - action: goto
-    target: /service-portal/industry-distribution
+    target: /service-portal/industry-distribution?industry=CL-SEI-02
   - action: evaluate
     note: 点击产业链下拉
+    target: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      const chainView = filter.locator('.arco-select-view').filter({
+        has: page.locator('input[placeholder*="产业链"]'),
+      }).first();
+      if (await chainView.count()) {
+        await chainView.click({ timeout: 3000 }).catch(() => {});
+        return;
+      }
+      const chainByPh = main.locator('input[placeholder*="产业链"]').first();
+      if (await chainByPh.count()) {
+        await chainByPh.click({ timeout: 3000 }).catch(() => {});
+      }
 expect:
   - note: 1、产业链下拉保持禁用
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业分布|全部产业/.test(t);
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验产业链禁用 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
-      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('input[placeholder="全部产业"]')).toBeVisible({ timeout: 8000 });
-      const filter = page.locator('.svc-portal-filter').first();
+      const main = page.locator('main');
+      await expect(main.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      const filter = main.locator('.svc-portal-filter').first();
       await expect(filter).toBeVisible({ timeout: 8000 });
-      const chain = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      await expect(chain).toBeVisible({ timeout: 8000 });
-      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
-      if (!dis) throw new Error('未选产业时产业链下拉应禁用（arco-select-disabled）');
+      await expect(filter.getByText('产业集群 / 产业')).toBeVisible();
+      const chainInput = filter.locator('input[placeholder*="产业链"]');
+      await expect(chainInput).toHaveCount(1, { timeout: 8000 });
+      const chainView = filter.locator('.arco-select-view').filter({ has: chainInput }).first();
+      await expect(chainView).toBeVisible();
+      const disabled = await chainView.evaluate((el) => {
+        const root = el.closest('.arco-select');
+        return Boolean(
+          el.className.includes('disabled') ||
+            root?.className.includes('disabled') ||
+            el.getAttribute('aria-disabled') === 'true',
+        );
+      });
+      if (!disabled) throw new Error('未选细分产业时产业链下拉应处于禁用态');
   - note: 2、不出现产业链选项
     assert: |-
-      const filter = page.locator('.svc-portal-filter').first();
-      const chain = filter.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      try { await chain.click({ timeout: 1500 }); } catch {}
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      const chainView = filter.locator('.arco-select-view').filter({
+        has: page.locator('input[placeholder*="产业链"]'),
+      }).first();
+      if (await chainView.count()) {
+        try { await chainView.click({ timeout: 1500 }); } catch {}
+      }
       await page.waitForTimeout(400);
       const chainOpts = page.locator('.arco-trigger-popup:visible .arco-select-option');
       const n = await chainOpts.count();
@@ -61,6 +70,3 @@ expect:
         throw new Error('产业链禁用态点击后仍出现选项 count=' + n + ' labels=' + JSON.stringify(preview));
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  深链 entry-seed catalog_path /service-portal/industry-distribution。筛选条 ServicePortalShell +
-  IndustryCatalogSelect（chainDisabled 逻辑：!industryId）。占位「全部产业链」。断言模式对齐 FUNC-01308 / portal 姊妹条。

@@ -1,0 +1,34 @@
+id: FUNC-05290
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05290
+priority: P1
+tier: B
+title: 主流程-选定产业
+entry_id: svc-portal-shenzhen
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/shenzhen
+  - action: evaluate
+    note: 1.展开产业下拉
+    run: |-
+      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
+      await page.locator('.svc-portal-industry-cascader-menu').waitFor({ state: 'visible' });
+  - action: evaluate
+    note: 2.选择「新一代信息技术」
+    run: |-
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().click();
+      await expect(page.locator('main')).toContainText('「新一代信息技术」为上下文', { timeout: 15000 });
+expect:
+  - note: 1、结论上下文为「新一代信息技术」
+    assert: |-
+      await expect(page.locator('main')).toContainText('「新一代信息技术」为上下文');
+  - note: 2、环节分布标题含「新一代信息技术」
+    assert: |-
+      await expect(page.locator('main')).toContainText('新一代信息技术 · 深圳产业链环节分布');
+  - note: 3、深圳机构约数仍展示家数
+    assert: |-
+      const block = page.locator('main .svc-portal-kpi').filter({ hasText: '深圳机构约数' });
+      await expect(block).toContainText(/\d[\d,]*\s*家/);
+on_fail: 截图 + 抄 X-Trace-Id

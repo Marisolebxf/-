@@ -1,0 +1,28 @@
+id: FUNC-05492
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05492
+priority: P0
+tier: B
+title: 主流程-技术力口径说明
+entry_id: svc-portal-capability
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /service-portal/capability-rank
+  - action: evaluate
+    note: 点击「服务机构技术能力」页签
+    assert: |-
+      const tab = page
+        .locator('[role=tab][data-tab-key="capability"]')
+        .or(page.getByRole('tab', { name: '服务机构技术能力', exact: true }));
+      await tab.first().click({ timeout: 10000 });
+      await page.waitForURL(/\/service-portal\/capability-rank/, { timeout: 15000 });
+expect:
+  - note: 1、说明写明综合分由平台技术力模型给出
+    assert: |-
+      await expect(page.locator('main')).toContainText('综合分由平台技术力模型给出', { timeout: 12000 });
+  - note: 2、说明写明固定五维等权且门户不可调权
+    assert: |-
+      await expect(page.locator('main')).toContainText('固定五维等权', { timeout: 12000 });
+      await expect(page.locator('main')).toContainText('门户不可调权', { timeout: 12000 });
+on_fail: 截图 + 抄 X-Trace-Id

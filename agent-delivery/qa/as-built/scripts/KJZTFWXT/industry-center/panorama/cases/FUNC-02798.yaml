@@ -19,22 +19,7 @@ steps:
 expect:
   - note: 前置：已进入本页并打开任一环节详情
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业链全景图谱 SPA 404 ' + page.url());
-      }
       await page.getByText('结构列表', { exact: true }).click();
       await page.waitForTimeout(600);
       const listRadio = page.locator('.arco-radio-button').filter({ hasText: /^结构列表$/ }).first();
@@ -55,16 +40,13 @@ expect:
     assert: |-
       if (!globalThis.__func02798_ready) throw new Error('前置：未打开环节详情');
       const detail = page.locator('[data-testid="panorama-inline-detail"]');
-      const tab = detail.getByRole('tab', { name: '主流技术路线' });
-      await expect(tab).toBeVisible({ timeout: 8000 });
-      await tab.click({ timeout: 8000 });
+      const tab = detail.locator('.arco-tabs-tab').filter({ hasText: /^主流技术路线$/ });
+      await expect(tab.first()).toBeVisible({ timeout: 8000 });
+      await tab.first().click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const selected =
-        (await tab.getAttribute('aria-selected')) === 'true' ||
-        ((await tab.getAttribute('class')) || '').includes('active');
-      if (!selected) {
-        throw new Error('步骤：「主流技术路线」页签未选中');
-      }
+      await expect(
+        detail.locator('.arco-tabs-tab-active').filter({ hasText: /^主流技术路线$/ }),
+      ).toBeVisible({ timeout: 5000 });
   - note: 1、该页签展示「暂无已发布主流技术路线」
     assert: |-
       if (!globalThis.__func02798_ready) throw new Error('前置：未打开环节详情');

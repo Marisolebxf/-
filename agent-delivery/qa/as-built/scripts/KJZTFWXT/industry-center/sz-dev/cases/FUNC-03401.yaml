@@ -77,11 +77,22 @@ expect:
         if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
           throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录空态，无成功结果可打开');
         }
-        const doneRow = page.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-        const doneCount = await doneRow.count();
-        let viewBtn = doneCount
-          ? doneRow.first().getByRole('button', { name: '查看结果' })
-          : page.getByRole('button', { name: '查看结果' }).filter({ hasNot: page.locator('.arco-btn-disabled') }).first();
+        const rows = page.locator('[data-frame-id="F-SZ-04"] .arco-table-body tr.arco-table-tr');
+        const devRows = rows.filter({ hasText: '深圳产业发展分析' });
+        const successRow = devRows.filter({
+          has: page.locator('td').getByText('已完成', { exact: true }),
+        });
+        const doneCount = await successRow.count();
+        if (doneCount === 0) {
+          const failCount = await devRows.filter({
+            has: page.locator('td').getByText('失败', { exact: true }),
+          }).count();
+          if (failCount > 0) {
+            throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 30892 分析记录仅失败态，无成功结果可打开报告');
+          }
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
+        }
+        const viewBtn = successRow.first().getByRole('button', { name: '查看结果' });
         if (!(await viewBtn.count())) {
           throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无已完成记录或未开放「查看结果」');
         }
