@@ -1,4 +1,4 @@
-> **【GDF-ENT-WORKPACK-v4.0.1 · Mapping 施工真源】** 日期 2026-10-21（v4.0.1：GDF round1 响应合并，变更见 CHANGELOG）。原基线日期 2026-10-20。基线切换至 **10-19 三方承诺清单**（架构师入仓 `GKX数据源表差异分析摘要-20261019.md` + live 实证核验）。本版变更：① `dwd_org_stock_base` 移出（10-19 清单不再收录；ES/extra 上市字段改源，见 §3.1.2 v4 注）；② 国外母子换源 `dwd_agg_subsidiary_info`（新 §3.21；eid 体系与主档命中率 6.3% 实测，精确匹配+治理清单）；③ 专利 5 张新侧表 mirror_only（无承接列不 ADD）；④ 融资/投资/并购改挂金融要素库（表名不变）。列契约以 `00` §8 / §9 为准。  
+> **【GDF-ENT-WORKPACK-v4.0.2 · Mapping 施工真源】** 日期 2026-10-22（v4.0.2：GDF round2 问询 31 题拍板合入，变更见 CHANGELOG）。v4.0.1 日期 2026-10-21（round1 响应合并）。原基线日期 2026-10-20。基线切换至 **10-19 三方承诺清单**（架构师入仓 `GKX数据源表差异分析摘要-20261019.md` + live 实证核验）。v4.0 主要变更：① `dwd_org_stock_base` 移出（10-19 清单不再收录；ES/extra 上市字段改源，见 §3.1.2 v4 注）；② 国外母子换源 `dwd_agg_subsidiary_info`（新 §3.21；eid 体系与主档命中率 6.3% 实测，精确匹配+治理清单）；③ 专利 5 张新侧表 mirror_only（无承接列不 ADD）；④ 融资/投资/并购改挂金融要素库（表名不变）。列契约以 `00` §8 / §9 为准。  
 > 基线来源：`agent-delivery/data/data-design/企业/企业域-ETL-Mapping明细-源表到DWD.md`（v1.2）；本包按监管人确认增加财务万元门禁、live 核验和港澳台本期范围。  
 > 旧短版 `09-企业维-ODS到DWD-Mapping说明-v4.md` **仅作导读**，字段级施工 **只认本文件**。  
 > **复核范围（诚实）**：只复核 `00` §8 已拍板项。其余 **继承 v1.2，未逐字段复验**。正式库已 ADD 的列按列洗。GDF 不写 demo。禁止假装全部表已对完。**v3.1.6 起对施工表启动逐字段复验（拍板④；v4.0 基线 62 张），发现项回写本文件。**
@@ -100,6 +100,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | §3.6 LIKE / §3.20 sybj 过滤 | 映射层（Wave B） | ODS 全量保留 |
 | 零日期 0000-00-00 / 1900-01-01 / 未来日期 | 映射层置 NULL + 治理清单 | ODS 原样镜像 |
 | 占位值（无/-//） | 金额类 NULL + 治理清单；文本类原样 | 既有单位门禁 |
+| **源端物理删除兜底（round2 #4 拍板 2026-10-22）** | 源库承诺不物理删行（业务数据只软删 `is_deleted=1`）；我方按**季度**做 ODS ↔ 源库全量行数/主键比对，发现源端物理删除的残留行从 ODS/DWD 同步移除并记录治理清单 | 增量按 `updated_time` 取数天然拉不到 DELETE 行，此为兜底对账；频率=每季度一次 |
 
 搜索时 `name_cn` 和 `name_en` 是 OR 关系——keyword 搜索同时匹配两个字段，任一命中即可。
 
@@ -251,7 +252,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `dwd_org_stock_finance_info.stock_code` | `listed_code` | 关联 | **v4.0 改源**：stock_base 移出后由上市财务表补充；源无该列则 NULL，不回连 stock_base |
 | 源无 | `stock_noun` | — | **v4.0 置空**：原源 stock_base 已移出；如后续恢复另拍板 |
 | `dwd_org_stock_finance_info` 相关列 | `listed_market` | 关联 | **v4.0 改源**：上市财务表有对应板块列则映射，无则 NULL |
-| `dwd_org_org_product_info.main_activities` | `main_activities` | 关联 | 从经营信息表补充 |
+| `dwd_org_org_product_info.main_activities` | `business_scope` | 关联 | **round2 #22 拍板（2026-10-22）**：源列注释=「公司经营范围」，语义精确对应 `business_scope`（本表 main_activities 无对应源，留空）；原误映射 main_activities 已纠正 |
 | `dwd_org_org_product_info.main_prod` | `main_prod` | 关联 | 从经营信息表补充 |
 | `dwd_org_org_product_info.description` | `description` | 关联 | 从经营信息表补充 |
 
@@ -260,7 +261,7 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | 源字段 | 目标字段（enterprise_extra） | 转换 |
 |---|---|---|
 | `org_id` | `org_id`（关联键） | JOIN enterprise_extra.org_id（extra 主行由 §3.1.2 建立；本节只 UPDATE 补充列） |
-| `main_activities` | `main_activities` | 直接；空则不覆盖 |
+| `main_activities` | `business_scope` | 直接；**round2 #22 拍板（2026-10-22）**：源列注释=「公司经营范围」→ 落 `business_scope`（本节原写 main_activities 系列错，目标 `main_activities` 留空）；空则不覆盖 |
 | `main_prod` | `main_prod` | 直接；空则不覆盖 |
 | `description` | `description` | 直接；空则不覆盖 |
 | `external_id` | （校验列） | 与主档 external_id 不一致时进治理清单，不覆盖 |
@@ -270,12 +271,15 @@ UK：`uk_org_id_main_prod`（源表业务唯一键）冲突时取 `updated_time`
 
 ### 3.2 `dwd_org_executive_info` → `enterprise_executive`
 
+> **round2 #14 拍板（2026-10-22）**：源表无性别列，`gender` 本期不洗（留空 NULL）；其余列照常映射。
+
 | 源字段 | 目标字段 | 映射类型 |
 |---|---|---|
 | `org_id` | `org_id` | 直接 |
 | `executives_name` | `executive_name` | 直接 |
 | `executives_position` | `position` | 直接 |
 | `data_source` | `data_source` | 直接 |
+| 源无 | `gender` | **不洗**（#14 拍板：源表无数据，留空） |
 
 ### 3.3 `dwd_org_annual_financial_info` → `enterprise_finance_history`
 
@@ -295,6 +299,8 @@ UK：`uk_org_id_main_prod`（源表业务唯一键）冲突时取 `updated_time`
 | `data_source` | `data_source` | 直接 | |
 
 > **财务单位门禁（2026-09-02 `human:徐滕强` 确认；2026-10-19 补成可执行规则）**：目标统一为**万元**。源注释或单位列明确为元时该列 ÷10000；明确为万元时原值写入。`dwd_org_annual_financial_info` 同一金额列里元和万元并存，且 `data_source` 不能把行分开时：**该金额单元格写 NULL，行进治理清单**（带 org_id、year、列名、原值）。禁止整表 ÷10000，禁止用数值大小猜单位。其他列照常洗，不因此停整包。
+
+> **round2 #19 拍板（2026-10-22）— 三源优先级**：年报财务（§3.3）、上市财务（§3.4）、年报资产（§3.20）三源落同一批金额列时**不设优先级、不互相覆盖**：同一 `(org_id, data_year, data_source)` 各自成行共存（`enterprise_finance_history` 唯一键即此三元组）；同三元组重跑取 `updated_time` 最新 upsert。下游（ES/页面）取数时按 `data_source` 自行选择或取最新年报，不依赖 ETL 侧择优。
 
 ### 3.4 `dwd_org_stock_finance_info` → `enterprise_finance_history`（补充）
 
@@ -330,6 +336,19 @@ UK：`uk_org_id_main_prod`（源表业务唯一键）冲突时取 `updated_time`
 
 禁止 ADD `news_title` / `news_date` / `news_content` 与现网列双写。demo 已有设计列可并存，产线只认上表。`lumen-etl-es-py` `news.py` 已改读 `title`/`publish_time`/`summary`（`DATA-ENT-DWD-ALIGN-ETL-L01`）；ES params 键名不动。
 
+**round2 #5 拍板（2026-10-22）— 8 个缺口字段处置**：
+
+| 目标字段 | 处置 | 依据 |
+|---|---|---|
+| `data_source` | **洗**：直接映射源 `data_source`（注释「数据来源」，有值） | #69 拍板「data_source 有数据就正常映射」 |
+| `industry_category` | **洗**：间接获取——关联 `enterprise_base.org_id` 取 `industry_category` | 本企业行业分类，base 已有 |
+| `region` | **洗**：间接获取——关联 `enterprise_base.org_id` 取 `region_id`（转区划名） | 本企业区域，base 已有 |
+| `news_type` | 不洗（NULL） | 源无资讯类型列；后续如需按标题规则分类另拍板 |
+| `amount` | 不洗（NULL） | 源无金额列（源是资讯，不是融资事件） |
+| `finance_round` | 不洗（NULL） | 同上 |
+| `counterparty` | 不洗（NULL） | 源无交易对手列 |
+| `sentiment` | 不洗（NULL） | 情感极性是算法产物，属 Python 算法域，不属 ETL 映射 |
+
 ### 3.6 `dwd_org_changerecord_info` → `enterprise_history_name`（关联映射）
 
 **仅取变更类型含"名称"的行**：
@@ -340,6 +359,7 @@ UK：`uk_org_id_main_prod`（源表业务唯一键）冲突时取 `updated_time`
 | `current_name` | `history_name` | 直接 | 变更前内容 = 曾用名 |
 | `update_date` | `start_date` | 直接 | 变更日期 = 曾用名起始 |
 | `update_name` | — | 不映射 | 变更后内容 = 现用名（已在 base 表） |
+| （窗口推导）`LEAD(update_date) OVER (PARTITION BY org_id ORDER BY update_date, dwd_id)` | `end_date` | 窗口函数 | **round2 #15 拍板（2026-10-22）**：该企业下一次名称变更日期 = 当前曾用名结束日；无下一次（最新一条）置 NULL |
 
 过滤条件：`WHERE update_content LIKE '%名称%'`
 
@@ -370,19 +390,20 @@ ES：`former_names` **本期要灌**（Q-WP3-14），整组替换；`DATA-ENT-ES
 | `inv_external_id` | — | 不映射 | 信用代码，本期不落 |
 | `data_source` | — | 不映射 | 正式库无此列，不 ADD |
 | `updated_time` | — | 不映射 | **禁止**当 `event_date` |
+| 源无 | `event_date` | **不洗** | **round2 #16 拍板（2026-10-22）**：源表无真实投资事件日期，留空 NULL；禁止拿 `updated_time` 等技术时间冒充 |
 
 ### 3.9 `dwd_org_tech_tag` → `enterprise_tag`（旧名 `dwd_org_tag_info` 现网不存在）
 
-2026-09-02 监管人确认：供应方工作簿与 live `gkx` 均为 `dwd_org_tech_tag`（约 20 万行）。**与下文 v1.2 设想的 tag_info 列不完全同构**：live 有 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；**无** `name_cn`/`external_id`/`tag_level`/`tag_value`。`org_tag` 现网是中文名称（如「高新技术企业」），不是 `high_tech` 码。码对照仍走 `ENT-P0-7`。`tag_dict` 未就绪时：`tag_code` 与 `tag_name` 都落 `org_tag` 原文，`tag_category` 写 NULL。禁止编造码，禁止因字典为空整表不洗。过滤 `is_deleted = 0`。
+2026-09-02 监管人确认：供应方工作簿与 live `gkx` 均为 `dwd_org_tech_tag`（约 20 万行）。**与下文 v1.2 设想的 tag_info 列不完全同构**：live 有 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；**无** `name_cn`/`external_id`/`tag_level`/`tag_value`。`org_tag` 现网是中文名称（如「高新技术企业」），不是 `high_tech` 码。`tag_dict` **由我方提供与维护**，建在 `gkxlumenx_dwd` 层（不属三方贴源，不在 `02` 清单）；2026-10-22 已从 demo 库灌入 7 行种子示意（外资/瞪羚/高新/上市/专精特新/科技型中小企业/独角兽，round2 问询 #28 拍板）。JOIN 键：`org_tag` = `tag_dict.tag_name`（中文对中文，round2 问询 #27 拍板）。`tag_code` 全量编码字典待三方标签全量数据到位后统一整理（round2 问询 #26 拍板），未整理期间 `tag_code` 落 `org_tag` 中文原文。`tag_value` 为我方备用字段，本期不写（NULL）。禁止编造码，禁止因字典为空整表不洗。过滤 `is_deleted = 0`。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | |
-| `org_tag` | `tag_code` | 直接 | 标签编码 |
-| `org_tag` | `tag_name` | 直接 | 与 `tag_code` 同为中文原值。`tag_dict` 有命中行时再改用字典名，未命中保持原文 |
-| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_category` | 字典反查 | 字典无行或未命中则 NULL |
+| `org_tag` | `tag_code` | 直接 | `tag_code` 全量字典未整理前落 `org_tag` 中文原文（#26 拍板：字典待三方全量标签到位后统一编码） |
+| `org_tag` | `tag_name` | 直接 | 标签中文名，与 `tag_dict.tag_name` JOIN 的键 |
+| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` ON `org_tag` = `tag_dict.tag_name` | `tag_category` | 字典反查 | 命中取字典 `tag_category`；无行或未命中则 NULL |
 | `tag_level` | — | 不映射 | 目标 `enterprise_tag` 无 `tag_level` 字段；`tag_dict.tag_level` 已按 `tag_code` 维护 |
-| `tag_value` | — | 待细化 | 普通标签默认 NULL；荣誉/级别类标签的展示值后续按规则生成 |
+| `tag_value` | — | 不映射 | **#26 拍板（2026-10-22）**：我方备用字段，本期不写（NULL） |
 | `created_time` | `create_time` | 直接 | 创建时间 |
 | `updated_time` | `update_time` | 直接 | 更新时间 |
 | — | `tag_score` | 源无 | 默认 NULL；后续如需评分来源再回填 |
@@ -442,7 +463,7 @@ ES / 图谱本期不上。供应链模块不得再读股东源。
 
 ### 3.12 招投标 → `enterprise_bid`
 
-**Q-WP3-26（2026-09-02 `human:徐滕强`）**：正式库用现网列。有同义就洗进现网；**项目编号必须洗**（标讯关键字段），现网无列则 **只 ADD `project_no`**。公告类型是招投标公告属性，现网没有对应列 → **不映射，`bid_type` 空着**，禁止塞进 `bid_type`。
+**Q-WP3-26（2026-09-02 `human:徐滕强`）**：正式库用现网列。有同义就洗进现网；**项目编号必须洗**（标讯关键字段），现网无列则 **只 ADD `project_no`**。公告类型是招投标公告属性，现网没有对应列 → **不映射，`bid_type` 空着**，禁止塞进 `bid_type`。**round2 #18 复核（2026-10-22）：此口径仍有效。**
 
 主路径：`dwd_bid_win_candidate_out` 按 `org_id` 落企业；用 `u_id` 关联 `dwd_bid_base_out` 取公告标题/发布日/项目编号。
 
@@ -691,6 +712,8 @@ Wave A 贴 `dwd_patent` / `dwd_patent_applicants` / `dwd_patent_assignees`。宽
 
 `dwd_patent` **无** `ipc` / `cpc` 列，有 `main_classification_ipcr` / `main_classification_cpc`；`citation_nums` **不存在**，是 `reference_cited_count`。宽列已 ADD：`ipc_code`/`ipc_main`←`main_classification_ipcr`，`cpc_main`←`main_classification_cpc`，`citation_count`←`reference_cited_count`。禁止把源列名 `reference_cited_count` 写成目标列。`cited_by_count` 源表无对应列，写 NULL。禁止按旧列名 `ipc`/`cpc`/`citation_nums` 施工。
 
+**round2 #17 拍板（2026-10-22）**：`enterprise_patent_detail.data_source` ← 源 `dwd_patent.table_data_source` 直接映射（同 3.15/3.16 系列口径：源列名 `table_data_source`，按业务 `data_source` 落库）。
+
 #### 3.14.1.1 申请人 / 权利人 → `enterprise_patent_org_rel`
 
 | 源 | 角色 | 目标映射 |
@@ -822,18 +845,20 @@ GROUP BY org_id, YEAR(filing_date)
 
 #### 3.15.2 `dwd_forg_base_info` → `enterprise_forg_extra`
 
+> **round2 #20 拍板（2026-10-22）— 两源合并规则**：合并键 = `org_id`；`enterprise_forg_extra` 主行由本节（`dwd_forg_base_info`，机构主档）INSERT 建立；`dwd_forg_product_info`（§3.15.3）按 `org_id` UPDATE 只补空列（已有值不覆盖）；两源同列冲突时**主档优先**（product 只在主档值为 NULL 时补）。
+
 | 源字段 | 目标字段 | 转换逻辑/说明 |
 |---|---|---|
-| `org_id` | `org_id` | 先写机构 ID；`main_activities`/`main_prod`/`description` 由 `dwd_forg_product_info` 补充 |
+| `org_id` | `org_id` | 先写机构 ID；`business_scope`/`main_prod`/`description` 由 `dwd_forg_product_info` 补充 |
 
 #### 3.15.3 `dwd_forg_product_info` → `enterprise_forg_extra`
 
 | 源字段 | 目标字段 | 转换逻辑/说明 |
 |---|---|---|
 | `org_id` | `org_id` | 直接复用 |
-| `main_activities` | `main_activities` | 公司主营业务 |
-| `main_products` | `main_prod` | 主要产品 |
-| `description` | `description` | 企业简介 |
+| `main_activities` | `main_activities` | 公司主营业务；**仅当主档建行后该列为 NULL 时补**（#20 拍板：主档优先，product 只补空） |
+| `main_products` | `main_prod` | 主要产品；同上仅补空 |
+| `description` | `description` | 企业简介；同上仅补空 |
 | `create_time` | `create_time` | 创建时间 |
 | `updated_time` | `update_time` | 设计映射；现网 `enterprise_forg_extra` 已补 `update_time`，按该字段增量同步 |
 | 源无 | `id` | 自增主键 |
@@ -999,8 +1024,9 @@ ES / 图谱本波无下游；只洗 MySQL DWD。
 | `jlr` | `enterprise_finance_history.net_profit` | 同上 |
 | `zcze` | `enterprise_finance_history.total_assets` | 源为 double(元)；÷10000；仅补 NULL |
 | `fzze` | `enterprise_finance_history.total_liabilities` | 门禁换算；仅补 NULL |
-| `yftrje` | 研发投入宽列（`enterprise_extra` / 财务宽列 as-built 为准） | 门禁换算；目标列以正式库 `13` §3 as-built 为准，缺列不 ADD 前置 NULL |
-| `yfrysl` / `nsze` / `hdzffczjbz` / `jrdk` / `syzqyhj` / `gdzcze` | — | 本期不映射（目标无对应列；如后续拍板补列另开） |
+| `yftrje` | `enterprise_finance_history.rd_investment` | **round2 #25 拍板（2026-10-22）：洗**。门禁换算（源 varchar，能确证数值+单位才落，统一万元；无法确证 NULL + 治理清单）；随本表三源共存规则（§3.3 #19 拍板），`(org_id, data_year, data_source)` 各自成行不覆盖。`rd_staff_count` 同理可由 `yfrysl` 洗入（数值可解析才写） |
+| `yfrysl` | `enterprise_finance_history.rd_staff_count` | 研发人员数量；源 varchar 数值可解析才写，否则 NULL；口径同上 |
+| `nsze` / `hdzffczjbz` / `jrdk` / `syzqyhj` / `gdzcze` | — | 本期不映射（目标无对应列；如后续拍板补列另开） |
 | `zzzjid` / `sybj` / `rksj` / `gxsj` 等技术列 | — | 不映射 |
 
 > 同表其余两张（`dwd_org_annual_report_base` / `dwd_org_income_statement`）**本期 mirror_only 只贴不洗**（见 `02` v3.1.6）；如后续需要补 `main_activities`（年报 base `qyzyywhd`）或上市财务缺口，另开 mapping 增补。
@@ -1014,8 +1040,8 @@ ES / 图谱本波无下游；只洗 MySQL DWD。
 
 | 源字段 | 目标字段（正式库实际列） | 转换逻辑 |
 |---|---|---|
-| `eid` | `org_id` | 精确 JOIN `dwd_forg_base_info.org_id`；命中写 org_id，未命中 NULL + 治理清单（带 eid/ename 证据） |
-| `sub_eid` | `sub_org_id` | 尝试 JOIN 同表 org_id；未命中 NULL + 治理清单（母子同源体系，子命中率同量级） |
+| `eid` | `org_id` | 精确 JOIN `dwd_forg_base_info.org_id`；**round2 #21 拍板（2026-10-22）：未命中行整行丢弃（不写 NULL，`org_id NOT NULL` 约束不可满足），进治理清单**。只洗命中的 952 个 eid |
+| `sub_eid` | `sub_org_id` | 尝试 JOIN 同表 org_id；未命中 NULL + 治理清单（母子同源体系，子命中率同量级；`sub_org_id` 现网可空，允许 NULL） |
 | `sub_name` | `sub_name` | 直接 |
 | `sub_country_code` | `sub_country_code` | 直接 |
 | `sub_country` | `sub_country_name` | 直接 |
@@ -1048,29 +1074,102 @@ GROUP BY org_id
 -- 其余 risk_* 表同理，每张表一条 INSERT...SELECT
 ```
 
-### 4.2 `enterprise_region_summary`
+### 4.2 `enterprise_region_summary`（round2 问询 #1 拍板：洗；2026-10-22 重写）
+
+> 旧版 SQL 从 `enterprise_base` 选了不存在的 `region_name`/`region_type`/`parent_region_id`。现行口径：区划属性一律 JOIN 我方维表 `gkxlumenx_dim.code_region`（`code`=区划代码 / `name`=名称 / `level`=层级类型 / `parent`=上级行政区）；`total_revenue` 按区域内企业最新年报营收（万元）聚合。
 
 ```sql
--- 从 enterprise_base 按区域聚合
+INSERT INTO enterprise_region_summary
+  (region_id, region_name, region_type, parent_region_id, stat_date,
+   enterprise_total, new_enterprise_count, active_enterprise_count, total_revenue)
 SELECT
-    region_id, region_name, region_type, parent_region_id, CURRENT_DATE AS stat_date,
-    COUNT(*) AS enterprise_total,
-    SUM(CASE WHEN DATE(registration_date) = CURRENT_DATE THEN 1 ELSE 0 END) AS new_enterprise_count,
-    SUM(CASE WHEN business_status = '在营' THEN 1 ELSE 0 END) AS active_enterprise_count
-FROM enterprise_base
-GROUP BY region_id, region_type
+  eb.region_id,
+  cr.name     AS region_name,        -- 维表反查，替代旧版不存在的列
+  cr.level    AS region_type,        -- province/city/district（以维表 level 值为准）
+  cr.parent   AS parent_region_id,
+  CURRENT_DATE AS stat_date,
+  COUNT(*) AS enterprise_total,
+  -- 新注册口径：统计当年注册（旧版 `registration_date = CURRENT_DATE` 恒为 0，已废弃；
+  -- 如需改滚动 365 天口径请在 round3 反馈）
+  SUM(CASE WHEN eb.registration_date >= MAKEDATE(YEAR(CURRENT_DATE), 1) THEN 1 ELSE 0 END) AS new_enterprise_count,
+  SUM(CASE WHEN eb.business_status = '在营' THEN 1 ELSE 0 END) AS active_enterprise_count,
+  COALESCE(SUM(fin.revenue), 0) AS total_revenue   -- 万元；区域内企业最新年报营收合计
+FROM enterprise_base eb
+JOIN gkxlumenx_dim.code_region cr ON eb.region_id = cr.code
+LEFT JOIN (
+  -- 每企业一行：取 data_year 最大且营收非 NULL 的最新一行
+  -- （#19 三源共存后同 (org_id, data_year) 可有 3 行，不取 ROW_NUMBER 会把企业放大 2~3 倍）
+  SELECT org_id, revenue FROM (
+    SELECT f.org_id, f.revenue,
+           ROW_NUMBER() OVER (
+             PARTITION BY f.org_id
+             ORDER BY f.data_year DESC, f.update_time DESC   -- 同年多源取更新时间最新
+           ) AS rn
+    FROM enterprise_finance_history f
+    WHERE f.revenue IS NOT NULL
+  ) t WHERE rn = 1
+) fin ON fin.org_id = eb.org_id
+WHERE eb.region_id IS NOT NULL AND eb.region_id <> ''
+GROUP BY eb.region_id, cr.name, cr.level, cr.parent
 ```
 
-### 4.3 `enterprise_industry_summary`
+### 4.3 `enterprise_industry_summary`（round2 问询 #2 拍板：洗；2026-10-22 重写）
+
+> `enterprise_industry_chain` 无 `stat_year` 列——该列是**汇总表自己的统计批次年度**，取跑批当日所在年份，不来自源。三个统计列来源：研发人员合计取 `enterprise_base.rd_staff_count`；专利总量取 `enterprise_patent_org_rel`（多申请人关系表）去重专利数；高新技术数取 `enterprise_tag` 命中字典 `tag_name='高新技术企业'`（tag_dict 由我方维护，见 §3.9）。**依赖顺序：先洗 `enterprise_tag`、`enterprise_patent_org_rel`，再跑本聚合。**
 
 ```sql
--- 从 enterprise_industry_chain 按产业链聚合
+INSERT INTO enterprise_industry_summary
+  (chain_code, chain_name, stat_year, stat_date,
+   enterprise_count, research_staff_total, patent_total, high_tech_count)
 SELECT
-    chain_code, chain_name, stat_year, CURRENT_DATE AS stat_date,
-    COUNT(DISTINCT org_id) AS enterprise_count
-FROM enterprise_industry_chain eic
-JOIN enterprise_base eb ON eic.org_id = eb.org_id
-GROUP BY chain_code, chain_name, stat_year
+  d.chain_code,
+  MAX(cn.chain_name)  AS chain_name,
+  YEAR(CURRENT_DATE)  AS stat_year,          -- 统计批次年度 = 跑批年（源表无此列）
+  CURRENT_DATE        AS stat_date,
+  COUNT(*)            AS enterprise_count,   -- d 已按 (chain, org) 去重，且并入 base 的企业
+  COALESCE(SUM(COALESCE(eb.rd_staff_count, 0)), 0) AS research_staff_total,
+  COALESCE(SUM(COALESCE(pc.patent_cnt, 0)), 0)    AS patent_total,
+  COUNT(ht.org_id)    AS high_tech_count     -- 命中标签的企业数
+-- d：链×企业去重明细（同一企业挂同链多节点只算一次）
+FROM (SELECT DISTINCT chain_code, org_id FROM enterprise_industry_chain) d
+JOIN enterprise_base eb ON d.org_id = eb.org_id
+LEFT JOIN (SELECT DISTINCT chain_code, chain_name FROM enterprise_industry_chain) cn
+       ON cn.chain_code = d.chain_code
+-- 企业级指标先各自聚合成"每企业一行"，再链级 SUM，禁止把企业级计数列放进 GROUP BY
+LEFT JOIN (
+  SELECT org_id, COUNT(DISTINCT patent_id) AS patent_cnt
+  FROM enterprise_patent_org_rel
+  GROUP BY org_id
+) pc ON pc.org_id = d.org_id
+LEFT JOIN (
+  SELECT DISTINCT org_id
+  FROM enterprise_tag
+  WHERE tag_name = '高新技术企业'
+) ht ON ht.org_id = d.org_id
+GROUP BY d.chain_code
+```
+
+### 4.4 `enterprise_patent_history`（round2 问询 #3 拍板：洗；2026-10-22 补 6 个口径）
+
+> 粒度 `org_id + data_year`（申请年）。7 个指标全部由 `enterprise_patent_detail` 一条聚合得出：`filing_year` 列已存在直接用；授权/发明/有效按条件计数；被引合计 SUM；两个 latest 取当年 MAX 日期。`patent_valid_count` 的 `legal_status` 枚举值以 live 实测为准（如「有效/审中/失效」），未命中视为无效，不伪造。
+
+```sql
+INSERT INTO enterprise_patent_history
+  (org_id, data_year, patent_apply_count, patent_grant_count, patent_valid_count,
+   patent_invention_count, patent_citation_count, latest_patent_date, latest_grant_date)
+SELECT
+  org_id,
+  filing_year AS data_year,
+  COUNT(*)                                              AS patent_apply_count,   -- ① 申请数：当年申请
+  SUM(CASE WHEN grant_date IS NOT NULL THEN 1 ELSE 0 END) AS patent_grant_count,  -- ② 当年申请且（任一时候）获授权
+  SUM(CASE WHEN legal_status = '有效' THEN 1 ELSE 0 END)  AS patent_valid_count,   -- ③ 当前有效（枚举以实测为准）
+  SUM(CASE WHEN patent_type LIKE '发明%' THEN 1 ELSE 0 END) AS patent_invention_count, -- ④ 发明专利（含发明公布/授权）
+  SUM(COALESCE(citation_count, 0))                       AS patent_citation_count, -- ⑤ 被引次数合计
+  MAX(filing_date) AS latest_patent_date,               -- ⑥ 当年最近申请日
+  MAX(grant_date)  AS latest_grant_date                 -- ⑦ 当年最近授权日（无授权为 NULL）
+FROM enterprise_patent_detail
+WHERE filing_year IS NOT NULL
+GROUP BY org_id, filing_year
 ```
 
 ---

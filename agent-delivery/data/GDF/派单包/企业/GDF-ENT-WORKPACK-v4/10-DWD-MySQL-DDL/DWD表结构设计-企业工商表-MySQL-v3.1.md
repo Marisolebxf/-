@@ -291,9 +291,9 @@ CREATE TABLE `enterprise_finance_history` (
   `revenue_growth_rate` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `profit_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `gross_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_investment` decimal(20,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_staff_count` int DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `rd_investment` decimal(20,4) DEFAULT NULL COMMENT '研发投入(万元)；round2 #25 拍板(2026-10-22)由 dwd_org_annual_report_asset.yftrje 洗入(09§3.20)',
+  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '研发投入占营收比；正式库已有；口径涉业务定义升级甲方前不洗',
+  `rd_staff_count` int DEFAULT NULL COMMENT '研发人员数；round2 #25 拍板(2026-10-22)由 dwd_org_annual_report_asset.yfrysl 洗入(09§3.20)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -582,7 +582,7 @@ CREATE TABLE `enterprise_tag` (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_ent_tag` (`org_id`,`tag_code`,`tag_value`),
+  UNIQUE KEY `uk_ent_tag` (`org_id`,`tag_code`),
   KEY `idx_tag_code` (`tag_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=50268 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='企业-标签关联（canonical §4.4）';
 ```

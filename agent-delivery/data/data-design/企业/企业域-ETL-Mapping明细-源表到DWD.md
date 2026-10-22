@@ -190,10 +190,10 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 | `incorporation_year` | — | 不映射 | 可从 registration_date 推导 |
 | `listing_status` | `listed_status` | 直接 | 上市状态描述 |
 | `listing_date` | `listed_date` | 直接 | 上市日期 |
-| `dwd_org_stock_base.stock_code` | `listed_code` | 关联 | 从上市表补充 |
-| `dwd_org_stock_base.stock_noun` | `stock_noun` | 关联 | 从上市表补充 |
-| `dwd_org_stock_base.stock_type` | `listed_market` | 关联 | 从上市表补充（上市板块） |
-| `dwd_org_org_product_info.main_activities` | `main_activities` | 关联 | 从经营信息表补充 |
+| `dwd_org_stock_finance_info.stock_code` | `listed_code` | 关联 | **v4.0 改源**：`dwd_org_stock_base` 已移出（10-19 清单）；由上市财务表补充；源无该列则 NULL，不回连 stock_base |
+| 源无 | `stock_noun` | — | **v4.0 置空**：原源 stock_base 已移出；如后续恢复另拍板 |
+| `dwd_org_stock_finance_info` 相关列 | `listed_market` | 关联 | **v4.0 改源**：上市财务表有对应板块列则映射，无则 NULL |
+| `dwd_org_org_product_info.main_activities` | `business_scope` | 关联 | **2026-10-22 拍板（round2 #22）**：源列注释=「公司经营范围」→ 落 `business_scope`；目标 `main_activities` 留空（无对应源，避免同文重复写两列） |
 | `dwd_org_org_product_info.main_prod` | `main_prod` | 关联 | 从经营信息表补充 |
 | `dwd_org_org_product_info.description` | `description` | 关联 | 从经营信息表补充 |
 
@@ -276,23 +276,23 @@ ES mapping 新增 `name_en` 字段（text + standard 分词 + keyword 子字段�
 
 **2026-09-02 Q-WP3-27 A**：正式库 `inv_name`→`inv_org_name`，金额/占比→`invest_*`。被投键=`inv_org_id`。`inv_external_id` 是信用代码，不落。施工真源以派单包 `09` §3.8 为准。
 
-### 3.9 `dwd_org_tag_info` → `enterprise_tag`
+### 3.9 `dwd_org_tech_tag` → `enterprise_tag`（旧名 `dwd_org_tag_info` 现网不存在；2026-10-22 与派单包 `09`§3.9 对齐）
 
-源表以实际 live DDL `gkxlumenx_ods.dwd_org_tag_info` 为准，字段含 `org_id` / `name_cn` / `external_id` / `org_tag` / `tag_level` / `created_time` / `updated_time` / `is_deleted` 等；过滤 `is_deleted = 0` 才入 DWD。
+源表 = **`gkx.dwd_org_tech_tag`**（live 约 20 万行；列 `org_id`/`org_tag`/`data_source`/`created_time`/`updated_time`/`is_deleted` + 技术列；无 `name_cn`/`external_id`/`tag_level`/`tag_value`）。`org_tag` 是中文标签名（如「高新技术企业」），不是编码。**2026-10-22 拍板**：`tag_dict` 由我方提供与维护（`gkxlumenx_dwd.tag_dict`，已灌 7 行种子）；JOIN 键 `org_tag = tag_dict.tag_name`；`tag_code` 全量编码字典待三方标签全量数据到位后整理，期间落 `org_tag` 中文原文；`tag_value` 为我方备用字段本期不写（NULL）；`enterprise_tag` 唯一键已改为 `(org_id, tag_code)`。施工真源以派单包 `09` §3.9 为准。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `org_id` | `org_id` | 直接 | |
-| `org_tag` | `tag_code` | 直接 | 标签编码 |
-| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_name` | 字典反查 | 按 `tag_dict.tag_code = org_tag` 取 `tag_name` |
-| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` | `tag_category` | 字典反查 | 按 `tag_dict.tag_code = org_tag` 取 `tag_category` |
+| `org_tag` | `tag_code` | 直接 | 全量字典未整理前落 `org_tag` 中文原文（2026-10-22 拍板） |
+| `org_tag` | `tag_name` | 直接 | 标签中文名，与 `tag_dict.tag_name` JOIN 的键 |
+| `org_tag` → JOIN `gkxlumenx_dwd.tag_dict` ON `org_tag` = `tag_dict.tag_name` | `tag_category` | 字典反查 | 命中取字典 `tag_category`；无行或未命中则 NULL |
 | `tag_level` | — | 不映射 | 目标 `enterprise_tag` 无 `tag_level` 字段；`tag_dict.tag_level` 已按 `tag_code` 维护 |
-| `tag_value` | — | 待细化 | 普通标签默认 NULL；荣誉/级别类标签的展示值后续按规则生成 |
+| `tag_value` | — | 不映射 | **2026-10-22 拍板**：我方备用字段，本期不写（NULL） |
 | `created_time` | `create_time` | 直接 | 创建时间 |
 | `updated_time` | `update_time` | 直接 | 更新时间 |
 | — | `tag_score` | 源无 | 默认 NULL；后续如需评分来源再回填 |
 | — | `id` | 自增 | bigint AUTO_INCREMENT |
-| `name_cn` / `external_id` | — | 不映射 | 目标表无对应字段 |
+| `name_cn` / `external_id` | — | 不映射 | 目标表无对应字段（源表亦无此二列） |
 | `is_deleted` | — | 不映射 | 仅作为过滤条件 |
 
 ### 3.10 `dwd_org_subsidiary_info` → `enterprise_parent_subsidiary`
@@ -709,30 +709,17 @@ GROUP BY org_id
 -- 其余 risk_* 表同理，每张表一条 INSERT...SELECT
 ```
 
-### 4.2 `enterprise_region_summary`
+### 4.2 `enterprise_region_summary`（2026-10-22 与派单包 `09`§4.2 对齐，round2 #1 拍板）
 
-```sql
--- 从 enterprise_base 按区域聚合
-SELECT
-    region_id, region_name, region_type, parent_region_id, CURRENT_DATE AS stat_date,
-    COUNT(*) AS enterprise_total,
-    SUM(CASE WHEN DATE(registration_date) = CURRENT_DATE THEN 1 ELSE 0 END) AS new_enterprise_count,
-    SUM(CASE WHEN business_status = '在营' THEN 1 ELSE 0 END) AS active_enterprise_count
-FROM enterprise_base
-GROUP BY region_id, region_type
-```
+> 区划属性 JOIN 我方维表 `gkxlumenx_dim.code_region`（`name`/`level`/`parent`）；`total_revenue` = 区域内企业最新年报 `revenue`（万元）合计；新注册口径 = 统计当年注册。**施工真源以派单包 `09` §4.2 完整 SQL 为准。**
 
-### 4.3 `enterprise_industry_summary`
+### 4.3 `enterprise_industry_summary`（2026-10-22 与派单包 `09`§4.3 对齐，round2 #2 拍板）
 
-```sql
--- 从 enterprise_industry_chain 按产业链聚合
-SELECT
-    chain_code, chain_name, stat_year, CURRENT_DATE AS stat_date,
-    COUNT(DISTINCT org_id) AS enterprise_count
-FROM enterprise_industry_chain eic
-JOIN enterprise_base eb ON eic.org_id = eb.org_id
-GROUP BY chain_code, chain_name, stat_year
-```
+> `stat_year` = 跑批年份（汇总表自身批次年度，源表无此列）；`research_staff_total`←`enterprise_base.rd_staff_count`；`patent_total`←`enterprise_patent_org_rel` 去重计数；`high_tech_count`←`enterprise_tag` 命中字典「高新技术企业」。**依赖顺序：先洗 `enterprise_tag`、`enterprise_patent_org_rel` 再聚合。施工真源以派单包 `09` §4.3 完整 SQL 为准。**
+
+### 4.4 `enterprise_patent_history`（2026-10-22 与派单包 `09`§4.4 对齐，round2 #3 拍板）
+
+> 7 指标全部由 `enterprise_patent_detail` 单表聚合（filing_year 计数 / grant_date 非空 / legal_status='有效' / patent_type LIKE '发明%' / SUM(citation_count) / MAX(filing_date) / MAX(grant_date)）。施工真源以派单包 `09` §4.4 完整 SQL 为准。
 
 ---
 

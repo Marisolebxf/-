@@ -1,35 +1,48 @@
-# CHANGELOG — GDF-ENT-WORKPACK（v4 目录）
+# CHANGELOG — GDF-ENT-WORKPACK-v4
 
-> 本目录 CHANGELOG 自 v4.0 起新记；v3.x 历史见 `../GDF-ENT-WORKPACK-v3/CHANGELOG.md`。
+## v4.0.2（2026-10-22，round2 问询 31 题拍板合入）
 
-## v4.0.1 — 2026-10-21
+> 任务单：`GDF-ENT-WORKPACK-V4R2-L01`。round2 问询（`01-回填表-第2轮.md`，31 题）逐题拍板（human:徐滕强）后合入；回填物见 `交付客户-round2/round3/`。
 
-- **GDF round1 核对响应合并**（澄清清单 10 条全回复，回复包见 GDF 回传目录 round2/）：
-  - **P-05**：09 §3.21 母子映射目标列对齐正式库 DDL（原 parent_org_id/parent_name_en/sub_name_en/sub_country/start_date/data_source 废止，改 org_id/sub_org_id/sub_name/sub_country_code/sub_country_name；ename/source_table 入治理清单）
-  - **P-03**：09 新增 §3.14.1.2~1.5 专利四分表逐列映射（title→title_zh/title_en、abstract→abstract_zh、legal→legal_status+grant_date+detail_json、cited→citation_count/cited_by_count+detail_json）；§3.1.3 org_product 独立小节；§2.4.1 指路表（bid/港澳台/链树/applicants+assignees 的映射实际位置索引）
-  - **P-04/P-08**：§1.7 集中声明 23 张本期不洗目标表清单（风险 15+指标 8；签字 human:徐滕强）；base 32 列引 Q-WP3-29；财务 6 比率列升级甲方
-  - **P-09**：§1.8 行过滤落点与脏数据规则（is_deleted 双层过滤语义/零日期/占位值/未来日期）
-  - **P-01**：tag_dict 本期不灌 tag_category 全 NULL；code_region 确认使用
-  - **S-04**：forg_college 从 02 移入 pending_source_requests
-  - **S-06**：02 新增 extract_mode/watermark/lookback/schedule 字段；05 表头新增列——62 张统一首次全量+T+1 updated_time 增量（>=水位-1天，upsert 幂等），增量不过滤 is_deleted，每周对账
-  - **P-06**：10/ 补 enterprise_patent_org_rel as-built DDL
-  - **P-02**：§3.15.7/§3.9 历史对照清理
-- E5 逐字段复验收口：以 GDF 附录 B（277 列缺口）反哺核对，结论=①193 列设计稿遗留签不洗 ②22 列补 6 列映射 ③32 列引既有拍板 ④11 列部分补部分签不写；后续发现项继续回写
+### 09-企业域-ETL-Mapping明细
 
-## v4.0 — 2026-10-20
+| 章节 | 变更 | 问询# |
+|---|---|---|
+| §1.8 | 新增「源端物理删除兜底」：源库不物理删 + 季度全量比对 | #4/#31 |
+| §3.2 | `enterprise_executive.gender` 声明不洗（源无数据） | #14 |
+| §3.3 | 三源优先级：不设优先级，`(org_id,data_year,data_source)` 共存 | #19 |
+| §3.5 | news 8 缺口字段处置：data_source 直接映射；industry_category/region 关联 base；其余 5 列 NULL | #5(6-13) |
+| §3.6 | `end_date` ← LEAD 窗口推导 | #15 |
+| §3.8 | `event_date` 声明不洗（源无真实投资日期） | #16 |
+| §3.1.2/§3.1.3 | **经营范围改列**：源 `main_activities`（注释「公司经营范围」）改落 `business_scope`，目标 `main_activities` 留空 | #22 |
+| §3.9 | tag 重新拍板：`tag_value` 备用不写；JOIN 键 `org_tag=tag_dict.tag_name`；`tag_dict` 我方维护已灌 7 行种子 | #26/27/28 |
+| §3.14.1 | `data_source` ← `table_data_source` 直接映射 | #17 |
+| §3.12 | `bid_type` 保持空复核确认 | #18 |
+| §3.15.2/3 | forg_extra 合并规则：主档建行、product 只补 NULL | #20 |
+| §3.20 | `yftrje`→`rd_investment`、`yfrysl`→`rd_staff_count` 全部期共存放开洗 | #25 |
+| §3.21 | 母子未命中行改整行丢弃（原写 NULL 撞 NOT NULL）；`sub_org_id` 允许 NULL 说明 | #21 |
+| §4.2 | `enterprise_region_summary` SQL 重写（JOIN `gkxlumenx_dim.code_region`；`total_revenue` 口径） | #1 |
+| §4.3 | `enterprise_industry_summary` SQL 重写（`stat_year`=跑批年；3 统计列来源） | #2 |
+| §4.4 | 新增 `enterprise_patent_history` 7 指标聚合 SQL | #3 |
 
-**基线切换**：三方承诺清单 219→176（10-19 版，架构师入仓变更纪要）+ live `gkx` 实证核验。v3 整包继承，以下为差异：
+### 10-DWD-MySQL-DDL
 
-- **`dwd_org_stock_base` 移出**（拍板 2026-10-20）：10-19 清单不再收录（live 仍有 1,080 行仅备查）；`is_listed` 回归 `dwd_org_base_info.listing_status`；`listed_code`/`listed_market` 改源 `dwd_org_stock_finance_info`，`stock_noun` 置空（09 §3.1/§3.1.2 v4 注）。
-- **国外母子换源**：`dwd_agg_subsidiary_info`（10-19 清单新表，live 19,810 行）替代从未存在的 `dwd_forg_subsidiary_info`——**A1 阻塞解除**；新增 09 §3.21（eid→org_id 实测命中率 6.3%，精确匹配+治理清单，禁造 ID）；ES `forg_relations` 母子段解冻。
-- **专利 5 张新侧表扩入 mirror_only**（priority_filings 20,709 / claim 10,578 / description 15,900 / transfer 21,193 / family 16,235）：`enterprise_patent_detail` 无承接列，不 ADD 列；transfer 如需轨迹走 `detail_json` 另拍板。
-- **融资/投资/并购改挂金融要素库**（10-19 清单归属调整；表名/数据/live 行数不变，贴源洗数口径全部继承 v3.1.6）。
-- **10-19 纪要"Excel 多出字段"澄清**（live 实证）：`t_id` 分片键、`dwd_org_base_info.province_code/city_code/area_code` 等 153 表"Excel 多出"列 **live 库均不存在**——Excel 说明领先于库，**一律以 live 结构为准施工**，Excel 列不作源（02 头注已声明）。
-- **16 号文移出本包**（v4.0 定稿前拍板：缺口回复留在 v3 包归档，v4 对外只带施工真源；README 索引同步）。
-- **05/12/13 全卷对齐 v4 基线**：05 验收检查表按 02 v4.0 重做（62 张：P0=15/P1=33/P2=14；换源/移出/扩入全部体现 + 预填行数残留清除）；12 ES 卷 forg_relations 母子段解冻注记 + stock_base 移出后上市字段取值说明；13 差集卷 §2 forg_subsidiary 换源解除 + 开工顺序 v4 注。
-- 原 16 号文相关：其中 B1"56 张结构已建"对应 v3.1.6 基线，v4 下 ODS 结构差异 = 移出 stock_base、新增 6 张（agg_subsidiary + 专利 5 张）→ **结构核对以本包 02 v4.0 清单为准重跑差集**（我方跟进，不阻塞 GDF 贴已有表）。
-- 承诺清单内其余 52 张 ENT 现役表：行数/表名与 v3.1.6 一致（10-19 纪要"估数 0 变化"），02 全部继承。
+| 文件 | 变更 | 问询# |
+|---|---|---|
+| 工商表 v3.1 | `enterprise_tag` 唯一键改 `uk_ent_tag(org_id,tag_code)`（正式库已执行；NULL 不判重导致原键失效） | #26 附带 |
+| 指标汇总表 v3.1 §7.1 | 补 `enterprise_risk_summary` as-built CREATE TABLE（现网逐列核对） | #30 |
+| 工商表 v3.1 | `enterprise_patent_org_rel` DDL（round2 已补，本轮复核在位） | #29 |
 
-## 继承基线
+### 数据库变更（正式库 gkxlumenx_dwd，2026-10-22 已执行）
 
-- v3.1.6（2026-10-20 同日）：缺口分析回复、产业/企业拆分对称声明、司法明细回补、年报资产洗数、财务单位门禁等全部加工逻辑——见 `../GDF-ENT-WORKPACK-v3/CHANGELOG.md`。
+1. `enterprise_tag` 唯一键改为 `(org_id, tag_code)`。
+2. `tag_dict` 灌入 demo 库 7 行种子（外资/瞪羚/高新/上市/专精特新/科技型中小企业/独角兽）。
+
+### 结论口径
+
+- 本期要实现维持 **36 张**（#1/#2/#3 全部拍板「洗」，无减）。
+- 回填物：`交付客户-round2/round3/`（回填表 markdown + answers-round2.json + 本包副本）。
+
+## v4.0.1（2026-10-21，GDF round1 响应合并）
+
+（内容见此前记录，略）

@@ -138,6 +138,26 @@
   验证通过。
 - 兼容验证：`lumen-algo-py` DWD 读取测试 7/7 通过；topic-py 风险 ORM/Repository 契约测试 37/37 通过；现网汇总查询 smoke test 通过。
 
+### 7.1 As-built `CREATE TABLE`（2026-10-22 从现网 `information_schema` 逐列核对补录，与 GDF round2 问询 #30 对应）
+
+```sql
+CREATE TABLE `enterprise_risk_summary` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `org_id` varchar(64) NOT NULL COMMENT '企业唯一标识（gkxlumenx_dwd.enterprise_base.org_id）',
+  `risk_type` varchar(50) NOT NULL COMMENT '风险类型（judicial_case/executed/bankruptcy/abnormal/punishment/illegal/tax_punish）',
+  `total_count` int NOT NULL COMMENT '风险记录总数',
+  `current_count` int NOT NULL COMMENT '当前有效记录数',
+  `history_count` int NOT NULL COMMENT '历史记录数',
+  `latest_date` date DEFAULT NULL COMMENT '最新风险事件日期',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_org_risk` (`org_id`,`risk_type`),
+  KEY `idx_risk_type_count` (`risk_type`,`total_count`),
+  KEY `idx_org` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='企业风险汇总长表（企业 × 风险类型）';
+```
+
 ## 8. 2026-08-12 `enterprise_org_type` 新增
 
 ### 8.1 用途

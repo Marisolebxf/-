@@ -286,9 +286,9 @@ CREATE TABLE `enterprise_finance_history` (
   `revenue_growth_rate` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `profit_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
   `gross_margin` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_investment` decimal(20,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
-  `rd_staff_count` int DEFAULT NULL COMMENT '正式库已有，回写设计；本期 Mapping 不洗',
+  `rd_investment` decimal(20,4) DEFAULT NULL COMMENT '研发投入(万元)；round2 #25 拍板(2026-10-22)由 dwd_org_annual_report_asset.yftrje 洗入(09§3.20)',
+  `rd_investment_ratio` decimal(10,4) DEFAULT NULL COMMENT '研发投入占营收比；正式库已有；口径涉业务定义升级甲方前不洗',
+  `rd_staff_count` int DEFAULT NULL COMMENT '研发人员数；round2 #25 拍板(2026-10-22)由 dwd_org_annual_report_asset.yfrysl 洗入(09§3.20)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -577,7 +577,7 @@ CREATE TABLE `enterprise_tag` (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_ent_tag` (`org_id`,`tag_code`,`tag_value`),
+  UNIQUE KEY `uk_ent_tag` (`org_id`,`tag_code`),
   KEY `idx_tag_code` (`tag_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=50268 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='企业-标签关联（canonical §4.4）';
 ```
@@ -605,7 +605,7 @@ CREATE TABLE `enterprise_tag` (
 > 新增日期：2026-08-12
 > 数据库：`gkxlumenx_dwd`
 > 设计原则：字段命名和业务含义对齐国内 `enterprise_*` 表；org_id 复用源表，不重新生成
-> 源表：`dwd_forg_base_info` / `dwd_forg_product_info` / `dwd_forg_executive_info` / `dwd_forg_shareholder_info` / `dwd_foreign_org_annual_financial_info` / `dwd_forg_subsidiary_info`
+> 源表：`dwd_forg_base_info` / `dwd_forg_product_info` / `dwd_forg_executive_info` / `dwd_forg_shareholder_info` / `dwd_foreign_org_annual_financial_info` / ~~`dwd_forg_subsidiary_info`~~ → **`dwd_agg_subsidiary_info`（v4.0 换源，10-19 清单；字段映射认派单包 `09` §3.21，本节 CREATE 目标列不变）**
 
 ### 6.0 国外机构表清单
 
@@ -616,7 +616,7 @@ CREATE TABLE `enterprise_tag` (
 | 3 | `enterprise_forg_executive` | `enterprise_executive` | `dwd_forg_executive_info` | 高管信息 |
 | 4 | `enterprise_forg_finance_history` | `enterprise_finance_history` | `dwd_foreign_org_annual_financial_info` | 财务历史 |
 | 5 | `enterprise_forg_invest` | `enterprise_invest` | `dwd_forg_shareholder_info` | 股东/投资 |
-| 6 | `enterprise_forg_parent_subsidiary` | `enterprise_parent_subsidiary` | `dwd_forg_subsidiary_info` | 母子公司 |
+| 6 | `enterprise_forg_parent_subsidiary` | `enterprise_parent_subsidiary` | ~~`dwd_forg_subsidiary_info`~~ → `dwd_agg_subsidiary_info`（v4.0 换源） | 母子公司 |
 
 ### 6.1 `enterprise_forg_base`
 
@@ -754,7 +754,7 @@ CREATE TABLE `enterprise_forg_parent_subsidiary` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='国外机构母子公司关系';
 ```
 
-> **字段对比国内 `enterprise_parent_subsidiary`**：国外表多了 `sub_country_code` / `sub_country_name`（子公司所在国家），因为国外子公司可能在不同国家；少了 `ownership_ratio`（持股比例）和 `subsidiary_count`（子公司数量），因为源表 `dwd_forg_subsidiary_info` 没有这些字段。
+> **字段对比国内 `enterprise_parent_subsidiary`**：国外表多了 `sub_country_code` / `sub_country_name`（子公司所在国家），因为国外子公司可能在不同国家；少了 `ownership_ratio`（持股比例）和 `subsidiary_count`（子公司数量），因为源表（v4.0 起 = `dwd_agg_subsidiary_info`，原设计源 `dwd_forg_subsidiary_info` 从未存在于 live）没有这些字段。
 
 ## 7. `enterprise_recruit`（招聘信息，新增）
 
@@ -815,3 +815,22 @@ CREATE TABLE `enterprise_shareholder` (
 ```
 
 > 现网大量自然人股东无 `inv_org_id`，唯一键不含 `shareholder_org_id`。`owners_name` 空行跳过。
+
+## 9. as-built：`enterprise_patent_org_rel`（v4.0.1 补录，GDF round1 P-06）
+
+> 正式库已建空表（2026-09-02），information_schema 实查与 GDF describe 一致。本节补完整 DDL 文字（与派单包 `10/` 同文）。
+
+```sql
+CREATE TABLE `enterprise_patent_org_rel` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `patent_id` varchar(255) NOT NULL COMMENT '专利记录逻辑主键',
+  `org_id` varchar(64) NOT NULL COMMENT '匹配所得机构id',
+  `party_role` varchar(20) NOT NULL COMMENT 'APPLICANT/ASSIGNEE',
+  `party_sequence` int DEFAULT NULL COMMENT '源列表排列序号',
+  `source_name` varchar(255) DEFAULT NULL COMMENT '源名称（匹配前）',
+  `match_type` varchar(20) DEFAULT 'EXACT_NAME' COMMENT '匹配方式',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_patent_org_role_seq` (`patent_id`,`org_id`,`party_role`,`party_sequence`),
+  KEY `idx_org_id` (`org_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='专利-企业关系（多申请人/权利人）';
+```
