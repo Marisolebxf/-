@@ -34155,3 +34155,65 @@ tasks:
       - "node run-apiview.mjs --check 编译错误为 0"
       - "只回填这五条用例的自动化用例ID；不改用例步骤，不试跑联调台"
     update_time: "2026-10-22T14:16:09+08:00"
+
+  - id: LUMEN-SVC-P-PY-SVCAN-ASM-L01
+    task_type: "feature"
+    title: "P 段 B — svcan 页面装配层：覆盖矩阵/图谱边集/年度序列/深圳对比/统一信封"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: [lumen-algo-py, lumen-ui-algo-apiview]
+    language: [python, json]
+    delivery_phase: "implementation"
+    subcoord: "algorithm"
+    graph_role: "leaf"
+    ods_dependency_phase: "demo"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 260000
+    actual_tokens: 0
+    model_used: "deepseek-flash"
+    actual_cost: 0.0
+    cost_warn: "green"
+    claimed_by: "agent:algorithm-agent"
+    supervised_by: "human:唐绍祖"
+    claim_type: "pull"
+    claimed_at: "2026-10-22T14:05:00+08:00"
+    lock_until: "2026-10-23T14:05:00+08:00"
+    completed_at: "2026-10-22T14:40:00+08:00"
+    commit_sha: "df91b3d5d27f9292e1c9ca3b0cf2dda60a7fe9e6"
+    note: |
+      LUMEN-SVC-P-PY-SVCAN-ASM-L01（本任务唯一登记号；后续修改只追加 handoff §9 变更记录，不另开 task-id）。
+      demo 面 8 叶子全 ads_ready；pytest 22 passed；catalog node --test 21 passed；
+      黑盒联调 run_svc_cases.py 16/16 通过，baseline 对照 1/5（5 处缺口复现）。
+      matrix 键与远程 1350b75 的 /models/gap?org_ids=（机构×服务环节）双口径并存，
+      本任务给机构×产业领域（chain_code）并另暴露 coverage_matrix；端点分离，前端禁混读。
+      live 面待数据工厂灌数后复跑；K8s dev 未验（pipeline_waiver active，still_required 已满足）。
+    depends_on: []
+    touched_files:
+      - "repos/lumen-algo-py/lumen_common/algorithms/svcan/assembly"
+      - "repos/lumen-algo-py/lumen_common/algorithms/svcan/db.py"
+      - "repos/lumen-algo-py/lumen_common/algorithms/svcan/metrics.py"
+      - "repos/lumen-algo-py/lumen_algo_service/views/svcan.py"
+      - "repos/lumen-algo-py/lumen_algo_service/main.py"
+      - "repos/lumen-algo-py/tests/test_svcan_assembly.py"
+      - "repos/lumen-algo-py/tests/test_svcan_assembly_live.py"
+      - "repos/lumen-ui-algo-apiview/src/catalog/svc.json"
+    design_refs:
+      - "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-P-PY-SVCAN-BOOT-L01.md"
+      - "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-P-PY-SVCAN-ASM-L01.md"
+      - "local-workspace/docs/tasks/investiage/20261022_产业链服务机构分析接口调研/产业链服务机构分析接口调研报告.md"
+      - "local-workspace/docs/tasks/investiage/20261022_产业链服务机构分析接口调研/唐绍祖前期准备工作完成情况.md"
+    definition_of_done:
+      - "覆盖矩阵：fields[]+orgs[].coverage{}，缺格不写 0；fields.length>0 且 ≥1 org 有 coverage"
+      - "图谱边集：nodes/edges/paths，自环剔除+类型白名单，density=2E/(N(N-1)) 现算并随包下发公式"
+      - "年度序列：series[].points[] + _all 基线，points>=3；热度由后端给星级（Q060 进 yellow_gaps）"
+      - "深圳对比：5 城 cities[].metrics[] + tier；缺数给 null 不给 0，完整度单列不参与对比"
+      - "统一信封：read_only=true/write=false/pending_client_confirm/yellow_gaps/trace_id；未知叶子 rejected+白名单"
+      - "plane=demo|live：live 需 LUMEN_ALGO_SVCAN_LIVE_ENABLED=1，未授权返回 409+error，禁静默读生产"
+      - "catalog svc.json 12 条 models 端点 unavailable→running，catalog.test.mjs 全绿"
+      - "前端解析器零改动即可命中（svcCoverageModel/svcEcoGraphModel/svcTrendModel/svcSzCompareModel）"
+      - "pytest 22 passed；黑盒 16/16；baseline 对照 1/5 证明缺口复现"
+    evidence: "agent-handoffs/服务机构-SVC/LUMEN-SVC-P-PY-SVCAN-ASM-L01.md"
+    update_time: "2026-10-22T14:40:00+08:00"
