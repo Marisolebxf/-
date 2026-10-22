@@ -20,7 +20,7 @@
 |---|---|
 | 实例 | Doris 4.1.0 |
 | 用户名 | `test2` |
-| 初始密码 | `m+DWAG23RCXBP2L+y7ydaqu3aSuur7mxFOcl3iZHDgVe4eka` |
+| 初始密码 | 不进 git。PM 另行保管 |
 | 数据库 | `gkx_technology_analysis_dev` |
 
 连接示例：
