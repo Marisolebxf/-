@@ -70,6 +70,8 @@ const CONTRACT_ZH = { both: 'F∩L', func_only: 'F−L', lib_only: 'L−F', unso
 const ALGO_TYPES = ['STAT', 'COMPUTE', 'MODEL', 'GRAPH', 'API', 'MIXED', 'UNKNOWN'];
 const MODEL_TYPES = new Set(['MODEL', 'GRAPH', 'COMPUTE', 'MIXED']);
 const TANG_BLOCKER_TYPES = new Set(['MODEL', 'GRAPH', 'MIXED', 'LITERATURE', 'UNKNOWN']);
+/** 公式已签及以后的 lifecycle_stage：算法不再算卡点。保持与 data-lineage-policy §2.1.1 一致。 */
+const FORMULA_SIGNED_STAGES = new Set(['formula_signed', 'source_mapped', 'kit_complete']);
 const THIRD_PARTY_BLOCKER = 'PM（郭万迎）';
 const TOPIC_OWNER_UNNAMED = '专题维度Owner（未点名）';
 
@@ -286,11 +288,14 @@ function topicBlocker(topicOwner) {
   return TOPIC_OWNER_UNNAMED;
 }
 
-function blockerOwner(overallKey, algoType, topicOwner) {
+function blockerOwner(overallKey, algoType, topicOwner, lifecycleStage = 'unspecified') {
   const t = algoType === 'API' ? 'third_party' : algoType || 'UNKNOWN';
   if (t === 'third_party') return THIRD_PARTY_BLOCKER;
   if (t === 'STAT' || t === 'COMPUTE') return topicBlocker(topicOwner);
-  if (TANG_BLOCKER_TYPES.has(t) && overallKey !== 'live') {
+  // 公式已签（含其后各关）说明算法侧不再是卡点：改挂该 overall 的真实责任方，
+  // 否则签完仍显示「算法（唐绍祖）」会把会签成果投影成未签。
+  const formulaSigned = FORMULA_SIGNED_STAGES.has(lifecycleStage);
+  if (TANG_BLOCKER_TYPES.has(t) && overallKey !== 'live' && !formulaSigned) {
     return '算法（唐绍祖）';
   }
   return OWNER_ZH[overallKey] || '—';
@@ -362,7 +367,7 @@ function buildRows() {
         ingestion_status: INGEST_ZH[assessed ? r.ingestionStatus : 'mock'] ?? 'Mock',
         ingestion_stages: assessed ? stagesText(r.stages) : '',
         overall: OVERALL_ZH[overallKey],
-        blocker_owner: blockerOwner(overallKey, algoType, topicOwner),
+        blocker_owner: blockerOwner(overallKey, algoType, topicOwner, assessed ? r.lifecycleStage : 'unspecified'),
         update_freq: seed?.updateFreq || '',
         definition_summary: definition.length > 120 ? `${definition.slice(0, 120)}…` : definition,
         gap_hint: hints.get(id) || '',
