@@ -1,4 +1,4 @@
-# 多智能体任务队列（机器可读）
+﻿# 多智能体任务队列（机器可读）
 # coordinator-agent 每轮选取 status=ready（或 legacy pending）且 depends_on 均已 done 的 leaf 派单
 # 认领字段名词与流程：agent-delivery/task-claiming-guide.md
 # 监管人真名花名册：agent-delivery/team-roster.yaml
@@ -34298,7 +34298,6 @@ tasks:
       - "不改脚本断言把失败改成通过，不铺其余页"
       - "口令只来自环境变量，不写进仓库"
     update_time: "2026-10-22T17:18:32+08:00"
-<<<<<<< Updated upstream
   - id: QA-KJZTFWSFK-SCRIPT-CHAIN-BASIC-L02
     title: "算法库 chain.basic 其余脚本"
     status: "ready"
@@ -34323,7 +34322,6 @@ tasks:
       - "只回填这些用例的自动化用例ID；不改用例步骤，不跑批"
       - "chainId 只用名称表里已有的 id；缺名称从联调台源码补，不按 id 原文去点"
     update_time: "2026-10-22T21:14:57+08:00"
-=======
   - id: SYSINT-SCHEME-02-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-10-22T14:41:47.961Z"
@@ -34525,4 +34523,41 @@ tasks:
       - "能答出调用方向、鉴权、数据落点、缺数时界面表现、智树不做的部分、我方对接文档清单；对不上写「还没有」"
       - "done 的操作人是 human:淮政玮。本任务不建开发叶。不改图空间"
     update_time: "2026-10-22T22:41:56+08:00"
->>>>>>> Stashed changes
+  - id: DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01
+    supervised_by: "human:李伟"
+    claimed_at: "2026-10-22T14:08:45.683Z"
+    last_seen_at: "2026-10-22T14:08:45.683Z"
+    lock_until: "2026-10-22T18:08:45.683Z"
+    claimed_by: "agent:devops-agent"
+    title: "gkxlumen-display 展示聚合 BFF 部署层四件套 + 首次部署上线（D15）"
+    status: "ready_to_sign"
+    agent: "devops-agent"
+    epic: "E-PLATFORM"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "crosscut"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 150000
+    note: "留底收口：首次部署上线完成、E2E 全链路验证通过，handoff 已写（agent-handoffs/DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01.md），待 human:李伟 签收。"
+    depends_on: []
+    touched_files:
+      - "repos/lumen-svc-platform/helm/gkxlumen-platform/values.yaml"
+      - "repos/lumen-svc-platform/helm/gkxlumen-platform/values-lumen.yaml"
+      - "repos/lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-gateway-dev.yml"
+      - "repos/lumen-svc-platform/helm/gkxlumen-platform/configs/gkxlumen-display-dev.yml"
+      - "repos/lumen-svc-platform/helm/gkxlumen-platform/DEPLOY-LUMEN.md"
+      - "repos/lumen-svc-platform/.gitlab-ci.yml"
+    design_refs:
+      - "agent-delivery/architecture-baseline.md（D15 展示聚合 BFF / 三层调用链）"
+      - "agent-delivery/architecture-display-optimized.md §4.1 §4.2"
+      - "agent-delivery/agent-handoffs/DEVOPS-LUMEN-TOPIC-PY-SHOW-L01.md（show-py 前序单）"
+    definition_of_done:
+      - "部署层四件套入库：helm values 双文件（display 段整表写全）、网关路由种子、Nacos display-dev.yml 种子、CI 三处（-pl 清单/image job/deploy job），commit 链 235fdda→77f227a→3fa06d1→0271cd6→2bc11e8 全推 origin/dev"
+      - "helm:chart success：pipeline #2760 job #15022，release gkxlumen-platform STATUS=deployed，display Pod 1/1 Running（ClusterIP 7099，镜像 gkxlumen-display:latest，trivy 过）"
+      - "Nacos 手动双 tenant 灌入（空串+public）：gkxlumen-display-dev.yml 新建 + gateway-dev.yml 追加 /display/** 路由，回读 md5 双端一致"
+      - "网关热刷新生效：actuator/gateway/routes 25 条，gkxlumen-display (Paths: [/display/**]) 在列"
+      - "端到端验证：经网关 /display/actuator/health 返回 {\"status\":\"UP\"}，discoveryClient 确认 display 已注册 Nacos；/display/v1/** 401 为平台统一安全基线"
+      - "handoff agent-handoffs/DEVOPS-LUMEN-DISPLAY-BFF-DEPLOY-L01.md 完成含三次故障定位（reuse-values 合并语义/Service ports strategic merge/--set 持久化 hook 死循环）与遗留清单"
+    update_time: "2026-10-22T22:09:09+08:00"
