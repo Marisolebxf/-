@@ -1,15 +1,15 @@
 # SYSINT-SURVEY-02-L01 · 久新只读库内容调研：数据存储与指标支持
 
-> 只读调研。未改对端库，未写入我方 ADS，未标已接入。监管人淮政玮签收前不改 `done`。
+> 只读调研。未改对端库，未写入我方 ADS，未标已接入。监管人唐绍祖。签收前不改 `done`。
 
 ## 任务认领（必填）
 
 | 字段 | 值 |
 |------|-----|
 | claimed_by | `agent:doc-agent` |
-| supervised_by | `human:淮政玮` |
+| supervised_by | `human:唐绍祖` |
 | claim_type | `pull` |
-| 说明 | 仓 `gkx-orchestration`。范围经监管人确认：130 表字段级；指标库技术/人才/机构全部 93 条。未 commit，未 push |
+| 说明 | 仓 `gkx-orchestration`。范围经淮政玮确认：130 表字段级；指标库技术/人才/机构全部 93 条。2026-10-23 监管人改为唐绍祖 |
 
 ## Ponytail（coding 任务必填）
 
