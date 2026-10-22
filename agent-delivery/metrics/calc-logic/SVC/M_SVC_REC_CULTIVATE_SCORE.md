@@ -80,3 +80,10 @@ $$
 [1]培育综合评分｜安阳市科学技术局｜安阳市科技服务机构考评奖补办法（试行）：安科〔2022〕21号｜2022-05-26｜[《安阳市科技服务机构考评奖补办法（试行）》政策解读_政策解读_安阳市科学技术局](https://ayskjj.anyang.gov.cn/2022/07-21/2352930.html).
 
 [2]培育综合评分｜江苏省市场监督管理局｜科技服务机构星级评定规范：DB32/T 5108-2025｜2025-03-25｜https://dbba.sacinfo.org.cn/attachment/onlineRead/a0698473576de40c89372a7a7c44a9226580a1feed9ab56bde88156de762bb43?file=%2Fportal%2Fdownload%2Fa0698473576de40c89372a7a7c44a9226580a1feed9ab56bde88156de762bb43#zoom=auto&disablerange=true&disablestream=true&disableautofetch=true.
+
+## 会签记录
+
+> 2026-10-22 `human:唐绍祖` 已签 `formula` + `algorithm_type=MODEL`，**限试点口径**：上列王惠四维＋维度内/维度间等权默认；极值归一化分母为当期同池；缺维按可用维均值、可用维数 < 2 不入榜。
+> **未覆盖**：技术创新能力（研发人员/研发投入两列全空）、服务成效（`svc_served_ent_count`/`svc_project_count` 待建、无承载表）、产业相关度、政策匹配度（05 模型叶 181 的另一套维度名待甲方裁定 `REC-B02`）。
+> **降级披露**：现有规模＋市场缺口可算，但深圳池仅 169/14,033 出分（1.20%）；市场占有率分母降级为池内同行业营收，单机构行业组必得 100 分须在结果面披露。
+> 本稿仍为 20260829 王惠版（`source_tables` 指向 `demo_*`）；签字不等于认可 demo 实现，gkx 改写稿回仓后须做签署版↔实现版对照复核。详见 [`SVC-MODEL-REC-COSIGN-L01.md`](../../../agent-handoffs/服务机构-SVC/SVC-MODEL-REC-COSIGN-L01.md)。
