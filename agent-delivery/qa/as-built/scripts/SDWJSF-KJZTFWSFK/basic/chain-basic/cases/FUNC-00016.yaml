@@ -1,0 +1,20 @@
+id: FUNC-00016
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00016
+priority: P0
+title: 全国产业分布主流程
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 全国产业分布
+  - action: algo_fill
+    set: { chainId: INB1701 }
+  - action: algo_run
+expect:
+  - note: 运行结果 data 元素含 province、enterprise_count
+    assert: "await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('province'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_count')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。不断言 sample 具体省份名。

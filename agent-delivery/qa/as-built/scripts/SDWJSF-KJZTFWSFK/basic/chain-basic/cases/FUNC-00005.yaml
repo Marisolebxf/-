@@ -1,0 +1,20 @@
+id: FUNC-00005
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00005
+priority: P1
+title: 产业市场规模非法 statYear
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业市场规模
+  - action: algo_fill
+    set: { chainId: INB1701, statYear: not-a-year }
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 statYear，且不出现 total_revenue
+    assert: "await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701'); const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/statYear/.test(text)) throw new Error('结果未说明 statYear'); if (/total_revenue/.test(text)) throw new Error('结果含 total_revenue')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。statYear=not-a-year。结果须说明 statYear，且不得出现 total_revenue。

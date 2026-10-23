@@ -1,0 +1,20 @@
+id: FUNC-00020
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00020
+priority: P0
+title: 深圳产业要素主流程
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳产业要素
+  - action: algo_fill
+    set: { chainId: INB1701 }
+  - action: algo_run
+expect:
+  - note: 运行结果含 enterprise_count、institution_count、talent_count、total_revenue
+    assert: "await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_count'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('institution_count'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('talent_count'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('total_revenue')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。不断言 sample 具体要素数字。

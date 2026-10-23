@@ -1,0 +1,20 @@
+id: FUNC-00003
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00003
+priority: P0
+title: 产业市场规模仅 chainId
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业市场规模
+  - action: algo_fill
+    set: { chainId: INB1701 }
+  - action: algo_run
+expect:
+  - note: 运行结果 data 元素含 stat_year、total_revenue、growth_rate
+    assert: "await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('stat_year'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('total_revenue'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('growth_rate')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 statYear，仅 chainId=INB1701。不断言 sample 具体数字。

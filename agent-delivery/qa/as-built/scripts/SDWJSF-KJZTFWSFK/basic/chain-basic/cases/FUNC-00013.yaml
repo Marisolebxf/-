@@ -1,0 +1,20 @@
+id: FUNC-00013
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00013
+priority: P1
+title: 产业投融资规模不传 chainId
+entry_id: chain.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业投融资规模
+  - action: algo_fill
+    omit: [chainId]
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 chainId，且不出现 total_amount
+    assert: "const tag = page.locator('.test-workbench .chain-cascader .arco-tag'); if (await tag.count() && await tag.first().isVisible()) throw new Error('chainId 未清空'); const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/chainId/.test(text)) throw new Error('结果未说明 chainId'); if (/total_amount/.test(text)) throw new Error('结果含 total_amount')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 chainId。结果须说明 chainId，且不得出现 total_amount。
