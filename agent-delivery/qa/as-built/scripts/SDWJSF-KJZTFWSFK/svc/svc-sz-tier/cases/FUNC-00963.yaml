@@ -1,0 +1,27 @@
+id: FUNC-00963
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00963
+priority: P0
+title: 深圳梯队位置算法测试清单
+entry_id: svc.sz-tier
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/sz-tier"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 深圳梯队位置
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_SVC_SZ_TIER/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/svc-metric/metric/M_SVC_SZ_TIER/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('深圳梯队位置');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['深圳梯队', '深圳梯队位置']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。

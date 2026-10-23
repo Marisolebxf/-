@@ -1,0 +1,26 @@
+id: FUNC-00966
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00966
+priority: P1
+title: 上游依赖与综合研判非法 region
+entry_id: comp.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 上游依赖与综合研判
+  - action: algo_fill
+    set:
+      region: __invalid__
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 region 非法，且不返回含 kpis.vitality 或 upstream 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/region/.test(text)) throw new Error('结果未说明 region');
+      if (/vitality/.test(text) && /upstream/.test(text) && /bidSection/.test(text)) throw new Error('结果含 kpis.vitality 或 upstream 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。region=__invalid__。catalog status=unavailable，反向断言仍按文档。

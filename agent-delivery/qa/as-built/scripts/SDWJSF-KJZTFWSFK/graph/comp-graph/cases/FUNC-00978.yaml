@@ -1,0 +1,25 @@
+id: FUNC-00978
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00978
+priority: P0
+title: 实体检索 COMP_ENTITY_SEARCH
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 实体检索 COMP_ENTITY_SEARCH
+  - action: algo_fill
+    set:
+      q: "量子"
+      sort: "name"
+    omit:
+      - size
+  - action: algo_run
+expect:
+  - note: "省略 size 仍含业务字段结构"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","source","written_nodes","written_edges","items","total"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

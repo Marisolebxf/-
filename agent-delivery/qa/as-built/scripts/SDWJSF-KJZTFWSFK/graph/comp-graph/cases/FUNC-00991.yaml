@@ -1,0 +1,24 @@
+id: FUNC-00991
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00991
+priority: P0
+title: 可视化 COMP_GRAPH_VIZ
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 可视化 COMP_GRAPH_VIZ
+  - action: algo_fill
+    set:
+      limit: "40"
+    omit:
+      - layout
+  - action: algo_run
+expect:
+  - note: "省略 layout 仍含业务字段结构"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","written_nodes","written_edges","nodes","edges","tags"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

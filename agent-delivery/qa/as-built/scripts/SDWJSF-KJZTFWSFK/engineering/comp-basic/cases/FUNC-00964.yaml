@@ -1,0 +1,25 @@
+id: FUNC-00964
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00964
+priority: P0
+title: 上游依赖与综合研判主流程
+entry_id: comp.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 上游依赖与综合研判
+  - action: algo_fill
+    set:
+      region: "440300"
+  - action: algo_run
+expect:
+  - note: body 含 kpis、upstream、bar_items、pie_items 及用例点名字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['kpis', 'vitality', 'element', 'synergy', 'upstream', 'dimension', 'name', 'bidSection', 'menuLabel', 'ready', 'ready_label', 'bar_items', 'pie_items', 'value']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。region=440300。catalog status=unavailable，断言仍按文档字段名，不断言 sample 具体数字。

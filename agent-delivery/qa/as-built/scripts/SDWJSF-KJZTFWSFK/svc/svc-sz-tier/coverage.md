@@ -1,0 +1,12 @@
+# svc.sz-tier 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00956 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00956 | 深圳梯队，SZT-01 主流程 |
+| FUNC-00957 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00957 | 深圳梯队，SZT-02 省略 industry |
+| FUNC-00958 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00958 | 深圳梯队，SZT-03 非法 industry |
+| FUNC-00959 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00959 | 深圳梯队位置，SZC-01 主流程 |
+| FUNC-00960 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00960 | 深圳梯队位置，SZC-02 省略 industry |
+| FUNC-00961 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00961 | 深圳梯队位置，SZC-03 非法 industry |
+| FUNC-00962 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00962 | （页面），接口信息-清单 |
+| FUNC-00963 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00963 | （页面），算法测试-清单 |

@@ -1,0 +1,27 @@
+id: FUNC-01006
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01006
+priority: P0
+title: 产业全要素图谱 API算法测试清单
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 语义相似 COMP_SEMANTIC_SIM
+expect:
+  - note: 算法测试 tab 下拉 6 项；切换后 POST /industry-comp/v1/comp/graph/similar
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/industry-comp/v1/comp/graph/similar');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('语义相似 COMP_SEMANTIC_SIM');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["D 浏览 COMP_GRAPH_BROWSE","实体检索 COMP_ENTITY_SEARCH","关系查询 COMP_REL_QUERY","可视化 COMP_GRAPH_VIZ","语义相似 COMP_SEMANTIC_SIM","网络指标 COMP_NETWORK_METRIC"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

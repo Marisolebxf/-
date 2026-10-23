@@ -1,0 +1,9 @@
+# comp.basic 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00964 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00964 | 主流程 UPD-01 |
+| FUNC-00965 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00965 | 备选-不传 region UPD-02 |
+| FUNC-00966 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00966 | 异常-非法 region UPD-03 |
+| FUNC-00967 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00967 | 接口信息-清单 |
+| FUNC-00968 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00968 | 算法测试-清单 |

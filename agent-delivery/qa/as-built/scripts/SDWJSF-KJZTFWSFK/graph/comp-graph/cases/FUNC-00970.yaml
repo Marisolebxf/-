@@ -1,0 +1,25 @@
+id: FUNC-00970
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00970
+priority: P0
+title: D 浏览 COMP_GRAPH_BROWSE
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: D 浏览 COMP_GRAPH_BROWSE
+  - action: algo_fill
+    set:
+      hops: "1"
+      limit: "40"
+    omit:
+      - center
+  - action: algo_run
+expect:
+  - note: "省略 center 仍含 op_id、space、source、written_nodes、written_edges、nodes、edges"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","source","written_nodes","written_edges","nodes","edges"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

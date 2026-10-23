@@ -1,0 +1,24 @@
+id: FUNC-00965
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00965
+priority: P0
+title: 上游依赖与综合研判不传 region
+entry_id: comp.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 上游依赖与综合研判
+  - action: algo_fill
+    omit: [region]
+  - action: algo_run
+expect:
+  - note: body 仍含 kpis、upstream、bar_items、pie_items 及用例点名字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['kpis', 'vitality', 'element', 'synergy', 'upstream', 'dimension', 'name', 'bidSection', 'menuLabel', 'ready', 'ready_label', 'bar_items', 'pie_items', 'value']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 region（与 sample 相反）。catalog status=unavailable，不断言 sample 具体数字。

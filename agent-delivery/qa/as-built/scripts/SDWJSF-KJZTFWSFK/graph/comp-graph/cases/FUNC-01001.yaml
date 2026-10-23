@@ -1,0 +1,23 @@
+id: FUNC-01001
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01001
+priority: P0
+title: 网络指标 COMP_NETWORK_METRIC
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 网络指标 COMP_NETWORK_METRIC
+  - action: algo_fill
+    set:
+      center: "ent:ORG00000002"
+      limit: "40"
+  - action: algo_run
+expect:
+  - note: "传入 center 仍含业务字段结构"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","density","node_count","edge_count","centrality","written_nodes","written_edges"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

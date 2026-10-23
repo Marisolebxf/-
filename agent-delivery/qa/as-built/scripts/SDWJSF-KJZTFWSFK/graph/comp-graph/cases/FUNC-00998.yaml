@@ -1,0 +1,25 @@
+id: FUNC-00998
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00998
+priority: P1
+title: 语义相似 COMP_SEMANTIC_SIM
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 语义相似 COMP_SEMANTIC_SIM
+  - action: algo_fill
+    set:
+      a: "量子"
+      mode: "规则"
+    omit:
+      - b
+  - action: algo_run
+expect:
+  - note: "message 或 msg 指出 b 缺失；不含 score 成功结果"
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/b/.test(text)) throw new Error('结果未说明 b'); if (/score/.test(text)) throw new Error('结果含 score')
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

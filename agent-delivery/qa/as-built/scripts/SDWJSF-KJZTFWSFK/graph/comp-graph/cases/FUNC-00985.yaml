@@ -1,0 +1,25 @@
+id: FUNC-00985
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00985
+priority: P0
+title: 关系查询 COMP_REL_QUERY
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 关系查询 COMP_REL_QUERY
+  - action: algo_fill
+    set:
+      src: "ent:ORG00000002"
+      limit: "20"
+    omit:
+      - direction
+  - action: algo_run
+expect:
+  - note: "省略 direction 仍含业务字段结构"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","written_nodes","written_edges","edges"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"

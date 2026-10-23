@@ -1,0 +1,16 @@
+# comp.tech-outcome 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01007 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01007 | 科技成果评价，TEC-01 主流程 |
+| FUNC-01008 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01008 | 科技成果评价，TEC-02 省略 region |
+| FUNC-01009 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01009 | 科技成果评价，TEC-03 省略 year |
+| FUNC-01010 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01010 | 科技成果评价，TEC-04 非法 region |
+| FUNC-01011 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01011 | 科技成果评价，TEC-05 非法 year |
+| FUNC-01012 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01012 | 区域科技创新成果综合评价模型，SYN-01 主流程 |
+| FUNC-01013 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01013 | 区域科技创新成果综合评价模型，SYN-02 省略 region |
+| FUNC-01014 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01014 | 区域科技创新成果综合评价模型，SYN-03 省略 year |
+| FUNC-01015 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01015 | 区域科技创新成果综合评价模型，SYN-04 非法 region |
+| FUNC-01016 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01016 | 区域科技创新成果综合评价模型，SYN-05 非法 year |
+| FUNC-01017 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01017 | （页面），接口信息-清单 |
+| FUNC-01018 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01018 | （页面），算法测试-清单 |

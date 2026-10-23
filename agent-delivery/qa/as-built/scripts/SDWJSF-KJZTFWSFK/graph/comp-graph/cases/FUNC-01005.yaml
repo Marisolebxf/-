@@ -1,0 +1,30 @@
+id: FUNC-01005
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01005
+priority: P0
+title: 产业全要素图谱 API接口信息清单
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: assert_visible
+    target: "6 个接口"
+  - action: assert_visible
+    target: /industry-comp/v1/comp/graph
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 实体检索 COMP_ENTITY_SEARCH
+expect:
+  - note: 接口信息 tab 下拉 6 项；默认 browse GET；切换后 entities GET
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/industry-comp/v1/comp/graph/entities');
+      await expect(page.locator('.api-info-grid header')).toContainText('实体检索 COMP_ENTITY_SEARCH');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["D 浏览 COMP_GRAPH_BROWSE","实体检索 COMP_ENTITY_SEARCH","关系查询 COMP_REL_QUERY","可视化 COMP_GRAPH_VIZ","语义相似 COMP_SEMANTIC_SIM","网络指标 COMP_NETWORK_METRIC"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认 browse path，再切换实体检索。

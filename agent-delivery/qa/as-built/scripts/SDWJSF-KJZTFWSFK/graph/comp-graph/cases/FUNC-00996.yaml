@@ -1,0 +1,25 @@
+id: FUNC-00996
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00996
+priority: P0
+title: 语义相似 COMP_SEMANTIC_SIM
+entry_id: comp.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 语义相似 COMP_SEMANTIC_SIM
+  - action: algo_fill
+    set:
+      a: "量子"
+      b: "量子计算"
+    omit:
+      - mode
+  - action: algo_run
+expect:
+  - note: "省略 mode 仍含业务字段结构"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["op_id","space","score","source","model_version","llm_fallback","written_nodes","written_edges"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。"
