@@ -1,0 +1,26 @@
+id: FUNC-00461
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00461
+priority: P0
+title: 关键环节主流程 chainId=INB170101
+entry_id: chain.keynodes
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/keynodes"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 关键环节
+  - action: algo_fill
+    set:
+      chainId: INB170101
+  - action: algo_run
+expect:
+  - note: 返回面板含关键环节字段名；填 chainId 后 tag 为 INB170101
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB170101');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['node_name', 'position', 'high_end_index', 'value_added_score', 'tech_barrier_score', 'market_concentration_score', 'is_key_node']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档 sampleResponse 字段名。不断言 sample 具体数字。

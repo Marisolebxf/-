@@ -1,0 +1,25 @@
+id: FUNC-00483
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00483
+priority: P0
+title: 深圳产业优势识别模型主流程 chain_id=INB1701
+entry_id: chain.shenzhen
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/shenzhen"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳产业优势识别模型
+  - action: algo_fill
+    set:
+      chain_id: INB1701
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、hint
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const v = page.locator('.test-workbench .json-viewer');
+      await expect(v).toContainText('metric_id');
+      await expect(v).toContainText('hint');
+as_built_note: 用例写点击调用，页面按钮是执行接口。请求体按 sampleRequest 写 chain_id=INB1701（params.name=chainId，example=INB170101 不一致，以 sampleRequest 为准）。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。

@@ -1,0 +1,26 @@
+id: FUNC-00473
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00473
+priority: P0
+title: 区域指数主流程
+entry_id: chain.region
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/region"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 区域指数
+  - action: algo_fill
+    set:
+      chainId: INB170101
+  - action: algo_run
+expect:
+  - note: body 含 province、region_index、enterprise_count、rank_in_chain；填 chainId 后 tag 为 INB170101
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB170101');
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['province', 'region_index', 'enterprise_count', 'rank_in_chain']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

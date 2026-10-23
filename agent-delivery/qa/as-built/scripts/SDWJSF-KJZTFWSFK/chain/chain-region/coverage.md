@@ -1,0 +1,12 @@
+# chain.region 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00473 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00473 | 区域指数主流程 |
+| FUNC-00474 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00474 | 区域指数异常-缺 chainId |
+| FUNC-00475 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00475 | 竞争力评价主流程 |
+| FUNC-00476 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00476 | 竞争力评价异常-缺 chainId |
+| FUNC-00477 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00477 | 区域产业指数模型主流程 |
+| FUNC-00478 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00478 | 区域产业指数模型异常-缺 chainId |
+| FUNC-00479 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00479 | 接口信息-清单 |
+| FUNC-00480 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00480 | 算法测试-清单 |

@@ -1,0 +1,27 @@
+id: FUNC-00480
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00480
+priority: P0
+title: 区域产业指数算法测试清单
+entry_id: chain.region
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/region"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 区域产业指数模型
+expect:
+  - note: 算法测试下拉 3 项；切换后 POST M_CHAIN_DEEP_126_1/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/chainan/metric/M_CHAIN_DEEP_126_1/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('区域产业指数模型');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3);
+      for (const name of ['区域指数', '竞争力评价', '区域产业指数模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

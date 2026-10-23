@@ -1,0 +1,27 @@
+id: FUNC-00474
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00474
+priority: P1
+title: 区域指数不传 chainId
+entry_id: chain.region
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/region"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 区域指数
+  - action: algo_fill
+    omit: [chainId]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 chainId，且不出现 region_index 成功业务载荷
+    assert: |-
+      const tag = page.locator('.test-workbench .chain-cascader .arco-tag');
+      if (await tag.count() && await tag.first().isVisible()) throw new Error('chainId 未清空');
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/chainId/.test(text)) throw new Error('结果未说明 chainId');
+      if (/region_index/.test(text) && /enterprise_count/.test(text)) throw new Error('结果含 region_index 成功业务 body');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 chainId。catalog status=unavailable。结果须说明 chainId，且不得出现 sampleResponse 成功体特征字段。
