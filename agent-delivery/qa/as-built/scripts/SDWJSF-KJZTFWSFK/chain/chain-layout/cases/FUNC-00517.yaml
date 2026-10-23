@@ -1,0 +1,26 @@
+id: FUNC-00517
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00517
+priority: P0
+title: 重点布局产业推荐模型主流程
+entry_id: chain.layout
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/layout"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 重点布局产业推荐模型
+  - action: algo_fill
+    set:
+      chainId: INB170101
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、hint；responseFields 含 recommend_level、recommend_index 字段名
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB170101');
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'recommend_level', 'recommend_index']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。请求体 params.name=chainId，example=INB170101（sampleRequest 为 {}）。catalog status=available，断言仍按文档字段。不断言 sample 具体数字。

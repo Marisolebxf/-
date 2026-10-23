@@ -1,0 +1,20 @@
+id: FUNC-00071
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00071
+priority: P1
+title: 政策时序指标非法 kind
+entry_id: policy.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策时序指标
+  - action: algo_fill
+    set: { kind: __invalid__ }
+  - action: algo_run
+expect:
+  - note: 结果说明 kind 非法，且无 timeseries 成功载荷
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/kind/.test(text)) throw new Error('结果未说明 kind'); if (/period_key/.test(text)) throw new Error('结果含 period_key'); if (/publish_count/.test(text)) throw new Error('结果含 publish_count');"
+as_built_note: 用例写点击调用，页面按钮是执行接口。kind=__invalid__。

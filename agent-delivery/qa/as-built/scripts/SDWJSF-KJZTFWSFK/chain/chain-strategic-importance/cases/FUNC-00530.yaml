@@ -1,0 +1,25 @@
+id: FUNC-00530
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00530
+priority: P0
+title: 产业战略重要性分析算法测试清单
+entry_id: chain.strategic-importance
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/strategic-importance"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 战略重要性
+expect:
+  - note: 算法测试下拉 1 项；调用区 GET /innov/v1/industry/{chainId}/strategic-importance
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/{chainId}/strategic-importance');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('战略重要性');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1);
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('战略重要性');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

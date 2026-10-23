@@ -1,0 +1,21 @@
+id: FUNC-00078
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00078
+priority: P0
+title: 政策基础指标接口信息清单
+entry_id: policy.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/basic"
+  - action: assert_visible
+    target: 7 个接口
+  - action: assert_visible
+    target: /policy/v1/policy/metrics
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 政策基础指标（全维度）
+expect:
+  - note: 接口信息页签；切换后概览为政策基础指标（全维度） GET /policy/v1/policy/indicators；下拉 7 项
+    assert: "await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true'); await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET'); await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/policy/v1/policy/indicators'); await expect(page.locator('.api-info-grid header')).toContainText('政策基础指标（全维度）'); await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click(); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(7); for (const name of ['指标总览','政策基础指标（全维度）','政策级别指标','政策类型指标','政策时序指标','全国政策分布','深圳政策分布']) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }"
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息，默认项为指标总览 path /policy/v1/policy/metrics。
