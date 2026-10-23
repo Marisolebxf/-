@@ -7,7 +7,7 @@ element: POLICY
 role: store-nebula
 status: draft
 version: "2026-08-21"
-updated: 2026-08-21
+updated: 2026-10-23
 engine: nebula
 task_id: DATA-POLICY-STORAGE-S3-L01
 ---
@@ -30,7 +30,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 | 边 | 中文 | 起点 → 终点 | 源字段 | 权重 | props |
 |---|---|---|---|---|---|
-| `support` | **扶持**：政策把资源投向谁 | policy → industry | `related_entities.industry`（空则回落 `ext5`） | `0.8` | `{factor: factors}` |
+| `support` | **扶持**：政策把资源投向谁 | policy → industry | `policy_industry_rel`（`is_deleted=0`）。不读已弃用的 `related_entities.industry`，不用 `ext5` 兜底 | `0.8` | `{factor: factors}` |
 | | | policy → enterprise | `related_entities.enterprise` | `0.5–0.9` 随机 | — |
 | | | policy → talent | `related_entities.talent` | `0.7` | — |
 | `apply_to` | **适用**：政策的效力覆盖谁 | policy → industry | 同 `industry` 源 | `0.6` | — |

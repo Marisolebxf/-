@@ -7,7 +7,7 @@ element: POLICY
 role: store-mysql
 status: draft
 version: "2026-08-21"
-updated: 2026-08-21
+updated: 2026-10-23
 engine: mysql
 task_id: DATA-POLICY-STORAGE-S3-L01
 ---
@@ -15,7 +15,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 > Java **只读**本层。DDL 细列见旧稿 v1 §3。库：`demo_gkxlumenx_ads`。`calc_batch_id` 前缀 `mock_` 区分 Mock。
 
-## 表总览（as-built 15 张，回源 `polan/common/db.py`）
+## 表总览（as-built 16 张）
 
 | 群 | 张数 | 产出模块 |
 |---|---|---|
@@ -23,8 +23,9 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 | 图镜像 | 2 | `graph/entity.py` |
 | NER 结果 | 1 | `graph/entity.py` |
 | 文本智能处理 | 3 | `text/*` |
+| 产业关联镜像 | 1 | `industry_enrich.py`（自 DWD 同名表按政策同步） |
 
-> 旧口径「九张指标表」只覆盖第一群，会漏掉后 6 张。写入图见 [`../../etl/pipeline-dwd-to-ads.md`](../../etl/pipeline-dwd-to-ads.md)。
+> 旧口径「九张指标表」只覆盖第一群。指标 / 图 / 文本的写入图见 [`../../etl/pipeline-dwd-to-ads.md`](../../etl/pipeline-dwd-to-ads.md)。`policy_industry_rel` 不在那 12 步里。
 
 ## 指标表（v1 九张，搬树不改列语义）
 
@@ -66,6 +67,14 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 | `policy_simulate` | D3 政策效果推演仿真：基线 vs 仿真值与曲线 | `scenario_id` · `scope_type` · `scope_code` · `params` json · `baseline_value` · `simulated_value` · `delta_rate` · `curve` json · `explanation` |
 
 三张表均带 `model_version` + `calc_batch_id`，规则基线产物按 D9 须在 UI 标注模型版本。`policy_simulate` 目前只存**单轮**结果；多轮对比快照是 `OPEN-POLICY-DISP-05` 缺口，不要往本表塞。
+
+## 产业关联镜像（1 张）
+
+| 表 | 用途 | 关键列 |
+|---|---|---|
+| `policy_industry_rel` | DWD 同名表的只读镜像。列与 `demo_gkxlumenx_dwd.policy_industry_rel` 相同 | `id` · `policy_id` · `industry_name` · `industry_link_code` · `is_deleted` · `create_time` · `update_time` |
+
+抽取写完 DWD 后，按 `policy_id` 删除 ADS 中该政策的行，再插入 DWD 当前行（含已逻辑删除行，`id` 不变）。Java 读本表。算法增量与图谱仍读 DWD。有效行：`is_deleted=0`。
 
 ## 展示窗口消费（DS-10/11/12）
 

@@ -7,14 +7,14 @@ element: POLICY
 role: data-flow
 status: approved
 version: "2026-09-11"
-updated: 2026-09-11
+updated: 2026-10-23
 engine: multi
 signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
 task_id: LUMEN-POLICY-E-DEVOPS-L01
-amendment_note: "E0 只补发布边：helm 装出 gkxlumen-platform-topic-policy:7097；网关 /policy/** → 30899；政策 HTTP 现网 gkxlumen-platform-entan-py:8000；Nacos FORCE_NACOS_REPUBLISH 灌 async.policy.algo-base-url。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。2026-09-11 增 §2.4 产业向量消费切面 + L0 theme 只进 ext5（CROSS-VEC；不改 §1 工厂边、不翻签）。"
+amendment_note: "E0 只补发布边：helm 装出 gkxlumen-platform-topic-policy:7097；网关 /policy/** → 30899；政策 HTTP 现网 gkxlumen-platform-entan-py:8000；Nacos FORCE_NACOS_REPUBLISH 灌 async.policy.algo-base-url。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。2026-09-11 增 §2.4 产业向量消费切面 + L0 theme 只进 ext5（CROSS-VEC；不改 §1 工厂边、不翻签）。2026-10-23：related_entities.industry 贴源后弃用；产业抽取只写 DWD policy_industry_rel，并按政策同步到 ADS 同名表，不回写主表 JSON。"
 ---
 ```
 
@@ -48,7 +48,7 @@ flowchart LR
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |---|---|---|---|---|
-| 三方 / Mock ODS | DWD `policy_base_info` | 批：模拟 GDF / `run_all_policy` | 本批失败不晋升 ADS；保留上一成功 DWD | 默写正式 `gkx`/`gkxlumenx_*`；仍用 `dwd_zck_*`；PG 叙述；**`theme` 写入 `related_entities.industry`** |
+| 三方 / Mock ODS | DWD `policy_base_info` | 批：模拟 GDF / `run_all_policy` | 本批失败不晋升 ADS；保留上一成功 DWD | 默写正式 `gkx`/`gkxlumenx_*`；仍用 `dwd_zck_*`；PG 叙述；**`theme` 写入 `related_entities.industry`（该键已弃用）** |
 | `lumen-algo-py` polan | ADS `policy_*` | 流水线 append/replace | 半成品不发布；任务 failed | 前端造假填数；专题调 `/v1`；专题 Job 一次 load 全表 4 万+（须走 `polan.harness` 分片） |
 | `lumen-algo-py` polan | `demo_gkx_chain` | 投影（算子冻结，本叶只迁代码） | fail-soft：ADS 镜像仍可读；`source` 不得标 nebula | `CREATE SPACE gkx_policy`；`DROP SPACE demo_gkx_chain`；写 `gkx_chain` |
 | Java `gkxlumen-topic-policy` | 前端 | 在线 HTTP | 不写回库；不扫 ODS | 直连 nGQL；lumen 调 demo 服务当正式链；展示前端把 fixture 当 ADS |
@@ -139,28 +139,28 @@ flowchart LR
   ODS["ODS 政策"] -->|"L0 结构映射"| DWD["DWD policy_base_info"]
   DWD -->|"theme 只进 ext5"| EXT["ext5"]
   DWD -->|"L1 标题/摘要/关键词/要点"| L1["match_industry_anchors"]
-  L1 --> SLOT["related_entities.industry"]
-  SLOT -.->|"同步重灌到此结束"| STOP["不调 Milvus / LLM"]
+  L1 --> REL["policy_industry_rel"]
   BTN["按钮 / Job A"] -->|"search top-k"| VEC["Milvus gkxlumen_industry_anchor"]
   VEC -->|"候选名+vid+score"| L1
+  REL -.->|"不写"| OLD["related_entities.industry 弃用"]
 ```
 
-| 层 | 产业槽来源 | 进重灌同步？ | 进 ETL / 按钮？ |
+| 层 | 产业关联落点 | 进重灌同步？ | 进 ETL / 按钮？ |
 |---|---|---|---|
-| L0 结构映射 | `theme` → **仅** `ext5`；**不**写入 `related_entities.industry` | **是** | 否（已在重灌做完） |
-| L1 规则 / 图名 | 标题 + 摘要 + 关键词 + 要点 + `policy_support`；`match_industry_anchors` | **是** | 否（已在重灌做完） |
-| 锚点向量检索 | 查询 embed → top-k → **再** L1 对码 | **否** | **是**（Job A / 「语义抽槽」按钮） |
-| L2 LLM 抽名 | 只输出中文名，再 L1 对码；失败回退 L1 | **否** | **是**（Job B，默认关） |
+| L0 结构映射 | `theme` → **仅** `ext5`。**不**写 `related_entities.industry`（贴源后该键弃用） | **是** | 否（已在重灌做完） |
+| L1 规则 / 图名 | 标题 + 摘要 + 关键词 + 要点 + `policy_support`；`match_industry_anchors`。链码写入 `policy_industry_rel`，不回写主表 JSON | **是** | 否（已在重灌做完） |
+| 锚点向量检索 | 查询 embed → top-k → **再** L1 对码。按钮 / Job A **只**写 DWD `policy_industry_rel`（`is_deleted` 逻辑删除），并同步 ADS 同名表 | **否** | **是**（Job A / 「抽取产业」按钮） |
+| L2 LLM 抽名 | 只输出中文名，再 L1 对码；失败回退 L1。同样只写关联表 | **否** | **是**（Job B，默认关） |
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
 |---|---|---|---|---|
-| polan 重灌 `run_all_policy` / append | DWD 产业槽 | 灌数 HTTP | 无码只留 `{name}`；上图 skip | 同步调 `embed/rebuild` / `search` / LLM；`theme` 进 industry 槽 |
+| polan 重灌 `run_all_policy` / append | `policy_industry_rel`（L1 对码） | 灌数 HTTP | 无码只留名称行；上图 skip | 同步调 `embed/rebuild` / `search` / LLM；`theme` 或链码写入 `related_entities.industry` |
 | `POST /internal/industry/embed/search` | Job A / 按钮 | 重灌成功之后的下游步 | 503 + degraded + 空 items；**不写假 `chain:`** | 采 top1 当 `industry_link_code`；与灌链并排跑 |
 | Java `POST /chain/topic/v1/industry/embed/search` | 后续门面 | Feign | 未就绪 501 + honesty | Java 直连 19530 / TEI；把 score 加工成链码 |
 
 **定码铁律**：向量分数不是码。top-k 候选必须再过 `match_industry_anchors`。VID 只用图上链码（`chain:INB170101`），禁止 ODS 短码 / 中文名。
 
-**与 OPEN-POLICY-XDOM-01**：覆盖度分母仍是 CHAIN 维 / 图上点数。分子只认 L1（及未来 Job A 二次对码）写出的 `industry_link_code`；`ext5` 的 theme **不计入**产业覆盖。
+**与 OPEN-POLICY-XDOM-01**：覆盖度分母仍是 CHAIN 维 / 图上点数。分子只认 DWD `policy_industry_rel` 中 `is_deleted=0` 且带 `industry_link_code` 的行。ADS 同名表是镜像，不另计。`ext5` 的 theme 与已弃用的 `related_entities.industry` **不计入**产业覆盖。
 
 ## 3. 点/边挂接映射（拓扑已放行；细表 DDL 仍 draft）
 
@@ -221,7 +221,7 @@ CHAIN 现网 schema（`chainan.graph.nebula_schema`，禁止另起第二套本�
 |---|---|---|---|---|
 | OPEN-POLICY-DIM-01 | `M_POLICY_NATIONAL_DIST` · `M_POLICY_SZ_DIST` | `dim: dim.region`（省级 / 深圳区县映射） | `basic/indicators.py` 直接用 `dwd.policy_base_info.region` 字符串聚合，无维表 | 省市区名称不规范时分组漂移；跨域口径无法与 CHAIN/ENT 对齐 |
 | OPEN-POLICY-DIM-02 | `M_POLICY_LAYOUT_REC_COUNT` | 「专家策略库（待补维表）」 | 无。`eval/layout.py` 仅融合机遇 + 短板 | 布局建议缺专家策略输入，口径不完整 |
-| OPEN-POLICY-XDOM-01 | `M_POLICY_INDUSTRY_COVERAGE` | `dwd.industry_chain`（跨域产业链维表） | 产业侧靠 L1 写入的 `related_entities.industry`（须有 `industry_link_code`）。`ext5` 只存 theme，**不计入**覆盖分子。分母仍未接 CHAIN 维表 | 「产业链全节点数」分母无权威来源；theme 退出后分子不再被主题词污染 |
+| OPEN-POLICY-XDOM-01 | `M_POLICY_INDUSTRY_COVERAGE` | `dwd.industry_chain`（跨域产业链维表） | 分子 = DWD `policy_industry_rel` 有效行里的 `industry_link_code`。ADS 镜像不另计。`ext5` 只存 theme，`related_entities.industry` 已弃用，二者都不计入。分母仍未接 CHAIN 维表 | 「产业链全节点数」分母无权威来源 |
 
 两条路二选一，**不得两边并存**：补齐对应对象，或把 seed 的 `source_tables` 改为 as-built 做法并在口径里写明降级。前者属结构项、后者属口径项，均需 `human:淮政玮` 定向。
 

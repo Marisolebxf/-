@@ -30,7 +30,8 @@ gkxlumenx_ods.dwd_global_policy_base
 |---|---|---|
 | `POLICY-B1-DOMESTIC` | 可配置 | 无；国内洗入 |
 | `POLICY-B2-GLOBAL` | 可配置 | 无；国际洗入同一张表 |
-| 写 ES / ADS / Nebula | **不执行** | 本包范围外 |
+| 写 ES / Nebula | **不执行** | 不在本包 |
+| `POLICY-C1-INDUSTRY` / `POLICY-C2-CLAUSE` | B 成功后另排 | 见 `12`。不要配进本 Mapping 作业 |
 
 B1/B2 可并行配置，但必须共用同一 UK；碰撞行按 09 §1.2 **隔离计数**，禁止改键。
 
@@ -45,4 +46,4 @@ B1/B2 可并行配置，但必须共用同一 UK；碰撞行按 09 §1.2 **隔�
 
 ## 5. 本侧后续
 
-指标 STAT / 图谱 / 检索不在本包。正式 DAG 名仍挂 `OPEN-POLICY-FLOW-01`，由产线回写。
+指标 STAT / 图谱 / 检索不在本包。B 成功后的抽取产业与条款结构化见 `12`（不进本派工的字段配置）。正式 DAG 名仍挂 `OPEN-POLICY-FLOW-01`，由产线回写。

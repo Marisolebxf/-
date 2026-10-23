@@ -7,7 +7,7 @@ element: POLICY
 role: etl
 status: as-built
 version: "2026-08-31"
-updated: 2026-08-31
+updated: 2026-10-23
 engine: mysql
 task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 ---
@@ -37,7 +37,11 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 | D2 | `text/match.py` | `policy_match` |
 | D3 | `text/simulate.py` | `policy_simulate` |
 
-> 四张表（`policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate`）曾漏登 S3，已于 `DATA-POLICY-STORAGE-S3-GAP-L01` 补进 [`../stores/mysql/ads.md`](../stores/mysql/ads.md)（as-built 共 15 张）。
+> 四张表（`policy_entity` / `policy_text_parse` / `policy_match` / `policy_simulate`）曾漏登 S3，已于 `DATA-POLICY-STORAGE-S3-GAP-L01` 补进 [`../stores/mysql/ads.md`](../stores/mysql/ads.md)。
+
+## 产业关联镜像（不在上表 12 步）
+
+`policy_industry_rel` 由 `polan/industry_enrich.py` 在单次抽取提交内同步：DWD 写完后，按 `policy_id` 替换 ADS 同名表的行。`run_all_policy` 不 TRUNCATE、不重算这张表。列与 DWD 相同，见 [`../stores/mysql/dwd.md`](../stores/mysql/dwd.md)。
 
 ## 顺序约束（不可随意打乱）
 

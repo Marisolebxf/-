@@ -7,13 +7,13 @@ element: POLICY
 role: etl
 status: draft
 version: "2026-08-21"
-updated: 2026-08-21
+updated: 2026-10-23
 engine: mysql
 task_id: DATA-POLICY-STORAGE-S3-L01
 ---
 ```
 
-> ODS DDL 真源：[`../sources/ods-ddl.md`](../sources/ods-ddl.md)。  
+> ODS 字段真源：汇总表「国内政策要素库」「国外政策要素库」。DDL：[`../sources/ods-ddl.md`](../sources/ods-ddl.md)。  
 > 项目 DWD：`demo_gkxlumenx_dwd.policy_base_info`。旧 v1 37 列 **不得**当贴源。本叶不 APPLY。
 
 读过滤：`is_deleted=0`；`is_history=0`（当前）。`id` 长度 ≤100，上图 VID `pol:{id}` 仍受 `vid_length=80` 约束——超长须截断策略另开（禁止静默碰撞）。
@@ -22,7 +22,8 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 | ODS | 项目 DWD 建议列 | 规则 |
 |---|---|---|
-| `id` | `policy_id` | 主键；勿另造哈希 |
+| `t_id` | 不进业务列 | tdsql 分片键 |
+| `id` | `policy_id` | 业务唯一键；勿另造哈希 |
 | `title` | `title` | 直拷；源 500 |
 | `publish_code` | `issued_number` | 直拷 |
 | `ministry` | `publish_organization` | 直拷 |
@@ -52,6 +53,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 | ODS | 项目 DWD | 规则 |
 |---|---|---|
+| `t_id` | 不进业务列 | tdsql 分片键 |
 | `id` | `policy_id` | 与国内同一键空间，碰撞则加前缀 `gbl:` 须书面定（OPEN） |
 | `title` `abstract` `content` `link` `theme` | 同名 / `url` | `title` 源为 text |
 | `organ` | `publish_organization` | 必填 |

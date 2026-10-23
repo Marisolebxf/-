@@ -7,21 +7,22 @@ element: POLICY
 role: source
 status: draft
 version: "2026-08-21"
-updated: 2026-08-21
+updated: 2026-10-23
 engine: mysql
 task_id: DATA-POLICY-STORAGE-S2-L01
 ---
 ```
 
-> **表结构以此文件为准**（`human:淮政玮` 提供 · 2026-08-21）。供应库 `gkx`；Demo 镜像同 DDL、同表名。  
-> 角色 = **ODS 贴源**。禁止把本表当项目 DWD。禁止再写 `dwd_zck_*`。  
-> 本叶不 APPLY。冲突时：**本 DDL 赢** `doc/` xlsx / 旧映射报告。
+> 三方只读 ODS **固定两张表**（2026-10-23）：`dwd_policy_base`（国内政策）、`dwd_global_policy_base`（海外政策）。  
+> 字段以 [`../../../../third-party-source/doc/md-extract/版权人才、企业机构、政策数据汇总表.md`](../../../../third-party-source/doc/md-extract/版权人才、企业机构、政策数据汇总表.md) 的「国内政策要素库」「国外政策要素库」为准（各 35 列，含 `t_id`）。  
+> 供应库 `gkx` 只读；Demo 镜像同表名。角色 = **ODS 贴源**。禁止把本表当项目 DWD。禁止再写 `dwd_zck_*`。本叶不 APPLY。
 
 ## `dwd_policy_base`（国内政策库）
 
 ```sql
 CREATE TABLE `dwd_policy_base` (
-  `id` varchar(100) NOT NULL COMMENT '技术字段:表的主键',
+  `t_id` bigint NOT NULL COMMENT 'tdsql分片键。汇总表标主键；业务唯一与索引主键是 id',
+  `id` varchar(100) NOT NULL COMMENT '政策唯一ID',
   `title` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '政策标题',
   `publish_code` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '政策文号',
   `ministry` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '发文部门',
@@ -63,7 +64,8 @@ CREATE TABLE `dwd_policy_base` (
 
 ```sql
 CREATE TABLE `dwd_global_policy_base` (
-  `id` varchar(100) NOT NULL COMMENT '技术字段:表的主键',
+  `t_id` bigint NOT NULL COMMENT 'tdsql分片键。汇总表标主键；业务唯一与索引主键是 id',
+  `id` varchar(100) NOT NULL COMMENT '业务唯一标识，用于去重',
   `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '政策文件的正式标题',
   `abstract` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '政策内容的简要概述',
   `organ` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '政策制定/发布机构名称',
@@ -95,7 +97,7 @@ CREATE TABLE `dwd_global_policy_base` (
   `is_deleted` smallint NOT NULL DEFAULT '0' COMMENT '技术字段:逻辑删除标识,0未删除,1已删除',
   `operator_remarks` varchar(100) DEFAULT NULL COMMENT '技术字段:操作备注',
   `insert_remark` smallint NOT NULL DEFAULT '0' COMMENT '技术字段:插入标识,0新增,1修改,2补齐',
-  `doc_type` varchar(64) DEFAULT NULL COMMENT '文档类型',
+  `doc_type` varchar(100) DEFAULT NULL COMMENT '文档类型',
   `is_history` int DEFAULT NULL COMMENT '是否历史标识,0当前,1历史',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='政策-国外政策-国外政策信息表';

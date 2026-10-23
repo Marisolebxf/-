@@ -2,6 +2,8 @@
 
 | 日期 | 任务 | 说明 |
 |---|---|---|
+| 2026-10-23 | ODS 只读源 | 三方只读固定 `dwd_policy_base` / `dwd_global_policy_base`，字段以汇总表国内/国外政策要素库为准（各 35 列，补 `t_id`）。废止 `dwd_zck_*` 与 29/16 列口径 |
+| 2026-10-23 | 产业关联表 | `related_entities.industry` 贴源后弃用；抽取只写 DWD `policy_industry_rel`（逻辑删除），并按政策同步到 ADS 同名表。同步 `dwd.md` / `ads.md` / `pipeline-dwd-to-ads.md` / `01-data-flow.md` §2.4 / `nebula.md` / `pipeline-to-nebula.md` / 旧目录 `data-design/政策` |
 | 2026-08-21 | `DATA-POLICY-STORAGE-S1-L01` | 开域 + `POLICY-STORAGE-FLOW` approved |
 | 2026-08-21 | `DATA-POLICY-STORAGE-S2-L01` | sources / etl / seeds 指针 |
 | 2026-08-21 | `DATA-POLICY-STORAGE-S3-L01` | stores draft；图谱 hang `demo_gkx_chain` |

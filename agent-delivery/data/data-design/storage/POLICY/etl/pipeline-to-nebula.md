@@ -184,7 +184,7 @@ Java 不抽实体、不写 nGQL。LLM 若上，只许在 Python `entity.py`（�
 
 | 边 | 中文 | 需规 | 终点类型 | DWD 源 | 规则权重 | 上图条件 |
 |---|---|---|---|---|---|---|
-| `support` | 扶持：资源投向谁 | 107 扶持 | industry | `related_entities.industry`，空则 `ext5` | 0.8 | 解析到 `chain:` / `segment:` |
+| `support` | 扶持：资源投向谁 | 107 扶持 | industry | `policy_industry_rel`（`is_deleted=0`） | 0.8 | 解析到 `chain:` / `segment:` |
 | `support` | 同上 | 107 扶持 | enterprise | `related_entities.enterprise` | 0.5–0.9（受控随机，Mock） | 解析到 `ent:` |
 | `support` | 同上 | 107 扶持 | talent | `related_entities.talent` | 0.7 | **本波不上图**（无 Tag） |
 | `apply_to` | 适用：效力覆盖谁 | 107 适用 | industry | 同 industry 源 | 0.6 | 同 industry |
@@ -199,7 +199,7 @@ Java 不抽实体、不写 nGQL。LLM 若上，只许在 Python `entity.py`（�
 3. 需规还有 **技术方向**。代码 `ENTITY_TAGS` 有 `tech`，循环**未抽**，本波不上图（`OPEN-POLICY-GRAPH-01`）。
 4. 边权之和 = 政策点加权度 = `M_POLICY_RELATION_DEGREE` 输入（读 ADS 边，不读 Nebula）。
 
-`related_entities` 现网怎么来：`ods_to_dwd` 默认 `industry=[theme|目标产业]`、`org=[ministry]`，企业/人才/服务常空。所以 4.7 万条里多数只有产业名字符串 + 发文部门，**没有**可挂 `ent:` 的企业 ID——§8 跳过量大是缺口不是故障。
+`related_entities` 里企业 / 人才 / 机关 / 服务仍由贴源写入（`org` 默认发文部门，企业/人才/服务常空）。**`industry` 键 2026-10-23 起弃用**：贴源不写，产业抽取也不更新；产业边只读 `policy_industry_rel` 的有效行。历史行里残留的产业名字符串不再作为上图来源。企业侧仍常无 `ent:` ID——§8 跳过量大是缺口不是故障。
 
 ---
 
@@ -250,7 +250,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph industry
-    I1["related_entities.industry 或 ext5"] --> I2["node industry:名称"]
+    I1["policy_industry_rel is_deleted=0"] --> I2["node industry:名称"]
     I2 --> I3["NER industry 0.86"]
     I2 --> I4{"props 有 industry_link_code 且 FETCH 到 chain/segment?"}
     I4 -->|是| I5["挂 support+apply_to"]
@@ -290,7 +290,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-  A["政策行"] --> B{"industry 或 ext5?"}
+  A["政策行"] --> B{"policy_industry_rel 有效行?"}
   B -->|有| C["边 pol → industry:名 weight=0.8 props.factor=factors"]
   A --> D{"enterprise[]?"}
   D -->|有| E["边 pol → enterprise:名 weight=0.5~0.9"]
@@ -349,7 +349,7 @@ flowchart TB
 
 | 编号 | 触发（规则不够） | 推什么 | 写入 | 不推 |
 |---|---|---|---|---|
-| L1 | `keywords` / `ext5` / `related_entities.industry` 皆空，但 title/keypoints/abstract 有领域表述 | 抽 3–8 个领域 Tag（与单条焦点同一语义，混成一列） | NER `keyword`/`industry`；可选补 industry 点 | 不改源表 `keywords` |
+| L1 | `keywords` 为空，且 `policy_industry_rel` 无有效链码，但 title/keypoints/abstract 有领域表述 | 抽 3–8 个领域 Tag（与单条焦点同一语义，混成一列） | NER `keyword`/`industry`；可选补关联表。不写 `related_entities.industry` | 不改源表 `keywords` |
 | L2 | `enterprise`/`talent`/`service` 空，正文有「支持××企业 / 高层次人才 / 孵化器」 | 抽受益对象短语 + 槽 | NER + 对应点；无 ID 仍**不上图** | 不按店名猜 `ent:` |
 | L3 | 只有 `ministry`，正文另有「由××组织实施 / ××监管」 | 裁定机关角色：发文 / 实施 / 监管 | 实施、监管可拆 `regulate` 或 props.role | 不把发文部门一律当监管 |
 | L4 | 产业已有，分不清扶持还是适用 | 裁定 `support` / `apply_to` / 两条都要 | 边类型 | 不删规则已落的双轨产业边，除非模型高置信互斥 |
@@ -448,7 +448,7 @@ A 档**只认本域自身实体**：政策点 + 属性 NER。关联主体名称�
 
 | 边 | 终点 | op_id | 档 | 上图？ | VID 规则 | as-built 源 | 缺口 |
 |---|---|---|---|---|---|---|---|
-| `support` | 产业 | `POLICY_RE_SUPPORT` | C | **上图** | `FETCH` `chain:` / `segment:`（`props.industry_link_code`） | `related_entities.industry`，空则 `ext5`；权 0.8 | 多数仅有产业名字符串 → `no_stable_id` |
+| `support` | 产业 | `POLICY_RE_SUPPORT` | C | **上图** | `FETCH` `chain:` / `segment:`（`props.industry_link_code`） | `policy_industry_rel` 有效行；权 0.8。不读 `related_entities.industry` / `ext5` | 无链码或码对不上顶点 → `no_stable_id` |
 | `support` | 技术 | `POLICY_RE_SUPPORT` | C | **本波不上图** `OPEN-POLICY-GRAPH-01` | — | `ENTITY_TAGS` 有 `tech`，循环**未抽** | 无 Tag、无稳定 ID |
 | `support` | 企业 | `POLICY_RE_SUPPORT` | C | **上图** | `FETCH` `ent:`（`org_id`→`enterprise_code`→`entity_id`） | `related_entities.enterprise`；权 0.5–0.9（Mock 抖动） | 企业常空 → `empty_field`；有名无 ID → `no_stable_id` |
 | `support` | 人才 | `POLICY_RE_SUPPORT` | C | **本波不上图** `OPEN-POLICY-GRAPH-01` | — | `related_entities.talent`；ADS 可建点权 0.7 | 无 talent Tag |
