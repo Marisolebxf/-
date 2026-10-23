@@ -5,6 +5,8 @@
 > `OpsContentController`（105 行）纯路由。改动 diff 仅 5 处（CI `-pl` 加 cms / pom surefire / 启动类注解 /
 > yml ignore-urls / 删 permitAll 链配置），`git diff` 5 分钟可过。单测 23 例即行为规格说明。
 > 已知取舍见 §1 偏离表 7 条（重点 #3 std_updated_at 改名、#6 删 permitAll 链的理由）。
+> **回归面已核实**：单体 boot 不依赖 cms（pom/源码零引用），资源服务器链只影响 gkxlumen-cms 独立部署；
+> 机器轨久新回归只读 5 处 diff 即可确认（Api-Key 过滤器代码零改动）。
 
 > **任务**：SYSINT-03-01A-JAVA-L01（`task_type=feature`，E-PM-DELIVERY）
 > **执行**：`agent:api-agent` · **监管/签收**：`human:徐滕强`
