@@ -1,0 +1,27 @@
+id: FUNC-00694
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00694
+priority: P0
+title: 政策匹配补传 subject_id
+entry_id: policy.match
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/match"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策匹配
+  - action: algo_fill
+    set:
+      subject_id: E0001
+      subject_type: 企业
+      limit: 20
+  - action: algo_run
+expect:
+  - note: 补传 subject_id 仍含 rank_no、subject_name、policy_title、match_score、metric_id
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['rank_no', 'subject_name', 'policy_title', 'match_score', 'metric_id']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。subject_type 下拉选「企业」。catalog status=unavailable，不断言 sample 具体数字。

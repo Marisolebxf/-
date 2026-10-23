@@ -1,0 +1,27 @@
+id: FUNC-00690
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00690
+priority: P1
+title: 政策文本解析非法 limit
+entry_id: policy.parse
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/parse"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策文本解析
+  - action: algo_fill
+    set:
+      limit: -1
+    omit: [policy_id]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 limit，且不返回含 summary 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/limit/.test(text)) throw new Error('结果未说明 limit');
+      if (/summary/.test(text) && /hint/.test(text) && /metric_id/.test(text)) throw new Error('结果含 summary 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 policy_id，limit=-1。catalog status=available。

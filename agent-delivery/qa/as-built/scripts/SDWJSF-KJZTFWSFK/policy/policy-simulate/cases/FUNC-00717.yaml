@@ -1,0 +1,27 @@
+id: FUNC-00717
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00717
+priority: P0
+title: 政策效果推演补传 scope_code
+entry_id: policy.simulate
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/simulate"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策效果推演
+  - action: algo_fill
+    set:
+      scope_code: 440000
+      limit: 20
+    omit: [scenario_id]
+  - action: algo_run
+expect:
+  - note: 仍含 metric_id、hint、simulated_value 字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'simulated_value']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。scope_code=440000 取参数说明示例。catalog status=available，不断言 sample 具体数字。

@@ -1,0 +1,29 @@
+id: FUNC-00706
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00706
+priority: P1
+title: 政策匹配推送非法 limit
+entry_id: policy.match
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/match"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策匹配推送
+  - action: algo_fill
+    omit: [subject_id]
+    set:
+      subject_type: 企业
+      limit: -1
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 limit，且不返回含 metric_id 或 match_score 的成功业务 body
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/limit/.test(text)) throw new Error('结果未说明 limit');
+      if (/M_POLICY_MATCH/.test(text) && /hint/.test(text)) throw new Error('结果含 metric_id 成功业务 body');
+      if (/match_score/.test(text) && /metric_id/.test(text)) throw new Error('结果含 match_score 成功业务 body');
+as_built_note: 用例写点击调用，页面按钮是执行接口。limit=-1。catalog status=available。

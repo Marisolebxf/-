@@ -1,0 +1,28 @@
+id: FUNC-00721
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00721
+priority: P1
+title: 政策效果推演非法 scenario_id
+entry_id: policy.simulate
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/simulate"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策效果推演
+  - action: algo_fill
+    set:
+      scenario_id: __invalid__
+      limit: 20
+    omit: [scope_code]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 scenario_id，且不返回含 metric_id 或 simulated_value 的成功业务 body
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/scenario_id/.test(text)) throw new Error('结果未说明 scenario_id');
+      if (/M_POLICY_SIMULATE/.test(text) && /simulated_value/.test(text)) throw new Error('结果含 metric_id 或 simulated_value 成功业务 body');
+as_built_note: 用例写点击调用，页面按钮是执行接口。scenario_id=__invalid__。catalog status=available。

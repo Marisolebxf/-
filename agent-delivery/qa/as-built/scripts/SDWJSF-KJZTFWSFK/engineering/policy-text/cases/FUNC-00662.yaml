@@ -1,0 +1,24 @@
+id: FUNC-00662
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00662
+priority: P0
+title: 文本解析省略 limit
+entry_id: policy.text
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/text"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 文本解析
+  - action: algo_fill
+    omit: [policy_id, limit]
+  - action: algo_run
+expect:
+  - note: 元素含 title、policy_id、elements
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['title', 'policy_id', 'elements']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit policy_id 与 limit。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

@@ -1,0 +1,27 @@
+id: FUNC-00680
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00680
+priority: P0
+title: 政策文本处理算法测试清单
+entry_id: policy.text
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/text"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 效果推演
+expect:
+  - note: 算法测试下拉 3 项；切换后 GET /policy/v1/policy/simulate
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/policy/v1/policy/simulate');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('效果推演');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3);
+      for (const name of ['文本解析', '政策匹配', '效果推演']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

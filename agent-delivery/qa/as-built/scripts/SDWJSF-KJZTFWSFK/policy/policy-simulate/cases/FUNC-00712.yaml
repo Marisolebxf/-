@@ -1,0 +1,24 @@
+id: FUNC-00712
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00712
+priority: P0
+title: 效果推演省略 limit
+entry_id: policy.simulate
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/simulate"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 效果推演
+  - action: algo_fill
+    omit: [scope_code, scenario_id, limit]
+  - action: algo_run
+expect:
+  - note: 仍含推演字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['scope_code', 'scenario_id', 'baseline_value', 'simulated_value', 'metric_id']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 limit。catalog status=unavailable，不断言 sample 具体数字。

@@ -1,0 +1,26 @@
+id: FUNC-00702
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00702
+priority: P0
+title: 政策匹配推送省略 subject_type
+entry_id: policy.match
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/match"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策匹配推送
+  - action: algo_fill
+    omit: [subject_id, subject_type]
+    set:
+      limit: 20
+  - action: algo_run
+expect:
+  - note: 省略 subject_type 仍含 metric_id、hint、match_score
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'match_score']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 subject_id、不传 subject_type。catalog status=available，不断言 sample 具体数字。

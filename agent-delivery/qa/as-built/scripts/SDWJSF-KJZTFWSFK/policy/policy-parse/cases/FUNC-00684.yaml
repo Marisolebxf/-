@@ -1,0 +1,27 @@
+id: FUNC-00684
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00684
+priority: P1
+title: 文本解析非法 policy_id
+entry_id: policy.parse
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/parse"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 文本解析
+  - action: algo_fill
+    set:
+      policy_id: __invalid__
+      limit: 20
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 policy_id，且不返回含 summary 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/policy_id/.test(text)) throw new Error('结果未说明 policy_id');
+      if (/summary/.test(text) && /title/.test(text) && /policy_id/.test(text)) throw new Error('结果含 summary 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。policy_id=__invalid__，limit=20。catalog status=unavailable。

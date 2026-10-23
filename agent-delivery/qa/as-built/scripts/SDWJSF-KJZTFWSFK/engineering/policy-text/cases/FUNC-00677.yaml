@@ -1,0 +1,28 @@
+id: FUNC-00677
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00677
+priority: P1
+title: 效果推演非法 scenario_id
+entry_id: policy.text
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/text"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 效果推演
+  - action: algo_fill
+    set:
+      scope_code: 440000
+      scenario_id: __invalid_scenario__
+      limit: 20
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 scenario_id，且不返回含 simulated_value 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/scenario_id/.test(text)) throw new Error('结果未说明 scenario_id');
+      if (/simulated_value/.test(text) && /baseline_value/.test(text)) throw new Error('结果含 simulated_value 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。scenario_id=__invalid_scenario__，scope_code=440000，limit=20。catalog status=unavailable。
