@@ -1,0 +1,27 @@
+id: FUNC-00496
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00496
+priority: P1
+title: 深圳机遇分析模型不传 chainId
+entry_id: chain.sz-opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/sz-opportunity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳机遇分析模型
+  - action: algo_fill
+    omit: [chainId]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 chainId，且不返回含 metric_id 为 M_CHAIN_DEEP_128_1 的成功业务 body
+    assert: |-
+      const tag = page.locator('.test-workbench .chain-cascader .arco-tag');
+      if (await tag.count() && await tag.first().isVisible()) throw new Error('chainId 未清空');
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/chainId/.test(text)) throw new Error('结果未说明 chainId');
+      if (/M_CHAIN_DEEP_128_1/.test(text) && /metric_id/.test(text)) throw new Error('结果含 M_CHAIN_DEEP_128_1 成功业务 body');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 chainId，请求体为空。catalog_status=available。结果须说明 chainId，且不得出现 M_CHAIN_DEEP_128_1 成功体。

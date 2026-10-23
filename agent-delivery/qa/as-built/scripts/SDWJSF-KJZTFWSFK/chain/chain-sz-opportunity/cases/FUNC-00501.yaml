@@ -1,0 +1,30 @@
+id: FUNC-00501
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00501
+priority: P0
+title: 深圳机遇分析接口信息清单
+entry_id: chain.sz-opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/sz-opportunity"
+  - action: assert_visible
+    target: 4 个接口
+  - action: assert_visible
+    target: /innov/v1/industry/{chainId}/shenzhen
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 深圳机遇分析模型
+expect:
+  - note: 接口信息 tab；4 项下拉；默认深圳机遇分析 GET shenzhen；切换后 POST M_CHAIN_DEEP_128_1/compute
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/industry/chainan/metric/M_CHAIN_DEEP_128_1/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('深圳机遇分析模型');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['深圳机遇分析', '深圳机遇分析模型', '深圳产业机遇数', '深圳产业机遇评分']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认深圳机遇分析 path，再切换深圳机遇分析模型。选项标题由 runner 在已打开弹层里点 .arco-select-option。

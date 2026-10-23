@@ -1,0 +1,26 @@
+id: FUNC-00509
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00509
+priority: P0
+title: 产业发展路线历程主流程
+entry_id: chain.roadmap
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/roadmap"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业发展路线历程
+  - action: algo_fill
+    set:
+      chainId: INB1701
+  - action: algo_run
+expect:
+  - note: body 含 timeline 及嵌套 key_events 结构字段名；填 chainId 后 tag 为 INB1701
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['timeline', 'year', 'key_events', 'date', 'type', 'type_name', 'title', 'enterprise']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

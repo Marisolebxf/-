@@ -1,0 +1,26 @@
+id: FUNC-00503
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00503
+priority: P0
+title: 产业热点领域识别主流程
+entry_id: chain.hotspot
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/hotspot"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业热点领域识别
+  - action: algo_fill
+    set:
+      chainId: INB1702
+  - action: algo_run
+expect:
+  - note: body 含热点分、资讯数、融资额、新增企业与热点新闻相关字段名；填 chainId 后 tag 为 INB1702
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1702');
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['hotspot_score', 'news_count', 'investment_total', 'new_enterprise_count', 'hot_news', 'title', 'views']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

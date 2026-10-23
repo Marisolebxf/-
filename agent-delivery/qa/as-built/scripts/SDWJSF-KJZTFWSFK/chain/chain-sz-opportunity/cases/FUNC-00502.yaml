@@ -1,0 +1,27 @@
+id: FUNC-00502
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00502
+priority: P0
+title: 深圳机遇分析算法测试清单
+entry_id: chain.sz-opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/sz-opportunity"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 深圳产业机遇评分
+expect:
+  - note: 算法测试下拉 4 项；切换后 POST M_CHAIN_SZ_OPPORTUNITY_SCORE/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/chainan/metric/M_CHAIN_SZ_OPPORTUNITY_SCORE/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('深圳产业机遇评分');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['深圳机遇分析', '深圳机遇分析模型', '深圳产业机遇数', '深圳产业机遇评分']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉项与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

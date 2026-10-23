@@ -1,0 +1,28 @@
+id: FUNC-00488
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00488
+priority: P1
+title: 深圳问题识别不传 chainId
+entry_id: chain.sz-problem
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/sz-problem"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳问题识别
+  - action: algo_fill
+    omit: [chainId]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 chainId，且不返回含 panorama.enterprise_count 或 problem.problems 的成功业务 body
+    assert: |-
+      const tag = page.locator('.test-workbench .chain-cascader .arco-tag');
+      if (await tag.count() && await tag.first().isVisible()) throw new Error('chainId 未清空');
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/chainId/.test(text)) throw new Error('结果未说明 chainId');
+      if (/enterprise_count/.test(text) && /panorama/.test(text)) throw new Error('结果含 panorama.enterprise_count 成功业务 body');
+      if (/problems/.test(text) && /problem/.test(text)) throw new Error('结果含 problem.problems 成功业务 body');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 chainId。catalog_status=unavailable。结果须说明 chainId，且不得出现 sampleResponse 成功体特征字段。

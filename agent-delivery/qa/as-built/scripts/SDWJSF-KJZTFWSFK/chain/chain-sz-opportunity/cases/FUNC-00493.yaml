@@ -1,0 +1,26 @@
+id: FUNC-00493
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00493
+priority: P0
+title: 深圳机遇分析主流程 chainId=INB170101
+entry_id: chain.sz-opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/sz-opportunity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳机遇分析
+  - action: algo_fill
+    set:
+      chainId: INB170101
+  - action: algo_run
+expect:
+  - note: body 含 panorama、advantage、problem、opportunity 及用例点名字段名；tag 为 INB170101
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB170101');
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['panorama', 'advantage', 'problem', 'opportunity', 'enterprise_count', 'node_count', 'nodes', 'edges', 'district_dist', 'node_name', 'position', 'src', 'dst', 'district', 'sz_enterprise_count', 'sz_share', 'sz_rank', 'growth_rate', 'advantage_index', 'rank_overall', 'share_score', 'rank_score', 'growth_score', 'advantages', 'problem_count', 'tech_score', 'talent_score', 'market_score', 'capital_score', 'policy_score', 'problems', 'name', 'severity', 'score', 'opportunity_index', 'cycle_stage', 'trend_score']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档 sampleResponse 字段名。不断言 sample 具体数字。

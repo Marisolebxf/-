@@ -1,0 +1,14 @@
+# chain.sz-opportunity 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00493 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00493 | 深圳机遇分析主流程 chainId=INB170101 |
+| FUNC-00494 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00494 | 深圳机遇分析异常-入参-缺 chainId |
+| FUNC-00495 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00495 | 深圳机遇分析模型主流程 chainId=INB170101 |
+| FUNC-00496 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00496 | 深圳机遇分析模型异常-入参-缺 chainId |
+| FUNC-00497 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00497 | 深圳产业机遇数主流程 chainId=INB170101 |
+| FUNC-00498 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00498 | 深圳产业机遇数异常-入参-缺 chainId |
+| FUNC-00499 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00499 | 深圳产业机遇评分主流程 chainId=INB170101 |
+| FUNC-00500 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00500 | 深圳产业机遇评分异常-入参-缺 chainId |
+| FUNC-00501 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00501 | 接口信息-清单 |
+| FUNC-00502 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00502 | 算法测试-清单 |
