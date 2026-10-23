@@ -38,6 +38,27 @@
 - 发布密度没有已登记分母。重点城市名单没有登记。连续性 / 增长率公式仍是 `pending_algorithm`。
 - `SYSINT-03-04B` 不读这十条 demo 数。
 
+## 范围与实现
+
+DoD 五条都落在 demo。十条在 `portal_gap_rows` 各有独立结果，政策分析左侧「基础指标」下各有一页。相近指标不填数。密度缺分母、重点城市名单未登记时为空并写明原因。种子、矩阵、`PORTAL-CMS-政策扶持.md`、lumen 与 SYSINT-03-04B 都没改。
+
+## 偏离
+
+展示从基础指标页的一张总表改成十条独立菜单，名称以「政策扶持-」开头。每页只画该条的 `series`。`series` 为空时图上写「没有可画的序列」。结果仍全部为空，原因与派单包一致。
+
+## 产物清单
+
+- `demo-algo-ent-analysis` `5427a65`：十条独立结果与单测
+- `demo-ui-system-test` `67ccd78`：十条菜单与页面
+- `demo-ui-system-test` `dfe18cb`：菜单名称加上「政策扶持-」
+- 本 handoff
+
+## 验收证据
+
+- 单测 `tests/test_policy_portal_gaps.py`：2 passed
+- 本地政策分析页十条菜单各打开一次，结果为「空」，原因与算法返回一致
+- 上述 commit 已在各自 `origin/dev`。本次未再查 K8s rollout
+
 ## 修改内容
 
 计算在 `demo-algo-ent-analysis` 的 `portal_gap_rows`。`nearby_metrics` 只参与拒绝改挂，不写入 `value`。`reject_portal_gap_rehang` 拒绝把 `M_POLICY_INTENSITY_INDEX`、`M_POLICY_INTENSITY_SCORE`、`M_POLICY_INDUSTRY_COVERAGE`、`M_POLICY_SUPPORT_STRENGTH` 写成 `filled_from` 或 `metric_id`。力度排名仍只认 `M_POLICY_INTENSITY_SCORE`，不在这十条里，也不新造排名 ID。
@@ -69,17 +90,17 @@
 ## 遗留风险
 
 - 十条目前都是空结果。分母、重点城市名单、相关产业范围、连续性公式登记之后才能填数。
-- 页面要看到这十条，需要已部署含 `portal_gaps` 的 demo 政策算法服务。本次未推送。
+- 页面要看到这十条，已部署的 demo 政策算法服务须包含 `portal_gaps`。代码已推 `origin/dev`，本次未再查部署是否已滚出。
 - 注册表 `model_used` 枚举没有 Grok。价按 `claude-sonnet-4.5` 价表、algorithm 75/25 估算。`source: estimate_no_console`。
 
 ## CI/CD（必填）
 
-- 分支：两仓本地 `dev` 工作区，未 commit，未 push
-- commit：无
-- pipeline URL / ID：无
-- 部署 namespace / 镜像 tag：无
-- K8s rollout：未触发
-- dev 测试 URL / 命令与结果：单测见上。浏览器未开
+- 分支：`demo-algo-ent-analysis` 与 `demo-ui-system-test` 的 `origin/dev`
+- commit：`5427a65`、`67ccd78`、`dfe18cb`
+- pipeline URL / ID：未在本次记录
+- 部署 namespace / 镜像 tag：未在本次记录
+- K8s rollout：未再查
+- dev 测试 URL / 命令与结果：单测 2 passed。本地 `#/policy/portal-*` 十条页面已核对
 
 ## 可观测性（建议）
 
@@ -93,7 +114,9 @@
 - `repos/demo-algo-ent-analysis/polan/eval/intensity.py`
 - `repos/demo-algo-ent-analysis/api/policy_routes.py`
 - `repos/demo-algo-ent-analysis/tests/test_policy_portal_gaps.py`
-- `repos/demo-ui-system-test/src/views/policy/components/BasicIndicators.vue`
+- `repos/demo-ui-system-test/src/views/policy/policyMenuConfig.ts`
+- `repos/demo-ui-system-test/src/views/policy/pages/PortalGapPage.vue`
+- `repos/demo-ui-system-test/src/router/index.ts`
 
 ## 架构合规自检
 
@@ -104,7 +127,8 @@
 | 未把 demo 接进 lumen | ✅ |
 | 未改种子、矩阵、契约 | ✅ |
 | 未拍板 QPOL-02 | ✅ |
-| Nebula / 对象存储 | 未涉及 |
+| 未写 Nebula | ✅ |
+| 未新造对象存储桶 | ✅ |
 
 ## cost
 
