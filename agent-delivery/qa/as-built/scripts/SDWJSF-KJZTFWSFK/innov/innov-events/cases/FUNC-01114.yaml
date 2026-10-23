@@ -1,0 +1,25 @@
+id: FUNC-01114
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01114
+priority: P0
+title: M1 科创事件地图算法测试清单
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 热力聚合
+expect:
+  - note: "算法测试 tab 下拉 6 项；切换后 GET /innov/v1/events/heatmap"
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/events/heatmap');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('热力聚合');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["事件列表","地图点位","热力聚合","事件详情","关联分析","事件类型字典"]) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

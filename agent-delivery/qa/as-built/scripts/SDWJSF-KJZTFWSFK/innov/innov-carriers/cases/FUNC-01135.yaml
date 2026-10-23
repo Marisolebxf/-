@@ -1,0 +1,27 @@
+id: FUNC-01135
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01135
+priority: P1
+title: 载体排行非法 pageSize
+entry_id: innov.carriers
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/carriers"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 载体排行
+  - action: algo_fill
+    set:
+      pageNum: 1
+      pageSize: not-a-size
+  - action: algo_run
+expect:
+  - note: 结果说明 pageSize 非法，且无 list 排行成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/pageSize/.test(text)) throw new Error('结果未说明 pageSize');
+      if (/list/.test(text) && /subScores/.test(text)) throw new Error('结果含 list 排行成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。pageSize=not-a-size。catalog status=running。组合 RNK-05。

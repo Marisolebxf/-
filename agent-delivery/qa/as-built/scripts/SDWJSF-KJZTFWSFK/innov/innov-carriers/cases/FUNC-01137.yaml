@@ -1,0 +1,25 @@
+id: FUNC-01137
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01137
+priority: P1
+title: 载体详情不传 carrierId
+entry_id: innov.carriers
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/carriers"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 载体详情
+  - action: algo_fill
+    omit: [carrierId]
+  - action: algo_run
+expect:
+  - note: 结果说明 carrierId，且无 info、trend 成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/carrierId/.test(text)) throw new Error('结果未说明 carrierId');
+      if (/info/.test(text) && /trend/.test(text)) throw new Error('结果含 info、trend 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit carrierId，path 段为空。catalog status=running。组合 DET-02。

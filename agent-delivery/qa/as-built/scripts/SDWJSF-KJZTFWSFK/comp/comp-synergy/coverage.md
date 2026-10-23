@@ -1,0 +1,12 @@
+# comp.synergy 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01078 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01078 | 创新协同，SYN-01 主流程 |
+| FUNC-01079 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01079 | 创新协同，SYN-02 不传 region |
+| FUNC-01080 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01080 | 创新协同，SYN-03 非法 region |
+| FUNC-01081 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01081 | 区域创新协同分析模型，M191-01 主流程 |
+| FUNC-01082 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01082 | 区域创新协同分析模型，M191-02 不传 region |
+| FUNC-01083 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01083 | 区域创新协同分析模型，M191-03 非法 region |
+| FUNC-01084 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01084 | （页面），接口信息-清单 |
+| FUNC-01085 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01085 | （页面），算法测试-清单 |

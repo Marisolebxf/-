@@ -1,0 +1,22 @@
+id: FUNC-01108
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01108
+priority: P0
+title: 事件详情 eventId=EVT-001
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 事件详情
+  - action: algo_fill
+    set:
+      eventId: "EVT-001"
+  - action: algo_run
+expect:
+  - note: "返回面板含 eventId、importanceDetail 及同层字段名"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["eventId","importanceDetail","title","eventType","eventTime","importanceLevel","importanceScore","summary","k","v"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 DET-01。

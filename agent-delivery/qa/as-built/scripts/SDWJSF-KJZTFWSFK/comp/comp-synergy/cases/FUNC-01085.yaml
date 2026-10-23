@@ -1,0 +1,27 @@
+id: FUNC-01085
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01085
+priority: P0
+title: 区域创新协同分析算法测试清单
+entry_id: comp.synergy
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/synergy"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 区域创新协同分析模型
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_SYNTH_191_1/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/synth-metric/metric/M_SYNTH_191_1/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('区域创新协同分析模型');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['创新协同', '区域创新协同分析模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=true，本条只核下拉和 method/path。

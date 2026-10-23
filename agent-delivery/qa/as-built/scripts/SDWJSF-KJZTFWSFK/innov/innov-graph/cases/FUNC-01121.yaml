@@ -1,0 +1,29 @@
+id: FUNC-01121
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01121
+priority: P0
+title: 影响分排行
+entry_id: innov.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 影响分排行
+  - action: algo_fill
+    set:
+      pageNum: "1"
+      pageSize: "20"
+    omit:
+      - domainId
+      - nodeType
+  - action: algo_run
+expect:
+  - note: 省略 domainId 仍含 total、period、list 结构字段
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['total', 'period', 'list', 'nodeId', 'nodeType', 'name', 'influenceScore', 'rankInDomain']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 RNK-02。

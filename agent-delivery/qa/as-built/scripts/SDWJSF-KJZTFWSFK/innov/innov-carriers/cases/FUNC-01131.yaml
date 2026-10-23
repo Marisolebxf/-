@@ -1,0 +1,26 @@
+id: FUNC-01131
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01131
+priority: P0
+title: 载体排行 pageNum=1 pageSize=20
+entry_id: innov.carriers
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/carriers"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 载体排行
+  - action: algo_fill
+    set:
+      pageNum: 1
+      pageSize: 20
+  - action: algo_run
+expect:
+  - note: total、period、list 及排行元素字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['total', 'period', 'list', 'carrierId', 'name', 'carrierType', 'indexScore', 'rankTotal', 'subScores', 'output', 'quality', 'activity', 'performance']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=running，不断言 sample 具体数字。组合 RNK-01 金样。

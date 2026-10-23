@@ -1,0 +1,23 @@
+id: FUNC-01105
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01105
+priority: P0
+title: 热力聚合补传 endTime
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 热力聚合
+  - action: algo_fill
+    set:
+      endTime: "2025-12-31 23:59:59"
+    omit: [startTime]
+  - action: algo_run
+expect:
+  - note: "返回面板含 lng、lat、weight"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["lng","lat","weight"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。endTime 借用同页列表 example。组合 HM-03。

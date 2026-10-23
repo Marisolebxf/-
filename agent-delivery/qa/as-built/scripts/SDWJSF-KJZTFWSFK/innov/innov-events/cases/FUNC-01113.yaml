@@ -1,0 +1,28 @@
+id: FUNC-01113
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01113
+priority: P0
+title: M1 科创事件地图接口信息清单
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: assert_visible
+    target: 6 个接口
+  - action: assert_visible
+    target: /innov/v1/events
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 地图点位
+expect:
+  - note: "接口信息 tab 下拉 6 项；默认 GET /innov/v1/events；切换地图点位"
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/events');
+      await expect(page.locator('.api-info-grid header')).toContainText('地图点位');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["事件列表","地图点位","热力聚合","事件详情","关联分析","事件类型字典"]) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息，步骤切换至地图点位。

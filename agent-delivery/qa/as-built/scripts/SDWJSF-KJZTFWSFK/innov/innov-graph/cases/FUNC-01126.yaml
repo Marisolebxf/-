@@ -1,0 +1,29 @@
+id: FUNC-01126
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01126
+priority: P1
+title: 影响分排行
+entry_id: innov.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 影响分排行
+  - action: algo_fill
+    set:
+      domainId: D-AI
+      nodeType: __invalid__
+      pageNum: "1"
+      pageSize: "20"
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 nodeType 非法；不含 list 排行成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/nodeType/.test(text)) throw new Error('结果未说明 nodeType');
+      if (/list/.test(text) && /rankInDomain/.test(text)) throw new Error('结果含 list 排行成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。nodeType=__invalid__ 为非法入参。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 RNK-07。

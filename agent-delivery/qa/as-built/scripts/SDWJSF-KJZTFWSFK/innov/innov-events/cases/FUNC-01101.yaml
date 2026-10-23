@@ -1,0 +1,22 @@
+id: FUNC-01101
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01101
+priority: P0
+title: 地图点位 mode=geo
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 地图点位
+  - action: algo_fill
+    set:
+      mode: "geo"
+  - action: algo_run
+expect:
+  - note: "返回面板含 type、features 及 properties 字段名"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["type","features","geometry","coordinates","properties","eventId","title","importanceLevel","importanceScore","eventType"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。endpoint_id=innov.events.geo 同 path 与事件列表。组合 GEO-01。

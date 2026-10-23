@@ -1,0 +1,34 @@
+id: FUNC-01084
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01084
+priority: P0
+title: 区域创新协同分析接口信息清单
+entry_id: comp.synergy
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/synergy"
+  - action: assert_visible
+    target: 2 个接口
+  - action: assert_visible
+    target: /comp/v1/comp/innov-synergy
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 区域创新协同分析模型
+expect:
+  - note: 接口信息 tab；2 项下拉；切换后 POST M_SYNTH_191_1/compute
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/synth-metric/metric/M_SYNTH_191_1/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('区域创新协同分析模型');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['创新协同', '区域创新协同分析模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '创新协同' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/comp/v1/comp/innov-synergy');
+      await expect(page.locator('.api-info-grid header')).toContainText('创新协同');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认 innov-synergy path，再切换区域创新协同分析模型；assert 内再核创新协同默认 GET path。

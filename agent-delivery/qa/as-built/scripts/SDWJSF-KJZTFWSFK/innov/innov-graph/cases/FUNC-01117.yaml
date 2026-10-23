@@ -1,0 +1,27 @@
+id: FUNC-01117
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01117
+priority: P0
+title: 领域子图
+entry_id: innov.graph
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/graph"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 领域子图
+  - action: algo_fill
+    set:
+      domainId: D-AI
+    omit:
+      - limit
+  - action: algo_run
+expect:
+  - note: 省略 limit 仍含 period、nodes、edges 结构字段
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['period', 'nodes', 'edges', 'nodeId', 'nodeType', 'name', 'influenceScore', 'rank', 'src', 'dst', 'edgeType', 'weight']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 SUB-02。

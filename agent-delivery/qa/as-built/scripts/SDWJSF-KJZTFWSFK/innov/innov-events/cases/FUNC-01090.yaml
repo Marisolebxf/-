@@ -1,0 +1,25 @@
+id: FUNC-01090
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01090
+priority: P0
+title: 事件列表补传 importanceLevels
+entry_id: innov.events
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/events"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 事件列表
+  - action: algo_fill
+    set:
+      importanceLevels: "1"
+      pageNum: 1
+      pageSize: 20
+    omit: [startTime, endTime, eventTypes, keyword]
+  - action: algo_run
+expect:
+  - note: "返回面板含 total、list 及 list 元素字段名"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer'); for (const f of ["total","list","eventId","title","importanceLevel","importanceScore","eventTime","eventType","cityCode"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。importanceLevels=1。组合 LST-05。

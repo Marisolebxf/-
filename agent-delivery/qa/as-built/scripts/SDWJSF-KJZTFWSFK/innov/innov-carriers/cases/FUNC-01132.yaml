@@ -1,0 +1,26 @@
+id: FUNC-01132
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01132
+priority: P0
+title: 载体排行不传 pageNum pageSize=20
+entry_id: innov.carriers
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/carriers"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 载体排行
+  - action: algo_fill
+    omit: [pageNum]
+    set:
+      pageSize: 20
+  - action: algo_run
+expect:
+  - note: 省略 pageNum 仍含排行字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['total', 'period', 'list', 'carrierId', 'name', 'carrierType', 'indexScore', 'rankTotal', 'subScores', 'output', 'quality', 'activity', 'performance']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit pageNum。catalog status=running，不断言 sample 具体数字。组合 RNK-02。
