@@ -1,0 +1,16 @@
+# comp.policy-outcome 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01038 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01038 | 政策成果评价，POL-01 主流程 |
+| FUNC-01039 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01039 | 政策成果评价，POL-02 省略 region |
+| FUNC-01040 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01040 | 政策成果评价，POL-03 省略 year |
+| FUNC-01041 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01041 | 政策成果评价，POL-04 非法 region |
+| FUNC-01042 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01042 | 政策成果评价，POL-05 非法 year |
+| FUNC-01043 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01043 | 区域产业创新政策综合评价模型，M185-01 主流程 |
+| FUNC-01044 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01044 | 区域产业创新政策综合评价模型，M185-02 省略 region |
+| FUNC-01045 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01045 | 区域产业创新政策综合评价模型，M185-03 省略 year |
+| FUNC-01046 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01046 | 区域产业创新政策综合评价模型，M185-04 非法 region |
+| FUNC-01047 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01047 | 区域产业创新政策综合评价模型，M185-05 非法 year |
+| FUNC-01048 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01048 | （页面），接口信息-清单 |
+| FUNC-01049 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01049 | （页面），算法测试-清单 |

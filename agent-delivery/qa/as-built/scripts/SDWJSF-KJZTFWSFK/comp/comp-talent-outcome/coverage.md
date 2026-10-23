@@ -1,0 +1,16 @@
+# comp.talent-outcome 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01026 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01026 | 人才成果评价，TAL-01 主流程 |
+| FUNC-01027 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01027 | 人才成果评价，TAL-02 省略 region |
+| FUNC-01028 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01028 | 人才成果评价，TAL-03 省略 year |
+| FUNC-01029 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01029 | 人才成果评价，TAL-04 非法 region |
+| FUNC-01030 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01030 | 人才成果评价，TAL-05 非法 year |
+| FUNC-01031 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01031 | 区域产业创新人才综合评价模型，M184-01 主流程 |
+| FUNC-01032 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01032 | 区域产业创新人才综合评价模型，M184-02 省略 region |
+| FUNC-01033 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01033 | 区域产业创新人才综合评价模型，M184-03 省略 year |
+| FUNC-01034 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01034 | 区域产业创新人才综合评价模型，M184-04 非法 region |
+| FUNC-01035 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01035 | 区域产业创新人才综合评价模型，M184-05 非法 year |
+| FUNC-01036 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01036 | （页面），接口信息-清单 |
+| FUNC-01037 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01037 | （页面），算法测试-清单 |

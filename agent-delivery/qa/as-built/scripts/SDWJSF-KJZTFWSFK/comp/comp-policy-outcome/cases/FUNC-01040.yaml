@@ -1,0 +1,26 @@
+id: FUNC-01040
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01040
+priority: P0
+title: 政策成果评价 region=440300 不传 year
+entry_id: comp.policy-outcome
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/policy-outcome"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策成果评价
+  - action: algo_fill
+    omit: [year]
+    set:
+      region: "440300"
+  - action: algo_run
+expect:
+  - note: 不传 year 仍含主流程同类字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['index', 'rank', 'yoy', 'adv', 'radar', 'bar_items', 'pie_items', 'rows', '政策供给', '政策力度', '政策效果']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit year。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

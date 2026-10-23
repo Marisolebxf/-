@@ -1,0 +1,26 @@
+id: FUNC-01044
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01044
+priority: P0
+title: 区域产业创新政策综合评价模型不传 region year=2025
+entry_id: comp.policy-outcome
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/policy-outcome"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 区域产业创新政策综合评价模型
+  - action: algo_fill
+    omit: [region]
+    set:
+      year: 2025
+  - action: algo_run
+expect:
+  - note: 不传 region 仍含 metric_id、hint、index
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'index']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit region。catalog status=available，不断言 sample 具体数字。

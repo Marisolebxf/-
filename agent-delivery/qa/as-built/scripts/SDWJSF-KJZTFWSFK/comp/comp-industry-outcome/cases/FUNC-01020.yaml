@@ -1,0 +1,26 @@
+id: FUNC-01020
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01020
+priority: P0
+title: 产业成果评价不传 region year=2025
+entry_id: comp.industry-outcome
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/industry-outcome"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业成果评价
+  - action: algo_fill
+    omit: [region]
+    set:
+      year: 2025
+  - action: algo_run
+expect:
+  - note: 不传 region 仍含主流程同类字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['index', 'rank', 'yoy', 'adv', 'radar', 'bar_items', 'pie_items', 'rows', 'name', 'value', 'score', 'tag', 'note', '产品服务', '企业创新', '服务机构']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit region。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。组合 RIO-02。

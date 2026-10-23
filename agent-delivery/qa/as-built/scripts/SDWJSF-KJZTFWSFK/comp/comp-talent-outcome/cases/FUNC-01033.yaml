@@ -1,0 +1,26 @@
+id: FUNC-01033
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01033
+priority: P0
+title: 区域产业创新人才综合评价模型 region=440300 不传 year
+entry_id: comp.talent-outcome
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/talent-outcome"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 区域产业创新人才综合评价模型
+  - action: algo_fill
+    omit: [year]
+    set:
+      region: "440300"
+  - action: algo_run
+expect:
+  - note: 不传 year 仍含 metric_id、hint、index
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'index']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit year。catalog status=available，不断言 sample 具体数字。
