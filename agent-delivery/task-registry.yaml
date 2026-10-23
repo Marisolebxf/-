@@ -1,4 +1,4 @@
-﻿# 多智能体任务队列（机器可读）
+# 多智能体任务队列（机器可读）
 # coordinator-agent 每轮选取 status=ready（或 legacy pending）且 depends_on 均已 done 的 leaf 派单
 # 认领字段名词与流程：agent-delivery/task-claiming-guide.md
 # 监管人真名花名册：agent-delivery/team-roster.yaml
@@ -36226,7 +36226,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 250000
-    note: "改动停本地工作区待人工验收走查（打印效果需监管人浏览器确认）；selfcheck + vue-tsc + 回归全绿，联调通过（前端自验）"
+    note: |
+      重开轮：按监管人新口径重做完毕——①新评估报告专用模板（A4 分页、KPI 卡/排名条形图/维度雷达/明细表分块，D8 token）；②导出改 html2canvas+jsPDF 直下 PDF 文件（不弹打印预览）。jspdf+html2canvas 已获批准。selfcheck + vue-tsc + 回归 + eslint 全绿，改动停本地待人工验收走查
     touched_files:
       - "src/components/report/SystemReportReader.vue"
       - "src/components/report/enterpriseDomainReports.ts"
@@ -36239,7 +36240,7 @@ tasks:
       - "权限与埋点：沿用 ReportExportButton 现有 permCode 与付费闸门；导出动作埋点保留"
       - "自检：reportExport.selfcheck.mjs 断言七章节包含真实数据字段（排名/得分），无「同源摘要」「Wave 0 Mock」占位串；vue-tsc 绿"
       - "handoff + cost 四字段回填；ponytail: full"
-    update_time: "2026-10-22T17:18:58+08:00"
+    update_time: "2026-10-23T15:24:21+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-ENTAN-INNOVATION-L01
     cost_warn: "green"
     actual_cost: 0
@@ -38861,3 +38862,56 @@ tasks:
       - "正文落 gkxlumenx_cms overlay（A5 冻结库）；真源零写；操作写 cms_op_audit"
       - "OpenAPI + 请求响应示例入 handoff，作为前端叶（SYSINT-03-01A-L01）联调依据"
     update_time: "2026-10-23T15:57:38+08:00"
+  - id: LUMEN-DISPLAY-PORTAL-IFRAME-L01
+    cost_warn: "green"
+    actual_cost: 1.2
+    model_used: "glm-4.6"
+    actual_tokens: 210000
+    evidence: "agent-handoffs/门户集成-PORTAL/LUMEN-DISPLAY-PORTAL-IFRAME-L01.md"
+    claimed_at: "2026-10-23T07:08:02.787Z"
+    last_seen_at: "2026-10-23T07:08:02.787Z"
+    lock_until: "2026-10-23T11:08:02.787Z"
+    claimed_by: "human:孔东"
+    title: "lumen-ui-science-pc 统一门户 iframe 认证对接移植（systemCode=display：嵌入认证 + 权限校验 + postMessage 集成）"
+    status: "integration"
+    agent: "frontend-agent"
+    epic: "E-PORTAL-IFRAME"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 150000
+    note: "门户 iframe 认证对接移植完成：systemCode=display，src/portal/ 9 文件 + 10 既有文件改造；六点完整性要求全部落地；三绿（selfcheck/type-check/build）；改动停本地工作区待孔东人工验收"
+    depends_on: []
+    touched_files:
+      - "src/portal/*"
+      - "src/router/menu.ts"
+      - "src/router/guard.ts"
+      - "src/router/permissionFallback.ts"
+      - "src/router/base.ts"
+      - "src/router/types.d.ts"
+      - "src/directive/permission.ts"
+      - "src/main.ts"
+      - "src/utils/request.ts"
+      - "src/utils/authRedirect.ts"
+      - "src/layouts/DefaultLayout.vue"
+      - "src/assets/layout/layout.css"
+      - ".env.development"
+      - ".env.production"
+      - "docs/门户菜单权限注册清单.md"
+    design_refs:
+      - "repos/lumen-ui-topic/docs/国科信项目统一门户 iframe 集成技术方案.md"
+      - "agent-delivery/agent-handoffs/门户集成-PORTAL/LUMEN-PORTAL-IFRAME-L01.md"
+    definition_of_done:
+      - "src/portal/ 模块完整移植（embed/messenger/auth/perms/route-sync/sessionExpired/noPermission/device-switch/index + selfcheck），systemCode=display，权限源 /admin/get-permission-info（网关直调，Bearer+systemCode）"
+      - "iframe postMessage 集成完整：PAGE_READY（等权限接口成功）、ROUTE_CHANGE 双向（subPath 深链还原 + code 透传）、SESSION_EXPIRED、NO_PERMISSION、DEVICE_CHANGE；origin 白名单 + protocol 双校验，上行逐一指定 targetOrigin 禁 *"
+      - "菜单权限统一校验：navGroups 全量 permCode（menu:display:<组>:<项> 机械推导）注入 meta.perms，嵌入态 guard 拦截无权限路由并上报门户；无权限回落同组已授权菜单，零授权终止不循环"
+      - "v-permission 双模式：嵌入态比对门户权限码集（含权限异步到达 watch 重算 + updated 钩子），独立态保持本地 roles 比对；按钮码 btn:display:* 接入预留"
+      - "环境区分：.env.production 走真实权限源 + PORTAL_ORIGINS 白名单；.env.development 支持 VITE_PORTAL_PERM_SOURCE=mock 同构联调；MOCK_AUTH 开关与 Bearer 附加联动（mock 登录不带 token 打真网关）"
+      - "嵌入态布局：is-portal-embed 隐藏顶栏/侧栏，内容区满高贴边；登录态取 portal_access_token Cookie，嵌入未登录整窗跳门户 SSO 不渲染本地登录页"
+      - "docs/门户菜单权限注册清单.md 同步 systemCode=display 与机械码"
+      - "验证三绿：node src/portal/portal.selfcheck.mjs + pnpm type-check + pnpm build"
+      - "handoff 文档落库 agent-handoffs/门户集成-PORTAL/；人工验收闸门：改动停本地工作区，待 human:孔东 验收后方可 push"
+    update_time: "2026-10-23T15:21:46+08:00"
