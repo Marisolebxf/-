@@ -60,4 +60,6 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 读有效关联：`is_deleted=0`。图谱产业边（`support` / `apply_to` → industry）以本表有效行为源，不再读 `related_entities.industry` 或 `ext5`。
 
+索引：`(policy_id, is_deleted)` 给按政策读取、同步和增量跳过；`(industry_link_code, is_deleted, policy_id)` 给按链码查政策，末列 `policy_id` 让关联子查询不用回表。`is_deleted` 不做最左列。条件写 `is_deleted=0`，不用 `COALESCE`。
+
 ADS 镜像见 [`ads.md`](./ads.md) 的 `policy_industry_rel`。同步发生在单次抽取提交内：删掉 ADS 里该 `policy_id` 的行，再按 DWD 当前行插入（`id`、`is_deleted` 一致）。Java 只读 ADS。

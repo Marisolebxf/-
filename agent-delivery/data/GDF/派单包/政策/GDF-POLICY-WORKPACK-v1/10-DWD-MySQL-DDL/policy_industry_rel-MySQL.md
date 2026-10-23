@@ -16,9 +16,19 @@ CREATE TABLE IF NOT EXISTS `policy_industry_rel` (
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_policy_industry_rel_pid` (`policy_id`, `is_deleted`)
+  KEY `idx_policy_industry_rel_pid` (`policy_id`, `is_deleted`),
+  KEY `idx_policy_industry_rel_code` (`industry_link_code`, `is_deleted`, `policy_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   COMMENT='政策–产业关联。抽取写入，不回写主表';
 ```
 
-读有效关联：`is_deleted=0`。覆盖度只计 DWD 上带 `industry_link_code` 的有效行，ADS 镜像不另计。
+读有效关联：`is_deleted=0`（列是 NOT NULL，条件不要包 `COALESCE`，否则用不上索引第二列）。覆盖度只计 DWD 上带 `industry_link_code` 的有效行，ADS 镜像不另计。
+
+索引：
+
+| 索引 | 服务的查询 |
+|---|---|
+| `idx_policy_industry_rel_pid` (`policy_id`, `is_deleted`) | 按政策取关联、同步 ADS、增量跳过 |
+| `idx_policy_industry_rel_code` (`industry_link_code`, `is_deleted`, `policy_id`) | 按链码查政策。`policy_id` 放在末列，关联子查询不用回表 |
+
+`is_deleted` 只有 0/1，不能当最左列。按链码检索用等值，不用 `LIKE`。

@@ -74,7 +74,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 |---|---|---|
 | `policy_industry_rel` | DWD 同名表的只读镜像。列与 `demo_gkxlumenx_dwd.policy_industry_rel` 相同 | `id` · `policy_id` · `industry_name` · `industry_link_code` · `is_deleted` · `create_time` · `update_time` |
 
-抽取写完 DWD 后，按 `policy_id` 删除 ADS 中该政策的行，再插入 DWD 当前行（含已逻辑删除行，`id` 不变）。Java 读本表。算法增量与图谱仍读 DWD。有效行：`is_deleted=0`。
+抽取写完 DWD 后，按 `policy_id` 删除 ADS 中该政策的行，再插入 DWD 当前行（含已逻辑删除行，`id` 不变）。Java 读本表：政策详情的产业槽、按产业检索、时序板按链码拉政策，都等值关联这张镜像。算法增量与图谱仍读 DWD。有效行：`is_deleted=0`。索引与 DWD 相同。
 
 ## 展示窗口消费（DS-10/11/12）
 
