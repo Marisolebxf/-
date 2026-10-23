@@ -17,7 +17,7 @@
 
 ### 1.1 服务地址与鉴权
 
-- **Base URL**：集群内 ClusterIP Service `gkxlumen-cms`（示例：`http://gkxlumen-cms.{namespace}.svc.cluster.local`）。网关不注册 `/cms` 路由，**无公网入口**；具体 namespace / 凭证由项目组随对接通知提供。
+- **Base URL**：久新当前经智树网关访问（见 §1.5 跨集群联调访问说明）：`http://10.50.69.111:30895` + 路径前加 `/cms`。集群内服务直连地址为 ClusterIP `http://gkxlumen-platform-cms.zhipu-tts.svc.cluster.local:7098`（仅集群内可用）。凭证随对接通知线下提供。
 - 每个请求须携带：
 
 ```
@@ -67,6 +67,24 @@ X-CMS-Operator: {操作人姓名或账号}
 | 40901 | 409 | 删除被引用（`CMS_DELETE_REFUSED`，`data.reasons` 列引用来源） |
 | 42901 | 429 | 限流（`CMS_RATE_LIMITED`） |
 | 50001 | 5xx | 查询失败（`CMS_QUERY_FAILED`） |
+
+---
+
+## 1.5 跨集群联调访问说明（网关入口，2026-10-23 起）
+
+久新集群与智树集群为异集群，经智树 API 网关访问，**路径在文档原路径前统一加一层 `/cms`**：
+
+```
+文档路径:  /api/open/cms/v1/policy/list
+网关调用:  http://10.50.69.111:30895/cms/api/open/cms/v1/policy/list
+                                  ^^^^ 网关匹配段，转发时自动剥离
+```
+
+- **Base URL**：`http://10.50.69.111:30895`（智树网关内网地址，请先确认贵方网络到该节点可达）
+- **路径规则**：网关 `/cms/**` → 剥离 `/cms` → 转发智树 CMS 服务的 `/api/open/**`；服务端收到的路径与本文档一致
+- **鉴权**：`X-CMS-Api-Key` 不变（随对接通知线下提供）；写操作建议带 `X-CMS-Operator`
+- **临时性**：该网关入口为跨集群联调临时开通（已限流 + Key 鉴权）；久新服务后续入智树集群后，将切换回集群内 Service 直连（届时路径回到文档原样，无 `/cms` 前缀），会提前通知
+- **注意**：本文档其余章节的所有路径示例均为服务本征路径；经网关调用时统一在前面加 `/cms` 即可
 
 ---
 
