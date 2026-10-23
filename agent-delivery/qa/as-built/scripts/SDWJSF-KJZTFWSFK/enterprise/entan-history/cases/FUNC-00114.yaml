@@ -1,0 +1,20 @@
+id: FUNC-00114
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00114
+priority: P1
+title: 发展历程非法 org_id
+entry_id: entan.history
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/history"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 发展历程
+  - action: algo_fill
+    set: { org_id: __invalid__ }
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 org_id，且不将失败冒充为空 timeline 成功态
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/org_id/.test(text)) throw new Error('结果未说明 org_id'); if (/enterprise_name/.test(text) && (/\"timeline\"/.test(text) || /timeline\\s*:/.test(text))) throw new Error('结果冒充 timeline 成功态')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。org_id=__invalid__。结果须说明 org_id，不得冒充合法 org_id 下空 timeline 成功态。

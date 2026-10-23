@@ -1,0 +1,20 @@
+id: FUNC-00108
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00108
+priority: P0
+title: 企业搜索主流程 keyword 空 limit=1
+entry_id: entan.history
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/history"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 企业搜索
+  - action: algo_fill
+    set: { keyword: "", limit: 1 }
+  - action: algo_run
+expect:
+  - note: 运行结果含 org_id、enterprise_name
+    assert: "await expect(page.locator('.test-workbench .json-viewer')).toContainText('org_id'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_name')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。参数按步骤 keyword 空、limit=1；catalog status=unavailable，断言仍按文档字段。不断言 sample 具体 org_id 或企业名。

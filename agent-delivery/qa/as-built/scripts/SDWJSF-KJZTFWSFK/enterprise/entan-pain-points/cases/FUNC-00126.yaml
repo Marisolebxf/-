@@ -1,0 +1,27 @@
+id: FUNC-00126
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00126
+priority: P0
+title: 企业发展痛难点识别算法测试清单
+entry_id: entan.pain-points
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/pain-points"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 痛难点改进差距
+expect:
+  - note: 算法测试下拉 4 项；切换后调用区 POST M_ENT_PAINPOINT_GAP/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_PAINPOINT_GAP/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('痛难点改进差距');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['企业发展痛难点反映企业数（企业集合）', '企业发展痛难点严重度（企业集合）', '痛难点改进差距', '发展痛难点诊断']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

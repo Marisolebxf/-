@@ -1,0 +1,20 @@
+id: FUNC-00027
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00027
+priority: P0
+title: 重点企业提取主流程
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 重点企业提取
+  - action: algo_fill
+    set: { industry: 全部产业, city: 全部城市, scale: 全部规模, limit: 150 }
+  - action: algo_run
+expect:
+  - note: 运行结果 data 元素含 enterprise_name、key_score 及 sample 扩展字段
+    assert: "await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_name'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('key_score'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('headquarters_city'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_scale'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('industry'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('patent_grant_count'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('tech_transaction_amount');"
+as_built_note: 用例写点击调用，页面按钮是执行接口。参数按 catalog sampleRequest 空选填全部产业/城市/规模，limit=150。用例描述含 chainId 但步骤未填 chainId，本脚本不写 chainId。

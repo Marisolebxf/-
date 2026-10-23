@@ -1,0 +1,20 @@
+id: FUNC-00044
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00044
+priority: P1
+title: 新增企业数量非法 domain
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 新增企业数量
+  - action: algo_fill
+    set: { domain: __invalid__ }
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 domain，且不出现 new_count
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/domain/.test(text)) throw new Error('结果未说明 domain'); if (/new_count/.test(text)) throw new Error('结果含 new_count')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。domain=__invalid__。

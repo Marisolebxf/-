@@ -1,0 +1,21 @@
+id: FUNC-00104
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00104
+priority: P0
+title: 多城市企业群对标值主流程
+entry_id: entan.competitiveness
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/competitiveness"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 多城市企业群对标值
+  - action: algo_fill
+    set:
+      enterprise_codes: "0218337e44ca794fee9850cf1627b03b, 05dc8024336db695425572625773381b, 0551ccfde6aa2b3c52e647e283204040, 05ff69620c962ce3bbb852351f077299"
+  - action: algo_run
+expect:
+  - note: 运行结果含 metric_id、hint、enterprises
+    assert: "const v = page.locator('.test-workbench .json-viewer'); for (const f of ['metric_id','hint','enterprises']) { await expect(v).toContainText(f); }"
+as_built_note: 用例写点击调用，页面按钮是执行接口。enterprise_codes 同 SCR-01。hint 文案以实际调用为准，只断言字段名。

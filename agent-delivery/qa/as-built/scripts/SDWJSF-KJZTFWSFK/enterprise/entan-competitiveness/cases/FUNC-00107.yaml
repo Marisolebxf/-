@@ -1,0 +1,26 @@
+id: FUNC-00107
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00107
+priority: P0
+title: 深圳企业竞争力水平分析算法测试清单
+entry_id: entan.competitiveness
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/competitiveness"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 多城市企业群对标值
+expect:
+  - note: 算法测试下拉 3 项；切换后 POST /entan/v1/entan/metric/M_ENT_CITY_COMPARE_TOPIC/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST')
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_CITY_COMPARE_TOPIC/compute')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3)
+      for (const name of ['深圳企业竞争力水平分析（企业集合）','深圳企业竞争力排名（企业集合）','多城市企业群对标值']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name)
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

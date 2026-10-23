@@ -1,0 +1,20 @@
+id: FUNC-00038
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00038
+priority: P1
+title: 企业类型分布非法 year
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 企业类型分布
+  - action: algo_fill
+    set: { year: __invalid__ }
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 year，且不出现 enterprise_count
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/year/.test(text)) throw new Error('结果未说明 year'); if (/enterprise_count/.test(text)) throw new Error('结果含 enterprise_count')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。year=__invalid__。

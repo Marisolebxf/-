@@ -1,0 +1,20 @@
+id: FUNC-00042
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00042
+priority: P0
+title: 新增企业数量 domain=ALL
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 新增企业数量
+  - action: algo_fill
+    set: { domain: ALL }
+  - action: algo_run
+expect:
+  - note: 运行结果 rows 元素含 stat_year、new_count、cumulative_count
+    assert: "await expect(page.locator('.test-workbench .json-viewer')).toContainText('rows'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('stat_year'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('new_count'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('cumulative_count');"
+as_built_note: 用例写点击调用，页面按钮是执行接口。domain=ALL。不断言 sample 年份数字。

@@ -1,0 +1,21 @@
+id: FUNC-00057
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00057
+priority: P0
+title: 企业基础指标接口信息清单
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: assert_visible
+    target: 7 个接口
+  - action: assert_visible
+    target: /entan/v1/meta/filters
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 重点企业提取
+expect:
+  - note: 接口信息页签；切换后概览为重点企业提取 GET /entan/v1/key-enterprises；下拉 7 项与 catalog 标题一致
+    assert: "await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true'); await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET'); await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/key-enterprises'); await expect(page.locator('.api-info-grid header')).toContainText('重点企业提取'); await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click(); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(7); for (const name of ['筛选项','重点企业提取','企业类型分布','企业领域分布','新增企业数量','企业重点资讯统计','企业重点资讯明细']) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }"
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息，默认项为筛选项 path /entan/v1/meta/filters。选项标题由 runner 在已打开弹层里点 .arco-select-option。

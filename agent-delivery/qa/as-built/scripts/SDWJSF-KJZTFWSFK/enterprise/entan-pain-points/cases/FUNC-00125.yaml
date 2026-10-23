@@ -1,0 +1,30 @@
+id: FUNC-00125
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00125
+priority: P0
+title: 企业发展痛难点识别接口信息清单
+entry_id: entan.pain-points
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/pain-points"
+  - action: assert_visible
+    target: 4 个接口
+  - action: assert_visible
+    target: /entan/v1/entan/metric/M_ENT_PAINPOINT_COUNT/compute
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 企业发展痛难点严重度（企业集合）
+expect:
+  - note: 接口信息 tab 下拉 4 项；切换后严重度 POST M_ENT_PAINPOINT_SEVERITY
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_PAINPOINT_SEVERITY/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('企业发展痛难点严重度（企业集合）');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['企业发展痛难点反映企业数（企业集合）', '企业发展痛难点严重度（企业集合）', '痛难点改进差距', '发展痛难点诊断']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息，步骤 assert_visible 确认反映企业数 path。选项标题由 runner 在已打开弹层里点 .arco-select-option。

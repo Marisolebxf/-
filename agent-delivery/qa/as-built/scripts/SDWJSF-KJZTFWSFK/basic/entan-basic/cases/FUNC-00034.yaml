@@ -1,0 +1,20 @@
+id: FUNC-00034
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00034
+priority: P1
+title: 重点企业提取非法 scale
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 重点企业提取
+  - action: algo_fill
+    set: { industry: 人工智能, city: 深圳市, scale: __invalid__, limit: 150 }
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 scale，且不出现 key_score
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/scale/.test(text)) throw new Error('结果未说明 scale'); if (/key_score/.test(text)) throw new Error('结果含 key_score')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。scale=__invalid__。

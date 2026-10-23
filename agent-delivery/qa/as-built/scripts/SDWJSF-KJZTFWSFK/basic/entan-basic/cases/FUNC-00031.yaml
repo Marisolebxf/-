@@ -1,0 +1,21 @@
+id: FUNC-00031
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00031
+priority: P0
+title: 重点企业提取不传 limit
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 重点企业提取
+  - action: algo_fill
+    set: { industry: 人工智能, city: 深圳市, scale: 大 }
+    omit: [limit]
+  - action: algo_run
+expect:
+  - note: 运行结果 data 元素含 enterprise_name、key_score
+    assert: "await expect(page.locator('.test-workbench .json-viewer')).toContainText('enterprise_name'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('key_score');"
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit limit。

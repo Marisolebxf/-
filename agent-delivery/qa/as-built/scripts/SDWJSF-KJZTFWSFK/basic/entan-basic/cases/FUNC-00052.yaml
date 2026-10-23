@@ -1,0 +1,21 @@
+id: FUNC-00052
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00052
+priority: P0
+title: 企业重点资讯明细不传 size
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 企业重点资讯明细
+  - action: algo_fill
+    set: { news_type: 融资, keyword: "", page: 1 }
+    omit: [size]
+  - action: algo_run
+expect:
+  - note: 运行结果 data 含 list、total、page、size
+    assert: "await expect(page.locator('.test-workbench .json-viewer')).toContainText('list'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('total'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('page'); await expect(page.locator('.test-workbench .json-viewer')).toContainText('size');"
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit size。

@@ -1,0 +1,19 @@
+id: FUNC-00058
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00058
+priority: P0
+title: 企业基础指标算法测试清单
+entry_id: entan.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/basic"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 企业重点资讯明细
+expect:
+  - note: 算法测试下拉 7 项；切换后调用区为 GET /entan/v1/news
+    assert: "await expect(page.locator('.test-workbench .test-source')).toContainText('GET'); await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/news'); await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click(); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(7); for (const name of ['筛选项','重点企业提取','企业类型分布','企业领域分布','新增企业数量','企业重点资讯统计','企业重点资讯明细']) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }"
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=true，进入算法测试后可能自行请求；本条只核下拉和 method/path。
