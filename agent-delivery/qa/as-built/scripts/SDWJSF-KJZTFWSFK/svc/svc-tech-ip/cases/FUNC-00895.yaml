@@ -1,0 +1,24 @@
+id: FUNC-00895
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00895
+priority: P0
+title: 知识产权服务机构技术力评价模型 kind=tech
+entry_id: svc.tech-ip
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/tech-ip"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 知识产权服务机构技术力评价模型
+  - action: algo_fill
+    set: { kind: tech }
+  - action: algo_run
+expect:
+  - note: 含 metric_id、hint 与 responseFields 所列 tech
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'tech']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=available，不断言 sample 具体数字。
