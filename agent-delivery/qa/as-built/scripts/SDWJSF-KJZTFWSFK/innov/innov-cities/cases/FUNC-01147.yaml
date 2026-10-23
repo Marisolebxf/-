@@ -1,0 +1,25 @@
+id: FUNC-01147
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01147
+priority: P1
+title: 政策建议不传 cityCode
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 政策建议
+  - action: algo_fill
+    omit: [cityCode]
+  - action: algo_run
+expect:
+  - note: 结果说明 cityCode，且无 title、contentMd 成功建议 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/cityCode/.test(text)) throw new Error('结果未说明 cityCode');
+      if (/title/.test(text) && /contentMd/.test(text)) throw new Error('结果含 title、contentMd 成功建议 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit cityCode，path 段为空。catalog status=running。组合 ADV-02。

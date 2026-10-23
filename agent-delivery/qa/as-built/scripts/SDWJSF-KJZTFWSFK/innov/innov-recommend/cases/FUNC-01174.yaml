@@ -1,0 +1,33 @@
+id: FUNC-01174
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01174
+priority: P0
+title: 引育推荐（异步）接口信息清单
+entry_id: innov.recommend
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/recommend"
+  - action: assert_visible
+    target: 2 个接口
+  - action: assert_visible
+    target: /entan/v1/entan/metric/M_ENT_ATTRACTION_INDEX/compute
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 培育推荐契约
+expect:
+  - note: 接口信息 tab；下拉 2 项；默认招引 POST；切换培育 POST cultivation path
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_CULTIVATION_INDEX/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('培育推荐契约');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['招引推荐契约', '培育推荐契约']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '招引推荐契约' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_ATTRACTION_INDEX/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('招引推荐契约');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认招引 path，再切换培育推荐契约；assert 内再核招引推荐契约默认项。选项标题由 runner 在已打开弹层里点 .arco-select-option。

@@ -1,0 +1,25 @@
+id: FUNC-01144
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01144
+priority: P0
+title: 城市对标 cityCodes=440300,110000
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 城市对标
+  - action: algo_fill
+    set:
+      cityCodes: 440300,110000
+  - action: algo_run
+expect:
+  - note: list、radar 及对标元素字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['list', 'radar', 'cityCode', 'nameZh', 'indexScore', 'rankGlobal', 'resource', 'institution', 'output', 'environment', '创新资源', '制度环境', '创新产出', '产业环境']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。cityCodes=440300,110000。catalog status=running，不断言 sample 具体数字。组合 CMP-01。

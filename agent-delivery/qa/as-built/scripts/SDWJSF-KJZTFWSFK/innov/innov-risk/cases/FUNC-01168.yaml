@@ -1,0 +1,33 @@
+id: FUNC-01168
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01168
+priority: P0
+title: 风险洞察（异步）接口信息清单
+entry_id: innov.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/risk"
+  - action: assert_visible
+    target: 2 个接口
+  - action: assert_visible
+    target: /entan/v1/entan/metric/M_ENT_SUPPLY_CHAIN_RISK/compute
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 发展痛难点契约
+expect:
+  - note: 接口信息 tab；2 项下拉；默认供应链 POST；切换痛难点 POST M_ENT_PAINPOINT_GAP
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_PAINPOINT_GAP/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('发展痛难点契约');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['供应链风险图谱契约', '发展痛难点契约']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '供应链风险图谱契约' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_SUPPLY_CHAIN_RISK/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('供应链风险图谱契约');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认供应链 path，再切换发展痛难点契约；assert 内再核供应链默认项。选项标题由 runner 在已打开弹层里点 .arco-select-option。

@@ -1,0 +1,26 @@
+id: FUNC-01164
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01164
+priority: P0
+title: 供应链风险图谱契约主流程
+entry_id: innov.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/risk"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 供应链风险图谱契约
+  - action: algo_fill
+    set:
+      sub_type: 供应链风险
+      enterprise_codes: 91440300MA5DA8YX7E,91440300752531479N
+  - action: algo_run
+expect:
+  - note: summary、nodes、edges、key_nodes、break_risks 及子字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['summary', 'display_mode', 'data_time', 'enterprises', 'nodes', 'edges', 'id', 'name', 'relation_type', 'influence_score', 'is_key', 'src', 'dst', 'key_nodes', 'break_risks', 'suggestion', 'risk_level', 'impact']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。sub_type 单选填选项文案「供应链风险」。不断言 sample 具体数字。组合 SUP-01。

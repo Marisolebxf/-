@@ -1,0 +1,27 @@
+id: FUNC-01150
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01150
+priority: P0
+title: M4 城市创新能力算法测试清单
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 指数方法与权重
+expect:
+  - note: 算法测试下拉 4 项；切换后 GET index-method
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/cities/index-method');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('指数方法与权重');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['城市排名', '城市对标', '政策建议', '指数方法与权重']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

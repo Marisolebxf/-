@@ -1,0 +1,26 @@
+id: FUNC-01167
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01167
+priority: P1
+title: 发展痛难点契约缺 sub_type
+entry_id: innov.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/risk"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 发展痛难点契约
+  - action: algo_fill
+    omit:
+      - sub_type
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 sub_type；不含 issues 成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/sub_type/.test(text)) throw new Error('结果未说明 sub_type');
+      if (/issues/.test(text) && /title/.test(text) && /evidence/.test(text)) throw new Error('结果含 issues 成功业务结果');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit sub_type。catalog_status=running，反向断言仍按文档。组合 PAIN-02。

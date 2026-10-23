@@ -1,0 +1,26 @@
+id: FUNC-01152
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01152
+priority: P1
+title: 领域趋势预测
+entry_id: innov.forecast
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/forecast"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 领域趋势预测
+  - action: algo_fill
+    omit:
+      - domainId
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 domainId 缺失；不含 history、predictions 成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/domainId/.test(text)) throw new Error('结果未说明 domainId');
+      if (/history/.test(text) && /predictions/.test(text)) throw new Error('结果含 history、predictions 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 DOM-02。

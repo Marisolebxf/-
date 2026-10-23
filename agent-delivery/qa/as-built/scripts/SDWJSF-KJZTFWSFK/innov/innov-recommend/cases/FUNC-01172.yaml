@@ -1,0 +1,26 @@
+id: FUNC-01172
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01172
+priority: P0
+title: 培育推荐契约主流程
+entry_id: innov.recommend
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/recommend"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 培育推荐契约
+  - action: algo_fill
+    set:
+      sub_type: 培育
+      enterprise_codes: 91440300MA5DA8YX7E,91440300752531479N
+  - action: algo_run
+expect:
+  - note: task_id、candidate_count、rankings 培育榜字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['task_id', 'candidate_count', 'rankings', 'rank', 'enterprise_name', 'recommendation_score', 'industry_category', 'enterprise_scale', 'development_bottleneck']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。sub_type 单选填选项文案「培育」。enterprise_codes 为用例两码逗号串。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合=CULT-01。

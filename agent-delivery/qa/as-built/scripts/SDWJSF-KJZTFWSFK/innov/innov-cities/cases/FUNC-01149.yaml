@@ -1,0 +1,37 @@
+id: FUNC-01149
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01149
+priority: P0
+title: M4 城市创新能力接口信息清单
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: assert_visible
+    target: 4 个接口
+  - action: assert_visible
+    target: /innov/v1/cities/rank
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 城市对标
+expect:
+  - note: 接口信息 tab；下拉 4 项；默认 rank；切换城市对标 path 刷新
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/cities/compare');
+      await expect(page.locator('.api-info-grid header')).toContainText('城市对标');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['城市排名', '城市对标', '政策建议', '指数方法与权重']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '城市排名' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/cities/rank');
+      await expect(page.locator('.api-info-grid header')).toContainText('城市排名');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '指数方法与权重' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/cities/index-method');
+      await expect(page.locator('.api-info-grid header')).toContainText('指数方法与权重');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认 rank path，再切换城市对标；assert 内再核城市排名默认项与指数方法与权重 path。

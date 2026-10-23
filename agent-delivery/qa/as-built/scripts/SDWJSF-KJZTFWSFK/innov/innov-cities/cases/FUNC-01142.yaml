@@ -1,0 +1,24 @@
+id: FUNC-01142
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01142
+priority: P0
+title: 城市排名不传 scope
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 城市排名
+  - action: algo_fill
+    omit: [scope]
+  - action: algo_run
+expect:
+  - note: 省略 scope 仍含排名字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['period', 'list', 'cityCode', 'nameZh', 'indexScore', 'rankGlobal', 'rankDomestic', 'isBenchmark', 'subScores', 'resource', 'institution', 'output', 'environment']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit scope。catalog status=running，不断言 sample 具体数字。组合 RNK-02。

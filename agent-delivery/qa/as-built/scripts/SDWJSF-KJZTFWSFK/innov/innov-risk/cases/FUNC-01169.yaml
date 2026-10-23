@@ -1,0 +1,27 @@
+id: FUNC-01169
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01169
+priority: P0
+title: 风险洞察（异步）算法测试清单
+entry_id: innov.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/risk"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 发展痛难点契约
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_ENT_PAINPOINT_GAP/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_PAINPOINT_GAP/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('发展痛难点契约');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['供应链风险图谱契约', '发展痛难点契约']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。

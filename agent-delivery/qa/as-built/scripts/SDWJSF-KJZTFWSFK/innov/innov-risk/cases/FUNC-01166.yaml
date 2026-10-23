@@ -1,0 +1,26 @@
+id: FUNC-01166
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01166
+priority: P0
+title: 发展痛难点契约主流程
+entry_id: innov.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/risk"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 发展痛难点契约
+  - action: algo_fill
+    set:
+      sub_type: 痛难点
+      enterprise_codes: 91440300MA5DA8YX7E,91440300752531479N
+  - action: algo_run
+expect:
+  - note: summary、dimension_cards、issues 及子字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['summary', 'diagnosis_method', 'data_time', 'dimension_cards', 'dimension', 'priority', 'issue_count', 'affected_enterprise_count', 'issues', 'title', 'evidence']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。sub_type 单选填选项文案「痛难点」。不断言 sample 具体数字。组合 PAIN-01。

@@ -1,0 +1,26 @@
+id: FUNC-01161
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01161
+priority: P1
+title: 主题突变
+entry_id: innov.forecast
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/forecast"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 主题突变
+  - action: algo_fill
+    set:
+      domainId: __invalid__
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 domainId 非法；不含 topicName、burstScore 成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/domainId/.test(text)) throw new Error('结果未说明 domainId');
+      if (/topicName/.test(text) && /burstScore/.test(text)) throw new Error('结果含 topicName、burstScore 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 BUR-03。

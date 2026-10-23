@@ -1,0 +1,25 @@
+id: FUNC-01141
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01141
+priority: P0
+title: 城市排名 scope=global
+entry_id: innov.cities
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/cities"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 城市排名
+  - action: algo_fill
+    set:
+      scope: 全球
+  - action: algo_run
+expect:
+  - note: period、list 及排名元素字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['period', 'list', 'cityCode', 'nameZh', 'indexScore', 'rankGlobal', 'rankDomestic', 'isBenchmark', 'subScores', 'resource', 'institution', 'output', 'environment']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。scope 单选填选项文案「全球」（值 global）。catalog status=running，不断言 sample 具体数字。组合 RNK-01。

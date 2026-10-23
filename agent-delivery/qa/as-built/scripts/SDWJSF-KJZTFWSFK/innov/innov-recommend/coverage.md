@@ -1,0 +1,10 @@
+# innov.recommend 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01170 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01170 | 主流程 ATTR-01 招引推荐契约 |
+| FUNC-01171 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01171 | 异常-入参-缺sub_type ATTR-02 |
+| FUNC-01172 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01172 | 主流程 CULT-01 培育推荐契约 |
+| FUNC-01173 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01173 | 异常-入参-缺sub_type CULT-02 |
+| FUNC-01174 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01174 | 接口信息-清单 |
+| FUNC-01175 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01175 | 算法测试-清单 |

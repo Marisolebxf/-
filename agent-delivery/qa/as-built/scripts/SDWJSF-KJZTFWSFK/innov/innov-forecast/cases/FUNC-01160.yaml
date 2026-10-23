@@ -1,0 +1,25 @@
+id: FUNC-01160
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01160
+priority: P0
+title: 主题突变
+entry_id: innov.forecast
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/forecast"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 主题突变
+  - action: algo_fill
+    omit:
+      - domainId
+  - action: algo_run
+expect:
+  - note: 省略 domainId 仍含 topicName、burstScore、domainId、burstStart
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['topicName', 'burstScore', 'domainId', 'burstStart']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。组合 BUR-02。

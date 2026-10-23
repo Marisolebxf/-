@@ -1,0 +1,10 @@
+# innov.risk 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01164 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01164 | 主流程 SUP-01 供应链风险图谱契约 |
+| FUNC-01165 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01165 | 异常-入参-缺sub_type SUP-02 |
+| FUNC-01166 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01166 | 主流程 PAIN-01 发展痛难点契约 |
+| FUNC-01167 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01167 | 异常-入参-缺sub_type PAIN-02 |
+| FUNC-01168 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01168 | 接口信息-清单 |
+| FUNC-01169 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01169 | 算法测试-清单 |

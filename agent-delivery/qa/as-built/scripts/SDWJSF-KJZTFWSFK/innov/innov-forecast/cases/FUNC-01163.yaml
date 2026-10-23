@@ -1,0 +1,27 @@
+id: FUNC-01163
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01163
+priority: P0
+title: M5 创新影响预测算法测试清单
+entry_id: innov.forecast
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/forecast"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 主题突变
+expect:
+  - note: 算法测试下拉 3 项；切换后 GET /innov/v1/forecast/bursts
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/forecast/bursts');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('主题突变');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3);
+      for (const name of ['领域趋势预测', '创新点贡献度', '主题突变']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。
