@@ -1,0 +1,27 @@
+id: FUNC-01077
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01077
+priority: P0
+title: 区域创新要素综合分析算法测试清单
+entry_id: comp.element-synthesis
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/element-synthesis"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 要素贡献度与影响路径
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_SYNTH_ELEM_CONTRIB/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/synth-metric/metric/M_SYNTH_ELEM_CONTRIB/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('要素贡献度与影响路径');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['要素综合', '要素贡献度与影响路径']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=true，本条只核下拉和 method/path。

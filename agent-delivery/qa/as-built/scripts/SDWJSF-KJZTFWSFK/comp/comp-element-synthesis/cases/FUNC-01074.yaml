@@ -1,0 +1,24 @@
+id: FUNC-01074
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01074
+priority: P0
+title: 要素贡献度与影响路径不传 region
+entry_id: comp.element-synthesis
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/element-synthesis"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 要素贡献度与影响路径
+  - action: algo_fill
+    omit: [region]
+  - action: algo_run
+expect:
+  - note: 不传 region 仍含 metric_id、hint、index
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'index']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit region。catalog status=available，不断言 sample 具体数字。组合 ECON-02。

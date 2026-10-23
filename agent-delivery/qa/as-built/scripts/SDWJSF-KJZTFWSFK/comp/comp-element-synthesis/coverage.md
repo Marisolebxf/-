@@ -1,0 +1,12 @@
+# comp.element-synthesis 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01070 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01070 | 要素综合，ESYN-01 主流程 |
+| FUNC-01071 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01071 | 要素综合，ESYN-02 不传 region |
+| FUNC-01072 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01072 | 要素综合，ESYN-03 非法 region |
+| FUNC-01073 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01073 | 要素贡献度与影响路径，ECON-01 主流程 |
+| FUNC-01074 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01074 | 要素贡献度与影响路径，ECON-02 不传 region |
+| FUNC-01075 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01075 | 要素贡献度与影响路径，ECON-03 非法 region |
+| FUNC-01076 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01076 | （页面），接口信息-清单 |
+| FUNC-01077 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01077 | （页面），算法测试-清单 |

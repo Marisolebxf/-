@@ -1,0 +1,28 @@
+id: FUNC-01058
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01058
+priority: P0
+title: 区域创新要素类型综合评价接口信息清单
+entry_id: comp.element-type
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/element-type"
+  - action: assert_visible
+    target: 1 个接口
+  - action: assert_visible
+    target: /comp/v1/comp/element-type
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 要素类型
+expect:
+  - note: 接口信息 tab；下拉 1 项；GET /comp/v1/comp/element-type 与文档一致
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/comp/v1/comp/element-type');
+      await expect(page.locator('.api-info-grid header')).toContainText('要素类型');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1);
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('要素类型');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。单接口页下拉仅 1 项。选项标题由 runner 在已打开弹层里点 .arco-select-option。

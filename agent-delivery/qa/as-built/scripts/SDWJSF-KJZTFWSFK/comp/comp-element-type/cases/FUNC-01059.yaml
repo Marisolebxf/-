@@ -1,0 +1,25 @@
+id: FUNC-01059
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01059
+priority: P0
+title: 区域创新要素类型综合评价算法测试清单
+entry_id: comp.element-type
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-comp/element-type"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 要素类型
+expect:
+  - note: 算法测试下拉 1 项；调用区 GET /comp/v1/comp/element-type
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/comp/v1/comp/element-type');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('要素类型');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1);
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('要素类型');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=true，本条只核下拉和 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。
