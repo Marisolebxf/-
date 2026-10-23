@@ -1,0 +1,29 @@
+id: FUNC-01425
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01425
+priority: P0
+title: 算法测试
+entry_id: innov.sz-monitoring
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/sz-monitoring"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 创新价值排名
+expect:
+  - note: 算法测试 tab 下拉 8 项；切换创新价值排名后 POST path 刷新
+    assert: |-
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^\\s*创新价值排名\\s*$/ }).first().click();
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_INNOV_DS_06_CARRIER_003/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('创新价值排名');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(8);
+      for (const name of ["深圳创新监测指标清单","深圳创新载体创新价值排名","创新价值排名","深圳科技发展指标对比","深圳科技竞争力","深圳创新能力指数","深圳城市科技发展排名","深圳与对标城市趋势"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。未点击调用时不校验返回字段。场景=算法测试-清单。

@@ -1,0 +1,27 @@
+id: FUNC-01492
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01492
+priority: P0
+title: 算法测试
+entry_id: innov.topic-strategy
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/topic-strategy"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 协同绩效与影响力智能评估
+expect:
+  - note: 算法测试 tab 下拉 4 项；切换协同绩效与影响力智能评估后 POST path 刷新
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_INNOV_DS_26_ECO_012/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('协同绩效与影响力智能评估');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ["科技专题战略分析指标清单","影响力评价与应用反馈","协同绩效与影响力智能评估","热点区域自动识别与预警"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。未点击调用时不校验返回字段。场景=算法测试-清单。

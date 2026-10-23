@@ -1,0 +1,34 @@
+id: FUNC-01424
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01424
+priority: P0
+title: 接口信息
+entry_id: innov.sz-monitoring
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/sz-monitoring"
+  - action: assert_visible
+    target: 8 个接口
+  - action: assert_visible
+    target: /innov/v1/innov/metrics
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 深圳与对标城市趋势
+expect:
+  - note: 接口信息 tab；下拉 8 项；默认 metrics GET；切换深圳与对标城市趋势 POST compute
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metrics');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '深圳与对标城市趋势' }).first().click();
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metric/M_INNOV_CITY_TREND_SZ/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('深圳与对标城市趋势');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(8);
+      for (const name of ["深圳创新监测指标清单","深圳创新载体创新价值排名","创新价值排名","深圳科技发展指标对比","深圳科技竞争力","深圳创新能力指数","深圳城市科技发展排名","深圳与对标城市趋势"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。场景=接口信息-清单。

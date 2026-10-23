@@ -1,0 +1,18 @@
+# innov.topic-strategy 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-01479 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01479 | 科技专题战略分析指标清单，MET-01 主流程 金样 |
+| FUNC-01480 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01480 | 科技专题战略分析指标清单，MET-02 不传 module |
+| FUNC-01481 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01481 | 科技专题战略分析指标清单，MET-03 非法 module |
+| FUNC-01482 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01482 | 影响力评价与应用反馈，S25-01 主流程 |
+| FUNC-01483 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01483 | 影响力评价与应用反馈，S25-02 不传 module |
+| FUNC-01484 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01484 | 影响力评价与应用反馈，S25-03 非法 module |
+| FUNC-01485 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01485 | 协同绩效与影响力智能评估，E26-01 主流程 |
+| FUNC-01486 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01486 | 协同绩效与影响力智能评估，E26-02 不传 module |
+| FUNC-01487 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01487 | 协同绩效与影响力智能评估，E26-03 非法 module |
+| FUNC-01488 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01488 | 热点区域自动识别与预警，P27-01 主流程 |
+| FUNC-01489 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01489 | 热点区域自动识别与预警，P27-02 不传 module |
+| FUNC-01490 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01490 | 热点区域自动识别与预警，P27-03 非法 module |
+| FUNC-01491 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01491 | （页面），接口信息-清单 |
+| FUNC-01492 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01492 | （页面），算法测试-清单 |

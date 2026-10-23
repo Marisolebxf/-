@@ -1,0 +1,29 @@
+id: FUNC-01478
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01478
+priority: P0
+title: 湾区创新监测算法测试清单
+entry_id: innov.bay-area-monitoring
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/bay-area-monitoring"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 威胁因素分析
+expect:
+  - note: 算法测试 tab 下拉 17 项；切换威胁因素分析后 POST path 刷新
+    assert: |-
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '威胁因素分析' }).first().click();
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_INNOV_DS_05_GBA_ANALYSIS_006/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('威胁因素分析');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(17);
+      for (const name of ["湾区创新监测指标清单","粤港澳大湾区创新能力指标","创新环境指数","湾区创新热点区域","创新机制指数","创新机构指数","创新资源指数","子指标贡献度","湾区创新能力机会因素","湾区创新能力优势因素","湾区创新能力威胁因素","湾区创新能力短板因素","创新热点区域识别","优势因素分析","短板因素分析","机会因素分析","威胁因素分析"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。endpoint_id=innov.bay-area-monitoring.m_innov_ds_05_gba_analysis_006。未点击调用时不校验返回字段。场景=算法测试-清单。

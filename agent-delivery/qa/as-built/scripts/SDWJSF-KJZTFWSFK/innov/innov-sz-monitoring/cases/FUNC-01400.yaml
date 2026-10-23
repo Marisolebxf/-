@@ -1,0 +1,25 @@
+id: FUNC-01400
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01400
+priority: P0
+title: 深圳创新监测指标清单
+entry_id: innov.sz-monitoring
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/sz-monitoring"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 深圳创新监测指标清单
+  - action: algo_fill
+    set:
+      module: sz-monitoring
+  - action: algo_run
+expect:
+  - note: metrics、total 及 metrics 元素字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metrics', 'total', 'metric_id', 'name', 'algorithm_type', 'formula_status', 'pending_ref']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running。不断言 sample 具体数字。组合 MET-01。 endpoint_id=innov.sz-monitoring.metrics。

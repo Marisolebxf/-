@@ -1,0 +1,27 @@
+id: FUNC-01500
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01500
+priority: P0
+title: 服务机构管理算法测试清单
+entry_id: innov.service-org
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/service-org"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 影响力评价
+expect:
+  - note: 算法测试 tab 下拉 2 项；切换影响力评价后 POST compute path 刷新
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_INNOV_DS_29_INCUBATOR_006/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('影响力评价');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['服务机构管理指标清单', '影响力评价']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。未点击调用时不校验返回字段。场景=算法测试-清单。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。
