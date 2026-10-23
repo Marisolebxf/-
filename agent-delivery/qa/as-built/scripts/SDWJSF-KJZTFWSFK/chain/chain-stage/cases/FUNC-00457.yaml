@@ -1,0 +1,26 @@
+id: FUNC-00457
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00457
+priority: P0
+title: 产业阶段分析模型主流程 chain_id=INB1701
+entry_id: chain.stage
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/stage"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业阶段分析模型
+  - action: algo_fill
+    set:
+      chainId: INB1701
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、hint
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。步骤按 sampleRequest 传 chain_id=INB1701，表单字段名为 chainId，algo_fill 写 chainId=INB1701。catalog_status=available，断言仍按文档字段。不断言 sample 具体数字。

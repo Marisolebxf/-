@@ -1,0 +1,27 @@
+id: FUNC-00460
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00460
+priority: P0
+title: 产业阶段分析算法测试清单
+entry_id: chain.stage
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/stage"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 产业阶段分析模型
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_CHAIN_DEEP_123_1/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/chainan/metric/M_CHAIN_DEEP_123_1/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('产业阶段分析模型');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['产业阶段分析', '产业阶段分析模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

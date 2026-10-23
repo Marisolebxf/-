@@ -1,0 +1,26 @@
+id: FUNC-00455
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00455
+priority: P0
+title: 产业阶段分析主流程 chainId=INB1701
+entry_id: chain.stage
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/stage"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 产业阶段分析
+  - action: algo_fill
+    set:
+      chainId: INB1701
+  - action: algo_run
+expect:
+  - note: 返回面板含 cycle、stage 及文档示例字段名
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['cycle', 'stage', 'cycle_stage', 'growth_rate', 'investment_trend', 'enterprise_trend', 'trend', 'year', 'revenue', 'sub_stage', 'high_tech_ratio', 'investment_intensity']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档 sampleResponse 字段名。不断言 sample 具体数字。

@@ -1,0 +1,26 @@
+id: FUNC-00444
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00444
+priority: P1
+title: 专题全景图谱缺 chainId
+entry_id: chain.topic-panorama
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/topic-panorama"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 专题全景图谱
+  - action: algo_fill
+    omit:
+      - chainId
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 chainId，且不返回含 nodes 的成功业务 body
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/chainId/.test(text)) throw new Error('结果未说明 chainId');
+      if (/nodes/.test(text)) throw new Error('结果含 nodes')
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。

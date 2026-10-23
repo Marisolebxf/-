@@ -1,0 +1,25 @@
+# chain.topic-panorama 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00428 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00428 | A/B/C 按 op_id 写入主流程 |
+| FUNC-00429 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00429 | A/B/C 按 op_id 写入省略 id |
+| FUNC-00430 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00430 | A/B/C 按 op_id 写入传入 filter |
+| FUNC-00431 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00431 | A/B/C 按 op_id 写入省略 mode |
+| FUNC-00432 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00432 | A/B/C 按 op_id 写入省略 dry_run |
+| FUNC-00433 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00433 | A/B/C 按 op_id 写入传入 relation_whitelist |
+| FUNC-00434 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00434 | A/B/C 按 op_id 写入传入 dest_types |
+| FUNC-00435 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00435 | A/B/C 按 op_id 写入缺 op_id |
+| FUNC-00436 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00436 | A/B/C 按 op_id 写入缺 scope |
+| FUNC-00437 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00437 | A/B/C 按 op_id 写入非法 id |
+| FUNC-00438 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00438 | A/B/C 按 op_id 写入非法 filter |
+| FUNC-00439 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00439 | A/B/C 按 op_id 写入非法 mode |
+| FUNC-00440 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00440 | A/B/C 按 op_id 写入非法 dry_run |
+| FUNC-00441 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00441 | A/B/C 按 op_id 写入非法 relation_whitelist |
+| FUNC-00442 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00442 | A/B/C 按 op_id 写入非法 dest_types |
+| FUNC-00443 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00443 | 专题全景图谱主流程 chainId=INB13 |
+| FUNC-00444 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00444 | 专题全景图谱缺 chainId |
+| FUNC-00445 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00445 | 深圳产业链模型主流程 chain_id=INB1701 |
+| FUNC-00446 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00446 | 深圳产业链模型缺 chainId |
+| FUNC-00447 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00447 | 接口信息-清单 |
+| FUNC-00448 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00448 | 算法测试-清单 |

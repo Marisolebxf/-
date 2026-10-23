@@ -1,0 +1,29 @@
+id: FUNC-00431
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00431
+priority: P0
+title: A/B/C 按 op_id 写入省略 mode
+entry_id: chain.topic-panorama
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/topic-panorama"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: A/B/C 按 op_id 写入
+  - action: algo_fill
+    set:
+      op_id: CHAIN_NER_INDUSTRY
+      scope: one
+      id: INB13
+      mode: rule
+      dry_run: true
+    omit:
+      - mode
+  - action: algo_run
+expect:
+  - note: 省略可选 mode 仍返回与主流程一致的写入结果字段结构
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["op_id","written_nodes","written_edges","skipped","source","space","mode_effective","llm_fallback","calc_batch_id"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=running，断言仍按文档字段。不断言 sample 具体数字。
