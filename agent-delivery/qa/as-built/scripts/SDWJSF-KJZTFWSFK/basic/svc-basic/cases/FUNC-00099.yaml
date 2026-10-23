@@ -1,0 +1,19 @@
+id: FUNC-00099
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00099
+priority: P0
+title: 服务机构基础指标算法测试清单
+entry_id: svc.basic
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/basic"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 投融资动态资讯
+expect:
+  - note: 算法测试下拉 6 项；切换后调用区为 GET /entan/v1/svc/indicators
+    assert: "await expect(page.locator('.test-workbench .test-source')).toContainText('GET'); await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/svc/indicators'); await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click(); await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6); for (const name of ['服务机构基础指标（全维度）','全球服务机构产业布局','全球服务机构分布','投融资动态资讯','新增服务机构动态','深圳服务机构规模及分布']) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }"
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。

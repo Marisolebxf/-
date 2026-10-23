@@ -1,0 +1,26 @@
+id: FUNC-00725
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00725
+priority: P0
+title: 引导力主流程
+entry_id: policy.guide
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/guide"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 引导力
+  - action: algo_fill
+    set:
+      limit: 20
+    omit: [scope_code]
+  - action: algo_run
+expect:
+  - note: body 同层含 model_id、count、rows；rows 元素含 scope_name、effect_score、layout_rec_cnt、metric_id
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['model_id', 'count', 'rows', 'scope_name', 'effect_score', 'layout_rec_cnt', 'metric_id']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。不传 scope_code，limit=20。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。备注金样。
