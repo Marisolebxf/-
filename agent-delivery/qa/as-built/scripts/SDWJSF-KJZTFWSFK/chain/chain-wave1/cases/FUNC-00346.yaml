@@ -1,0 +1,26 @@
+id: FUNC-00346
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00346
+priority: P0
+title: WAVE1 链上企业数 chain_id=INB120401
+entry_id: chain.wave1
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/wave1"
+  - action: algo_tab
+    target: "test"
+  - action: algo_pick
+    target: "WAVE1 链上企业数"
+  - action: algo_fill
+    set:
+      chain_id: "INB120401"
+  - action: algo_run
+expect:
+  - note: 返回面板结构与 sampleResponse 同类，含 metric_id、metric_name_zh、data_source、shape
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB120401');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['code', 'msg', 'metric_id', 'metric_name_zh', 'data_source', 'shape']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=available，断言仍按文档字段。不断言 sample 具体数字。名称表无此 id，仍按用例写入 chain_id=INB120401。

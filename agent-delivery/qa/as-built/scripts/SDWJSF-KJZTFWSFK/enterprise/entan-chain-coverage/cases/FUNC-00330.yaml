@@ -1,0 +1,30 @@
+id: FUNC-00330
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00330
+priority: P0
+title: 企业产业链洞察接口信息清单
+entry_id: entan.chain-coverage
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/chain-coverage"
+  - action: assert_visible
+    target: 3 个接口
+  - action: assert_visible
+    target: /entan/v1/entan/metric/M_ENT_KEYPANO_DOMAIN_SUMMARY/compute
+expect:
+  - note: 接口信息 tab；下拉 3 项；默认重点企业全景图 POST compute；切换多元化指数后 path 刷新
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST')
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_KEYPANO_DOMAIN_SUMMARY/compute')
+      await expect(page.locator('.api-info-grid header')).toContainText('重点企业全景图（企业集合）')
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3)
+      for (const name of ['重点企业全景图（企业集合）', '多元化指数（企业集合）', '领域覆盖深度（企业集合）']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name)
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '多元化指数（企业集合）' }).click()
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST')
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_DIVERSIFICATION_INDEX/compute')
+      await expect(page.locator('.api-info-grid header')).toContainText('多元化指数（企业集合）')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab。切换多元化指数在 expect 内完成以核对刷新。选项标题由 runner 在已打开弹层里点 .arco-select-option。

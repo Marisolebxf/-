@@ -1,0 +1,27 @@
+id: FUNC-00338
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00338
+priority: P0
+title: M_ENT_DS_07_INDUSTRY_POTENTIAL_006 主流程
+entry_id: entan.growth-match
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/growth-match"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: M_ENT_DS_07_INDUSTRY_POTENTIAL_006
+  - action: algo_fill
+    set:
+      chainId: INB1701
+      enterprise_codes: 0218337e44ca794fee9850cf1627b03b,05dc8024336db695425572625773381b,0551ccfde6aa2b3c52e647e283204040,05ff69620c962ce3bbb852351f077299
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、hint、value 等契约字段名
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'value']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。enterprise_codes 为 POT-01 四元组。sampleResponse 未给 value 示例，成功结果应出现 value 或可识别计算结果体。不断言 sample 具体数字。

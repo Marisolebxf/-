@@ -1,0 +1,25 @@
+id: FUNC-00326
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00326
+priority: P0
+title: 多元化指数主流程
+entry_id: entan.chain-coverage
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/chain-coverage"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 多元化指数（企业集合）
+  - action: algo_fill
+    set:
+      enterprise_codes: 0218337e44ca794fee9850cf1627b03b,05dc8024336db695425572625773381b,0551ccfde6aa2b3c52e647e283204040,05ff69620c962ce3bbb852351f077299
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、metric_name_zh、value 及多元化指数契约字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'metric_name_zh', 'value', 'node_count', 'hint', 'data_source', 'confidence', 'calc_process', 'definition', 'formula', 'source_tables', 'model_version']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。测试内容含 chainId=INB1701，步骤未填 chainId，enterprise_codes 同 KPN-01。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

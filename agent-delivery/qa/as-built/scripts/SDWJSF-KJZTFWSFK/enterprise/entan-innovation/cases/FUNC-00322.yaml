@@ -1,0 +1,28 @@
+id: FUNC-00322
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00322
+priority: P0
+title: 企业创新能力评估接口信息清单
+entry_id: entan.innovation
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/innovation"
+  - action: assert_visible
+    target: 1 个接口
+  - action: assert_visible
+    target: /entan/v1/entan/metric/M_ENT_INNOVATION_INDEX/compute
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 创新能力指数（企业集合）
+expect:
+  - note: 接口信息 tab；下拉 1 项与 catalog 一致；POST path 与文档一致
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST')
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/metric/M_ENT_INNOVATION_INDEX/compute')
+      await expect(page.locator('.api-info-grid header')).toContainText('创新能力指数（企业集合）')
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1)
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('创新能力指数（企业集合）')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。单接口页下拉仅 1 项。选项标题由 runner 在已打开弹层里点 .arco-select-option。

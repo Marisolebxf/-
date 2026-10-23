@@ -1,0 +1,25 @@
+id: FUNC-00337
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00337
+priority: P1
+title: M_ENT_AGGLOMERATION_INDEX 缺 enterprise_codes
+entry_id: entan.growth-match
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/growth-match"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: M_ENT_AGGLOMERATION_INDEX
+  - action: algo_fill
+    omit: [enterprise_codes]
+  - action: algo_run
+expect:
+  - note: message 或 msg 说明缺少 enterprise_codes，且不返回 M_ENT_AGGLOMERATION_INDEX 成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/enterprise_codes/.test(text)) throw new Error('结果未说明 enterprise_codes');
+      if (/M_ENT_AGGLOMERATION_INDEX/.test(text) && /compute 响应/.test(text)) throw new Error('结果含 M_ENT_AGGLOMERATION_INDEX 成功业务结果');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 enterprise_codes。

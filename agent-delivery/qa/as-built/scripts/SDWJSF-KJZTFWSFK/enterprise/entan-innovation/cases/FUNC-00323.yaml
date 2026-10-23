@@ -1,0 +1,25 @@
+id: FUNC-00323
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00323
+priority: P0
+title: 企业创新能力评估算法测试清单
+entry_id: entan.innovation
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/innovation"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 创新能力指数（企业集合）
+expect:
+  - note: 算法测试下拉 1 项；调用区 POST M_ENT_INNOVATION_INDEX/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST')
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_INNOVATION_INDEX/compute')
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('创新能力指数（企业集合）')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1)
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('创新能力指数（企业集合）')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

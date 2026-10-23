@@ -1,0 +1,27 @@
+id: FUNC-00406
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00406
+priority: P0
+title: 第一波16STAT算法测试清单
+entry_id: chain.wave1
+tier: A
+steps:
+  - action: goto
+    target: "#/chain/wave1"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 全球成功案例匹配
+expect:
+  - note: 算法测试下拉 17 项；切换后 POST M_CHAIN_GLOBAL_CASE_MATCH/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/industry/chainan/metric/M_CHAIN_GLOBAL_CASE_MATCH/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('全球成功案例匹配');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(17);
+      for (const name of ["WAVE1 产业链环节总数", "WAVE1 链上企业数", "WAVE1 链上新增企业数", "WAVE1 全国区域企业分布", "WAVE1 深圳区域企业分布", "WAVE1 深圳企业数", "WAVE1 深圳企业占比", "WAVE1 产业市场规模", "WAVE1 产业市场增速", "WAVE1 投融资事件数", "WAVE1 区域融资分布", "WAVE1 区域营收分布", "WAVE1 区域专利分布", "WAVE1 深圳产业链完备度", "WAVE1 链上专利数", "WAVE1 链上产品数", "全球成功案例匹配"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

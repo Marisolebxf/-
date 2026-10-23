@@ -1,0 +1,27 @@
+id: FUNC-00341
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00341
+priority: P0
+title: 企业成长与产业匹配算法测试清单
+entry_id: entan.growth-match
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/growth-match"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: M_ENT_AGGLOMERATION_INDEX
+expect:
+  - note: 算法测试下拉 4 项；切换后 POST M_ENT_AGGLOMERATION_INDEX/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_AGGLOMERATION_INDEX/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('M_ENT_AGGLOMERATION_INDEX');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['成长潜力（企业集合）', '产业匹配度（企业集合）', 'M_ENT_AGGLOMERATION_INDEX', 'M_ENT_DS_07_INDUSTRY_POTENTIAL_006']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

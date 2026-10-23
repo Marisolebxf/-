@@ -1,0 +1,25 @@
+id: FUNC-00329
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00329
+priority: P1
+title: 领域覆盖深度缺 enterprise_codes
+entry_id: entan.chain-coverage
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/chain-coverage"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 领域覆盖深度（企业集合）
+  - action: algo_fill
+    omit: [enterprise_codes]
+  - action: algo_run
+expect:
+  - note: message 或 msg 说明缺少 enterprise_codes，且不返回含 max_level 的成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/enterprise_codes/.test(text)) throw new Error('结果未说明 enterprise_codes');
+      if (/M_ENT_DOMAIN_COVERAGE_DEPTH/.test(text) && /max_level/.test(text)) throw new Error('结果含领域覆盖深度成功业务态');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 enterprise_codes。catalog status=unavailable，反向断言仍按文档。

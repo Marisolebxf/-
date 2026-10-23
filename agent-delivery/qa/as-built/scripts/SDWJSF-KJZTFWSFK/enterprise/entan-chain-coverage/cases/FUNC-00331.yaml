@@ -1,0 +1,27 @@
+id: FUNC-00331
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00331
+priority: P0
+title: 企业产业链洞察算法测试清单
+entry_id: entan.chain-coverage
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/chain-coverage"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 领域覆盖深度（企业集合）
+expect:
+  - note: 算法测试下拉 3 项；切换后 POST M_ENT_DOMAIN_COVERAGE_DEPTH/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST')
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_DOMAIN_COVERAGE_DEPTH/compute')
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('领域覆盖深度（企业集合）')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3)
+      for (const name of ['重点企业全景图（企业集合）', '多元化指数（企业集合）', '领域覆盖深度（企业集合）']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name)
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。
