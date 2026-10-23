@@ -121,7 +121,7 @@ flowchart LR
 
 ---
 
-## 2. 锁定决策（14 项）
+## 2. 锁定决策（15 项）
 
 | # | 决策 | 内容 |
 |---|------|------|
@@ -139,10 +139,38 @@ flowchart LR
 | **D12** | **demo 原型 / lumen 正式隔离** | **`demo-*` 仓只做原型**（POC / UX 沙箱 / 算法内测 / Demo 库闭环）。**正式开发与交付只在 `lumen-*`。** **lumen 前端调用链禁止调用任何 `demo-*` 项目服务**：`lumen-ui-*` 只经 `gkxlumen-platform-gateway`（`lumen-svc-platform`）调 `gkxlumen-*` Java；Java 下游只调 `lumen-algo-py` / `lumen-etl-es-py` 等 lumen 算法（`/internal/*`）。禁止直连、nginx 反代、`VITE_*` 或 Feign/helm **回落**到 `demo-svc-platform` / `demo-platform-*` / `demo-algo-*` / `demo-svc-topic-py`。对照 demo 实现允许读代码后在 lumen 重写；**禁止 git merge demo→lumen**（延续铁律 6）。demo 前端可以打 demo 服务，与 lumen 隔离并存。决策来源：项目负责人 2026-08-14 确认。关联 task：`DECIDE-D12-LUMEN-CALLCHAIN`。历史债见 §3.1。 |
 | **D13** | **消息总线 = Kafka，运行时不用 RabbitMQ** | bootstrap **`10.50.11.76:9092`**。只承载 `task_completed` 大 JSON。正式 topic `gkx.analysis.result`、死信 `gkx.analysis.result.dlq`、组 `gkxlumen-ai-worker`；原型 topic `gkx.demo.analysis.result`、死信 `gkx.demo.analysis.result.dlq`、组 `demo-ai-worker`。两边禁止共用 topic 或组。发布者 `gkxlumen-platform-ai-py` / `demo-platform-ai-py`；消费者 `gkxlumen-platform-ai-worker` / `demo-platform-worker-py`。算法与 Java 不连总线。正文契约不变，单条上限 64MiB。口令不进 git，不改 MySQL root。图 `ARCH-MSG-KAFKA`（§1.1）。关联 task：`E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
 | **D14** | **对象存储按 §2.1：业务一个桶、用途是目录** | 正式业务只写 RustFS `http://10.50.69.111:19000` 上的桶 `gkx-lumen`（路径风格，控制台 `:19001`）。六个用途是这个桶里的目录，不是各自独立的桶。可观测仍用旧实例 `:30900` 上的 `tempo-blocks`、`loki-chunks`。存储设计说明见 [minio.md](data/data-design/storage/platform/minio.md)，与本节冲突时以本节为准。禁止自造桶或顶层目录，禁止前端直连对象存储，禁止业务读写 `milvus` 桶。凭证放 K8s Secret `gkxlumen-platform-rustfs` 或主机 `/data/middleware/.env`，不进 git。决策 2026-10-20，同日收敛为目录。 |
+| **D15** | **展示系统 Python 门面独立于专题系统** | 在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目作为**科技信息展示系统专属 Python 门面**，与专题侧 `gkx_search_service` / `gkx_svc_service` **进程级 + 镜像级 + 路由级三重隔离**：镜像 `gkxlumen-show-service`（端口 8082），路由前缀 `/internal/gkx-show/**`，K8s Deployment `gkxlumen-platform-show-py`。展示门面只读正式 ADS、不写 ADS、不承接算法职责（D2 算法库统一出口不变，数据加工/写 ADS 仍归 `lumen-algo-py/vendor/entan-py` / `innov-py`）。共享仅限 `gkx_common` 工具链（observability/response/config）。协作边界用 `CODEOWNERS` 划定。**调用链层级（三层）**：终端 → `gkxlumen-gateway` → `gkxlumen-display`（展示聚合 BFF，`/display/v1/**` 单入口）→ **Feign 并行** → 领域服务层（`gkxlumen-innov` / `gkxlumen-topic` / `gkxlumen-metrics`）→ **Feign /internal** → 算法层（`gkx_show_service` 读 ADS / 久新 API / 燕大 KG / 智谱 / 深势）。展示 BFF 职责：页面级聚合、Redis 缓存、分区降级、D9 就绪度注入；**不直连 Python / DB**。领域服务 Feign 调 Python 算法层（含 show-service）是合规路径。要素归属速查见 §2.2。决策来源：项目负责人 2026-10-22 确认，`徐腾强 @qike366.com` 落地骨架（commit `4b867f8`）。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
 
 ### 2.1 对象存储桶（D14）
 
 正式业务只有桶 `gkx-lumen`。MySQL 只存指针（桶名、对象键、谁能下载）。桶里只放字节。
+
+### 2.2 要素归属速查（D15 调用路由依据）
+
+> **完整调用链**：终端 → 网关 → `gkxlumen-display`（展示聚合 BFF `/display/v1/**`）→ Feign 并行 → 领域服务（innov/topic/metrics）→ Feign `/internal` → Python 算法层。
+> **本表仅标注领域服务下游 Python 路由方向**。真源：`工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/07-展示系统-页面级供方能力清单（久新+燕大）.md`
+
+| 要素 | 编码 | 供方 | 领域服务 → 算法层路由 |
+|---|---|---|---|
+| 企业 | enterprise | **智树自建** | Feign → `gkx_show_service` `/internal/gkx-show/v1/enterprise/*` 读 ADS |
+| 政策 | policy | **智树自建** | Feign → `gkx_show_service` 读 ADS |
+| 产业链 | chain | **智树自建** | Feign → `gkx_show_service` 读 ADS |
+| 服务机构 | service | **智树自建** | Feign → `gkx_show_service` 读 ADS |
+| 园区（创新载体） | park | **智树自建** | Feign → `gkx_show_service` 读 ADS |
+| 资金 | fund | **智树自建** | Feign → `gkx_show_service` 读 ADS |
+| 专家学者 | scholar | 久新 | 领域服务**直接调久新 API**，不走 show-service |
+| 科研机构 | institution | 久新 | 领域服务直接调久新 API |
+| 高校实验室 | lab | 久新 | 领域服务直接调久新 API |
+| 论文 | paper | 久新 | 领域服务直接调久新 API |
+| 期刊 | journal | 久新 | 领域服务直接调久新 API |
+| 专利 | patent | 久新 | 领域服务直接调久新 API |
+| 项目 | project | 久新 | 领域服务直接调久新 API |
+| 课题 | topic | 久新 | 领域服务直接调久新 API |
+| 成果 | result | 久新 | 领域服务直接调久新 API |
+| 会议 | meeting | 久新 | 领域服务直接调久新 API |
+| 知识图谱 | kg | 燕大 | 领域服务直接调燕大 API（KG-01~KG-09） |
+| NLP / 大模型 | — | 智谱 | 领域服务直接调智谱 API |
+| 量子 / 物理模拟 | — | 深势 | 领域服务直接调深势 API |
 
 | 位置 | 所在实例 | 用途 | 对象键 |
 |---|---|---|---|
@@ -238,6 +266,17 @@ dependency_rules:
     must_not: [business_rest_to_frontend]
     lumen_formal_repos: [lumen-algo-py, lumen-etl-es-py, lumen-topic-py]
     demo_prototype_repos: [demo-algo-science, demo-algo-ent-analysis, demo-svc-topic-py]
+  python_show_facade:                    # D15：展示系统 Python 门面独立
+    repo: lumen-topic-py                 # 不新建仓，仓内子项目 gkx_show_service
+    subproject: gkx_show_service
+    image: gkxlumen-show-service          # 独立镜像 + 独立 K8s Deployment
+    port: 8082
+    route_prefix: /internal/gkx-show/**
+    deploys_as: gkxlumen-platform-show-py
+    may_read: [mysql_ads]                 # 只读正式 ADS 消费面
+    may_call: [lumen_algo_py_internal_via_feign]  # 按需调算法库
+    must_not: [write_ads, nlp, graph_compute, model_inference]  # D2：算法职责归 algo-py
+    isolated_from: [gkx_search_service, gkx_svc_service]  # 专题侧路由 8080 / 8081 完全隔离
   display_aggregation:     # 展示页面级拼装
     prefer_reuse: [/topic/v1, /metrics/v1]
     must_not: [new_direct_python_call_bypassing_topic_metrics]
@@ -388,3 +427,4 @@ shared_core:
 | v2.2.18 | 2026-10-17 | **新增 D13 消息总线 = Kafka**：bootstrap `10.50.11.76:9092`；运行时禁止 RabbitMQ。正式 / 原型 topic 与消费组隔离。图 `ARCH-MSG-KAFKA`（draft）。业务仓仍有 AMQP 客户端，记 `D13-DEBT-RMQ`。不改 MySQL root，口令不进 git。任务 `E-PLATFORM-P0-KAFKA-RMQ-L01`。 |
 | v2.2.19 | 2026-10-20 | **新增 D14 对象存储桶**：§2.1 为各项目用桶的唯一规约。正式业务桶在 RustFS `10.50.69.111:19000`。禁止自造桶名，禁止前端直连，禁止业务读写 `milvus` 桶。凭证不进 git。 |
 | v2.2.20 | 2026-10-20 | **D14 收敛为目录**：正式业务只保留桶 `gkx-lumen`。`gkx-analysis-results`、`gkx-user-reports`、`gkx-source-reports`（含政策原始文件）、`gkx-cms-images`、`gkx-user-assets`、`gkx-others` 改为该桶内目录。可观测仍是独立桶 `tempo-blocks`、`loki-chunks`。 |
+| v2.2.21 | 2026-10-22 | **新增 D15 展示系统 Python 门面独立**：在 `lumen-topic-py` 仓内新增 `gkx_show_service` 子项目，与专题侧 `gkx_search_service` / `gkx_svc_service` 进程级 + 镜像级 + 路由级三重隔离（镜像 `gkxlumen-show-service` :8082，前缀 `/internal/gkx-show/**`，Deployment `gkxlumen-platform-show-py`）。展示门面只读正式 ADS + 按需调 algo-py `/internal/*`，不写 ADS、不承接算法职责（D2 不变）。骨架由徐腾强 `4b867f8` 落地；§4 依赖规则补 `python_show_facade` 块；协作边界用 `CODEOWNERS` 划定。关联任务 `DEVOPS-LUMEN-TOPIC-PY-SHOW-L01`。 |
