@@ -1,0 +1,27 @@
+id: FUNC-00869
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00869
+priority: P0
+title: 服务链短板分析算法测试清单
+entry_id: svc.gap
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/gap"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 服务机构产业领域覆盖评分
+expect:
+  - note: 算法测试下拉 3 项；切换后 POST M_SVC_ORG_COVERAGE_DEPTH/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/svc-metric/metric/M_SVC_ORG_COVERAGE_DEPTH/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('服务机构产业领域覆盖评分');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(3);
+      for (const name of ['服务链短板', '服务机构产业领域覆盖评分', '服务链短板分析模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。

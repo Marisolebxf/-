@@ -1,0 +1,23 @@
+id: FUNC-00879
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00879
+priority: P0
+title: 服务关系链模型 kind=relation
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 服务关系链模型
+  - action: algo_fill
+    set: { kind: relation }
+  - action: algo_run
+expect:
+  - note: metric_id 与 hint 字段名
+    assert: |-
+      for (const f of ['metric_id', 'hint']) {
+        await expect(page.locator('.test-workbench .json-viewer')).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。主路径 kind=relation（sampleRequest），非 options 的 tech。catalog status=available，不断言 sample 具体数字。

@@ -1,0 +1,23 @@
+id: FUNC-00874
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00874
+priority: P0
+title: 关系链图谱不传 limit
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 关系链图谱
+  - action: algo_fill
+    omit: [limit]
+  - action: algo_run
+expect:
+  - note: 不传 limit 仍含节点与边字段名
+    assert: |-
+      for (const f of ['nodes', 'edges', 'id', 'name', 'weight', 'source', 'target', 'mapped_from', 'relation']) {
+        await expect(page.locator('.test-workbench .json-viewer')).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit limit。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

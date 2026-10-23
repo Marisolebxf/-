@@ -1,0 +1,23 @@
+id: FUNC-00876
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00876
+priority: P0
+title: 生态影响力评分 kind=relation
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 生态影响力评分
+  - action: algo_fill
+    set: { kind: relation }
+  - action: algo_run
+expect:
+  - note: metric_id、hint 与 responseFields 字段名
+    assert: |-
+      for (const f of ['metric_id', 'hint', 'relation_summary', 'density', 'relation_top']) {
+        await expect(page.locator('.test-workbench .json-viewer')).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=available，不断言 sample 具体数字。

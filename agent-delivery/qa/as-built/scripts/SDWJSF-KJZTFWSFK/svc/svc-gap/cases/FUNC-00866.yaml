@@ -1,0 +1,23 @@
+id: FUNC-00866
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00866
+priority: P0
+title: 服务链短板分析模型不传 kind
+entry_id: svc.gap
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/gap"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 服务链短板分析模型
+  - action: algo_fill
+    omit: [kind]
+  - action: algo_run
+expect:
+  - note: 仍含 metric_id、hint
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      await expect(v).toContainText('metric_id');
+      await expect(v).toContainText('hint');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit kind。catalog status=available，不断言 sample 具体数字。

@@ -1,0 +1,34 @@
+id: FUNC-00837
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00837
+priority: P0
+title: C 科研 SVC_RE_RESEARCH
+entry_id: svc.graph
+tier: A
+steps:
+  -
+    action: goto
+    target: "#/industry-service/graph"
+  -
+    action: algo_tab
+    target: test
+  -
+    action: algo_pick
+    target: C 科研 SVC_RE_RESEARCH
+  -
+    action: algo_fill
+    set:
+      op_id: SVC_RE_RESEARCH
+      scope: one
+      id: 0218337e44ca794fee9850cf1627b03b
+      mode: rule
+      dry_run: true
+      dest_types: "[\"research\"]"
+  -
+    action: algo_run
+expect:
+  -
+    note: "返回面板含字段：op_id、written_nodes、written_edges、skipped、source、space、mode_effective、llm_fallback"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["op_id","written_nodes","written_edges","skipped","source","space","mode_effective","llm_fallback"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。"

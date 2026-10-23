@@ -1,0 +1,34 @@
+id: FUNC-00882
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00882
+priority: P0
+title: 服务关系链接口信息清单
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: assert_visible
+    target: 4 个接口
+  - action: assert_visible
+    target: /entan/v1/svc/models
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 关系链图谱
+expect:
+  - note: 接口信息 tab 下拉 4 项；切换后关系链图谱与生态影响力评分 path 与文档一致
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/svc/graph');
+      await expect(page.locator('.api-info-grid header')).toContainText('关系链图谱');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(4);
+      for (const name of ['关系链模型', '关系链图谱', '生态影响力评分', '服务关系链模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option', { hasText: '生态影响力评分' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/svc-metric/metric/M_SVC_GRAPH_INFLUENCE/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('生态影响力评分');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认关系链模型 GET /entan/v1/svc/models，步骤再切换关系链图谱，断言内再切生态影响力评分。

@@ -1,0 +1,35 @@
+id: FUNC-00746
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00746
+priority: P0
+title: A 实体识别 SVC_NER_ORG
+entry_id: svc.graph
+tier: A
+steps:
+  -
+    action: goto
+    target: "#/industry-service/graph"
+  -
+    action: algo_tab
+    target: test
+  -
+    action: algo_pick
+    target: A 实体识别 SVC_NER_ORG
+  -
+    action: algo_fill
+    set:
+      op_id: SVC_NER_ORG
+      scope: batch
+      mode: rule
+      dry_run: true
+      filter: "{\"all\":true}"
+    omit:
+      - id
+  -
+    action: algo_run
+expect:
+  -
+    note: "返回面板含字段：op_id、written_nodes、written_edges、skipped、source、model_version、calc_batch_id、mode_effective、llm_fallback、space、vid_scheme"
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["op_id","written_nodes","written_edges","skipped","source","model_version","calc_batch_id","mode_effective","llm_fallback","space","vid_scheme"]) { await expect(viewer).toContainText(f); }
+as_built_note: "用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。"

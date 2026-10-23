@@ -1,0 +1,25 @@
+id: FUNC-00872
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00872
+priority: P1
+title: 关系链模型非法 kind
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 关系链模型
+  - action: algo_fill
+    set: { kind: __invalid__ }
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 kind，且不返回含 density 的成功 relation_summary
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/kind/.test(text)) throw new Error('结果未说明 kind');
+      if (/density/.test(text) && /relation_top/.test(text)) throw new Error('结果含 density 成功 relation_summary');
+as_built_note: 用例写点击调用，页面按钮是执行接口。kind=__invalid__。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

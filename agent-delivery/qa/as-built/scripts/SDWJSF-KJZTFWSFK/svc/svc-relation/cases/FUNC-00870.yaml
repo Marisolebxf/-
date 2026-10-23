@@ -1,0 +1,23 @@
+id: FUNC-00870
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00870
+priority: P0
+title: 关系链模型 kind=relation
+entry_id: svc.relation
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/relation"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 关系链模型
+  - action: algo_fill
+    set: { kind: relation }
+  - action: algo_run
+expect:
+  - note: relation_summary 与 relation_top 字段名
+    assert: |-
+      for (const f of ['relation_summary', 'density', 'ext', 'node_count', 'link_count', 'relation_top', 'org_id', 'centrality', 'name']) {
+        await expect(page.locator('.test-workbench .json-viewer')).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

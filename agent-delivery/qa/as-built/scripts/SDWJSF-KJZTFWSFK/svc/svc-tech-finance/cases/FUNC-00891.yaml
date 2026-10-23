@@ -1,0 +1,27 @@
+id: FUNC-00891
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00891
+priority: P0
+title: 金融服务机构技术力评估算法测试清单
+entry_id: svc.tech-finance
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/tech-finance"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 金融服务机构技术力评价模型
+expect:
+  - note: 算法测试下拉 2 项；切换后 POST M_SVC_DEEP_174_1/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/svc-metric/metric/M_SVC_DEEP_174_1/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('金融服务机构技术力评价模型');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(2);
+      for (const name of ['金融服务技术力', '金融服务机构技术力评价模型']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog autoRun=false，本条只核下拉和 method/path。
