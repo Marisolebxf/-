@@ -35,13 +35,13 @@
 
 `PORTAL-CMS-FIELD-API-L01`（in_progress，监管淮政玮）是字段和读接口的定义单。它已触发指标核对与四条回写定义，那些单不把本单写成前置。契约原文写「任欢维护正文」。按 2026-10-22 定稿，这些菜单的页面和接口都由智树做，不再交给久新做前端。
 
-定义单保持原 ID 和状态，不另开第二张回写叶。内容与可视化按技术方案一行一个任务。基础数据写侧（WBS-03-10～14）不充当这些菜单。指标行依赖 `PORTAL-CMS-METRIC-COVER-L01`，该单未完成，对齐还没有。
+定义单保持原 ID 和状态，不另开第二张回写叶。内容与可视化按技术方案一行一个任务。基础数据写侧（WBS-03-10～14）不充当这些菜单。指标行分别依赖四张核对单：`PORTAL-CMS-METRIC-COVER-ENT-L01`、`PORTAL-CMS-METRIC-COVER-CHAIN-L01`、`PORTAL-CMS-METRIC-COVER-POL-L01`、`PORTAL-CMS-METRIC-COVER-SVC-L01`。原 `PORTAL-CMS-METRIC-COVER-L01` 已 blocked，不再执行。对齐还没有。
 
 有 CMS 正文的菜单（WBS-03-01a、03-02a、03-03a）共用下一行的控件和表单框架，不各做一套编辑页。政策扶持没有 CMS 字段，不走这套表单。
 
 | 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-03-15 · `SYSINT-03-15-L01` | 前端架构：CMS 公共控件选型、设计、开发；CMS 字段增删改查表单编辑页的通用框架 | 孔东 | `lumen-ui-topic` | `SYSINT-SCHEME-03-L01`。控件用仓内 Arco，不另引组件库。字段形状以四份门户 CMS 契约为准 | 企业、产业全景、专题服务的正文编辑都套这个框架：列表、新建、编辑、发布。富文本、名单、时间线、按产业切换能复用。政策扶持不做出 CMS 表单 | 无开始时间 | 2026-11-05 |
+| WBS-03-15 · `SYSINT-03-15-L01` | 前端架构：CMS 公共控件选型、设计、开发；CMS 字段增删改查表单编辑页的通用框架 | 孔东 | `lumen-ui-topic` | 控件用仓内 Arco，不另引组件库。字段形状以四份门户 CMS 契约为准。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 企业、产业全景、专题服务的正文编辑都套这个框架：列表、新建、编辑、发布。富文本、名单、时间线、按产业切换能复用。政策扶持不做出 CMS 表单 | 无开始时间 | 2026-11-05 |
 
 ### WBS-03-01 企业发展
 
@@ -51,7 +51,7 @@
 |---|---|---|---|---|---|---|---|
 | WBS-03-01a · `SYSINT-03-01A-L01` | 运营正文·前端。CMS：`star_roster_item`、`star_selection_standard`、`star_product_panorama`、`star_tech_narrative`、`star_team_strength`、`star_scientist_ratio`、`star_story`、`key_chain_structure`、`key_enterprise_set`、`sz_enterprise_intro`、`sz_focus_set`、`display_name_alias`。`overview` 无 CMS。页面：列表/编辑/发布，套 WBS-03-15 表单框架 | 孔东（2026-10-23 前端线定孔东） | `lumen-ui-topic` | `SYSINT-SCHEME-03-L01`。WBS-03-15。Java 运营写接口拆 `SYSINT-03-01A-JAVA-L01`（同日拆叶），两叶经 PORTAL-CMS-企业发展.md 已确认契约握手 | 智树页面可编、可发、可读已发布块。法定名称走主数据，别名标明非法定名。专利数和研发占比不写进 HTML。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
 | WBS-03-01a-JAVA · `SYSINT-03-01A-JAVA-L01` | 运营正文·Java 运营写接口。gkxlumen-cms 新增 12 个 content_type 的 list/create/update/publish；正文落 `gkxlumenx_cms`（徐滕强 2026-10-23 拍板，A5 已冻结库）；真源零写；操作写 cms_op_audit；OpenAPI + 示例入 handoff 供前端叶联调 | 徐滕强 | `lumen-svc-platform`（`gkxlumen-cms`） | `SYSINT-SCHEME-03-L01`。契约 PORTAL-CMS-企业发展.md 已确认 | 对端（前端叶）能按契约完成 12 类正文编辑发布。不复用 `/api/open/cms/v1/*` 机器接口当页面接口 | 无开始时间 | 2026-11-05 |
-| WBS-03-01b · `SYSINT-03-01B-L01` | 指标区块。契约点名、COVER 未完成，不算已对齐：`M_ENT_TOTAL_COUNT`、`M_ENT_REGIONAL_COUNT`、`M_ENT_RESEARCHER_COUNT`、`M_ENT_KEY_NODE_COUNT`、`M_ENT_KEYPANO_QUAL_DISTRIBUTION`、`M_ENT_KEYPANO_DOMAIN_SUMMARY`、`M_ENT_KEY_TOTAL`、`M_ENT_STAR_ENTERPRISE_COUNT`、`M_ENT_RD_INVESTMENT_RATIO`、`M_ENT_SZ_COUNT`。缺口：历年总数趋势、专利数、深圳历年趋势、领域个数、规模、上市数、国企数 | 徐滕强 | 同上，算法在 `lumen-algo-py` | `PORTAL-CMS-METRIC-COVER-L01` 企业段（claimed，监管唐绍祖）。核对未完成前缺口保持空态 | 已有 ID 走指标服务。缺口不手填进 CMS，不用相邻指标顶替 | 无开始时间 | 2026-10-19 |
+| WBS-03-01b · `SYSINT-03-01B-L01` | 指标区块。契约点名、COVER 未完成，不算已对齐：`M_ENT_TOTAL_COUNT`、`M_ENT_REGIONAL_COUNT`、`M_ENT_RESEARCHER_COUNT`、`M_ENT_KEY_NODE_COUNT`、`M_ENT_KEYPANO_QUAL_DISTRIBUTION`、`M_ENT_KEYPANO_DOMAIN_SUMMARY`、`M_ENT_KEY_TOTAL`、`M_ENT_STAR_ENTERPRISE_COUNT`、`M_ENT_RD_INVESTMENT_RATIO`、`M_ENT_SZ_COUNT`。缺口：历年总数趋势、专利数、深圳历年趋势、领域个数、规模、上市数、国企数 | 徐滕强 | 同上，算法在 `lumen-algo-py` | `PORTAL-CMS-METRIC-COVER-ENT-L01`（监管唐绍祖）。核对未完成前缺口保持空态 | 已有 ID 走指标服务。缺口不手填进 CMS，不用相邻指标顶替 | 无开始时间 | 2026-10-19 |
 | WBS-03-01c · `SYSINT-03-01C-L01` | 非 CMS 生成。链上瓶颈解读、生态合作摘要走大模型。图谱边不从 CMS 画。生成接口路径还没有 | 徐滕强 | 专题前端、`lumen-algo-py` | 契约 §1.2、§1.3。边的正式口径仍是 Q040 | 生成失败只隐藏文案。不补假节点，不设 `star_ecosystem_note` | 无开始时间 | 2026-10-19 |
 | WBS-03-01d | 已发布正文回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-ENT-L01`（ready_to_sign）所列 12 个 content_type | 徐滕强 | 定义单在 `gkx-orchestration`。实现等会签后定仓 | 该定义单 `done` 且架构师会签允许写入 DWD。指标、LLM 摘要、图谱边不回写 | 只落 `publish_status=published`。没有现成表的保持缺口，不新编表名 | 无开始时间 | 2026-10-19 |
 
@@ -61,8 +61,8 @@
 
 | 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-03-02a · `SYSINT-03-02A-L01` | 运营正文。`pano_industry_intro`、`pano_dev_history`、`pano_sz_feature`、`pano_cluster_effect`、`pano_competitive_position`。节点简介和市场规模文案本轮不进 CMS | 李伟 | `lumen-ui-topic`、专题 Java | `SYSINT-SCHEME-03-L01`。WBS-03-15。契约草案确认前不改字段 | 智树页面可编已发布正文。编辑页套通用表单框架。正文不内嵌企业数。菜单相对路径进统一用户中心 | 无开始时间 | 2026-10-19 |
-| WBS-03-02b · `SYSINT-03-02B-L01` | 指标与图谱数字。契约点名、对齐还没有：`M_CHAIN_ENTERPRISE_COUNT`、`M_CHAIN_INSTITUTION_COUNT`、`M_CHAIN_NODE_COUNT`、`M_CHAIN_SZ_ENTERPRISE_COUNT`、`M_CHAIN_SZ_INSTITUTION_COUNT`、`M_CHAIN_GLOBAL_REGION_COUNT`、`M_CHAIN_NATIONAL_REGION_COUNT`。深圳各区计数是缺口。节点和边不进 CMS。读图不在本叶新做 | 李伟 | 同上，算法在 `lumen-algo-py`。读图主路径不在本叶 | `PORTAL-CMS-METRIC-COVER-L01` 专题全景段 | 已有 ID 走指标服务。区级缺口空态。读图归 WBS-03-06 与第 7 项 | 无开始时间 | 2026-10-19 |
+| WBS-03-02a · `SYSINT-03-02A-L01` | 运营正文。`pano_industry_intro`、`pano_dev_history`、`pano_sz_feature`、`pano_cluster_effect`、`pano_competitive_position`。节点简介和市场规模文案本轮不进 CMS | 李伟 | `lumen-ui-topic`、专题 Java | WBS-03-15。契约草案确认前不改字段。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 智树页面可编已发布正文。编辑页套通用表单框架。正文不内嵌企业数。菜单相对路径进统一用户中心 | 无开始时间 | 2026-10-19 |
+| WBS-03-02b · `SYSINT-03-02B-L01` | 指标与图谱数字。契约点名、对齐还没有：`M_CHAIN_ENTERPRISE_COUNT`、`M_CHAIN_INSTITUTION_COUNT`、`M_CHAIN_NODE_COUNT`、`M_CHAIN_SZ_ENTERPRISE_COUNT`、`M_CHAIN_SZ_INSTITUTION_COUNT`、`M_CHAIN_GLOBAL_REGION_COUNT`、`M_CHAIN_NATIONAL_REGION_COUNT`。深圳各区计数是缺口。节点和边不进 CMS。读图不在本叶新做 | 李伟 | 同上，算法在 `lumen-algo-py`。读图主路径不在本叶 | `PORTAL-CMS-METRIC-COVER-CHAIN-L01` | 已有 ID 走指标服务。区级缺口空态。读图归 WBS-03-06 与第 7 项 | 无开始时间 | 2026-10-19 |
 | WBS-03-02c · `SYSINT-03-02C-L01` | 产业资讯。不进 CMS。读 `dwd_industry_chain_news_info`，按 `industry_code` 过滤 | 李伟 | 专题 Java 只读 | 客户决策清单 2026-08-25 该表「禁止业务使用」未解除则不上屏 | 有记录则按发布时间倒序。无记录事件线为空，不从其他产业补，不用大模型生成 | 无开始时间 | 2026-10-19 |
 | WBS-03-02d | 已发布正文回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01`（ready_to_sign）五个 `pano_*`。资讯表禁止用 CMS 覆盖 | 徐滕强（回写定义单监管人。页面仍归李伟，不两人共管一叶） | 定义单在 `gkx-orchestration` | 该定义单 `done` 且架构师会签 | 只回写已发布的五个正文块。不改 2026-08-25 对资讯表的记录 | 无开始时间 | 2026-10-19 |
 
@@ -72,8 +72,8 @@
 
 | 草案号        | 子项                                                                                                                 | 监管人                   | 仓                        | 依赖                                                        | 可对端                                             | 开始时间 | 完成日期要求 |
 | ---------- | ------------------------------------------------------------------------------------------------------------------ | --------------------- | ------------------------ | --------------------------------------------------------- | ----------------------------------------------- | ---- | ------ |
-| WBS-03-03a · `SYSINT-03-03A-L01` | 运营正文。仅 `svc_business_domain.body_html`，绑定 `org_id` 与 `industry_id`                                                 | 徐滕强                   | `lumen-ui-topic`、专题 Java | `SYSINT-SCHEME-03-L01`。WBS-03-15。契约草案确认前不改字段                                 | 智树页面只编这一处 HTML。编辑页套通用表单框架。法定名称、领导人、名次、分数不进正文。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
-| WBS-03-03b · `SYSINT-03-03B-L01` | 指标与主数据。全球总数/类型/规模，环节机构数，区域分布，技术力前 30（`M_SVC_ORG_TECH_SCORE`），深圳总数/类型/领域/区域，重点机构规模。历年趋势无单独 ID，记缺口。名称、成立时间、领导人走机构主数据 | 徐滕强                   | 同上，算法在 `lumen-algo-py`   | `PORTAL-CMS-METRIC-COVER-L01` 专题服务段。技术力权重仍是 Q-SVCCHAIN-01 | 已有 ID 走指标服务。CMS 不另维护重点名单，不覆盖法定名称                | 无开始时间 | 2026-11-05 |
+| WBS-03-03a · `SYSINT-03-03A-L01` | 运营正文。仅 `svc_business_domain.body_html`，绑定 `org_id` 与 `industry_id`                                                 | 徐滕强                   | `lumen-ui-topic`、专题 Java | WBS-03-15。契约草案确认前不改字段。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 智树页面只编这一处 HTML。编辑页套通用表单框架。法定名称、领导人、名次、分数不进正文。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
+| WBS-03-03b · `SYSINT-03-03B-L01` | 指标与主数据。全球总数/类型/规模，环节机构数，区域分布，技术力前 30（`M_SVC_ORG_TECH_SCORE`），深圳总数/类型/领域/区域，重点机构规模。历年趋势无单独 ID，记缺口。名称、成立时间、领导人走机构主数据 | 徐滕强                   | 同上，算法在 `lumen-algo-py`   | `PORTAL-CMS-METRIC-COVER-SVC-L01`。技术力权重仍是 Q-SVCCHAIN-01 | 已有 ID 走指标服务。CMS 不另维护重点名单，不覆盖法定名称                | 无开始时间 | 2026-11-05 |
 | WBS-03-03c | 已发布正文回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-SVC-L01`（ready_to_sign），只回写 `svc_business_domain`                        | 徐滕强（回写定义单监管人。页面仍归侯佳伟） | 定义单在 `gkx-orchestration` | 该定义单 `done` 且架构师会签                                        | 只落已发布的业务介绍。数量、类型、规模、区域、技术力、重点名单不回写              | 无开始时间 | 2026-11-05 |
 
 ### WBS-03-04 政策扶持
@@ -83,8 +83,9 @@
 | 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
 | WBS-03-04a | 确认无 CMS、无正文读接口、不回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-POL-L01`（claimed） | 淮政玮 | `gkx-orchestration` | 该定义单收口。不新造政策富文本 | 可对端是这份确认。不另做内容管理后台 | 无开始时间 | 2026-11-05 |
-| WBS-03-04b · `SYSINT-03-04B-L01` | 指标页。力度排名用 `M_POLICY_INTENSITY_SCORE`。全国/省/市数量与连续性、发布密度、节点覆盖、深圳数量/趋势/各区/节点覆盖都是缺口。`M_POLICY_OPPORTUNITY_COUNT` 不顶替数量 | 淮政玮 | `lumen-ui-topic`、专题 Java、`lumen-algo-py` | `PORTAL-CMS-METRIC-COVER-L01` 政策段 | 有 ID 的走指标服务。缺口空态，CMS 不填名次和分数。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
-| WBS-03-04c · `SYSINT-03-04C-L01` | 最新政策与深圳最新政策。走政策主数据：`policy_id`、`title`、`publish_time`、`region_name`、`source_url` | 淮政玮 | 专题 Java 只读 | 列表/详情/失效仍是基础数据接口。本叶不重做 WBS-03-12，也不把 backlog 的政策列表算进来 | 时间线有记录或为空。不新造运营导语 | 无开始时间 | 2026-11-05 |
+| WBS-03-04b · `SYSINT-03-04B-L01` | 指标页。力度排名用 `M_POLICY_INTENSITY_SCORE`。全国/省/市数量与连续性、发布密度、节点覆盖、深圳数量/趋势/各区/节点覆盖都是缺口。`M_POLICY_OPPORTUNITY_COUNT` 不顶替数量。真实 ADS 未接前允许 mock | 淮政玮 | `lumen-algo-py` | `PORTAL-CMS-METRIC-COVER-POL-L01`（监管淮政玮）。读接口是 `SYSINT-04-05-API-L01`。ADS 需求见 WBS-03-04d，不阻塞 | 有 ID 的走指标服务。缺口空态，CMS 不填名次和分数。契约不改 | 无开始时间 | 2026-11-05 |
+| WBS-03-04c · `SYSINT-03-04C-L01` | 最新政策与深圳最新政策的读接口。字段：`policy_id`、`title`、`publish_time`、`region_name`、`source_url`。无主数据时允许 mock | 淮政玮 | 专题 Java 只读 | 不重做 WBS-03-12，也不把 `CMS-JX-POL-LIST-L01` 并进本叶。结果供 `SYSINT-04-05-API-L01` | 有记录或为空。不新造运营导语。契约不改 | 无开始时间 | 2026-11-05 |
+| WBS-03-04d · `SYSINT-POL-ADS-REQ-L01` | 政策扶持读数对 ADS 的需求。只写需求，不实现加工。不进门户闭环 | 淮政玮 | `gkx-orchestration` | 无。页面与 `SYSINT-04-05-API-L01` 先 mock | 列出力度排名、十条缺口、时间线五个字段的建议落点。不生成 CDC | 无开始时间 | 还没有 |
 
 ## 可视化（运维人员。不是门户四页）
 
@@ -92,10 +93,10 @@
 
 | 草案号       | 子项           | 监管人 | 仓                                        | 依赖                                 | 可对端                             | 开始时间 | 完成日期要求 |
 | --------- | ------------ | --- | ---------------------------------------- | ---------------------------------- | ------------------------------- | ---- | ------ |
-| WBS-03-05 · `SYSINT-03-05-L01` | 企业发展可视化（前后端） | 徐滕强 | `lumen-ui-topic`、专题 Java、`lumen-algo-py` | `SYSINT-SCHEME-03-L01`。不复用基础数据写侧，也不复用 WBS-03-01 的运营页 | 该可视化菜单主路径可点，缺数为空态。菜单相对路径进统一用户中心 | 无开始时间 | 2026-10-19 |
+| WBS-03-05 · `SYSINT-03-05-L01` | 企业发展可视化（前后端） | 徐滕强 | `lumen-ui-topic`、专题 Java、`lumen-algo-py` | 不复用基础数据写侧，也不复用 WBS-03-01 的运营页。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 该可视化菜单主路径可点，缺数为空态。菜单相对路径进统一用户中心 | 无开始时间 | 2026-10-19 |
 | WBS-03-06 · `SYSINT-03-06-L01` | 产业全景可视化（前后端） | 李伟  | 同上                                       | 同上                                 | 同上                              | 无开始时间 | 2026-10-19 |
 | WBS-03-07 · `SYSINT-03-07-L01` | 专题服务可视化（前后端） | 黄敬洲 | 同上                                       | 同上                                 | 同上                              | 无开始时间 | 2026-11-05 |
-| WBS-03-08 · `SYSINT-03-08-L01` | 政策扶持可视化（前后端） | 淮政玮 | 同上                                       | 同上                                 | 同上                              | 无开始时间 | 2026-11-05 |
+| WBS-03-08 · `SYSINT-03-08-L01` | 政策扶持可视化（前后端）。指标与需规 93–98 同一套，不另开清单任务 | 淮政玮。注册表监管人为孔东 | 同上                                       | `SYSINT-04-05-API-L01`。允许 mock | 可视化菜单主路径可点，缺数为空态。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
 
 ## 统一用户中心（2026-10-22 晚补行）
 
@@ -103,6 +104,6 @@
 
 | 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-03-18 · `SYSINT-03-18-L01` | 本项菜单注册与用户权限。内容管理四菜单、可视化四菜单 | 淮政玮。2026-10-22 纪要未点名，2026-10-23 指定 | 统一用户中心配置。业务仓不写主机名 | `SYSINT-SCHEME-03-L01`。各菜单叶负责自己的相对路径 | 八个菜单以相对路径可见，对应用户登录后能进。地址不写 `https://next.itic-sci.com/`。八个菜单的相对路径仍还没有 | 无开始时间 | 2026-11-05 |
+| WBS-03-18 · `SYSINT-03-18-L01` | 本项菜单注册与用户权限。内容管理四菜单、可视化四菜单 | 淮政玮。2026-10-22 纪要未点名，2026-10-23 指定 | 统一用户中心配置。业务仓不写主机名 | 各菜单叶负责自己的相对路径。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 八个菜单以相对路径可见，对应用户登录后能进。地址不写 `https://next.itic-sci.com/`。八个菜单的相对路径仍还没有 | 无开始时间 | 2026-11-05 |
 
 不进本表：专家知识、全要素图谱 overlay、基础数据里其余 backlog（各类 TopN、全景包、名录、政策统计、失效通知）。政策列表与企业档案见 WBS-03-16、03-17。可视化不再拆给久新做前端。
