@@ -62,7 +62,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 | 表 | 用途 | 关键列 |
 |---|---|---|
-| `policy_text_parse` | D1 政策文本解析：摘要 + 结构化要素 + 自动标签 | `policy_id` · `title` · `summary` · `structured_elements` json · `auto_tags` json · `model_version` |
+| `policy_text_parse` | D1 政策文本解析：摘要 + 结构化要素 + 自动标签 | `policy_id` · `title` · `summary` · `structured_elements` json · `auto_tags` json · `model_version` · `create_time` · `update_time` |
 | `policy_match` | D2 政策匹配推送：主体 ↔ 政策的匹配打分与理由 | `subject_type` · `subject_id` · `subject_name` · `policy_id` · `policy_title` · `match_score` · `match_reasons` json · `rank_no` |
 | `policy_simulate` | D3 政策效果推演仿真：基线 vs 仿真值与曲线 | `scenario_id` · `scope_type` · `scope_code` · `params` json · `baseline_value` · `simulated_value` · `delta_rate` · `curve` json · `explanation` |
 
