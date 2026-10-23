@@ -1,0 +1,27 @@
+id: FUNC-01252
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01252
+priority: P0
+title: 科技创新评估算法测试清单
+entry_id: innov.tech-evaluation
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/tech-evaluation"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 技术创新趋势预测
+expect:
+  - note: 算法测试下拉 25 项；切换后 POST M_TECH_DS_07_TECH_INNOV_006/compute（endpoint_id=m_tech_ds_07_tech_innov_006）
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_TECH_DS_07_TECH_INNOV_006/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('技术创新趋势预测');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(25);
+      for (const name of ["科技创新评估指标清单", "政策与条件保障力综合评估", "发展战略引导力", "产业发展潜力综合评估", "技术产品成熟度", "产业科学影响力", "产业技术影响力", "技术创新力综合评估", "技术创新趋势预测", "技术市场潜力", "专利质量", "科学创造力趋势预测", "科学创造力趋势预测", "科学研究前沿性", "政策实施效果", "政策扶持力度", "科学网络中心性", "区域科技创新竞争力水平", "区域科技创新发展潜力", "增长速度", "热度指数", "多企业竞争情报比对", "专利质量评估", "技术创新力综合评估", "技术创新趋势预测"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。用例指定 endpoint_id=innov.tech-evaluation.m_tech_ds_07_tech_innov_006；同名 title 下拉 runner 点首项，断言以 path 为准。catalog autoRun=false，本条只核下拉和 method/path。

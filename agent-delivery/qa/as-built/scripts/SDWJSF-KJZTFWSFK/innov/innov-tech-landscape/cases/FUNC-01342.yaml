@@ -1,0 +1,34 @@
+id: FUNC-01342
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01342
+priority: P0
+title: 科技全域态势接口信息清单
+entry_id: innov.tech-landscape
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/tech-landscape"
+  - action: assert_visible
+    target: 15 个接口
+  - action: assert_visible
+    target: /innov/v1/innov/metrics
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 会议影响力
+expect:
+  - note: 接口信息 tab；下拉 15 项；默认 metrics GET；切换会议影响力 POST compute
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metrics');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '会议影响力' }).first().click();
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metric/M_INNOV_CONFERENCE_INFLUENCE/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('会议影响力');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(15);
+      for (const name of ["科技全域态势指标清单","会议影响力","企业影响力","事件关注度","事件影响力","监测异常点识别","要素聚类","监测趋势预测","期刊影响力","科研机构影响力","专利影响力","项目（含课题）影响力","专家学者影响力","要素聚类分析","监测趋势预测"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。场景=接口信息-清单。

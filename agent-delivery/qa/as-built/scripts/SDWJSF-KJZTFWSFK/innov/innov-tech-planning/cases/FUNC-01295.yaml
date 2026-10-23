@@ -1,0 +1,32 @@
+id: FUNC-01295
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01295
+priority: P0
+title: 接口信息
+entry_id: innov.tech-planning
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/tech-planning"
+  - action: assert_visible
+    target: 14 个接口
+  - action: assert_visible
+    target: /innov/v1/innov/metrics
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 潜在科技发展方向预警
+expect:
+  - note: 接口信息 tab；14 项下拉；默认 GET metrics；切换潜在科技发展方向预警 POST compute
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metric/M_INNOV_PLAN_DIRECTION_ALERT/compute');
+      await expect(page.locator('.api-info-grid header')).toContainText('潜在科技发展方向预警');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(14);
+      for (const name of ["科技发展规划指标清单","潜在科技发展方向预警","本地科技创新特色与优势","科技人才流动（产业界↔学术界）","竞争情报等级","研究领域等级划分","研究领域重叠度","本地特色与优势分析","科技人才流动监控","潜在科技发展方向预警","研究领域重叠度","研究领域等级划分","竞争情报等级","多企业竞争情报比对"]) { await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name); }
+      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '科技发展规划指标清单' }).click();
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('GET');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/innov/v1/innov/metrics');
+      await expect(page.locator('.api-info-grid header')).toContainText('科技发展规划指标清单');
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息，步骤切换至潜在科技发展方向预警；assert 内再核默认 GET metrics。选项标题由 runner 在已打开弹层里点 .arco-select-option。

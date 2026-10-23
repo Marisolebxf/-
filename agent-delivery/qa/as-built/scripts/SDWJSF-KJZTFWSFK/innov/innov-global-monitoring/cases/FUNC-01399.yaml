@@ -1,0 +1,27 @@
+id: FUNC-01399
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-01399
+priority: P0
+title: 全球创新监测算法测试清单
+entry_id: innov.global-monitoring
+tier: A
+steps:
+  - action: goto
+    target: "#/innov/global-monitoring"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 多维度排名展示
+expect:
+  - note: 算法测试 tab 下拉 18 项；切换多维度排名展示后 POST path 刷新
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/innov/v1/innov/metric/M_INNOV_DS_04_CARRIER_RANK_002/compute');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('多维度排名展示');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(18);
+      for (const name of ['全球创新监测指标清单', '创新价值', '创新载体创新能力指数', '创新影响预测', '创新影响分数', '创新点发现', '创新点价值评估', '创新价值', '创新能力指数', '创新点发现', '创新价值评估', '创新影响分数', '创新影响预测', '创新载体多维度排名', '城市对标分析', '城市创新能力要素表现', '城市创新能力排名', '多维度排名展示']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。未点击调用时不校验返回字段。场景=算法测试-清单。
