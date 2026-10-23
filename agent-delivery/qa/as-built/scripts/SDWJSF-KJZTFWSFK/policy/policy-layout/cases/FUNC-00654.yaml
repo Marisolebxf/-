@@ -1,0 +1,26 @@
+id: FUNC-00654
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00654
+priority: P0
+title: 布局推荐补传 scope_code
+entry_id: policy.layout
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/layout"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 布局推荐
+  - action: algo_fill
+    set:
+      scope_code: "440000"
+      limit: 20
+  - action: algo_run
+expect:
+  - note: 仍含 scope_name、layout_rec_cnt、recommendations
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['scope_name', 'layout_rec_cnt', 'recommendations']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。scope_code=440000、limit=20。catalog status=unavailable，不断言 sample 具体数字。

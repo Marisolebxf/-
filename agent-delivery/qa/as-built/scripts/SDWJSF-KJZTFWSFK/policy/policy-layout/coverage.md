@@ -1,0 +1,11 @@
+# policy.layout 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00653 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00653 | 主流程 |
+| FUNC-00654 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00654 | 备选-参数组合 |
+| FUNC-00655 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00655 | 备选-参数组合 |
+| FUNC-00656 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00656 | 异常-入参-非法scope_code |
+| FUNC-00657 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00657 | 异常-入参-非法limit |
+| FUNC-00658 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00658 | 接口信息-清单 |
+| FUNC-00659 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00659 | 算法测试-清单 |

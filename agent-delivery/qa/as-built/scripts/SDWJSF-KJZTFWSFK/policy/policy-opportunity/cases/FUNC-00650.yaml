@@ -1,0 +1,27 @@
+id: FUNC-00650
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00650
+priority: P1
+title: 机遇分析非法 limit
+entry_id: policy.opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/opportunity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 机遇分析
+  - action: algo_fill
+    set:
+      limit: -1
+    omit: [region_code]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 limit，且不返回含 opportunity_cnt 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/limit/.test(text)) throw new Error('结果未说明 limit');
+      if (/opportunity_cnt/.test(text) && /relation_degree/.test(text)) throw new Error('结果含 opportunity_cnt 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。limit=-1，不传 region_code。catalog status=unavailable。

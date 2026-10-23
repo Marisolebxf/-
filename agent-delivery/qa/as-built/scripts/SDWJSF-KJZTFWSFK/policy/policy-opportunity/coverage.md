@@ -1,0 +1,11 @@
+# policy.opportunity 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00646 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00646 | 主流程 |
+| FUNC-00647 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00647 | 备选-参数组合 |
+| FUNC-00648 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00648 | 备选-参数组合 |
+| FUNC-00649 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00649 | 异常-入参-非法region_code |
+| FUNC-00650 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00650 | 异常-入参-非法limit |
+| FUNC-00651 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00651 | 接口信息-清单 |
+| FUNC-00652 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00652 | 算法测试-清单 |

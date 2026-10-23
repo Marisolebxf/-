@@ -1,0 +1,26 @@
+id: FUNC-00646
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00646
+priority: P0
+title: 机遇分析主流程
+entry_id: policy.opportunity
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/opportunity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 机遇分析
+  - action: algo_fill
+    set:
+      limit: 20
+    omit: [region_code]
+  - action: algo_run
+expect:
+  - note: body data 数组元素含 region_code、opportunity_cnt、relation_degree
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['region_code', 'opportunity_cnt', 'relation_degree']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。测试内容含 chainId=INB1701 但步骤未填 chainId，本脚本不写 chainId。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。备注金样。
