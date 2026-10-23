@@ -1,43 +1,63 @@
-# 创新环境指数（M_INNOV_GBA_ENV_INDEX）
+# 粤港澳大湾区创新环境指标（M_INNOV_GBA_ENV_INDEX）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ENV_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ENV_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ENV_INDEX_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_INNOV_GBA_ENV_INDEX |
-| 指标名称 | 创新环境指数 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 湾区创新监测 |
+| 指标名称 | 粤港澳大湾区创新环境指标 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技信息展示系统·科技发展态势·科技全域态势·科创要素·湾区 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q133 / Q-MO-DS05-02 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·科技全域态势·科创要素·湾区创新环境（序号 12 附属）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_GBA_ENV_INDEX.md` |
 
 ## 口径定义
 
-湾区 11 城政策供给、主题覆盖与高企密度综合分，取值 0—100。
+政策供给、政策覆盖（type 广度代理）、高企密度三维都能算出，四城分数非退化（深圳 100.0、广州 68.8、东莞 13.6、惠州 1.1）；但**11 城中 7 城无机构底册**（珠海/佛山有政策却无高企分母），**政策主题 `theme` 字面 NULL 19,998/20,000**，覆盖维只能用 type 广度代理，**港澳整块缺失** → 判 **部分支持**。本档位与 `code/M_INNOV_GBA_ENV_INDEX_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：政策供给 / 政策覆盖 / 高企密度。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 政策供给 |  | 该城有效政策件数。 | COUNT(DISTINCT id) | dwd_policy_base(id, city, province, status, expire_date, publish_year, rank) — 政策去重,湾区城市,有效,发布年,级别 |
-| 政策覆盖 |  | 政策主题点数。 | COUNT(DISTINCT theme) | dwd_policy_base(id, city, theme) — 政策主题 |
-| 高企密度 |  | 高企占存续机构比。 | 高企数 / 存续机构数 | dwd_org_tech_tag(org_id, org_tag) — 高新技术标签；dwd_org_base_info(org_id, city, province, reg_status) — 存续机构分母 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ENV_INDEX.md` §二（M_INNOV_GBA_ENV_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_policy_base(id, city, province, status, expire_date, publish_year, rank, theme) — 政策去重,湾区城市,有效过滤,发布年,级别,主题；dwd_org_base_info(org_id, name_cn, city, province, org_type, reg_status) — 湾区机构入集,高企分母；dwd_research_institute_base_info(org_id, name_cn, city, province, reg_status) — 科研机构入集；dwd_forg_base_info(org_id, name_en, country, city) — 港澳机构入集；dwd_org_tech_tag(org_id, org_tag) — 高新技术等科技型标签
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_forg_base_info`
+- `dwd_policy_base`
+- `dwd_research_institute_base_info`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|湾区创新监测.md|序号 96「分解为多个子指标（如创新资源指数、创新机构指数、创新机制指数、创新环境指数）」。总指数子指标「创新环境」（xlsx 43）。需求未给内部构成维度，参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：11 城中仅 4 城有机构底册（深圳/广州/东莞/惠州，合计 188,774 家）；珠海 0 家、佛山 1 家、中山 1 家、江门/肇庆/香港/澳门 0 家，港澳 forg 有效命中 0；政策覆盖维 theme 字面 NULL 19,998/20,000，只能用 type 广度为代理 → 不得超过部分支持
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 0.0 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ENV_INDEX.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ENV_INDEX.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ENV_INDEX_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

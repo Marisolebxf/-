@@ -1,8 +1,7 @@
 # 产学研合作强度（M_CHAIN_ACADEMIC_COOP_SCORE）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_COOP_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_COOP_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_COOP_SCORE_out.json`。
 
 ## 基础信息
 
@@ -10,67 +9,60 @@
 |---|---|
 | 指标ID | M_CHAIN_ACADEMIC_COOP_SCORE |
 | 指标名称 | 产学研合作强度 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业竞争力评价 |
-| 三级模块 | - |
-| 更新频率 | 季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链（CHAIN |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题·区域产业竞争力页（产学研协同卡，经 `mid2req.json` 挂 CHAIN-PORTAL-OVERVIEW / 产业实体关系抽取族）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_ACADEMIC_COOP_SCORE.md` |
 
 ## 口径定义
 
-指定产业链上，企业与高校、科研机构之间的产学研合作强度综合评分，从联合专利、联合项目（合作论文）、人才流动三维加权评定，取值 0—100。对象=产业链层面的产学研合作，不是单次合作事件、也不是单个机构。
+无现成产学研合作强度结果面 → 非完全直接支持；gkx 三方源总量充足（专利 294 万、中文论文 10.09 万、学者 2.13 万）且合作论文维当日实测命中 305 篇真校企共现，但三维中**联合专利维结构断列**（`dwd_patent` 无 applicants 列）、**人才流动维结构断表**（轨迹表缺整表且 `scholar_org_id` 全空）——始终有依赖维无法闭合 → **部分支持**。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：联合专利 / 联合项目 / 人才流动。算法库「产业实体关系抽取」（1.1.1.1.1.1.1.2.2，约 378 行）明确需构建「产业-科研机构」关系，但未给出独立匹配度评分公式，故按产学研合作测度学术惯例补齐三维，默认等权（ΣW=1），甲方可改。
-
-### 第一步：入集
-
-- 先按 `dwd_org_industry_tags.industry_code` 定链，链上企业以 `credit_code` 去重。
-- 高校以 `dwd_org_heis_info` 对齐，科研机构以 `dwd_research_institute_base_info` 对齐（`external_id`/`name_cn` 匹配）。
-
-### 第二步：三个子项
-
-1. **联合专利**：专利申请人主体同时包含「链上企业」与「高校/科研机构」的专利去重数。用 `dwd_patent.applicants`/`first_applicant_name` 与企业、机构名称做共现判定。
-2. **联合项目（合作论文）**：链上企业与高校/科研机构共同署名的论文去重数。用 `dwd_zh_paper.author_info_list` 做机构共现判定（英文论文 `dwd_en_paper` 无作者单位明细，不计入本子项）。
-3. **人才流动**：高校/科研机构学者与链上企业存在任职/合作关联的学者去重数。用 `dwd_scholar.scholar_org_id`/`scholar_org_name_zh` 与企业/机构名称匹配判定。
-
-### 第三步：综合得分
-
-各子项在统计窗内 min-max 归一到 0—100，等权求和：
-$$
-产学研合作强度 = \frac{1}{3}(联合专利得分 + 联合项目得分 + 人才流动得分)
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产学研合作强度 | 联合专利 | 联合专利数 | 企业与高校/科研机构共同申请的专利去重数 | COUNT(DISTINCT pn WHERE 申请人含企业且含高校/科研机构) | dwd_patent(pn, first_applicant_name, applicants, first_current_assignee_name, pbdt_year) — 申请人共现判定；dwd_org_industry_tags(industry_code, company_name, credit_code) — 链上企业；dwd_org_heis_info(name_cn, external_id) — 高校；dwd_research_institute_base_info(name_cn, external_id) — 科研机构 | 联合专利共现标记字段 |
-|  | 联合项目 | 合作论文数 | 企业与高校/科研机构共同署名的论文去重数 | COUNT(DISTINCT paper_id WHERE 作者单位含企业与高校/科研机构) | dwd_zh_paper(id, author_info_list, cover_year_start) — 作者单位共现；dwd_org_industry_tags(industry_code, company_name) — 链上企业；dwd_org_heis_info(name_cn) — 高校；dwd_research_institute_base_info(name_cn) — 科研机构 | 合作项目/技术合同成交额表；英文论文作者单位明细 |
-|  | 人才流动 | 校企人才关联数 | 高校/科研机构学者与链上企业存在任职关联的去重学者数 | COUNT(DISTINCT scholar_id WHERE 学者机构含企业与高校/科研机构) | dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者所属机构；dwd_org_industry_tags(industry_code, company_name) — 链上企业；dwd_org_heis_info(name_cn) — 高校；dwd_research_institute_base_info(name_cn) — 科研机构 | 人才流动轨迹表 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_COOP_SCORE.md` §二（M_CHAIN_ACADEMIC_COOP_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_industry_tags(industry_code, industry_name, company_name, credit_code) — 链上企业入集
-- dwd_org_heis_info(org_id, name_cn, external_id, city) — 高校机构
-- dwd_research_institute_base_info(org_id, name_cn, external_id, city) — 科研机构
-- dwd_patent(pn, first_applicant_name, applicants, first_current_assignee_name, pbdt_year) — 联合专利判定
-- dwd_zh_paper(id, author_info_list, cover_year_start) — 合作论文判定（中文）
-- dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 人才流动判定
-- industry_chain_entity_rel(chain_id, node_id, entity_type, entity_id, relation_type, confidence) — 产业-科研机构图谱关系（demo_gkxlumenx_dwd）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_en_paper`
+- `dwd_org_heis_info`
+- `dwd_org_industry_tags`
+- `dwd_patent`
+- `dwd_research_institute_base_info`
+- `dwd_scholar`
+- `dwd_scholar_coauthor`
+- `dwd_zh_paper`
 
-- 联合专利共现标记字段（申请人「企业×机构类型」判定结果）
-- 合作项目/技术合同成交额表（产学研项目维度）
-- 人才流动轨迹表（学者跨校企任职/合作记录）
-- industry_chain_entity_rel 中 entity_type=科研机构 的关系抽取结果标准化
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业实体关系抽取｜科技专题服务算法库 1.1.1.1.1.1.1.2.2（产业-科研机构关系）。
+## 数据支持度与缺口
 
-[2] 产学研合作强度测度｜教育部、科学技术部｜《关于促进产学研用深度融合的指导意见》，以联合专利、合作论文、人才流动为核心测度维度。
+- **判档**：部分支持
+- **判档理由**：gkx 源在且合作论文维实测命中 305 篇真校企共现；但联合专利维缺 applicants 列（结构断）、人才流动维缺轨迹表且 scholar_org_id 全空 → 三维缺两维，仅部分依赖维可算
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 388.6 秒（源件落盘记录）
 
-[3] 产学研协同创新｜国家发展改革委｜《关于推动产业创新能力提升的指导意见》，产学研合作以联合专利/联合项目/人才流动加权评价。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_COOP_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_COOP_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_COOP_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

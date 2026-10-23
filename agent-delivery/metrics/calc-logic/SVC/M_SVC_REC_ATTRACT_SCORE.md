@@ -1,109 +1,69 @@
 # 招引综合评分（M_SVC_REC_ATTRACT_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_REC_ATTRACT_SCORE |
 | 指标名称 | 招引综合评分 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 引入服务机构推荐分析 |
-| 更新频率 | 按需 |
-| 对齐状态判定 | 待甲方Q-SVCCHAIN-05；四维已对extract |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SVCCHAIN-05 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·产业服务链分析·招引机构推荐列表评分列 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| 缺失年份 | [2007, 2008, 2009, 2010, 2011, 2012] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_REC_ATTRACT_SCORE.md` |
 
 ## 口径定义
 
-针对深圳拟发展产业方向，对外部服务机构的招引综合评分，从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度评定，取值 0—100。
+「招引综合评分」四维里，产业匹配度与对外合作意愿可由现有表代理算出，技术领先性只剩专利授权件数一个代理，发展潜力只覆盖 187 家（1.01%）——四维无法在同一批机构上齐备，故判 **部分支持**，只发布分布与分位，不发布可对外背书的单一冠军榜。
 
 ## 计算逻辑说明
 
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法消除量纲，转换为 0—100 之间的标准化得分：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij} 为第 i 个机构在第 j个指标上的原始值，\min(x_j) 和 \max(x_j)分别为该指标在所有机构中的最小值和最大值。
-$$
-
-第二步：各维度得分计算
-
-各维度得分为其下各指标标准化得分的加权平均（可采用等权重，也可根据评估重点自行制定各指标权重）：
-$$
-产业匹配度得分 = w_1 \times 产业契合度得分 + w_2 \times 产业链协同度得分
-$$
-
-$$
-技术领先性得分 = w_3 \times 研发投入强度得分+ w_4 \times专利申请量得分
-$$
-
-$$
-发展潜力得分 = w_5 \times营业收入同比增长率得分+ w_6 \times净利润同比增长率得分
-$$
-
-$$
-对外合作意愿得分 = w_7 \times$ 对外合作项目数量得分+ w_8 \times对外合作覆盖范围得分
-$$
-
-第三步：招引综合评分计算
-
-四个维度得分加权汇总（可采用等权重，各维度权重 = 1/4；也可根据评估重点自行制定各维度权重）：
-$$
-招引综合评分 = W_1 \times 产业匹配度得分 + W_2 \times 技术领先性得分 + W_3 \times 发展潜力得分 + W_4 \times 对外合作意愿得分
-$$
-其中，W_1、W_2、W_3、W_4 为各维度权重，可采用等权重（各占 25%），也可根据评估重点自行制定，\sum W = 1。得分越高，表明机构的招引价值越大，越值得优先引进。
-
-
-
-| 维度             | 指标             | 指标说明                                                     | 计算方法                                             | 源表字段 | 待建字段 |
-| :--------------- | :--------------- | :----------------------------------------------------------- | :--------------------------------------------------- | -------- | -------- |
-| **产业匹配度** | 产业契合度 | 机构主营业务与目标产业方向的匹配程度 | 匹配关键词数 ÷ 目标产业关键词库总数 × 100% | demo_gkxlumenx_ods.svc_org_card(org_id, industry) — 机构行业；dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业；dwd_industry_chain_info(industry_name, industry_link_name) — 目标词表 | 无 |
-|  | 产业链协同度 | 机构在产业链中的位置与上下游协同价值 | 机构上下游关联企业数量 ÷ 目标产业链总企业数 × 100% | dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 机构覆盖环节；dwd_industry_chain_info(industry_code, industry_link_code) — 目标链环节；dwd_org_invest_info(org_id, inv_org_id) — 上下游关联代理 | 无 |
-| **技术领先性** | 研发投入强度 | 机构研发费用占营业收入的比例 | 研发经费内部支出 ÷ 营业收入 × 100% | dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, year) — 研发投入,营收 | 无 |
-|  | 发明专利占比 | 有效发明专利占有效专利总数的比重 | 有效发明专利数 ÷ 有效专利总数 × 100% | dwd_patent(patent_id, kind, first_applicant_name) — 专利类型,申请人对齐；dwd_patent_legal(pn, status) — 授权有效 | 无 |
-| **发展潜力** | 营业收入增长率 | 反映机构本年营业收入相比上年同期的增长情况，体现短期营收增长趋势 | （本年营业收入 − 上年营业收入）÷ 上年营业收入 × 100% | dwd_org_annual_financial_info(org_id, operating_revenue, year) — 营收 | 无 |
-|  | 净利润增长率 | 反映机构本年净利润相比上年同期的增长情况，体现短期盈利增长趋势 | （本年净利润 − 上年净利润）÷ 上年净利润 × 100% | dwd_org_annual_financial_info(org_id, pure_profit, year) — 净利润 | 无 |
-| **对外合作意愿** | 对外合作项目数量 | 机构近三年参与或发起的对外合作项目总数 | 统计近三年对外合作项目总数 | dwd_org_invest_info(org_id, inv_org_id) — 对外投资代理 | svc_coop_project_count-对外合作项目数 |
-|  | 对外合作覆盖范围 | 机构对外合作的区域覆盖广度 | 统计对外合作覆盖的省份或城市数量 | dwd_org_invest_info(org_id, inv_org_id) — 对外投资；dwd_org_base_info(org_id, city, province) — 对端区域 | svc_coop_region_count-对外合作覆盖区域数 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md` §二（M_SVC_REC_ATTRACT_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选
-- dwd_org_base_info(org_id, external_id, city, province) — 信用代码对齐,对端区域
-- dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业
-- dwd_industry_chain_info(industry_name, industry_link_name) — 目标产业词表
-- dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, pure_profit, year) — 研发投入,营收,净利润
-- dwd_patent(patent_id, kind, first_applicant_name) — 专利类型,申请人对齐
-- dwd_patent_legal(pn, status) — 授权有效
-- dwd_org_invest_info(org_id, inv_org_id) — 对外投资
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_org_invest_info`
+- `dwd_org_org_product_info`
+- `dwd_org_shareholder_info`
+- `dwd_patent`
+- `dwd_patent_legal`
 
-- svc_coop_project_count-对外合作项目数
-- svc_coop_region_count-对外合作覆盖区域数
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1]招引综合评分 | 国家统计局 | 什么是研究与试验发展（R&D）经费及投入强度 | 2025-03-21 | https://www.stats.gov.cn/zs/tjws/tjzb/202301/t20230101_1903948.html.
+## 数据支持度与缺口
 
-[2]招引综合评分 | 科技部 | “创新积分制”工作指引（全国试行版） | 2024-08-12 | https://kjj.hebi.gov.cn/kjdt/art/2024/art_d7af249cd56041c38c5227b4e92af48f.html.
+- **判档**：部分支持
+- **判档理由**：「招引综合评分」四维里，产业匹配度与对外合作意愿可由现有表代理算出，技术领先性只剩专利授权件数一个代理，发展潜力只覆盖 187 家（1.01%）——四维无法在同一批机构上齐备，故判 **部分支持**，只发布分布与分位，不发布可对外背书的单一冠军榜。
+- **基期声明**：本件不是固定年窗指标：营收/净利润增长率取每家机构最近两个正值年算 CAGR，窗口随机构而异。财务表 gkx.dwd_org_annual_financial_info 在池内非空值只落在 2013—2025；2007—2012 在池内 0 行非空（整段无 data），故列入 missing 而不是按 0 摊入。规模/营收类不进入本件综合分，只作为发展潜力维的输入；专利侧不按年筛选（聚合无年份列）。
 
-[3]招引综合评分 | 国家统计局 | 2025年1—5月份全国规模以上工业企业利润下降1.1% | 2025-06-27 | https://www.stats.gov.cn/sj/zxfb/202506/t20250627_1960270.html.
+## 溯源与复现
 
-[4]招引综合评分| 工业和信息化部 | 《中外中小企业合作区管理暂行办法》（工信部企业〔2024〕168号） | 2024-09-03 | http://www.scio.gov.cn/live/2024/35043/wjzc/202410/t20241022_870437.html.
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-[5]招引综合评分 | 峄城区人民政府 | 对区政协十届四次会议第38号提案的答复（关于优化招商引资考核工作机制的提案） | 2025-09-09 | http://www.ycq.gov.cn/zwgk/gkzt/jytabl/qzxtabljg/202509/t20250909_2151247.html.
+## 更新记录
 
-## 会签记录
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
-> 2026-10-22 `human:唐绍祖` 已签 `formula` + `algorithm_type=MODEL`，**限试点口径**：上列王惠四维＋维度内/维度间等权默认；极值归一化分母为当期同池；缺维按可用维均值、可用维数 < 2 不入榜；增长率取最近两个正值年 CAGR、截断 −95%~+300%。
-> **未覆盖**：政策匹配度、深圳连接度（05 模型叶 180 的竞争力/产业相关度/政策匹配度/深圳连接度属另一套维度名，待甲方裁定 `REC-B01`）。
-> **代理口径**：技术领先性实际仅由发明专利占比支撑（研发投入列全空）；对外合作以 `dwd_org_invest_info` 投资边代理。
-> 本稿仍为 20260829 王惠版（`source_tables` 指向 `demo_*`）；签字不等于认可 demo 实现，gkx 改写稿回仓后须做签署版↔实现版对照复核。详见 [`SVC-MODEL-REC-COSIGN-L01.md`](../../../agent-handoffs/服务机构-SVC/SVC-MODEL-REC-COSIGN-L01.md)。

@@ -1,6 +1,7 @@
 # 城市创新能力要素表现（M_INNOV_CITY_FACTOR_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_FACTOR_GLOBAL.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_FACTOR_GLOBAL.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_FACTOR_GLOBAL_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,59 @@
 |---|---|
 | 指标ID | M_INNOV_CITY_FACTOR_GLOBAL |
 | 指标名称 | 城市创新能力要素表现 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 全球创新监测 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | — |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·全球创新监测→城市创新能力分析→创新能力要素分析｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_CITY_FACTOR_GLOBAL.md` |
 
 ## 口径定义
 
-各城在人才、资金、政策三要素上的量化表现，取值 0—100。对象=城市。不拆成多条 ID。
+无现成「城市创新能力要素表现」结果面 → 非完全直接支持；资金维（上市研发经费）完整可用且量级与官方公报吻合（深圳窗内年均约 2,277 亿 vs 公报 2,236.61 亿，偏差 1.8%），三要素可出分（深圳 73.0/广州 50.5/东莞 0.0 有区分度），但人才维 `development_employee` 全库 90,926 行 100% NULL 退化为纯学者数、且学者库学界偏向使企业城（深圳）被系统性低估（深圳 165 名学者反而低于广州 840 名），政策维 `city` 字段 48.5% NULL 使城市件数偏保守，要素宇宙限粤三城 → 按定义落入**部分支持**。
 
 ## 计算逻辑说明
 
-城市入集。采用加权平均，三维：人才（学者+研发人员）/ 资金（研发经费）/ 政策（有效政策数）。本批城内极值归一。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 人才 |  | 学者与研发人员。 | 学者去重数 + SUM(development_employee) | dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构；dwd_org_annual_financial_info(org_id, year, development_employee) — 年报研发人员 |
-| 资金 |  | 上市研发投入。 | SUM(research_development_amount) | dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发投入 |
-| 政策 |  | 有效政策去重件数。 | COUNT(DISTINCT id) | dwd_policy_base(id, city, province, status, expire_date, publish_year) — 有效政策 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_FACTOR_GLOBAL.md` §二（M_INNOV_CITY_FACTOR_GLOBAL.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, org_type, reg_status) — 城市机构入集,名称对齐；dwd_research_institute_base_info(org_id, name_cn, city, province, reg_status) — 科研机构入集；dwd_forg_base_info(org_id, name_en, name_alias, country, city) — 海外机构入集；dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发投入；dwd_org_annual_financial_info(org_id, year, development_employee) — 年报研发人员；dwd_policy_base(id, city, province, status, expire_date, publish_year) — 有效政策；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_stock_finance_info`
+- `dwd_org_tech_tag`
+- `dwd_patent`
+- `dwd_policy_base`
+- `dwd_scholar`
+- `dwd_zh_paper`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-依照需求文档构建。02-科技信息展示系统|科技发展态势|全球创新监测.md|创新能力要素分析 · 序号 86(如人才、资金、政策)
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：无现成「城市创新能力要素表现」结果面 → 非完全直接支持；资金维（上市研发经费）完整可用且量级与官方公报吻合（深圳窗内年均约 2,277 亿 vs 公报 2,236.61 亿，偏差 1.8%），三要素可出分（深圳 73.0/广州 50.5/东莞 0.0 有区分度），但人才维 `development_employee` 全库 90,926 行 100% NULL 退化为纯学者数、且学者库学界偏向使企业城（深圳）被系统性低估（深圳 165 名学者反而低于广州 840 名），政策维 `city` 字段 48.5% NULL 使城市件数偏保守，要素宇宙限粤三城 → 按定义落入**部分支持**。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_FACTOR_GLOBAL.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_FACTOR_GLOBAL.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_FACTOR_GLOBAL_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

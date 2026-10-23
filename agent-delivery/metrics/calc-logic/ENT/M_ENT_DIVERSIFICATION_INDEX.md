@@ -1,6 +1,7 @@
 # 多元化指数（M_ENT_DIVERSIFICATION_INDEX）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DIVERSIFICATION_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DIVERSIFICATION_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DIVERSIFICATION_INDEX_out.json`。
 
 ## 基础信息
 
@@ -8,38 +9,53 @@
 |---|---|
 | 指标ID | M_ENT_DIVERSIFICATION_INDEX |
 | 指标名称 | 多元化指数 |
-| 一级模块 | 企业分析 |
-| 二级模块 | 重点企业领域分布分析 |
-| 三级模块 | 领域分布分析 |
-| 更新频率 | 产业标签更新后 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 是 |
-| 关联Q编号 | Q013 |
-
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 科技信息展示系统·企业分析·重点企业领域分布分析相关页面（wanghui: true） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_DIVERSIFICATION_INDEX.md` |
 
 ## 口径定义
 
-基于企业在产业环节上的分布构造一个Shannon熵归一化值，反映企业多元化程度。取值 0~1，值越接近 1 表示企业在各节点上分布越均匀（高度多元化），值越接近 0 表示高度集中在少数节点。
+开发库无「多元化指数」现成结果面 → 非完全直接支持；三方库 `gkx.dwd_org_industry_tags` 的 `industry_link_code` 字段**结构齐全且解析率 100%**（2,283,762 行 JSON 数组串全部摊平成功），熵值**现转算出** H*=0.4492 → **完全转换支持**。
 
 ## 计算逻辑说明
 
-$$
-H* = -Sum( p_j * ln(p_j) ) / ln(k)  \\
-$$
-
-$p_j = n_j / Sum(n_j)$  ：节点$ j $内企业数量 ÷ 全部企业总数 
-
-$k$  ：企业覆盖的去重节点总数 
-当 k <= 1 时（只覆盖1个或0个节点），$H*$ = 0（无多元化）
-当所有$ p_j$ 相等时（完全均匀分布），$H*$ = 1（最大多元化）
-
-### 步骤说明
-
-1. **按节点分组计数** — 对每个 `industry_link_code` 统计去重企业数 $n_j$
-2. **计算比例** ：$ p_j = n_j / SUM(n_j)$，即该节点企业数占总企业数的比例
-3. **计算Shannon熵** ：$H = -SUM(p_j * ln(p_j))$
-4. **归一化** ：$H* = H / ln(k)$，k 为有企业覆盖的去重节点数，结果为 0~1
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DIVERSIFICATION_INDEX.md` §二（M_ENT_DIVERSIFICATION_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
-gkx.dwd_org_industry_tags（credit_code, industry_link_code, industry_code）
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_industry_chain_info`
+- `dwd_org_industry_tags`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：完全转换支持
+- **判档理由**：gkx tags 2,283,762 行 industry_link_code 100% 可解析（JSON 数组串摊平）；摊平后 k=12148 节点、N=5319383 (节点,企业)对；Shannon 熵 H=4.2244、归一化 H*=0.4492 现算成功。结构+当前量+现转成功 → 完全转换支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DIVERSIFICATION_INDEX.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DIVERSIFICATION_INDEX.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DIVERSIFICATION_INDEX_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

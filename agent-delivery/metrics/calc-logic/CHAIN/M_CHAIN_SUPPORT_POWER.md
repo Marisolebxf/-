@@ -1,6 +1,7 @@
 # 配套服务（M_CHAIN_SUPPORT_POWER）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SUPPORT_POWER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SUPPORT_POWER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SUPPORT_POWER_out.json`。
 
 ## 基础信息
 
@@ -8,40 +9,57 @@
 |---|---|
 | 指标ID | M_CHAIN_SUPPORT_POWER |
 | 指标名称 | 配套服务 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 年 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
-
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | CHAIN |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 区域产业指数 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SUPPORT_POWER.md` |
 
 ## 口径定义
 
-指定区域在指定产业链上的配套生态竞争力得分，取值0—100。对齐算法库配套生态竞争力，由政策覆盖率和融资环境合成。
+政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `code/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
-二维等权。先按区域、链、年计算政策覆盖率和融资事件数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city="深圳市"。从dwd_industry_chain_info确定目标产业链；融资维关联dwd_org_industry_tags取链上企业，再关联dwd_org_base_info筛区域。库无独立服务机构产业链表，不纳入本指标。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- |
-| 区域产业指数 | 配套生态 | 政策覆盖率 | 政策命中环节数/全链环节数×100%。分母为dwd_industry_chain_info中该链industry_link_code去重件数。分子为至少被一条有效政策命中的industry_link_code去重件数。政策库无环节外键，用industry_link_name出现在title、keywords、keypoints或theme判定命中。政策须status为有效、publish_year不晚于统计年，且province或city落在目标区域，或rank含国家级 | dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 目标产业链范围, 产业链名称, 全链环节去重, 环节名称匹配政策; dwd_policy_base(id, title, keywords, keypoints, theme, province, city, status, publish_year, rank) — 政策去重, 标题匹配环节, 关键词匹配环节, 要点匹配环节, 主题匹配环节, 政策省份, 政策城市, 有效状态, 发布年, 国家级覆盖全部区域 | 无 |
-| 区域产业指数 | 配套生态 | 融资环境 | 区域链上融资事件去重件数。链上企业credit_code关联dwd_org_financing_info.external_id，并经dwd_org_base_info按province、city筛区域，按org_id与completion_date去重；completion_date所在年不晚于统计年 | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联; dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市; dwd_org_financing_info(org_id, external_id, completion_date) — 融资企业标识, 信用代码关联, 融资完成时间 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SUPPORT_POWER.md` §二（M_CHAIN_SUPPORT_POWER.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 目标产业链范围, 产业链名称, 全链环节去重, 环节名称匹配政策
-- dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联
-- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市
-- dwd_policy_base(id, title, keywords, keypoints, theme, province, city, status, publish_year, rank) — 政策去重, 标题匹配环节, 关键词匹配环节, 要点匹配环节, 主题匹配环节, 政策省份, 政策城市, 有效状态, 发布年, 国家级覆盖全部区域
-- dwd_org_financing_info(org_id, external_id, completion_date) — 融资企业标识, 信用代码关联, 融资完成时间
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
+- `dwd_policy_base`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 配套服务｜中国中小企业发展促进中心｜中国中小企业发展促进中心. 2025年度中小企业发展环境评估报告[R]. 北京, 2025. https://www.tanchang.gov.cn/zfxxgk/public/32129002/148149154.html
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoints`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_financing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重。两维都能算出数，但都带不可修复的维度退化，故判**部分支持**。本档位与 `code/M_CHAIN_SUPPORT_POWER_out.json` 的 `support_judgment` 一致。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 0.39 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SUPPORT_POWER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SUPPORT_POWER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SUPPORT_POWER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

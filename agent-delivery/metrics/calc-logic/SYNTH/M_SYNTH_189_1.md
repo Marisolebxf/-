@@ -1,6 +1,7 @@
 # 区域创新要素领域综合评价模型（M_SYNTH_189_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SYNTH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_189_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_189_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_189_1_out.json`。
 
 ## 基础信息
 
@@ -8,96 +9,59 @@
 |---|---|
 | 指标ID | M_SYNTH_189_1 |
 | 指标名称 | 区域创新要素领域综合评价模型 |
-| 一级模块 | 综合智能分析 |
-| 二级模块 | 区域创新要素分析 |
-| 三级模块 | 要素领域 |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SYNTH-02 / Q-SYNTH-E-01 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_189_1.md` |
 
 ## 口径定义
 
-选定区域内、统计年度的区域创新要素领域指数，从产业领域覆盖广度、技术领域应用深度、创新产出强度、人才结构合理性、经济贡献度五个维度合成，取值 0—100。分数越高表示创新要素在各领域的综合发展水平越高。
+本指标把「区域创新要素」拆成人才、研发投入、产业主体、技术领域、创新载体五维，维内两子项批内极值归一、维内等权、五维等权，得到 0—100 的要素指数。
 
 ## 计算逻辑说明
 
-**同M_SYNTH_ELEM_DOMAIN_INDEX 区域创新要素领域指数**
-
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法消除量纲，转换为 0—100 之间的标准化得分：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij}为第 i个区域在第j个指标上的原始值，\min(x_j)和 \max(x_j)分别为该指标在所有区域中的最小值和最大值。
-$$
-
-第二步：各维度得分计算
-
-各维度得分为其下两个指标标准化得分的加权平均（可采用等权重，也可根据评估重点自行制定各指标权重）：
-$$
-产业领域覆盖广度得分= w_1 \times高新技术企业数得分+ w_2 \times规上工业增加值得分
-$$
-
-$$
-技术领域应用深度得分= w_3 \times每万从业人员发明专利授权数得分+ w_4 \times研发经费投入强度得分
-$$
-
-$$
-创新产出强度得分= w_5 \times专利授权量得分+ w_6 \times专利转移件数得分
-$$
-
-$$
-人才结构合理性得分= w_7 \times研发人员占比得分+ w_8 \times高学历人才占比得分
-$$
-
-$$
-经济贡献度得分=w_9 \times全员劳动生产率得分+ w_{10} \times高技术产业营业收入占比得分
-$$
-
-宏观取数：`dwd_macro_index_data`，`is_deleted=0`，`dim_cal=JDZ`，`dim_dur=DNLJ`，按 12 位 `area_code` 与统计年对齐；深圳=`440300000000`。地区生产总值=`gmjj_jjzl_01`。规上工业增加值=`gmjj_jjzl_01_02_01_01`（字典名「按规模分:规上工业企业增加值」）。高学历与类型/层次指数对齐：学者学历表硕/博，不用从业人员本科。每万从业人员发明专利的分母、全员劳动生产率的分母均为年报 `employees_number` 合计，不是官方人口或就业人员。专利转移件数按 `pn` 去重、按转移生效年入窗，不是技术合同成交额。
-
-第三步：区域创新要素领域指数综合得分
-
-五个维度得分加权汇总（可采用等权重，各维度权重 = 1/5；也可根据评估重点自行制定各维度权重）：
-$$
-区域创新要素领域指数 = \sum_{k=1}^{5} W_k \times 维度得分_k
-$$
-其中，各维度权重可采用等权重（各占 20%），也可根据评估重点自行制定，\sum W = 1。得分越高，表明该区域的创新要素在各领域的综合发展水平越高。
-
-| 维度                 | 指标                       | 指标说明                                                     | 计算方法                                                     | 源表字段                                                     | 待建字段 |
-| :------------------- | :------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- | ------------------------------------------------------------ | -------- |
-| **产业领域覆盖广度** | 高新技术企业数             | 反映区域内高新技术产业的覆盖规模和广度。                     | 统计区域内有效期内的高新技术企业总数                         | dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-|                      | 规上工业增加值             | 反映区域内规模以上工业的产出规模。                           | 直接取 gmjj_jjzl_01_02_01_01 绝对值，当年累计                | dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数；dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典；dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000；dwd_dim_index_cal(dim_cal, cal_name) — 计量口径；dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度；dwd_dim_source_code(source_code, source_name) — 数据来源；index_code=gmjj_jjzl_01_02_01_01 — 按规模分:规上工业企业增加值 | 无       |
-| **技术领域应用深度** | 每万从业人员发明专利授权数 | 反映区域内按从业人员计的发明授权密度。                       | 发明专利授权数 ÷ 年报从业人员合计（万人）                    | dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利去重,发明授权,申请人对齐,联合申请人,年窗；dwd_org_annual_financial_info(org_id, year, employees_number) — 年报从业人数；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-|                      | 研发经费投入强度           | 反映区域对技术研发的投入力度，体现技术领域应用的支撑强度。   | 企业年报/上市研发投入合计 ÷ 地区生产总值(gmjj_jjzl_01) × 100% | dwd_org_annual_financial_info(org_id, year, `arch development am`) — 研发投入；dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年；dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数；dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典；dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000；dwd_dim_index_cal(dim_cal, cal_name) — 计量口径；dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度；dwd_dim_source_code(source_code, source_name) — 数据来源；index_code=gmjj_jjzl_01 — 地区生产总值 | 无       |
-| **创新产出强度**     | 专利授权量                 | 反映区域技术成果的产出规模和技术积累水平。                   | 统计年度内发明专利、实用新型专利、外观设计专利授权总量       | dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利去重,发明授权,申请人对齐,联合申请人,年窗；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-|                      | 专利转移件数               | 反映区域技术成果转移活跃度。按件计数，不是成交额。           | 统计年度内专利转移去重件数                                   | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效年窗；dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year) — 申请人对齐；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-| **人才结构合理性**   | 研发人员占比               | 反映区域从业人员中研发人员的密度，体现人才结构的创新导向。   | 研发人员数 ÷ 从业人员总数 × 100%                             | dwd_org_annual_financial_info(org_id, year, development_employee, employees_number) — 研发人员,从业人数；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-|                      | 高学历人才占比             | 与类型/层次指数对齐：学者最高学历含硕/博的占比。             | 最高学历含硕/博的学者 ÷ 从业人员总数 × 100%                  | dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集；dwd_org_annual_financial_info(org_id, year, employees_number) — 从业人员；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集 | 无       |
-| **经济贡献度**       | 全员劳动生产率             | 反映区域产出效率。分母为企业年报从业人数，不是官方就业人员。 | 地区生产总值(gmjj_jjzl_01) ÷ 年报从业人员合计                | dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观事实,按12位area_code与统计年取数；dwd_dim_index_attribute(index_code, index_name, data_freq) — 指标字典；dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000；dwd_dim_index_cal(dim_cal, cal_name) — 计量口径；dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度；dwd_dim_source_code(source_code, source_name) — 数据来源；index_code=gmjj_jjzl_01 — 地区生产总值；dwd_org_annual_financial_info(org_id, year, employees_number) — 年报从业人数；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
-|                      | 高技术产业营业收入占比     | 反映高技术产业对区域经济的贡献程度。                         | 高技术产业营业收入 ÷ 规模以上工业企业营业收入 × 100%         | dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签；dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, development_employee, employees_number, total_assets, `arch development am`, pure_profit) — 营收,研发人员,从业人数,资产,研发投入,净利润；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年 | 无       |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_189_1.md` §二（M_SYNTH_189_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,存续,成立年
-- dwd_org_annual_financial_info(org_id, year, operating_revenue, development_employee, employees_number, `arch development am`) — 营收,研发人员,从业人数,研发投入
-- dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-- dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利去重,发明授权,申请人对齐,联合申请人,年窗
-- dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效年窗
-- dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-- dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集,所属机构
-- dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-- dwd_macro_index_data(index_code, occur_period, area_code, dim_cal, dim_dur, index_value, unit_use) — 宏观指标事实
-- dwd_dim_index_attribute(index_code, index_name, data_freq, unit_use) — 指标字典
-- dwd_dim_admin_area(area_code, area_name) — 行政区划,深圳=440300000000
-- dwd_dim_index_cal(dim_cal, cal_name) — 计量口径
-- dwd_dim_index_dur(dim_dur, dur_name) — 时间跨度
-- dwd_dim_source_code(source_code, source_name) — 数据来源
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_job`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_recruit_info`
+- `dwd_org_stock_finance_info`
+- `dwd_rd`
+- `dwd_scholar`
 
-无
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：五维中四维（投入/主体/技术/载体）在四城均有真实非零读数，且互不重复取数；但人才维只有深圳（247 位）、广州（918 位）达到可评分门槛，东莞 9 位、惠州 0 位，属学者表覆盖不足而非真实为零，故这两城人才维记 null（不补 0），指数由其余四维等权；研发投入只能取上市主体（856 家，占底册 0.45%），不是全口径 R&D；惠州 2024 年研发费用 175.39 亿元、较 2022 年 48.91 亿元增 258%，与 2023 年166.37 亿元的跳升需按主体核对（惠州 24 家上市主体里 1 家即可主导），已在 §三 披露。
+- **基期声明**：研发费用取 2024 年 12 月累计值（1 个真实年份，来源 gba_rd_20261021.json，2019–2024 连续可用但本指标只用 2024）；企业底册、高企、专精特新、机构、高校、学者均为截面存量，无跨年分母，故 base_years_missing 为空。
+- **复现实测耗时**：约 2.4 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_189_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_189_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_189_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

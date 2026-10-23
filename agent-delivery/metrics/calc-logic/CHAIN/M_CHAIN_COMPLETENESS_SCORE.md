@@ -1,8 +1,7 @@
 # 产业链完整度评分（M_CHAIN_COMPLETENESS_SCORE）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_COMPLETENESS_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_COMPLETENESS_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_COMPLETENESS_SCORE_out.json`。
 
 ## 基础信息
 
@@ -10,64 +9,54 @@
 |---|---|
 | 指标ID | M_CHAIN_COMPLETENESS_SCORE |
 | 指标名称 | 产业链完整度评分 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
-| 更新频率 | 季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | QC01 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链总览／链健康度 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「完整度评分卡」、跨链对比条形图 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_COMPLETENESS_SCORE.md` |
 
 ## 口径定义
 
-指定产业链在统计窗内的完整度综合评分，从环节覆盖完整度、企业覆盖均匀度、产值覆盖度三维评定，取值 0—100。分数越高表示产业链结构越完整、断点越少。对象=产业链整体完整度，不是单环节完整度。口径对应 QC01，待甲方冻结。
+「覆盖 + 均匀」两维都能用链树与标签现算，12 条链全部有分、可复现；但完整度评分按需求语义还应包含「产值覆盖」维，而 `gkx` 没有任何环节级产值字段（企业级年报也仅 37 份），三维缺一维 → 按 §〇 判**部分支持**，分数只能称「结构完整度」。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：环节覆盖完整度 / 企业覆盖均匀度 / 产值覆盖度。算法库「产业链全景模型构建」（1.1.1.1.1.1.1.3.1，约 431 行）提出「识别产业链完整性与断点」及「动态更新保持完整性」，但未给出独立完整度公式；按产业链完整性评价学术惯例补齐三维，默认等权（ΣW=1）。
-
-### 第一步：入集
-
-按 `dwd_industry_chain_info.industry_code` 定链，标准环节树由 `industry_link_code`/`level`/`parent_code` 构成；已落地环节由 `chain_node`/`chain_panorama` 提供。
-
-### 第二步：三个子项
-
-1. **环节覆盖完整度**：已覆盖环节数 ÷ 标准全链环节数 × 100。分子=`chain_panorama.node_count`，分母=该链 `dwd_industry_chain_info` 去重 `industry_link_code` 数。
-2. **企业覆盖均匀度**：各环节企业分布的均匀程度。用各环节企业数在链上的变异系数（CV=σ/μ）反向映射：均匀度=100×(1−CV)。环节企业数来自 `chain_enterprise` 按节点聚合。
-3. **产值覆盖度**：有产值/营收数据的环节占比。分子=能关联到 `chain_market.total_revenue` 的环节数，分母=全链环节数。
-
-### 第三步：综合得分
-
-各子项 min-max 归一到 0—100，等权求和：
-$$
-产业链完整度评分 = \frac{1}{3}(环节覆盖完整度得分 + 企业覆盖均匀度得分 + 产值覆盖度得分)
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业链完整度评分 | 环节覆盖完整度 | 环节覆盖率 | 已覆盖环节数占标准全链环节数比重 | 已覆盖环节数/全链环节数×100 | chain_panorama(chain_id, node_count) — 已覆盖环节数；dwd_industry_chain_info(industry_code, industry_link_code, level) — 标准全链环节 | 标准全链环节权威基准 |
-|  | 企业覆盖均匀度 | 环节企业分布均匀度 | 各环节企业数的离散程度反向映射 | 100×(1−CV)，CV=环节企业数标准差/均值 | chain_enterprise(chain_id, enterprise_id, city, district) — 环节企业聚合；chain_node(node_id, chain_id, node_name) — 环节 | 无 |
-|  | 产值覆盖度 | 产值覆盖环节占比 | 有营收/产值数据的环节占比 | 有产值环节数/全链环节数×100 | chain_market(chain_id, total_revenue, enterprise_count) — 产业链产值；dwd_industry_chain_info(industry_code, industry_link_code) — 全链环节 | 环节级产值字段 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_COMPLETENESS_SCORE.md` §二（M_CHAIN_COMPLETENESS_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, level, parent_code, node_company_count) — 标准环节树
-- chain_panorama(chain_id, chain_name, node_count, edge_count, enterprise_count) — 全景已落地环节/企业（gkxlumenx_ads / demo_gkxlumenx_ads）
-- chain(chain_id, chain_name, industry_code, node_count) — 产业链主表（gkxlumenx_dwd）
-- chain_node(node_id, chain_id, node_name, position) — 环节
-- chain_enterprise(chain_id, enterprise_id, enterprise_name, city, district) — 链上企业
-- chain_market(chain_id, chain_name, stat_year, total_revenue) — 产业链产值
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_industry_tags`
 
-- 标准全链环节权威基准字段（应覆盖环节数，由业务/QC01 冻结）
-- 环节级产值字段（现 `chain_market` 仅产业链粒度）
-- 完整度计算阈值与权重（QC01 待甲方确认）
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业链全景模型构建｜科技专题服务算法库 1.1.1.1.1.1.1.3.1（完整性与断点识别、动态更新）。
+## 数据支持度与缺口
 
-[2] 产业链完整度评价｜工业和信息化部｜《关于提升产业链供应链韧性和安全水平的指导意见》，以环节覆盖、企业布局、产值覆盖衡量产业链完整性。
+- **判档**：部分支持
+- **判档理由**：覆盖与均匀度两维可用链树 + 标签现算，12 条链均有分；产值维在 gkx 不存在，评分只反映结构完整度，不能替代含产值的完整度。
+- **基期声明**：截面指标：统计当前存量，不设年度分母。
 
-[3] 产业链完整性测度｜中国电子信息产业发展研究院（赛迪）｜产业链现代化水平评估指标体系（环节覆盖度/企业均匀度/产值覆盖度）。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_COMPLETENESS_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_COMPLETENESS_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_COMPLETENESS_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

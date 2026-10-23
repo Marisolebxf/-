@@ -1,6 +1,7 @@
 # 技术产品成熟度（M_INNOV_POT_MATURITY）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_MATURITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_MATURITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_MATURITY_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,63 @@
 |---|---|
 | 指标ID | M_INNOV_POT_MATURITY |
 | 指标名称 | 技术产品成熟度 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | INNOV（创新机会） |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业潜力 → 技术产品成熟度 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_POT_MATURITY.md` |
 
 ## 口径定义
 
-按授权比例、发明占比、市场渗透综合评分，取值 0—100。对象为 IPC 前 4 位；综合评估复用本三维时按产业汇总。
+IPC4 级 0—100 成熟度：授权比例与发明占比同批极值归一后等权；市场渗透维因转移表不可落 IPC4 缺测，不补 0
+
+> 一句话口径（源件 §0.3）：王惠把「技术产品成熟度」定为三维：授权比例、发明占比、市场渗透，对象是 IPC 前 4 位。本库能交付前两维——主键切片 200,000 行（6.80%）按 IPC4 聚合后，147 个单元通过「切片 ≥200 件且 2021—2024 全量 ≥3,000 件」双门槛，授权比例 25.3%—93.4%、发明占比 12.0%—100.0%，同批极值归一后等权得到 48.30—75.95 的分数。第三维市场渗透**整维缺测**：`dwd_patent_transfer` 只有 22,809 行 / 20,000 个 pn（占 2,939,895 的 0.68%），且 `pn` 无索引、主表按 pn 关联要全表扫（禁），无法落到 IPC4。判**部分支持**。本档位与 `code/M_INNOV_POT_MATURITY_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
-采用加权平均，三维：授权比例（授权专利/专利）/ 发明占比（发明专利/专利）/ 市场渗透（转移专利/专利）。
+```text
+score = 100 × mean(minmax(grant_ratio), minmax(inv_ratio))
+```
 
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 授权比例 |  | 授权专利占全部专利比。 | 授权专利数 / 专利数 | dwd_patent(pn, main_classification_ipcr, granted_number, apdt_year) — IPC领域,授权号,申请年 |
-| 发明占比 |  | 发明专利占全部专利比。 | 发明专利数 / 专利数 | dwd_patent(pn, main_classification_ipcr, kind, apdt_year) — IPC领域,申请类型,申请年 |
-| 市场渗透 |  | 发生转移的专利占比。 | 转移专利数 / 专利数 | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日；dwd_patent(pn, main_classification_ipcr, apdt_year) — 专利分母,IPC领域 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_MATURITY.md` §二（M_INNOV_POT_MATURITY.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_patent(pn, kind, granted_number, first_applicant_name, main_classification_ipcr, apdt_year) — 专利去重,申请类型,授权号,申请人对齐,IPC领域,申请年；dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日；dwd_org_base_info(org_id, name_cn, external_id, industry, city, province, reg_status) — 名称对齐,空间过滤,产业切片；dwd_org_industry_tags(credit_code, industry_code, industry_name) — 产业标签
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_id`
+- `dwd_patent`
+- `dwd_patent_family`
+- `dwd_patent_transfer`
+- `dwd_zh_paper`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技创新评估.md|序号 147「通过技术生命周期分析、市场渗透率分析等方法，评估特定产业内技术或产品的成熟度」。对照 seq 137 实现类（TOPIC-TECH-05 同叶 third_party）。禁止 B 轨成熟度/阶段 ID 顶替。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：王惠把「技术产品成熟度」定为三维：授权比例、发明占比、市场渗透，对象是 IPC 前 4 位。本库能交付前两维——主键切片 200,000 行（6.80%）按 IPC4 聚合后，147 个单元通过「切片 ≥200 件且 2021—2024 全量 ≥3,000 件」双门槛，授权比例 25.3%—93.4%、发明占比 12.0%—100.0%，同批极值归一后等权得到 48.30—75.95 的分数。第三维市场渗透**整维缺测**：`dwd_patent_transfer` 只有 22,809 行 / 20,000 个 pn（占 2,939,895 的 0.68%），且 `pn` 无索引、主表按 pn 关联要全表扫（禁），无法落到 IPC4。判**部分支持**。本档位与 `code/M_INNOV_POT_MATURITY_out.json` 的 `support_judgment` 一致。
+- **基期声明**：由产物中实际出现的年度键反推：used=[2021, 2022, 2023, 2024, 2025, 2026]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。
+- **复现实测耗时**：约 1.4 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_MATURITY.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_MATURITY.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_MATURITY_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

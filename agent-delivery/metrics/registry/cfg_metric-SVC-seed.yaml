@@ -1,847 +1,1027 @@
-# cfg_metric 种子 —— 产业服务域（SVC）M_SVC_* 指标 8 件套
+# cfg_metric 种子 —— 产业服务链域（SVC）M_SVC_* 指标
 # ============================================================================
-# 作用：METRIC-SEED-REGISTER-L01 把 OPEN 新号身份写入 seed（D1=draft）。
-# 维护：data-agent  ·  监管：human:淮政玮  ·  创建：2026-08-22
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-# algorithm_type 本批一律 UNKNOWN（未签）。禁止把赋号卡 suggested_unsigned 当已签。
-# 禁止 D1=aligned。存量口径/公式/源表不在本文件改（本文件为该域首份 seed）。
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：51 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-23"
 domain: SVC
-seed_version: "0.1.0"
-batch: open_draft_20260822
-total_metrics: 43
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
+total_metrics: 51
 defaults:
-  source_systems: [pending_ods]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
   owner_agent: data-agent
-  version: "0.1.0"
-  algorithm_type: UNKNOWN
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
-  - metric_id: M_SVC_ORG_TECH_SCORE
-    metric_name_zh: "服务机构影响力"
-    definition: "选定服务机构在统计年度的技术力综合评分（进度表指标名「服务机构影响力」，B 轨口径为技术力），从专利数量、研发投入、核心专家、成功案例、标准制定五个维度评定，取值 0—100。分数越高表示技术能力越强。"
-    formula: "采用等权平均（权重待 Q-SVCCHAIN-01）。五维：专利数量 / 研发投入 / 核心专家 / 成功案例 / 标准制定。对比集合内截面标准化。"
-    algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card— 服务机构认定", "dwd_patent(patent_id, kind, first_applicant_name, application_reference.apdt_year) — 专利类型、申请人、申请年", "dwd_patent_legal(pn, status, anticipated_expiration) — 授权/有效", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 年报研发投入、营收、研发人员、从业人数", "dwd_org_important_news_info(org_id, news_title, news_date) — 案例资讯代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
-    version: 1
-    updated: "2026-08-31"
-    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TECH_SCORE.md"
-    owner_agent: data-agent
-  - metric_id: M_SVC_TYPE_DIST_QUERY
-    metric_name_zh: "查询结果·服务类型分布"
-    definition: >
-      2026-10-13 转「查询态口径卡」（human:徐滕强 选 A）。统计的不是全库快照：对当前查询会话命中的服务机构（org_id 去重）按类型分桶 COUNT，属查询链路实时聚合，不落 ADS、不预聚合。分组字段：优先主数据 svc_type，空回落 org_type（Q106 A 案，甲方未签）；过渡期实现按 2026-08-27 侯佳伟 2A 用 ADS 卡面 service_type_candidate 六类（空档单独计不丢弃）。0 命中 → 全 0 / 空图；禁止回退全库 3525 六类分布顶上（3A）；禁止消费 SVCCHAIN-* / M_SVC_ORG_CNT / M_SVC_PT_*。实现归 TOPIC-QUERY 查询叶，不进 SVC-ALGO-STAT-21-IMPL-L01。
-    formula: "查询态（实时，不落 ADS）：SELECT COALESCE(svc_type, org_type, '未分类') AS type_bucket, COUNT(DISTINCT org_id) FROM 当前查询命中 org_id 集合 GROUP BY 1；过渡期分桶列=svc_org_card.service_type_candidate。与候选机构数（REC_CANDIDATE_CNT 废止）不同：本条有完整六要素口径，保留指标身份作查询页图表口径真源。"
-    algorithm_type: STAT
-    source_tables: [ads.svc_org_card.service_type_candidate]
-    source_systems: [ads.svc_org_card]
-    update_freq: n/a（查询实时，随查询会话）
-    version: "0.2.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-QUERY-04"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
-    acceptance_unit_id: "TOPIC-QUERY"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-QUERY-METRIC-OPEN-L01
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_TYPE_DIST_QUERY.md"
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
   - metric_id: M_SVC_BASE_101_1
     metric_name_zh: "服务机构基础指标模型构建"
-    definition: >
-      2026-10-13 封面身份落 seed（human:徐滕强 选 B）。本 ID 是算法库 SRS ALGO-SVC-BASE-101 整叶封面（需求目录页），不是复合指标、不是加权总分，无统计口径可定义——对象/度量/公式全在分项。六大核心指标体系（六套对照）：①全球布局=M_SVC_INDUSTRY_LAYOUT（UNKNOWN，不在 STAT 21 批）；②全球分布=M_SVC_PT_GLOBAL_TOTAL/M_SVC_PT_REGION_ORG/M_SVC_PT_GLOBAL_TYPE_DIST；③投融资动态=M_SVC_INVEST_Y（UNKNOWN）；④新增动态=M_SVC_ORG_NEW_COUNT；⑤深圳规模=M_SVC_PT_SZ_TOTAL/M_SVC_PT_KEYORG_SCALE；⑥深圳分布=M_SVC_PT_SZ_REGION_ORG/M_SVC_PT_SZ_TYPE_DIST/M_SVC_PT_SZ_FIELD_DIST。三禁：本 ID 不出数、不灌 ADS、fact/series/dist 恒 0 行；分项回指 05·101 但禁止把分项加总/顶替回写封面；禁止 COUNT(*)/compute_metric('M_SVC_BASE_101_1') 顶替（2026-08-27 侯佳伟 1A 2A 3A）。
-    formula: "无公式（封面号不出数）。三禁：禁 COUNT(*) 出这一格；禁 compute_metric 本 ID；禁分项加总回写。"
+    definition: "封面号的第一条纪律是「不出数」：它登记的是「服务机构基础指标模型」这一族指标的构建任务，本身不是可展示的数值。因此若按「有没有对应结果面」去判档，会得到「完全不支持」这种看似严谨、实则答错问题的结论。本件的做法是把封面号展开成它登记的六大体系，逐个体系判「今天能不能算出数」，再按体系聚合出档位。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_BASE_101_1.py 为准）。"
     algorithm_type: STAT
-    source_tables: []
-    source_systems: []
+    source_tables: ["dwd_forg_base_info", "dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_financing_info", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: n/a
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_BASE_101_1.md"
+    data_support_level: "部分支持"
+    support_reason: "封面号自身不出数（三禁）；以其登记的六大体系为评估对象：①③④⑥ 四体系可现转，②（海外轴）与⑤（服务能力子维）各有一处结构性缺口 → 六体系中 4 全支持 / 2 部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析（SRS seq 120 页面族的基础模型登记项）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SVC-BASE-101"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_BASE_101_1.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_CHAIN_BOTTLENECK
     metric_name_zh: "瓶颈堵点判定"
-    definition: "选定产业在统计窗口内，按全周期六环节（研发与科研合作、知识产权与标准、技术转移与孵化、中试熟化、检测认证、市场化服务）分别给出短板判定，输出服务空白、薄弱环节、资源瓶颈或正常。六环节并列，不合成单一分数。"
-    formula: "六环节并列判定，不合成单一分数。演示规则（正式阈值待 Q-SVCCHAIN-03）：机构数=0→服务空白；≤1→薄弱环节；平均服务深度<55→资源瓶颈；否则正常。三类档位互斥，优先空白、再薄弱、再瓶颈。"
+    definition: "王惠口径的三档是：环节家数 0 → 服务空白；≤1 → 薄弱环节；平均服务深度 <55 → 资源瓶颈；否则正常。本件换到 gkx 后，前两档一次都没触发（最少的中试也有 8 家），第三档因为深度分无源而无法判定，于是六个环节全部落在「有供给」，结论退化。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_CHAIN_BOTTLENECK.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card— 服务机构认定；", "dwd_org_industry_tags(credit_code, industry_code) — 选定产业挂接", "dwd_industry_chain_info(industry_code) — 定链", "见 M_SVC_ORG_COVERAGE_DEPTH — 环节平均服务深度"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "周"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 周
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-03"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_BOTTLENECK.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "家数维可词表代理现转（六环节 30,776/776/13,878/8/4,533/10,702）；第三档「资源瓶颈」所需的平均服务深度分在 gkx/live 均无任何来源（Q-SVCCHAIN-02 口径未签、SVC-P0-3 成员表未建）→ 三档只能判前两档"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·瓶颈堵点智能识别（SRS seq 124）"
+    pending_ref: "Q-SVCCHAIN-03"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
     metric_name_zh: "环节平均服务深度"
-    definition: >
-      2026-10-13 拍板：某服务链环节内各机构服务深度分的算术平均（0-100）。环节字典唯一真源 = CT-SVC-PT-01 六环节；禁止另造第七档。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。语义=环节内平均服务强度，不是产业链节点覆盖比例。双缺口：① 无机构×服务链环节服务记录成员表（SVC-P0-3 / Q-SVCCHAIN-08）；② 机构服务深度分口径未签（Q-SVCCHAIN-02 / M_SVC_ORG_COVERAGE_DEPTH 系 MODEL，D1 draft）。本条不写 metric: 引用（避免继承 MODEL 叶把产业链 industry_link_code 当环节的错误轴，2026-10-13 人拍）。禁止用产业链 industry_link_code / node_stage、服务六类、国标 industry、15 集群、svc_chain_gap.avg_depth 冒充。
-    formula: >
-      目标口径：SELECT stage_id, AVG(depth) AS avg_depth
-      FROM <机构×服务链环节服务记录 + 机构服务深度分>（缺口：无此表，待供方交付 SVC-P0-3）
-      WHERE org_id IN (SELECT org_id FROM demo_gkxlumenx_dwd.svc_org_circle)
-      GROUP BY stage_id;
-      环节轴固定六码（CT-SVC-PT-01）；分子=机构在该环节的服务深度分（沿 M_SVC_ORG_COVERAGE_DEPTH，公式未签）；环节内无机构返回空（页面显示「—」，不伪造 0）。选产业是 API 过滤，不进口径。
-      当前无法执行：① 机构×环节服务记录不存在；② 深度分口径未签。禁止把前端 fixture 或 svc_chain_gap.avg_depth 当已接通；禁止直接 AVG 产业链节点覆盖比例。
+    definition: "这个指标的结构最干净：分母是六环节机构数（可算），分子是「机构×环节服务深度分」（不存在）。公式 avg_depth = AVG(depth_i) 本身没有争议，争议在于 depth_i 从哪来——需规只给了维度名，旧稿登记为待建（SVC 侧 `svc_*` 深度表未建、口径 Q-SVCCHAIN-02 未签）。"
+    formula: "avg_depth(s) = AVG(depth_i), i ∈ {org: stage(org)=s}；空 → null（不伪造 0）"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）", "（缺口）机构服务深度分 <- metric: M_SVC_ORG_COVERAGE_DEPTH（未签；本条不写引用）"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md"
+    data_support_level: "部分支持"
+    support_reason: "分母与分组可算（六环节 44,153 家口径）；分子「机构×环节服务深度分」无源：口径未签（Q-SVCCHAIN-02）且 gkx 无任何 svc_* 深度表/列 → 全部分格为「—」"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "SVC-P0-3"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·全链路可视化（SRS seq 123）的节点深度标签"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-002"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT
     metric_name_zh: "环节服务机构数"
-    definition: >
-      2026-10-13 拍板：圈定池内落在指定服务链环节的服务机构去重家数。环节字典唯一真源 = CT-SVC-PT-01 六环节（stage-research 研发与科研合作 / stage-ip 知识产权与标准 / stage-transfer 技术转移与孵化 / stage-pilot 中试熟化 / stage-testing 检测认证 / stage-market 市场化服务）；禁止另造第七档。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。语义=机构服务供给站位，不是企业产业链归属。缺口：无机构×环节服务记录成员表（SVC-P0-3 / Q-SVCCHAIN-08）。禁止用产业链 industry_link_code / node_stage、服务六类 FINANCE/IP/HR/MKT/CONSULT/INNOV、国标 industry、15 集群、svc_chain_gap.org_count_in_stage 冒充。Q-SVCCHAIN-08 仍黄。
-    formula: >
-      目标口径：SELECT stage_id, COUNT(DISTINCT org_id) AS org_count
-      FROM <机构×服务链环节服务记录>（缺口：无此表，待供方交付 SVC-P0-3）
-      WHERE org_id IN (SELECT org_id FROM demo_gkxlumenx_dwd.svc_org_circle)
-      GROUP BY stage_id;
-      环节轴固定六码（CT-SVC-PT-01）；同机构同环节多次服务只计 1；某环节 0 家返回 0（页面「暂无供给机构」不伪造）。选产业是 API 过滤，不进口径。
-      当前无法执行：机构×环节服务记录在 ODS/DWD/ADS 均不存在。禁止把前端 fixture segment 或 svc_chain_gap 汇总壳当已接通。
+    definition: "六环节计数的「正式口径」依赖一张机构×环节成员表（SVC-P0-3），gkx 与 live 都没有这张表。可执行的替代是「经营范围词表命中」：机构在经营范围里写了某环节的关键词，就认为它在该环节有供给。这是代理，不是事实表——一家机构可能写了但没做，也可能做了但没写。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_CHAIN_SEGMENT_ORG_COUNT.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_ORG_COUNT.md"
+    data_support_level: "部分支持"
+    support_reason: "六环节家数可词表代理现转（pool 44,153 家，六环节去重 34,578 家）；正式「机构×环节」成员事实表在 gkx 与 live 均不存在（SVC-P0-3 待供方），正式口径不可执行"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "SVC-P0-3"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·全链路可视化（SRS seq 123）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-001"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_ORG_COUNT.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_172_1
     metric_name_zh: "服务链短板分析模型"
-    definition: "选定产业服务链在统计窗口内的短板分析综合结果，从服务质量、经营效益、服务类型结构三维度定位短板环节并给出成因，输出短板环节、成因与优化建议。"
-    formula: "三维阈值定位（算法库 9.1 质量/效益/类型；前端六环节判定见 M_SVC_CHAIN_BOTTLENECK）。本模型额外输出成因说明与优化建议，不另起一级维度。"
+    definition: "三维里两维有表、一维无表：经营效益有财务年报（池内 6,759 家），服务类型结构有类型词表，服务质量没有任何评价类承载表。此外结构维在本数据源下还出现「同源退化」——环节词表与类型词表都从同一段经营范围命中，六个环节全部盖满六类，结构缺口恒为 0。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_172_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 环节归属", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_org_annual_financial_info(org_id, operating_revenue, pure_profit, year) — 经营效益", "demo_gkxlumenx_ads.svc_org_card（service_type_candidate）— 服务类型结构"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_172_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三维中服务类型结构维可算、经营效益维可现转（财务覆盖部分环节），但服务质量评价维在全库无承载表（待建 svc_quality_score）→ 三维缺一，部分支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务链短板分析（SRS seq 123/124）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_173_1
     metric_name_zh: "服务关系链模型"
-    definition: "选定服务机构集合在统计窗口内的关系链综合评分，从关系强度、关系层次、关系密度三维度刻画合作网络稳定性与紧密度，取值 0—100。"
-    formula: "三维等权。边集优先投资/股东；合作、交易合同、信用评估边待建。"
+    definition: "关系链的正式边集有四类：合作（联合申报/共同中标）、交易（服务合同）、资本（投资/股东）、信用（评分）。gkx 只有资本这一类可用，其余三类无表。因此本件构的是一张「资本纽带图」，用它代理服务关系链——两家机构有共同股东，比毫无关系更可能有业务往来，但这是概率关系，不是事实关系。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_173_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["dwd_org_invest_info(org_id, inv_org_id, investment_amount) — 投资边与交易规模代理", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东边", "demo_gkxlumenx_ads.svc_org_card— 服务机构认定；"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info", "dwd_org_subsidiary_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_173_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三维（强度/层次/密度）在「资本纽带」代理图上均可算，但正式合作边、交易合同边、信用评分表在 gkx 无源（待建 svc_coop_edge / svc_trade_contract / svc_credit_score），强度维只能由投资/股东事件 + 失信处罚反向代理 → 部分支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构关系图谱（SRS seq 123 的机构关系下钻）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_174_1
     metric_name_zh: "金融服务机构技术力评价模型"
-    definition: "选定金融服务机构在统计年度的技术力指数，从资金规模、融资成本、资金风险、服务质量四个维度评定，取值 0—100。"
-    formula: "四维等权。入集另限金融类关键词。"
+    definition: "四维里三维有源：资金规模（资产 + 注册资本，覆盖 3,192 家）、资金风险（资产负债率 + 失信处罚，覆盖全池）、服务质量（资讯条数代理，覆盖 2,149 家）。融资成本全库无利率字段，是结构性无源。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_174_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=FINANCE )", "dwd_org_annual_financial_info(org_id, total_assets, total_liabilities, year) — 资产与负债", "dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资事件", "dwd_org_risk_shixin(org_id) — 失信（风险反向）", "dwd_org_company_punish(org_id) — 处罚（风险/服务反向）", "dwd_org_important_news_info(org_id, news_title, news_date) — 服务质量资讯代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_174_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维中资金规模、资金风险、服务质量三维可现转；融资成本维全库无利率字段、结构性无源（待建 financing_cost_rate），故为部分支持，不抬档"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构技术力评估（SRS seq 121/122）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_175_1
     metric_name_zh: "知识产权服务机构技术力评价模型"
-    definition: "选定知识产权服务机构在统计年度的技术力指数，从专业能力、业务范围、成功案例数、合作伙伴四个维度评定，取值 0—100。"
-    formula: "四维等权。入集另限知识产权类关键词。"
+    definition: "四维里两维有量：专业能力靠 `dwd_patent.agency` 与机构名对齐（样本内命中 3 家、43,260 件），合作伙伴靠投资/股东边（40 家）。成功案例只有资讯条数代理（62 家）。业务范围维在 gkx 完全无表（旧库该表 104 行且失配）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_175_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=IP )", "dwd_patent(patent_id, agency, first_applicant_name, kind) — 代理机构与专利", "dwd_patent_legal(pn, status) — 有效专利", "dwd_org_industry_tags(credit_code, industry_code) — 业务覆盖产业", "dwd_org_invest_info(org_id, inv_org_id) — 合作/投资伙伴", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东", "dwd_org_important_news_info(org_id, news_title, news_date) — 案例资讯代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_id", "dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_industry_tags", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_175_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维中专业能力（agency 代理件数）与合作伙伴（资本边）可现转，成功案例仅有资讯代理；业务范围维在 gkx 无产业标签表（dwd_org_industry_tags 缺失）→ 结构性缺维，部分支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构技术力评估（SRS seq 121/122）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_176_1
     metric_name_zh: "人力资源服务机构技术力评价模型"
-    definition: "选定人力资源服务机构在统计年度的技术力指数，从人才资源、服务标准化、客户满意度三个维度评定，取值 0—100。"
-    formula: "三维等权。算法阐述中的招聘效率、岗位匹配度挂在人才资源下；流程规范性挂在服务标准化下。"
+    definition: "三维里人才资源有两条腿：从业人数（财务年报 `employees_number`）与招聘岗位数（`dwd_org_recruit_info`）。前者在 HR 池内只有 20 家有值，后者覆盖 422 家、岗位合计 115,785 个，是真正撑起这一维的数据。服务标准化只有资质标签代理（320 家），客户满意度完全无源。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_176_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=HR  )", "dwd_org_annual_financial_info(org_id, employees_number, year) — 从业人数", "dwd_org_recruit_info(org_id, job_title, hiring_number, release_date) — 招聘供给", "dwd_org_tech_tag(org_id, org_tag) — 资质标签代理标准化"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info", "dwd_org_tech_tag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_176_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三维中人才资源（从业人数）与服务标准化（资质标签代理）可现转，客户满意度维无任何评价类承载表、招聘侧数据未并入快照 → 部分支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构技术力评估（SRS seq 121/122）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_177_1
     metric_name_zh: "市场营销服务机构技术力评价模型"
-    definition: "选定市场营销服务机构在统计年度的技术力指数，从调研能力、策划能力、成功项目案例数目三个维度评定，取值 0—100。"
-    formula: "三维等权。调研/策划无专用源，仅资讯关键词代理；正式评价待采购。"
+    definition: "三维里调研能力、策划能力在 gkx 没有任何承载表：既没有调研报告/样本量表，也没有方案数、比稿中标、执行验收表，连文本级的可代理字段都找不到。唯一有量的是成功项目案例，且只能用资讯条数代理（682 家、资讯合计 20,063 条）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_177_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=MKT) — 市场营销类认定", "dwd_org_important_news_info(org_id, news_title, news_content, news_date) — 调研/策划/案例资讯代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_company_punish", "dwd_org_important_news_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_recruit_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_177_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三维中调研能力、策划能力在 gkx 无任何承载表（连弱代理都缺文本级命中），仅成功项目案例有资讯条数代理 → 只能出单维代理分、不能合成技术力指数；按「有部分维度可取」落部分支持，不因指数不可合成而降为完全不支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构技术力评估（SRS seq 121/122）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_178_1
     metric_name_zh: "咨询服务机构技术力评价模型"
-    definition: "选定咨询服务机构在统计年度的技术力指数，从人才密度、行业经验、成功案例数、行业声誉四个维度评定，取值 0—100。"
-    formula: "四维等权。入集另限咨询类关键词。"
+    definition: "D2（行业经验）、D4（行业声誉）两维在 gkx 可实测；D1（人才密度）因年报表无研发人员列而结构性缺分子，D3（成功案例）无正式源，四维只剩两维进合成，故判**部分支持**，且正文明确本指数实际是「经验 + 声誉」二维，不可对外称四维合成。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_178_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(service_type_candidate=CONSULT) — 咨询服务机构认定", "dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 人才密度", "dwd_org_industry_tags(credit_code, industry_code) — 行业覆盖", "dwd_org_tech_tag(org_id, org_tag) — 荣誉声誉", "dwd_org_important_news_info(org_id, news_title, news_date) — 声量/案例代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_178_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维中 D2（年限全量 + 产业标签覆盖 762 家）、D4（标签 32077 家 + 资讯 24639 家 + 风险 22719 家）两维在 gkx 可实测复现，D3 仅有资讯弱代理；但 D1 人才密度维结构性缺分子——gkx 年报表无研发人员列（全表实测 0 行非空），从业人员 emp 虽有 86 家也构不成占比，而人才密度是本模型的第一维、官方标准里权重最高的一维，缺它不能算「完全转换支持」，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_179_1
     metric_name_zh: "科技创新服务机构技术力评价模型"
-    definition: "选定科技创新服务机构在统计年度的技术力指数，从合作科研机构数、合作企业数、科技创新成果数量、技术转化成果数量四个维度评定，取值 0—100。"
-    formula: "各指标经极值归一化转换为0-100分后，采用等权重或自行确定权重加权汇总，得到技术力综合得分。"
+    definition: "D2（合作企业）、D3（专利产出）、D4（技术转化）三维在 gkx 实测可算并已合成；D1（合作科研机构）只有 2.9 万行申请人抽样（覆盖约 1% 专利），无法构成全量产学研「研」侧指标，故判**部分支持**，并明确旧稿的「完全转换支持」不成立。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_179_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, service_type_candidate) — 服务机构清单,科技创新类型筛选", "dwd_patent(patent_id, first_applicant_name, applicants, kind) — 联合申请人,成果专利", "dwd_org_heis_info(name_cn, univ_type) — 高校识别", "dwd_zh_project(id, funded_institution, title) — 国内项目承担单位", "dwd_patent_legal(pn, status, isdt_year) — 专利授权有效", "dwd_patent_transfer(pn, transfer_effective_date) — 专利转移", "dwd_org_invest_info(org_id, inv_org_id) — 合作企业代理"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_patent_applicants", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_179_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维里 D2（资本型合作边）、D3（专利 1228959 件 / 19249 家，含发明占比分层）、D4（专利转移 491 件触达 119 家）三维在 gkx 实测可算并已合成；D1 合作科研机构数缺全量联合申请人明细——gkx 只导出了 28964 行申请人抽样（对 293.9 万件专利约 1%），只能给出稀疏下界，不足以进合成。四维缺一且缺的是产学研「研」侧，判部分支持；旧稿称本指标可「完全转换支持」，在 gkx 侧不成立，已如实降档。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_180_1
     metric_name_zh: "服务机构引入推荐模型"
-    definition: "对外部服务机构的引入推荐指数，从竞争力、产业相关度、政策匹配度、深圳连接度四个维度评定，取值 0—100，并生成优先级排序。"
-    formula: "各指标经极值归一化转换为0-100分后，各维度内指标加权得到四个维度得分，四个维度加权汇总得到引入推荐综合得分，按得分从高到低排序生成引入优先级排名。"
+    definition: "四维在外部池上均可实测并合成，但竞争力维因年报无研发两列只能走产出侧代理、政策维因无命中表只能用标题关键词近似、连接度因对端城市仅池内可见只能当下界，三处均为结构性缺口，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_180_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业", "dwd_industry_chain_info(industry_code, industry_name, industry_link_name) — 目标产业词表", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 研发投入,营收,研发人员,从业人数", "dwd_policy_base(id, title, keywords, theme, keypoints, status) — 政策文本", "dwd_org_invest_info(org_id, inv_org_id) — 深圳连接", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 深圳连接", "dwd_org_subsidiary_info(org_id, sub_org_id) — 深圳子公司", "dwd_org_base_info(org_id, city) — 对端城市"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_policy_base"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_180_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维在外部池 18535 家上均可实测：竞争力维用专利代理（9995 家有专利）、产业相关度用深圳 20+8 标签（7139 家有标签）、政策匹配用 20,000 条政策标题关键词、深圳连接度用双端在池的资本边；但两处是结构性缺口——(1) 年报无研发投入/研发人员两列，竞争力只能走产出侧代理；(2) 资本边对端城市只在池内可见（30,219 个对端只有 8820 个有城市），连接度是下界。缺政策命中表 svc_org_policy_hit，政策维只能用标题关键词近似。故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_DEEP_181_1
     metric_name_zh: "服务机构培育推荐模型"
-    definition: "对深圳本土服务机构的培育推荐指数，从竞争力、产业相关度、政策匹配度、发展潜力四个维度评定，取值 0—100。"
-    formula: "各指标经极值归一化转换为0-100分后，各维度内指标加权得到四个维度得分，四个维度加权汇总，得到培育推荐综合得分。"
+    definition: "四维在深圳池上均可实测并合成，但竞争力维因年报无研发两列只能走产出侧代理、政策维因无命中表只能标题近似、发展潜力维因财务覆盖仅 673/25,597（2.63%）只在小子群成立，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_DEEP_181_1.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,深圳城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, pure_profit, year) — 研发投入,营收,研发人员,从业人数,净利润", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code, industry_name) — 已挂产业,覆盖环节", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_policy_base(id, title, keywords, theme, keypoints, city, status) — 政策文本"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["派生输入: code/_snapshots21/svc21_facts_20261022.json(上游 gkx.dwd_org_org_product_info + dwd_org_base_info 45,011 行)"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-05"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＋维度内/维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 竞争力维年报研发两列全空，现以专利数×0.6＋发明占比×0.4 代理，结果面须标代理；② 产业相关度维 dwd_org_industry_tags 上链阻塞（覆盖 10,778/25,597）；③ 政策匹配维无命中表、以政策标题近似，归一上限 190；④ 发展潜力维财务覆盖 673/25,597（营收 CAGR 161、净利 127），只作右尾甄别、不作全池排序。缺维按可用维均值，维数<2 不入榜。Q-SVCCHAIN-05 余项：名单入围阈值／培育建议生成规则／甲方确认正式口径仍待。源表仍 demo 面、gkx 改写稿未回仓 → D1 不升 aligned、D3/D4 不升绿）"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_DEEP_181_1.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "四维在深圳池 25597 家上均可实测：竞争力（专利 13378 家）、产业相关度（20+8 标签 10778 家）、政策匹配（政策标题关键词）、发展潜力（营收 CAGR 161 家 / 净利 CAGR 127 家）；两处结构性缺口——年报研发两列空挂使竞争力只能产出侧代理；财务覆盖仅 673/25597 家（2.63%），发展潜力维只在有两年正值序列的子群体成立。判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＋维度内/维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 竞争力维年报研发两列全空，现以专利数×0.6＋发明占比×0.4 代理，结果面须标代理；② 产业相关度维 dwd_org_industry_tags 上链阻塞（覆盖 10,778/25,597）；③ 政策匹配维无命中表、以政策标题近似，归一上限 190；④ 发展潜力维财务覆盖 673/25,597（营收 CAGR 161、净利 127），只作右尾甄别、不作全池排序。缺维按可用维均值，维数<2 不入榜。Q-SVCCHAIN-05 余项：名单入围阈值／培育建议生成规则／甲方确认正式口径仍待。源表仍 demo 面、gkx 改写稿未回仓 → D1 不升 aligned、D3/D4 不升绿）"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_GRAPH_112_1
     metric_name_zh: "服务机构实体识别构建"
-    definition: >
-      服务机构实体识别构建：对应算法库 SRS ALGO-SVC-GRAPH-112，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "实体域 44,153 家可完整圈定（主档对齐 44,132 家，99.95%），七类类型轴与四项主档属性都能现转；但需规点名的「人数」属性只有 1,582 家（3.58%）有观测，且 gkx 没有任何图谱挂载表，节点号只能按 `org_id` 确定性派生、没有物化落库。实体识别这件事本身是通的，属性面的「人」这一维是空的，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_GRAPH_112_1.py 为准）。"
     algorithm_type: GRAPH
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_org_product_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_112_1.md"
+    data_support_level: "部分支持"
+    support_reason: "实体域 44153 家（主档对齐 44132，99.95%）与七类类型轴、四项主档属性可现转；但原文点名的「人数」属性仅 1582 家（3.58%）有观测——年报人数字段在池内覆盖率过低，且 gkx 无图谱挂载表（节点号只能确定性派生、无物化），故落部分支持，不抬到完全转换。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构图谱（SRS seq 131/132 页面族）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SVC-GRAPH-112"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_GRAPH_113_1
     metric_name_zh: "服务机构实体关系抽取"
-    definition: >
-      服务机构实体关系抽取：对应算法库 SRS ALGO-SVC-GRAPH-113，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "需规点名六类关系（服务类型、服务内容、服务范围、合作伙伴、客户、资本纽带），gkx 里**只有资本纽带一类有表**（投资 41,888 行触池、机构股东 372,205 行触池），其余五类没有任何承载表；子公司表虽在，但双端在池 0 条。已完成边集是 13,141 条无向去重边、覆盖 12,905 个节点（29.23%），图结构与度数分布都能算，但「服务关系网络」这个语义只落地了资本一维，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_GRAPH_113_1.py 为准）。"
     algorithm_type: GRAPH
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_heis_info", "dwd_org_invest_info", "dwd_org_shareholder_info", "dwd_org_subsidiary_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_113_1.md"
+    data_support_level: "部分支持"
+    support_reason: "资本纽带边（投资 + 机构股东）双端在池 13141 条、覆盖 12905 个节点，可现转；但需求点名的服务类型/服务内容/服务范围/合作伙伴/客户五类语义边在 gkx 无承载表（子公司表双端在池 0 条），多元关系仅落地一类，故落部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构图谱关系视图（SRS seq 131/132）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SVC-GRAPH-113"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_GRAPH_CENTRALITY
     metric_name_zh: "节点度中心性"
-    definition: >
-      可见子网内节点连接数 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "度中心性的公式本身没有任何数据依赖，只要边集就位就能算；本件在 13,141 条资本边（投资 ∪ 机构股东，双端在池、无向去重）上实测出全池 DC 最大 0.0074515（深创投，度 329）、活跃子网口径最大 0.025496，分布与榜单完整可交付。但需求语义里的「服务关系边」（合作/交易/客户）在 gkx 无承载表，算出来的度是**资本度**而不是**服务度**，正式语义的服务网络度无源，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_GRAPH_CENTRALITY.py 为准）。"
     algorithm_type: GRAPH
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_invest_info", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_CENTRALITY.md"
+    data_support_level: "部分支持"
+    support_reason: "代理边集（投资 + 机构股东，双端在池 13141 条）上度中心性可现算并已出榜单；但需求口径的「服务关系边」（合作/交易/客户）在 gkx 无承载表，正式语义的服务网络度无源，故落部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构图谱中心性榜单（SRS seq 133）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "TOPIC-ECO-005"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_GRAPH_DENSITY
     metric_name_zh: "服务网络密度"
-    definition: >
-      当前可见子网无向密度 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "密度公式 $D = 2|E|/(|N|(|N|-1))$ 只需边数与节点数，本件在 13,141 条资本边上算出全池密度 **1.348180e-05**、活跃子网密度 **1.578251e-04**，可能边 9.747e+08、实现占比 0.00134818%，计算链完整。但会签口径 **Q-SVCCHAIN-03 明确裁决「服务网络密度的边不算投资/股东」**，而正式的服务关系边在 gkx 无承载表，因此本件的数值只能以「资本纽带密度（代理）」身份披露，不能宣称正式服务网络密度——这是本件判 **部分支持** 的决定性理由。"
+    formula: "D = 2|E| / (|N| * (|N| - 1))"
     algorithm_type: GRAPH
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_invest_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_DENSITY.md"
+    data_support_level: "部分支持"
+    support_reason: "代理密度可现转（全池 1.348e-05 / 活跃子网 1.578e-04），结构与计算链完整；但会签口径 Q-SVCCHAIN-03 明确「服务网络密度的边不算投资/股东」，正式服务关系边在 gkx 无承载表，始终有一维缺正式数据，故落部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务网络概览（SRS seq 133/134）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "TOPIC-ECO-004"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_GRAPH_INFLUENCE
     metric_name_zh: "生态影响力评分"
-    definition: "选定服务机构在当前可见服务关系子网中的生态影响力综合评分，从度中心性、介数中心性、接近中心性三个维度评定，取值 0—100。"
-    formula: "生态影响力评分基于服务链网络图谱，分别计算各节点的度中心性（直接连接比例）、介数中心性（最短路径经过比例）、接近中心性（到其他节点平均距离的倒数），经极值归一化后加权汇总得到综合评分。"
+    definition: "三中心性（度、介数、接近）在资本边集上全部可算：度用 Freeman 相对度、介数用 Brandes（巨型分量 7,040 节点取 1,000 个固定种子抽样、其余分量精确）、接近用调和中心性（scipy 无权最短路精确），三维 min-max 后等权合成 ×100，实测最高分 **96.30**（深创投）、中位 13.13、共 12,905 个机构有分。会签裁决 Q-SVCCHAIN-03 只约束「密度」不许用投资/股东边，未约束影响力评分。但**需求语义是「服务机构在服务生态中的影响力」，而边集只有资本纽带**（投资 + 机构股东），服务关系边在库内无承载表——按四档定义，主体可算、至少一个必需维只能用代理变量，落在「部分支持」，不是「完全转换支持」。评的是**资本纽带网络影响力**，这个主语必须始终带上（§2.6 与附录 G）。"
+    formula: "Influence = 100/3 * (DC_hat + BC_hat + CC_hat)，各分量在全部有度节点上 min-max"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn) — 服务机构清单,网络节点", "dwd_org_invest_info(org_id, inv_org_id) — 投资边", "dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东边"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_invest_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-03"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_GRAPH_INFLUENCE.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三中心性在代理边集（投资 + 机构股东，双端在池 13141 条、12905 个有度节点）上全部可算，合成分与 Top10 已落盘；但需求语义是「服务机构在服务生态中的影响力」，服务关系边库内无承载表、只能用资本纽带代理，且介数为 1,000 种子抽样估计（SE≈3.2%）→ 主体可算、必需维为代理，判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·生态影响力榜单（SRS seq 133/135）"
+    pending_ref: "Q-SVCCHAIN-03"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_INDUSTRY_LAYOUT
+    metric_name_zh: "全球服务机构产业布局"
+    definition: "地理三轴（省→市→区）与产业门类轴均可算且覆盖率 ≥ 90%，但「全球」轴在 gkx 库内无任何字段支撑（池内 44,132 家非空省份机构 100% 为广东省），产业维只到门类不到中类，故按「部分支持」定档，不抬档。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_INDUSTRY_LAYOUT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_INDUSTRY_LAYOUT.md"
+    data_support_level: "部分支持"
+    support_reason: "地理维（省→市→区）、产业维（国民经济行业门类 20 类，覆盖 99.88%）、服务维（主服务类型 7 类 + 服务环节 6 类）三轴交叉全部在库内实测可算，格子数、HHI、CR3、香农熵、环节渗透率均已落盘；但「全球」轴实现不了——池内 44,132 家有省份的机构 100% 是广东省，库内无 country/境外机构字段，布局只能做到省域内 4 市 26 区，且产业维只到门类不到中类小类，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    last_repro_elapsed_sec: 0.524
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_INVEST_Y
+    metric_name_zh: "服务机构投融资动态"
+    definition: "需求要的是「投融资数量 + 金额」，gkx 只能兑现**融资事件计数**：`dwd_org_financing_info` 25,654 行，池内 24,391 件、覆盖 5,910 家机构，日期锚 100%，峰值 2016 年 3,704 件；投资侧无事件表、金额列整列为空、无 INVEST/FINANCING 类型列，故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 等九件同池（44,153 家），池规则见其 §2.2。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_INVEST_Y.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_financing_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_INVEST_Y.md"
+    data_support_level: "部分支持"
+    support_reason: "融资事件年度序列可现转（24,391 件、43 个年份、日期锚 100%）；但 gkx 只有 dwd_org_financing_info， INVEST 侧无事件表，且金额列整列为空，需求中的「投融资数量+金额」只能兑现融资事件计数"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·投融资动态（§1.1.1.2.4.2.3）/ 算法库·服务机构基础指标模型（序号 101）"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_NEW_CNT
+    metric_name_zh: "新增服务机构动态"
+    definition: "「新增」在 gkx 侧能算的是**毛出生**：按底册成立年分组，2013—2022 十个完整年合计 20,877 家、峰值 2015 年 3,342 家；但 2023—2025 成立年明显缺登（218/66/12 家），且没有注销/吊销事件流，「净新增」与「近三年趋势」都不可算，故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 同池（44,153 家），池规则见其 §2.2；与 `M_SVC_ORG_NEW_COUNT` 是同一底座的两种输出（本件给动态叙事与结构切片，后者给纯计数序列）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_NEW_CNT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_NEW_CNT.md"
+    data_support_level: "部分支持"
+    support_reason: "毛出生序列可现转（成立年覆盖 99.95%），但 gkx 底册成立年在 2023—2025 右截断（218/66/12 家），且无注销/吊销事件流，净新增不可算；近年序列不可用于趋势结论"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·新增服务机构动态（§1.1.1.2.4.2.4）/ 算法库·服务机构基础指标模型（序号 101）"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_ORG_CNT
+    metric_name_zh: "全球服务机构分布（按国家计数）"
+    definition: "「全球分布」在 gkx 侧只能闭合国内一格：44,132 家经省级归并全部落在中国，21 家未回联底册单列「未判定」；覆盖国家数为 1。海外格没有任何与六类服务机构口径闭合的名录（`dwd_forg_*` 是英国偏企业名录与全球科研机构名录，语义不闭合），因此国家轴只能给「中国一格 + 空集」，按四档如实落 **部分支持**。本件与 `M_SVC_ORG_TOTAL`、`M_SVC_NEW_CNT`、`M_SVC_ORG_NEW_COUNT`、`M_SVC_ORG_MARKET_HEAT`、`M_SVC_INVEST_Y`、`M_SVC_ORG_TECH_SCORE`、`M_SVC_ORG_COVERAGE_BREADTH`、`M_SVC_ORG_COVERAGE_DEPTH` 共用同一机构池（44,153 家），池规则见 `M_SVC_ORG_TOTAL` §2.2。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_CNT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_forg_", "dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_CNT.md"
+    data_support_level: "部分支持"
+    support_reason: "国内格可完整闭合（44,132 家经 province→中国归并、省级 drill-down 可对账）；但 gkx 底册无 country 列、无与六类服务机构口径闭合的海外名录，国家轴海外格始终无源，按四档落部分支持"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·全球服务机构分布（§1.1.1.2.4.2.2）/ 算法库·服务机构基础指标模型（序号 101）"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_COVERAGE_BREADTH
     metric_name_zh: "服务广度"
-    definition: >
-      2026-10-13 拍板：对齐企业 M_ENT_DOMAIN_COVERAGE_COUNT。单机构服务广度 = 圈定池机构落到的产业集群 cluster_id 去重数（15；industry_cluster：CL-SEI-01～10 + CL-FUT-01～05）。人口 org_id ∈ demo_gkxlumenx_dwd.svc_org_circle。上链 enterprise_industry_chain ← ods:dwd_org_industry_tags；chain_code 收 L0 后 JOIN industry_cluster_map；未映射不计；无上链行=0。语义=所属产业链覆盖的集群数，不是服务合同事实。禁止 hit_fields、国标 industry 单值、自建 svc_org_field_service。Q068 15 集群目录仍黄。
-    formula: >
-      SELECT c.org_id, COUNT(DISTINCT m.cluster_id) AS breadth
-      FROM demo_gkxlumenx_dwd.svc_org_circle c
-      LEFT JOIN demo_gkxlumenx_dwd.enterprise_industry_chain e ON e.org_id = c.org_id
-      LEFT JOIN demo_gkxlumenx_dwd.industry_chain ic ON ic.chain_id = e.chain_code
-      LEFT JOIN demo_gkxlumenx_dim.industry_cluster_map m
-        ON m.industry_id = ic.industry_id AND m.is_active = 1 AND m.map_status = 'mapped'
-      LEFT JOIN demo_gkxlumenx_dim.industry_cluster k
-        ON k.cluster_id = m.cluster_id AND k.is_active = 1
-      GROUP BY c.org_id;
-      （与 M_ENT_DOMAIN_COVERAGE_COUNT 同构；人口加 circle。L0 行 industry_id=自身；L1 行 industry_id=L0。无匹配=0。禁止 COUNT hit_fields。）
+    definition: "原口径是「机构覆盖的 15 个产业集群数」，gkx 没有 `industry_cluster` 与 `industry_cluster_map` 两张字典表，`dwd_org_industry_tags` 与底册信用码仅约 3.5% 对齐且码域不通，无法重建集群广度。本件改用**六类服务类型**（IP/FINANCE/HR/MKT/CONSULT/INNOV）的去重个数作代理，公式同构（去重计数）、语义降级（集群→服务类型），故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 等九件同池（44,153 家）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_COVERAGE_BREADTH.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle", "enterprise_industry_chain <- ods: dwd_org_industry_tags"]
-    source_systems: ["国内机构要素库", "产业链要素库"]
+    source_tables: ["dwd_org_industry_tags", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.3.1"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_BREADTH.md"
+    data_support_level: "部分支持"
+    support_reason: "原口径的 15 产业集群字典（industry_cluster / industry_cluster_map）在 gkx 不存在；dwd_org_industry_tags 与底册信用码仅 3.5% 对齐、且 INB13xx 与 chain_info 的 INB12xx 不是同一码域，无法重建集群广度。改用六类服务类型去重个数作代理，公式同构但语义降级，按部分支持定档"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q068"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业服务链分析·服务机构画像·服务广度 / 算法库·服务机构基础指标模型（序号 101）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-003"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_BREADTH.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_COVERAGE_DEPTH
     metric_name_zh: "服务机构产业领域覆盖评分"
-    definition: "指从服务广度和服务深度两个维度，对服务机构在目标产业服务链中的覆盖能力进行综合量化评估的得分。得分越高，表明机构在产业领域的覆盖能力越强。"
-    formula: "服务机构产业领域覆盖评分由服务广度（覆盖产业领域数量）和服务深度（覆盖环节数÷总环节数×100%）两个维度加权汇总得到。"
+    definition: "本件是「广度 × 深度」两轴等权评分：广度轴取六类服务类型（M_SVC_ORG_COVERAGE_BREADTH），深度轴取六环节（research/transfer/ip/testing/market/pilot），各归一化到 0—1 后 50/50 合成 0—100。两轴都全池可算，但都已语义降级——原广度是 15 产业集群，原深度是 1,261 个 `link_code`；gkx 既无集群字典，`tags` 的 INB13xx 与 `chain_info` 的 INB12xx 也不是同一码域。故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 等九件同池（44,153 家）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_COVERAGE_DEPTH.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, industry) — 服务机构清单", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 覆盖产业领域,覆盖环节", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准产业领域,标准环节"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "周"
+    source_tables: ["派生输入: code/_snapshots21/svc21_facts_20261022.json(上游 gkx.dwd_org_org_product_info 45,011 行)"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 周
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-02"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_DEPTH.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "两轴可算但都已语义降级：广度轴由 15 产业集群降为六类服务类型（gkx 无集群字典），深度轴由产业服务链 1,261 个 link_code 降为六环节（tags 与 chain_info 码域不通、底册对齐仅 3.5%）；评分只适合同池相对比较，不能当原口径的绝对覆盖评分"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业服务链分析·服务机构画像·覆盖评分 / 算法库·服务机构基础指标模型（序号 101）"
+    pending_ref: "Q-SVCCHAIN-02"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_MARKET_HEAT
     metric_name_zh: "市场热度评级"
-    definition: "基于特定产业或技术领域的新增服务机构数量时间序列数据，通过分析趋势曲线的斜率（增长速度）和波动（稳定性）特征，将市场热度划分为不同等级，直观反映该领域的市场活跃程度和资本关注度。"
-    formula: "服务机构新增趋势分析统计特定产业或技术领域下新增服务机构数量形成时间序列，通过趋势斜率（线性回归拟合）衡量增长速率、曲线波动（变异系数）衡量市场稳定性，综合判定市场热度评级。"
+    definition: "热度评级 = 新增序列的**相对斜率**（OLS 斜率 / 均值）与**变异系数**（std / mean）按王惠阈值分档。本件用 2013—2022 十个完整年算出斜率 −305.34 家/年、相对斜率 −14.63%、CV 46.07%，落「下行期」。但 2023—2025 成立年右截断（218/66/12 家），评级窗口只能止于 2022，「当前热度」实为「截至 2022 的历史判断」，故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL`、`M_SVC_NEW_CNT`、`M_SVC_ORG_NEW_COUNT` 等九件同池（44,153 家）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_MARKET_HEAT.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, industry) — 服务机构清单,产业筛选", "dwd_org_base_info(org_id, incorporation_date, external_id) — 成立日期,新增序列", "dwd_org_industry_tags(credit_code, industry_code) — 产业过滤"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "年"
+    source_tables: ["dwd_org_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 年
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-02"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_MARKET_HEAT.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "2013—2022 十个完整年可算 OLS 斜率（-305.34 家/年，相对 -14.63%）与 CV（46.07%），按王惠表落「下行期」；但 2023—2025 成立年右截断（218/66/12 家），评级窗口止于 2022，「当前热度」只能作历史判断，不能当 2026 年现状"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业服务链分析·新增动态·热度标签 / 算法库·服务机构基础指标模型（序号 101）"
+    pending_ref: "Q-SVCCHAIN-02"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_NEW_COUNT
     metric_name_zh: "年度新增服务机构数"
-    definition: >
-      圈定池 svc_org_circle 内，按工商成立年计的年度新增家数。新增=YEAR(dwd_org_base_info.incorporation_date)。无成立日跳过。全库一条按年序列，不按领域切开。「首次开展服务」无源，不进本条。环比页面用相邻两年差，不入库。旧号 M_SVC_NEW_CNT 不再承担本序列。不用 svc_new_org_stat。Q-SVC-010 仍黄（入池规则 A）。
-    formula: >
-      [IMPL] 两层禁止混写。SEED=灌数投影；SERVE=线上出数。Java/Python /internal 只实现 SERVE。
-      [SEED 仅 svcseed 或 GDF] INSERT demo_gkxlumenx_ads.svc_metric_series(metric_id,period,value)
-      SELECT 'M_SVC_ORG_NEW_COUNT' AS metric_id,
-             CAST(YEAR(o.incorporation_date) AS CHAR) AS period,
-             COUNT(*) AS value
-      FROM demo_gkxlumenx_dwd.svc_org_circle c
-      INNER JOIN demo_gkxlumenx_ods.dwd_org_base_info o ON o.org_id = c.org_id
-      WHERE o.incorporation_date IS NOT NULL
-      GROUP BY YEAR(o.incorporation_date);
-      SEED 禁止：metric_id 写成 M_SVC_NEW_CNT；写入 svc_new_org_stat；GROUP BY field_id；把 incorporation_* 拷进 svc_org_circle。
-      [SERVE 前端→Java REST→Python /internal] SELECT period, value
-      FROM demo_gkxlumenx_ads.svc_metric_series
-      WHERE metric_id = 'M_SVC_ORG_NEW_COUNT'
-      ORDER BY period;
-      SERVE 禁止：JOIN ODS；JOIN svc_org_circle；GROUP BY 成立年；WHERE metric_id='M_SVC_NEW_CNT'；只取近5年。
-      [PAGE] yoy = value(year) - value(year-1)，不写库、不另开 metric_id。
+    definition: "本件是 `M_SVC_NEW_CNT` 的计数孪生件：同一机构池（44,153 家）、同一成立年字段、同一 2013—2022 窗口，输出年度计数、累计区间与近年结构切片；差异只在本件更强调「纯计数与累计」而不做叙事。毛出生可算，净新增与近三年不可算，故落 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_NEW_COUNT.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle <- ods: dwd_org_base_info.incorporation_date"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_org_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: yearly
-    version: "0.2.1"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_NEW_COUNT.md"
+    data_support_level: "部分支持"
+    support_reason: "出生存量序列可现转（成立年覆盖 99.95%、2013—2022 十个完整年）；但出清侧（注销/吊销）缺失、2023—2025 成立年右截断，「净新增」与近年趋势均不可算"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVC-010"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业服务链分析·新增服务机构动态·年度柱图 / 算法库·服务机构基础指标模型（序号 101）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-005"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_NEW_COUNT.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_SELECTED_COUNT
     metric_name_zh: "当前分析机构数"
-    definition: >
-      2026-10-13 废止。分析页「已选 N 家」是用户勾选 org_id 后的会话 UI 计数，不是指标。领域筛选不改分析对象，也不走后端按条件查总数。保留 ID 防冲突。页面继续用数组 length，不要 MetricSpecCard，不要 Java/Python 出数。
-    formula: "n/a（废止）。页面已选家数 = 当前工作区勾选 org_id 个数，前端实时计。禁止后端 COUNT。"
+    definition: "「当前分析 N 家」的 N 是前端会话里 `selection.length`，即用户勾选了几家机构。它没有总体、没有参考期、没有去重规则、不持久化、跨用户不可比，**不是统计指标**；gkx 280 张表里也没有任何 `svc_*` 表族可以承载它。2026-10-13 徐滕强拍板废止，本件按 **完全不支持** 归档，不补数、不替代、不灌库。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_SELECTED_COUNT.py 为准）。"
     algorithm_type: STAT
-    source_tables: []
-    source_systems: []
+    source_tables: ["dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: n/a
-    version: "0.3.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_SELECTED_COUNT.md"
+    data_support_level: "完全不支持"
+    support_reason: "不适用（已废止）：页面 N = 前端会话 selection.length，不是统计指标；gkx 无 svc_* 表，无会话态承载，也不应为它灌数。存量替代（44,153）与 selection.length 的相关性按定义为 0，不能冒充"
     is_mock: true
-    mapping_status: "🔧"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业服务链分析·服务机构库·页面右上角「当前分析 N 家」"
     pending_ref: "SVC-METRIC-COVER-STAT-L01"
     acceptance_unit_id: "TOPIC-ORG-002"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_SELECTED_COUNT.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_ORG_TECH_SCORE
+    metric_name_zh: "服务机构影响力"
+    definition: "王惠五维等权模型中，gkx 只有三维可算：专利覆盖 52.97%、研发（仅上市主体）覆盖 3.12%、案例资讯代理覆盖 55.80%；专家维依赖的 `development_employee` 整列为空，标准维无承载表。评分实为**三维合成**（缺维不入平均、按可用维重新归一），且 min-max 原始值被头部极值支配（中位分 0.01），故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 等九件同池（44,153 家），池规则见其 §2.2。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_TECH_SCORE.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_org_important_news_info", "dwd_org_stock_finance_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TECH_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "五维中专利（52.97% 覆盖）、研发（仅上市主体 3.12%）、案例资讯代理（55.8%）三维可现转；专家维依赖的 development_employee 整列为空、标准维无承载表，两维始终缺，评分实为三维合成，按部分支持定档"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·服务机构画像·技术力评分 / 算法库·服务机构基础指标模型（序号 101）"
+    pending_ref: "Q-SVCCHAIN-01"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_ORG_TOTAL
     metric_name_zh: "入库服务机构总数"
-    definition: "服务机构库=项目 DWD svc_org_circle（现网 demo_gkxlumenx_dwd）。一行一机构：org_id 唯一键 uk_svc_org_circle_org。入池=ODS dwd_org_base_info 按规则 A（svc_rule_demo_kw_v1.1）挂入。含 pending_client_confirm=1。Q-SVC-010 仍 🟡。"
-    formula: "COUNT(*) FROM svc_org_circle。org_id 已是唯一键，不用 DISTINCT。不数 svc_org_card / svc_metric_fact / ODS 全量 / svc_org_base。规则 A 临时词表不进无法执行。"
+    definition: "服务机构库的「唯一键计数」在 gkx 侧没有同名池表，但 `dwd_org_org_product_info` 提供了可复算的机构域：45,011 行经营范围文本、按 `org_id` 去重得 44,153 家；再以 `org_id` 回联 `dwd_org_base_info`（189,116 行）命中 44,132 家，回联率 99.95%。人口结构、唯一键与当前数据量三者都足，现在即可经转换得到计数，故判 **完全转换支持**。本件与 `M_SVC_ORG_CNT`、`M_SVC_NEW_CNT`、`M_SVC_ORG_NEW_COUNT`、`M_SVC_ORG_MARKET_HEAT`、`M_SVC_INVEST_Y`、`M_SVC_ORG_TECH_SCORE`、`M_SVC_ORG_COVERAGE_BREADTH`、`M_SVC_ORG_COVERAGE_DEPTH` 共用同一机构池（44,153 家），池规则以本件 §2.2 为准。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_ORG_TOTAL.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle <- ods: dwd_org_base_info"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TOTAL.md"
+    data_support_level: "完全转换支持"
+    support_reason: "gkx 无 svc_org_circle，但 dwd_org_org_product_info 有 45,011 行经营范围文本、按 org_id 去重得 44,153 家；与底册 189,116 行回联命中 44,132 家（99.95%）。人口结构+当前数据量均足，现在即可经转换得到唯一键计数"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVC-010"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析（§1.1.1.2.4.2.7）/ 科技专题服务系统·算法库·基础指标分析模型→服务机构基础指标模型构建（§1.1.1.1.1.1.1.1.4，序号 101，六大体系的人口底座）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ORG-001"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_ORG_TOTAL.md"
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_CHAIN_NODE_ORG
     metric_name_zh: "产业链节点服务机构数"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板）。预统计宽表口径（2026-10-13 徐滕强纠偏：不存在"选定产业"运行时概念，选定只是查询/展示层下钻过滤，不进指标定义）：圈定池 svc_org_circle 按产业轴×环节轴全组合预统计——产业轴=15 集群（dim.industry_cluster，sz-10+5-2026，同第 14 条字典）；环节轴=CHAIN_STAGES 服务六站（CT-SVC-PT-01 唯一真源：stage-research 研发与科研合作/stage-ip 知识产权与标准/stage-transfer 技术转移与孵化/stage-pilot 中试熟化/stage-testing 检测认证/stage-market 市场化服务）。15×6=90 格全量常备，每格 COUNT(DISTINCT org_id)（同机构同环节多服务计 1）；空格显「暂无供给机构」不伪造。术语澄清：「产业链节点」的"节点"=服务链站位节点（六环节），非 industry_chain 产业节点；「产业链」=产业轴前置维度。事实源缺口：机构×产业×环节服务记录 ODS/DWD/DIM 均不存在（Q-SVCCHAIN-08；供方题 SVC-P0-3）→ 现网 90 格全 0 如实呈现，交付后重跑变真数。与 M_SVC_CHAIN_SEGMENT_ORG_COUNT 关系=同一预统计宽表两个消费口径（按 stage 聚合边际和=SEGMENT；field×stage 明细=本条），同源不同粒度，两 ID 并存禁互相顶替。三禁：禁 SEGMENT_ORG_COUNT 顶替；禁产业链节点 node_stage/15 集群/服务六类冒充环节；禁造环节家数假数。
-    formula: "SEED: COUNT(DISTINCT org_id) GROUP BY field_id(15 集群)×stage_id(CHAIN_STAGES 六环节)，90 格全量；前端「选定产业」=查宽表 field_id 下钻，不现算。SERVE: 落 svc_metric_fact（维度=field_id+stage_id）。"
+    definition: "产业 × 环节交叉格可出数（**12 个产业 × 6 环节 = 72 格，66 格非零**），但两张分面都是代理：环节轴的正式成员表（机构 × 产业 × 环节服务记录，SVC-P0-3）在 gkx 与 live 均不存在，产业轴覆盖率只有 40.58% 且换过词典 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_CHAIN_NODE_ORG.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口", "（缺口）机构×产业×环节服务记录 — ODS/DWD/DIM 均无，待供方交付（SVC-P0-3）", "demo_gkxlumenx_dim.industry_cluster — 产业轴字典（15 集群）", "前端 CHAIN_STAGES 常量（CT-SVC-PT-01）— 环节轴字典唯一真源"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_industry_tags", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_CHAIN_NODE_ORG.md"
+    data_support_level: "部分支持"
+    support_reason: "产业×环节交叉格可出数（12 个产业 × 6 环节 = 72 格，其中 66 格非零），但两张分面都是代理：环节轴的正式成员表（机构×产业×环节服务记录，SVC-P0-3）在 gkx 与 live 均不存在，产业轴覆盖率只有 40.58% 且换了词典 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-08"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 产业链节点视图；展示侧呼应科技信息展示系统·产业服务链分析→节点服务机构"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-004"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_CHAIN_NODE_ORG.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_GLOBAL_SCALE_DIST
     metric_name_zh: "全球服务机构规模分布"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板）。门户全球介绍页规模分布：对圈定池 svc_org_circle 按从业人数四档计数（左闭右开 [0,50)/[50,200)/[200,500)/[500,+]）。分档判定链（单链兜底非双轨）：①人数优先=每机构取最近一个有数年份的 dwd_org_annual_financial_info.employees_number；②无人数时按注册资本兜底映射同一套四档（对齐企业域 enterprise_scale 兜底先例）：<1000万→<50 档、[1000万,5000万)→50-200 档、[5000万,1亿)→200-500 档、≥1亿→≥500 档（万元，dwd_org_base_info.registered_capital）；③两者皆无→残档「未分档」。现网人数∩圈定=0（SVC-P0-2），全部 43,296 走注册资本兜底，属过渡态：供方人数对上后兜底链自动退位为人数优先（链序保证，不改口径）。统一灌数 svc_metric_dist(category,value)；ADS 卡面加列与 ODS 同名 employees_number（承 2026-08-28 锁版，供 KEYORG_SCALE 档案直读）。悬停注明「部分机构按注册资本兜底分档（人数缺失）」。口径全球（同 GLOBAL_TOTAL 世界图），呈现仅国内。三禁：禁主表 org_size（微小中大）映射冒充人数档；禁注册资本档与人数档并行双轨两张图；禁造四档假分布。
-    formula: "SEED: fact(category,value)=COUNT(DISTINCT org_id) 按判定链分档（人数优先→注册资本兜底→未分档）；占比=档/SUM(四档)。SERVE: 统一灌 svc_metric_dist(category,value)。"
+    definition: "注册资本兜底链覆盖 **44,083/44,153（99.84%）**，六桶合计与池全对账（487＋4,594＋3,000＋34,413＋1,589＋70＝44,153），可当日出数；但规模刻画的第一指标——员工数——主链只有 **1,582 家（3.58%）** 有值，只能用注册资本顶替。叠加「全球」境外轴无源，判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_GLOBAL_SCALE_DIST.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 人口", "dwd_org_annual_financial_info(org_id, year, employees_number) — 人数（现网∩圈定=0，挂 SVC-P0-2）", "dwd_org_base_info(org_id, registered_capital) — 注册资本兜底（万元）"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_SCALE_DIST.md"
+    data_support_level: "部分支持"
+    support_reason: "注册资本兜底链覆盖 99.84%（44,032/44,153 入桶，含 foreign/unknown 单列），六桶合计与池全对账；但员工数主链只有 1,582 家（3.58%）有值，规模刻画的第一指标不可用，且「全球」轴境外机构无源 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（规模筛选位）"
     pending_cosign: "需改待复核 human:唐绍祖 2026-10-16（实核三伤：①列名错 source_tables 写 registered_capital，ODS 实际列 registered_capital_value，按 seed 直查 1054 报错；②币种未归一 美元154/港元87/欧元5/日元1 按面值直接比万元刻度；③官方刻度复算 99.5%(43,069/43,296) 仍挤 500+ 档，违反本条『禁造四档假分布』。建议：列名改 registered_capital_value + 外币折人民币归一后再切档 + 兜底档单列『注册资本兜底』不冒充人数档；徐滕强确认后转正式已签）"
     acceptance_unit_id: "TOPIC-PT-003"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_SCALE_DIST.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_GLOBAL_TOTAL
     metric_name_zh: "全球服务机构总数"
-    definition: >
-      2026-10-13 定稿（SVC-METRIC-COVER-STAT-L01）。门户「全球服务机构概况」总数 KPI 占位指标：现网 = 国内圈定切片（svc_org_circle，现网 3525 全广东），格子先写圈定值并强制「目前只有国内数据，全球待接入」提醒（悬停 + ⚠️ Q-SVCCHAIN-07）；真全球名录待 Q-SVCCHAIN-07（海外 forg 0 行、港澳台 ∩ circle=0）。「本年新增」= 本条 series 相邻年差（存量差，2026-08-28 侯佳伟 3A），同 ID 不另编号、不改挂 M_SVC_ORG_NEW_COUNT。无成立日 1 家不进序列（fact 3525 为准，series 末年 3524，页面注记一句）。禁止缩放 89600；禁止线上 JOIN ODS；禁止把港澳台/海外并进 circle；禁止旧号 M_SVC_ORG_CNT 顶替。
-    formula: >
-      [SEED 仅工厂/svcseed] fact.value = COUNT(*) FROM svc_org_circle（现网 3525，org_id 唯一键）；series = 圈定名单按工商成立年累加存量（末年≈3525，无成立日 1 家不进）。[SERVE 线上只读 ADS] SELECT period, value FROM ads.svc_metric_series WHERE metric_id='M_SVC_PT_GLOBAL_TOTAL'（fact 同理）；本年新增 = series 相邻年差。pending_cosign: human:唐绍祖（formula 待补签）
+    definition: "境内口径的存量值（44,153）与成立年累积序列（75 期，其中 64 个有值年，期末 44,132）在 gkx 全部可现转且对账闭合（44,132＋无成立年 21＝44,153）。卡点在「全球」二字的境外侧：`dwd_forg_base_info` 虽有 20,000 行，但只有 GB/US/CA 三个国别值、country 列全空、与机构主档无对齐键，不是服务机构名录，无法并入总量。因此本件判 **部分支持**——不是算不出数，而是只能出「境内全量」这一格。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_GLOBAL_TOTAL.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle <- ods: dwd_org_base_info"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_forg_base_info", "dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
+    data_support_level: "部分支持"
+    support_reason: "境内口径的存量值与成立年累积序列均可现转（池 44,153 家、可回查率 99.95%、64 个有值年份、期末 44,132＋无年份 21＝池全对账）；但「全球」所需的境外服务机构名录在 gkx 无源——dwd_forg_base_info 20,000 行只有 GB/US/CA 三个国别值且与服务机构池无对齐键，故海外轴无法并入 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（全球总量计数位）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-001"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TOTAL.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_GLOBAL_TYPE_DIST
     metric_name_zh: "全球服务机构类型分布"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板）。门户全球介绍页三类环图：对圈定池 svc_org_circle 按高校/科研院所/企业三档计数与占比。分类判定只认结构化来源：高校=org_id∈dwd_org_heis_info，院所=org_id∈dwd_research_institute_base_info，企业=池内其余。本项目口径高校与科研机构本体不属服务机构（另有归口，我们不做）——两类恒 0 是口径性结论，非数据缺失；高校冠名企业（XX大学科技园有限公司等）按企业归，属正确入圈不属漏圈。现网池 43,296 家（svc_rule_demo_kw_v1.1，全企业型），环图单色如实呈现，禁止造占比假数、禁止隐藏 0 值档。三禁：禁候选六类（service_type_candidate FINANCE/IP/HR/MKT/CONSULT/INNOV）冒充类型轴；禁名称关键词把高校冠名企业冒充高校本体；禁给高校/院所造非 0 假数。
-    formula: "SEED: fact(type,value): 高校=COUNT(DISTINCT circle.org_id JOIN heis)（恒0口径）；院所=COUNT(DISTINCT circle.org_id JOIN institute)（现网≈0）；企业=COUNT(*)-高校-院所；dist=各value/SUM(value)。SERVE: 同口径，人口随圈定规则升版联动。"
+    definition: "机构**本体**三分类在 gkx 可实算且三类互斥闭合（企业 44,095＋高校 37＋科研院所 21＝44,153）；**服务类型**六类词表也可现转（六类多命中合计 101,335 家次）。但「全球」的境外侧无源，`dwd_forg_base_info` 20,000 行只有 GB/US/CA 三值、不是机构名录，境外机构的类型分布不可得 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_GLOBAL_TYPE_DIST.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 人口", "dwd_org_heis_info(org_id) — 高校判定(恒0口径依据)", "dwd_research_institute_base_info(org_id) — 院所判定"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_forg_base_info", "dwd_org_base_info", "dwd_org_org_product_info", "dwd_research_institute_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
+    data_support_level: "部分支持"
+    support_reason: "机构本体三分类在 gkx 可实算且闭合（企业 44,095＋高校 37＋科研院所 21＝44,153），六类服务词表亦可现转；但「全球」轴的境外机构在 gkx 无源（dwd_forg_base_info 仅 GB/US/CA 三值且非服务名录），类型分布在境外面不可得 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（服务类型筛选位）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-002"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_GLOBAL_TYPE_DIST.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_KEYORG_SCALE
     metric_name_zh: "重点机构规模档案值"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板）。门户重点机构卡的规模档案直读：对重点机构名单（遴选归 Q-SVCCHAIN-01 技术力 Top，本条不定义名单）逐机构读 ADS 卡面 org_size / employees_number / operating_revenue 三字段，非计算指标、不按本条另灌数（承 2026-08-28 侯佳伟 1A2A3B）。无值显示「—（未披露）」，禁显 0（假零档案）、禁注册资本顶充人数；人数列承第 9 条 M_SVC_PT_GLOBAL_SCALE_DIST 同名列写入。现网人数/营收∩圈定=0（SVC-P0-2），卡面这两格现网预期「—」。三禁：禁按本指标另灌数；禁无值显 0；禁注册资本顶充人数显示。
-    formula: "无聚合公式（档案直读）。card(org_id, org_size, employees_number, operating_revenue)；本 ID 不出 fact/series/dist。"
+    definition: "规模档（org_size）在代理名单上 100% 有值；但员工数只有 **329/1,906（17.26%）**、营业收入只有 **266/1,906（13.96%）** 在年报里有值，且正式「重点机构名单」在 gkx 无源（Q-SVCCHAIN-01 未交付），名单本身是代理 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_KEYORG_SCALE.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["ads 卡面（svc_org_card 同族，employees_number 承第 9 条写入）", "dwd_org_base_info(org_size) — 上游", "dwd_org_annual_financial_info(employees_number, operating_revenue) — 上游（现网∩圈定=0，挂 SVC-P0-2）"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_KEYORG_SCALE.md"
+    data_support_level: "部分支持"
+    support_reason: "规模档（org_size）在代理名单上 100% 有值；但员工数只有 329/1906 家（17.26%）、营业收入只有 266/1906 家（13.96%）在年报里有值，且正式「重点机构名单」在 gkx 无源（Q-SVCCHAIN-01 未交付）→ 三格中两格量不足、名单本身是代理 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 重点机构档案卡；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库（机构详情）"
     pending_ref: "Q-SVCCHAIN-06"
     acceptance_unit_id: "TOPIC-PT-011"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_KEYORG_SCALE.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_REGION_ORG
     metric_name_zh: "区域服务机构数"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板：口径先写对，数据有无另论）。门户全球介绍页区域分布：对圈定池 svc_org_circle 按国家/地区维度聚合计数（SRS 05·101 全球服务机构分布，明文「计算各个国家所有的服务机构数量」）；国内展开到省级（province），国外按国家归并。口径全球不收窄；呈现按真数据：现网仅国内（广东 43,296 单省，svc_rule_demo_kw_v1.1），国外空白不渲染假数、不造国家行（含港澳台，2026-08-28 侯佳伟锁：不 UNION 港澳台/海外），挂「目前只有国内数据，全球待接入」。与 M_SVC_PT_GLOBAL_TOTAL 同池同世界图，人口随圈定规则升版联动。三禁：禁造国家/地区假行；禁用 89600 缩放数顶替；禁空着不出数（有真数必出）。
-    formula: "SEED: fact(region,value)=COUNT(DISTINCT org_id) GROUP BY country(国内展开 province)；占比=region/SUM(value)。SERVE: 同口径落 svc_region_dist，海外灌数后国家行自然出现。"
+    definition: "省/市两级区域轴在 gkx 可实算且闭合（广东 44,132＋未分配 21＝44,153；四市＋未分配＝44,153），但需求写的「各个国家」轴无源：`dwd_forg_base_info` 只有 GB/US/CA 三值、且不是服务机构名录、与池无对齐键 → 国家维度始终缺 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_REGION_ORG.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id, province, city) — 人口与地理字段", "dwd_forg_base_info — 海外主体表(现网 0 行，灌数后启用，挂 Q-SVCCHAIN-07)"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_forg_base_info", "dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
+    data_support_level: "部分支持"
+    support_reason: "省/市两级区域轴在 gkx 可实算（44132/44153 有省级归属，覆盖 2 个省级区划、4 个市级区划）；但需求要求的「各个国家」轴无源：dwd_forg_base_info 只有 GB/US/CA 三值且不是服务机构名录，与池无对齐键 → 国家/海外维度始终缺 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（区域筛选位）"
     pending_ref: "Q-SVCCHAIN-06"
     acceptance_unit_id: "TOPIC-PT-005"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_SZ_FIELD_DIST
     metric_name_zh: "深圳机构产业领域分布"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板）。门户深圳介绍页产业领域分布图：领域轴=全站现行 15 集群字典（dim.industry_cluster，sz-10+5-2026，2026-08-17 李伟拍板全站同一份）全集常显。取数链与 M_SVC_ORG_COVERAGE_BREADTH 同构五跳：圈定池 svc_org_circle JOIN dwd_org_base_info（city='深圳市' 切片，同第 11 条）→ enterprise_industry_chain（机构上链）→ industry_chain（chain_code→industry_id）→ dim.industry_cluster_map（L0→cluster_id，mapped）→ dim.industry_cluster（15 全集）。无上链/未映射机构单列「未分配」桶常显禁剔除。现网上链数据阻塞（enterprise_industry_chain 仅 1 行且与池 JOIN=0；ODS dwd_org_industry_tags 104 行 credit_code/name 对不上主档，GDF 已知 enterprise_code 回填阻塞）：15 集群现网全 0、未分配=全池深圳切片数，如实呈现禁造彩色假数；上链回填后图自然变彩。环节轴（服务链环节）从本条删除——环节语义归第 15 条 M_SVC_PT_CHAIN_NODE_ORG 承担（旧稿 hit_fields 工商标签冒充服务记录的口径作废）。禁用 dwd_service_org.industry_field（废弃表）与 serviceCenterData SERVICE_FIELDS 8 领域（前端旧字典残留，另行走前端改造）。三禁：禁用工商标签/废弃表冒充领域；禁造集群假数；禁隐藏未分配桶。
-    formula: "SEED: 15 集群字典+未分配 LEFT JOIN (COUNT(DISTINCT c.org_id) 五跳链 WHERE b.city='深圳市' GROUP BY k.cluster_id)；未命中集群补 0。SERVE: 落 svc_metric_fact（维度=cluster_id）。"
+    definition: "深圳切片的产业领域分布可出数（**10,778/25,597** 家对齐到产业词表，12 个产业名、多命中 19,522 家次），但领域轴**换了一套字典**：旧稿的 15 集群目录在 gkx 无表，改用 tags 的「20+8 产业集群」词表，且覆盖率只有 42.11%、未对齐的 14,819 家只能单列 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_SZ_FIELD_DIST.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city) — 深圳切片（同第 11 条）", "demo_gkxlumenx_dwd.enterprise_industry_chain(org_id, chain_code) — 机构上链（上游 ODS dwd_org_industry_tags）", "demo_gkxlumenx_dwd.industry_chain(chain_id, industry_id) — 链码→L0 行业码", "demo_gkxlumenx_dim.industry_cluster_map(industry_id, cluster_id) + industry_cluster(15 集群) — 领域字典与映射"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_industry_tags", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_FIELD_DIST.md"
+    data_support_level: "部分支持"
+    support_reason: "深圳切片的产业领域分布可出数（10778/25597 家对齐到产业词表，12 个产业名、多命中 19522 家次），但领域轴换了一套字典（旧稿 15 集群目录在 gkx 无表，改用 tags 的「20+8 产业集群」词表），且覆盖率只有 42.11%、未对齐的 14819 家只能单列 → 维度不完整 → 部分支持"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 深圳专题→领域分布；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（产业领域筛选位）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-009"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_FIELD_DIST.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_SZ_REGION_ORG
     metric_name_zh: "深圳机构区域分布"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板；同日修正取数链并补真数）。门户深圳介绍页各区域服务机构分布图：圈定池 svc_org_circle JOIN dwd_org_base_info（ON org_id 取 city/area，企业最全信息主档；池表自身无 district 列，废弃表 dwd_service_org 已弃用）city='深圳市' 切片 GROUP BY area。标准十区字典全集常显（福田/罗湖/南山/盐田/宝安/龙岗/龙华/坪山/光明/大鹏新区），无值区显 0 不隐藏；area 为空或 JOIN 不上主档单列「未分配」桶常显，禁静默剔除。现池深圳真数 14,033（南山 3655/宝安 2850/龙岗 2039/福田 1829/龙华 1795/光明 798/罗湖 553/坪山 388/盐田 121/大鹏 0/未分配 5）；数随池联动，禁写死旧 ADS svc_sz_dist 十行；十区+未分配计数之和=第 11 条深圳总数。悬停同门户提醒（Q-SVCCHAIN-06/07）。三禁：禁写死历史分布；禁静默剔除空区机构；禁造无机构区假数。
-    formula: "SEED: 十区字典+未分配 LEFT JOIN (COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市' GROUP BY b.area)；未命中类别补 0。SERVE: 落 svc_metric_fact（维度=district）。"
+    definition: "深圳切片的区级分布可现转且闭合：**25,597** 家，9 个有值行政区 25,587＋未分配 10＋区外/异名 0＝25,597，与 `M_SVC_PT_SZ_TOTAL` 同数；区字段非空率 99.96%。无代理维度、无外部依赖 → **完全转换支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_SZ_REGION_ORG.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 district 列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, area) — 企业最全信息主档：城市切片与区级字段来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.1"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_REGION_ORG.md"
+    data_support_level: "完全转换支持"
+    support_reason: "深圳切片的区级分布可现转且闭合：切片 25597 家，9 个行政区＋未分配 10＋区外/异名 0 ＝25597（与 M_SVC_PT_SZ_TOTAL 同池同数）；区字段非空率 99.96%，未分配单列不剔除"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 深圳专题；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库（区块筛选位）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-010"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_REGION_ORG.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_SZ_TOTAL
     metric_name_zh: "深圳产业服务机构数量"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 确认；同日补真数修订）。门户深圳介绍页总数格：圈定池 svc_org_circle JOIN dwd_org_base_info（ON org_id 取 city，池表自身无 city 列；企业最全信息主档=dwd_org_base_info）取 city='深圳市' 的机构去重数。现池真数 14,033（池 43,296 城市分布：广州 19,600/深圳 14,033/东莞 7,908/惠州 1,751/京甬 4，全命中主档）；数随圈定池联动，禁止写死历史值（3525 时代的 1355 与 43296 全池误估均已作废；第 21 条对比页跟本条同规则同数，替换 fixture 1240）。本年新增=本 ID series 按成立年相邻年差（同第 6 条 GLOBAL_TOTAL 3A 口径，成立年经主档 incorporation_date 取）；缺成立年机构只进 fact 不进 series。不加列（承 2026-08-28 侯佳伟 1A2A3B）；T2 同一批写 fact/series。人口全企业型（高校/院所不在池，第 7 条拍板口径）。
-    formula: "SEED: fact=COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市'；series(year,value)=按成立年累计存量（深圳切片）；本年新增=series[当年]-series[当年-1]。SERVE: 落 svc_metric_fact/svc_metric_series。"
+    definition: "深圳切片的数量、成立年累积序列、区级对账三面在 gkx 全部可现转：切片 **25,597** 家、序列 47 期（1979—2025）、区级 25,587＋未分配 10＝25,597、序列期末＋无年份＝25,597。「结构 + 当前数据量」双足，当日即可转换出数 → **完全转换支持**。这也是本批九件里唯一不依赖海外轴、且三面闭合的两件之一（另一件是 `M_SVC_PT_SZ_REGION_ORG`）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_SZ_TOTAL.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 city/成立年列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, area, incorporation_date) — 企业最全信息主档：城市切片与成立年来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.1"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TOTAL.md"
+    data_support_level: "完全转换支持"
+    support_reason: "深圳切片的数量、成立年累积序列、区级对账三面在 gkx 全部可现转：切片 25597 家、区级分布加总与切片完全一致（25587＋未分配 10＝25597）、序列期末＋无年份＝切片；依赖字段（city/incorporation_year/area）覆盖 99.96% 以上，「结构+当前数据量」双足，当日即可转换出数"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）深圳专题；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库（深圳切片）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-007"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TOTAL.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_PT_SZ_TYPE_DIST
-    metric_name_zh: "深圳机构类型统计"
-    definition: >
-      2026-10-13 落盘（human:徐滕强 拍板；同日补真数修订）。门户深圳介绍页机构类型环图：类型轴维持机构本体三类字典（高校/科研院所/企业）。现网全池只有企业一类：高校=0、科研院所=0、企业=深圳切片数（同第 11 条 M_SVC_PT_SZ_TOTAL 口径：池 JOIN dwd_org_base_info 取 city='深圳市'，现池真数 14,033）；环图单色如实呈现，不做视觉美化。分类能力受限原因：高校/院所归独立模块，不在本项目服务机构池（第 7 条拍板）。不改服务六类、不做类型×区矩阵（SRS §6 业务类型+区域分布依据留作二期扩展注记）。三禁：禁造高校/院所假数据；禁给恒 0 类别造占比；禁把业务标签冒充机构本体类型。
-    formula: "SEED: 三类全集字典 LEFT JOIN (COUNT(DISTINCT c.org_id) FROM svc_org_circle c JOIN dwd_org_base_info b ON b.org_id=c.org_id WHERE b.city='深圳市' GROUP BY org_type)；未命中类别补 0。SERVE: 落 svc_metric_fact（维度=org_type）。"
+    metric_name_zh: "深圳服务机构类型分布"
+    definition: "三类轴的「企业」一类可由 `city='深圳市'` 直接切出 25,589 家（99.9687%），但「高校」只能靠名称含「大学/学院」的规则识别（8 家，清洗后 6 家），「科研院所」21 家在池内 `city` 与 `prov` 全为空串、按城市切片恒 0——三类中有一类结构性不可得、一类规则不可靠，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_PT_SZ_TYPE_DIST.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["demo_gkxlumenx_dwd.svc_org_circle(org_id) — 圈定池人口（无 city 列）", "demo_gkxlumenx_ods.dwd_org_base_info(org_id, city, org_type) — 城市切片与类型轴来源", "上游同 svc_org_circle/dwd_org_base_info 生成链路"]
-    source_systems: [gkx-mysql-raw]
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info", "dwd_research_institute_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.1"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TYPE_DIST.md"
+    data_support_level: "部分支持"
+    support_reason: "三类轴的「企业」一类可由 `city='深圳市'` 直接切出 25,589 家（99.9687%），但「高校」只能靠名称含「大学/学院」的规则识别（8 家，清洗后 6 家），「科研院所」21 家在池内 `city` 与 `prov` 全为空串、按城市切片恒 0——三类中有一类结构性不可得、一类规则不可靠，故判 **部分支持**。"
     is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-SVCCHAIN-06"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·深圳服务机构类型环图"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-PT-008"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_PT_SZ_TYPE_DIST.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_REC_ATTRACT_SCORE
     metric_name_zh: "招引综合评分"
-    definition: "针对深圳拟发展产业方向，对外部服务机构的招引综合评分，从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度评定，取值 0—100。"
-    formula: "招引综合评分从产业匹配度、技术领先性、发展潜力、对外合作意愿四个维度分别计算各维度得分，再加权汇总得到综合评分。"
+    definition: "「招引综合评分」四维里，产业匹配度与对外合作意愿可由现有表代理算出，技术领先性只剩专利授权件数一个代理，发展潜力只覆盖 187 家（1.01%）——四维无法在同一批机构上齐备，故判 **部分支持**，只发布分布与分位，不发布可对外背书的单一冠军榜。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_REC_ATTRACT_SCORE.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选", "dwd_org_base_info(org_id, external_id, city, province) — 信用代码对齐,对端区域", "dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业", "dwd_industry_chain_info(industry_name, industry_link_name) — 目标产业词表", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, pure_profit, year) — 研发投入,营收,净利润", "dwd_patent(patent_id, kind, first_applicant_name) — 专利类型,申请人对齐", "dwd_patent_legal(pn, status) — 授权有效", "dwd_org_invest_info(org_id, inv_org_id) — 对外投资"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_industry_chain_info", "dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_industry_tags", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_shareholder_info", "dwd_patent", "dwd_patent_legal"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-05"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＝产业匹配度／技术领先性／发展潜力／对外合作意愿，维度内与维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 研发投入强度源列 arch development am 全空，技术领先性实际仅由发明专利占比支撑；② 发展潜力维连续两年营收仅 5 家、净利润 3 家可算，对 99.97% 机构为空维；③ 产业标签覆盖 23.25%（6,805/29,263），12 个标签名与 15 集群零交集；④ 对外合作以 dwd_org_invest_info 投资边代理，项目数／覆盖区域数为待建字段。缺维按可用维均值，维数<2 不入榜。不覆盖 05 模型叶（180）的竞争力／产业相关度／政策匹配度／深圳连接度四维，两套维度名待甲方裁定（REC-B01）。Q-SVCCHAIN-05 余项：默认权重正式化／量化来源／名单入围阈值／推荐理由规则／甲方确认仍待。源表仍 demo 面 → D1 不升 aligned、D3/D4 不升绿）"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_ATTRACT_SCORE.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "「招引综合评分」四维里，产业匹配度与对外合作意愿可由现有表代理算出，技术领先性只剩专利授权件数一个代理，发展潜力只覆盖 187 家（1.01%）——四维无法在同一批机构上齐备，故判 **部分支持**，只发布分布与分位，不发布可对外背书的单一冠军榜。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·招引机构推荐列表评分列"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＝产业匹配度／技术领先性／发展潜力／对外合作意愿，维度内与维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 研发投入强度源列 arch development am 全空，技术领先性实际仅由发明专利占比支撑；② 发展潜力维连续两年营收仅 5 家、净利润 3 家可算，对 99.97% 机构为空维；③ 产业标签覆盖 23.25%（6,805/29,263），12 个标签名与 15 集群零交集；④ 对外合作以 dwd_org_invest_info 投资边代理，项目数／覆盖区域数为待建字段。缺维按可用维均值，维数<2 不入榜。不覆盖 05 模型叶（180）的竞争力／产业相关度／政策匹配度／深圳连接度四维，两套维度名待甲方裁定（REC-B01）。Q-SVCCHAIN-05 余项：默认权重正式化／量化来源／名单入围阈值／推荐理由规则／甲方确认仍待。源表仍 demo 面 → D1 不升 aligned、D3/D4 不升绿）"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_REC_CANDIDATE_CNT
     metric_name_zh: "候选机构数"
-    definition: >
-      2026-10-13 废止。招引/培育页「共 N 家候选」是当前产业方向与筛选条件下、生成推荐名单后的结果集条数（前端 results.length），随筛选实时变，不是预聚合统计指标。与已废止的 M_SVC_ORG_SELECTED_COUNT 同类。保留 ID 防冲突。页面可继续显示 N，不要 MetricSpecCard，不要 Java/Python 出数，不要灌 ADS。
-    formula: "n/a（废止）。页面 N = 当前推荐结果集 length，前端实时计。禁止写 ads.svc_metric_* 本 ID；禁止把圈定 3525 当候选数；禁止后端 COUNT 顶替。"
+    definition: "「候选机构数」不是统计量，而是招引/培育页在当前筛选条件下 `results.length` 的显示值：产业方向、机构类型、服务环节、规模任意一项变化，N 就变。注册表已于 2026-10-13 由徐滕强判 retired，指标身份撤销；本件不计算任何值，只交付「为什么不可算」的否定性证据。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_REC_CANDIDATE_CNT.py 为准）。"
     algorithm_type: STAT
-    source_tables: []
-    source_systems: []
+    source_tables: ["dwd_bid_win_candidate_out", "dwd_bid_win_candidate_out_bak_20260911", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: n/a
-    version: "0.3.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_CANDIDATE_CNT.md"
+    data_support_level: "完全不支持"
+    support_reason: "「候选机构数」不是统计量，而是招引/培育页在当前筛选条件下 `results.length` 的显示值：产业方向、机构类型、服务环节、规模任意一项变化，N 就变。注册表已于 2026-10-13 由徐滕强判 retired，指标身份撤销；本件不计算任何值，只交付「为什么不可算」的否定性证据。"
     is_mock: true
-    mapping_status: "🔧"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "招引/培育页「共 N 家候选」文案"
     pending_ref: "SVC-METRIC-COVER-STAT-L01"
     acceptance_unit_id: "TOPIC-REC-003"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_CANDIDATE_CNT.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_REC_CULTIVATE_SCORE
     metric_name_zh: "培育综合评分"
-    definition: "对深圳本土在库服务机构的培育综合评分，从现有规模、技术创新能力、服务成效、市场缺口四个维度评定，取值 0—100。"
-    formula: "各指标原始数据经极值归一化转换为0-100分后，各维度内指标加权平均得到四个维度得分，四个维度加权汇总，得到培育综合评分。"
+    definition: "培育综合评分四维里，现有规模只覆盖 1,030 家（4.0239%）、技术创新能力**恒缺**（两分子列在 90,926 行中 0 行非空）、服务成效只能拿新闻条数代理、市场缺口只能用池内同门类营收份额代理——四维中有一维结构性不可得，故判 **部分支持**，只发布 981 家三维/两维可算机构的分布，不发布全市培育排序。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_REC_CULTIVATE_SCORE.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,深圳城市筛选", "dwd_org_base_info(org_id, external_id) — 信用代码对齐", "dwd_org_annual_financial_info(org_id, employees_number, total_assets, development_employee, arch development am, operating_revenue, year) — 从业人数,资产总额,研发人员,研发投入,营收", "dwd_org_important_news_info(org_id, news_title, news_date) — 服务成效代理", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 所属产业"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "按需"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_important_news_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 按需
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-05"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＝现有规模／技术创新能力／服务成效／市场缺口，维度内与维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 技术创新能力维研发人员／研发投入两列全空，整维缺；② 服务成效维 svc_served_ent_count／svc_project_count 待建、库内无承载表，整维缺，现以 dwd_org_important_news_info 代理不作正式口径；③ 现有规模＋市场缺口可算，但深圳池仅 169/14,033 出分（1.20%），市场占有率分母降级为池内同行业营收、单机构行业组必得 100 分须披露。缺维按可用维均值，维数<2 不入榜。不覆盖 05 模型叶（181）的竞争力／产业相关度／政策匹配度／发展潜力四维，两套维度名待甲方裁定（REC-B02）。Q-SVCCHAIN-05 余项：默认权重正式化／量化来源／名单入围阈值／培育建议规则／甲方确认仍待。源表仍 demo 面 → D1 不升 aligned、D3/D4 不升绿）"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_REC_CULTIVATE_SCORE.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "培育综合评分四维里，现有规模只覆盖 1,030 家（4.0239%）、技术创新能力**恒缺**（两分子列在 90,926 行中 0 行非空）、服务成效只能拿新闻条数代理、市场缺口只能用池内同门类营收份额代理——四维中有一维结构性不可得，故判 **部分支持**，只发布 981 家三维/两维可算机构的分布，不发布全市培育排序。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·产业服务链分析·本土服务机构培育列表评分列"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-22（试点口径：王惠四维＝现有规模／技术创新能力／服务成效／市场缺口，维度内与维度间等权默认；formula 与 algorithm_type=MODEL 同签，不签『四维完整』。显式边界：① 技术创新能力维研发人员／研发投入两列全空，整维缺；② 服务成效维 svc_served_ent_count／svc_project_count 待建、库内无承载表，整维缺，现以 dwd_org_important_news_info 代理不作正式口径；③ 现有规模＋市场缺口可算，但深圳池仅 169/14,033 出分（1.20%），市场占有率分母降级为池内同行业营收、单机构行业组必得 100 分须披露。缺维按可用维均值，维数<2 不入榜。不覆盖 05 模型叶（181）的竞争力／产业相关度／政策匹配度／发展潜力四维，两套维度名待甲方裁定（REC-B02）。Q-SVCCHAIN-05 余项：默认权重正式化／量化来源／名单入围阈值／培育建议规则／甲方确认仍待。源表仍 demo 面 → D1 不升 aligned、D3/D4 不升绿）"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_RELATION_DENSITY
+    metric_name_zh: "服务关系链密度"
+    definition: "「服务关系链密度」问的是服务机构和它的服务对象之间连得有多密。calc-logic 的语义载体是「服务关系边」，而 gkx 里能连的边只有投资与股东两类股权关系——它们能构造出一张图，也能算出密度，但这张图回答的是「谁持有谁」，不是「谁服务谁」。因此本件把可算的图结构量全部算出来，把不可算的语义维整块登记为缺口，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_RELATION_DENSITY.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: monthly
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_RELATION_DENSITY.md"
+    data_support_level: "部分支持"
+    support_reason: "「服务关系链密度」问的是服务机构和它的服务对象之间连得有多密。calc-logic 的语义载体是「服务关系边」，而 gkx 里能连的边只有投资与股东两类股权关系——它们能构造出一张图，也能算出密度，但这张图回答的是「谁持有谁」，不是「谁服务谁」。因此本件把可算的图结构量全部算出来，把不可算的语义维整块登记为缺口，判**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "服务机构关系图概览卡、城市服务机构网络密度对比"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_RELATION_RISK
+    metric_name_zh: "服务关系风险"
+    definition: "「服务关系风险」要回答的是：一家本身干净的服务机构，会不会因为它的服务对象或合作方出事而被波及。这个问题的骨架是「风险主体 + 关系边 + 传导规则」三件套。gkx 里风险主体齐备（处罚与失信两张表都有真实记录），关系边只有股权两类，传导规则只能按「一跳邻居是否风险」来定。三件套里缺的是**业务关系**这一层，所以本件能算「股权暴露」，算不出「服务暴露」，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_RELATION_RISK.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_company_punish", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_risk_shixin", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: monthly
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_RELATION_RISK.md"
+    data_support_level: "部分支持"
+    support_reason: "「服务关系风险」要回答的是：一家本身干净的服务机构，会不会因为它的服务对象或合作方出事而被波及。这个问题的骨架是「风险主体 + 关系边 + 传导规则」三件套。gkx 里风险主体齐备（处罚与失信两张表都有真实记录），关系边只有股权两类，传导规则只能按「一跳邻居是否风险」来定。三件套里缺的是**业务关系**这一层，所以本件能算「股权暴露」，算不出「服务暴露」，判**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "服务机构关系图风险着色、机构详情页「关联风险」卡、城市服务生态风险对比"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
     metric_name_zh: "服务链完整度"
-    definition: >
-      2026-10-13 拍板（沿 2026-08-28 侯佳伟 1A）：深圳服务链完整度。公式未签（Q-SVCCHAIN-04 / 唐绍祖）；机构×服务链环节无源（SVC-P0-3 / Q-SVCCHAIN-08）。本批不做真数；对比页继续诚实排除、不画完整度柱。若将来用「环节覆盖占比」理解完整度，轴只能是 CT-SVC-PT-01 服务链六环节，禁止产业链 industry_link_code / 服务六类 / 国标 industry 冒充。不写可执行公式。
-    formula: >
-      当前无法执行：① 完整度算法未签（Q-SVCCHAIN-04）；② 机构×服务链环节服务记录不存在（SVC-P0-3）。
-      禁止本批写 ads.svc_metric_* 本 ID；禁止用六站有机构占比或六类覆盖率冒充完整度验收成 live；禁止把前端 fixture 当已接通。
-      解挂条件：唐绍祖出完整度定义卡 + 供方交付机构×六环节成员表（若公式用覆盖占比）。
+    definition: "服务链完整度的分子是「已覆盖的关键环节数」、分母是「全部关键环节数」，而两库既没有「机构×环节」的成员记录（结构缺），也没有任何一行环节事实（数据缺）；公式本身还未签（算法缺）。三层同时缺失，属结构与数据均不具备可算闭环，故判 **完全不支持**，并按要求留下四条否定性探针。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_SZ_CHAIN_COMPLETENESS.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["（缺口）完整度算法定义卡 <- Q-SVCCHAIN-04", "（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_bid_base_out"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_CHAIN_COMPLETENESS.md"
+    data_support_level: "完全不支持"
+    support_reason: "完整度公式未签（Q-SVCCHAIN-04 / 唐绍祖），calc-logic 0.2.0 明确「本件不做真数、不写可执行公式」；计算所需的「机构×服务链六环节服务记录」（SVC-P0-3）在 gkx 与 live 均不存在（gkx 280 表 0 张 svc_*；live 13 张 svc_* 表 0 行）。分子（某机构在某环节提供过服务）与分母（关键环节全集）两端都无结构承载，属结构与数据双缺。经营范围词表派生的六站代理在城市级恒满 6/6、在 12 个产业上恒为 5/6（distinct=1、零方差），既无区分度，又被 calc-logic 明令禁止冒充完整度，不能把档位抬到部分支持。故判完全不支持，官方值置 null。"
     is_mock: true
-    mapping_status: "🔧"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析·深圳对比页（当前诚实排除，不画完整度柱）"
     pending_ref: "Q-SVCCHAIN-04"
     acceptance_unit_id: "TOPIC-ECO-007"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_CHAIN_COMPLETENESS.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_SZ_COMPARE_METRIC
     metric_name_zh: "城市对比指标值"
-    definition: >
-      2026-10-13 拍板（沿 2026-08-28 侯佳伟 1B2A3A）：生态页「深圳现状对比」的城市×小项多格取值面板，不是单一标量。演示框架三小项=服务机构数量 / 平均技术力得分 / 服务网络密度（完整度另条已挂起）。口径=服务机构，禁止用全量工商机构数冒充。部分闭合：仅「深圳×服务机构数」可 live，与第 11 条 M_SVC_PT_SZ_TOTAL 同规则同数（圈定池按 city=深圳 COUNT；数随圈定变，不写死历史 1355）。外市/全国平均×机构数不灌——现网样本严重偏广东、同口径外市服务机构池几乎为空（样本事实）+ 城市基准源须甲方指定（Q-SVCCHAIN-04 业务）。平均技术力不进本叶（MODEL M_SVC_ORG_TECH_SCORE / Q-SVCCHAIN-01 未签）。网络密度不进本叶（GRAPH M_SVC_GRAPH_DENSITY；入站无服务机构↔服务机构边，SVC-P1-1 / Q-SVCCHAIN-03；投资/股东边不算服务关系）。其余格继续 fixture + 🧪⚠️。整板不伪闭合 live。
-    formula: >
-      可执行（仅一格）：深圳 orgCount = COUNT(*) FROM svc_org_circle 半连接 ODS 主表 WHERE city 属深圳（与 M_SVC_PT_SZ_TOTAL 同一套圈定与城市过滤；结果必须同数）。
-      不可执行 / 禁止灌 ADS：北上广与全国平均的 orgCount；任一城市的 avgTechScore、networkDensity。
-      禁止 INSERT 外市假行；禁止用 ODS 全量工商按城 COUNT 顶替服务机构对比；禁止把前端 CITY_METRIC_VALUES fixture（含旧深圳 1240）验收成 live。
+    definition: "「城市对比指标值」不是单一数字，而是「城市 × 小项」的多格面板（3 小项 × 8 行 = 24 格）。24 格里只有「深圳 × orgCount」一格可发布（25,597，与 `M_SVC_PT_SZ_TOTAL` 同数）；外市 orgCount 在同池内可数但池 100% 落广东、北京/上海 0 家；avgTechScore 因模型未签且两子指标分子整列为空而整列不可发布；networkDensity 因无服务机构间边源而整列不可发布。24 格里只有 1 格可发布，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_SZ_COMPARE_METRIC.py 为准）。"
     algorithm_type: STAT
-    source_tables: ["svc_org_circle + dwd_org_base_info(city) — 仅深圳×机构数，同 M_SVC_PT_SZ_TOTAL", "（缺口）外市服务机构可比池 / 城市基准源 <- Q-SVCCHAIN-04", "（缺口）城市平均技术力 <- metric: M_SVC_ORG_TECH_SCORE（Q-SVCCHAIN-01 未签）", "（缺口）服务机构↔服务机构边 <- ods: 待供方交付（SVC-P1-1）→ 网络密度"]
-    source_systems: ["国内机构要素库"]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_invest_info", "dwd_org_org_product_info", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: daily
-    version: "0.2.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_COMPARE_METRIC.md"
+    data_support_level: "部分支持"
+    support_reason: "三小项 × 多城市的面板里，只有「深圳 × orgCount」一格可发布（25,597，与 M_SVC_PT_SZ_TOTAL 同数）；外市 orgCount 虽在同池内可数，但池 100% 落广东省、北京/上海 0 家，不构成城市基准；avgTechScore 三子指标有两个分子整列为空且模型未签；networkDensity 无服务机构间边源。九格中一格可发布、其余不可，故判部分支持。"
     is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-04"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析·深圳对比页对比柱（§1.1.1.2.4.2.7）"
     pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
     acceptance_unit_id: "TOPIC-ECO-008"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "SVC-METRIC-COVER-STAT-L01"
-    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_COMPARE_METRIC.md"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_SZ_DISTRICT
+    metric_name_zh: "深圳服务机构分布"
+    definition: "「深圳服务机构分布」要的是深圳服务机构在行政区上的分布，两库都没有现成的区级分布结果表；但 gkx 底册的 `area` 字段在深圳切片上覆盖 99.96%，与机构池按 `org_id` 回联后区级合计 25,587 加未分配 10 严格等于切片 25,597，结构与数据量都足，现在即可经转换得到分布，故判 **完全转换支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_SZ_DISTRICT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_DISTRICT.md"
+    data_support_level: "完全转换支持"
+    support_reason: "gkx 280 表中无 svc_region_dist 等结果面（0 张 svc_*），但底册 area 字段在深圳切片上 25,587/25,597 有值（99.96%），未分配 10 家可单列，区级合计与切片严格闭合；结构与数据量均足，当日可经转换出数，故判完全转换支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析·深圳对比页区级分布（§1.1.1.2.4.2.7）/ 科技专题服务系统·算法库·服务机构基础指标模型（§1.1.1.1.1.1.1.1.4）"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_SZ_SCALE
+    metric_name_zh: "深圳服务机构规模"
+    definition: "「深圳服务机构规模」要的是深圳服务机构在大中小微四档上的分布。两库都没有规模分布结果表，但底册的 `org_size` 枚举在深圳切片上覆盖 99.88%、五档合计与切片逐位闭合，资本列覆盖 99.91% 可作合理性校验，结构与数据量均足，当日即可现转，故判 **完全转换支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_SZ_SCALE.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_SCALE.md"
+    data_support_level: "完全转换支持"
+    support_reason: "规模档（org_size）在深圳切片上 25,566/25,597 有值（99.88%），未知 31 家可单列；gkx 无 svc_metric_fact 结果面，但底册字段 + 当前数据量足以现转出五档分布与交叉分面，且五档合计与切片逐位闭合，故判完全转换支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析·深圳对比页规模结构柱（§1.1.1.2.4.2.7）/ 科技专题服务系统·算法库·服务机构基础指标模型（§1.1.1.1.1.1.1.1.4）"
+    updated: "2026-10-23"
+
   - metric_id: M_SVC_SZ_TIER
     metric_name_zh: "深圳梯队位置"
-    definition: "根据深圳在服务机构数量、技术力得分、服务链完整度三个对比维度的表现，分别对每个维度进行独立梯队划分。"
-    formula: "服务机构数量直接统计目标产业相关科学研究和技术服务业法人单位数，技术力得分由研发投入强度、研发人才结构、创新产出三个子指标极值归一化后等权汇总得到，服务链完整度按已覆盖服务链关键环节数占全部环节数的比例计算，各维度分别与全国各城市对比后按排名分档确定梯队位置。"
+    definition: "「深圳梯队位置」不是单一数字，而是「服务机构数量 / 技术力得分 / 服务链完整度」三维各自按 30/40/30 排名分档。三维里只有「服务机构数量」在池内可数（深圳 25,597），但排名需要与北京、上海、其他省会城市同口径比较，而池 100% 落广东、外省 0 家；技术力三维子指标里两个的分子列整列为空；完整度公式未签且无环节成员表。三维无法在同一城市集合上闭合，故判 **部分支持**，不产出任何梯队名次。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_SZ_TIER.py 为准）。"
     algorithm_type: MODEL
-    source_tables: ["demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,城市筛选", "dwd_org_base_info(org_id, external_id, city) — 信用代码对齐,城市", "dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 环节覆盖", "dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节", "dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 研发投入,营收,研发人员,从业人数", "dwd_patent(patent_id, kind, first_applicant_name) — 创新产出", "dwd_patent_legal(pn, status) — 授权有效"]
-    source_systems: ["Mock @ batch=mock_20260831"]
-    update_freq: "季"
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_org_product_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 季
     version: 1
-    updated: "2026-08-31"
     algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: "Q-SVCCHAIN-04"
     calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_SZ_TIER.md"
-    owner_agent: data-agent
+    data_support_level: "部分支持"
+    support_reason: "三个维度里只有「服务机构数量」在池内可算（深圳 25,597），但梯队分档要求与全国城市同口径排序，而 gkx 服务机构池 100% 落在广东省、池外城市 0 家，无法构成全国对比集合；「技术力」三子指标有两个的分子列整列为空（研发投入/研发人员），只有专利代理可算；「服务链完整度」公式未签且无机构×环节成员表，六站代理在 12 个产业上恒为 5/6、无区分度。三维均无法在同一城市集合上闭合，故判部分支持，不产出梯队名次。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统·产业服务链分析·深圳对比页梯队徽标（§1.1.1.2.4.2.7）"
+    pending_ref: "Q-SVCCHAIN-04"
+    updated: "2026-10-23"
+
+  - metric_id: M_SVC_TYPE_DIST_QUERY
+    metric_name_zh: "查询结果·服务类型分布"
+    definition: "查询结果·服务类型分布是查询链路上的实时分桶逻辑，不是全库统计：对象是当前查询命中的 `org_id` 集合、度量是每桶去重计数、结果不落 ADS。gkx 没有 `svc_type` 主数据列，六类只能由经营范围词表重建，且「INNOV 优先」与「IP 优先」两套优先级给出的分布整体换形（INNOV 19,879 vs 1,544），故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SVC_TYPE_DIST_QUERY.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info", "dwd_org_industry_tags", "dwd_org_org_product_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: n/a（查询实时，随查询会话）
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/svc_metrics.py（计算） + repos/demo-algo-ent-analysis/api/svc_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SVC/M_SVC_TYPE_DIST_QUERY.md"
+    data_support_level: "部分支持"
+    support_reason: "查询结果·服务类型分布是查询链路上的实时分桶逻辑，不是全库统计：对象是当前查询命中的 `org_id` 集合、度量是每桶去重计数、结果不落 ADS。gkx 没有 `svc_type` 主数据列，六类只能由经营范围词表重建，且「INNOV 优先」与「IP 优先」两套优先级给出的分布整体换形（INNOV 19,879 vs 1,544），故判 **部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题服务系统·数据查询·推荐图表分析·服务生态多样性图"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 handoff §9）"
+    acceptance_unit_id: "TOPIC-QUERY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"

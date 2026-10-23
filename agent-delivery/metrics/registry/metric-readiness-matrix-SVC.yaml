@@ -1,751 +1,1325 @@
-# metric-readiness-matrix —— 产业服务域（SVC）联调台 Mock 触及指标
+# metric-readiness-matrix —— 产业服务链域（SVC）四维就绪度
 # ============================================================================
-# 真源角色：SVC 域四维就绪度机器真源（本批覆盖联调台基础指标 A1–A6 与关系链演示 KPI）。
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
 # 模型定义：data-lineage-policy.md §2.3
-# 生成任务：FE-GKX-MOCK-VIZ-ALIGN-L01（唐绍祖）· 2026-08-05
-# 血缘改指：DATA-SVC-STORAGE-GAP-L02 · 2026-08-19
-#            物理表改指 demo_gkxlumenx_ads.svc_metric_* / svc_region_dist 与 hang demo_gkx_chain。
-#            不改绿 D1（仍 draft）/ D2（仍 pending）/ D4（仍 mock）。不伪造 aligned / live。
-# ============================================================================
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-SVC-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
+# ----------------------------------------------------------------------------
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 0 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
+# ----------------------------------------------------------------------------
+# 本域分布：51 条｜D1 aligned 51 / draft 0｜D3 full 5 / partial 43 / none 3 / pending_ods 0｜本批新增 0 条、D3 有据升级 6 条、派生件 2 条。
 
 version: 1
 module: SVC
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
-as_of: "2026-08-19"
+updated: "2026-10-23"
+as_of: "2026-10-23"
 d2_verifier: lineage-subcoord
-d4_batch: mock_20260805
-storage_gap_task: DATA-SVC-STORAGE-GAP-L02
-
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "覆盖 demo-ui-system-test 产业服务基础指标 A1–A6 与服务关系链演示 KPI。"
-  - "FE 经 MetricHint 挂 metric_id；status=warn 对应 pending_client / Q-SVC-010。"
-  - "库表血缘 Demo：demo_gkxlumenx_ads.svc_metric_fact/series/dist、svc_region_dist；A3 hang demo_gkxlumenx_dwd.svc_org_finance_event；圈定 hang svc_org_circle；图 hang demo_gkx_chain。禁止再写 gkx_dwd.service_org / gkx_service 当现行。"
-  - "列对照：storage/SVC/etl/ods-to-ads-mapping.md。词表：storage/SVC/seeds/svc_rule_demo_kw_v1.md（待核验）。"
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
-  - metric_id: M_SVC_INDUSTRY_LAYOUT
-    metric_name_zh: 全球服务机构产业布局
-    acceptance_unit_id: SVC-BASIC-A1
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "ADS=demo_gkxlumenx_ads.svc_metric_dist；人口 svc_org_circle JOIN ODS dwd_org_base_info.industry/industry_l*_name + org_size；六类=service_type_candidate。Q-SVC-009 live 可能缺 industry* 则只留六类粒。Q-SVC-010 待核验。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_ORG_CNT
-    metric_name_zh: 全球服务机构分布（按国家计数）
-    acceptance_unit_id: SVC-BASIC-A2
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "ADS=svc_region_dist geo_level=province（ODS 无国家列，诚实降级）；源 ODS dwd_org_base_info.province。量级口径见 Q-SVC-005。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_INVEST_Y
-    metric_name_zh: 服务机构投融资动态
-    acceptance_unit_id: SVC-BASIC-A3
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "hang demo_gkxlumenx_dwd.svc_org_finance_event ← ODS dwd_org_financing_info / dwd_org_invest_info；ADS=svc_metric_series。Q-SVC-006 可 0 行；不伪闭合 live。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_NEW_CNT
-    metric_name_zh: 新增服务机构动态
-    acceptance_unit_id: SVC-BASIC-A4
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "ADS=svc_metric_series；YEAR(ODS dwd_org_base_info.incorporation_date) 仅圈定内。正式灌数待 F-SEED。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_SZ_SCALE
-    metric_name_zh: 深圳服务机构规模
-    acceptance_unit_id: SVC-BASIC-A5
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "ADS=svc_metric_fact；过滤 ODS city∈{深圳,深圳市}。org_size 有则进 ext。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_SZ_DISTRICT
-    metric_name_zh: 深圳服务机构分布
-    acceptance_unit_id: SVC-BASIC-A6
-    module: SVC-BASIC
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "ADS=svc_region_dist geo_level=sz_district；优先 ODS area（md-extract），live 仅 district 则用 district（Q-SVC-004）。禁止地址解析冒充。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_RELATION_DENSITY
-    metric_name_zh: 服务关系链密度
-    acceptance_unit_id: SVC-RELATION
-    module: SVC-DEEP
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "图 hang demo_gkx_chain（禁 gkx_service）；ADS=svc_relation_chain。F-ALGO 未写边；Q062；联调台仍 Mock。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_SVC_RELATION_RISK
-    metric_name_zh: 服务关系网络风险分
-    acceptance_unit_id: SVC-RELATION
-    module: SVC-DEEP
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "依赖 svc_relation_chain + demo_gkx_chain；Q062；无独立风险源表。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  # --- METRIC-SEED-REGISTER-L01 OPEN 新号 / 未入 seed 的 reuse ---
-  - metric_id: M_SVC_ORG_TECH_SCORE
-    metric_name_zh: "服务机构影响力"
-    d1_def_status: aligned
-    d1_pending_ref: "Q-SVCCHAIN-01"
-    d1_note: "王惠 20260829 口径已入库（专利/财务维已对 extract 表）；剩余维度对齐待 Q-SVCCHAIN-01"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_SVC_TYPE_DIST_QUERY
-    metric_name_zh: "查询结果·服务类型分布"
-    acceptance_unit_id: "TOPIC-QUERY"
-    module: TOPIC-QUERY
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-QUERY-04"
-    d1_note: "2026-10-13 徐滕强拍板转查询态口径卡（选 A）：口径六要素已锁 seed v0.2.0，实现归 TOPIC-QUERY 查询叶（不进 SVC-ALGO-STAT-21-IMPL-L01），不落 ADS。D1 留 draft——类型字典列 svc_type/org_type 仍待 Q106 甲方签；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "查询态指标：不建 ADS 目标表，过渡期读 svc_org_card.service_type_candidate（侯佳伟 2A）。主数据 svc_type/org_type 列待 Q106 核。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
   - metric_id: M_SVC_BASE_101_1
     metric_name_zh: "服务机构基础指标模型构建"
     acceptance_unit_id: "ALGO-SVC-BASE-101"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "2026-10-13 徐滕强选 B：封面身份落 seed v0.2.0（六套对照+三禁，无统计口径、无公式、恒 0 行是设计）。D1 维持 draft——algorithm_type 仍待唐绍祖签，不升 aligned；封面无数不挂页，无需 MetricSpecCard"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强选 B：封面身份落 seed v0.2.0（六套对照+三禁，无统计口径、无公式、恒 0 行是设计）。D1 维持 draft——algorithm_type 仍待唐绍祖签，不升 
+      aligned；封面无数不挂页，无需 MetricSpecCard
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "封面号不出数、无源表需求（source_tables 空）。分项各自映射源；本条不建表不灌数，fact/series/dist 出现本编号行即错"
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（dwd_forg_base_info、dwd_org_annual_financial_info、dwd_org_company_pun
+      ish、dwd_org_financing_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。封面号自身不出数（三禁）；以其登记的六大体系为评估对象：①③④⑥ 四体系可现转，②（海外轴）与⑤（服务能力子维）各有一处结构性
+      缺口 → 六体系中 4 全支持 / 2 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_CHAIN_BOTTLENECK
     metric_name_zh: "瓶颈堵点判定"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-03"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。家数维可词表代理现转（六环节 30,776/776/13,878/8/4,533/10,702）；第三档「资源瓶颈」所需的平均
+      服务深度分在 gkx/live 均无任何来源（Q-SVCCHAIN-02 口径未签、SVC-P0-3 成员表未建）→ 三档只能判前两档
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
     metric_name_zh: "环节平均服务深度"
     acceptance_unit_id: "TOPIC-ECO-002"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "SVC-P0-3"
-    d1_note: "0.2.0 目标口径已锁（六环节 CT-SVC-PT-01 + circle 人口 + AVG(depth)）。D1 保持 draft：分子服务深度分口径未签（Q-SVCCHAIN-02），且不挂 MODEL 引用（避免继承产业链环节轴）。D3/D4 未升。"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 目标
+      口径已锁（六环节 CT-SVC-PT-01 + circle 人口 + AVG(depth)）。D1 保持 draft：分子服务深度分口径未签（Q-SVCCHAIN-02），且不挂 MOD
+      EL 引用（避免继承产业链环节轴）。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "无机构×服务链环节服务记录表；且无机构服务深度分结果表（依赖 M_SVC_ORG_COVERAGE_DEPTH）。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "事实表待供方交付（SVC-P0-3 / Q-SVCCHAIN-08）；深度分口径待签（Q-SVCCHAIN-02）。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。分母与分组可算（六环节 44,153 家口径）；分子「机构×环节服务深度分」无源：口径未签（Q-SVCCHAIN-02）且 g
+      kx 无任何 svc_* 深度表/列 → 全部分格为「—」
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_CHAIN_SEGMENT_ORG_COUNT
     metric_name_zh: "环节服务机构数"
     acceptance_unit_id: "TOPIC-ECO-001"
-    module: SVC
+    module: "SVC"
     d1_def_status: aligned
-    d1_pending_ref: "SVC-P0-3"
-    d1_note: "0.2.0 目标口径已锁：六环节 CT-SVC-PT-01 + circle 人口 + COUNT DISTINCT org。缺口=无机构×环节成员表。D3/D4 未升。"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 目标
+      口径已锁：六环节 CT-SVC-PT-01 + circle 人口 + COUNT DISTINCT org。缺口=无机构×环节成员表。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "无机构×服务链环节服务记录表（ODS/DWD/ADS 均缺）；产业链 industry_link_code / svc_chain_gap 汇总壳不可替代。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "事实表待供方交付（SVC-P0-3 / Q-SVCCHAIN-08）。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。六环节家数可词表代理现转（pool 44,153 家，六环节去重 34,578 家）；正式「机构×环节」成员事实表在 gkx 
+      与 live 均不存在（SVC-P0-3 待供方），正式口径不可执行
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_DEEP_172_1
     metric_name_zh: "服务链短板分析模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维中服务类型结构维可算、经营效益维可现转（财务覆盖部分环节），但服务质量评价维在全库无承载表（待建 svc_quality_
+      score）→ 三维缺一，部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_173_1
     metric_name_zh: "服务关系链模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维（强度/层次/密度）在「资本纽带」代理图上均可算，但正式合作边、交易合同边、信用评分表在 gkx 无源（待建 svc_co
+      op_edge / svc_trade_contract / svc_credit_score），强度维只能由投资/股东事件 + 失信处罚反向代理 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_174_1
     metric_name_zh: "金融服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中资金规模、资金风险、服务质量三维可现转；融资成本维全库无利率字段、结构性无源（待建 financing_cost_rat
+      e），故为部分支持，不抬档
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_175_1
     metric_name_zh: "知识产权服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 11 张 gkx 表可查（dwd_id、dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_
+      important_news_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中专业能力（agency 代理件数）与合作伙伴（资本边）可现转，成功案例仅有资讯代理；业务范围维在 gkx 无产业标签表（
+      dwd_org_industry_tags 缺失）→ 结构性缺维，部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_176_1
     metric_name_zh: "人力资源服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维中人才资源（从业人数）与服务标准化（资质标签代理）可现转，客户满意度维无任何评价类承载表、招聘侧数据未并入快照 → 部分支
+      持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_177_1
     metric_name_zh: "市场营销服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_company_punish、dwd_org_importan
+      t_news_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维中调研能力、策划能力在 gkx 无任何承载表（连弱代理都缺文本级命中），仅成功项目案例有资讯条数代理 → 只能出单维代理分
+      、不能合成技术力指数；按「有部分维度可取」落部分支持，不因指数不可合成而降为完全不支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_178_1
     metric_name_zh: "咨询服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_annual_financial_info）；批量初判 provisional，待 lineage-subcoord 核验
+      。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中 D2（年限全量 + 产业标签覆盖 762 家）、D4（标签 32077 家 + 资讯 24639 家 + 风险 227
+      19 家）两维在 gkx 可实测复现，D3 仅有资讯弱代理；但 D1 人才密度维结构性缺分子——gkx 年报表无研发人员列（全表实测 0 行非空），从业人员 emp 虽有 86 家也构不成
+      占比，而人才密度是本模型的第一维、官方标准里权重最高的一维，缺它不能算「完全转换支持」，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_179_1
     metric_name_zh: "科技创新服务机构技术力评价模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_patent_applicants、dwd_patent_transfer）；批量初判 provisional，待 lineage
+      -subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维里 D2（资本型合作边）、D3（专利 1228959 件 / 19249 家，含发明占比分层）、D4（专利转移 491 件
+      触达 119 家）三维在 gkx 实测可算并已合成；D1 合作科研机构数缺全量联合申请人明细——gkx 只导出了 28964 行申请人抽样（对 293.9 万件专利约 1%），只能给出稀疏
+      下界，不足以进合成。四维缺一且缺的是产学研「研」侧，判部分支持；旧稿称本指标可「完全转换支持」，在 gkx 侧不成立，已如实降
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_180_1
     metric_name_zh: "服务机构引入推荐模型"
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_policy_base）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维在外部池 18535 家上均可实测：竞争力维用专利代理（9995 家有专利）、产业相关度用深圳 20+8 标签（7139 
+      家有标签）、政策匹配用 20,000 条政策标题关键词、深圳连接度用双端在池的资本边；但两处是结构性缺口——(1) 年报无研发投入/研发人员两列，竞争力只能走产出侧代理；(2) 资本边对端
+      城市只在池内可见（30,219 个对端只有 8820 个有城市），连接度是下界。缺政策命中表 svc_org_policy_h
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_DEEP_181_1
     metric_name_zh: "服务机构培育推荐模型"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-05"
-    d1_note: "2026-10-22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＋等权默认；不签四维完整，四维缺口与代理口径见 seed pending_cosign 与 handoff SVC-MODEL-REC-COSIGN-L01）。不升 aligned：源表仍 demo 面、gkx 改写稿未回仓；Q-SVCCHAIN-05 阈值/培育建议规则/甲方确认仍待"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＋等权默认；不签四维完整，四维缺口与代理口径见 seed pending_cosign 与
+      handoff SVC-MODEL-REC-COSIGN-L01）。不升 aligned：源表仍 demo 面、gkx 改写稿未回仓；Q-SVCCHAIN-05 阈值/培育建议规则/甲方
+      确认仍待
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维在深圳池 25597 家上均可实测：竞争力（专利 13378 家）、产业相关度（20+8 标签 10778 家）、政策匹配
+      （政策标题关键词）、发展潜力（营收 CAGR 161 家 / 净利 CAGR 127 家）；两处结构性缺口——年报研发两列空挂使竞争力只能产出侧代理；财务覆盖仅 673/25597 家（2
+      .63%），发展潜力维只在有两年正值序列的子群体成立。判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: formula_signed
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_GRAPH_112_1
     metric_name_zh: "服务机构实体识别构建"
     acceptance_unit_id: "ALGO-SVC-GRAPH-112"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_org_product_i
+      nfo、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。实体域 44153 家（主档对齐 44132，99.95%）与七类类型轴、四项主档属性可现转；但原文点名的「人数」属性仅 15
+      82 家（3.58%）有观测——年报人数字段在池内覆盖率过低，且 gkx 无图谱挂载表（节点号只能确定性派生、无物化），故落部分支持，不抬到完全转换。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_GRAPH_113_1
     metric_name_zh: "服务机构实体关系抽取"
     acceptance_unit_id: "ALGO-SVC-GRAPH-113"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_heis_info、dwd_org_invest_info、dwd_org_shareholder_info、dwd_or
+      g_subsidiary_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。资本纽带边（投资 + 机构股东）双端在池 13141 条、覆盖 12905 个节点，可现转；但需求点名的服务类型/服务内容/服
+      务范围/合作伙伴/客户五类语义边在 gkx 无承载表（子公司表双端在池 0 条），多元关系仅落地一类，故落部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_GRAPH_CENTRALITY
     metric_name_zh: "节点度中心性"
     acceptance_unit_id: "TOPIC-ECO-005"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_invest_info、dwd_org_shareholder_info）；批量初判 provisional，待 line
+      age-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。代理边集（投资 + 机构股东，双端在池 13141 条）上度中心性可现算并已出榜单；但需求口径的「服务关系边」（合作/交易/客
+      户）在 gkx 无承载表，正式语义的服务网络度无源，故落部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_GRAPH_DENSITY
     metric_name_zh: "服务网络密度"
     acceptance_unit_id: "TOPIC-ECO-004"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_invest_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。代理密度可现转（全池 1.348e-05 / 活跃子网 1.578e-04），结构与计算链完整；但会签口径 Q-SVCCHAI
+      N-03 明确「服务网络密度的边不算投资/股东」，正式服务关系边在 gkx 无承载表，始终有一维缺正式数据，故落部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_GRAPH_INFLUENCE
     metric_name_zh: "生态影响力评分"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-03"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构图谱"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_invest_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三中心性在代理边集（投资 + 机构股东，双端在池 13141 条、12905 个有度节点）上全部可算，合成分与 Top10 已
+      落盘；但需求语义是「服务机构在服务生态中的影响力」，服务关系边库内无承载表、只能用资本纽带代理，且介数为 1,000 种子抽样估计（SE≈3.2%）→ 主体可算、必需维为代理，判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_SVC_INDUSTRY_LAYOUT
+    metric_name_zh: "全球服务机构产业布局"
+    acceptance_unit_id: "SVC-BASIC-A1"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。地理维（省→市→区）、产业维（国民经济行业门类 20 类，覆盖 99.88%）、服务维（主服务类型 7 类 + 服务环节 6 
+      类）三轴交叉全部在库内实测可算，格子数、HHI、CR3、香农熵、环节渗透率均已落盘；但「全球」轴实现不了——池内 44,132 家有省份的机构 100% 是广东省，库内无 country/
+      境外机构字段，布局只能做到省域内 4 市 26 区，且产业维只到门类不到中类小类，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_INVEST_Y
+    metric_name_zh: "服务机构投融资动态"
+    acceptance_unit_id: "SVC-BASIC-A3"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_financing_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。融资事件年度序列可现转（24,391 件、43 个年份、日期锚 100%）；但 gkx 只有 dwd_org_financin
+      g_info， INVEST 侧无事件表，且金额列整列为空，需求中的「投融资数量+金额」只能兑现融资事件计数
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_NEW_CNT
+    metric_name_zh: "新增服务机构动态"
+    acceptance_unit_id: "SVC-BASIC-A4"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。毛出生序列可现转（成立年覆盖 99.95%），但 gkx 底册成立年在 2023—2025 右截断（218/66/12 家），
+      且无注销/吊销事件流，净新增不可算；近年序列不可用于趋势结论
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_ORG_CNT
+    metric_name_zh: "全球服务机构分布（按国家计数）"
+    acceptance_unit_id: "SVC-BASIC-A2"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_、dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisiona
+      l，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。国内格可完整闭合（44,132 家经 province→中国归并、省级 drill-down 可对账）；但 gkx 底册无 c
+      ountry 列、无与六类服务机构口径闭合的海外名录，国家轴海外格始终无源，按四档落部分支持
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
   - metric_id: M_SVC_ORG_COVERAGE_BREADTH
     metric_name_zh: "服务广度"
     acceptance_unit_id: "TOPIC-ORG-003"
-    module: SVC
+    module: "SVC"
     d1_def_status: aligned
-    d1_pending_ref: "Q068"
-    d1_note: "0.3.1 对齐 M_ENT_DOMAIN_COVERAGE_COUNT；领域键仅 industry_cluster 15。D3/D4 未升。"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.3.1 对齐
+      M_ENT_DOMAIN_COVERAGE_COUNT；领域键仅 industry_cluster 15。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "表齐：circle + enterprise_industry_chain + industry_chain + dim map。现网 chain_code 样例可能未对齐 INB。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "上链灌 INB 与 ENT 同闸。公式可算。不挂 Q-SVCCHAIN-08。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_org_org_product_info）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。原口径的 15 产业集群字典（industry_cluster / industry_cluster_map）在 gkx 不存
+      在；dwd_org_industry_tags 与底册信用码仅 3.5% 对齐、且 INB13xx 与 chain_info 的 INB12xx 不是同一码域，无法重建集群广度。改用六类服
+      务类型去重个数作代理，公式同构但语义降级，按部分支持定档
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_ORG_COVERAGE_DEPTH
     metric_name_zh: "服务机构产业领域覆盖评分"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-02"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（产业领域覆盖度）"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。两轴可算但都已语义降级：广度轴由 15 产业集群降为六类服务类型（gkx 无集群字典），深度轴由产业服务链 1,261 个 l
+      ink_code 降为六环节（tags 与 chain_info 码域不通、底册对齐仅 3.5%）；评分只适合同池相对比较，不能当原口径的绝对覆盖评分
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_ORG_MARKET_HEAT
     metric_name_zh: "市场热度评级"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-02"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（新增服务机构动态的派生评级）"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。2013—2022 十个完整年可算 OLS 斜率（-305.34 家/年，相对 -14.63%）与 CV（46.07%），按王
+      惠表落「下行期」；但 2023—2025 成立年右截断（218/66/12 家），评级窗口止于 2022，「当前热度」只能作历史判断，不能当 2026 年现状
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_ORG_NEW_COUNT
     metric_name_zh: "年度新增服务机构数"
     acceptance_unit_id: "TOPIC-ORG-005"
-    module: SVC
+    module: "SVC"
     d1_def_status: aligned
-    d1_pending_ref: "Q-SVC-010"
-    d1_note: "2026-08-27 侯佳伟 1A2A3A。0.2.1 公式拆 [SEED]/[SERVE]/[PAGE]。Java/Python 只实现 SERVE。D3/D4 未升。"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-08-
+      27 侯佳伟 1A2A3A。0.2.1 公式拆 [SEED]/[SERVE]/[PAGE]。Java/Python 只实现 SERVE。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "出数读 svc_metric_series。现网格子仍挂旧号 M_SVC_NEW_CNT，是灌数改挂不是缺列。svc_new_org_stat 不用。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "公式可算：圈定池按 YEAR(incorporation_date) 计数。成立日在 ODS，不拷进 circle。规则 A 仍黄。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。出生存量序列可现转（成立年覆盖 99.95%、2013—2022 十个完整年）；但出清侧（注销/吊销）缺失、2023—2025
+      成立年右截断，「净新增」与近年趋势均不可算
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_ORG_SELECTED_COUNT
     metric_name_zh: "当前分析机构数"
     acceptance_unit_id: "TOPIC-ORG-002"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "SVC-METRIC-COVER-STAT-L01"
-    d1_note: "2026-10-13 废止。勾选家数是 UI，不是指标。D1 不升 aligned。"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 废止。勾选家数是 UI，不是指标。D1 不升 aligned。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "无目标表。废止后不建。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_org_product_info）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: none
-    d3_gap: "无三方源。不是条件查询总数。"
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。不适用（已废止）：页面 N = 前端会话 selection.length，不是统计指标；gkx 无 svc_* 表，无会话态承载
+      ，也不应为它灌数。存量替代（44,153）与 selection.length 的相关性按定义为 0，不能冒充
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: n/a }
-    lifecycle_stage: retired
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
+  - metric_id: M_SVC_ORG_TECH_SCORE
+    metric_name_zh: "服务机构影响力"
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（机构技术力/影响力画像）"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径已入库（专利/财务维已对 extract 表）；剩余维度对齐待 Q-SVCCHAIN-01
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_important_news_info、dwd_org_stock_finance_info、dwd_patent）；批量
+      初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。五维中专利（52.97% 覆盖）、研发（仅上市主体 3.12%）、案例资讯代理（55.8%）三维可现转；专家维依赖的 deve
+      lopment_employee 整列为空、标准维无承载表，两维始终缺，评分实为三维合成，按部分支持定档
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_ORG_TOTAL
     metric_name_zh: "入库服务机构总数"
     acceptance_unit_id: "TOPIC-ORG-001"
-    module: SVC
+    module: "SVC"
     d1_def_status: aligned
-    d1_pending_ref: "Q-SVC-010"
-    d1_note: "库=svc_org_circle；org_id 唯一键，COUNT(*)；规则 A 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：库=svc_or
+      g_circle；org_id 唯一键，COUNT(*)；规则 A 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "公式可算（COUNT(*) FROM svc_org_circle）。入池规则 A 临时。不数卡面。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。gkx 无 svc_org_circle，但 dwd_org_org_product_info 有 45,011 行经营范围文本
+      、按 org_id 去重得 44,153 家；与底册 189,116 行回联命中 44,132 家（99.95%）。人口结构+当前数据量均足，现在即可经转换得到唯一键计数
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_PT_CHAIN_NODE_ORG
     metric_name_zh: "产业链节点服务机构数"
     acceptance_unit_id: "TOPIC-PT-004"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-08"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：预统计宽表 15×6=90 格（产业轴=15 集群×环节轴=CHAIN_STAGES 六站）；「选定产业」=查询层下钻不进口径；术语澄清节点=服务链站位；与 SEGMENT_ORG_COUNT 同源两消费禁顶替。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：预统计宽表 15×6=90 格（产业轴=15 集群×环节轴=CHAIN_STAGES 六站）；「选定产业」=查询层下钻不进口径；术语澄清节点=服务链站位；与
+      SEGMENT_ORG_COUNT 同源两消费禁顶替。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "事实源=机构×产业×环节服务记录，ODS/DWD/DIM 均不存在（已核验）；供方题 SVC-P0-3 待交付；现网 90 格全 0「暂无供给机构」如实呈现，禁伪造"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_org_org_product_info）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：事实源=机构×产业×环节服务记录，ODS/DWD/DIM 均不存在（
+      已核验）；供方题 SVC-P0-3 待交付；现网 90 格全 0「暂无供给机构」如实呈现，禁伪造
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_GLOBAL_SCALE_DIST
     metric_name_zh: "全球服务机构规模分布"
     acceptance_unit_id: "TOPIC-PT-003"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：四档左闭右开 [0,50)/[50,200)/[200,500)/[500,+]；判定链=人数优先（最近有数年 employees_number）→注册资本兜底（<1000万/[1000万,5000万)/[5000万,1亿)/≥1亿 映射四档，对齐企业域先例）→未分档残档。与 08-28 锁版「人数唯一源」的偏差已登记 Q-SVCCHAIN-06。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：四档左闭右开 [0,50)/[50,200)/[200,500)/[500,+]；判定链=人数优先（最近有数年 employees_number）→注册资本
+      兜底（<1000万/[1000万,5000万)/[5000万,1亿)/≥1亿 映射四档，对齐企业域先例）→未分档残档。与 08-28 锁版「人数唯一源」的偏差已登记 Q-SVCCHAIN-
+      06。仍
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "employees_number 现网 452 家有数∩圈定=0（SVC-P0-2 追问保留）；registered_capital 列已在 dwd_org_base_info 核验存在（万元）；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_org_product_i
+      nfo）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。注册资本兜底链覆盖 99.84%（44,032/44,153 入桶，含 foreign/unknown 单列），六桶合计与池全
+      对账；但员工数主链只有 1,582 家（3.58%）有值，规模刻画的第一指标不可用，且「全球」轴境外机构无源 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_GLOBAL_TOTAL
     metric_name_zh: "全球服务机构总数"
     acceptance_unit_id: "TOPIC-PT-001"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 定稿：国内格可执行（COUNT(*) FROM svc_org_circle）、全球格挂 Q-SVCCHAIN-07（海外/港澳台无源）；formula 本体已写、待唐绍祖补签，D1 不升 aligned；本年新增=series 存量差（侯佳伟 3A）；1 家无成立日 series 末年 3524、fact 3525 为准"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 定稿：国内格可执行（COUNT(*) FROM svc_org_circle）、全球格挂 Q-SVCCHAIN-07（海外/港澳台无源）；formula 本体已写、待唐绍祖补签，D1
+      不升 aligned；本年新增=series 存量差（侯佳伟 3A）；1 家无成立日 series 末年 3524、fact 3525 为准
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "SEED 真源=dwd svc_org_circle（COUNT 直接可跑）；全球格卡 Q-SVCCHAIN-07 名录（forg 0 行/港澳台∩circle=0）；状态仍 pending_ods 不变"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info、dwd_org_org_product_info）；批量初判 p
+      rovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。境内口径的存量值与成立年累积序列均可现转（池 44,153 家、可回查率 99.95%、64 个有值年份、期末 44,132＋
+      无年份 21＝池全对账）；但「全球」所需的境外服务机构名录在 gkx 无源——dwd_forg_base_info 20,000 行只有 GB/US/CA 三个国别值且与服务机构池无对齐键
+      ，故海外轴无法并入 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_GLOBAL_TYPE_DIST
     metric_name_zh: "全球服务机构类型分布"
     acceptance_unit_id: "TOPIC-PT-002"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：高校/院所本体不属服务机构口径（恒0，另有归口）；企业=池内其余；判型 JOIN dwd_org_heis_info/dwd_research_institute_base_info（org_id）。单色环如实。仍 draft 待 Q-SVCCHAIN-06/07+甲方口径确认"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：高校/院所本体不属服务机构口径（恒0，另有归口）；企业=池内其余；判型 JOIN dwd_org_heis_info/dwd_research_instit
+      ute_base_info（org_id）。单色环如实。仍 draft 待 Q-SVCCHAIN-06/07+甲方口径确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "判型 JOIN 键 org_id 已在 demo 库核验（heis 3501/institute 2074/circle 43296，三方两表∩circle=0 为口径结果非缺口）；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info、dwd_org_org_product_info、dwd_res
+      earch_institute_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。机构本体三分类在 gkx 可实算且闭合（企业 44,095＋高校 37＋科研院所 21＝44,153），六类服务词表亦可现转；
+      但「全球」轴的境外机构在 gkx 无源（dwd_forg_base_info 仅 GB/US/CA 三值且非服务名录），类型分布在境外面不可得 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_KEYORG_SCALE
     metric_name_zh: "重点机构规模档案值"
     acceptance_unit_id: "TOPIC-PT-011"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：档案直读非计算指标，读卡面 org_size/employees_number/operating_revenue 不另灌；无值显「—」禁显 0；名单归 Q-SVCCHAIN-01。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：档案直读非计算指标，读卡面 org_size/employees_number/operating_revenue 不另灌；无值显「—」禁显 0；名单归 Q
+      -SVCCHAIN-01。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "卡面三字段链路已定（人数承第 9 条同名列）；employees_number/operating_revenue 现网∩圈定=0（SVC-P0-2）；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info）；批量初判 provisional，待 l
+      ineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。规模档（org_size）在代理名单上 100% 有值；但员工数只有 329/1906 家（17.26%）、营业收入只有 26
+      6/1906 家（13.96%）在年报里有值，且正式「重点机构名单」在 gkx 无源（Q-SVCCHAIN-01 未交付）→ 三格中两格量不足、名单本身是代理 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_REGION_ORG
     metric_name_zh: "区域服务机构数"
     acceptance_unit_id: "TOPIC-PT-005"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：口径全球（国家/地区轴，国内展开省级）不收窄；呈现仅国内（广东 43296 单省）如实，国外空白不造行；同 GLOBAL_TOTAL 世界图。仍 draft 待 Q-SVCCHAIN-06/07+甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：口径全球（国家/地区轴，国内展开省级）不收窄；呈现仅国内（广东 43296 单省）如实，国外空白不造行；同 GLOBAL_TOTAL 世界图。仍 draft
+      待 Q-SVCCHAIN-06/07+甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "svc_org_circle 地理字段已在 demo 库核验（province 全量=广东；city 细到深圳）；海外表 dwd_forg_base_info 0 行（Q-SVCCHAIN-07）；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info、dwd_org_org_product_info）；批量初判 p
+      rovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。省/市两级区域轴在 gkx 可实算（44132/44153 有省级归属，覆盖 2 个省级区划、4 个市级区划）；但需求要求的「
+      各个国家」轴无源：dwd_forg_base_info 只有 GB/US/CA 三值且不是服务机构名录，与池无对齐键 → 国家/海外维度始终缺 → 部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_SZ_FIELD_DIST
     metric_name_zh: "深圳机构产业领域分布"
     acceptance_unit_id: "TOPIC-PT-009"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0：领域轴=15 集群全集常显（sz-10+5-2026 全站同一份字典）；五跳链与 BREADTH 同构；无上链→「未分配」常显；环节轴删除（归第 15 条）。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0：领域轴=15 集群全集常显（sz-10+5-2026 全站同一份字典）；五跳链与 BREADTH 同构；无上链→「未分配」常显；环节轴删除（归第 15 条）
+      。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "上链现网阻塞（已核验）：enterprise_industry_chain 仅 1 行且 org_id 与池 JOIN=0；ODS dwd_org_industry_tags 104 行 credit_code/company_name 均对不上 dwd_org_base_info（GDF-ENT-WORKPACK-v3 已知阻塞：enterprise_code 全空无法回填 org_id）；双挂 L0（人工智能 SEI-01+FUT-02 等 Q068 团队临时）按主集群计。→ 现网 15 集群全 0、未分配=深圳切片全量，如实呈现"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_org_org_product_info）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：上链现网阻塞（已核验）：enterprise_industry_ch
+      ain 仅 1 行且 org_id 与池 JOIN=0；ODS dwd_org_industry_tags 104 行 credit_code/company_name 均对不上 dwd_
+      org_base_info（GDF-ENT-WORKPACK-v3 已知阻塞：enterprise_code 全空无法回填 org_id）；双挂 L0（人工智能 SEI-01+FUT-02
+      等 Q068 团队临时）按主集群计。→ 现网 15 集群全 0、未分配=深圳切片全量，如实呈现
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_SZ_REGION_ORG
     metric_name_zh: "深圳机构区域分布"
     acceptance_unit_id: "TOPIC-PT-010"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0 + 同日 v0.2.1 修正取数链：标准十区字典全集常显（无值显 0）；空 area/JOIN 不上单列「未分配」不剔除；区级字段源改 dwd_org_base_info.area（真主档）。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0 + 同日 v0.2.1 修正取数链：标准十区字典全集常显（无值显 0）；空 area/JOIN 不上单列「未分配」不剔除；区级字段源改 dwd_org_ba
+      se_info.area（真主档）。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "区级字段源=dwd_org_base_info.area（demo 库已核验真数：深圳 14,033=南山 3655/宝安 2850/龙岗 2039/福田 1829/龙华 1795/光明 798/罗湖 553/坪山 388/盐田 121/大鹏 0/空 5→未分配）；池 43,296 全命中主档；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。深圳切片的区级分布可现转且闭合：切片 25597 家，9 个行政区＋未分配 10＋区外/异名 0 ＝25597（与 M_SVC_
+      PT_SZ_TOTAL 同池同数）；区字段非空率 99.96%，未分配单列不剔除
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_SZ_TOTAL
     metric_name_zh: "深圳产业服务机构数量"
     acceptance_unit_id: "TOPIC-PT-007"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强确认 v0.2.0 + 同日 v0.2.1 补真数：city 经 dwd_org_base_info JOIN 取；现池深圳真数 14,033（池全量 43,296 城市分布已核）；数随池联动不写死；本年新增=series 相邻年差（3A）；缺成立年只进 fact。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强确认 v0.2.0 + 同日 v0.2.1 补真数：city 经 dwd_org_base_info JOIN 取；现池深圳真数 14,033（池全量 43,296 城市分布已
+      核）；数随池联动不写死；本年新增=series 相邻年差（3A）；缺成立年只进 fact。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "dwd_org_base_info.city 已在 demo 库核验（池 43,296 全命中主档：广州 19600/深圳 14033/东莞 7908/惠州 1751/京甬 4）；成立年同第 6 条；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。深圳切片的数量、成立年累积序列、区级对账三面在 gkx 全部可现转：切片 25597 家、区级分布加总与切片完全一致（25587
+      ＋未分配 10＝25597）、序列期末＋无年份＝切片；依赖字段（city/incorporation_year/area）覆盖 99.96% 以上，「结构+当前数据量」双足，当日即可转换出
+      数
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_PT_SZ_TYPE_DIST
-    metric_name_zh: "深圳机构类型统计"
+    metric_name_zh: "深圳服务机构类型分布"
     acceptance_unit_id: "TOPIC-PT-008"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-06"
-    d1_note: "2026-10-13 徐滕强拍板 v0.2.0 + 同日 v0.2.1 补真数：三类字典维持（高校/院所/企业）；现网高校=0、院所=0、企业=深圳切片真数 14,033（同第 11 条 JOIN 主档口径）；环图单色如实呈现；分类能力受限=高校/院所归独立模块（第 7 条拍板）。仍 draft 待甲方"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板 v0.2.0 + 同日 v0.2.1 补真数：三类字典维持（高校/院所/企业）；现网高校=0、院所=0、企业=深圳切片真数 14,033（同第 11 条 JOIN 主档口
+      径）；环图单色如实呈现；分类能力受限=高校/院所归独立模块（第 7 条拍板）。仍 draft 待甲方
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "dwd_org_base_info.city/org_type demo 库已核验（深圳切片 14,033）；类型字段现网全为企业单值属业务事实非缺口；正式 ODS 侧待核验，未核≠已确认缺口"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info、dwd_research_institute_bas
+      e_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三类轴的「企业」一类可由 `city='深圳市'` 直接切出 25,589 家（99.9687%），但「高校」只能靠名称含「大
+      学/学院」的规则识别（8 家，清洗后 6 家），「科研院所」21 家在池内 `city` 与 `prov` 全为空串、按城市切片恒 0——三类中有一类结构性不可得、一类规则不可靠，故判 *
+      *部分支持**。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_REC_ATTRACT_SCORE
     metric_name_zh: "招引综合评分"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-05"
-    d1_note: "2026-10-22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＝产业匹配度/技术领先性/发展潜力/对外合作意愿＋等权默认；不签四维完整，研发投入整列空、发展潜力对 99.97% 空维、产业标签覆盖 23.25%、对外合作以投资边代理；两套维度名待甲方裁定 REC-B01）。不升 aligned：源表仍 demo 面；Q-SVCCHAIN-05 阈值/推荐理由规则/甲方确认仍待"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＝产业匹配度/技术领先性/发展潜力/对外合作意愿＋等权默认；不签四维完整，研发投入整列空、
+      发展潜力对 99.97% 空维、产业标签覆盖 23.25%、对外合作以投资边代理；两套维度名待甲方裁定 REC-B01）。不升 aligned：源表仍 demo 面；Q-SVCCHAIN-
+      05 阈
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_base_in
+      fo、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。「招引综合评分」四维里，产业匹配度与对外合作意愿可由现有表代理算出，技术领先性只剩专利授权件数一个代理，发展潜力只覆盖 187
+      家（1.01%）——四维无法在同一批机构上齐备，故判 **部分支持**，只发布分布与分位，不发布可对外背书的单一冠军榜。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: formula_signed
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SVC_REC_CANDIDATE_CNT
     metric_name_zh: "候选机构数"
     acceptance_unit_id: "TOPIC-REC-003"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "SVC-METRIC-COVER-STAT-L01"
-    d1_note: "2026-10-13 废止。涉及筛选条件的实时结果集 length，不是指标。D1 不升 aligned。作废 08-28 侯佳伟 1B「仍挂 STAT」口径。"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 废止。涉及筛选条件的实时结果集 length，不是指标。D1 不升 aligned。作废 08-28 侯佳伟 1B「仍挂 STAT」口径。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "无目标表。废止后不建。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_bid_win_candidate_out、dwd_bid_win_candidate_out_bak_20260911、dwd_
+      org_org_product_info）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: none
-    d3_gap: "无三方源。不是可灌 ADS 的统计指标。"
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。「候选机构数」不是统计量，而是招引/培育页在当前筛选条件下 `results.length` 的显示值：产业方向、机构类型、服务环
+      节、规模任意一项变化，N 就变。注册表已于 2026-10-13 由徐滕强判 retired，指标身份撤销；本件不计算任何值，只交付「为什么不可算」的否定性证据。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: n/a }
-    lifecycle_stage: retired
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_REC_CULTIVATE_SCORE
     metric_name_zh: "培育综合评分"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-05"
-    d1_note: "2026-10-22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＝现有规模/技术创新能力/服务成效/市场缺口＋等权默认；不签四维完整，技术创新与服务成效整维缺、深圳池仅 169/14,033 出分、市场占有率分母降级；两套维度名待甲方裁定 REC-B02）。不升 aligned：源表仍 demo 面；Q-SVCCHAIN-05 阈值/培育建议规则/甲方确认仍待"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      22 formula/algorithm_type 已会签 human:唐绍祖（试点口径：王惠四维＝现有规模/技术创新能力/服务成效/市场缺口＋等权默认；不签四维完整，技术创新与服务成效整
+      维缺、深圳池仅 169/14,033 出分、市场占有率分母降级；两套维度名待甲方裁定 REC-B02）。不升 aligned：源表仍 demo 面；Q-SVCCHAIN-05 阈值/培育建
+      议规则/
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_important_new
+      s_info、dwd_org_org_product_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。培育综合评分四维里，现有规模只覆盖 1,030 家（4.0239%）、技术创新能力**恒缺**（两分子列在 90,926 行中
+      0 行非空）、服务成效只能拿新闻条数代理、市场缺口只能用池内同门类营收份额代理——四维中有一维结构性不可得，故判 **部分支持**，只发布 981 家三维/两维可算机构的分布，不发布全市
+      培育排序。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: formula_signed
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_SVC_RELATION_DENSITY
+    metric_name_zh: "服务关系链密度"
+    acceptance_unit_id: "SVC-RELATION"
+    module: "SVC-DEEP"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_invest_info、dwd_org_org_product_info、dwd_or
+      g_shareholder_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：图 hang gkx_chain（禁 gkx_service）；AD
+      S=svc_relation_chain。F-ALGO 未写边；Q062；联调台仍 Mock。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_RELATION_RISK
+    metric_name_zh: "服务关系风险"
+    acceptance_unit_id: "SVC-RELATION"
+    module: "SVC-DEEP"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_company_punish、dwd_org_invest_info、dwd_org_org_product_info、d
+      wd_org_risk_shixin…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：依赖 svc_relation_chain + gkx_chain；
+      Q062；无独立风险源表。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
   - metric_id: M_SVC_SZ_CHAIN_COMPLETENESS
     metric_name_zh: "服务链完整度"
     acceptance_unit_id: "TOPIC-ECO-007"
-    module: SVC
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-04"
-    d1_note: "0.2.0 挂起身份已锁：公式未签（Q-04）+ 环节无源（Q-08）。D1 保持 draft，不升 aligned。现网诚实排除。D3/D4 未升。"
-    d2_schema_status: pending
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 挂起
+      身份已锁：公式未签（Q-04）+ 环节无源（Q-08）。D1 保持 draft，不升 aligned。现网诚实排除。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "无完整度结果表；若用覆盖占比还缺机构×服务链环节成员表。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "算法待签（Q-SVCCHAIN-04）；事实表待供方（SVC-P0-3 / Q-SVCCHAIN-08）。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_bid_base_out）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。完整度公式未签（Q-SVCCHAIN-04 / 唐绍祖），calc-logic 0.2.0 明确「本件不做真数、不写可执行公式」；
+      计算所需的「机构×服务链六环节服务记录」（SVC-P0-3）在 gkx 与 live 均不存在（gkx 280 表 0 张 svc_*；live 13 张 svc_* 表 0 行）。分子（
+      某机构在某环节提供过服务）与分母（关键环节全集）两端都无结构承载，属结构与数据双缺。经营范围词表派生的六站代理在城市级恒满
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_SVC_SZ_COMPARE_METRIC
     metric_name_zh: "城市对比指标值"
     acceptance_unit_id: "TOPIC-ECO-008"
-    module: SVC
+    module: "SVC"
     d1_def_status: aligned
-    d1_pending_ref: "Q-SVCCHAIN-04"
-    d1_note: "0.2.0 部分闭合已锁：多格面板；仅深圳×服务机构数=跟 M_SVC_PT_SZ_TOTAL 同规则。外市/技术力/密度缺口写明。整板不升 live。D3/D4 未升。"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 部分
+      闭合已锁：多格面板；仅深圳×服务机构数=跟 M_SVC_PT_SZ_TOTAL 同规则。外市/技术力/密度缺口写明。整板不升 live。D3/D4 未升。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "深圳机构数可读圈定+主表 city；外市基准表/技术力结果表/服务边表均缺。"
-    d3_source_mapping_status: pending_ods
-    d3_gap: "外市基准 Q-04（样本偏广东）；技术力 Q-01；服务边 SVC-P1-1/Q-03。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_invest_info、d
+      wd_org_org_product_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三小项 × 多城市的面板里，只有「深圳 × orgCount」一格可发布（25,597，与 M_SVC_PT_SZ_TOTAL
+      同数）；外市 orgCount 虽在同池内可数，但池 100% 落广东省、北京/上海 0 家，不构成城市基准；avgTechScore 三子指标有两个分子整列为空且模型未签；networ
+      kDensity 无服务机构间边源。九格中一格可发布、其余不可，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
+  - metric_id: M_SVC_SZ_DISTRICT
+    metric_name_zh: "深圳服务机构分布"
+    acceptance_unit_id: "SVC-BASIC-A6"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_org_product_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：ADS=svc_region_dist geo_level=sz
+      _district；优先 ODS area（md-extract），live 仅 district 则用 district（Q-SVC-004）。禁止地址解析冒充。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_SVC_SZ_SCALE
+    metric_name_zh: "深圳服务机构规模"
+    acceptance_unit_id: "SVC-BASIC-A5"
+    module: "SVC-BASIC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_org_product_i
+      nfo）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：ADS=svc_metric_fact；过滤 ODS city∈
+      {深圳,深圳市}。org_size 有则进 ext。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
   - metric_id: M_SVC_SZ_TIER
     metric_name_zh: "深圳梯队位置"
-    d1_def_status: draft
-    d1_pending_ref: "Q-SVCCHAIN-04"
-    d1_note: "王惠 20260829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）"
-    d2_schema_status: pending
+    acceptance_unit_id: "BATCH-20261021/SVC 服务机构（产业服务链分析"
+    module: "SVC"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：王惠 20260
+      829 口径/公式已起草入库；formula/algorithm_type 待唐绍祖会签（GAP-ALGO-TYPE-UNSIGNED）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_org_product_i
+      nfo、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三个维度里只有「服务机构数量」在池内可算（深圳 25,597），但梯队分档要求与全国城市同口径排序，而 gkx 服务机构池 1
+      00% 落在广东省、池外城市 0 家，无法构成全国对比集合；「技术力」三子指标有两个的分子列整列为空（研发投入/研发人员），只有专利代理可算；「服务链完整度」公式未签且无机构×环节成员表，
+      六站代理在 12 个产业上恒为 5/6、无区分度。三维均无法在同一城市集合上闭合，故判部分支持，不产出梯队名次。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_SVC_TYPE_DIST_QUERY
+    metric_name_zh: "查询结果·服务类型分布"
+    acceptance_unit_id: "TOPIC-QUERY"
+    module: "TOPIC-QUERY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      13 徐滕强拍板转查询态口径卡（选 A）：口径六要素已锁 seed v0.2.0，实现归 TOPIC-QUERY 查询叶（不进 SVC-ALGO-STAT-21-IMPL-L01），不落 
+      ADS。D1 留 draft——类型字典列 svc_type/org_type 仍待 Q106 甲方签；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_org_product_info）；批量初
+      判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。查询结果·服务类型分布是查询链路上的实时分桶逻辑，不是全库统计：对象是当前查询命中的 `org_id` 集合、度量是每桶去重计
+      数、结果不落 ADS。gkx 没有 `svc_type` 主数据列，六类只能由经营范围词表重建，且「INNOV 优先」与「IP 优先」两套优先级给出的分布整体换形（INNOV 19,879
+      vs 1,544），故判 **部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+

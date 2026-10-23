@@ -1,8 +1,7 @@
 # 产业热点领域识别模型（M_CHAIN_DEEP_120_1）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_120_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_120_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_120_1_out.json`。
 
 ## 基础信息
 
@@ -10,61 +9,57 @@
 |---|---|
 | 指标ID | M_CHAIN_DEEP_120_1 |
 | 指标名称 | 产业热点领域识别模型 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
-| 更新频率 | 月度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链深度／热点识别 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链首页「热点链」卡片、链对比页「升温榜」 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2023, 2024, 2025] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_DEEP_120_1.md` |
 
 ## 口径定义
 
-通过对接资讯数据库与投融资/企业增量数据，基于市场份额、行业增长率、竞争格局等热点指标与阈值，利用热点识别算法对目标产业动态进行分析，实时识别并跟踪产业热点领域。对象=产业细分热点领域，评分取值 0—100，分数越高热点越显著。
+「热点」是**领域 × 时间**的二维判断。时间维有（融资年、成立年）；**领域维只到链，不到叶级**——这就是本件判「部分支持」的全部理由。链级排序可算，叶级卡片算不出，两者不是精度差，是维度缺一层。
 
 ## 计算逻辑说明
 
-三步：① 数据采集：资讯（`chain_news`/`dwd_industry_chain_news_info`）、投融资（`chain_investment`）、新企业增量（`chain_enterprise_stat`）。② 子评分：资讯热度分（news_freq_score，按资讯量/浏览量）、资本热度分（investment_score，按投融资额）、市场热度分（enterprise_growth_score，按新进入企业增长）。③ 综合：三子分加权得 hotspot_score，超过阈值标 is_hot，并输出 hot_news 与排名 rank_overall。
-
-- 资讯热度分 = 归一化(资讯数量, 热点资讯数)
-- 资本热度分 = 归一化(投融资事件数, 投融资总额)
-- 市场热度分 = 归一化(新进入企业数, 增长率)
-- 热点综合分 hotspot_score = Σ(Wi × 子评分)
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业热点领域识别模型 | 资讯热度 | 资讯数量 | 统计期内产业相关资讯去重数。 | COUNT(DISTINCT news_id) | chain_news(news_id, chain_id, chain_name, title, summary, views, is_hot, publish_time)；dwd_industry_chain_news_info(id, industry_code, title, publish_date, abstract)；gkxlumenx_ads.chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views, growth_rate) | 无 |
-|  |  | 热点资讯数 | 被标注为热点或浏览量超阈值的资讯数。 | COUNT(DISTINCT news_id) WHERE is_hot=1 OR views≥阈值 | chain_news(news_id, views, is_hot)；chain_news_stat(hot_count) | 热点阈值参数表 |
-| 产业热点领域识别模型 | 资本热度 | 投融资事件数 | 统计期内产业投融资事件去重数。 | COUNT(DISTINCT investment_id) | chain_investment(investment_id, chain_id, enterprise_name, round, amount, invest_date)；dwd_org_financing_info(org_id, funding_round, funding_amount, completion_date) | 无 |
-|  |  | 投融资总额 | 统计期内产业投融资金额合计。 | SUM(amount) | chain_investment(amount)；gkxlumenx_ads.chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate, count_growth_rate) | 无 |
-| 产业热点领域识别模型 | 市场热度 | 市场份额 | 该产业营收/企业占全部产业比重。 | 产业营收 ÷ 全部产业营收合计 | chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) | 市场份额指标表（全产业分母口径） |
-|  |  | 行业增长率 | 产业营收/企业数量同比增速。 | (本期 − 上期) ÷ 上期 | chain_market(growth_rate)；chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate) | 无 |
-|  |  | 竞争格局(新进入企业数) | 统计期内新进入该产业的企业数量。 | COUNT(DISTINCT enterprise_id) WHERE 新进入 | chain_enterprise_stat(enterprise_count, growth_rate)；dwd_org_base_info(incorporation_year) | 无 |
-| 产业热点领域识别模型 | 热点判定 | 热点综合分 | 三子评分加权后的热点综合得分。 | Σ(Wi × 子评分)，超阈值 is_hot | gkxlumenx_ads.chain_hotspot(chain_id, chain_name, news_count, investment_total, new_enterprise_count, news_freq_score, investment_score, enterprise_growth_score, hotspot_score, is_hot, hot_news, rank_overall) | 热点权重与阈值参数表 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_120_1.md` §二（M_CHAIN_DEEP_120_1.py 零改语义复算）。
 
 ## 源表字段
 
-- chain_news(news_id, chain_id, chain_name, enterprise_id, enterprise_name, news_type, type_name, title, summary, views, is_hot, publish_time, data_year, data_month) — 产业资讯
-- dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract, source) — 产业资讯 ODS
-- dwd_news_base(yqwyj, fbsj, lymc, lx, bt, zy, xgqyxx) — 全网资讯
-- chain_investment(investment_id, chain_id, chain_name, enterprise_id, enterprise_name, round, amount, investor, invest_date, data_year) — 投融资明细
-- dwd_org_financing_info(org_id, name_cn, funding_round, funding_amount, completion_date, investors_name) — 融资事件
-- chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模与增长率
-- chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与增长
-- dwd_org_base_info(org_id, name_cn, incorporation_year, city, province) — 企业成立年（新进入判定）
-- gkxlumenx_ads.chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views, growth_rate) — 资讯月度统计
-- gkxlumenx_ads.chain_hotspot(chain_id, chain_name, news_count, investment_total, new_enterprise_count, news_freq_score, investment_score, enterprise_growth_score, hotspot_score, is_hot, hot_news, rank_overall) — 热点识别结果
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_industry_chain_news_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
 
-- 市场份额指标表（全产业分母口径：产业营收 ÷ 全产业营收合计）
-- 竞争格局/行业集中度指标表（HHI 或 CR4，需企业营收份额明细）
-- 热点识别权重与阈值参数表
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 舆情与热点监测相关方法|国家统计局社科文司|中国创新指数指标体系|https://www.stats.gov.cn/sj/zxfb/202302/t20230203_1900165.html
+## 数据支持度与缺口
 
-[2] 区域创新能力监测指标体系|科学技术部|https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110674.html
+- **判档**：部分支持
+- **判档理由**：链级热度可用两条可比时间序列合成：融资事件近三年 1630 起（占挂链事件 11.14%）、新设企业近三年 2430 家（占可挂链新设 4.62%），12 条链全部有值。但产品要的「领域」是叶级：954 个叶级环节中，具备叶级时间序列的来源为 0/3——资讯标签最深只到 7 位根链（叶级标签 0 个）、融资表无环节字段（8 列）、成立年份只到链级。资讯腿本身还只覆盖 9/12 条链（智能网联汽车、软件与信息服务、智能终端 为 0），极差 82416 : 222（371.2 倍），不可作横截面比较。故判部分支持：能给「哪条链在升温」，不能给「链里哪个细分领域在升温」。
+- **基期声明**：近三年窗口 2023—2025 全部有数，未做缺年摊 0；2026 年为不完整年（截至 07），不入窗口。分母为各链全期（1990—2025）事件数，属同源分母，不是外部总量。
+- **复现实测耗时**：约 1.2 秒（源件落盘记录）
 
-[3] 市场集中度（HHI/CR4）测算方法|国务院反垄断委员会|《关于相关市场界定的指南》|https://www.samr.gov.cn/
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_120_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_120_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_120_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,69 +1,67 @@
 # 瓶颈堵点判定（M_SVC_CHAIN_BOTTLENECK）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_BOTTLENECK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_BOTTLENECK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_BOTTLENECK_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_CHAIN_BOTTLENECK |
 | 指标名称 | 瓶颈堵点判定 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 服务链短板分析 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 二级已按需求7.4+原型六环节收口；正式分档阈值待Q-SVCCHAIN-03 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SVCCHAIN-03 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·产业服务链分析·瓶颈堵点智能识别（SRS seq 124） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_CHAIN_BOTTLENECK.md` |
 
 ## 口径定义
 
-选定产业在统计窗口内，按全周期六环节（研发与科研合作、知识产权与标准、技术转移与孵化、中试熟化、检测认证、市场化服务）分别给出短板判定，输出服务空白、薄弱环节、资源瓶颈或正常。六环节并列，不合成单一分数。
+王惠口径的三档是：环节家数 0 → 服务空白；≤1 → 薄弱环节；平均服务深度 <55 → 资源瓶颈；否则正常。本件换到 gkx 后，前两档一次都没触发（最少的中试也有 8 家），第三档因为深度分无源而无法判定，于是六个环节全部落在「有供给」，结论退化。
 
 ## 计算逻辑说明
 
-入集：服务机构认定读 demo_gkxlumenx_ads.svc_org_card
-
-选定产业用 dwd_org_industry_tags.credit_code = dwd_org_base_info.external_id，且 industry_code 须先在 dwd_industry_chain_info 定链。
-
-第一步：按专家知识库六环节归集机构。正式映射待建 svc_chain_stage_map；代理为 main_activities 命中该环节服务类型词。未映射不计入任何环节。产业链节点 industry_link_code 不是本指标六环节。
-
-第二步：各环节计 COUNT(DISTINCT org_id)；平均服务深度读 M_SVC_ORG_COVERAGE_DEPTH，无深度不伪造 0。
-
-第三步：分档（演示规则，正式阈值待 Q-SVCCHAIN-03）：机构数 = 0 → 服务空白；机构数 ≤ 1 → 薄弱环节；平均深度非空且 < 55 → 资源瓶颈；否则正常。三类档位互斥，优先空白、再薄弱、再瓶颈。  WHERE main_activities 命中「委托研发|联合攻关|大设施开放|算力服务
-
-第四步：各环节服务类型仅用于全链路可视化，不作为本指标三级，不单独改写分档。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 瓶颈堵点判定 | 研发与科研合作 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定研发与科研合作是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities)main_activities命中委托研发\|联合攻关\|大设施开放\|算力服务 — 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-研发与科研合作映射 |
-| 瓶颈堵点判定 | 知识产权与标准 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定知识产权与标准是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities)命中专利预审\|IP保护\|标准制定\|合规咨询 — 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-知识产权与标准映射 |
-| 瓶颈堵点判定 | 技术转移与孵化 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定技术转移与孵化是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities) 命中技术转移\|成功孵化\|产学研对接— 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-技术转移与孵化映射 |
-| 瓶颈堵点判定 | 中试熟化 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定中试熟化是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities) 命中中试\|中试放大\|工艺验证\|试产代工— 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-中试熟化映射 |
-| 瓶颈堵点判定 | 检测认证 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定检测认证是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities)命中检验检测\|计量校准\|认证认可 — 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-检测认证映射 |
-| 瓶颈堵点判定 | 市场化服务 |  | 从该环节入集服务机构覆盖规模与平均服务深度，判定市场化服务是否为服务空白、薄弱环节或资源瓶颈。 | COUNT(DISTINCT org_id) 归属本环节；AVG(服务深度)；0→服务空白；≤1→薄弱环节；深度<55→资源瓶颈 | dwd_org_org_product_info(org_id, main_activities) 命中投融资\|人才服务\|人才配置\|数字化转型— 本环节归集代理；见 M_SVC_ORG_COVERAGE_DEPTH — 平均服务深度 | svc_chain_stage_map-市场化服务映射 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_BOTTLENECK.md` §二（M_SVC_CHAIN_BOTTLENECK.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card— 服务机构认定；
-- dwd_org_industry_tags(credit_code, industry_code) — 选定产业挂接
-- dwd_industry_chain_info(industry_code) — 定链
-- 见 M_SVC_ORG_COVERAGE_DEPTH — 环节平均服务深度
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_company_punish`
+- `dwd_org_important_news_info`
+- `dwd_org_invest_info`
+- `dwd_org_org_product_info`
+- `dwd_org_recruit_info`
+- `dwd_org_risk_shixin`
+- `dwd_org_shareholder_info`
 
-- svc_chain_stage_map-六环节映射
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-瓶颈堵点判定｜研发与科研合作 | 国家发展改革委 |[https://www.ndrc.gov.cn/wsdwhfz/202512/t20251203_1402210.html](https://link.wtturl.cn/?target=https%3A%2F%2Fwww.ndrc.gov.cn%2Fwsdwhfz%2F202512%2Ft20251203_1402210.html&scene=im&aid=582478&lang=zh)
+## 数据支持度与缺口
 
-瓶颈堵点判定｜知识产权与标准| 国家知识产权局（九部门科技服务业实施意见）|[https://www.cnipa.gov.cn/art/2025/6/20/art_55_200211.html](https://link.wtturl.cn/?target=https%3A%2F%2Fwww.cnipa.gov.cn%2Fart%2F2025%2F6%2F20%2Fart_55_200211.html&scene=im&aid=582478&lang=zh)
+- **判档**：部分支持
+- **判档理由**：家数维可词表代理现转（六环节 30,776/776/13,878/8/4,533/10,702）；第三档「资源瓶颈」所需的平均服务深度分在 gkx/live 均无任何来源（Q-SVCCHAIN-02 口径未签、SVC-P0-3 成员表未建）→ 三档只能判前两档
+- **基期声明**：截面指标：六环节分档基于当前存量计数，无年度分母；第三档（资源瓶颈）依赖的「平均服务深度分」在 gkx 无任何来源，故 base_years 与深度窗口均不适用，已逐环节记 depth_status。
 
-瓶颈堵点判定｜技术转移与孵化 | 全国人大（国务院科技成果转化专项报告）|http://www.npc.gov.cn/npc/c2/c30834/202512/t20251229_450858.html
+## 溯源与复现
 
-瓶颈堵点判定｜中试熟化 | 国家发展改革委 |[https://www.ndrc.gov.cn/wsdwhfz/202512/t20251203_1402210.html](https://link.wtturl.cn/?target=https%3A%2F%2Fwww.ndrc.gov.cn%2Fwsdwhfz%2F202512%2Ft20251203_1402210.html&scene=im&aid=582478&lang=zh)中华人民共...
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_BOTTLENECK.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_BOTTLENECK.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_BOTTLENECK_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-瓶颈堵点判定｜检测认证| 中国政府网（质量基础设施助力产业链供应链指导意见）|[https://www.gov.cn/zhengce/zhengceku/202401/content_6926534.htm](https://link.wtturl.cn/?target=https%3A%2F%2Fwww.gov.cn%2Fzhengce%2Fzhengceku%2F202401%2Fcontent_6926534.htm&scene=im&aid=582478&lang=zh)
+## 更新记录
 
-瓶颈堵点判定｜市场化服务 | 国家发展改革委（四链融合专题）|[https://www.ndrc.gov.cn/xwdt/ztzl/NEW_srxxgcjjpjjsx/yjcg/zw/202512/t20251204_1402237.html](https://link.wtturl.cn/?target=https%3A%2F%2Fwww.ndrc.gov.cn%2Fxwdt%2Fztzl%2FNEW_srxxgcjjpjjsx%2Fyjcg%2Fzw%2F202512%2Ft20251204_1402237.html&scene=im&aid=582478&lang=zh)
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

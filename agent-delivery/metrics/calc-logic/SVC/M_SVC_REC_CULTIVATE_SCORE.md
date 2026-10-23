@@ -1,89 +1,64 @@
 # 培育综合评分（M_SVC_REC_CULTIVATE_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_REC_CULTIVATE_SCORE |
 | 指标名称 | 培育综合评分 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 培育服务机构推荐分析 |
-| 更新频率 | 按需 |
-| 对齐状态判定 | 待甲方Q-SVCCHAIN-05；规模/创新已对extract |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SVCCHAIN-05 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·产业服务链分析·本土服务机构培育列表评分列 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| 缺失年份 | [2007, 2008, 2009, 2010, 2011, 2012] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_REC_CULTIVATE_SCORE.md` |
 
 ## 口径定义
 
-对深圳本土在库服务机构的培育综合评分，从现有规模、技术创新能力、服务成效、市场缺口四个维度评定，取值 0—100。
+培育综合评分四维里，现有规模只覆盖 1,030 家（4.0239%）、技术创新能力**恒缺**（两分子列在 90,926 行中 0 行非空）、服务成效只能拿新闻条数代理、市场缺口只能用池内同门类营收份额代理——四维中有一维结构性不可得，故判 **部分支持**，只发布 981 家三维/两维可算机构的分布，不发布全市培育排序。
 
 ## 计算逻辑说明
 
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法消除量纲，转换为 0—100 之间的标准化得分：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij} 为第 i 个机构在第 j 个指标上的原始值，\min(x_j) 和 \max(x_j) 分别为该指标在所有机构中的最小值和最大值。
-$$
-
-第二步：各维度得分计算
-
-各维度得分为其下各指标标准化得分的等权加权平均：
-
-现有规模得分 =（从业人员数得分 + 资产规模得分）÷ 2
-技术创新能力得分 =（研发人才结构得分 + 研发投入强度得分）÷ 2
-服务成效得分 =（服务企业数量得分 + 服务项目数量得分）÷ 2
-市场缺口得分 = 市场占有率得分
-
-第三步：培育综合评分计算
-
-四个维度得分按等权加权汇总：
-$$
-培育综合评分 = \frac{现有规模得分 + 技术创新能力得分 + 服务成效得分 + 市场缺口得分}{4}
-$$
-其中，各维度可采用等权重（各占 25%），也可根据评估重点自行制定各维度权重。得分越高表明机构的培育综合能力越强。
-
-培育综合评分指标体系
-
-| 维度             | 指标         | 指标说明                                                     | 计算公式                                       | 源表字段 | 待建字段 |
-| :--------------- | :----------- | :----------------------------------------------------------- | :--------------------------------------------- | -------- | -------- |
-| **现有规模** | 从业人员数 | 机构全职从事科创服务的职工总数，反映人力资源规模 | 上年度全职从事科创服务职工总数 | dwd_org_annual_financial_info(org_id, employees_number, year) — 从业人数 | 无 |
-|  | 资产规模 | 机构拥有的资产总额，反映经济实力和经营基础 | 资产总额（资产负债表中“资产总计”科目期末余额） | dwd_org_annual_financial_info(org_id, total_assets, year) — 资产总额 | 无 |
-| **技术创新能力** | 研发人才结构 | 研发人员占从业人员总数的比重，反映机构研发人力投入强度和创新人才储备 | 研发人员数 ÷ 从业人员总数 × 100% | dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员,从业人数 | 无 |
-|  | 研发投入强度 | 研发经费内部支出占营业收入的比重，反映机构对技术创新的重视程度和投入能力 | 研发经费内部支出 ÷ 营业收入 × 100% | dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, year) — 研发投入,营收 | 无 |
-| **服务成效** | 服务企业数量 | 评价周期内实际服务的企业总数，反映服务覆盖广度 | 评价周期内服务企业总数 | dwd_org_important_news_info(org_id, news_title, news_date) — 服务成效代理 | svc_served_ent_count-服务企业数 |
-|  | 服务项目数量 | 评价周期内承接并完成的服务项目总量，反映业务活跃度 | 评价周期内完成服务项目总数 | dwd_org_important_news_info(org_id, news_title, news_date) — 服务成效代理 | svc_project_count-服务项目数 |
-| **市场缺口** | 市场占有率 | 机构营业收入占目标市场同类机构营业收入总额的比重，反映市场竞争地位和成长空间 | 机构营业收入 ÷ 目标市场同类机构营收总额 × 100% | demo_gkxlumenx_ods.svc_org_card(org_id, industry) — 同类机构清单；dwd_org_annual_financial_info(org_id, operating_revenue, year) — 机构营收,同类营收 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md` §二（M_SVC_REC_CULTIVATE_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,深圳城市筛选
-- dwd_org_base_info(org_id, external_id) — 信用代码对齐
-- dwd_org_annual_financial_info(org_id, employees_number, total_assets, development_employee, arch development am, operating_revenue, year) — 从业人数,资产总额,研发人员,研发投入,营收
-- dwd_org_important_news_info(org_id, news_title, news_date) — 服务成效代理
-- dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 所属产业
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_important_news_info`
+- `dwd_org_org_product_info`
 
-- svc_served_ent_count-服务企业数
-- svc_project_count-服务项目数
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1]培育综合评分｜安阳市科学技术局｜安阳市科技服务机构考评奖补办法（试行）：安科〔2022〕21号｜2022-05-26｜[《安阳市科技服务机构考评奖补办法（试行）》政策解读_政策解读_安阳市科学技术局](https://ayskjj.anyang.gov.cn/2022/07-21/2352930.html).
+## 数据支持度与缺口
 
-[2]培育综合评分｜江苏省市场监督管理局｜科技服务机构星级评定规范：DB32/T 5108-2025｜2025-03-25｜https://dbba.sacinfo.org.cn/attachment/onlineRead/a0698473576de40c89372a7a7c44a9226580a1feed9ab56bde88156de762bb43?file=%2Fportal%2Fdownload%2Fa0698473576de40c89372a7a7c44a9226580a1feed9ab56bde88156de762bb43#zoom=auto&disablerange=true&disablestream=true&disableautofetch=true.
+- **判档**：部分支持
+- **判档理由**：培育综合评分四维里，现有规模只覆盖 1,030 家（4.0239%）、技术创新能力**恒缺**（两分子列在 90,926 行中 0 行非空）、服务成效只能拿新闻条数代理、市场缺口只能用池内同门类营收份额代理——四维中有一维结构性不可得，故判 **部分支持**，只发布 981 家三维/两维可算机构的分布，不发布全市培育排序。
+- **基期声明**：非固定年窗：现有规模取每家机构最近一个有值的年报年（从业人员/资产总额），窗口随机构而异；财务表在池内非空值只落 2013—2025，2007—2012 池内 0 行非空，列入 missing，不按 0 摊入。服务成效的新闻条数无年份窗口（全历史累计）；市场缺口取最近一个有值年的营业收入，同门类分母只汇总同一年的有值机构。
 
-## 会签记录
+## 溯源与复现
 
-> 2026-10-22 `human:唐绍祖` 已签 `formula` + `algorithm_type=MODEL`，**限试点口径**：上列王惠四维＋维度内/维度间等权默认；极值归一化分母为当期同池；缺维按可用维均值、可用维数 < 2 不入榜。
-> **未覆盖**：技术创新能力（研发人员/研发投入两列全空）、服务成效（`svc_served_ent_count`/`svc_project_count` 待建、无承载表）、产业相关度、政策匹配度（05 模型叶 181 的另一套维度名待甲方裁定 `REC-B02`）。
-> **降级披露**：现有规模＋市场缺口可算，但深圳池仅 169/14,033 出分（1.20%）；市场占有率分母降级为池内同行业营收，单机构行业组必得 100 分须在结果面披露。
-> 本稿仍为 20260829 王惠版（`source_tables` 指向 `demo_*`）；签字不等于认可 demo 实现，gkx 改写稿回仓后须做签署版↔实现版对照复核。详见 [`SVC-MODEL-REC-COSIGN-L01.md`](../../../agent-handoffs/服务机构-SVC/SVC-MODEL-REC-COSIGN-L01.md)。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

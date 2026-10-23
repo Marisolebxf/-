@@ -1,66 +1,66 @@
-# M_CHAIN_REG_RESEARCH_ORG 科研机构（链维 / 区域维）计算口径细稿
+# 科研机构（链维/区域维）（M_CHAIN_REG_RESEARCH_ORG）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（双桶含高校；目标桥唯一真源；过渡桥提法撤销）
-- **类型**：STAT（去重计数）
-- **is_mock**：true（institution 行数据未灌；灌数后转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_RESEARCH_ORG.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_RESEARCH_ORG.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_RESEARCH_ORG_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：专题系统 · 产业链分析 · 区域产业评价页（`CHAIN-TOPIC-REGIONAL.yaml` `row_id: TOPIC-REG-015`），主项"科研机构"，子项"学术力叶子"；页面定义"区域内科研机构规模或密度"；页面约束"**不得用全景 INSTITUTION_COUNT 顶替**"（本条有区域维）；A1 需规 `ALGO-CHAIN-DEEP-126`；上游合成 `M_CHAIN_ACADEMIC_POWER`（学术生态）。
-- **白话**：深圳这条链上挂了多少家高校和科研院所——数机构家数，衡量学术载体厚度。
-- **与已定稿条目关系**：
-  - `M_CHAIN_INSTITUTION_COUNT`（Seq 4 v0.2.0）：同族无区域维；本条 = 它 + `city = :region_city`；
-  - `M_CHAIN_REG_PAPERS`（Seq 10 v0.2.0）：学术力族兄弟，机构桶口径同构（heis+ri 双桶、企业研究院不入桶）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_RESEARCH_ORG |
+| 指标名称 | 科研机构（链维/区域维） |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／区域协同／创新载体 |
+| 更新频率 | 年度 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 区域产业链对比页「科研机构」矩阵、深圳都市圈协同看板｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_REG_RESEARCH_ORG.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-指定区域内、指定产业链链上的**高校+科研院所去重家数**。
+四市机构列合计 1,030 / 931 / 136 / 117 是真值，但 12 链 × 4 市的行内拆分只有 134 家可归属（2.4%），矩阵只能看列不能看行，判部分支持。
 
-- 机构桶：`dwd_org_heis_info` ∪ `dwd_research_institute_base_info`（拍板 ①：双桶都包含）；`××研究院有限公司` 等企业法人研究院不入桶（归 ENTERPRISE 口径）；
-- 去重键：`org_id`；
-- 区域轴：机构主档自身 `city`（两表原生列，不经企业主档）；
-- 挂链：`industry_chain_entity_rel`（`entity_type='institution'` + `chain_id`）**唯一真源**（拍板 ②：结构真实、数据未灌不报缺）；
-- **键位规则（2026-10-14 复核更正）**：`entity_id` 按 entity_type **分键**（真源 `data-design/storage/CHAIN/etl/pipeline-ent-hang.md` §0 + `ods-to-dwd-mapping.md` §1.2/§5）：
-  - `enterprise` = **org_id**（已冻结硬规则；credit 对不上 org_id → drop）
-  - `product` = `p:{credit_code}:{行id}`（明知的 Demo 合成键，产品 UID 未冻待换；李伟 2026-08-28 明令禁当主键）
-  - `institution` = **设计未冻结**——机构挂链灌数方案出台时定键（CHAIN-P0-6 在问）；本条口径预填 org_id 语义（对齐机构主档，与图谱 inst: 族 VID 取值先例自洽），灌数时若定其他键需回改本条 JOIN。
+## 计算逻辑说明
 
-## 3. Formula（SQL）
-
-```sql
-SELECT COUNT(DISTINCT r.entity_id) AS research_org_cnt
-FROM demo_gkxlumenx_dwd.industry_chain_entity_rel r
-JOIN (
-  SELECT org_id, city FROM demo_gkxlumenx_ods.dwd_org_heis_info WHERE is_deleted = 0
-  UNION
-  SELECT org_id, city FROM demo_gkxlumenx_ods.dwd_research_institute_base_info WHERE is_deleted = 0
-) inst ON inst.org_id = r.entity_id
-WHERE r.entity_type = 'institution'
-  AND r.is_deleted = 0
-  AND r.chain_id = :chain_code
-  AND inst.city = :region_city;
+```text
+机构数 = COUNT(DISTINCT org) BY chain × city；机构桶 = 院所 ∪ 高校
 ```
 
-> 2026-10-14 修正记录：首版沿 G2 证据卡建议稿写了"过渡桥版（dwd_org_industry_tags）"。human:徐滕强 指正后核实：tags 是**企业**产业标签表（company_name+credit_code 打产业标签），机构主档与其 credit_code↔external_id 匹配 0——与本指标无关，过渡桥提法**撤销**，演示路径不留防误导。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_RESEARCH_ORG.md` §二（M_CHAIN_REG_RESEARCH_ORG.py 零改语义复算）。
 
-## 4. 表依赖与实核（2026-10-14 demo）
+## 源表字段
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd_org_heis_info` | 高校桶 + 区域轴 | 3,501 行；深圳 16 |
-| `dwd_research_institute_base_info` | 院所桶 + 区域轴 | 2,074 行；深圳 1,014（demo 灌数深圳占比高，如实采数） |
-| `dwd.industry_chain_entity_rel` | 机构挂链唯一真源 | 319 行全部 `product`；institution 0 行 = **数据未灌**（表结构在案 25 列，非缺口） |
-| ~~`dwd_org_industry_tags`~~ | ~~过渡桥~~（撤销） | 企业产业标签表，与机构挂链无关 |
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 5. 缺口分型
+- `dwd_industry_chain_info`
+- `dwd_org_heis_info`
+- `dwd_research_institute_base_info`
 
-| 项 | 分型 | 处置 |
-|---|---|---|
-| `industry_chain_entity_rel` institution 0 行 | **数据未灌**（DDL 在案；institution 键位设计未冻结，灌数方案出台时定键） | 先不管、不报缺、不挂号；灌数后即真数 |
-| 机构↔链挂接供应方交付计划 | 既有号 CHAIN-P0-6 在册（Seq 4 开题） | 本条不重复挂号，仅语义关联注记 |
+## 待建表字段
 
-## 6. 验证记录（2026-10-14）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 端到端：institution 0 行 → 真数 0（如实展示）；灌数后 = 该链挂链机构 ∩ 深圳高校 16 ∪ 院所 1,014 的去重子集。
-- 键位格式：product 行 entity_id 样例 `p:91440300MA5EQK3B7X:1`（Demo 合成键）——佐证键位约定必须显式钉死。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：官方唯一桥 industry_chain_entity_rel 的 institution 行在 gkx 不存在，链维没有现成归属；但区域维所需的两张载体底册齐全（院所 2,074 + 高校 3,501，city 字段 100% 有值），四市列合计可直接数出、可对账。链维用机构名匹配环节名得到 134 家、10 链非零，只能作下限。区域完整 + 链维弱，判部分支持。
+- **基期声明**：本件是截面计数（当前底册时点），不做年度序列，故无基期年份；底册不带历史版本，无法回溯往年机构数。若要做年度序列，院所侧有 incorporation_date（1,996 行），高校侧有 est_year，见 M_CHAIN_INSTITUTION_COUNT。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_RESEARCH_ORG.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_RESEARCH_ORG.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_RESEARCH_ORG_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

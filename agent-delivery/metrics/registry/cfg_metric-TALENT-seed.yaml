@@ -1,603 +1,690 @@
-# cfg_metric 种子 —— 人才域（TALENT）M_TALENT_* 指标 8 件套
+# cfg_metric 种子 —— 人才域（TALENT）M_TALENT_* 指标
 # ============================================================================
-# 作用：METRIC-SEED-REGISTER-L01 把 OPEN 新号身份写入 seed（D1=draft）。
-# 维护：data-agent  ·  监管：human:淮政玮  ·  创建：2026-08-22
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-# algorithm_type 本批一律 UNKNOWN（未签）。禁止把赋号卡 suggested_unsigned 当已签。
-# 禁止 D1=aligned。存量口径/公式/源表不在本文件改（本文件为该域首份 seed）。
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：32 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-23"
 domain: TALENT
-seed_version: "0.1.0"
-batch: open_draft_20260822
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 32
 defaults:
-  source_systems: [pending_ods]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
   owner_agent: data-agent
-  version: "0.1.0"
-  algorithm_type: UNKNOWN
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
   - metric_id: M_TALENT_ACADEMIC_SCORE
-    metric_name_zh: "人才学术力指数"
-    definition: >
-      用户可组合指标与权重后的人才学术力综合评分、排名与名单对比。内部默认：一条综合指数； 分项维名跟 05（成果数量/学术影响力/专业技能）；04 H 指数/被引/期刊/合作广度作第三方内部特征， 不展开公式、不单列 ID（Q-MO-TALENT-03）。禁止 M_CHAIN_ACADEMIC_POWER / M_SYNTH_VIT_DIM_SCORE。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_ACADEMIC_SCORE"
+    definition: "需求给的五维里，论文数、被引次数、H 指数三列在 `gkx.dwd_scholar` 上 **20,420 条有姓名记录 100% 非空**，可直接出分；期刊影响力维无任何分区/影响因子承载（`gkx.dwd_zh_journal` 2,796 行、`impact_score` 非空 **0**），学术合作广度维只有 `dwd_scholar_coauthor` 1,187,606 行的合著**数量**、没有期刊与机构维度——两维始终补不齐，故判**部分支持**，交付「三维学术力指数」而不是「五维学术力」。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_ACADEMIC_SCORE.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar", "dwd_scholar_coauthor", "dwd_scholar_paper_relation", "dwd_scholar_papers", "dwd_scholar_research_direction", "dwd_scholar_talent_flag", "dwd_zh_journal"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_ACADEMIC_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "需求五维中三维（论文/被引/H）在 gkx.dwd_scholar 100% 非空、可全量打分；期刊影响力维无任何期刊分区/影响因子表（dwd_zh_journal.impact_score 2,796 行非空 0），学术合作广度维只有 dwd_scholar_coauthor 1,187,606 行的合著数量、无期刊/机构维度，两维始终无法补齐 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才详情页「学术影响力分析」卡片（雷达 + 分档 + 池内位次）"
     pending_ref: "Q-MO-TALENT-03"
     acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_ATTRACT_SCORE
-    metric_name_zh: "引入人才推荐指数"
-    definition: >
-      全球库中与深圳产业发展方向契合的外部人才综合推荐分（G3 Job，非 G1 图算）。 名单规模为同核 STAT 面（共 N 人），不另造 CNT ID。分项维与推荐理由不单列（Q-MO-TALENT-06）。 可与 DS-16 复用本核，不改挂展示页、不消费展示 OPEN。 禁止 M_SVC_REC_* / M_ENT_ATTRACT_SCORE / M_ENT_ATTRACTION_INDEX。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-06"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_CULTIVATE_SCORE
-    metric_name_zh: "培育人才推荐指数"
-    definition: >
-      高成长潜力人才综合培育推荐分 + 建议名单规模（G3 Job）。培育方向建议为文本，无独立 ID。 分项维不单列（Q-MO-TALENT-06）。禁止 M_SVC_REC_* / M_ENT_CULTIVATE_SCORE / M_ENT_CULTIVATION_INDEX。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-06"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_FLOW_TRACK
-    metric_name_zh: "人才流动追踪"
-    definition: >
-      区域/行业人才流入、流出、留存的时间序列（自然年）。用关系边+时间属性；禁止 GIS 轨迹引擎。 三面共一条 ID，不拆。04 未单列流动页不影响本核。可与展示 DS-14 迁徙同源，不改挂、不消费展示 OPEN。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_INDUSTRY_SCORE
-    metric_name_zh: "人才产业力指数"
-    definition: >
-      特定产业领域内人才个人产业转化贡献的综合评分与排名。内部默认取 04：专利转化/项目/商业化（对象=人）。 05 企业侧「人才综合实力（影响力/产业覆盖/媒体知名度）」不作为本 ID 主口径（Q-MO-TALENT-04）。 禁止伪展开转化率；禁止改挂企业指标。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-04"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_ORG_DIST
-    metric_name_zh: "重点人才机构分布"
-    definition: >
-      内部默认取招标 04：在高校/院所/企业等类型（用户可筛）下，按人才所属机构聚合， 输出该产业或技术领域内人才最集中的前 N 家机构及其人才数量与占比（名录去重、当前快照）。 05「省/国家拥有的人才机构数」不作为本 ID 主口径（Q-MO-TALENT-01）。 不发明机构数/占比分项 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-01"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_REGIONAL_DIST
-    metric_name_zh: "重点人才区域分布"
-    definition: >
-      用户选定产业或技术领域下，对重点人才（第三方名录、人才实体去重）按地理单元计数， 并支持多领域并列对照。内部默认：当前快照；地理粒度=国家与省级并列（全球库含境外）； 重点人才集合见 Q-MO-TALENT-10。地图可视化与筛选壳不进本 ID。 禁止复用 M_CHAIN_REG_TALENT_STRUCTURE / M_CHAIN_SZ_TALENT；不改挂 DS-13/14。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-10"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_RELATION_NET
-    metric_name_zh: "重点人才关系链结构"
-    definition: >
-      论文/专利/组织/项目多源融合后的合作、引用等多元关系网络（节点/边规模等图统计）， 支撑最短路径与节点洞察呈现。G1 当前图（Nebula）。内部默认：路径长度与节点画像不单列 ID （Q-MO-TALENT-08）。可与展示 DS-15 同源，不改挂、不消费展示 OPEN。可视化拖拽不进本 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-08"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_STRUCT_QUERY
-    metric_name_zh: "查询结果·人才结构"
-    definition: >
-      对当前查询命中结果集中的人才实体（talent_id 去重）按结构分箱统计人数与占比， 匹配推荐饼图/柱状。统计窗口=当次查询结果集，不是自然年全量名录、不是 05 人才 13 叶。 默认分箱=最高学历；职称/年龄为同一 ID 下可切换维（Q-MO-QUERY-01）。 禁止消费 TOPIC-TALENT-05 / 综合 seq 184 / 展示 DS-13～16。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-QUERY-01"
-    acceptance_unit_id: "TOPIC-QUERY"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-QUERY-METRIC-OPEN-L01
-  - metric_id: M_TALENT_SUPPLY_STRUCT
-    metric_name_zh: "人才供给情况"
-    definition: >
-      特定领域人才供给的历年变化 + 当前存量结构。内部默认：历年序列用自然年、 学士/硕士/博士毕业数量（05）；存量结构以学历为主；职称/年龄不单列 ID（Q-MO-TALENT-02）。 对象=名录去重人才。领域过滤不另造 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-02"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_SZ_STATUS
-    metric_name_zh: "深圳人才现状与优劣势"
-    definition: >
-      统一评价框架下深圳 vs 全国/重点城市的人才横向对比，含计数面（.1）与优劣势/短板面（.7.4）， 一条 MIXED 核不拆（Q-MO-TALENT-07）。供需平衡归 M_TALENT_SZ_SUPPLY_DEMAND。 报告导出壳不进本 ID。禁止 M_CHAIN_SZ_TALENT。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-07"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_SZ_SUPPLY_DEMAND
-    metric_name_zh: "深圳人才供需评价"
-    definition: >
-      特定产业/技术领域深圳人才供需平衡（缺口或盈余）及趋势。内部默认：第三方供需评价指数， 禁止伪展开「供给−需求」算术（Q-MO-TALENT-09）。与 M_TALENT_SZ_STATUS 分核。 结构化报告壳不进本 ID。禁止 M_CHAIN_BOTTLENECK_TALENT。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-09"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
-  - metric_id: M_TALENT_UNIV_NEW
-    metric_name_zh: "高校新培育人才"
-    definition: >
-      目标技术领域高校新增人才培养识别、培养趋势、学科/技术方向与校际对比（05 `.7.3`，自然年）。 04 三句（3–5 年毕业生预测、新专业/研究中心、校企合作）不纳入本核、不另发明 ID（Q-MO-TALENT-05）。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-TALENT-05"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-TALENT-METRIC-OPEN-L01
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.4
+    updated: "2026-10-23"
 
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
-  - metric_id: M_TALENT_BASE_98_1
-    metric_name_zh: "人才基础指标模型构建"
-    definition: >
-      人才基础指标模型构建：对应算法库 SRS ALGO-TALENT-BASE-98，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+  - metric_id: M_TALENT_ATTRACT_SCORE
+    metric_name_zh: "M_TALENT_ATTRACT_SCORE"
+    definition: "外部候选池 20,238 人里，学术力 A 维 100% 可算、专利 P 维 45.43%（9,195 人姓名唯一且不少于 3 字）、产业方向 M 维 70.94%（14,357 人）、深圳连接 C 维只有 **2.35%** 非零（476 人）——四维里三维能用、一维极稀；再加上招聘平台真源 `dwd_job` 只有 **10 行**、无投递/意向交互日志，「智能筛选」只能降级为规则化筛选，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_ATTRACT_SCORE.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_job", "dwd_patent", "dwd_patent_inventors", "dwd_scholar", "dwd_scholar_education_background", "dwd_scholar_research_direction", "dwd_scholar_work_experience", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_ATTRACT_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "A/P/M 三维在外部池可算（A 全覆盖、P 约七成、M 约七成），但 C 维（深圳连接）只有约一成候选可测：深圳署名论文 10.3%、深圳履历受「子表 scholar_id 仅 9.3% 可连」限制；需求所指的招聘平台真源 `dwd_job` 仅 10 行、无投递/意向交互日志，「智能筛选」只能降级为规则化筛选 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才引进推荐页「候选池排序 + 分维雷达 + 深圳关联标」"
+    pending_ref: "Q-MO-TALENT-06"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_BASE_98_1
+    metric_name_zh: "M_TALENT_BASE_98_1"
+    definition: "四族分组计数全部能出数：学者 **21,316**、机构 **2,108**、方向标签 **97,249**、学历行 **43,766**；但三处硬缺口始终存在——①「人才」只有学者口径，企业研发人员与技能人才无表；② 学历族是**存量学者的毕业年回溯**、不是当年毕业生流量，且无学科码；③ 三张子表的 `scholar_id` 与主档只有 **9.3%** 可连，四族不能交叉切片、D2/D3 无年份列故增长率不可算，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_BASE_98_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_heis_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_scholar_research_direction", "dwd_scholar_talent_flag", "dwd_scholar_work_experience"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_BASE_98_1.md"
+    data_support_level: "部分支持"
+    support_reason: "四族分组计数都能出数（学者 21,316、机构 2,108、方向标签 97,249、学历行 43,766），但三处硬缺口始终存在：①「人才」只有学者口径，企业研发人员/技能人才无表；② D4 是存量学者学历回溯，不是学科×年份的官方供给流量，且无学科码；③ D3/D4 的 scholar_id 与主档仅 9.3% 可连，四族不能交叉切片、D2/D3 无年份列故增长率不可算 → 部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才分布图页「区域分布概览 / 城市详情 / 学历结构」三张统计卡"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-BASE-98"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-  - metric_id: M_TALENT_DEEP_156_1
-    metric_name_zh: "重点人才识别模型"
-    definition: >
-      重点人才识别模型：对应算法库 SRS ALGO-TALENT-DEEP-156，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_CULTIVATE_SCORE
+    metric_name_zh: "M_TALENT_CULTIVATE_SCORE"
+    definition: "182 名深圳在册学者里，学术力 A 与平台资源 R 两维 100% 可算、专利 P 维 87 人可算（95 人因同名/两字/无命中缺测）、留深黏性 Po 维只有 139 人有值——其中「深圳任职年限」只覆盖 21 人、「深圳求学」覆盖 **0** 人（学历子表与主档 ID 不同域）、真正撑起 Po 维的是「深圳署名论文占比」136 人，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_CULTIVATE_SCORE.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_heis_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_scholar_talent_flag", "dwd_scholar_work_experience", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_CULTIVATE_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "四维中三维修（A 学术力、P 专利、R 平台资源）有可算数据；Po 留深黏性维的三个子信号里，「任职年限」与「深圳求学」受子表 scholar_id 跨域影响只覆盖可连子集，「深圳署名论文占比」可算但仅对有论文署名者；专利维两字姓名/池内同名一律缺测 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "深圳人才态势页「本地留存与培育」卡（分档 + 四维雷达 + 深圳署名占比）"
+    pending_ref: "Q-MO-TALENT-06"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_DEEP_156_1
+    metric_name_zh: "M_TALENT_DEEP_156_1"
+    definition: "三因子（h / 被引 / 论文数）在 `dwd_scholar` 21,316 行上 **100% 非空**、20,420 名有姓名学者可全量打分，院士标识 112 行可作外部校验——识别主链成立；但需求点名的「企业人才库」「招聘/薪资市场信号」在 `gkx` 全库无表（`dwd_job` 仅 10 行），学历/履历/研究方向三张子表与身份主档只有 9.25%—9.5% 可对齐，识别池只能退化为「学者口径」，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_156_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_job", "dwd_org_annual_financial_info", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_scholar_research_direction", "dwd_scholar_talent_flag", "dwd_scholar_work_experience", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_156_1.md"
+    data_support_level: "部分支持"
+    support_reason: "学术影响力三列（h / citation_nums / paper_nums）在 gkx.dwd_scholar 21,316 行上 100% 非空、可全量打分，院士标识与中文论文面可作外部校验，识别主链成立；但需求输入第一项「企业人才库数据」与「招聘/薪资市场信号」在库内无表（dwd_job 仅 10 行），学历/履历/研究方向三张子表与身份主档只有 9.3% 可行对齐，识别池退化为学者口径 → 部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「重点人才名单 + 分数分档 + 深圳切片」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-156"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 6.2
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_157_1
-    metric_name_zh: "人才流动追踪模型"
-    definition: >
-      人才流动追踪模型：对应算法库 SRS ALGO-TALENT-DEEP-157，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_157_1"
+    definition: "履历表 57,117 段覆盖 16,718 名有机构记录的学者，且自带 `is_current` 标记，机构序列、城际有向边、深圳三态（流入/流出/留存）都能全量现转；但需求点名的社交网络、招聘网站、简历库三类源在 `gkx` 无表（`dwd_job` 仅 10 行），流动只能用「现机构 vs 历史机构」代理，机构名空 20.41%、与主档仅 10.56% 可挂，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_157_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_job", "dwd_org_heis_info", "dwd_org_industry_tags", "dwd_scholar", "dwd_scholar_work_experience"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_157_1.md"
+    data_support_level: "部分支持"
+    support_reason: "履历表 57,117 段覆盖 20,028 名学者，机构序列/城际边/深圳三态可全量现转，流动骨架成立；但需求点名的社交网络、招聘网站、简历数据库三类源在库内无表（dwd_job 仅 10 行），流失与流入只能用「现机构 vs 历史机构」代理，且履历表与身份主档只有 9.27% 可挂（姓名/职称仅在这部分可用），深圳流入年样本集中在少数年份 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「区域流入/流出/留存 + 城际流向 + 时间线」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-157"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 4.7
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_158_1
-    metric_name_zh: "高校学院新培育人才模型"
-    definition: >
-      高校学院新培育人才模型：对应算法库 SRS ALGO-TALENT-DEEP-158，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_158_1"
+    definition: "培养机构名单（教育部名录深圳 11 校 + 4 个深圳研究生院/院所）与全国培养分母（名录内博士学历段 1,802 段 / 1,769 人）可全量现转，产出层（深圳机构署名中文论文 1,205 篇、近五年 894 篇）可算；但「新培育」的核心时序腿几乎不存在——全库学历表中命中深圳培养机构的记录只有 15 段、覆盖 13 人，2019 年后仅 3 段，无法支撑逐年新增序列，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_158_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_heis_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_158_1.md"
+    data_support_level: "部分支持"
+    support_reason: "培养机构名单（教育部名录深圳 11 校 + 4 个深圳研究生院/院所）与全国培养分母（名录内博士学历段）可全量现转，产出层（深圳机构署名中文论文 1,188 篇）可算；但「新培育」的核心时序腿在库内近乎不存在——全库学历表中命中深圳培养机构的记录只有 15 段、覆盖 13 名学者、2019 年后仅 3 段，无法支撑逐年新增序列；且学历表与身份主档只有 9.25% 可挂、无学科代码 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「高校学院培育产出 + 校×年 + 学科方向」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-158"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 9.4
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_159_1
-    metric_name_zh: "深圳重点人才优势和短板分析模型"
-    definition: >
-      深圳重点人才优势和短板分析模型：对应算法库 SRS ALGO-TALENT-DEEP-159，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_159_1"
+    definition: "五维画像（规模/影响力/产出/顶才/帽子）在 `dwd_scholar` 21,316 行上可全量现转，领域维可用 13,955 名双锚定学者的 20+8 簇归属算区位商，优势/短板骨架成立；但需求点名的技能匹配度、招聘难度、薪资水平、发展前景四项市场供需维在库内完全无源（`dwd_job` 仅 10 行、无薪资字段），且深圳可判簇学者只有 100 人，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_159_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_job", "dwd_org_annual_financial_info", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_talent_flag", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_159_1.md"
+    data_support_level: "部分支持"
+    support_reason: "学者画像五维（规模/影响力/产出/顶才/帽子）在 gkx.dwd_scholar 21,316 行上可全量现转，领域维可用 13,955 名学者的双锚定论文判簇、按区位商给出优势/短板，诊断骨架成立；但需求点名的技能匹配度、招聘难度、薪资水平、发展前景四项市场供需维在库内完全无源（dwd_job 仅 10 行、无薪资字段），对标口径也只有学者库（全国样本实为都市圈 + 京沪）→ 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「深圳 vs 京沪画像 + 20+8 优势/短板（LQ）」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-159"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 14.1
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_160_1
-    metric_name_zh: "人才关系链模型"
-    definition: >
-      人才关系链模型：对应算法库 SRS ALGO-TALENT-DEEP-160，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_160_1"
+    definition: "关系边（1,187,606 行 / 20,011 个 ego / 899,662 个合作者节点）与机构名可全量现读，深圳子图、跨城连接、枢纽识别都能算；但每个 ego 只保留前 100 个合作者（34.03% 已顶满）、合作者姓名非空仅 16.19%、ego 侧根本没有姓名列、表内无年份，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_160_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar", "dwd_scholar_coauthor", "dwd_scholar_research_direction", "dwd_scholar_work_experience"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_160_1.md"
+    data_support_level: "部分支持"
+    support_reason: "关系边（1,187,606 行 / 20,011 ego / 899,662 合作者）与机构名可全量现读，深圳子图、跨城连接、枢纽识别都能算；但（a）每个 ego 只保留前 100 个合作者，（b）ego 侧无姓名、只能靠履历表补机构，（c）表内无年份，趋势链不可算，（d）ego id 与主档 dwd_scholar 只有 1,839 个交集 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才画像页「合作者链路 + 跨城连接 + 枢纽识别」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-160"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_161_1
-    metric_name_zh: "人才供需分析评价模型"
-    definition: >
-      人才供需分析评价模型：对应算法库 SRS ALGO-TALENT-DEEP-161，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_161_1"
+    definition: "需求侧有 670 万条（估算）真实招聘岗位流水、供给侧有 20,420 名学者与 28 簇归属，两侧都能算；但岗位表只有岗位名与工作地，无学历/技能/薪资，岗位名到 20+8 簇的关键词命中率只有 5.99%，两侧单位不同（岗位 vs 人），供给侧只能用存量学者代替「新增供给」，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_161_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_id", "dwd_job", "dwd_org_recruit_info", "dwd_scholar", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_161_1.md"
+    data_support_level: "部分支持"
+    support_reason: "需求侧有 6,702,453 条真实招聘岗位流水、供给侧有 20,420 名学者与论文簇归属，两侧都能算；但（a）岗位表只有岗位名与工作地，无学历/技能/薪资要求，（b）岗位名到 20+8 簇只能靠关键词，命中率 5.99%，（c）两侧单位不同（岗位 vs 人）、（d）本地培养段仅 15 段、供给侧只能用存量学者代替「新增供给」→ 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「岗位需求 × 学者供给 × 20+8 簇稀缺度」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-161"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_162_1
-    metric_name_zh: "人才学术力评估模型"
-    definition: >
-      人才学术力评估模型：对应算法库 SRS ALGO-TALENT-DEEP-162，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_162_1"
+    definition: "成果数量（`paper_nums`）与被引（`citation_nums`）在 `dwd_scholar` 21,316 行上 **100% 非空**、20,420 名有姓名学者可全量打分，主链成立；第三维「专业技能水平」在 `dwd_scholar_research_direction` 与主档只有 **1,793 / 20,420 = 8.78%** 可对齐，只能用「姓名 + 机构 6 字前缀」双锚定的中文论文所命中的产业簇个数代理（13,955 人，68.33%），仍有 6,465 人无第三维，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_162_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar", "dwd_scholar_papers", "dwd_scholar_research_direction", "dwd_scholar_talent_flag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_162_1.md"
+    data_support_level: "部分支持"
+    support_reason: "成果数量与学术影响力两维在 20,420 名有姓名学者上 100% 可算；第三维「专业技能水平」只能代理：`dwd_scholar_research_direction` 与主档 scholar_id 只有 1,793 个交集（8.78%），本文改用姓名+机构双锚定的中文论文簇，覆盖 13,955 人（68.33%），仍有 6,465 人没有第三维；且「簇个数」是产业领域广度，不是技能水平本身 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「学术力指数 + 分档 + 深圳切片」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-162"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_163_1
-    metric_name_zh: "人才产业力评估模型"
-    definition: >
-      人才产业力评估模型：对应算法库 SRS ALGO-TALENT-DEEP-163，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_163_1"
+    definition: "深圳 95,600 行企业底册中，77,529 家有专利申请人记录、合计 1,300,219 件（占全表 2,939,895 件的 44.23%），59,645 家有 IPC 小类覆盖（76.93%），两维可全量打分；第三维媒体声量受「1,668,414 行新闻表按名称计数」的算力限制，只能对专利 TOP60 取数（58 家命中），且无去重、无情感，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_163_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_important_news_info", "dwd_org_industry_product_tags", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_163_1.md"
+    data_support_level: "部分支持"
+    support_reason: "企业影响力（专利件数）与产业覆盖度（IPC 小类数）在 77,529 家深圳企业上可算，两维相关系数 0.78；但媒体知名度只能在专利 TOP60 的 58 家上取数（新闻表 1,668,414 行按名称计数需逐名过滤，全池 7.7 万家不可行），且新闻条数含转载/重复、无情感与去重，只能作头部相对声量；IPC 缓存覆盖 76.93%、深大等机构口径偏低 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「产业力指数 + 企业榜 + 深圳切片」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-163"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_164_1
-    metric_name_zh: "招入人才推荐模型"
-    definition: >
-      招入人才推荐模型：对应算法库 SRS ALGO-TALENT-DEEP-164，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_164_1"
+    definition: "外部候选人 20,183 人中，学术力 100% 可算、所属机构专利 17,093 人（84.70%）可算、深圳连接度只有 468 人（2.32%）有任何信号，其中 82 人强于 0.4；需求点名的「产品匹配度」在招聘表与产品标签表都无法落地，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_164_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_industry_product_tags", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_scholar_work_experience"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_164_1.md"
+    data_support_level: "部分支持"
+    support_reason: "学术力（20,183 人全覆盖）、产业力（机构专利 17,105 人 = 84.75%）、深圳连接度（合著 465 人 / 履历 19 人）三维可算，但需求点名的「产品匹配度」没有数据：招聘表只有岗位名与工作地、无技能要求，产品标签表的 credit_code 与机构底册只有 3.5% 交集，无法逐人匹配；深圳连接度有合著信号的人只占 2.30% → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「外部候选人推荐榜 + 匹配分析卡」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-164"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DEEP_165_1
-    metric_name_zh: "培育人才布局模型"
-    definition: >
-      培育人才布局模型：对应算法库 SRS ALGO-TALENT-DEEP-165，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "M_TALENT_DEEP_165_1"
+    definition: "当前机构在深的 237 名学者中，59 人有 20+8 产业簇、111 人有锚定论文、210 人有机构专利，但**同时具备「学术力 + 方向或成长信号」的只有 68 人（28.69%）**；其余 169 人只有生涯累计与机构专利，无法谈「方向布局」，不评分。故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DEEP_165_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_bid_", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_talent_flag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DEEP_165_1.md"
+    data_support_level: "部分支持"
+    support_reason: "方向匹配（59 人有 20+8 聚类命中）、成长信号（32 人 np≥3 有首末年份）、学术力（237 人全覆盖）、产业支撑（210 人有机构专利）四维可算；但「培养布局」要求的培养项目/平台/经费/导师数据在 gkx 全缺（人才工程表只有称号与年份、无对象级培养措施），聚类方向来自论文题目关键词共现而非官方技术目录 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「在深人才培育榜 + 方向匹配 + 分层建议」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-DEEP-165"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_005
     metric_name_zh: "沟通障碍智能检测"
-    definition: >
-      原文要模型，不是尽调字段。禁止改挂 164/501。无 also_in。不发明 M_*。见 REC-D05。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "检测对象是「人的沟通行为」，标签是「障碍程度」，两者在 `gkx` 280 张表里都不存在：13 个 `language` 列全部描述论文/文档/政策语种，0 张语音/访谈/会议/邮件表，0 个障碍标签字段；退而求其次用「海外经历」当代理，方向还是反的（经历越多通常障碍越低）。故判**完全不支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_005.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_en_paper", "dwd_en_paper_abstract", "dwd_en_paper_title", "dwd_global_policy_base", "dwd_global_policy_base_bak_20260923", "dwd_industry_analysis_documents", "dwd_org_recruit_info", "dwd_patent", "dwd_patent_bak_20260912", "dwd_scholar", "dwd_scholar_edu", "dwd_scholar_talent_flag", "dwd_zh_paper", "dwd_zh_paper_abstract", "dwd_zh_paper_title"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_005.md"
+    data_support_level: "完全不支持"
+    support_reason: "全库无个人语言能力字段（13 个 language 列全部指向论文/文档语种），无访谈/语音/会议/邮件语料，无沟通障碍标签；bio 文本里提到英语的仅 28/19,109（0.15%），是自述且无等级。检测对象（沟通行为）与标签（障碍程度）双双缺席，任何打分都是造数。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "国际人才引进页「沟通障碍评估」（建议不上线，见 §5）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-005"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_006
     metric_name_zh: "文化融合风险评估"
-    definition: >
-      原文要模型。禁止改挂 164。无 also_in。见 REC-D06。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "「文化融合风险」= 外籍/跨文化身份 × 文化距离 × 适应结果。身份侧 0 字段、距离侧 0 字段、结果侧 0 张表；唯一有数的是「海外经历」628/896 人，而经历越多通常适应越好，与风险方向相反。故判**完全不支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_006.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_forg_base_info", "dwd_scholar", "dwd_scholar_edu", "dwd_scholar_talent_flag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_006.md"
+    data_support_level: "完全不支持"
+    support_reason: "宗教/族群字段 0 列、文化/社区类表 0 张、国籍/签证字段 0 列；`dwd_forg_base_info` 是境外企业底册而非境外人才，country 列去重为 0；bio 提到华裔/外籍合计 3 条。既无「外籍身份」也無「融合结果」，无法构建风险评分。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "国际人才引进页「文化融合风险」（建议不上线自动评分，见 §5.4）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-006"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_007
     metric_name_zh: "国际流动壁垒分析"
-    definition: >
-      禁止按号挂 111。157 不顶替。无 also_in。见 REC-D07。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "壁垒本身（签证/居留、国籍、家庭随迁、学历认证）全库 0 字段；但「流动经历」三维可算——海外学历 628 人、海外履历 896 人、国际合著 1,824 人，2,883 人有至少一个境外信号。经历强通常意味着壁垒低，因此只能给出**逆向代理**，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_007.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_forg_base_info", "dwd_scholar", "dwd_scholar_edu"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_007.md"
+    data_support_level: "部分支持"
+    support_reason: "海外学历 628 人、海外履历 896 人、国际合著 1,824 人三维可算，能刻画「流动经历强度」；但壁垒本身——签证/居留、国籍、家庭随迁、学历认证——全库 0 字段，只能给出壁垒的逆向代理（经历越多=壁垒越低），无法直接测「被什么挡住」。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "国际人才引进页「国际流动壁垒画像」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-007"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_010
     metric_name_zh: "引进阻力量化评分"
-    definition: >
-      禁止改挂 164 招引推荐指数。501 ≠ 覆盖。智库标法不冲掉 A。无 also_in。见 REC-D10。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "学术势能 20,420 全覆盖、地理距离 20,420 全覆盖、流动惯性 1,766 人有履历、头衔 80 名院士在面板——四维可算；但薪酬期望、家庭随迁、语言、签证四类阻力全库 0 字段。评分只能覆盖「可测阻力」，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_010.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar", "dwd_scholar_talent_flag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_010.md"
+    data_support_level: "部分支持"
+    support_reason: "学术势能（20,420 全覆盖）、地理距离（全覆盖）、流动惯性（1,766 人有履历）、头衔阻力（80 名院士在面板）四维可算；但薪酬期望、家庭、语言、签证四类阻力在 gkx 全库 0 字段，评分只覆盖「可测阻力」，不能当全阻力使用。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "国际人才引进页「引进阻力榜」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-010"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_013
     metric_name_zh: "高精度成本模型构建"
-    definition: >
-      禁止改挂 164。智库标法不冲掉 A。无 also_in。不发明 M_*。见 REC-D13。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "成本模型的因变量是「引进一个人要花多少钱」。37 个 `cost/income` 列全部是企业分部财务（`core_biz_cost` 等）或期刊排版费（`layout_cost`），0 列薪酬/安家费/猎头费；798 万条招聘记录只有岗位描述、无薪资；学者主档只有 `paper_nums/citation_nums/h_index/reference_nums`。因变量不存在，模型无从谈起，故判**完全不支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_013.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_en_journal", "dwd_main_business_composition_", "dwd_main_business_composition_area", "dwd_main_business_composition_industry", "dwd_main_business_composition_prod", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_talent_flag"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_013.md"
+    data_support_level: "完全不支持"
+    support_reason: "成本模型的因变量不存在：37 个 cost/income 列全部是企业分部财务或期刊排版费，0 列薪酬/安家费/猎头费；798 万条招聘记录无薪资字段；学者主档无薪酬职级。只能做「企业人均研发费用」这类宏观代理，无法落到个人引进成本，故完全不支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "国际人才引进页「引进成本测算」（建议改为「企业研发投入参考」，见 §5.4）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-013"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_025
     metric_name_zh: "团队组合与协同分析"
-    definition: >
-      对不上 164/165。禁止 160 顶替。禁止按号挂 165。无 also_in。不发明 M_*。见 REC-D25。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "237 名当前在深学者中 59 人有 20+8 聚类（方向覆盖与重叠可算）、全池可算引用均衡、2,250 条 coauthor 边可算合作密度；但团队产出、项目共担、角色分工、年龄职级全库无字段，深圳机构内部合作边只有 7 条（密度 0—0.4762%）。「协同效应」本身无法验证，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_DS_16_TALENT_RECRUIT_025.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_bid_", "dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_DS_16_TALENT_RECRUIT_025.md"
+    data_support_level: "部分支持"
+    support_reason: "在深 237 名学者中 59 人有 20+8 聚类（可算方向覆盖与重叠）、全池可算引用均衡、coauthor 边 2,250 条可算内部合作密度；但团队产出、项目共担、角色分工、年龄职级全库无字段，关键词仅 1/237 非空，深圳机构内部合作边仅 7 条（密度 0.0%—0.4762%），协同效应本身无法验证。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才洞察页「团队组合 / 互补配对」"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-025"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-  - metric_id: M_TALENT_GRAPH_110_1
-    metric_name_zh: "人才实体识别构建"
-    definition: >
-      人才实体识别构建：对应算法库 SRS ALGO-TALENT-GRAPH-110，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_FLOW_TRACK
+    metric_name_zh: "M_TALENT_FLOW_TRACK"
+    definition: "旧稿把\"流动\"等同于\"换单位\"，未区分同机构晋升与真流动，也未处理并行任职；分母在\"有履历人数\"与\"全库人数\"之间来回切。本件固定三个分母并全程标注："
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_FLOW_TRACK.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_FLOW_TRACK.md"
+    data_support_level: "部分支持"
+    support_reason: "旧稿把\"流动\"等同于\"换单位\"，未区分同机构晋升与真流动，也未处理并行任职；分母在\"有履历人数\"与\"全库人数\"之间来回切。本件固定三个分母并全程标注："
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_GRAPH_110_1
+    metric_name_zh: "M_TALENT_GRAPH_110_1"
+    definition: "第一，两个宇宙的交集极小。主档 21,316 人里，有学位/职称/研究方向/履历任一属性的人只有 1,858 人；反过来，属性宇宙 20,030 人里只有 9.28% 能在主档找到同名同机构的对应实体。这不是抽样缺失，而是两套数据来自不同采集批次、主键体系未打通。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_GRAPH_110_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_GRAPH_110_1.md"
+    data_support_level: "部分支持"
+    support_reason: "第一，两个宇宙的交集极小。主档 21,316 人里，有学位/职称/研究方向/履历任一属性的人只有 1,858 人；反过来，属性宇宙 20,030 人里只有 9.28% 能在主档找到同名同机构的对应实体。这不是抽样缺失，而是两套数据来自不同采集批次、主键体系未打通。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-GRAPH-110"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_TALENT_GRAPH_111_1
     metric_name_zh: "人才实体关系抽取"
-    definition: >
-      人才实体关系抽取：对应算法库 SRS ALGO-TALENT-GRAPH-111，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "五类点名关系里，「科研机构」可强建（20,829 条，按机构名称串聚合），「技术」可弱建（研究方向自由文本），其余三类无表无字段。骨架活、共著图稀疏但可用，语义关系只落实一类强一类弱，按 §〇 落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_GRAPH_111_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar", "dwd_scholar_coauthor", "dwd_scholar_paper_relation", "dwd_scholar_research_direction"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_GRAPH_111_1.md"
+    data_support_level: "部分支持"
+    support_reason: "需求明列的 5 类实体关系里只有「科研机构」可强建成（20,829 条，按机构名称串），「技术」只能弱建成（研究方向自由文本，97,249 个不同标签、82.3% 只出现一次，无受控词表）；「企业 / 产业 / 服务机构 / 政策」四类在 gkx 无任何关系表或可映射字段。共著关系仅 0.73% 的行落在人才主档内（8,675/1,187,606），机构 ID 整列为空，主档内网络 61.21% 的学者是孤点。骨架可建、六类关系只落实一类强一类弱，故落部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才图谱页「实体关系」视图、人才详情页的「所属机构 / 合作网络 / 研究方向」侧栏"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-TALENT-GRAPH-111"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
 
+  - metric_id: M_TALENT_INDUSTRY_SCORE
+    metric_name_zh: "M_TALENT_INDUSTRY_SCORE"
+    definition: "四维里学术深度 H 100% 可算、专利 PAT 45.46%（9,282 人）、产业关联论文 IND 35.35%（7,219 人至少 1 篇命中 20+8 簇）、产学研触点 LINK 27.01%（5,515 人）——三维能算、一维只覆盖四分之一；需求原意里的横向课题经费、技术转让、企业委托合同三列在 `gkx` 全库不存在，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_INDUSTRY_SCORE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_industry_tags", "dwd_patent_transfer", "dwd_scholar", "dwd_scholar_research_direction", "dwd_scholar_work_experience", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_INDUSTRY_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "四维中 IND/H/PAT 三维可直接算，LINK 维只能由「企业任职履历 / 企业合作论文 / 深圳机构合作论文」三个 0/1 信号拼装，需求原意中的横向课题经费、技术转让、企业委托合同三列在 gkx 全库不存在（见 §三 表级清单）→ 部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "人才产业画像页「20+8 集群归属 + 产业关联度分档 + 簇内榜」"
+    pending_ref: "Q-MO-TALENT-04"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 17.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_ORG_DIST
+    metric_name_zh: "M_TALENT_ORG_DIST"
+    definition: "| 证据 | 实测值 | 落盘位置 | 对判档的作用 | |---|---|---|---| | 机构名填充 | 20,829 / 21,316 = 97.72% | `coverage.org_filled` / `org_share` | 分母足够大，不存在「整列空」 | | 机构串去重 | 2,108 个 | `coverage.distinct_org` | 足以做 CR/HHI，不需要外部机构库 | | 机构主键 | `scholar_org_id` 非空 0 行 | `coverage.org_id_filled` | 不能直接 group by 主键，必须走名称转换 |"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_ORG_DIST.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_heis_info", "dwd_org_recruit_info", "dwd_scholar", "dwd_scholar_talent_flag", "dwd_scholar_work_experience"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_ORG_DIST.md"
+    data_support_level: "完全转换支持"
+    support_reason: "| 证据 | 实测值 | 落盘位置 | 对判档的作用 | |---|---|---|---| | 机构名填充 | 20,829 / 21,316 = 97.72% | `coverage.org_filled` / `org_share` | 分母足够大，不存在「整列空」 | | 机构串去重 | 2,108 个 | `coverage.distinct_org` | 足以做 CR/HHI，不需要外部机构库 | | 机构主键 | `scholar_org_id` 非空 0 行 | `coverage.org_id_filled` | 不能直接 group by 主键，必须走名称转换 |"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-01"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_REGIONAL_DIST
+    metric_name_zh: "M_TALENT_REGIONAL_DIST"
+    definition: "| 证据 | 实测值 | 产物键 | 对判档的作用 | |---|---|---|---| | 有机构名 | 20,829 | `coverage.org_filled` | 推断的输入基数 | | 可定位 | 19,050（91.46%） | `coverage.locatable` | 主体可算 | | 未归属 | 1,779（8.54%） | `coverage.unmatched` | 覆盖缺口，不能判完全支持 | | 海外 | 308（1.48%） | `coverage.foreign` | 只能判大洲级，不能判国家 |"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_REGIONAL_DIST.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_heis_info", "dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_REGIONAL_DIST.md"
+    data_support_level: "部分支持"
+    support_reason: "| 证据 | 实测值 | 产物键 | 对判档的作用 | |---|---|---|---| | 有机构名 | 20,829 | `coverage.org_filled` | 推断的输入基数 | | 可定位 | 19,050（91.46%） | `coverage.locatable` | 主体可算 | | 未归属 | 1,779（8.54%） | `coverage.unmatched` | 覆盖缺口，不能判完全支持 | | 海外 | 308（1.48%） | `coverage.foreign` | 只能判大洲级，不能判国家 |"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-10"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_RELATION_NET
+    metric_name_zh: "M_TALENT_RELATION_NET"
+    definition: "第一，6,810 个 ego 的度正好等于 100，占 20,011 个 ego 的 34.03%。真实度大于 100 的人被压到 100，于是均值 59.35、p75 100、p90 100、p99 100 全部失真。均值只能读作下界，不能读作\"平均每人合作 59 人\"。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_RELATION_NET.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_scholar", "dwd_scholar_coauthor"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_RELATION_NET.md"
+    data_support_level: "部分支持"
+    support_reason: "第一，6,810 个 ego 的度正好等于 100，占 20,011 个 ego 的 34.03%。真实度大于 100 的人被压到 100，于是均值 59.35、p75 100、p90 100、p99 100 全部失真。均值只能读作下界，不能读作\"平均每人合作 59 人\"。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-08"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_STRUCT_QUERY
+    metric_name_zh: "M_TALENT_STRUCT_QUERY"
+    definition: "第一，学位表 43,766 行是\"多段学位\"记录，一人可有多行。直接按行计数会把\"本科 + 硕士 + 博士\"的人算三次，博士占比会被抬高。本件按人取最高，18,200 人有值，博士 15,813 人。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_STRUCT_QUERY.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_STRUCT_QUERY.md"
+    data_support_level: "完全转换支持"
+    support_reason: "第一，学位表 43,766 行是\"多段学位\"记录，一人可有多行。直接按行计数会把\"本科 + 硕士 + 博士\"的人算三次，博士占比会被抬高。本件按人取最高，18,200 人有值，博士 15,813 人。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-QUERY-01"
+    acceptance_unit_id: "TOPIC-QUERY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_SUPPLY_STRUCT
+    metric_name_zh: "M_TALENT_SUPPLY_STRUCT"
+    definition: "第一，供给的价格维完全缺失。没有期望薪酬、最低可接受薪资、当前薪资，任何\"某学科人才贵不贵\"\"深圳薪资溢价能否吸人\"的问题都无法回答。供给曲线在本库内只有\"量\"的一侧。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_SUPPLY_STRUCT.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_SUPPLY_STRUCT.md"
+    data_support_level: "部分支持"
+    support_reason: "第一，供给的价格维完全缺失。没有期望薪酬、最低可接受薪资、当前薪资，任何\"某学科人才贵不贵\"\"深圳薪资溢价能否吸人\"的问题都无法回答。供给曲线在本库内只有\"量\"的一侧。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-02"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_SZ_STATUS
+    metric_name_zh: "M_TALENT_SZ_STATUS"
+    definition: "第一，深圳组用机构名判定，不能用面板 `city` 列。面板 `city` 把\"哈尔滨工业大学(深圳)\"判回哈尔滨、\"北京大学深圳医院\"判回北京，共 23 人错分。本件改用 `is_sz_org()`，机构名含\"深圳\"或 `loc2` 判深圳，得 236 人；用面板 `city` 只得 213 人。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_SZ_STATUS.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_SZ_STATUS.md"
+    data_support_level: "完全转换支持"
+    support_reason: "第一，深圳组用机构名判定，不能用面板 `city` 列。面板 `city` 把\"哈尔滨工业大学(深圳)\"判回哈尔滨、\"北京大学深圳医院\"判回北京，共 23 人错分。本件改用 `is_sz_org()`，机构名含\"深圳\"或 `loc2` 判深圳，得 236 人；用面板 `city` 只得 213 人。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-07"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_SZ_SUPPLY_DEMAND
+    metric_name_zh: "M_TALENT_SZ_SUPPLY_DEMAND"
+    definition: "第一，需求侧的域分布被岗位名主导。深圳岗位里经管/人文社科占 35.02%、其他/未归类占 31.74%，两者合计 66.76%。这不是说深圳 67% 的岗位是文职，而是说\"产品经理\"\"销售经理\"\"会计\"\"招聘专员\"这类泛称被归到了经管，而\"工程师\"类泛称大量落入\"其他\"。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_SZ_SUPPLY_DEMAND.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_recruit_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_SZ_SUPPLY_DEMAND.md"
+    data_support_level: "部分支持"
+    support_reason: "第一，需求侧的域分布被岗位名主导。深圳岗位里经管/人文社科占 35.02%、其他/未归类占 31.74%，两者合计 66.76%。这不是说深圳 67% 的岗位是文职，而是说\"产品经理\"\"销售经理\"\"会计\"\"招聘专员\"这类泛称被归到了经管，而\"工程师\"类泛称大量落入\"其他\"。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-09"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TALENT_UNIV_NEW
+    metric_name_zh: "M_TALENT_UNIV_NEW"
+    definition: "第一，建校年只覆盖 46.13%。3,501 行里 1,353 所有 `est_year`，其余为空。更麻烦的是 `est_year` 是\"现校名成立年\"，合并、更名、升格的院校会显得很新——例如某专科 2016 年升格为学院，`est_year` 就记 2016，但它并不是新设。因此\"2016 年后建校 25 所\"是下限，且混有\"更名\"。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TALENT_UNIV_NEW.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TALENT/M_TALENT_UNIV_NEW.md"
+    data_support_level: "部分支持"
+    support_reason: "第一，建校年只覆盖 46.13%。3,501 行里 1,353 所有 `est_year`，其余为空。更麻烦的是 `est_year` 是\"现校名成立年\"，合并、更名、升格的院校会显得很新——例如某专科 2016 年升格为学院，`est_year` 就记 2016，但它并不是新设。因此\"2016 年后建校 25 所\"是下限，且混有\"更名\"。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-TALENT-05"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"

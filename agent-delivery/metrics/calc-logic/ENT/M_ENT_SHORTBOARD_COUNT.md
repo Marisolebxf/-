@@ -1,114 +1,65 @@
 # 短板指标数（M_ENT_SHORTBOARD_COUNT）
 
-> 口径真源：算法 2026-09（同业=同链，空值不判，L3 跟 SCORE）→ `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：挂 `M_ENT_COMPETITIVENESS_SCORE` 的 **L3 实际值 + 同链同年均值**，不用总分。  
-> 能算。只缺目标表。SCORE 未出数是上游。Q014 仍 🟡。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SHORTBOARD_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SHORTBOARD_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SHORTBOARD_COUNT_out.json`。
 
-## 依赖（标明，不改上游叶）
+## 基础信息
 
-| 顺序 | 指标 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_ENT_COMPETITIVENESS_SCORE`（MODEL，本波不算） | **同一套 L3 实际值** + 同链同年均值。不是 `score` 总分 |
-| 2 | 本条 | 数有几条 L3 相对同业更差 |
-
-不改 SCORE 叶。Q014 仍 🟡；L3 清单暂跟 SCORE 现稿，权重闭合后若增删 L3，本条跟着变。
-
-## 元数据
-
-- **指标ID**：`M_ENT_SHORTBOARD_COUNT`
-- **指标名称**：短板指标数
-- **一级模块**：企业分析
-- **二级模块**：企业评估
-- **三级模块**：综合竞争力评估
-- **更新频率**：年（随 SCORE 批次）
-- **对齐状态**：D1 aligned；同业=同链；能算；只缺目标表
-- **是否在数据库**：无短板结果表；SCORE 落表待建
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q014
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_SHORTBOARD_COUNT |
+| 指标名称 | 短板指标数 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／企业评估／综合竞争力 |
+| 更新频率 | 年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业竞争力画像「短板指标数」卡 + 短板明细｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_SHORTBOARD_COUNT.md` |
 
 ## 口径定义
 
-**每个企业一条**：综合竞争力指标体系里，表现为短板的 L3 个数。
+6 个 L3 可在 gkx 年报财务表上真算，765 家企业判出短板数（均值 2.51，8.10% 为零短板）；另外 3 个 L3 无原料，且判定年度集中在 2014—2015，故判部分支持。
 
+## 计算逻辑说明
+
+```text
+shortboard_count_i = COUNT(L3_j | x_ij 存在 AND 同链同年均值存在(n>=5) AND 方向判定为更差)
 ```
-COUNT(L3)
-WHERE 该 L3 有值
-  AND 同链同年均值有值
-  AND 该企该 L3 相对同链更差
-```
 
-相对更差：
-
-- 资产负债率：**高于**同链同年均值（负债差）
-- 其余 L3：**低于**同链同年均值
-
-空值 / 均值空：**不判**短板（不计入分子，也不当「低于」）。
-
-L3 集合 = SCORE 四维现稿（9 条）：资产总额、从业人员、营收利润率、资产负债率、总资产周转率、本科及以上占比、研发人员占比、市占率、销售收入。
-
-- **禁止**用 `score_total` / 综合分一个数去跟均值比。
-- **禁止**另开一套短板指标清单。
-- 只国内。同业键=`chain_code`+年，不另按国标行业/规模。
-
-8 件套只留这条 COUNT。下面实现不得改口径。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-L3 值 + 同链均值在 → 按上式 COUNT。能算。
-
-### ② 依赖评分出不出（另一回事）
-
-SCORE MODEL 本波不算；L3 与同业均值尚未落表。人力/学历/市占等原料空，是 SCORE 叶的事。  
-现网没有短板列可抄。demo `enterprise_score` **不当接通**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | SCORE 出数里的 L3 + 同业均值（随 `ads_ent_competitiveness_score` 或 SCORE 明细） | **上游未建** |
-| 目标 | `enterprise_shortboard` 建议名：`org_id + data_year + shortboard_count`（可加 bitset/JSON 列记下是哪几条，本波不强制） | **缺口：无此表** |
-
-源 ≠ 目标。禁止把财务年报当目标。GDF 暂缓。
-
-## 分场景 / 千万级（不进 8 件套）
-
-生产：年批次在 SCORE 出数之后，按链算各 L3 均值，再逐企 COUNT 写入目标表。查询带 `org_id`（+年）。  
-禁止请求路径对千万企 × 9 指标现算均值。demo 可扫小表对口径，不算接通。
-
-**计算公式文件**：`M_ENT_SHORTBOARD_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SHORTBOARD_COUNT.md` §二（M_ENT_SHORTBOARD_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-二次 STAT：
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-```
-ads_ent_competitiveness_score <- metric: M_ENT_COMPETITIVENESS_SCORE
-```
+- `dwd_market`
+- `dwd_org_annual_financial_info`
 
-用 L3 + 同业均值，不用总分。左端随 SCORE 落表；不写 `gkx.dwd_*` 当 FROM。
+## 待建表字段
 
-来源系统：国内机构要素库（SCORE 原料侧）。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 现网探针（2026-08-28；不进 8 件套）
+## 数据支持度与缺口
 
-- 无 `enterprise_shortboard`。SCORE 落表未建。
-- `enterprise_score` 120 行总分 mock，禁止当短板。
-- ODS 年报人力/学历等空：记在 SCORE 叶，不写成本条口径缺口。
+- **判档**：部分支持
+- **判档理由**：九个 L3 里 6 项可从 gkx 年报财务表算出、3 项无原料（学历无字段 / 研发人员整列为空 / 市占率仅 15 行），且能判定的企业只占底册的极小比例；同链同年均值在本库是小样本，按 min_peers=5 有大量 cell 不判。结构与数据都在，但覆盖不足 → 部分支持。
+- **基期声明**：本件是截面口径（每企业取 L3 覆盖面最广的一年，并列取较晚年），不是多期均值；财报表年份覆盖 2013—2025，判定实际落到 [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]。没有任何年份被按 0 摊进分母。
 
-## 待建 / 缺口
+## 溯源与复现
 
-1. **无独立目标表**（公式只标这一条）。
-2. SCORE L3 + 同链均值未出：上游，不进无法执行。
-3. D3 / D4 本波不升。`is_mock: true`。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SHORTBOARD_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SHORTBOARD_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SHORTBOARD_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-## 备注
+## 更新记录
 
-bid `§1.1.1.2.4.2.3.10`；STAT。与排名同类二次处理。不改 MODEL 叶。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
----
-*2026-09-07 COVER-STAT-L01：0.3.1 同业=同链；能算；只缺目标表；D1 aligned*

@@ -1,69 +1,63 @@
-# 区域创新协同分析模型（M_SYNTH_191_1）
+# 区域创新协同分析模型（合作网络密度）（M_SYNTH_191_1）
+
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_191_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_191_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_191_1_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SYNTH_191_1 |
-| 指标名称 | 区域创新协同分析模型 |
-| 使用位置 | 综合智能分析 / 区域创新协同分析 / 协同度计算模型 |
-| 口径版本 | V1.3-20260904 |
-| 更新频率 | 年度 |
+| 指标名称 | 区域创新协同分析模型（合作网络密度） |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_191_1.md` |
 
 ## 口径定义
 
-选定区域内、统计年度的区域创新协同指数，由完整度、中心度、密度三项标准化后加权合成，取值 0—100。分数越高表示创新合作越紧密、网络覆盖越好。对象=区域协同网络，不是要素贡献路径。与 `M_SYNTH_COLLAB_INDEX` 同核、本 ID 为算法库序号 191 模型入口。
+本指标按王惠口径计算区域创新合作网络的密度：节点是深圳、广州、东莞、惠州四市内 2021—2024 年中文论文 ≥3 篇的机构，边是同一篇论文的共同署名。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：完整度 / 中心度 / 密度。算法库序号 191 已给这三项。需求序号 140 所列联合专利、合作项目、人才流动作为建网边，不另起一套二级。各维极值归一后等权（也可按评估重点改权，$ΣW=1$）。本指标不建作者合作网专表，边从现表现算。完整度=节点覆盖度，即“已进入协同的主体数 ÷ 区域内应纳入的主体总数”；应纳入主体类型由用户选择，不固定为企业、科研机构、人才机构三类。
-
-### 第一步：入集与建网
-
-节点：区域内用户所选主体类型（默认企业、科研机构、学者所属机构），键=`org_id`（学者机构对齐 `name_cn`）。孤立主体也进节点集。
-
-边：无向，去重。三类边并集，有一次合作即连：
-
-- 联合专利：`dwd_patent.applicants` 解析出不少于 2 个本区域申请人，每对申请人连边。
-- 合作项目：`dwd_zh_project.funded_institution` 解析出不少于 2 个本区域机构，每对连边。
-- 人才流动：同一 `scholar_id` 在 `dwd_scholar_work_experience` 中出现不少于 2 个不同 `org_name_zh`，且两机构都在本区域，按任职顺序相邻机构连边。
-
-不落中间表。区域内有效节点不足 2 个则三维记空。
-
-### 第二步：三个子项
-
-1. **完整度**  
-   节点完整度 = 已进入协同的节点数（至少有一条合作边，即度 ≥ 1）÷ 区域内应纳入节点总数（用户所选主体类型在区域内的节点并集，含孤立节点）。
-
-2. **中心度**  
-   全部节点度数的平均值，再极值归一，N<3 记空。不跑介数、不跑最短路。
-
-3. **密度**  
-   实际无向边数除以完全图边数（节点两两都相连时的边数），即密度 = 2×实际无向边数 ÷ [N×(N−1)]。节点不足 2 个则空。
-
-三维等权得协同指数。高效协同 = 度数不低于本批七十分位的连通分量；孤立主体 = 度数为 0。输出区域一行，含三维得分、指数与孤立主体清单。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 区域创新协同分析模型 | 完整度 | 节点覆盖度 | 已进入协同的节点数占应纳入节点总数的比重。 | 已进入协同的节点数（至少一条合作边）÷ 区域内应纳入节点总数 × 100 | dwd_patent(pn, applicants, first_applicant_name, pbdt_year) — 联合专利边；dwd_zh_project(id, funded_institution, approval_year) — 合作项目；dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构流动；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续；dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构节点；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 人才所属机构 | 无 |
-| 区域创新协同分析模型 | 中心度 | 平均点度中心性 | 协同网节点平均度数。                       | 全部节点度数求和后除以节点数，再极值归一                     | dwd_patent(pn, applicants, first_applicant_name, pbdt_year) — 联合专利边；dwd_zh_project(id, funded_institution, approval_year) — 合作项目；dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构流动；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域创新协同分析模型 | 密度 | 网络密度 | 实际合作边占完全图边数的比重。 | 实际无向边数除以节点两两相连时的边数 | dwd_patent(pn, applicants, first_applicant_name, pbdt_year) — 联合专利边；dwd_zh_project(id, funded_institution, approval_year) — 合作项目；dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构流动；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_191_1.md` §二（M_SYNTH_191_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域节点入集,名称对齐,机构类型
-- dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构节点
-- dwd_patent(pn, applicants, first_applicant_name, pbdt_year) — 联合专利边
-- dwd_zh_project(id, funded_institution, approval_year) — 合作项目边
-- dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 人才所属机构
-- dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 人才流动边
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_patent`
+- `dwd_patent_applicants`
+- `dwd_scholar_paper_relation`
+- `dwd_zh_project`
 
-- 无
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 区域创新协同指数|科学技术部|区域创新能力监测指标体系|https://www.most.gov.cn/zxgz/cxdcwq/zbtx/201311/t20131129_110674.html
+## 数据支持度与缺口
 
-[2] 区域创新协同指数|中国科技发展战略研究小组|中国科学院大学中国创新创业管理研究中心|中国科技发展战略研究小组, 中国科学学与科技政策研究会. 中国区域创新能力评价报告[M]. 北京: 科学技术文献出版社, 2025.
+- **判档**：部分支持
+- **判档理由**：王惠口径（边数 ÷ 完全图边数）可直接计算，节点与边都由真实论文署名构造，四市子图与城市对矩阵均有量；但只能覆盖学术协同：专利共同申请表只有 2 万件抽样、合作项目表金额与参与方字段全空，产学研协同的另外两条腿缺失；论文机构串仅 47.4% 能判城（其余机构名不含城市与校名），密度绝对值偏低。故判部分支持，不抬到完全转换支持。
+- **基期声明**：论文窗口 2021–2024 四个真实年份；合作边为该窗口内共现，不含 2025–2026（2026 为残年）。本指标为窗口累计截面，不做年度分母除法。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_191_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_191_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_191_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

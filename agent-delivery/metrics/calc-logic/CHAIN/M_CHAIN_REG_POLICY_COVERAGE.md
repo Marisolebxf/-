@@ -1,76 +1,64 @@
-# M_CHAIN_REG_POLICY_COVERAGE 政策覆盖率（链维 / 区域维）计算口径细稿
+# 区域政策覆盖率（M_CHAIN_REG_POLICY_COVERAGE）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（饱和加权 / 拆词防误判 / 分母 L1 / 国家级覆盖全国）
-- **类型**：STAT（比例）
-- **is_mock**：false（源表在案有数，端到端真值已实测）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_POLICY_COVERAGE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_POLICY_COVERAGE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_POLICY_COVERAGE_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：专题系统 · 产业链分析 · 区域产业评价页（`CHAIN-TOPIC-REGIONAL.yaml` `row_id: TOPIC-REG-019`），主项"政策覆盖率"，子项"支撑力叶子"；页面约束"指数预设叶子；不得用门户 POLICY_MATCH_SCORE 或诊断口径顶替"；上游合成条 `M_CHAIN_REG_ECOSYSTEM` / `M_CHAIN_SUPPORT_POWER` 引用。
-- **兄弟条目先例**（`M_CHAIN_REG_COMP_SUPPORT` v1，2026-08-27）："政策覆盖率=相关政策覆盖环节占全链环节数比例"，title/keywords/keypoints/theme 四列文本匹配。
-- **白话**：深圳在这条链的 6 个主环节里，政策铺得有多全、多厚。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_POLICY_COVERAGE |
+| 指标名称 | 区域政策覆盖率 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链区域对比、政策覆盖热力图｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_REG_POLICY_COVERAGE.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**政策覆盖率 = Σ(hit_i / (hit_i + 5)) / L1 环节总数 × 100%**
+48 个链×城格子全部可算，均值 17.18%、最高 58.33%；但只命中标题、政策库 2021 年后仅 2,410 行、二值口径 20/48 已饱和，只能判部分支持。
 
-- `hit_i` = 命中第 i 个 L1 环节的有效政策数（区域池含国家级）；
-- 饱和参数 k=5：政策越多环节分越高、渐近 1 不爆表（拍板 ①：政策多的环节加分）；
-- 分母 = 该链 L1 实体链环节数（拍板 ③：采用链环节定义；INB1701=6，`dwd_industry_chain_info.level=1`）；无命中环节贡献 0；
-- 输出 0–100% 纯比例，分档交 UI。
+## 计算逻辑说明
 
-### 命中判定（拍板 ②：拆词但不拆细）
-
-- 匹配面：政策 `title`（keywords/keypoints/theme demo 零填充——0/0/2 行，口径保留待灌，当前仅 title 承重）；
-- 词表 = **环节名实体词**（算法侧维护：半导体、集成电路、通信、超高清、智能终端、软件…），环节内多词 OR；
-- 停用词剔除（与/及/应用/视频/信息服务/新型）；**泛词不入表**（"网络"、"终端"单独出现不匹配）——实测"网络"一词引入 18 条误判（52→34）；
-- 政策与环节多对多：一条政策命中多环节，各环节各计各的，不跨环节去重。
-
-### 政策池（拍板 ④：国家级覆盖全国）
-
-`is_deleted=0 AND status='有效' AND (city = :region_city OR ((city IS NULL OR city='') AND rank LIKE '%国家级%'))`
-
-## 3. Formula（SQL）
-
-```sql
--- 内层：各环节命中数
-SELECT l.industry_link_code, COUNT(DISTINCT p.id) AS hit_cnt
-FROM demo_gkxlumenx_ods.dwd_industry_chain_info l
-JOIN demo_gkxlumenx_ods.dwd_policy_base p
-  ON p.is_deleted = 0 AND p.status = '有效'
- AND (p.city = :region_city
-   OR ((p.city IS NULL OR p.city = '') AND p.`rank` LIKE '%国家级%'))
- AND (p.title LIKE CONCAT('%', :token_1, '%')
-   OR p.title LIKE CONCAT('%', :token_2, '%'))   -- 该环节实体词 OR 展开
-WHERE l.is_deleted = 0 AND l.industry_code = :chain_code AND l.level = 1
-GROUP BY l.industry_link_code;
-
--- 外层：覆盖率 = Σ(hit_i/(hit_i+5)) / COUNT(L1 环节)
+```text
+Cov(c,r)=Σ_i hit_i/(hit_i+5)/|L1(c)|×100%；池=city=r ∪ 国家级(level=4)；hit=标题词命中
 ```
 
-## 4. 表依赖与实核（2026-10-14 demo 库）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_POLICY_COVERAGE.md` §二（M_CHAIN_REG_POLICY_COVERAGE.py 零改语义复算）。
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd_policy_base` | 政策池 | demo 20,000 行（is_deleted=0 全部、status 全"有效"）；city 非空 10,294 / 深圳 879 / 国家级 2,174；rank 为 JSON 数组串（省级 7,449/市级 6,149/…）；**live gkxlumenx_ods 无此表 = 跨库差异注记，非缺口**（2026-08-18 ENT 域观测的即 live 侧） |
-| `dwd_industry_chain_info` | 链与 L1 环节字典 | INB1701 L1=6 / L2=26；全局 15 链 L1 合计 28 |
-| 环节词表 | 命中判定载体 | 算法侧维护（环节名→实体词组），非库表 |
+## 源表字段
 
-## 5. 验证记录（2026-10-14，深圳 × INB1701）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-| 环节 | 实体词 | 命中政策数 | 贡献 (hit/(hit+5)) |
-|---|---|---|---|
-| 新型网络与通信 | 通信 | 34 | 0.87 |
-| 软件与信息服务 | 软件 | 27 | 0.84 |
-| 半导体与集成电路 | 半导体/集成电路 | 18 | 0.78 |
-| 超高清视频与显示 | 超高清/显示 | 6 | 0.55 |
-| 人工智能与应用 | 人工智能 | 5 | 0.50 |
-| 智能终端 | 智能终端 | 1 | 0.17 |
-| **加权覆盖率** | | | **61.8%** |
+- `dwd_policy_base`
 
-对照：二元口径（命中即 1）= 6/6 = 100%，已无区分度——证明拍板 ① 加权的必要性。全串 LIKE（"半导体与集成电路"整串）= 0 命中，证明拆词必要性；"网络"泛词引入 18 条误判（52→34），证明拍板 ② 防误判必要性。
+## 待建表字段
 
-## 6. 关联条目
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- `M_CHAIN_REG_COMP_SUPPORT` / `M_CHAIN_SUPPORT_POWER`：上游合成条引用本输出；其 formula 中"政策命中率/全链环节数"二元描述在复审时按本条加权版对齐（本轮不动）。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：12 链 × 4 市 = 48 个格子全部可算，政策底表 20,000 行、链树 1,273 节点齐备；但命中只基于标题（theme 非零行 2），不是正文语义覆盖；覆盖率最高仅 58.33%、均值 17.18%，但二值口径已有 20/48 个格子 100%（链路只要命中 1 条就算覆盖）、16 个格子 0%，说明连续值主要拉开「命中几条」，而非「覆盖/不覆盖」；政策库 2021 年后仅 2410 行，按年截断会把广州池从 2,499 砍到 157，故只能用存量、无法做年度政策增量；城市只认中文全称精确匹配，9,706 行 city=NULL 只能靠 level=4 区分国家级。故判部分支持。
+- **基期声明**：政策覆盖是**存量截面**（全表 20,000 行，最早 1981-04-07、最晚 2024-02-18)，不做年度序列，因此没有年度基期。按 2021+ 截断不是「补 0」，而是把存量表误当增量表，本件明确拒绝该做法，并在 sensitivity 里量化其后果。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_POLICY_COVERAGE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_POLICY_COVERAGE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_POLICY_COVERAGE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

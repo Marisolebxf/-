@@ -1,6 +1,7 @@
 # 区域产业创新人才综合评价模型（M_SYNTH_184_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SYNTH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_184_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_184_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_184_1_out.json`。
 
 ## 基础信息
 
@@ -8,68 +9,57 @@
 |---|---|
 | 指标ID | M_SYNTH_184_1 |
 | 指标名称 | 区域产业创新人才综合评价模型 |
-| 一级模块 | 综合智能分析 |
-| 二级模块 | 区域创新活力分析 |
-| 三级模块 | 产业创新人才 |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| 缺失年份 | [2021, 2022, 2023, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_184_1.md` |
 
 ## 口径定义
 
-选定区域内、统计年度的人才创新成果指数，从创新人才数量、学历结构、年龄结构、成果产出四维评定，取值 0—100。分数越高表示人才结构与产出越强。对象=区域创新人才，不是单名学者、不是企业技术人才维。
+本指标把「区域产业创新人才」拆成数量、学历、年龄、成果四维，维内子项批内极值归一、 子项等权，四维等权合成 0—100。
 
 ## 计算逻辑说明
 
-采用加权平均。四维：创新人才数量 / 学历结构 / 年龄结构 / 成果产出。算法库序号 184 已给这四维，不另起维度。各维极值归一后等权（也可按评估重点改权，ΣW=1）。
-
-### 第一步：入集
-
-统计窗默认自然年。区域落到 `dwd_org_base_info.city` / `province` / `area`。学者机构 `dwd_scholar.scholar_org_name_zh` / `scholar_org_id` 对齐 `name_cn` / `org_id`。研发人员取 `dwd_org_annual_financial_info.development_employee`，年键=`year`。
-
-### 第二步：四个子项
-
-1. **创新人才数量**  
-   区域学者去重数 + 区域内企业研发人员合计。两子值分别极值归一后等权。
-
-2. **学历结构**  
-   最高学历含硕/博（`dwd_scholar_education_background.degree_zh` / `degree_en` 含硕士、博士、Master、Ph.D、PhD）的学者 / 区域学者去重数。一名学者多条学历取最高一条。
-
-3. **年龄结构**  
-   现库无出生年。正式口径用最早任职年推从业年限代理年龄：统计年 − `dwd_scholar_work_experience.start_time` 最早年。青年占比 = 从业年限 < 10 年的学者 / 有任职记录的学者。这是年龄代理，不是真实出生年；不另待建 `birth_year`。
-
-4. **成果产出**  
-   四子项极值归一后等权：论文与H指数、对齐授权专利、专利转移、院士学者数。  
-   - 论文与H指数：区域学者 `paper_nums` + `h_index` 合计。  
-   - 对齐授权专利：区域内机构对齐授权专利去重数，年键=`pbdt_year`。  
-   - 专利转移：区域内机构对齐专利的权利转移去重数，年键=`dwd_patent_transfer.transfer_effective_date`。是机构级转移代理技术转化，不是人才转化台账。  
-   - 院士学者数：`dwd_scholar_talent_flag.academician=1` 的区域学者去重数。仅覆盖院士荣誉，不含科技奖明细。
-
-四维等权得指数。输出区域一行，含四维得分与综合分。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 区域产业创新人才综合评价模型 | 创新人才数量 | 学者存量 | 区域学者去重数。 | COUNT(DISTINCT scholar_id) | dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者存量,所属机构；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 研发人员合计 | 企业研发人员求和。 | SUM(development_employee) | dwd_org_annual_financial_info(org_id, year, development_employee) — 研发人员；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域产业创新人才综合评价模型 | 学历结构 | 硕博学者占比 | 最高学历含硕博的学者占比。 | COUNT(硕博)/COUNT(学者) | dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者存量,所属机构；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域产业创新人才综合评价模型 | 年龄结构 | 青年学者占比 | 从业年限<10年学者占比。任职年正式代理年龄。 | COUNT(青年)/COUNT(有任职记录) | dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构流动；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者存量,所属机构；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域产业创新人才综合评价模型 | 成果产出 | 论文与H指数 | 学者paper_nums与h_index合计。 | SUM(paper_nums)+SUM(h_index) | dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 学者存量,论文量,H指数；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 对齐授权专利 | 机构对齐授权专利去重数。 | COUNT(DISTINCT 授权专利) | dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 专利转移 | 机构对齐专利权利转移去重数，代理技术转化。 | COUNT(DISTINCT pn) WHERE 转移年=统计年 | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,技术转化代理；dwd_patent(pn, first_applicant_name) — 申请人对齐；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 院士学者数 | 区域院士学者去重数，代理获奖/荣誉。 | COUNT(DISTINCT scholar_id) WHERE academician=1 | dwd_scholar_talent_flag(scholar_id, academician) — 院士标识；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者存量,所属机构；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_184_1.md` §二（M_SYNTH_184_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续
-- dwd_org_annual_financial_info(org_id, year, development_employee, employees_number) — 研发人员,从业人数
-- dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id, paper_nums, h_index) — 学者存量,所属机构,论文量,H指数
-- dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-- dwd_scholar_work_experience(scholar_id, start_time, end_time, org_name_zh) — 任职起止,机构
-- dwd_scholar_talent_flag(scholar_id, academician) — 院士标识,获奖代理
-- dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 机构对齐授权专利
-- dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,技术转化代理
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
 
-- 无
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：四维里两维出数：数量维（四市学者 1,174 人，深 247 / 广 918 / 莞 9 / 惠 0）与成果维（2024 授权 270,110 件、转移 172 件、论文+H 126,251、院士 6 人）都有真实非零读数且逐项可复现；但另外两维不可用：①数量维的企业研发人员分母整列为空（0/90,926 非空）；②学历维与年龄维只有深穗两城有样本（学位记录 116 条、履历记录 103 条），且两城差异用 Fisher 精确检验 p=0.5498 / 0.7816，统计上不可区分——能算出但不构成可发布读数，整维不入指数。四维只有两维可算，判部分支持
+- **基期声明**：本指标是 2024 年截面：专利授权与转移取 2024（库内真实年份 2021—2026，2017—2020 零行，§3.16）；学者、学历、履历、院士为存量/生涯累计，无年份分母。2025/2026 进 missing 是因为不是本批统计年（2025 公开滞后、2026 为残年），不是因为缺失被摊成 0。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_184_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_184_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_184_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

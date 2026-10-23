@@ -1,8 +1,7 @@
 # 政策文本解析（M_POLICY_TEXT_PARSE）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-POLICY-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TEXT_PARSE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TEXT_PARSE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TEXT_PARSE_out.json`。
 
 ## 基础信息
 
@@ -10,81 +9,57 @@
 |---|---|
 | 指标ID | M_POLICY_TEXT_PARSE |
 | 指标名称 | 政策文本解析 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 政策分析 |
-| 三级模块 | - |
-| 更新频率 | 日 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | QPOL-02 |
+| 所属域 | POLICY（政策分析） |
+| 一级模块 | 政策 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 政策详情页「政策标签」区、政策库检索页左侧「支持工具／对象类型／产业方向／时间节点」四组复选筛选项 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/POLICY/M_POLICY_TEXT_PARSE.md` |
 
 ## 口径定义
 
-对 DWD 未删除政策的正文/摘要做结构化要素抽取、自动摘要与标签，输出结构化要素、摘要与标签集合。统计窗口=最新 `calc_batch` 快照，对象=`dwd_policy_base.is_deleted=0` 且 `is_history=0`（当前版）的政策。
+正本把「政策文本解析」拆成三支：结构化要素抽取（要 `policy_entity` 系三张表）、自动摘要（要生成模型）、自动标签（要关键词/主题/要点三列）。三张实体表在 `gkx` **一张都没有**，三列辅助字段里 `keywords`、`keypoints` 各 0 行、`theme` 只有 2 行，模型权重本机也没有。剩下能做的，只有「在正文上跑闭集词表」这一条路——它属于「部分支持」：有文本、有可复现规则，但没有实体级结构化输出，也没有摘要。
 
 ## 计算逻辑说明
 
-采用「结构化要素抽取 + 自动摘要 + 自动标签」三支，输入为政策正文/摘要，抽取由 NLP 模型执行，结果落 `ads.policy_text_parse`。
-
-### 第一步：入集
-
-取最新 `calc_batch` 快照内未删除、当前版的 DWD 政策：
-
-```sql
-SELECT id, title, abstract, content, keywords, theme, keypoints, policy_support
-FROM gkx.dwd_policy_base
-WHERE is_deleted = 0 AND is_history = 0;
-```
-
-### 第二步：结构化要素抽取
-
-对 `content` / `abstract` 抽取政策目标、扶持措施、责任主体、申报条件、支持力度、时间节点等要素。要素实体落 `policy_entity(policy_id, entity_type, entity_name, attributes, confidence)`，实体间关系落 `policy_entity_relation(policy_id, entity_id, relation_type, relation_weight)`。结构化结果字段以 `ads.policy_text_parse.structured_elements` 输出。
-
-### 第三步：自动摘要
-
-对 `content` 生成摘要，输出 `ads.policy_text_parse.summary`；`abstract` 可作为摘要种子。
-
-### 第四步：自动标签
-
-基于 `keywords`、`theme`、`keypoints` 及抽取要素生成自动标签，输出 `ads.policy_text_parse.auto_tags`。
-
-```sql
--- 入集（最新 calc_batch 快照）
-SELECT p.id, p.title, p.abstract, p.keywords, p.theme, p.keypoints
-FROM gkx.dwd_policy_base p
-WHERE p.is_deleted = 0 AND p.is_history = 0;
-
--- 抽取结果关联（要素/关系）
-SELECT pe.policy_id, pe.entity_type, pe.entity_name, pe.confidence, pe.calc_batch_id
-FROM gkx.policy_entity pe
-WHERE pe.policy_id = :policy_id;
-```
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 政策文本解析 | 结构化要素抽取 | 政策目标/扶持措施/责任主体/申报条件/支持力度/时间节点 | 从正文/摘要抽取结构化要素及实体。 | 实体抽取：NER/规则 → policy_entity；关系：→ policy_entity_relation | dwd_policy_base(id, title, abstract, content, keywords, theme, keypoints, policy_support) — 政策正文/摘要/关键点；policy_entity(policy_id, entity_type, entity_name, attributes, confidence, source_field, calc_batch_id) — 政策实体；policy_entity_relation(policy_id, entity_id, relation_type, relation_weight, relation_desc, confidence) — 实体关系 | 政策实体关系实际数据（现表 0 行） |
-|  | 自动摘要 | 政策摘要 | 生成政策内容自动摘要。 | summary = LLM/抽取式摘要(content) | dwd_policy_base(id, title, content, abstract) — 政策正文/摘要 | 摘要模型产出字段（输出表 summary） |
-|  | 自动标签 | 政策标签 | 基于关键词/主题/关键点生成自动标签。 | auto_tags = keywords ∪ theme ∪ 抽取要素标签 | dwd_policy_base(id, keywords, theme, keypoints, type) — 关键词/主题/关键点/类型 | 标签模型产出字段（输出表 auto_tags） |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TEXT_PARSE.md` §二（M_POLICY_TEXT_PARSE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, title, abstract, content, keywords, theme, keypoints, policy_support, type, province, city, rank, is_deleted, is_history) — 政策正文/摘要/关键词/主题/关键点（有数据）
-- policy_entity(policy_id, entity_type, entity_name, attributes, source_field, confidence, model_version, calc_batch_id) — 政策实体（结构化要素，有数据）
-- policy_entity_relation(policy_id, entity_id, relation_type, relation_weight, relation_desc, extract_rule, confidence) — 政策实体关系（表结构存在，0 行）
-- policy_entity_type(type_code, type_name, type_desc, parent_id) — 政策实体类型字典（表结构存在，0 行）
-- policy_base_info(policy_id, title, abstract, keywords, content, elements, keypoints, factors, sci_tech_attribute, application_conditions, execution_cycle, execution_entity, related_entities, is_deleted) — DWD 政策解析层（结构化要素目标字段）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_bid_`
+- `dwd_global_policy_base`
+- `dwd_global_policy_base_bak_20260923`
+- `dwd_industry_chain_info`
+- `dwd_policy_base`
+- `dwd_policy_base_bak_20260923`
 
-- `policy_entity_relation`、`policy_entity_type` 实际数据（现均 0 行，仅表结构）。
-- `ads.policy_text_parse` 的 `summary`、`structured_elements`、`auto_tags` 为模型产出输出字段（输出表，非源表）。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 智能政策拆解.md｜序号 606—609（政策语义理解：深度语义解析、意图识别与条款分类；条款精细化拆解：拆分章节/条目/细则，提取政策目标、扶持措施、保障机制、责任主体；关键指标自动提取：抽取量化指标、补贴标准、资质要求、时间节点；政策实体关联：关联发布主体、适用领域、关联政策、服务对象）。
+## 数据支持度与缺口
 
-[2] 政策效果推演.md｜序号 237 政策文本智能解析（利用 NLP 和深度学习提取政策关键词、核心内容、支持对象、申报条件、支持力度）。
+- **判档**：部分支持
+- **判档理由**：正本把「政策文本解析」拆成三支：结构化要素抽取（要 `policy_entity` 系三张表）、自动摘要（要生成模型）、自动标签（要关键词/主题/要点三列）。三张实体表在 `gkx` **一张都没有**，三列辅助字段里 `keywords`、`keypoints` 各 0 行、`theme` 只有 2 行，模型权重本机也没有。剩下能做的，只有「在正文上跑闭集词表」这一条路——它属于「部分支持」：有文本、有可复现规则，但没有实体级结构化输出，也没有摘要。
+- **基期声明**：截面件：政策文本解析对 20,000 条存量政策逐条执行，不按年份切窗、无时间分母。publish_year 跨 1981—2024，2023/2024 的零行是采集断档（DATA_FACTS §3.49 邻域），不得读成「政策文本归零」。
 
-[3] 政策实体识别构建｜科技专题服务算法库.md｜1.1.1.1.1.1.1.2.5（规则识别、词典识别、实体维护更新与属性提取）。
+## 溯源与复现
 
-[4] 政策实体关系抽取｜科技专题服务算法库.md｜1.1.1.1.1.1.1.2.6（抽取政策与政策主题、政策目标、实施主体、受益对象、监管机构等关系）。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TEXT_PARSE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TEXT_PARSE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TEXT_PARSE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

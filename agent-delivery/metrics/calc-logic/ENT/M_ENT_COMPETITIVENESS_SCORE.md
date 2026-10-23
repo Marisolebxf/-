@@ -1,6 +1,7 @@
 # 综合竞争力分（M_ENT_COMPETITIVENESS_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_COMPETITIVENESS_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_COMPETITIVENESS_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_COMPETITIVENESS_SCORE_out.json`。
 
 ## 基础信息
 
@@ -8,77 +9,56 @@
 |---|---|
 | 指标ID | M_ENT_COMPETITIVENESS_SCORE |
 | 指标名称 | 综合竞争力分 |
+| 所属域 | ENT（企业分析） |
 | 一级模块 | 企业分析 |
-| 二级模块 | 企业评估 |
-| 三级模块 | 综合竞争力评估 |
-| 更新频率 | 年度/模型版本发布时 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q014 |
-
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·企业分析「企业竞争力分析—个性化竞争力评价与输出」（§1.1.1.2.4.2.3.10.2「计算企业综合竞争力得分」；算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 输出「综合竞争力指数」）... |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_COMPETITIVENESS_SCORE.md` |
 
 ## 口径定义
 
-企业综合竞争力评估的综合得分，满分0-100分，综合反映企业在企业规模、财务状况、人力资源、市场表现四个维度的综合水平。
+无现成「综合竞争力分」结果面（落表 `ads_ent_competitiveness_score` 待建；现网 `enterprise_score` 120 行为 innov/operate/growth 口径禁顶替）→ 非完全直接支持；九个三级指标的原料集中在 gkx `dwd_org_annual_financial_info`（90,926 行），但六项财务/规模指标填充仅 2.4%—3.5%、研发人员全空、本科及以上学历无字段、市场占有率需行业营收汇总（同样依赖低填充营收）——极值归一化对覆盖面敏感，2—4% 覆盖撑不起全国可比的 min/max，人力资源维两指标一空一无 → **部分支持**（表结构在、原料结构性薄，非无法构建）。
 
 ## 计算逻辑说明
 
-第一步：数据标准化处理
-
-各指标原始数据通过极值归一化法消除量纲，将每个指标的实际值转换为0—100之间的标准化得分：
-$$
-正向指标：指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-负向指标：指标得分_{ij} = \frac{\max(x_j) - x_{ij}}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij} 为企业 i 在第 j个指标上的原始值，\min(x_j) 和 \max(x_j)分别为该指标在所有企业中的最小值和最大值。
-$$
-
-第二步：计算各维度得分
-
-将各二级指标下的三级指标标准化得分，按照对应的指标分值进行加权汇总，得到企业规模、财务状况、人力资源、市场表现四个维度的综合得分：
-$$
-维度得分_i = \sum_{j=1}^{n} w_j \times 指标得分_{ij}
-$$
-
-$$
-其中，w_j 为第 j 个三级指标的权重（指标分值/100），n为该维度下三级指标的总数。
-$$
-
-第三步：计算综合竞争力得分
-
-将五个维度的得分与一级指标权重加权汇总，得到企业综合竞争力最终得分：
-$$
-综合竞争力得分 = \sum_{k=1}^{4} W_k \times 维度得分_{ik}
-$$
-其中，W_k 为第 k个一级指标的权重（需要确定权重或者使用熵值法），i为企业编号。最终得分越高，表明企业综合竞争力越强。
-
-### 企业综合竞争力评价指标体系
-
-| 一级维度     | 三级指标               | 指标说明                                   | 源表字段 |
-| :----------- | :--------------------- | :----------------------------------------- | -------- |
-| **企业规模** | 资产总额        | 企业期末资产总额                           | gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 期末资产总额 |
-|              | 从业人员数             | 企业期末员工总数                           | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 期末员工总数 |
-| **财务状况** | 营业收入利润率         | 利润总额 ÷ 营业收入 × 100%                 | gkx.dwd_org_annual_financial_info(org_id, total_profit, operating_revenue, year) — 营业收入利润率=利润总额÷营业收入×100% |
-|              | 资产负债率             | 负债总额 ÷ 资产总额 × 100%                 | gkx.dwd_org_annual_financial_info(org_id, total_liabilities, total_assets, year) — 资产负债率=负债总额÷资产总额×100% |
-|              | 总资产周转率           | 营业收入 ÷ 平均资产总额 × 100%             | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_assets, year) — 总资产周转率=营业收入÷平均资产总额×100% |
-| **人力资源** | 本科及以上学历员工占比 | 本科及以上学历人数 ÷ 员工总数 × 100%       | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 员工总数（分母）<br>gkx 现库无学历结构字段（待建）— 本科及以上学历人数 |
-|              | 研发人员占比     | 研发人员人数 ÷ 员工总数 × 100%        | gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员占比=研发人员数÷员工总数×100% |
-| **市场表现** | 市场占有率             | 企业产品销售量 ÷ 市场同类产品销售量 × 100% | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 企业营业收入<br>gkx.dwd_org_base_info(org_id, industry_l1_code) — 行业归属，需行业营收汇总 |
-|              | 销售收入               | 与所有者投入资本无关的经济利益总流入       | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 营业收入 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_COMPETITIVENESS_SCORE.md` §二（M_ENT_COMPETITIVENESS_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_profit, total_assets, total_liabilities, development_employee, employees_number, year) — 企业规模（资产总额、从业人员数）、财务状况（营业收入利润率、资产负债率、总资产周转率）、人力资源（研发人员占比）、市场表现（市场占有率、销售收入），优先年报，覆盖非上市企业
-gkx.dwd_org_base_info(org_id, industry_l1_code) — 市场占有率维度的行业归属与行业营收汇总
-本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `ads_ent_`
+- `ads_ent_competitiveness_score`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_rd_achiev_info`
 
-本科及以上学历人数字段 — 现库无学历结构字段，待建
-目标结果表 ads_ent_competitiveness_score(score, peer_group, batch_id, 待建) — 综合竞争力得分
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：四维九三级指标原料：gkx 财务表 90926 行中资产>0 2.9%、员工>0 3.5%、营收>0 2.4%、利润非空 2.6%、负债>0 2.6%、财务三要素齐 fin3 2.3%；研发人员 development_employee 全空；本科及以上学历人数无字段（待建）；市场占有率需行业营收汇总（同样依赖低填充营收）。极值归一化对填充量敏感——2-4% 覆盖撑不起全国可比 min/max，人力资源维两指标一空一无 → 部分支持（表结构在、原料结构性薄，非无法构建）。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_COMPETITIVENESS_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_COMPETITIVENESS_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_COMPETITIVENESS_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

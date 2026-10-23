@@ -1,118 +1,63 @@
 # 覆盖企业类型数（M_ENT_KEYPANO_TYPE_COUNT）
 
-> 口径真源：每格重点名单里六类 DWD 标签有几类至少 1 家 → 2026-08-30 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：挂重点名单 `M_ENT_KEY_TOTAL` + 上链 + `enterprise_tag`。  
-> **① DWD 能数**：六类都在 `enterprise_tag.tag_code`，关系在就能 COUNT。  
-> **② ODS→DWD**：灌数另一步，不进「无法执行」。  
-> **选链不进口径**：ETL 全量链×链位；API 按键查。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_TYPE_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_TYPE_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_TYPE_COUNT_out.json`。
 
-## 依赖（标明，不改上游叶）
+## 基础信息
 
-| 顺序 | 依赖 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_ENT_KEY_TOTAL` / Q038 | 重点企业名单 |
-| 2 | `enterprise_industry_chain` | 企业上了哪条链、链位 |
-| 3 | `enterprise_tag` | 六类标签关系 |
-| 4 | 本条 | 每个 `(chain_code, node_stage)` 一格：有几类 ≥1 家 |
-
-不改 KEY_TOTAL / TYPE_COUNT 叶的任务范围以外口径（TYPE_COUNT 已同步改挂标签）。
-
-## 元数据
-
-- 指标ID：`M_ENT_KEYPANO_TYPE_COUNT`
-- 名称：覆盖企业类型数
-- 模块：企业分析 / 重点企业概览（E-33）
-- 更新频率：周
-- 关联Q：Q010（判定边界）；名单侧 Q038
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_KEYPANO_TYPE_COUNT |
+| 指标名称 | 覆盖企业类型数 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 → 重点企业全景 → 选定链位后的「覆盖类型数」徽标 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_KEYPANO_TYPE_COUNT.md` |
 
 ## 口径定义
 
-每个 `(chain_code, node_stage)`：该格重点名单里，六类 DWD 标签有几类至少 1 家。结果 **0～6**。
+`COUNT(DISTINCT tag_code)` 这个动作本身没有难度，难点全在三个名词：**重点名单**、**`tag_code` 字典**、**链位**。gkx 有 55 个真实资质标签、228 万行企业链标签，但没有 `enterprise_tag` / `tag_dict` / `key_enterprise` 三张表，也没有 `node_stage` 字段。三个名词里两个靠代理、一个靠映射，故按 §〇 判**部分支持**。
 
-六类一律 `enterprise_tag.tag_code`（`tag_dict`）：
+## 计算逻辑说明
 
-| 类型 | `tag_code` | 禁止 |
-|------|------------|------|
-| 高新 | `high_tech` | — |
-| 专精特新 | `little_giant` | — |
-| 小巨人 | `little_giant_pro` | — |
-| 小微 | `sme` | `org_size`；`sme_tech` |
-| 外资 | `foreign` | `enterprise_type` 含外商 |
-| 上市 | `listed` | `is_listed` / 主档 listing |
-
-```
-COUNT(DISTINCT tag_code)
-WHERE tag_code ∈ {foreign, high_tech, sme, listed, little_giant, little_giant_pro}
-  AND org_id ∈ 该格重点名单
-GROUP BY chain_code, node_stage
-```
-
-- 一企可进多类。禁止把覆盖数理解成企业数（那是 MATCH）。按类家数是后面的 `TYPE_STRUCTURE`。
-- 禁止 `honor_type` / 不存在的 honor 表。
-- 禁止「当前结果集 / 所选产业链」进口径。
-- 只国内。
-
-## 两步分开（强制）
-
-### ① DWD 能不能数
-
-`enterprise_tag` 有这六类关系 + 名单 + 上链边 → COUNT。公式完整，**可以算完**。
-
-### ② ODS → DWD（另一回事）
-
-六类 ODS 有没有灌进左端 `enterprise_tag`，只记灌数 / D3。没灌 **不写「当前无法执行」**，不否定 ①。
-
-名单 KEY_TOTAL / 上链 ODS 弱，也是依赖现状，不跟 ② 揉成一句。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `key_enterprise` + `enterprise_industry_chain` + `enterprise_tag` | 名单 demo；上链表在；标签表在 |
-| 目标 | `enterprise_keypano_chain_node_summary.type_cover_count`（与 MATCH 同粒度） | **缺口：无此表** |
-
-源 ≠ 目标。GDF 暂缓。
-
-## 分场景 / 千万级（不进 8 件套）
-
-| 层 | 做什么 |
-|----|--------|
-| ETL | 名单 ∩ 上链 ∩ 六类 tag，**所有** `chain_code × node_stage` 写 `type_cover_count`。 |
-| API | 只读目标表，按键查行。不带条件可回全量格子。 |
-| 前端 | 选链/链位是过滤。 |
-
-禁止请求路径对全库 JOIN 现算。demo 可现算对口径，不算接通。
-
-**计算公式文件**：`M_ENT_KEYPANO_TYPE_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_TYPE_COUNT.md` §二（M_ENT_KEYPANO_TYPE_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_industry_chain
-enterprise_tag
-key_enterprise <- metric: M_ENT_KEY_TOTAL
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-右端 ODS（`dwd_org_tech_tag` / 上链源）只作家谱，不证明 ① 已接通。
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_org_tech_tag`
 
-来源系统：国内机构要素库、产业链要素库。
+## 待建表字段
 
-## 现网探针（2026-08-30；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 无 `enterprise_keypano_qual_summary` / honor 表。
-- `tag_dict` 有 `sme` / `foreign` / `listed` / `high_tech` / `little_giant` / `little_giant_pro`。
-- ADS `key_enterprise` 87 行 demo，不当接通。
+## 数据支持度与缺口
 
-## 待建 / 缺口（不是口径算不全）
+- **判档**：部分支持
+- **判档理由**：`COUNT(DISTINCT tag_code)` 这个动作本身没有难度，难点全在三个名词：**重点名单**、**`tag_code` 字典**、**链位**。gkx 有 55 个真实资质标签、228 万行企业链标签，但没有 `enterprise_tag` / `tag_dict` / `key_enterprise` 三张表，也没有 `node_stage` 字段。三个名词里两个靠代理、一个靠映射，故按 §〇 判**部分支持**。
+- **基期声明**：截面件：名单按专利授权累计量一次性截取，链位与标签无年度键；不设基期，不得用 created_time 反推年度。
 
-1. 名单 / 上链依赖出数。
-2. 无独立目标列。
-3. D3 / D4 本波不升。`is_mock: true`。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_TYPE_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_TYPE_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_TYPE_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-bid `E-33 重点企业概览`；STAT。与 `M_ENT_TYPE_COUNT` 同一套六类码。
+## 更新记录
 
----
-*2026-08-30 COVER-STAT-L01：六类 tag_code；DWD 能数 / ODS 灌数分开*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

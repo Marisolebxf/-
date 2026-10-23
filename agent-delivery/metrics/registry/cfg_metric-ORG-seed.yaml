@@ -1,423 +1,466 @@
-# cfg_metric 种子 —— 科研机构域（ORG）M_ORG_* 指标 8 件套
+# cfg_metric 种子 —— 科研机构域（ORG）M_ORG_* 指标
 # ============================================================================
-# 作用：METRIC-SEED-REGISTER-L01 把 OPEN 新号身份写入 seed（D1=draft）。
-# 维护：data-agent  ·  监管：human:淮政玮  ·  创建：2026-08-22
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-# algorithm_type 本批一律 UNKNOWN（未签）。禁止把赋号卡 suggested_unsigned 当已签。
-# 禁止 D1=aligned。存量口径/公式/源表不在本文件改（本文件为该域首份 seed）。
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：22 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-23"
 domain: ORG
-seed_version: "0.1.0"
-batch: open_draft_20260822
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 22
 defaults:
-  source_systems: [pending_ods]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
   owner_agent: data-agent
-  version: "0.1.0"
-  algorithm_type: UNKNOWN
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
   - metric_id: M_ORG_ATTENTION_TREND
     metric_name_zh: "科研关注度"
-    definition: >
-      由同一选定范围下的新增科研机构数量及其增长速率合成的领域科研关注度趋势（SRS 04 seq 65）。 05 无关注度专叶，与新增动态同叶消费。非检索热度、非政策关注度。 OPEN Round 4 草稿曾标 STAT；本 loop 按「指数合成（无训练）」改为建议 COMPUTE。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "有人会提议「用论文数代理被引」，但这两者度量的是不同东西：论文数度量产出规模，被引度量同行认可。一家机构可以年产 200 篇但篇均被引 0.3，另一家年产 20 篇但篇均被引 30，前者「关注度高」后者「影响力高」，用论文数代理会把后者彻底埋掉。本件选择**不设被引维**，把论文数明确标为「学术产出曝光量」，并在 §四 把「不能读作学术影响力」写成硬约束。这比造一个看起来很专业的代理值更负责。"
+    formula: "A_i = 0.65·pct(论文 2016–2023 合计) + 0.20·pct(政策提及) + 0.15·pct(项目数)，缺维重归一"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_important_news_info", "dwd_policy_base", "dwd_zh_paper", "dwd_zh_paper_citation", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_ATTENTION_TREND.md"
+    data_support_level: "部分支持"
+    support_reason: "有人会提议「用论文数代理被引」，但这两者度量的是不同东西：论文数度量产出规模，被引度量同行认可。一家机构可以年产 200 篇但篇均被引 0.3，另一家年产 20 篇但篇均被引 30，前者「关注度高」后者「影响力高」，用论文数代理会把后者彻底埋掉。本件选择**不设被引维**，把论文数明确标为「学术产出曝光量」，并在 §四 把「不能读作学术影响力」写成硬约束。这比造一个看起来很专业的代理值更负责。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "Q-MO-ORG-02"
     acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_ATTRACT_SCORE
     metric_name_zh: "科研机构招引推荐指数"
-    definition: >
-      对候选科研机构多维评估后的招引优先级得分；建议名单规模为同核计数展示面，不另造 CNT ID。 G3 Job。内部默认维取 05.4 seq 154（学术影响力 / 科技成果 / 团队实力）。 禁止改挂企业招引或服务机构招引 ID。推荐理由文本无独立 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "需求序号 154「科研机构引入推荐模型」在算法库 §1.1.1.1.1.1.1.6.6 里对应的产物就是「招引推荐指数」。也就是说，本件与已入库的 `M_ORG_DEEP_154_1` **同属一个需求项**，不是两个指标。二者的差别是实现分工：154 件是候选清单模型（只算 1,060 家省内非深机构、五维含学科契合 Q 与稀缺 S、输出 9 家名单），本件是全体 2,074 家的单值指数（含深圳本地机构、含动量维 R、输出 0–100 与 A/B/C）。"
+    formula: "score = (0.35A + 0.35S + 0.30T + 0.15R 在缺失维重归一) × 证据覆盖折减(0.80+0.05×维数)；≥2 维出分"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_industry_tags", "dwd_scholar", "dwd_zh_paper", "dwd_zh_paper_citation", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_ATTRACT_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "需求序号 154「科研机构引入推荐模型」在算法库 §1.1.1.1.1.1.1.6.6 里对应的产物就是「招引推荐指数」。也就是说，本件与已入库的 `M_ORG_DEEP_154_1` **同属一个需求项**，不是两个指标。二者的差别是实现分工：154 件是候选清单模型（只算 1,060 家省内非深机构、五维含学科契合 Q 与稀缺 S、输出 9 家名单），本件是全体 2,074 家的单值指数（含深圳本地机构、含动量维 R、输出 0–100 与 A/B/C）。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "Q-MO-ORG-07"
     acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_COLLAB_CHAIN
-    metric_name_zh: "科研合作关系链条"
-    definition: >
-      以论文、专利等合作记录构建的科研机构合作网络（G1 A 面当前图 / Nebula）， 展示合作强度、合作类型与核心节点。对象=专题科研机构。 不是产业服务图谱，不是区域创新协同指数。强度/类型/中心性默认作为本核展示面，不拆子 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-05"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_CULTIVATE_SCORE
-    metric_name_zh: "科研机构扶持推荐指数"
-    definition: >
-      对深圳本地科研机构评估后的培育/扶持优先级得分及建议名单规模。 「一院一策」为文本，无独立 ID。G3 Job。 内部默认维取 05.4 seq 155（成果 / 经费效率 / 人才结构）。 禁止改挂企业培育或服务机构扶持 ID。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-07"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_INDUSTRY_COVER
-    metric_name_zh: "科研机构产业领域覆盖"
-    definition: >
-      选定专题科研机构集合（名录去重）在统计窗口（默认自然年）内参与的产业链领域去重个数， 及该覆盖数的同比/环比趋势。对象不含产业服务链「服务机构」。 R-19「各领域参与度」无独立核，不另造 DEPTH ID。筛选壳本身不是本核。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_NEW_TREND
-    metric_name_zh: "新增科研机构趋势"
-    definition: >
-      选定产业或技术领域内，统计窗口（默认自然年）内首次进入该范围科研机构名录的机构 去重计数随时间变化。对象仅专题科研机构。禁止因 05 seq 99(4) 混写「服务机构」而改挂 M_SVC_NEW_CNT / M_SVC_ORG_NEW_COUNT。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-01"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_PERF_QUERY
-    metric_name_zh: "查询结果·科研机构绩效"
-    definition: >
-      对当前查询命中结果集中的科研机构（org_id 去重）按绩效核做推荐聚合，匹配饼图/柱状。 默认核=结果集内关联论文数 COUNT，可按 org_type 分组（Q-MO-QUERY-02）。 不是 05 科研机构 10 叶模型输出，禁止消费 TOPIC-ORG-05 / M_SVC_ORG_* / SVCCHAIN。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-QUERY-02"
-    acceptance_unit_id: "TOPIC-QUERY"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-QUERY-METRIC-OPEN-L01
-  - metric_id: M_ORG_SZ_ADVANTAGE
-    metric_name_zh: "深圳科研机构优势"
-    definition: >
-      选定产业下深圳科研机构相对全国（或对照集合）的优势分析报告。G3 Job。 内部默认维取 05.4 seq 151（成果 / 经费 / 人才）。指标选择壳不是本核。 不与现状解读核重复算覆盖。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-08"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_SZ_PAINPOINT
-    metric_name_zh: "深圳科研机构痛难点"
-    definition: >
-      识别深圳科研机构在选定产业下的痛难点，并给出改进建议与分析报告。G3 Job。 内部默认维取 05.4 seq 152（项目 / 转化 / 人才 / 产业合作）。 禁止用企业痛点 M_ENT_PAINPOINT_* 或服务机构口径顶替。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-09"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_SZ_STATUS
-    metric_name_zh: "深圳科研机构现状解读"
-    definition: >
-      深圳科研机构在选定产业下的优势与不足解读报告，突出关键指标表现。 范围=深圳×选定产业×专题科研机构名录。不重复计算优势专叶与痛难点专叶的覆盖。 评价框架配置壳不是本核。禁止用 M_CHAIN_SZ_INSTITUTION_COUNT 顶替。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-04"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_TECH_LAYOUT
-    metric_name_zh: "科研机构技术领域布局"
-    definition: >
-      所选科研机构在核心学科 / 前沿方向 / 产业技术链上的布局分布（机构×领域计数或占比）。 统计窗口默认自然年；对象=专题科研机构名录去重。 seq 149「各领域科技综合实力」默认并入本核展示面、不另造 ID，且不得冒充可配置多机构技术力。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-03"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
-  - metric_id: M_ORG_TECH_SCORE
-    metric_name_zh: "科研机构技术力评价与对比"
-    definition: >
-      用户从技术力指标库多选并设权后，对各专题科研机构计算的技术力得分， 支撑雷达/条形对比与综合排名。05 十叶无专叶，差集 third_party（【算法补】），公式不展开。 禁止改挂服务机构或企业技术力；禁止用综合科研实力或领域科技综合实力冒充本核。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "⏳"
-    pending_ref: "Q-MO-ORG-06"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-ORG-METRIC-OPEN-L01
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
 
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
   - metric_id: M_ORG_BASE_99_1
     metric_name_zh: "科研机构基础指标模型构建"
-    definition: >
-      科研机构基础指标模型构建：对应算法库 SRS ALGO-ORG-BASE-99，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "ORG 家族的 8 个模型（本件与后续 153–157、154、155 等）都以「一家机构」为计算单元。如果各件各用一套机构清单，会出现同一家机构在 A 页面有分、在 B 页面查不到的情况，且总数对不上。因此本件把底册、城市映射、名称归一、同族识别全部固化在 `code/_snapshots21/org_family_panel_20261021.json` 与 `code/_org_family_common.py` 里，后续指标只读面板、不再连库，从机制上保证「2,074 家」这个分母在整套 ORG 指标里唯一。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_BASE_99_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_important_news_info", "dwd_org_industry_tags", "dwd_patent", "dwd_patent_transfer", "dwd_research_institute_base_info", "dwd_scholar", "dwd_zh_paper", "dwd_zh_paper_citation", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_BASE_99_1.md"
+    data_support_level: "部分支持"
+    support_reason: "ORG 家族的 8 个模型（本件与后续 153–157、154、155 等）都以「一家机构」为计算单元。如果各件各用一套机构清单，会出现同一家机构在 A 页面有分、在 B 页面查不到的情况，且总数对不上。因此本件把底册、城市映射、名称归一、同族识别全部固化在 `code/_snapshots21/org_family_panel_20261021.json` 与 `code/_org_family_common.py` 里，后续指标只读面板、不再连库，从机制上保证「2,074 家」这个分母在整套 ORG 指标里唯一。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-BASE-99"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_COLLAB_CHAIN
+    metric_name_zh: "科研合作关系链条"
+    definition: "本件构建了两层合作网络。机构层：163 家机构出现在网络中，其中 83 家有机构-机构边，共 90 条（原始 96 条，剔除 6 条同族伪边），密度 0.0264，连通分量 9 个、最大连通块 43 家。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_COLLAB_CHAIN.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_scholar_coauthor", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_COLLAB_CHAIN.md"
+    data_support_level: "部分支持"
+    support_reason: "本件构建了两层合作网络。机构层：163 家机构出现在网络中，其中 83 家有机构-机构边，共 90 条（原始 96 条，剔除 6 条同族伪边），密度 0.0264，连通分量 9 个、最大连通块 43 家。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-ORG-05"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_CULTIVATE_SCORE
+    metric_name_zh: "科研机构扶持推荐指数"
+    definition: "按需求原文三维（成果 0.35 / 经费效率 0.25 / 人才 0.20）算出来的分数与招引指数秩相关 0.95，即两个页面会给出几乎相同的排序。这不是实现问题，而是需求问题：§6.6（引入推荐）与 §6.7（扶持推荐）在维度定义上高度同构，都是「成果 + 经费 + 人才」，只是权重不同。"
+    formula: "score = 0.35S + 0.25F + 0.20T + 0.20G（缺维重归一，≥2 维出分）"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_annual_financial_info", "dwd_scholar", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_CULTIVATE_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "按需求原文三维（成果 0.35 / 经费效率 0.25 / 人才 0.20）算出来的分数与招引指数秩相关 0.95，即两个页面会给出几乎相同的排序。这不是实现问题，而是需求问题：§6.6（引入推荐）与 §6.7（扶持推荐）在维度定义上高度同构，都是「成果 + 经费 + 人才」，只是权重不同。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-ORG-07"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_149_1
     metric_name_zh: "科研机构重点技术领域布局模型"
-    definition: >
-      科研机构重点技术领域布局模型：对应算法库 SRS ALGO-ORG-DEEP-149，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本件把 2,074 家科研机构的专利存量按 IPC4 小类拆进 7 个技术领域，得到 194 家有布局证据的机构、545 个机构×领域对。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_149_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_industry_tags", "dwd_research_institute_base_info", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_149_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家科研机构的专利存量按 IPC4 小类拆进 7 个技术领域，得到 194 家有布局证据的机构、545 个机构×领域对。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-149"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_150_1
     metric_name_zh: "科研机构发展历程模型"
-    definition: >
-      科研机构发展历程模型：对应算法库 SRS ALGO-ORG-DEEP-150，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对科研机构（底册 2,007 家）从六类信号源（新闻/变更/专利/转让/项目/荣誉）抽取 9 类发展事件（迁址、扩编、获奖等），按机构-时间组织成发展历程序列；统计窗口为全量历史累计，按事件发生日归期；去重按事件源唯一键（同源同日同类型事件只计 1 次）；本批实测抽得 2,487 条事件。特例：无日期事件挂靠到来源记录日期；多源重复事件按优先源保留。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_150_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_news", "dwd_org_changerecord_info", "dwd_patent", "dwd_patent_transfer", "dwd_policy_base", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_work_experience", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_150_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件从六类信号里抽出 9 类事件，共 2,487 条，覆盖 2,007 家机构。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-150"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_151_1
     metric_name_zh: "深圳科研机构优势分析模型"
-    definition: >
-      深圳科研机构优势分析模型：对应算法库 SRS ALGO-ORG-DEEP-151，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "三维（专利产出、国基金经费、学者）在「有证据子集」上可算分位，但三个分母分别是深圳 87 家、全国 NSFC 1,593 家、省内 12 家，彼此不同源，只能做**同维内相对排序**；919 家（90.63%）机构无任何证据，无法入榜。产业维无表可依，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_151_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_heis_info", "dwd_patent", "dwd_scholar", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_151_1.md"
+    data_support_level: "部分支持"
+    support_reason: "评价宇宙 1014 家深圳机构中 95 家有可核实产出（9.37%），三维分位与优势指数可复现；但只有经费维是真全国对标（NSFC 1592 家承担机构），专利维无全国属地只能内部相对分位（87 家），人才维仅 12 家有记录（省内底册）。需求要求的「科研成果水平/科研经费投入/人才队伍素质」三线里，两条是代理或内部相对，且权重的阈值为本件自定义，故判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/科研机构优势度评估"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-151"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_152_1
     metric_name_zh: "深圳科研机构痛难点识别模型"
-    definition: >
-      深圳科研机构痛难点识别模型：对应算法库 SRS ALGO-ORG-DEEP-152，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本件与 `M_ORG_SZ_PAINPOINT` 的区别是：PB 件出「每一路多少」，本件出「合起来多痛、分几档」。要打分就必须定权重、定点集、定分级规则，三件事都会把数据缺口放大——尤其当打分集只有 25 家时，一个维度的缺失就能改变前几名。因此本件把点集、权重、分级规则、稳定性检验全部落盘，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_152_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_patent", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: quarterly
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_152_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件与 `M_ORG_SZ_PAINPOINT` 的区别是：PB 件出「每一路多少」，本件出「合起来多痛、分几档」。要打分就必须定权重、定点集、定分级规则，三件事都会把数据缺口放大——尤其当打分集只有 25 家时，一个维度的缺失就能改变前几名。因此本件把点集、权重、分级规则、稳定性检验全部落盘，判**部分支持**。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "机构培育优先级、机构痛难点分级榜、政策投放名单"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-152"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_153_1
     metric_name_zh: "科研合作关系链条模型"
-    definition: >
-      科研合作关系链条模型：对应算法库 SRS ALGO-ORG-DEEP-153，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "无现成「合作关系链条」结果面 → 非完全直接支持；学者共著边（`dwd_scholar_coauthor` 1,187,606 条）结构与量均足、机构级加权网络已现算（V=1,052 / E=1,519 / 加权度总和 9,197），但项目合作边因参与机构字段单值而断裂、专利共申边仅有 0.68% 采样、跨领域特征缺学科标签、机构同族（本部—校区）未合并产生伪合作边 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_153_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_scholar", "dwd_scholar_coauthor", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_153_1.md"
+    data_support_level: "部分支持"
+    support_reason: "可用真实共著关系构建机构级加权合作网络（清洗后 1519 条深圳相关边、137 个深圳节点，核心节点与伙伴可解释），但项目合作无字段、专利共同申请仅 0.68% 采样、跨领域特征无标签 → 部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "算法库「科研机构深度分析模型构建 / 科研合作关系链条模型」（§1.1.1.1.1.1.1.6.5，序号 153）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-153"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_154_1
-    metric_name_zh: "科研机构引入推荐模型"
-    definition: >
-      科研机构引入推荐模型：对应算法库 SRS ALGO-ORG-DEEP-154，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "科研机构引入推荐模型（重建件）"
+    definition: "本件把 2,074 家广东科研机构里非深圳的 1,060 家作为候选池，其中 205 家（19.34%）至少有一项产出信号，203 家达到「至少三维可算」的评分门槛。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_154_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_research_institute_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_154_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家广东科研机构里非深圳的 1,060 家作为候选池，其中 205 家（19.34%）至少有一项产出信号，203 家达到「至少三维可算」的评分门槛。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-154"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_DEEP_155_1
     metric_name_zh: "科研机构扶持推荐模型"
-    definition: >
-      科研机构扶持推荐模型：对应算法库 SRS ALGO-ORG-DEEP-155，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "对科研机构（本批 2,074 家）在三个维度（经营/产出/潜力）分别算库内分位数得分（0-100），加权合成扶持推荐指数并降序排名；统计窗口为最新截面（各维取最新可得年度值）；去重按机构唯一（一机构一指数）；特例：某维缺值的机构按剩余维加权归一，全缺者不出分不进推荐榜。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_DEEP_155_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_DEEP_155_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件对 2,074 家机构算了三个维度的分位分，加权得到扶持推荐指数。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-DEEP-155"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_GRAPH_114_1
     metric_name_zh: "科研机构实体识别构建"
-    definition: >
-      科研机构实体识别构建：对应算法库 SRS ALGO-ORG-GRAPH-114，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本件以 2,074 家科研机构为实体主表，建了 2,241 条别名词典（规范名 + 去尾括号写法），对 100,900 篇论文的 435,937 条署名机构串做匹配。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_GRAPH_114_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_changerecord_info", "dwd_patent_transfer", "dwd_policy_base", "dwd_research_institute_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_GRAPH_114_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件以 2,074 家科研机构为实体主表，建了 2,241 条别名词典（规范名 + 去尾括号写法），对 100,900 篇论文的 435,937 条署名机构串做匹配。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-GRAPH-114"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_ORG_GRAPH_115_1
-    metric_name_zh: "科研机构实体关系抽取"
-    definition: >
-      科研机构实体关系抽取：对应算法库 SRS ALGO-ORG-GRAPH-115，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "机构关系图结构（投资/股权代理）"
+    definition: "本件用投资边与股东边构建企业资本关系图：底册 189,116 家，有边企业 19,768 家（10.4528%），去重无向边 19,628 条（投资 9,312、股东 17,082，去重后 19,628）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_GRAPH_115_1.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_forg_research_org_info", "dwd_forg_university_org_info", "dwd_org_base_info", "dwd_org_invest_info", "dwd_org_shareholder_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_GRAPH_115_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件用投资边与股东边构建企业资本关系图：底册 189,116 家，有边企业 19,768 家（10.4528%），去重无向边 19,628 条（投资 9,312、股东 17,082，去重后 19,628）。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-ORG-GRAPH-115"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
 
+  - metric_id: M_ORG_INDUSTRY_COVER
+    metric_name_zh: "科研机构产业领域覆盖"
+    definition: "本件把 2,074 家科研机构中 194 家（9.35%）有 IPC4 证据的机构，按 IPC 首字母归入 8 个技术部类，共 5,781 件专利入图，用到 259 个 IPC4 小类（全库 634 个的 40.85%）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_INDUSTRY_COVER.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_industry_tags"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_INDUSTRY_COVER.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家科研机构中 194 家（9.35%）有 IPC4 证据的机构，按 IPC 首字母归入 8 个技术部类，共 5,781 件专利入图，用到 259 个 IPC4 小类（全库 634 个的 40.85%）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_NEW_TREND
+    metric_name_zh: "新增科研机构趋势"
+    definition: "时间维完整、领域维缺失：2,074 家机构的登记年可派生 2001—2026 的年度新增序列（96.24% 填充），但需求要的「选定产业/技术领域内」在库内没有任何直接标签（技术标签表 32,322 家只命中 1 家），只能用 IPC 部（189 家，9.11%）与国基金项目（53 家，2.56%）做代理，且底册 100% 在广东，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_NEW_TREND.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_research_institute_base_info", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_NEW_TREND.md"
+    data_support_level: "部分支持"
+    support_reason: "时间面完整可算：2,074 家机构中 1,996 家有登记年（96.24%），2001—2026 年度新增序列、3 年斜率、5 年移动平均全部可复现；但需求要的「选定产业/技术领域内」无法闭合——库内无机构×产业领域直接标签（技术标签仅命中 1 家），只能用 IPC 部（219 家，10.56%）与国基金项目（53 家，2.56%）两条代理面，且底册 100% 在广东省，不能称全国趋势。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/新增科研机构趋势"
+    pending_ref: "Q-MO-ORG-01"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_PERF_QUERY
+    metric_name_zh: "查询结果·科研机构绩效"
+    definition: "本件把 2,074 家机构中 325 家「至少一项产出大于 0」的机构物化为查询宽表：广州 173 家、深圳 120 家、东莞 21 家、惠州 11 家；"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_PERF_QUERY.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_annual_financial_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_PERF_QUERY.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家机构中 325 家「至少一项产出大于 0」的机构物化为查询宽表：广州 173 家、深圳 120 家、东莞 21 家、惠州 11 家；"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-QUERY-02"
+    acceptance_unit_id: "TOPIC-QUERY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_SZ_ADVANTAGE
+    metric_name_zh: "深圳科研机构优势"
+    definition: "本件把 2,074 家机构按城市分成四组：深圳 1,014、广州 822、东莞 127、惠州 111，用五维（机构数、专利、论文、项目、学者）算总量指数，用四维人均当量（专利/机构、论文/机构、项目/机构、学者/机构）算强度指数。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_SZ_ADVANTAGE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_research_institute_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_SZ_ADVANTAGE.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家机构按城市分成四组：深圳 1,014、广州 822、东莞 127、惠州 111，用五维（机构数、专利、论文、项目、学者）算总量指数，用四维人均当量（专利/机构、论文/机构、项目/机构、学者/机构）算强度指数。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-ORG-08"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_SZ_PAINPOINT
+    metric_name_zh: "深圳科研机构痛难点"
+    definition: "痛点分析要回答「这家机构卡在哪」。gkx 里能当作「卡点」观测面的有五路：纵向项目（拿不拿得到钱）、专利转让（成果卖不卖得掉）、论文（学术产出）、专利（技术产出）、政策提及（政府关不关注）。五路都能算，所以不是一个「无数据」的件；但产学研合作这一路（机构与企业联合攻关）在 gkx 没有边表，而它恰恰是「痛点」最常见的成因，缺了它就只能看结果、看不到过程。按四档定义，这属于「始终有部分依赖维度无法得到」，判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_SZ_PAINPOINT.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_transfer", "dwd_policy_base", "dwd_research_institute_base_info", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: quarterly
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_SZ_PAINPOINT.md"
+    data_support_level: "部分支持"
+    support_reason: "痛点分析要回答「这家机构卡在哪」。gkx 里能当作「卡点」观测面的有五路：纵向项目（拿不拿得到钱）、专利转让（成果卖不卖得掉）、论文（学术产出）、专利（技术产出）、政策提及（政府关不关注）。五路都能算，所以不是一个「无数据」的件；但产学研合作这一路（机构与企业联合攻关）在 gkx 没有边表，而它恰恰是「痛点」最常见的成因，缺了它就只能看结果、看不到过程。按四档定义，这属于「始终有部分依赖维度无法得到」，判**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "深圳科研机构画像卡、四市科研产出对比、机构培育建议"
+    pending_ref: "Q-MO-ORG-09"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_SZ_STATUS
+    metric_name_zh: "深圳科研机构现状解读"
+    definition: "七维里三维（规模、结构、成长）在 1,014 家深圳机构上可全量计算，四城同口径可比；另外三维（产出、经费、人才）只对有证据子集可算——专利 87 家、国基金 20 家、学者 12 家，覆盖率 8.58%/1.97%/1.18%，且「经费」只是 NSFC 资助额而非全口径科研经费，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_SZ_STATUS.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_research_institute_base_info", "dwd_scholar", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_SZ_STATUS.md"
+    data_support_level: "部分支持"
+    support_reason: "规模/结构/成长三维在 1014 家深圳机构上可直接计算，四城同口径可比；产出/经费/人才三维只对有证据子集可算：专利 87 家、国基金 20 家、学者 12 家，分别占深圳机构 8.58% / 1.97% / 1.18%，且经费只是 NSFC 资助额、不是全口径科研经费；需求要求的「在该产业」切片无法闭合（机构×产业领域标签仅命中 1 家），只能给城市级总体现状。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/科研机构深度分析模型构建/深圳科研机构现状分析"
+    pending_ref: "Q-MO-ORG-04"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_TECH_LAYOUT
+    metric_name_zh: "科研机构布局技术领域分析"
+    definition: "本件给 194 家有 IPC4 证据的机构各生成一张技术画像：7 个领域的份额、件数、IPC4 小类数、四档标签，加上 top5 IPC4 小类与论文/项目侧的潜在方向。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_ORG_TECH_LAYOUT.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_industry_tags", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_TECH_LAYOUT.md"
+    data_support_level: "部分支持"
+    support_reason: "本件给 194 家有 IPC4 证据的机构各生成一张技术画像：7 个领域的份额、件数、IPC4 小类数、四档标签，加上 top5 IPC4 小类与论文/项目侧的潜在方向。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-ORG-03"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_ORG_TECH_SCORE
+    metric_name_zh: "科研机构技术力对比分析"
+    definition: "本件把 2,074 家底册中「7 项核心指标至少 2 项有值」的 234 家机构入池，对 7 项指标各算池内百分位，再按调用方给的权重加权平均（缺项不进分母），输出分数、排名、top20 与 top12 雷达。"
+    formula: "{'score': 'Σ_k w_k·pct_{i,k} / Σ_k w_k（只取该机构有值的 k）', 'pct': '池内百分位 0—100，并列取平均位次', 'min_indicators': 2, 'tie_break': '专利存量降序', 'why_percentile': '专利存量是重尾分布（中位 8、最大 943），min-max 会把除头部以外的所有机构压到 0—3 分；百分位保留区分度且对量纲不敏感，代价是丢失绝对差距（第 1 与第 2 的分数差不再反映 2.4 倍的专利差）。'}"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_annual_financial_info", "dwd_patent_apply"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/ORG/M_ORG_TECH_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把 2,074 家底册中「7 项核心指标至少 2 项有值」的 234 家机构入池，对 7 项指标各算池内百分位，再按调用方给的权重加权平均（缺项不进分母），输出分数、排名、top20 与 top12 雷达。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-MO-ORG-06"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"

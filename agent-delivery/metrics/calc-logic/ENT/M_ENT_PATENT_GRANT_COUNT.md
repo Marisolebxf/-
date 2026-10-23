@@ -1,106 +1,66 @@
 # 专利授权量（M_ENT_PATENT_GRANT_COUNT）
 
-> 口径真源：王惠底稿「第一专利权人 + 授权」→ 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01`。**粒度=企业**（每 org 一条），不是筛选范围加总。累计授权件数，不按报告期。查询键是 `org_id`，第一专利权人须名称匹配落 `first_assignee_org_id`。
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PATENT_GRANT_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PATENT_GRANT_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PATENT_GRANT_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_PATENT_GRANT_COUNT`
-- **指标名称**：专利授权量
-- **一级模块**：企业分析
-- **二级模块**：企业评估
-- **三级模块**：技术力评估
-- **更新频率**：日
-- **对齐状态**：口径已锁第一专利权人；缺两列标缺口，不写无法执行
-- **是否在数据库**：ODS 有第一受让人名称与 `status=授权`；项目 DWD 明细无第一人字段
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：无（王惠底稿曾标 24，不进 8 件套）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_PATENT_GRANT_COUNT |
+| 指标名称 | 专利授权量 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／企业评估／技术力评估 |
+| 更新频率 | 日 |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 专利授权量 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_PATENT_GRANT_COUNT.md` |
 
 ## 口径定义
 
-**每个企业一条**：该企业作为**第一专利权人**的授权专利去重件数（累计）。发明 / 实用新型 / 外观设计都计。不是「选定企业授权量合计」。
+每企业一条：该企业作为第一专利权人的授权专利去重件数（累计，含发明/实用新型/外观）
 
-- 第一专利权人 ≠ 第一申请人。ODS 键 = `dwd_patent.first_current_assignee_name`（与 `dwd_patent_assignees.sequence=1` 一致；子表行数不全，以主表字段为准）。
-- 应用层按 `org_id` 查，不能直接用名称。ETL 用第一受让人名称匹配 `enterprise_base.enterprise_name` / `enterprise_forg_base.name_en`，写入 `first_assignee_org_id`。匹配不上：**不计入**该企业。
-- 法律状态 = ODS `dwd_patent_legal.status` **授权**。禁止把 DWD 现网「有效」当成授权。
-- 不按产业过滤。不按报告期（正式现网明细无授权日列可用；本条不做本年授权量）。
-- 无独立国外专利表。同一套 ODS，名称映射到国内或国外主档。不造 `enterprise_forg_patent`。
-- 与 `M_ENT_PATENT_TOTAL`：总量用现有 `org_id`（权利人映射，不过滤法律状态）；本条用 `first_assignee_org_id` + 授权。两列不要混用。
+> 一句话口径（源件 §0.3）：gkx 全库授权 2,140,420 件，其中 **1,903,793 件（88.9448%）** 能按名称归到企业主档，落到 **143,754 家**「至少有一件授权」的企业（占底册 189,116 家的 76.0137%）；另有 13,609 家企业「有公开、无授权」。企业级中位 4 件、均值 12.0981 件、P99 107 件、最大 18,235 件（华南理工大学）。整体授权率 74.4469%，高于全库 72.806%。纯企业口径 1,777,120 件（93.3463%），高校/院所/医院 126,673 件（6.6537%）。
 
 ## 计算逻辑说明
 
-```
-SELECT first_assignee_org_id,
-       COUNT(DISTINCT patent_id) AS grant_count
-FROM enterprise_patent_detail
-WHERE legal_status = '授权'
-  AND first_assignee_org_id IS NOT NULL
-GROUP BY first_assignee_org_id
-```
-
-单企读取：`WHERE first_assignee_org_id = :org_id`（仍是该企业自己的 COUNT，不是全集）。禁止无 `GROUP BY` 的全集 `COUNT`。
-
-## 两点分开（强制）
-
-### ① formula
-
-明细有 `first_assignee_org_id` + `legal_status='授权'` 就能按企 COUNT。
-
-### ② 缺列
-
-正式 DWD 无 `first_current_assignee_name` / `first_assignee_org_id`：**缺口：缺列**（要补到专利明细，不另建表）。**不写「无法按第一人计算」当整条无法执行。**
-
-**计算公式文件**：`M_ENT_PATENT_GRANT_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PATENT_GRANT_COUNT.md` §二（M_ENT_PATENT_GRANT_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_patent_detail <- ods: dwd_patent
-enterprise_patent_detail.legal_status <- ods: dwd_patent_legal
-enterprise_patent_detail.first_current_assignee_name <- ods: dwd_patent
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-`first_assignee_org_id` 是 DWD 内名称匹配产物，不进 ODS 右端。主档 JOIN 不进 8 件套 `source_tables`。
+- `dwd_org_base_info`
+- `dwd_patent`
+- `dwd_patent_assignees`
+- `dwd_patent_bak_20260912`
+- `dwd_patent_legal`
 
-来源系统（`source_systems`）：国内机构要素库、国外机构要素库。
+## 待建表字段
 
-## DWD 字段变更（COVER-STAT-L01）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-正式 `gkxlumenx_dwd.enterprise_patent_detail` 现网无这两列，**要补到专利明细**（不是另建表）。GDF workpack 暂缓对外，变更先记本条。
+## 数据支持度与缺口
 
-| 列 | 类型（建议） | 来源 | 用途 |
-|---|---|---|---|
-| `first_current_assignee_name` | varchar(255) | `dwd_patent.first_current_assignee_name` | 第一专利权人**名称**（匹配原料） |
-| `first_assignee_org_id` | varchar(64) | 上列名称 JOIN `enterprise_base.enterprise_name` ∪ `enterprise_forg_base.name_en` | 查询键；与现有 `org_id` 分立 |
+- **判档**：完全转换支持
+- **判档理由**：gkx 全库授权 2,140,420 件，其中 **1,903,793 件（88.9448%）** 能按名称归到企业主档，落到 **143,754 家**「至少有一件授权」的企业（占底册 189,116 家的 76.0137%）；另有 13,609 家企业「有公开、无授权」。企业级中位 4 件、均值 12.0981 件、P99 107 件、最大 18,235 件（华南理工大学）。整体授权率 74.4469%，高于全库 72.806%。纯企业口径 1,777,120 件（93.3463%），高校/院所/医院 126,673 件（6.6537%）。
+- **基期声明**：截面累计件，不按报告期（calc-logic 明文「不按报告期」，正式明细也无授权日列）。dwd_patent.apdt_year 仅 2021—2026，故累计窗口为六年；2026 为残年（74,810 行）。used/missing 留空，窗口在此说明。
 
-建议索引：`KEY idx_patent_first_org (first_assignee_org_id, legal_status)`。
+## 溯源与复现
 
-不要用 `assignee_name` 顶第一人（那是当前权利人全集）。不要用 `first_applicant_name`。demo 有 `assignee_name` 但全空，且没有 `first_*` 两列。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PATENT_GRANT_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PATENT_GRANT_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PATENT_GRANT_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-## 现网探针（live `gkx`，2026-08-27；不进 8 件套）
+## 更新记录
 
-- `dwd_patent` 86028；`first_current_assignee_name` 非空 85894。
-- `dwd_patent_assignees.sequence=1` 与第一受让人名称对上的 61442 条全部一致；子表仅 70000 行，不能当唯一真源。
-- 第一申请人 ≠ 第一专利权人：1867 条不同。
-- `dwd_patent_legal.status` 授权 27939。
-- 正式 DWD 明细 467 行、`legal_status` 仅「审中/有效」、无第一人列。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
-## 待建 / 缺口（必须标；不是无法执行）
-
-| 类型 | 缺什么 | 现网 |
-|------|--------|------|
-| 缺列 | `enterprise_patent_detail.first_current_assignee_name` | 正式明细无此列；ODS 主表有名称 |
-| 缺列 | `enterprise_patent_detail.first_assignee_org_id` | 未建；名称匹配产物 |
-| 未灌 | `legal_status='授权'` | DWD 现网只有审中/有效 |
-| 其它 | 名称匹配规则（繁简/曾用名/英文） | GDF 未定；匹配失败 drop |
-
-D3 / D4 本波不升。`is_mock: true`。本波不改 GDF DDL。
-
-## 备注
-
-bid `§1.1.1.2.4.2.3.3`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。禁止抄 `patent_history.patent_grant_count` 代替本条。
-
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-27 第一专利权人=名称匹配；2026-08-31 方案1 缺列标缺口*

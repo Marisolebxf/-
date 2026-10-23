@@ -1,6 +1,7 @@
 # 专利质量（M_INNOV_TINN_PATENT_QUALITY）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_PATENT_QUALITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_PATENT_QUALITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_PATENT_QUALITY_out.json`。
 
 ## 基础信息
 
@@ -8,38 +9,58 @@
 |---|---|
 | 指标ID | M_INNOV_TINN_PATENT_QUALITY |
 | 指标名称 | 专利质量 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 技术创新力指标展示页「专利质量评估」卡片（五维雷达 + 领域排名） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| 缺失年份 | [2021, 2022, 2023, 2024, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_TINN_PATENT_QUALITY.md` |
 
 ## 口径定义
 
-按家族规模、权利要求数、被引次数、技术宽度、法律状态稳定性综合评分，取值 0—100。
+五维**全部无法落到 IPC4**：家族规模维的 `other_Versions` 前缀样本 0/3,000 非空、同族表只有 20,593 行；权利要求维的 `original_text` 是 mediumtext、20,026 行全量取文本 60 秒超时；被引维 20,515 行里只有 475 件能按 `patent_id` 回连主表（0.0162%）；技术宽度维的附加分类未进面板、按 IPC4 统计需全表 294 万行聚合（600 秒断连）；法律状态维 20,000 行覆盖 0.68%、按 `patent_id` 回连 60 秒超时。三张价值附表按 `patent_id` 回连主表的三条查询各跑满 60 秒被中断（4 次复现，错误码 3024）。**不是「分低」，是「算不出」**，故判**完全不支持**。
 
 ## 计算逻辑说明
 
-按 IPC 前 4 位入集技术领域。采用加权平均，五维：家族规模（other_Versions）/ 权利要求数（claims 项数）/ 被引次数（cited_by_nums）/ 技术宽度（IPC4 去重数）/ 法律状态稳定性（授权且未失效）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 家族规模 |  | 领域专利平均同族成员数。 | 同族成员数合计 / 专利数 | dwd_patent(pn, main_classification_ipcr, other_Versions, apdt_year) — 同族专利,IPC领域 |
-| 权利要求数 |  | 领域专利平均权利要求项数。 | 权利要求项数合计 / 专利数 | dwd_patent(pn, main_classification_ipcr, claims, apdt_year) — 权利要求,IPC领域 |
-| 被引次数 |  | 领域专利被后续专利引用的总次数。 | SUM(cited_by_nums) | dwd_patent_cited(pn, cited_by_nums) — 专利被引次数；dwd_patent(pn, main_classification_ipcr, apdt_year) — 专利去重,IPC领域 |
-| 技术宽度 |  | 单件专利覆盖的 IPC 小类广度。 | 每件专利 IPC4 去重数合计 / 专利数 | dwd_patent(pn, main_classification_ipcr, further_classification_ipcr, apdt_year) — 主分类,附加分类 |
-| 法律状态稳定性 |  | 仍处于授权/有效且未失效的专利占比。 | 稳定专利数 / 专利数 | dwd_patent_legal(pn, status, expiration_year) — 专利状态,到期年 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_PATENT_QUALITY.md` §二（M_INNOV_TINN_PATENT_QUALITY.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_patent(pn, first_applicant_name, main_classification_ipcr, further_classification_ipcr, claims, other_Versions, apdt_year) — 专利去重,申请人对齐,主分类,附加分类,权利要求,同族,申请年；dwd_patent_cited(pn, cited_by_nums) — 专利被引次数；dwd_patent_legal(pn, status, expiration_year) — 专利状态,到期年；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_id`
+- `dwd_patent`
+- `dwd_patent_cited`
+- `dwd_patent_claim`
+- `dwd_patent_family`
+- `dwd_patent_legal`
 
-无
+## 待建表字段
 
-## 备注
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-02-科技信息展示系统|科技发展态势|科技创新评估.md|序号 141「通过引文分析、权利要求分析、家族专利分析等方法，评估专利的技术创新质量和价值……（如被引次数、权利要求数量、家族规模）」。05 无专叶。禁止 96(8) 领先机构/182 高价值专利/186 专利成果质量顶替。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：五维**全部无法落到 IPC4**：家族规模维的 `other_Versions` 前缀样本 0/3,000 非空、同族表只有 20,593 行；权利要求维的 `original_text` 是 mediumtext、20,026 行全量取文本 60 秒超时；被引维 20,515 行里只有 475 件能按 `patent_id` 回连主表（0.0162%）；技术宽度维的附加分类未进面板、按 IPC4 统计需全表 294 万行聚合（600 秒断连）；法律状态维 20,000 行覆盖 0.68%、按 `patent_id` 回连 60 秒超时。三张价值附表按 `patent_id` 回连主表的三条查询各跑满 60 秒被中断（4 次复现，错误码 3024）。**不是「分低」，是「算不出」**，故判**完全不支持**。
+- **基期声明**：价值附表无申请年字段且无法回连主表，任何年度分母都不成立
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_PATENT_QUALITY.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_PATENT_QUALITY.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_PATENT_QUALITY_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

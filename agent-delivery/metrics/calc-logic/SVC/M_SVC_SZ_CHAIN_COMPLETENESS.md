@@ -1,63 +1,62 @@
 # 服务链完整度（M_SVC_SZ_CHAIN_COMPLETENESS）
 
-## 基本信息
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。
 
-- 指标ID: M_SVC_SZ_CHAIN_COMPLETENESS
-- 指标名称: 服务链完整度
-- 一级模块: 产业服务链分析
-- 二级模块: 服务链分析
-- 三级模块: 深圳对比
-- 更新频率: pending（解挂前不适用）
-- 对齐状态判定: 挂起（0.2.0；公式未签 + 环节无源）
-- 是否在数据库: 否
-- 关联Q编号: Q-SVCCHAIN-04（算法）+ Q-SVCCHAIN-08 / SVC-P0-3（环节成员表）
+## 基础信息
+
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_SZ_CHAIN_COMPLETENESS |
+| 指标名称 | 服务链完整度 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 科技信息展示系统·产业服务链分析·深圳对比页（当前诚实排除，不画完整度柱） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_SZ_CHAIN_COMPLETENESS.md` |
 
 ## 口径定义
 
-深圳服务链完整度。统一评价框架下的对比指标之一（招标点过），**本批不做真数**。
+服务链完整度的分子是「已覆盖的关键环节数」、分母是「全部关键环节数」，而两库既没有「机构×环节」的成员记录（结构缺），也没有任何一行环节事实（数据缺）；公式本身还未签（算法缺）。三层同时缺失，属结构与数据均不具备可算闭环，故判 **完全不支持**，并按要求留下四条否定性探针。
 
-| 项 | 锁定值 |
+## 计算逻辑说明
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md` §二（M_SVC_SZ_CHAIN_COMPLETENESS.py 零改语义复算）。
+
+## 源表字段
+
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_bid_base_out`
+
+## 待建表字段
+
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
+
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：完整度公式未签（Q-SVCCHAIN-04 / 唐绍祖），calc-logic 0.2.0 明确「本件不做真数、不写可执行公式」；计算所需的「机构×服务链六环节服务记录」（SVC-P0-3）在 gkx 与 live 均不存在（gkx 280 表 0 张 svc_*；live 13 张 svc_* 表 0 行）。分子（某机构在某环节提供过服务）与分母（关键环节全集）两端都无结构承载，属结构与数据双缺。经营范围词表派生的六站代理在城市级恒满 6/6、在 12 个产业上恒为 5/6（distinct=1、零方差），既无区分度，又被 calc-logic 明令禁止冒充完整度，不能把档位抬到部分支持。故判完全不支持，官方值置 null。
+- **基期声明**：本件是截面（当期环节覆盖），无年度序列，不使用基期年份；future 若要出「完整度时间序列」，需要机构×环节成员表带生效期，当前两库均无此字段。
+
+## 溯源与复现
+
+| 项 | 值 |
 |---|---|
-| 状态 | 挂起（沿 2026-08-28 侯佳伟 1A） |
-| 现网 | 对比页诚实排除，不画完整度柱；badge 挂排除声明 |
-| 公式 | **未签**（Q-SVCCHAIN-04 / 唐绍祖） |
-| 环节轴（若将来用覆盖占比） | 只能是 CT-SVC-PT-01 服务链六环节；**不是**产业链 |
-| 环节数据 | 机构×服务链环节服务记录**不存在** |
-
-### 为何现在做不出
-
-1. 完整度算法本身未定义——不知道分子/分母、是否「有站算覆盖」。
-2. 即便临时用「六环节有供给站数 / 6」，也要机构×环节成员表，现网无源（同环节家数 / 平均深度）。
-3. 城市对标还要外市基准源（Q-04 须甲方指定），本条不单独开号。
-
-## 计算公式
-
-无。不写可执行 SQL。
-
-```text
-禁止本批 IMPL 写 ads.svc_metric_* 本 ID
-禁止用六站有机构占比 / 六类覆盖率冒充完整度
-禁止把 fixture 验收成 live
-禁止用产业链 industry_link_code 冒充服务环节
-```
-
-解挂条件：唐绍祖出完整度定义卡 +（若公式依赖覆盖）供方交付机构×六环节成员表。
-
-## 源库表字段
-
-```
-（缺口）完整度算法定义卡 <- Q-SVCCHAIN-04
-（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）
-```
-
-细稿旧述 `svc_chain_gap_score` 0 行汇总壳**不作源**。
-
-## 参考文献 / 依据
-
-`Q-SVCCHAIN-04`；`Q-SVCCHAIN-08`；`SVC-ALGO-STAT-21-L01` 序号 20；demo `ShenzhenCompareView.tsx` 诚实排除声明；2026-10-13 human:徐滕强 确认挂起身份。
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-21: 初版（演示态）
 - 2026-08-28: 侯佳伟 1A 挂起
 - 2026-10-13: 0.2.0 挂起身份落 seed；明确轴若用覆盖则只认服务六环节、禁产业链；不写可执行公式
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

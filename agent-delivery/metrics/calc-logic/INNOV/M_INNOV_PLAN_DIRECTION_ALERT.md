@@ -1,47 +1,73 @@
-# 潜在科技发展方向预警（M_INNOV_PLAN_DIRECTION_ALERT）
+# 发展方向预警（M_INNOV_PLAN_DIRECTION_ALERT）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PLAN_DIRECTION_ALERT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PLAN_DIRECTION_ALERT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PLAN_DIRECTION_ALERT_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_INNOV_PLAN_DIRECTION_ALERT |
-| 指标名称 | 潜在科技发展方向预警 |
+| 指标名称 | 发展方向预警 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技发展规划 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技发展规划页「全球热点技术捕捉」——潜在科技发展方向预警列表 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2019, 2020, 2021, 2022] |
+| 缺失年份 | [2016, 2017, 2018] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_PLAN_DIRECTION_ALERT.md` |
 
 ## 口径定义
 
-按 IPC 前 4 位监测潜在方向并预警。方向主键就是 IPC4。六源近窗相对基线增速加权得 F。
+无「预警结果」现成表 → 非完全直接支持；六源中专利/论文/产业三源可算，项目与政策因停录只能前移窗口，人才源因两套 ID 宇宙不互通而不可得 → 预警只能覆盖部分源，判**部分支持**。
 
 ## 计算逻辑说明
 
-按 IPC 前 4 位入集。采用加权平均，六维：专利 / 论文 / 项目 / 人才 / 产业 / 政策（各源近窗相对基线增速）。
+```text
+{'wanghui': 'F=mean(g_s)；g_s=(近窗年均值-基期年均值)/max(基期年均值,1)；level=2 if F>=1 且两源g>0, 1 if F>=0.5, else 0', 'windows': {'patent': {'base': [2021, 2022], 'recent': [2023, 2024]}, 'paper': {'base': [2021, 2022], 'recent': [2023, 2024]}, 'project': {'base': [2019, 2020], 'recent': [2022, 2023]}, 'industry': {'base': [2021, 2022], 'recent': [2023, 2024]}, 'policy': {'base': [2019, 2020], 'recent': [2021, 2022]}}, 'weights_assumed': 'A 套五源等权（王惠未给权重）；B 套两源等权'}
+```
 
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 专利 |  | 该 IPC4 申请量近窗相对基线增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_patent(pn, keywords, main_classification_ipcr, apdt_year) — 专利去重,关键词袋,IPC领域,申请年 |
-| 论文 |  | 关键词命中该方向的论文量增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词 |
-| 项目 |  | 关键词或学科命中该方向的立项量增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_zh_project(id, keywords, discipline, approval_year) — 项目关键词,学科,立项年 |
-| 人才 |  | 研究方向命中该方向的发文学者数增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_scholar_research_direction(scholar_id, fields) — 学者研究方向；dwd_scholar_paper_relation(scholar_id, year) — 学者发文年 |
-| 产业 |  | 该 IPC4 活跃申请机构数增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_patent(pn, first_applicant_name, main_classification_ipcr, apdt_year) — 申请人对齐,IPC领域；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤 |
-| 政策 |  | 主题或关键词命中该方向的政策量增速。 | g=(近窗均值-基线均值)/max(基线均值,1) | dwd_policy_base(id, keywords, theme, keypoints, publish_year, city, province) — 政策关键词,主题,要点,发布年,空间 |
-| 预警等级 |  | 融合强度叠加多源同向。 | F≥1且两源g>0为2；F≥0.5为1；否则0 | 上六源 g 加权得 F |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PLAN_DIRECTION_ALERT.md` §二（M_INNOV_PLAN_DIRECTION_ALERT.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, apdt_year) — 专利去重,关键词袋,申请人对齐,IPC领域,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词；dwd_zh_project(id, keywords, discipline, approval_year) — 项目关键词,学科,立项年；dwd_scholar_research_direction(scholar_id, fields) — 学者研究方向；dwd_scholar_paper_relation(scholar_id, year) — 学者发文年；dwd_policy_base(id, keywords, theme, keypoints, publish_year, city, province) — 政策关键词,主题,要点,发布年,空间；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_patent`
+- `dwd_policy_base`
+- `dwd_scholar_`
+- `dwd_scholar_paper_relation`
+- `dwd_scholar_research_direction`
+- `dwd_talent_base`
+- `dwd_zh_paper`
+- `dwd_zh_project`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技发展规划.md|序号 184「结合论文、专利、项目、人才、产业和政策等多源数据，对潜在科技发展方向进行持续监测与预警分析」。招标父句「潜在的科技发展方向预警」收口本叶。对象≠134 已识别热点趋势预测。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：六源中仅专利与产业可用且同出 dwd_patent（不独立）；论文单日回填、项目与政策 2022 起停录、人才无映射。A 套字面执行可跑但 F 的方差被论文维垄断，B 套收缩为两源后仍只能算「原型」
+- **基期声明**：各源窗口不同，基线年按源显式列出；专利/论文/产业基线为 2021—2022（2016—2020 在 dwd_patent 无行），项目/政策因停录前移至 2019—2020。缺失年不得按 0 摊入分母。
+- **复现实测耗时**：约 21.4 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PLAN_DIRECTION_ALERT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PLAN_DIRECTION_ALERT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PLAN_DIRECTION_ALERT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,63 +1,63 @@
-# M_CHAIN_SZ_INSTITUTION_COUNT 深圳产业链机构数 计算口径细稿
+# 深圳产业链机构数（M_CHAIN_SZ_INSTITUTION_COUNT）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（机构=高校+科研院所、不含服务机构；org_id 去重硬修正；深圳市全称；带链参数）
-- **类型**：STAT（去重计数）
-- **is_mock**：true（链桥 INB1309 mock 可算；机构挂链跟 CHAIN-P0-6；全量交付后转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_INSTITUTION_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_INSTITUTION_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_INSTITUTION_COUNT_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：专题系统 · 产业链分析 · 深圳产业现状（链全景页 `CHAIN-SZ-PANORAMA`），与深圳链上企业数并排的"机构家底数"——链上高校/科研院所在深圳有多少家。
-- **白话**：挂在这条链上的主体里，属于高校或科研院所、且注册地在深圳的家数。
-- **旧稿问题（本版硬修正）**：seed v0.1.0 = `COUNT(DISTINCT enterprise_name) WHERE org_type='机构'`——①名称去重（同名校误并、跨表无法对齐）；② `org_type` 是链桥壳表上不存在的幻字段，判型无来源；细稿旧文"科研**和服**务机构"范围漂移。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_SZ_INSTITUTION_COUNT |
+| 指标名称 | 深圳产业链机构数 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业发展分析／深圳产业现状 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「深圳产业现状」机构家底卡 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_INSTITUTION_COUNT.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**指定产业链链上主体中，判型为高校或科研院所（heis ∪ research_institute 双表并集）、注册地为深圳市的 org_id 去重家数。**
+「深圳有多少家机构」可算（226 家）；「机构属哪条链」只能名称代理，覆盖率 38.05%，链维度只能作下限 → **部分支持**。
 
-- **机构范围（拍板 ①）**：高校（`dwd_org_heis_info`）+ 科研院所（`dwd_research_institute_base_info`），**不含服务机构**：
-  - `svc_org_circle` 43,296 家全企业型，归 `M_CHAIN_SZ_ENTERPRISE_COUNT` / `M_CHAIN_ENTERPRISE_COUNT` 侧；并入本条会同一批 org_id 双计，破坏"机构+企业=链上主体总数"自洽；
-  - 企业法人研究所（××研究院有限公司）归企业侧（2026-10-14 拍板），名称关键词不作身份判定；
-  - 与全国版 `M_CHAIN_INSTITUTION_COUNT`（entity_rel 原生维）、`M_CHAIN_REG_PAPERS` / `M_CHAIN_REG_COMP_ACADEMIC`（heis∪ri 桶）四处口径自洽。
-- **去重键（硬修正）**：`enterprise_name` 名称去重 → `org_id` 去重；
-- **判型方式**：org_id IN (heis) OR org_id IN (ri)（双表并集，同 SVC/REG 族先例）；
-- **城市/参数**：`city='深圳市'` 全称 + `:chain_code` 带参（沿用 Seq 20 三项拍板）。
+## 计算逻辑说明
 
-## 3. Formula（SQL）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_INSTITUTION_COUNT.md` §二（M_CHAIN_SZ_INSTITUTION_COUNT.py 零改语义复算）。
 
-```sql
-SELECT COUNT(DISTINCT eic.org_id) AS sz_chain_institution_cnt
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
-JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-  ON b.org_id = eic.org_id AND b.is_deleted = 0
-WHERE b.city = '深圳市' AND eic.chain_code = :chain_code
-  AND (eic.org_id IN (SELECT org_id FROM demo_gkxlumenx_ods.dwd_org_heis_info WHERE is_deleted = 0)
-    OR eic.org_id IN (SELECT org_id FROM demo_gkxlumenx_ods.dwd_research_institute_base_info WHERE is_deleted = 0));
-```
+## 源表字段
 
-## 4. 表依赖与实核（2026-10-14 demo）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd.enterprise_industry_chain` | 链桥 | INB1309 mock 2000 行（深圳 1004 家 org_id 全键通）；余链 0 行 |
-| `dwd_org_base_info` | 注册地 city | 189,116 行 org_id 全唯一；深圳市 95,600 家 |
-| `dwd_org_heis_info` | 高校判型 | REG_PAPERS 端到端验证过（深圳 heis 路径真数 1,791 篇论文） |
-| `dwd_research_institute_base_info` | 院所判型 | 同上 UNION 桶验证过 |
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_research_institute_base_info`
 
-## 5. 缺口分型
+## 待建表字段
 
-| 项 | 分型 | 处置 |
-|---|---|---|
-| 机构挂链未灌（entity_type=institution 0 行；链桥 mock 挂点全企业型） | 数据未灌 | 跟 CHAIN-P0-6（供应方交付计划已问）；当前如实 0 + ⚠️，口径为准 |
-| 判型双表 org_id 命中率 | 未逐表实测（REG 族同款 JOIN 已通） | D2 标 provisional；灌数后随首跑核验 |
-| 旧稿 org_type 幻字段 / 名称去重 | 表名漂移+口径硬伤 | 已重写；ADS 壳路线弃 |
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 6. 验证记录（2026-10-14）
+## 数据支持度与缺口
 
-- heis∪ri UNION 桶同款 JOIN：REG_PAPERS 深圳端到端 1,791 篇验证通过。
-- org_id 全键链路：深圳×INB1309 1004 家验证通过（企业侧）；机构侧等 CHAIN-P0-6 灌数后首跑。
+- **判档**：部分支持
+- **判档理由**：「深圳有多少家机构」可算（名称口径 1,030 家，与 inst_city 快照一致）；「机构属哪条链」只能名称代理，覆盖率低且机构表无产业链字段，链维度只能作下限展示。
+- **基期声明**：截面指标：统计当前存量，不设年度分母。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_INSTITUTION_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_INSTITUTION_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_INSTITUTION_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-21: 初版（模拟王惠调研，org_type 幻字段+名称去重）
 - 2026-10-14: v0.2.0 硬修正（heis∪ri 判型 + org_id 去重 + 不含服务机构；human:徐滕强 拍板）
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

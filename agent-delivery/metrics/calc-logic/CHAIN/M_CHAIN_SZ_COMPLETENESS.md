@@ -1,65 +1,62 @@
----
-metric_id: M_CHAIN_SZ_COMPLETENESS
-metric_name_zh: 深圳产业链完整度
-algorithm_type: STAT
-version: 0.2.0
-updated: 2026-10-14
-owner: data-agent / human:淮政玮
-status: 口径已定（复用 REG_ECOSYSTEM 深圳特例）
----
+# 深圳产业链完整度（M_CHAIN_SZ_COMPLETENESS）
 
-# M_CHAIN_SZ_COMPLETENESS 深圳产业链完整度 — 计算逻辑说明
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_COMPLETENESS.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_COMPLETENESS.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_COMPLETENESS_out.json`。
 
-> 2026-10-14 human:徐滕强 拍板：本指标 = `M_CHAIN_REG_ECOSYSTEM`（区域环节完整度）在 `region_city='深圳市'` 的**特例**，口径完全复用不另立。细稿引用 REG_ECOSYSTEM 文档（`M_CHAIN_REG_ECOSYSTEM.md`）不复制逻辑，避免两处漂移。旧稿 QC01「按节点数/按企业覆盖/按产值覆盖」三选一废弃，统一落 L1 节点覆盖版。
+## 基础信息
 
-## 1. 业务定义
-
-深圳产业链完整度 = 深圳企业覆盖的 L1 环节数 / 该链全部 L1 环节数 × 100。
-
-- **L1 口径**沿用此前「用L1先」拍板，与 REG_ECOSYSTEM 同构（同页家族指标口径一致）。
-
-## 2. 数据源
-
-| 表 | 用途 |
+| 项目 | 内容 |
 |---|---|
-| `demo_gkxlumenx_dwd.industry_chain_node` | 分母：该链 L1 环节（`node_level=1 AND is_deleted=0`） |
-| `demo_gkxlumenx_dwd.enterprise_industry_chain` | 上链桥（`chain_code=:chain_code`） |
-| `demo_gkxlumenx_ods.dwd_org_base_info` | 深圳判定（`city='深圳市' AND is_deleted=0`） |
+| 指标ID | M_CHAIN_SZ_COMPLETENESS |
+| 指标名称 | 深圳产业链完整度 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业发展分析／深圳产业现状 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 链全景页「深圳产业现状」完整度卡与雷达 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_COMPLETENESS.md` |
 
-## 3. SQL
+## 口径定义
 
-```sql
-SELECT ROUND(100 * cov.covered / denom.total, 1) AS sz_completeness_pct
-FROM (SELECT COUNT(*) AS total
-      FROM demo_gkxlumenx_dwd.industry_chain_node
-      WHERE chain_id = :chain_code AND node_level = 1 AND is_deleted = 0) denom,
-     (SELECT COUNT(DISTINCT COALESCE(n.parent_node_id, e.node_id)) AS covered
-      FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
-      JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-        ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = '深圳市'
-      LEFT JOIN demo_gkxlumenx_dwd.industry_chain_node n
-        ON n.node_id = e.node_id AND n.is_deleted = 0
-      WHERE e.chain_code = :chain_code) cov;
-```
+公式 $k/K$ 的两侧都在 gkx 内闭合：分母 $K$ 来自 `dwd_industry_chain_info` 的 1,273 节点链树（12 条顶层链子树合计 1,261 个节点），分子 $k$ 来自 `dwd_org_industry_tags` 的深圳切片（116,017 行，按统一社会信用代码 4403 判定），12 条链当日全部算出 57.61%–100% 的非退化值，0.01 秒可复算 → 判**完全转换支持**。
 
-与 REG_ECOSYSTEM 唯一差异：`:region_city` 绑定常量 `'深圳市'`。
+## 计算逻辑说明
 
-## 4. 参数
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_COMPLETENESS.md` §二（M_CHAIN_SZ_COMPLETENESS.py 零改语义复算）。
 
-| 参数 | 含义 | 默认 |
-|---|---|---|
-| `:chain_code` | 产业链编码 | 必填 |
+## 源表字段
 
-## 5. 边界语义
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-- 分母 0（链无 L1 节点）→ NULL，UI 显「无数据」，不伪造 0%。
-- 上链桥当前 0 行 → 真数 0%，如实展示（数据事，不挡口径）。
+- `dwd_industry_chain_info`
+- `dwd_org_industry_tags`
 
-## 6. 版本与变更
+## 待建表字段
 
-| 版本 | 日期 | 变更 | 拍板 |
-|---|---|---|---|
-| 0.1.0 | — | 旧稿：QC01 三选一待确认 | — |
-| 0.2.0 | 2026-10-14 | 复用 REG_ECOSYSTEM 深圳特例，L1 口径定版 | human:徐滕强 |
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-正式签名待 human:唐绍祖 会签。
+## 数据支持度与缺口
+
+- **判档**：完全转换支持
+- **判档理由**：公式 k/K 的两侧都可在 gkx 内闭合：K 来自 dwd_industry_chain_info 的 1,273 节点链树，k 来自 dwd_org_industry_tags 按 4403 行政区划码切片的 116,017 行挂链记录；12 条链全部算出 57.61%—100%，无空链、无零分母，脚本 0.01 秒可复算。逐链 K 与旧稿完全一致，k 因不再回联 18.9 万行底册而略高（0—4 个节点），属覆盖集差异而非口径变化。
+- **基期声明**：截面存量指标，不设统计期；挂链桥无统计期字段，不做年度序列。
+- **复现实测耗时**：约 0.01 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_COMPLETENESS.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_COMPLETENESS.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_COMPLETENESS_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

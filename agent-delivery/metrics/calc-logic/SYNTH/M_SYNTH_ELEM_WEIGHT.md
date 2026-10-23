@@ -1,106 +1,58 @@
 # 类型/层次/领域权重分布（M_SYNTH_ELEM_WEIGHT）
 
-> 口径真源：算法 2026-09 回填（各 1/3、展示=否）→ `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：读类型/层次/领域三条 MODEL 指数，再乘本条权，刷出区域要素综合分。  
-> 跟 `M_SYNTH_VIT_WEIGHT` 同规矩。Q-SYNTH-E-01 仍 🟡。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-SYNTH-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT_out.json`。
 
-## 依赖（强制，先于本条）
+## 基础信息
 
-| 顺序 | 指标 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_SYNTH_ELEM_INDICATOR`（MODEL） | 三维下分项原值+得分 |
-| 2 | `M_SYNTH_ELEM_TYPE_INDEX` | 类型维一条分 |
-| 3 | `M_SYNTH_ELEM_LEVEL_INDEX` | 层次维一条分 |
-| 4 | `M_SYNTH_ELEM_DOMAIN_INDEX` | 领域维一条分 |
-| 5 | 本条权 | 各 1/3，合计 1 |
-| 6 | 刷分 | `Σ index(维) × w(维)` |
-
-不挂 `TYPE_SCORE` / `LEVEL_SCORE`（那是七要素各自分，不是三维合成输入）。  
-上游设计：算法库 §10.6–10.8。本波不改那些 MODEL seed。
-
-## 元数据
-
-- 指标ID：`M_SYNTH_ELEM_WEIGHT`
-- 名称：类型/层次/领域权重分布
-- 模块：E8 区域创新要素
-- 更新频率：随三维 INDEX 批次
-- 关联Q：Q-SYNTH-E-01；综合公式另见 Q-SYNTH-02（INDEX 叶）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SYNTH_ELEM_WEIGHT |
+| 指标名称 | 类型/层次/领域权重分布 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合智能分析／区域创新要素分析／要素评价模型构建 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md` |
 
 ## 口径定义
 
-区域一条要素综合分：
+权重的**算术面**没有障碍：加权和、熵权、弹性、翻转阈值、单纯形扫描五步全部落地，四城 `elem_score` 与 `M_SYNTH_ELEM_INDEX` 逐城一致（差 < 1e-6）。卡住的是**配置面**：gkx 与 live 开发库都没有权重表，calc-logic 把权重写成「可采用等权重，也可根据评估重点自行制定」，等于甲方未定值；上游另标 `is_mock: true`、Q-SYNTH-E-01 仍 🟡。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。
 
-```
-w_type = w_level = w_domain = 1/3
-w 合计必须 = 1，否则该次无法计算
+## 计算逻辑说明
 
-elem_score =
-    (1/3) × type_index
-  + (1/3) × level_index
-  + (1/3) × domain_index
-
-type_index   <- metric: M_SYNTH_ELEM_TYPE_INDEX
-level_index  <- metric: M_SYNTH_ELEM_LEVEL_INDEX
-domain_index <- metric: M_SYNTH_ELEM_DOMAIN_INDEX
-```
-
-- 缺任一维指数：该区域该次无法计算，不拿 0 顶。
-- 无阈值、不再二次归一（归一在各维 INDEX 内）。
-- 产品「计算方法」**不展示**权重表。
-- 禁止按页面改权。禁止用七要素 SCORE 加总冒充三维分。
-- 禁止读 demo 等权指数当已接通。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-权已钉。三维 INDEX 有值就能刷 `elem_score`。
-
-### ② 上游出不出
-
-三条 INDEX / INDICATOR 仍 pending、专题库未建。这是 MODEL 叶缺口，**不改本条公式**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | 三条 `*_INDEX` | MODEL 未出数 |
-| 目标 | `ads.synth_elem_weight` 建议：`region_id + window`，列 `w_*` + `elem_score` | **缺口：无此表** |
-
-源 ≠ 目标。本波不建 GDF DDL。
-
-## 分场景 / 实现方案
-
-### 场景 A · 跑批刷分
-
-三维 INDEX 批次齐后点查乘权写入。禁止请求路径现算全库。
-
-### 场景 B · 默认快照
-
-读已刷 `elem_score`。缺维该行空。
-
-### demo
-
-演示等权 **不算接通**。
-
-**计算公式文件**：`M_SYNTH_ELEM_WEIGHT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md` §二（M_SYNTH_ELEM_WEIGHT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-<- metric: M_SYNTH_ELEM_TYPE_INDEX
-<- metric: M_SYNTH_ELEM_LEVEL_INDEX
-<- metric: M_SYNTH_ELEM_DOMAIN_INDEX
-```
+源件未点名任何 dwd_/ads_/ods_ 物理表（纯派生/合成件，输入为兄弟件产物或快照）；依赖清单见源件 §〇/§三。
 
-无 ODS 右端。`source_systems` 不写 `Mock @ batch`。
+## 待建表字段
 
-## 待建 / 缺口
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-1. 三条维 INDEX 出数。
-2. **无独立目标表**。
-3. D3 / D4 本波不升。`is_mock: true`。Q-SYNTH-E-01 / Q-SYNTH-02 仍 🟡。
+## 数据支持度与缺口
 
----
-*2026-09-07 COVER-STAT-L01：权 1/3×3；formula 挂三维 INDEX 刷分*
+- **判档**：部分支持
+- **判档理由**：权重的算术部分可算且闭合（三维各 1/3、合计 1，四城 elem_score 与 M_SYNTH_ELEM_INDEX 逐城一致），但权重本身不是甲方标定值：calc-logic 明写「可采用等权重，也可根据评估重点自行制定」，上游另标 is_mock: true、Q-SYNTH-E-01 仍 🟡，且这 1/3 落在的两个维（类型、领域）各自还有整维缺失，故判部分支持——公式能跑，权重没有权威出处。
+- **基期声明**：权重是结构性参数，不带年份；被加权的三条维指数都是 2024 单年截面。2021—2023 未入集（本族设计为单年截面），2025/2026 不完整不进分母。权重不随年份重估——若要按年重估熵权，需先把 2021—2023 的叶子补齐。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

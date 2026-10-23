@@ -1,6 +1,7 @@
 # 政策力度指数（M_POLICY_INTENSITY_INDEX）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-POLICY-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INTENSITY_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INTENSITY_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INTENSITY_INDEX_out.json`。
 
 ## 基础信息
 
@@ -8,46 +9,52 @@
 |---|---|
 | 指标ID | M_POLICY_INTENSITY_INDEX |
 | 指标名称 | 政策力度指数 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 政策分析 |
-| 三级模块 | 政策力度排名 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待甲方QPOL-02；门户已挂本 ID |
-| 是否在数据库 | 否 |
-| 关联Q编号 | QPOL-02 |
+| 所属域 | POLICY（政策分析） |
+| 一级模块 | 政策 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 政策分析页「政策力度排名」榜单、城市政策对比雷达图 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/POLICY/M_POLICY_INTENSITY_INDEX.md` |
 
 ## 口径定义
 
-按城市从效果、覆盖、成本三维综合评定的政策力度指数，取值 0—100。分数越高表示该市政策实施力度越强。
+五项三级指标的结构都在（`implementation_date` 是 date，`policy_support` 是 JSON，`district` 是 varchar），但四列/子键的填充是 0，剩下的一项（区县去重数）只有 5.825% 的行有值。三维合成要求每一维都能出一列原始值，实测三维里两维没有任何输入，因此判**完全不支持**。
 
 ## 计算逻辑说明
 
-入集：国内政策库 dwd_policy_base；status=有效且 expire_date 空或不早于统计日；按 id 去重。综合统计默认仅国内（QPOL-05），国际政策 dwd_global_policy_base 不进综合分。对比单位是城市：city 含该市名即计入；rank 含国家级的政策可计入每个对比市。该市有效政策数为 N_c，N_c=0 不输出。
-
-第一步：城市级原始值（见下表）。三维互不共用同一计数。
-
-第二步：合成：各维截面 min-max 到 [0,1]，缺维不补 0、不进平均；等权（权重待 QPOL-02）后 ×100。全样本同值取 0.5。N<3 标「样本不足」。
-
-第三步：三维等权平均 ×100。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 政策力度指数 | 效果维度 | 实施日完备占比 | 从该市有效政策中实施已启动、支持方式已写明的平均占比评估输出成效。 | COUNT(implementation_date 非空) / N_c | dwd_policy_base(id, city, implementation_date) — 去重, 城市, 实施日 | 无 |
-| 政策力度指数 | 效果维度 | 支持方式完备占比 | 从该市有效政策中实施已启动、支持方式已写明的平均占比评估输出成效。 | COUNT(support_way 至少 1 条非空) / N_c | dwd_policy_base(id, city, policy_support.support_way) — 去重, 城市, 支持方式 | 无 |
-| 政策力度指数 | 覆盖维度 | 支持对象种类数 | 从该市内部的对象广度与区县广度评估政策影响范围。 | COUNT(DISTINCT support_object)，空值不计入 | dwd_policy_base(id, city, policy_support.support_object) — 去重, 城市, 支持对象 | 无 |
-| 政策力度指数 | 覆盖维度 | 区县去重数 | 从该市内部的对象广度与区县广度评估政策影响范围。 | COUNT(DISTINCT district)，空值不计入 | dwd_policy_base(id, city, district) — 去重, 城市, 区县 | 无 |
-| 政策力度指数 | 成本维度 | 扶持行为完备占比 | 从该市有效政策中写明扶持行为的占比评估资源投入安排；无金额不编造拨款。 | COUNT(support_behavior 至少 1 条非空) / N_c | dwd_policy_base(id, city, policy_support.support_behavior) — 去重, 城市, 扶持行为 | support_amount-扶持金额 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INTENSITY_INDEX.md` §二（M_POLICY_INTENSITY_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, rank, city, district, status, expire_date, implementation_date, title, keywords, keypoints, theme, policy_support) — 去重, 国家级计入各市, 对比城市, 区内覆盖, 有效, 失效, 实施是否启动, 四字段命中, 扶持对象/行为/方式
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_policy_base`
 
-- support_amount-扶持金额（成本维正式口径
-- 现行用 support_behavior 非空占比）
+## 待建表字段
 
-## 参考资料
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-政策力度测量|南京大学商学院|浙江省科技厅重点软科学项目(2016C25G2010003)|仲为国,彭纪生,孙文祥. 政策测量、政策协同与经济绩效——基于创新政策的实证研究(1978-2006) [J]. 南方经济, 2008, (7): 45-58+67.
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：五项三级指标的结构都在（`implementation_date` 是 date，`policy_support` 是 JSON，`district` 是 varchar），但四列/子键的填充是 0，剩下的一项（区县去重数）只有 5.825% 的行有值。三维合成要求每一维都能出一列原始值，实测三维里两维没有任何输入，因此判**完全不支持**。
+- **基期声明**：截面指标（按城市），不设年度分母。calc-logic 的入集是「status=有效且未过期」，但 status 恒真、expire_date 全空（见 M_POLICY_VALIDITY_RATE），所以本件的入集等价于全表 20,000 行；这不是年份问题。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INTENSITY_INDEX.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INTENSITY_INDEX.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INTENSITY_INDEX_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

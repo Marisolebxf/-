@@ -1,85 +1,66 @@
 # 企业总数（M_ENT_TOTAL_COUNT）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿（业务定义）→ 2026-08-27 `ENT-SYNTH-METRIC-COVER-STAT-L01` 按架构师口头：部分统计国内+国外一起算，本条按 **国内 ∪ 国外主档** 重写。
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TOTAL_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TOTAL_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TOTAL_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_TOTAL_COUNT`
-- **指标名称**：企业总数
-- **一级模块**：企业分析
-- **二级模块**：企业总览
-- **三级模块**：企业整体概况
-- **更新频率**：日
-- **对齐状态**：已对齐（业务定义）；计算表已改挂项目 DWD；统计范围含国外主档
-- **是否在数据库**：国内 ODS 有样例行；国外企业主档 `dwd_forg_base_info` 现网 **0 行**（2026-08-27 live `gkx`）；项目 DWD 待 GDF 灌数（D4 仍 mock）
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q-E32
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_TOTAL_COUNT |
+| 指标名称 | 企业总数 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 二级模块 | 企业总览 |
+| 三级模块 | 企业整体概况 |
+| 更新频率 | 日 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业分析·企业总览「企业总数」卡｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_TOTAL_COUNT.md` |
 
 ## 口径定义
 
-在选定的未来产业范围内，国内机构 ∪ 国外机构按企业去重的数量。
-
-- 国内：一企一码（统一社会信用代码）；`enterprise_base.enterprise_code` 与 `org_id` 1:1，对不上 drop。
-- 国外：`enterprise_forg_base.enterprise_code` 为当地官方注册码；计算键同样是源表 `org_id`，不重新生成。
-- 港澳台 **不等于** 国外，不并入本条国外侧。
-- 国外高校 / 科研表（`dwd_forg_university_org_info` / `dwd_forg_research_org_info`）不是企业主档，不计入。
-
-统计窗口：最新批次。去重：`COUNT(DISTINCT org_id)`，国内 ∪ 国外 UNION（两边 `org_id` 命名空间不同，UNION 即可）。
+按 2026-08-27 calc-logic 的「国内 ∪ 国外主档」口径，gkx 上可以跑通并给出 **209,116** 家：国内主档 189,116 家、国外主档 20,000 家、两侧 `org_id` 零重叠；但国外主档只有 GB 19,832、US 159、CA 9 三个国家，7,365 行名称为字面空值、7,457 行无外部注册码，属**国别样本档**而不是全球名录。国内侧本身是「广东底册」（广东 188,776 家，占 99.82%），所以 209,116 只能作「库内可见企业数」，不能作「全国企业总数」对外发布，故判 **部分支持**。
 
 ## 计算逻辑说明
 
-未选产业（全量）：
-
-```
-COUNT(DISTINCT org_id)
-FROM (
-  SELECT org_id FROM enterprise_base
-  UNION
-  SELECT org_id FROM enterprise_forg_base
-)
-```
-
-选定未来产业：
-
-```
-1. 国内：enterprise_industry_chain 按 chain_code / chain_name 过滤后 JOIN enterprise_base
-2. 国外：无上链表（无 enterprise_forg_industry_chain），暂不能按产业并入
-3. 计数：仅国内过滤结果的 COUNT(DISTINCT org_id)
-```
-
-现网 ODS 无 `dwd_org_industry_chain_dtl`；`enterprise_industry_chain` 不能用 tags 冒充正式链位。
-
-对应 seed `formula`：COUNT(DISTINCT org_id) FROM (enterprise_base UNION enterprise_forg_base)；选产业时国内经 industry_chain 过滤，国外暂不纳入。
-
-**计算公式文件**：`M_ENT_TOTAL_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TOTAL_COUNT.md` §二（M_ENT_TOTAL_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-8 件套 `source_tables` 写 **项目 DWD ← ODS** 血缘链（左端必须是 `gkxlumenx_dwd` 表，右端 ODS 表名不带 `gkx.`）：
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-```
-enterprise_base <- ods: dwd_org_base_info
-enterprise_forg_base <- ods: dwd_forg_base_info
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+- `dwd_forg_base_info`
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_chain_dtl`
+- `dwd_org_industry_tags`
 
-现网探针：国内主档有数；国外主档 `dwd_forg_base_info` 0 行；tags 非正式链位。计算 FROM 只用左端 DWD。
+## 待建表字段
 
-来源系统（`source_systems`）：国内机构要素库、国外机构要素库、产业链要素库。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 待建 / 缺口
+## 数据支持度与缺口
 
-- 国外企业主档 live `gkx.dwd_forg_base_info` = 0 行（2026-08-27）；公式可 UNION，数灌不上。
-- 国外无上链表：选未来产业时国外侧暂不能并入。
-- ODS 无 `dwd_org_industry_chain_dtl`；tags 不能当正式链位。
-- D3 维持 `pending_ods`；D4 维持 mock（`is_mock: true`）。
+- **判档**：部分支持
+- **判档理由**：国内主档完整可算（189,116 家、189,116 个 org_id/信用码），但国外主档 gkx.dwd_forg_base_info 只有 20,000 行、3 个国家（GB 19,832 / US 159 / CA 9），其中 7,365 行 name_en 为字面 'null'，属样本性主档而非全球企业名录；『全球企业总数』的国外维无法闭合。
+- **基期声明**：截面计数，无年度序列；基期不适用（库内成立年跨 1900—2026，但本指标不按年摊分母，故 used/missing 均为空）
 
-## 备注
+## 溯源与复现
 
-bid `§1.1.1.2.4.2.3`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TOTAL_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TOTAL_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TOTAL_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
----
-*王惠 20260816 Excel 底稿正式化 2026-08-18；2026-08-26 改挂项目 DWD；2026-08-27 国内∪国外主档（COVER-STAT-L01）*
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

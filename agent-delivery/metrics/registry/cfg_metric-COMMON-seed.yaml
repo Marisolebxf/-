@@ -1,43 +1,41 @@
-# cfg_metric 种子 —— 跨要素 / 查询聚合域（COMMON）M_COMMON_* 指标 8 件套
+# cfg_metric 种子 —— 跨要素 / 查询聚合域（COMMON）M_COMMON_* 指标
 # ============================================================================
-# 作用：METRIC-SEED-REGISTER-L01 把 OPEN 新号身份写入 seed（D1=draft）。
-# 维护：data-agent  ·  监管：human:淮政玮  ·  创建：2026-08-22
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-# algorithm_type 本批一律 UNKNOWN（未签）。禁止把赋号卡 suggested_unsigned 当已签。
-# 禁止 D1=aligned。存量口径/公式/源表不在本文件改（本文件为该域首份 seed）。
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：1 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-08-22"
+updated: "2026-10-23"
 domain: COMMON
-seed_version: "0.1.0"
-batch: open_draft_20260822
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 1
-
 defaults:
-  source_systems: [pending_ods]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
   owner_agent: data-agent
-  version: "0.1.0"
-  algorithm_type: UNKNOWN
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
   - metric_id: M_COMMON_INFO_TREND_QUERY
-    metric_name_zh: "查询结果·资讯传播趋势"
-    definition: >
-      对当前查询结果集中的资讯按发布时间自然月桶计数，呈现传播趋势（Q-MO-QUERY-05）。 ELEMENT=COMMON（资讯非七要素助记码）。不是链域全量 M_CHAIN_NEWS_COUNT / M_CHAIN_HOT_NEWS_COUNT。资讯 CMS 喂数缺口不另造独立核。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "共性信息趋势查询"
+    definition: "108,052 条链标签新闻可出 18 个月（2025-02 至 2026-07）逐链月度序列与环比，但只有两年、出不了同比，判部分支持。"
+    formula: "series(chain, month) = COUNT(DISTINCT news) WHERE chain_code ∈ industry_code；环比 = 本月/上月-1；同比需同月两年齐全"
     algorithm_type: STAT
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
-    update_freq: pending
-    version: "0.1.0"
+    source_tables: ["dwd_industry_chain_info", "dwd_industry_chain_news_info", "dwd_news_base"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-ent-analysis/entan/metrics/metrics.py（计算，待阶段2确认模块） + repos/demo-algo-ent-analysis/api/entan_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/COMMON/M_COMMON_INFO_TREND_QUERY.md"
+    data_support_level: "部分支持"
+    support_reason: "enterprise_news_stat 结果面不存在，但趋势查询的原料齐全且是真数据：108,052 条带链标签的新闻、18 个月、206 个来源，逐月去重计数即可回答「某链信息量怎么走」。不能判完全转换支持的原因是时间窗只有 2025—2026：18 个月够看月度起伏与环比，但不够同比，也看不到 2018—2024 的长趋势（长窗口旁证表只有 20,000 行且无链标签）。故判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "产业链情报页「信息热度趋势」折线图 + 月份钻取｜ **数据支持度**：**部分支持**"
     pending_ref: "Q-MO-QUERY-05"
     acceptance_unit_id: "TOPIC-QUERY"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: METRIC-SEED-REGISTER-L01
-    open_task: TOPIC-QUERY-METRIC-OPEN-L01
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"

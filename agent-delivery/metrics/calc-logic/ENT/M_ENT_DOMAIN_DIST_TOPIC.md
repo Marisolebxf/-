@@ -1,102 +1,66 @@
 # 企业领域分布（M_ENT_DOMAIN_DIST_TOPIC）
 
-> 口径真源：专题 OPEN → 2026-08-31 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> 领域 = 15 集群 `cluster_id`（跟 `M_ENT_DOMAIN_COVERAGE_COUNT`）。不改挂 Q013。  
-> 家数从 **`enterprise_industry_chain`** 去重，经 L0 → `industry_cluster_map`。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DOMAIN_DIST_TOPIC.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DOMAIN_DIST_TOPIC.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DOMAIN_DIST_TOPIC_out.json`。
 
-## 元数据
+## 基础信息
 
-- 指标ID：`M_ENT_DOMAIN_DIST_TOPIC`
-- 名称：企业领域分布
-- 模块：专题企业 / TOPIC-ENT-05
-- 更新频率：年
-- 关联Q：Q068（15 集群 🟡）；不挂 Q013
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_DOMAIN_DIST_TOPIC |
+| 指标名称 | 企业领域分布 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 专题企业 |
+| 二级模块 | TOPIC-ENT-05 |
+| 三级模块 | 企业领域分布 |
+| 更新频率 | 年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 专题企业页「各领域企业数量」条形/饼图与逐年趋势线｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_DOMAIN_DIST_TOPIC.md` |
 
 ## 口径定义
 
-自然年 × `cluster_id`：国内上链企业去重家数，以及该格同比。
+本件能给出**单期 × 12 条产业链**的家数与占比，不能给出**年度 × 15 集群**的分布与同比：链归属表没有 `stat_year`，15 集群目录与 map 两库均无，故判 **部分支持**。
 
-```
-COUNT(DISTINCT e.org_id)
-FROM enterprise_industry_chain e
-JOIN industry_chain c ON c.chain_id = e.chain_code
-JOIN industry_cluster_map m
-  ON m.industry_id = c.industry_id
- AND m.is_active = 1 AND m.map_status = 'mapped'
-GROUP BY stat_year, m.cluster_id
-```
+## 计算逻辑说明
 
-同比（同一 `cluster_id`）：
-
-```
-(cnt_y - cnt_y-1) / cnt_y-1
-```
-
-上年 0 或空 → 同比空。
-
-- 统计主体 = `enterprise_industry_chain`。禁止年报/专利/产品另抽 `field_id`。
-- 领域键 = `industry_cluster_map.cluster_id`（15）。未映射不计。
-- **选产业是 API**：ETL 全量年×集群（及需要的链键）；禁止把「当前所选产业」写进 GROUP BY。
-- 统计年 = 批次自然年快照（该年末上链仍有效的边），不是专利公开年。
-- 只国内。无国外上链，不 UNION。
-- 禁止另造深度 / 多元化 ID。禁止改挂 Q013 加权。
-
-8 件套只留这条 COUNT + 同比。下面实现不得改口径。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-上链边 + map 在就能 GROUP BY 年×集群 COUNT。公式完整。
-
-### ② 灌数 / 目录（另一回事）
-
-`chain_code` 须灌 INB；Q068 未甲方确认。demo 上链表 IC-* 对不上 INB，不当接通。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_industry_chain` | 表在；码未对齐 INB |
-| 目标 | `enterprise_domain_year_dist`（建议：`stat_year + cluster_id + org_cnt + yoy`） | **缺口：无此表** |
-
-源 ≠ 目标。维表 `industry_chain` / `industry_cluster_map` / `industry_cluster` 不进 `source_systems`。GDF 暂缓。
-
-## 分场景 / 千万级（不进 8 件套）
-
-| 层 | 做什么 |
-|----|--------|
-| ETL | 每年全量年×集群 COUNT 写入目标表；同比用上年同行。 |
-| API | 按年 / `cluster_id` / 链键过滤；禁止请求路径全表现算。 |
-| 前端 | 选产业 = 带链键查行。 |
-
-**计算公式文件**：`M_ENT_DOMAIN_DIST_TOPIC.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DOMAIN_DIST_TOPIC.md` §二（M_ENT_DOMAIN_DIST_TOPIC.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-计算 FROM 只用左端上链表。dim / `industry_chain` 写细稿。
+- `dwd_dim_admin_area`
+- `dwd_id`
+- `dwd_industry_chain_info`
+- `dwd_org_industry_tags`
+- `dwd_org_tech_tag`
 
-来源系统：产业链要素库。
+## 待建表字段
 
-## 现网探针（2026-08-27 覆盖领域叶；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- dim 15 集群 + map 在。
-- 上链表 `chain_code` 仍 IC-* 样例，对不上 INB。
+## 数据支持度与缺口
 
-## 待建 / 缺口（不是口径算不全）
+- **判档**：部分支持
+- **判档理由**：本件能给出**单期 × 12 条产业链**的家数与占比，不能给出**年度 × 15 集群**的分布与同比：链归属表没有 `stat_year`，15 集群目录与 map 两库均无，故判 **部分支持**。
+- **基期声明**：本件无年度键：链归属表没有 stat_year，created_time 只有单一批次。因此既没有「进入分母的年份」，也没有「缺哪一年」，used/missing 为空；同比按「上年格不存在」记空，不按 0 摊入。
 
-1. 上链灌 INB；Q068 🟡。
-2. **无独立目标表**。
-3. D3 / D4 本波不升。`is_mock: true`。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DOMAIN_DIST_TOPIC.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DOMAIN_DIST_TOPIC.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DOMAIN_DIST_TOPIC_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-acceptance `TOPIC-ENT-05`；STAT。不作废展示 `DOMAIN_COVERAGE_*`。
+## 更新记录
 
----
-*2026-08-31 COVER-STAT-L01：年×集群 COUNT FROM 上链表；选产业是 API*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,71 +1,61 @@
-# M_SVC_PT_CHAIN_NODE_ORG 计算细稿（产业链节点服务机构数）
+# 产业链节点服务机构数（M_SVC_PT_CHAIN_NODE_ORG）
 
-- 版本：v0.2.0（2026-10-13 human:徐滕强 拍板落盘）
-- 任务：SVC-METRIC-COVER-STAT-L01 第 15 条；seed 版本同步 0.2.0
-- SRS 对应：TOPIC-PT-004（SVCCHAIN-PORTAL 专题服务门户）；Bid 33.2；TRACE REQ-SVC-PT-CHAIN-DIST
-- 关联：`M_SVC_CHAIN_SEGMENT_ORG_COUNT`（同源两消费，见 §5）；第 14 条 `M_SVC_PT_SZ_FIELD_DIST`（同 15 集群产业轴）
-- 拍板链：2026-10-13 徐滕强三轮确认（①不合并 SEGMENT，产业过滤是本质差异；②术语澄清"节点"=服务链站位非产业节点；③预统计宽表化，"选定"不进口径）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_CHAIN_NODE_ORG.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_CHAIN_NODE_ORG.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_CHAIN_NODE_ORG_out.json`。
 
-## 1. 语义与术语澄清
+## 基础信息
 
-**选定产业下，服务链六环节各站的服务机构去重家数。**
-
-| 术语 | 澄清 |
+| 项目 | 内容 |
 |---|---|
-| 「产业链节点」的"节点" | = **服务链站位节点**（CHAIN_STAGES 六环节），**不是** `industry_chain` 产业链的产业节点 |
-| 「产业链」 | = 产业轴前置维度（15 集群），供给查询下钻 |
-| 「选定产业」 | = **查询/展示层过滤**，不进指标定义（预统计指标无运行时选定概念，2026-10-13 徐滕强纠偏） |
+| 指标ID | M_SVC_PT_CHAIN_NODE_ORG |
+| 指标名称 | 产业链节点服务机构数 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（产业链节点供给） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 产业链节点视图；展示侧呼应科技信息展示系统·产业服务链分析→节点服务机构 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_PT_CHAIN_NODE_ORG.md` |
 
-## 2. 预统计宽表口径
+## 口径定义
 
-| 项 | 锁定值 |
+产业 × 环节交叉格可出数（**12 个产业 × 6 环节 = 72 格，66 格非零**），但两张分面都是代理：环节轴的正式成员表（机构 × 产业 × 环节服务记录，SVC-P0-3）在 gkx 与 live 均不存在，产业轴覆盖率只有 40.58% 且换过词典 → **部分支持**。
+
+## 计算逻辑说明
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_CHAIN_NODE_ORG.md` §二（M_SVC_PT_CHAIN_NODE_ORG.py 零改语义复算）。
+
+## 源表字段
+
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_org_industry_tags`
+- `dwd_org_org_product_info`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：产业×环节交叉格可出数（12 个产业 × 6 环节 = 72 格，其中 66 格非零），但两张分面都是代理：环节轴的正式成员表（机构×产业×环节服务记录，SVC-P0-3）在 gkx 与 live 均不存在，产业轴覆盖率只有 40.58% 且换了词典 → 部分支持
+- **基期声明**：截面宽表：产业×环节交叉计数是当前存量的预统计，不含年度分母；tags 表与经营范围词表都没有可用的服务记录年份，本件不做年度序列（补 0 会把未采集年当零供给）。
+
+## 溯源与复现
+
+| 项 | 值 |
 |---|---|
-| 人口 | `demo_gkxlumenx_dwd.svc_org_circle.org_id` |
-| 产业轴 | 15 集群（`dim.industry_cluster`，sz-10+5-2026，同第 14 条字典） |
-| 环节轴 | CHAIN_STAGES 服务六站（CT-SVC-PT-01 唯一真源）：`stage-research` 研发与科研合作 / `stage-ip` 知识产权与标准 / `stage-transfer` 技术转移与孵化 / `stage-pilot` 中试熟化 / `stage-testing` 检测认证 / `stage-market` 市场化服务 |
-| 全组合 | **15 × 6 = 90 格全量常备** |
-| 计数 | `COUNT(DISTINCT org_id)`；同机构同环节多服务计 1 |
-| 空格 | 显「暂无供给机构」，不伪造 |
-| SERVE | 落 `svc_metric_fact`（维度 field_id + stage_id）；前端选产业 = 查宽表 `field_id` 下钻，不现算 |
-
-## 3. 计算（SEED 演示）
-
-```sql
--- 目标口径（当前无源，不可执行）：
-SELECT f.field_id, s.stage_id, COUNT(DISTINCT r.org_id) AS org_count
-FROM dim_15clusters f                       -- 15 集群全集
-CROSS JOIN chain_stages s                   -- CHAIN_STAGES 六环节全集
-LEFT JOIN (机构×产业×环节服务记录) r        -- 缺口：待供方交付（SVC-P0-3）
-  ON r.field_id = f.field_id AND r.stage_id = s.stage_id
- AND r.org_id IN (SELECT org_id FROM svc_org_circle)
-GROUP BY f.field_id, s.stage_id;            -- 90 行全量，未命中格补 0
--- 现网预期：90 格全 0（事实源不存在），各环节显「暂无供给机构」
-```
-
-## 4. 事实源缺口（D3=none，如实挂账）
-
-- 「机构×产业×环节服务记录」在 ODS / DWD / DIM **均不存在**（Q-SVCCHAIN-08 全文已核）；
-- 供方题 **SVC-P0-3** 待交付；
-- 现网 90 格全 0 如实呈现；交付后重跑变真数。
-
-## 5. 与 SEGMENT_ORG_COUNT 的关系（同源两消费）
-
-同一张预统计宽表的两个消费口径：
-- 按 `stage_id` 聚合边际和（不分产业）= `M_SVC_CHAIN_SEGMENT_ORG_COUNT`（生态地铁图全貌）；
-- `field_id × stage_id` 明细 = 本条（产业下钻）。
-- 同源不同粒度，**两个指标 ID 并存，禁互相顶替**（TOPIC-ALGO-GAP-L02 登记明令）。
-
-## 6. 三禁
-
-- 禁用 `M_SVC_CHAIN_SEGMENT_ORG_COUNT` 顶替本条（全池单维 ≠ 产业×环节明细）。
-- 禁产业链节点 `node_stage` / 15 集群 / 服务六类（FINANCE/IP/HR/MKT/CONSULT/INNOV）冒充环节。
-- 禁造环节家数假数（现网全 0 就显全 0 + 「暂无供给机构」）。
-
-## 7. 呈现与缺口
-
-- 门户选定产业后展示六环节各站家数；空站显「暂无供给机构」；悬停提醒 Q-SVCCHAIN-08（供方交付中）。
-- 前端 `serviceReviewData.ts` 本指标演示 definition 已与本口径一致（选定产业领域内环节计数），仅「选定」语义按本稿归为查询层。
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_CHAIN_NODE_ORG.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_CHAIN_NODE_ORG.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_CHAIN_NODE_ORG_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-10-13: v0.2.0 落盘（预统计宽表 15×6=90 格；「选定产业」归查询层；术语澄清；与 SEGMENT 同源两消费禁顶替；D3=none 挂 Q-SVCCHAIN-08+SVC-P0-3）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

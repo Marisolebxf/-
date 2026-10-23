@@ -1,1512 +1,2436 @@
-# metric-readiness-matrix —— 企业维度（ENT 全域）四维就绪度矩阵
+# metric-readiness-matrix —— 企业维度（ENT 全域）四维就绪度
 # ============================================================================
-# 真源角色：企业维度指标四维就绪度（D1 定义 / D2 结构 / D3 源映射 / D4 接入）的机器真源；
-#           FE 只读消费（demo 阶段镜像到 readinessSeed.ts；Wave1 走 /metrics/v1/catalog）。
-# 模型定义：data-lineage-policy.md §2.3（v1.3；D2 `pending` 态为 v1.3.1 增补）
-# 生成任务：ENT-READINESS-MATRIX-ENT-L01（监管 human:淮政玮）· 2026-08-01
-#           前身 metric-readiness-matrix-ENT-EVAL.yaml（D9-READINESS-MODEL-L01）已整体吸收并删除。
-#           L02 补录：ENT-READINESS-MATRIX-ENT-L02（监管 human:淮政玮）· 2026-08-01 —— demo-ui-topic
-#           页面引用审计发现的 28 个缺口 metric_id：21 条新建（seed 已登记 10 + 未注册 11）+
-#           8 个同义 ID 别名归一（见 demo_metric_id_aliases）+ 4 个复核确认已在矩阵；
-#           另 UI-L02 防漏扫描补充发现 M_ENT_TYPE_RATIO（seed 已登记，原审计漏检）+1 条。
-# 覆盖范围：9 个企业 METRIC-OPEN 任务触达的指标（EVAL 13 + SEARCH/RISK/RECRUIT/KEYPANO/STAR/SHENZHEN 40 = 53 条；
-#           RISK 段含 seed 已登记但 gap catalog 未列的 M_ENT_NODE_CENTRALITY）
-#           + L02 补录 22 条（ENT-OVERVIEW 11 + 未注册 11）= 75 条。
-#   - COMPARE（对比篮）：派生容器、无统计指标，METRIC-OPEN 产物缺失（registry 标 done，待补验，见 §coverage_notes）
-#   - OPS（维护管理）：产物为 15 条 capability（CMS 写侧能力）非统计指标，不入本矩阵
-# 输入真源：metrics/registry/cfg_metric-ENT-seed.yaml（8 件套 + mapping_status）
-#           agent-handoffs/产品整体定义/{各模块}/ENT-*-data-gap-catalog.yaml（6 份）
-#           agent-handoffs/产品整体定义/{各模块}/METRIC-OPEN-ENT-*-核对记录.md
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
+# 模型定义：data-lineage-policy.md §2.3
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-ENT-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
 # ----------------------------------------------------------------------------
-# ⚠️ 诚实性约束（不伪闭合）：
-#   - EVAL 13 条 D2 判定为 provisional（依据 DWD 设计文档目测），待 lineage-subcoord 核验。
-#   - 非 EVAL 模块的 D2 一律 `pending`（未评估，v1.3.1 增补态）——结构支撑尚未逐条对照
-#     DWD/ES/图 设计，禁止伪标 ready；待架构/data-agent 评估后逐条升级。
-#   - D1/D3 按 policy §2.3.2 迁移映射从各模块 gap catalog 的 mapping_status/pending_ref 推导；
-#     推导性判定均为 provisional 性质，正式口径以王惠正式化提交为准。
-#   - D4 全部 mock（Wave 0），阶段清单全 todo；接入启动后由数据工厂更新。
-#   - d1_def_status=missing（未注册 metric_id 的 GAP-* 条目）时 d2~d4 = n/a（policy §2.3.1）。
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 17 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
 # ----------------------------------------------------------------------------
-# 字段 schema（每条 metric）：
-#   metric_id / metric_name_zh / acceptance_unit_id / module（所属 METRIC-OPEN 模块）
-#   d1_def_status:        aligned | draft | missing
-#   d1_pending_ref:       Q-* / GAP-*（draft 时必填）
-#   d1_note:              补充说明（如未入 seed 待注册）
-#   d2_schema_status:     ready | partial | missing | pending | n/a
-#   d2_schema_detail:     { mysql_dwd, es, graph: {status}, gap }   # pending/n-a 时可省略
-#   d2_assessed:          provisional | verified
-#   d3_source_mapping_status: full | partial | none | pending_ods | n/a
-#   d3_gap:               缺什么（partial/none 时必填；长文案仍以 data-gap-catalog 为准）
-#   d4_ingestion_status:  mock | ingesting | live | n/a
-#   d4_ingestion_stages:  { ods_synced, dwd_loaded, es_indexed, graph_loaded, verified }
-#                         每项 done | in_progress | todo | n/a
-#   legacy_mapping_status: 原 mapping_status（迁移对照，只读）
-#   lifecycle_stage:      可选（policy §2.1.1 v1.4.1）
-#                         pre_register | identified | open | formula_signed |
-#                         source_mapped | kit_complete | retired | unspecified
-#                         未填 = unspecified；禁止用本字段替代 D1–D4；不上 ⓘ 主卡
-# ============================================================================
+# 本域分布：96 条｜D1 aligned 96 / draft 0｜D3 full 33 / partial 60 / none 3 / pending_ods 0｜本批新增 0 条、D3 有据升级 3 条、派生件 0 条。
 
-version: 2
+version: 1
 module: ENT
 model_ref: data-lineage-policy.md#2.3
-model_status: effective   # 2026-08-01 项目负责人放行免会签定稿（相关人淮政玮线下通知）
-updated: "2026-08-24"
-as_of: "2026-08-01"
-d2_verifier: lineage-subcoord   # EVAL 13 条待核验；其余模块待首评
-d4_batch: mock_20260618
-
+model_status: provisional
+updated: "2026-10-23"
+as_of: "2026-10-23"
+d2_verifier: lineage-subcoord
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "ENT-COMPARE：registry 标 done 但 gap catalog / 核对记录磁盘缺失（仅派单包），需 coordinator 补验证据"
-  - "ENT-OPS：15 条 capability（LF-ENT-OPS-A/B/C）为 CMS 写侧能力，非统计指标，不入四维矩阵"
-  - "KEYPANO 8 条 / STAR 4 条（BY_INDUSTRY/BY_REGION/BASIC_INFO/HONOR_LIST）metric_id 未注册入 cfg_metric-ENT-seed，正式注册待王惠正式化提交（KEYPANO 归 Q047 管辖）"
-  - "L02 补录（ENT-READINESS-MATRIX-ENT-L02）：ENT-OVERVIEW 段 11 条（seed 已登记、未被 METRIC-OPEN 触达，D1 按 seed 推导；D2 一律 pending；D3 无 gap catalog 依据一律 pending_ods；D4 mock；含 UI-L02 防漏扫描补充发现的 M_ENT_TYPE_RATIO）；ENT-DEMO-UNREGISTERED 段 11 条（seed 未登记，d1 missing → d2~d4 = n/a，待王惠正式化）"
-  - "L02 复核：M_ENT_GROWTH_POTENTIAL / M_ENT_INDUSTRY_MATCH_SCORE / M_ENT_POLICY_MATCH_SCORE / M_ENT_STAR_ENTERPRISE_COUNT 已在矩阵（RECRUIT/STAR 段），demo 缺口属 FE 镜像未同步，不重复建条"
-
-# demo 本地同义 metric_id → 矩阵正名条目映射（L02 登记）。
-# ✅ 已收口（2026-08-01，项目负责人淮政玮拍板"按正式 ID 定稿情况更新 demo 历史 ID"）：
-#    demo-ui-topic 页面 / metricSeed / filterFieldSchema 已全部改用矩阵正名，
-#    FE 别名表（readinessSeed.METRIC_ID_ALIASES）已清空并有契约测试防回退。
-#    下表仅作历史对照存档（原 9 条），不再参与任何运行时解析：
-#      M_ENT_DOMAIN_BREADTH → M_ENT_DOMAIN_COVERAGE_BREADTH（领域覆盖广度）
-#      M_ENT_SZ_TOTAL_COUNT → M_ENT_SZ_COUNT（深圳企业数）
-#      M_ENT_NEW_COUNT → M_ENT_NEW_COUNT_Y（新增企业数；「近 12 月」为按年口径展示窗口，窗口正式表述随王惠正式化收口）
-#      M_ENT_RD_INVEST_AVG → M_ENT_AVG_RD_INVESTMENT（平均研发投入；UX 权限交互规范文档仍用旧写法，下次修订时同步）
-#      M_ENT_CLUSTER_INDEX → M_ENT_AGGLOMERATION_INDEX（集聚指数，Q012）
-#      M_ENT_DOMAIN_DEPTH → M_ENT_DOMAIN_COVERAGE_DEPTH（领域覆盖深度，Q013）
-#      M_ENT_DOMAIN_DIVERSITY → M_ENT_DIVERSIFICATION_INDEX（多元化指数，Q013）
-#      M_ENT_TECH_SCORE → M_ENT_TECH_POWER_SCORE（技术力分，Q014）
-#      M_ENT_BUSINESS_SCORE → M_ENT_BUSINESS_POWER_SCORE（商业力分，Q014）
-demo_metric_id_aliases: {}
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
-  # ════════════ ENT-EVAL（E-23/E-24/E-30，13 条，原 ENT-EVAL 矩阵原样吸收） ════════════
-  # ── E-23 技术力 ──
-  - metric_id: M_ENT_TECH_POWER_SCORE
-    metric_name_zh: "技术力得分"
-    acceptance_unit_id: E-23
-    module: ENT-EVAL   # SEARCH 模块复用本条（ENT-SEARCH gap catalog 同挂 Q014）
+  - metric_id: GAP-RECRUIT-METRIC-01
+    metric_name_zh: "深圳连接度"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
     d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.tech_score] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：无直接贴源字段（
+      K-O6）；需梳理投融资/子公司/供应链的深圳关联字段合成，未注册 metric_id
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "技术转化/技术合作维度缺直接 ODS 字段，暂以资质标签代理（详见 gap catalog Q014 条）"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_bid_base_out、dwd_org_base_info、dwd_org_invest_info、dwd_org_shareh
+      older_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。「深圳连接度」问的是「这家企业与深圳有多少经济联系」，本质是一个**比例**：对端落在深圳的关系数 ÷ 全部关系数。三类边（投资
+      、股东、子公司）在 gkx 都有真实行，底册有 `city` 可判属地，比例当场可算；唯一缺的是「供应链」这一类边，而它是旧稿的第三个推测维、不是需求原文的必需维。因此判**完全转换支持*
+      *，同时把「只用资本/组织边」「子公司用名称代理」两条边界写在发布口径里。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "❌"
+
+  - metric_id: GAP-RECRUIT-METRIC-03
+    metric_name_zh: "企业行业领域排名"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：排名范围/排序字
+      段/并列规则待下游定义，是否设独立 metric_id 未决
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_code、dwd_org_base_info、dwd_org_industry_tags）；批量初判 provi
+      sional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。行业字段非空 186809 家（大类二级 94 个），可评分 186135 家，覆盖 108 个行业，全部 186135 行均已
+      赋组内排名；Rec 代理分取值 606 种（并列由 dense rank 处理，代理键局限已在 MD 披露）；live enterprise_recruit=0（无现成结果面）。行业维度+
+      排序信号结构量均足，现转可得行业内排名；正式 Rec 公式待甲方闭合（ER-B10），属口径缺口而非数据缺口。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: GAP-RECRUIT-METRIC-04
+    metric_name_zh: "可视化行业分布"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：统计量/分母/行
+      业分类粒度待下游定义，是否设独立 metric_id 未决
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags）；批量初判 provisional，待 lineage-s
+      ubcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。深圳企业 95600 家、行业桶 98 个（二级），Top1 行业占比 26.33%（分布非退化）；live enterpris
+      e_industry_distribution=0（无现成结果面）。GROUP BY 现转即可出图表数据集；正式口径（对象集合/分类层级）待甲方闭合（ER-B10）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: GAP-RECRUIT-METRIC-05
+    metric_name_zh: "关键指标集合"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：指标集合展示顺序
+      与汇总方式待 UX/前端定义；不创建笼统总分
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_org_base_info、dwd_org_financing_info、dwd_org_income_statement、dwd
+      _org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。候选关键指标 11 项中 11 项有结构、11 项当前量>100；样例企业 3 张卡片装配成功（行业/资本/规模/投资/子公司/
+      融资/营收均可取值）。本 GAP 本质是展示层集合规则：各组成指标可从现库拼装，无需独立公式；最终展示哪几项由 UX 定义（handoff ER-B12 已锁定，不建总分）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
+    metric_name_zh: "城市平均商业力"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：Bid 明确要求
+      但 cfg_metric-ENT-seed 未注册；严禁以竞争力/营收指标替代；待何老师确认后注册
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_main_business_composition_industry、dwd_org_base_info、dwd_org_inco
+      me_statement、dwd_org_industry_product_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。营收信号覆盖 3076 家、产品标签 2 家、链标签 34969 家、主营构成 374 家；深圳出分企业 20645 家、对标
+      5 城中 4 城有分。bid §5.6 六维中「品牌指标、技术合作指标」两维在开发库/三方库无可用结构（无驰名商标/技术合作合同表），始终缺 2/6 维 → 按四档定义属部分支持（维度缺
+      口持续，不随量增长消失）；其余维结构+当前数据量足且已现转出分。正式权重与指标库构成待 Q014、ID 注册待何老师。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "❌"
+
+  - metric_id: M_ENT_AGGLOMERATION_INDEX
+    metric_name_zh: "集聚指数"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：demo 页面以
+      别名 M_ENT_CLUSTER_INDEX 引用；formula（区位熵/基尼系数）待 algorithm-agent
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_dim_admin_area、dwd_industry_chain_info、dwd_org_base_info、dwd_org_
+      industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。gkx 存续企业可识别城市×产业 168,754 家，覆盖 4 城市 / 20 个 L1 产业；深圳存续企业 94,955 家
+      ；industry_tags 2,283,762 行（产业归类主用 base_info.industry_l1_code，填充 186,809）；库存行数与本脚本实测行数一致=True。有
+      效样本量不足（区域覆盖维受限，仅粤内城市）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_ATTRACTION_INDEX
+    metric_name_zh: "招引推荐指数"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_base_in
+      fo、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维中：产业相关度 tags 已由 gkx 全量承载（2,283,762 行），但链路码与 dwd_industry_chai
+      n_info 关联仅 0 行（20 万行样本口径）、投入产出表缺失，产业链融入度仍不可闭合；政策匹配度有政策文本（20,000）与企业文本（45,011）但 GPT 契合层未建（keywo
+      rds 填充 3000）；深圳连接度可用投资/股东边代理中心度（scored=95652，含深圳连接企业 50358），但引力
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_ATTRACT_SCORE
+    metric_name_zh: "招引推荐评分"
+    acceptance_unit_id: "E-26"
+    module: "ENT-DEEP-GAP"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：别名=ATTRA
+      CTION_INDEX；能算；只缺独立目标表；Q015 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_financing_info、dwd_org_invest_info、dwd_pate
+      nt）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。上游指数与 enterprise_score 都不存在，但招引排序要的信号在 gkx 有真实载体：专利、IPC 广度、融资事件
+      、投资/股东边、企业城市归属，覆盖 13 万级企业。四项加权可出名单、分项分与「深圳以外候选」子表，故不判完全不支持；但三维修正为单指标代理、风险维未接入、权重未裁定，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_AVG_RD_INVESTMENT
+    metric_name_zh: "平均研发投入"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：demo 页面以
+      别名 M_ENT_RD_INVEST_AVG 引用
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_foreign_org_annual_financial_info、dwd_org_annual_financial_info、d
+      wd_org_industry_tags、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。gkx 国内年报宽表的研发列 **`arch_development_am` 非空 0 行 / 90,926 行**（`dev
+      elopment_employee`、`fixed_assets` 同为 0），按 calc-logic 口径算不出「全部法人平均研发投入」；唯一有数的是上市财务表 **645 家 FY2
+      025**（研发费 > 0），合计 **153,500,926,172.53 元**、均值 **237,985,932.05
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_BASE_97_4
+    metric_name_zh: "重点资讯统计"
+    acceptance_unit_id: "ALGO-ENT-BASE-97"
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_id、dwd_org_important_news_info）；批量初判 provisional，待 lineage-subcoo
+      rd 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。`gkx.dwd_org_important_news_info` 全表 **1,668,414 行**、**28,123 家*
+      *机构（占底册 14.8681%）、**93 个月份桶**，窗口 2018-01-22 至 2026-05-08；月度峰值 **2024-12 的 73,434 行**，年度峰值 **20
+      25 年的 421,067 行**，环比中位数 **4.2056%**；两库均无 `enterprise_news_mont
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
 
   - metric_id: M_ENT_BUSINESS_POWER_SCORE
     metric_name_zh: "商业力得分"
-    acceptance_unit_id: E-23
-    module: ENT-EVAL   # SEARCH 模块复用本条
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
     d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.business_score] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（ads_ent_business_score、dwd_industry_chain_info、dwd_org_annual_financ
+      ial_info、dwd_org_base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "市场维度（M_ENT_MARKET_SHARE）无第三方源，Q019 未闭合前以营收替代"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。六维中：市场维财务填充率低（2095/90,926，2.3%）；产品/产业链覆盖/关键环节三维依赖的 dwd_org_indu
+      stry_chain_dtl 在 gkx（及 live）均不存在（gkx industry_chain_info=1,273 仅链定义，无企业×节点关联）；品牌维资讯 1,668,414 
+      行可算声量、tech_tag 202,424 待核荣誉语义；技术合作维专利 2,939,895 行可解析联合申请、外部专家人月
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_ENT_TECH_RANK
-    metric_name_zh: 技术力排名
-    acceptance_unit_id: E-23
-    module: ENT-EVAL
+  - metric_id: M_ENT_CHAIN_COMPLETENESS
+    metric_name_zh: "产业链完整度"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
     d1_def_status: aligned
-    d1_pending_ref: Q014
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.tech_score（查询期 RANK）"] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：k/K×100；
+      K=INB叶子；默认全目录；不加权；祖先不上卷；QC01 仍 🟡；D3/D4 未升未降
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。gkx 目录 1273 码（12 链根、叶子 K=954）；tags 2,283,762 行全量拆解后 全国层面 k=940/9
+      54（完整度 98.53%）；深圳探针（credit_code JOIN LIMIT 20 万）k=712/954（74.63%）。结构+当前数据量均足，k/K 已现转算出。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CHAIN_STAGE_COVERAGE
+    metric_name_zh: "产业链环节覆盖"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；与 M_ENT_CHAIN_COMPLETENESS（E-25）语义相近，是否合并未经确认、不做别名归一
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags、dwd_p
+      atent）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "派生指标，随 M_ENT_TECH_POWER_SCORE 的源缺口联动"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。目录侧 954 个叶子节点、1273 个节点可用于覆盖率，企业侧 2,283,762 行标签中 569,303 行（24.93
+      %）`industry_link_code` 为空、无法定位环节，可算行 201,604（四城）。但王惠原式要求的『上游/中游/下游』段位字段 `level` 全为 0、命名行 0 条，段
+      位维整块缺失；另发现标签体系使用 5,674 个目录外环节码，目录（1,273 节点）只是企业实际使用分类的一小部分，k/K
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
 
-  - metric_id: M_ENT_PATENT_GRANT_COUNT
-    metric_name_zh: 专利授权数
-    acceptance_unit_id: E-23
-    module: ENT-EVAL
+  - metric_id: M_ENT_CITY_AVG_TECH_POWER
+    metric_name_zh: "城市平均技术力"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
     d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.patent_grant_count] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_RD_INVESTMENT_RATIO
-    metric_name_zh: 研发投入占比
-    acceptance_unit_id: E-23
-    module: ENT-EVAL
-    d1_def_status: aligned
-    d1_pending_ref: Q014
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.rd_investment, dwd.enterprise.revenue_latest] }
-      es: { status: n/a }
-      graph: { status: n/a }
-    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "[ENT-20260822] 结构 B：年报 dwd_org_annual_financial_info 无研发投入列；仅上市企业 dwd_org_stock_finance_info.research_development_amount。口径（资本化/取数年度）仍归 D1 draft（Q014）"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。tech_power 结果面不存在，但城市平均量可由企业级专利三维分聚合得到：专利计数、IPC4 广度、2024 申请量都在 
+      dwd_patent 里，企业城市在 dwd_org_base_info 里，聚合链完整。缺的是技术力的另外三维（人才/转化/投入）与「全部企业」分母口径，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_ENT_REVENUE_LATEST
-    metric_name_zh: 营收
-    acceptance_unit_id: E-23
-    module: ENT-EVAL
+  - metric_id: M_ENT_CITY_COMPARE_TOPIC
+    metric_name_zh: "多城市企业群对标值"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
     d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.revenue_latest] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_REVENUE_GROWTH_RATE
-    metric_name_zh: 营收增长率
-    acceptance_unit_id: E-23
-    module: ENT-EVAL
-    d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise_finance_history.revenue] }
-      es: { status: n/a }
-      graph: { status: n/a }
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"   # 🔧 仅 formula 待实现，不属源缺口
-
-  # ── E-24 商业力 ──
-  - metric_id: M_ENT_PROFIT_MARGIN
-    metric_name_zh: 利润率
-    acceptance_unit_id: E-24
-    module: ENT-EVAL
-    d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.net_profit, dwd.enterprise.revenue_latest] }
-      es: { status: n/a }
-      graph: { status: n/a }
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_MARKET_SHARE
-    metric_name_zh: 市场份额
-    acceptance_unit_id: E-24
-    module: ENT-EVAL   # SEARCH 模块复用本条
-    d1_def_status: aligned          # 定义已登记；断点在源与结构
-    d2_schema_status: missing
-    d2_schema_detail:
-      mysql_dwd: { status: missing, refs: [] }
-      es: { status: n/a }
-      graph: { status: n/a }
-      gap: "细分市场规模维表未设计（依赖是否采购三方市调数据的决策）"
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "无第三方采购源（K-O7 / GAP-SOURCE-01 / Q019）；wave0 业务态置灰不参与计分"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: n/a }
-    legacy_mapping_status: "❌"
-
-  # ── E-30 综合竞争力 ──
-  - metric_id: M_ENT_COMPETITIVENESS_SCORE
-    metric_name_zh: "综合竞争力分"
-    acceptance_unit_id: E-30
-    module: ENT-EVAL   # SEARCH 模块复用本条
-    d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.competitiveness_score] }
-      es: { status: n/a }
-      graph: { status: n/a }
-    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_invest_info）；批量初判 pro
+      visional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "派生自 tech_score/business_score，随二者源缺口联动"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三类对标值里两类有代理（技术力→专利三维分均值、投资活跃度→关系边密度），企业密度只能出企业数（缺面积分母），商业力整维无源。
+      更硬的约束是对标城市：北京 163 家、上海 16 家、苏州 0 家，需求点名的三个城市在本库不可比，对标只能落在深圳都市圈四市。两维可算、一维缺分母、一维整缺、对标集不完整，判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_CITY_DENSITY
+    metric_name_zh: "城市企业密度"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：分母锁 code
+      _region.area；全国不算；area空该市空；挂 REGIONAL_COUNT；Q016 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_dim_admin_area、dwd_dim_index_attribute、dwd_macro_index_data、dwd_o
+      rg_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。分子侧完全可得（66 个城市、189,115 行可绑定城市码，深圳 95,600 家），分母侧在 gkx 无任何 km² 数值
+      载体：面积类数值列扫描 0 命中，`area` 5 列全是 varchar 行政区名，区划字典 29 列无面积列；人口密度指标 a77361 仅 30 行 / 14 个国家代码 / 止于 
+      2021 年，不能反解城市面积。密度 = 分子/分母，分母恒缺即指标不可完整构建，故判部分支持（分子可交付、密度不可交付）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_CITY_RANK
+    metric_name_zh: "多城市对标排名"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；对标城市集合归 Q016（UX 权限交互规范曾以 ⚠️Q016 引用）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_base_in
+      fo、dwd_org_industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维中 D1 部分可算（营收>0 2,191/90,926，城市均值只覆盖 4 个广东城市）、D3 可算（tags 228 万
+      行、全国 98.53%、深圳 74.63%）、D2 恒缺（无城市面积载体）、D4 恒缺（0 张评分表）；权重 40/30/30 亦未甲方闭合（Q014）。综合得分无法在分母缺失下合成，名次
+      不可交付，故判部分支持而非完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
 
   - metric_id: M_ENT_COMPETITIVENESS_RANK
-    metric_name_zh: 竞争力排名
-    acceptance_unit_id: E-30
-    module: ENT-EVAL
+    metric_name_zh: "企业竞争力排名"
+    acceptance_unit_id: "E-30"
+    module: "ENT-EVAL"
     d1_def_status: aligned
-    d1_pending_ref: Q014
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: ["派生自 dwd.enterprise.competitiveness_score（查询期 RANK）"] }
-      es: { status: n/a }
-      graph: { status: n/a }
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "派生指标，随 M_ENT_COMPETITIVENESS_SCORE 联动"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_SHORTBOARD_COUNT
-    metric_name_zh: 短板维度数
-    acceptance_unit_id: E-30
-    module: ENT-EVAL
-    d1_def_status: aligned
-    d1_pending_ref: Q014
-    d1_note: "同业=同链同年；空值不判；L3 跟 SCORE；能算；只缺目标表；Q014 仍 🟡；D3/D4 未升"
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
     d2_schema_status: partial
-    d2_schema_detail:
-      mysql_dwd: { status: partial, refs: ["dwd.enterprise（各维度评分）"] }
-      es: { status: n/a }
-      graph: { status: n/a }
-      gap: "行业基准维表（P25/P75 分位数 DWS 聚合表）未设计"
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_invest_info、dwd_org_shareholder_info、dwd_pa
+      tent）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "公式可算。同业=同链。缺口：无 enterprise_shortboard"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。enterprise_score 与 enterprise_ranking 两张结果面都不存在，但排名所需的大头可从原始表算：
+      专利、IPC 广度、投资与股东关系、成立年限覆盖 13 万级企业，四维加权即可出完整名次与分项。缺的是经营维（营收覆盖 0.73%）与风险维（无逐企业记录），两维占旧稿权重的一部分，本件只
+      能按 0 处理。可排名但不完整，判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_ENT_INNOVATION_INDEX
-    metric_name_zh: "创新能力指数"
-    acceptance_unit_id: E-30
-    module: ENT-EVAL
+  - metric_id: M_ENT_COMPETITIVENESS_SCORE
+    metric_name_zh: "综合竞争力分"
+    acceptance_unit_id: "E-30"
+    module: "ENT-EVAL"
     d1_def_status: aligned
-    d2_schema_status: ready
-    d2_schema_detail:
-      mysql_dwd: { status: ready, refs: [dwd.enterprise.innovation_index] }
-      es: { status: n/a }
-      graph: { status: n/a }
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（ads_ent_、ads_ent_competitiveness_score、dwd_org_annual_financial_info、
+      dwd_org_base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "创新资质标签源可得；创新型企业分类口径（Q011）与权重（Q014）未闭合"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维九三级指标原料：gkx 财务表 90926 行中资产>0 2.9%、员工>0 3.5%、营收>0 2.4%、利润非空 2.
+      6%、负债>0 2.6%、财务三要素齐 fin3 2.3%；研发人员 development_employee 全空；本科及以上学历人数无字段（待建）；市场占有率需行业营收汇总（同样依赖低
+      填充营收）。极值归一化对填充量敏感——2-4% 覆盖撑不起全国可比 min/max，人力资源维两指标一空一无 → 部分支持（表
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # ════════════ ENT-SEARCH（E-31 企业查询，3 条新增；其余 5 条复用 EVAL/RISK/STAR 条目） ════════════
-  # 复用条目：M_ENT_TECH_POWER_SCORE / M_ENT_BUSINESS_POWER_SCORE / M_ENT_MARKET_SHARE /
-  #           M_ENT_COMPETITIVENESS_SCORE（EVAL 段）· M_ENT_SUPPLY_CHAIN_RISK（RISK 段）·
-  #           M_ENT_STAR_ENTERPRISE_COUNT（STAR 段，Q037 与 SEARCH 合并确认）
-  - metric_id: M_ENT_PATENT_TOTAL
-    metric_name_zh: 专利总数
-    acceptance_unit_id: E-20
-    module: ENT-SEARCH
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_HIGH_TECH_COUNT
-    metric_name_zh: 高新技术企业数
-    acceptance_unit_id: E-20
-    module: ENT-SEARCH
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "源 dwd_org_tech_tag 可得。中文 org_tag→内部 high_tech 由项目对照，不算无法执行。过期/曾获=码在就算。Q010 仅甲方书面。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
-    metric_name_zh: 领域覆盖面
-    acceptance_unit_id: E-22
-    module: ENT-SEARCH
-    d1_def_status: aligned
-    d1_pending_ref: Q013
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "dwd_enterprise_industry_tags 标签分类体系与业务口径是否一致待确认；临时按 tags 逗号分隔解析"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # ════════════ ENT-RISK（E-28/E-29 风险洞察，7 条） ════════════
-  - metric_id: M_ENT_SUPPLIER_COUNT
-    metric_name_zh: 供应商数量
-    acceptance_unit_id: E-28
-    module: ENT-RISK
-    d1_def_status: aligned
-    d1_pending_ref: Q017
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "以 gkx_dwd_org_invest_info 投资关系代理供应关系；缺直接供应关系与层级字段"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_ENT_CORE_SUPPLIER_COUNT
-    metric_name_zh: 核心供应商数量
-    acceptance_unit_id: E-28
-    module: ENT-RISK
+    metric_name_zh: "核心供应商数"
+    acceptance_unit_id: "E-28"
+    module: "ENT-RISK"
     d1_def_status: aligned
-    d1_pending_ref: Q017
-    d1_note: "Q017 ② 供应集合内投资金额 TOP5；丢掉 risk_level；能算；只缺目标表；D3/D4 未升"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：Q017 ② 供
+      应集合内投资金额 TOP5；丢掉 risk_level；能算；只缺目标表；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_bid_win_candidate_out、dwd_org_invest_info、dwd_org_shareholder_inf
+      o）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "公式可算。缺口：无 enterprise_supply_summary.core_supplier_count"
+    d3_gap: >
+      公式可算。缺口：无 enterprise_supply_summary.core_supplier_count
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_RELATION_STRENGTH
-    metric_name_zh: 关系强度
-    acceptance_unit_id: E-28
-    module: ENT-RISK
-    d1_def_status: draft
-    d1_pending_ref: Q017
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "交易频次/合作期限字段不全（invest_info/bid_info 仅部分覆盖）；wave0 按投资金额分档代理"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_NODE_CENTRALITY
-    metric_name_zh: 节点中心度
-    acceptance_unit_id: E-28
-    module: ENT-RISK
-    d1_def_status: aligned          # seed 已登记；METRIC-OPEN 未列缺口
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "图算法指标，依赖供应关系图数据（与 SUPPLIER_COUNT 同源缺口联动）"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_PAINPOINT_COUNT
-    metric_name_zh: "痛难点反映企业数"
-    acceptance_unit_id: E-29
-    module: ENT-RISK
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "财务维字段覆盖较全；市场/管理维度 ODS 字段有限，多维交叉判定喂不满"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_PAINPOINT_SEVERITY
-    metric_name_zh: "痛难点严重度"
-    acceptance_unit_id: E-29
-    module: ENT-RISK
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "[ENT-20260822] 结构 B：年报缺研发投入/研发人员/成本费用列，无法按原口径评严重度。评级阈值仍归 D1（Q014）"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_PAINPOINT_GAP
-    metric_name_zh: 痛难点改进差距
-    acceptance_unit_id: E-29
-    module: ENT-RISK
-    d1_def_status: draft
-    d1_pending_ref: Q018
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "P25/P75 基线依赖 DWS 聚合产出；产业链分组口径未定"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
-    metric_name_zh: "断链风险等级"
-    acceptance_unit_id: E-28
-    module: ENT-RISK   # SEARCH 模块复用本条
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "[ENT-20260822] 结构 C：缺供应链边表（C10 长/宽表仍未裁）。现有失信/异常/处罚事件源不能替代边表"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-
-  # ════════════ ENT-DEEP-GAP（ENT-DEEP-GAP-L01 demo 快路径，3 条，2026-08-04 新增）════════════
-  - metric_id: M_ENT_DEV_HISTORY
-    metric_name_zh: 企业发展历程
-    acceptance_unit_id: E-DEEP-01
-    module: ENT-DEEP-GAP
-    d1_def_status: aligned
-    d2_schema_status: ready
-    d2_assessed: confirmed
-    d3_source_mapping_status: full
-    d3_gap: "DWD 财务/专利/资讯表字段已对齐"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_ATTRACT_SCORE
-    metric_name_zh: 招引推荐评分
-    acceptance_unit_id: E-26
-    module: ENT-DEEP-GAP
-    d1_def_status: aligned
-    d1_pending_ref: Q015
-    d1_note: "别名=ATTRACTION_INDEX；能算；只缺独立目标表；Q015 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "公式可算（读 INDEX）。缺口：无独立目标表，查询读 INDEX 落表"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_ENT_CULTIVATE_SCORE
-    metric_name_zh: 培育推荐评分
-    acceptance_unit_id: E-27
-    module: ENT-DEEP-GAP
+    metric_name_zh: "培育推荐评分"
+    acceptance_unit_id: "E-27"
+    module: "ENT-DEEP-GAP"
     d1_def_status: aligned
-    d1_pending_ref: Q015
-    d1_note: "别名=CULTIVATION_INDEX；能算；只缺独立目标表；Q015 仍 🟡；Q018 不转分；D3/D4 未升"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：别名=CULTI
+      VATION_INDEX；能算；只缺独立目标表；Q015 仍 🟡；Q018 不转分；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_financing_info、dwd_org_invest_info、dwd_pate
+      nt）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "公式可算（读 INDEX）。缺口：无独立目标表，查询读 INDEX 落表"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。上游指数未出数、两张结果面都不存在，但培育场景要的四类信号在 gkx 有真实载体：成立年份（全量）、专利与 IPC 广度（13
+      万级）、融资事件（2.5 万条）与投资边（4.7 万条）。四项加权可出可解释的培育名单与分项分，故不判完全不支持；但旧稿三维（潜力/成长/恢复）是三个复合指数，本件用单指标替代，代理偏差
+      明确，且权重未裁定，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # ════════════ ENT-RECRUIT（E-26/E-27 引育推荐，9 条，含 4 条 GAP-*） ════════════
-  - metric_id: M_ENT_ATTRACTION_INDEX
-    metric_name_zh: "招引推荐指数"
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "深圳连接度维度无直接贴源字段（GAP-RECRUIT-METRIC-01）；政策匹配度跨政策域引用待打通"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_ENT_CULTIVATION_INDEX
     metric_name_zh: "培育推荐指数"
-    acceptance_unit_id: E-27
-    module: ENT-RECRUIT
+    acceptance_unit_id: "E-27"
+    module: "ENT-RECRUIT"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_industry_tags
+      、dwd_org_org_product_info…）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "企业潜力维度归属语义未定（GAP-RECRUIT-METRIC-02）；财务/研发源字段可得"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维成熟度：①产业相关度原料可算（tags 2283762 行+股东 400286 行图谱边+目录）✅；②政策匹配度缺 GPT
+      分类框架（政策库 content 96%、企业文本 45011 行 description 71.3%，但行动/话语两型契合的识别模型未建）❌；③企业潜力财务三指标：资产 2.9%、净利
+      润 2.6%、研发投入 arch_development_am 全空、营收 2.4%——低填充+一列空❌。三维一可两缺（GPT
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_ENT_RECOMMEND_COUNT
-    metric_name_zh: 推荐企业数
-    acceptance_unit_id: E-27
-    module: ENT-RECRUIT
+  - metric_id: M_ENT_DEEP_142_1
+    metric_name_zh: "企业发展历程模型"
+    acceptance_unit_id: "ALGO-ENT-DEEP-142"
+    module: "ENT"
     d1_def_status: aligned
-    d1_pending_ref: Q015
-    d1_note: "阈值=70 团队临时；招引/培育同一条；能算；只缺目标表；Q015 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_merger_acquisition_events_party_info、dwd_org_base_info、dwd_org_fi
+      nancing_info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "公式可算（INDEX≥70 COUNT）。缺口：无 enterprise_recommend_summary；INDEX 落表未建"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。五类事件只有两类带业务日期：E2 融资 24,598 条有 completion_date、E3 并购当事人 12,387 条
+      有公告日 ggrq（另有 1 条 1900-01-01 哨兵值）；E1 上市 listing_date 全库 0 行非空（listing_status 非空 1,971 家只有状态无日期）
+      ；E4 对外投资 46,967 行只有入库时间 created_time、无投资发生日；E5 股权结构 400,286 行为当
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
 
-  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
-    metric_name_zh: "产业匹配度"
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
+  - metric_id: M_ENT_DEV_HISTORY
+    metric_name_zh: "企业发展历程"
+    acceptance_unit_id: "E-DEEP-01"
+    module: "ENT-DEEP-GAP"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "[ENT-20260822] 结构 C：缺《中国投入产出表》，无法按原口径算产业匹配度/相关度"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_POLICY_MATCH_SCORE
-    metric_name_zh: 政策匹配度
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: draft
-    d1_pending_ref: Q015
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "企业标签（dwd_org_tag_info）可用；政策维标签分类体系跨域对齐待确认"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_GROWTH_POTENTIAL
-    metric_name_zh: "成长潜力"
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（ads_ent_rd_latest、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: full
-    d3_gap: "营收/研发/专利源字段可得；招引 vs 培育的归属语义（GAP-RECRUIT-METRIC-02）归 D1"
+    d3_gap: >
+      DWD 财务/专利/资讯表字段已对齐
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: GAP-RECRUIT-METRIC-01
-    metric_name_zh: 深圳连接度（未注册）
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: missing
-    d1_pending_ref: Q015
-    d1_note: "无直接贴源字段（K-O6）；需梳理投融资/子公司/供应链的深圳关联字段合成，未注册 metric_id"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: "wave0 业务态置灰「数据筹备中」"
-    d4_ingestion_status: n/a
-    legacy_mapping_status: "❌"
-
-  - metric_id: GAP-RECRUIT-METRIC-03
-    metric_name_zh: 企业行业领域排名（未注册）
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: missing
-    d1_note: "排名范围/排序字段/并列规则待下游定义，是否设独立 metric_id 未决"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: GAP-RECRUIT-METRIC-04
-    metric_name_zh: 可视化行业分布（未注册）
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: missing
-    d1_note: "统计量/分母/行业分类粒度待下游定义，是否设独立 metric_id 未决"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: GAP-RECRUIT-METRIC-05
-    metric_name_zh: 关键指标集合（未注册）
-    acceptance_unit_id: E-26
-    module: ENT-RECRUIT
-    d1_def_status: missing
-    d1_note: "指标集合展示顺序与汇总方式待 UX/前端定义；不创建笼统总分"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-    legacy_mapping_status: "⚠️"
-
-  # ════════════ ENT-KEYPANO（重点企业概览，8 条；metric_id 未入 seed，注册归 Q047） ════════════
-  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
-    metric_name_zh: 匹配企业数
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q038
-    d1_note: "未入 cfg_metric-ENT-seed；正式注册归 Q047"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "产业链→企业映射需 ADS 预聚合表 ads.enterprise_keypano_chain_node_summary（未建）；识别阈值临时"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
-    metric_name_zh: 覆盖企业类型数
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d1_note: "未入 cfg_metric-ENT-seed；正式注册归 Q047"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "enterprise_honor_tags.honor_type 可用；有效期口径歧义归 D1（Q010）"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
-    metric_name_zh: 整链资质分布
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d1_note: "未入 cfg_metric-ENT-seed；正式 metric_id 与地域聚合规则归 Q047"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "4×3 交叉分组源字段可得；资质口径依赖 Q010 闭合"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
-    metric_name_zh: 企业类型分布
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d1_note: "未入 cfg_metric-ENT-seed；多标签不可按互斥分类处理"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
-    metric_name_zh: 覆盖区域数
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q012
-    d1_note: "未入 cfg_metric-ENT-seed；密度分母与集聚指数公式归 Q012"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "国家/省/市三级行政区字段可用；区县仅地图展示深化不新增指标层"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
-    metric_name_zh: 区域分布
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q012
-    d1_note: "未入 cfg_metric-ENT-seed；强度颜色仅表达数量，不冒充密度/集聚指数"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "区域企业规模/占比（GAP-KEYENT-REGIONAL-SCALE/RATIO）无正式 metric_id 暂缺"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
-    metric_name_zh: 企业清单
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d1_pending_ref: Q038
-    d1_note: "未入 cfg_metric-ENT-seed；前端不展示评分/排名/风险/推荐"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "需 JOIN 四源表构建 ADS 视图 ads.enterprise_keypano_node_enterprise_list（未建）；产业链映射表待建"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
-    metric_name_zh: "领域摘要"
-    acceptance_unit_id: E-33
-    module: ENT-KEYPANO
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "关键词→领域→环节→链位映射规则未闭合；DEMO 以模糊匹配代理"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  # ════════════ ENT-STAR（E-34 明星企业介绍，5 条；SEARCH 复用 STAR_ENTERPRISE_COUNT） ════════════
-  - metric_id: M_ENT_STAR_ENTERPRISE_COUNT
-    metric_name_zh: 明星企业数量
-    acceptance_unit_id: E-34
-    module: ENT-STAR   # SEARCH 模块复用本条（Q037 两模块合并确认）
-    d1_def_status: aligned
-    d1_pending_ref: Q037
-    d1_note: "未入 cfg_metric-ENT-seed；待注册"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "以资质标签「明星企业」标记代理；认定级别/有效期规则待 Q037 闭合"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_STAR_BY_INDUSTRY
-    metric_name_zh: 明星企业行业分布
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: draft
-    d1_pending_ref: Q037
-    d1_note: "未入 cfg_metric-ENT-seed；待注册"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "industry_category / is_star 字段覆盖完整；统计规则随 Q037 调整归 D1"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_STAR_BY_REGION
-    metric_name_zh: 明星企业区域分布
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: draft
-    d1_pending_ref: Q037
-    d1_note: "未入 cfg_metric-ENT-seed；如按注册地而非总部展示需另确认区域口径"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "headquarters_city 字段覆盖完整"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_STAR_BASIC_INFO
-    metric_name_zh: 明星企业基础画像
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: draft
-    d1_note: "口径无歧义（✅）但未入 cfg_metric-ENT-seed；待王惠正式化时注册"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: ""
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "✅"
 
-  - metric_id: M_ENT_STAR_HONOR_LIST
-    metric_name_zh: 明星企业荣誉清单
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: draft
-    d1_note: "口径无歧义（✅）但未入 cfg_metric-ENT-seed；待王惠正式化时注册"
-    d2_schema_status: pending
+  - metric_id: M_ENT_DIVERSIFICATION_INDEX
+    metric_name_zh: "多元化指数"
+    acceptance_unit_id: "E-22"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
     d3_source_mapping_status: full
-    d3_gap: ""
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。gkx tags 2,283,762 行 industry_link_code 100% 可解析（JSON 数组串摊平）；摊平后
+      k=12148 节点、N=5319383 (节点,企业)对；Shannon 熵 H=4.2244、归一化 H*=0.4492 现算成功。结构+当前量+现转成功 → 完全转换支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
 
-  # ════════════ ENT-SHENZHEN（E-25 深圳企业现状分析，7 条） ════════════
-  - metric_id: M_ENT_SZ_COUNT
-    metric_name_zh: 深圳企业数量
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
+  - metric_id: M_ENT_DOMAIN_COVERAGE_BREADTH
+    metric_name_zh: "技术领域覆盖广度"
+    acceptance_unit_id: "E-22"
+    module: "ENT-SEARCH"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "[ENT-20260822] 结论 A 但不升 full：seed formula 仍含链位过滤，本轮不改 formula；D3 自 full 降 pending_ods"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_SZ_CHAIN_POSITION
-    metric_name_zh: 深圳产业链链位
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: full
-    d3_gap: ""
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：dwd_enterprise_industry_tags 标签分
+      类体系与业务口径是否一致待确认；临时按 tags 逗号分隔解析
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_KEY_NODE_COUNT
-    metric_name_zh: 关键节点数
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "[ENT-20260822] 结构 B：不靠企业挂接；dwd_industry_chain_info 只有分类树 parent_code/level，缺 SDPS 所需产业链有向网/供应边"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_CITY_AVG_TECH_POWER
-    metric_name_zh: 城市平均技术力
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: aligned
-    d1_pending_ref: Q014
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "依赖企业级技术力评分（转化/合作维度以资质标签代理）；Q016 对标城市集合影响计算范围"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: GAP-SZSTATUS-CITY-AVG-BUSINESS-POWER
-    metric_name_zh: 城市平均商业力（未注册）
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: missing
-    d1_pending_ref: Q014
-    d1_note: "Bid 明确要求但 cfg_metric-ENT-seed 未注册；严禁以竞争力/营收指标替代；待何老师确认后注册"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: "业务态显示正常不可用态"
-    d4_ingestion_status: n/a
-    legacy_mapping_status: "❌"
-
-  - metric_id: M_ENT_CITY_DENSITY
-    metric_name_zh: 企业密度
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: aligned
-    d1_pending_ref: Q016
-    d1_note: "分母锁 code_region.area；全国不算；area空该市空；挂 REGIONAL_COUNT；Q016 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "分母已锁 gkxlumenx_dim.code_region.area（有表有列）；缺口：area 灌数空则该市空；region_id 缺列在 REGIONAL_COUNT 叶；对标列 mock 不当接通"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_CHAIN_COMPLETENESS
-    metric_name_zh: 产业链完整度
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: aligned
-    d1_pending_ref: QC01
-    d1_note: "k/K×100；K=INB叶子；默认全目录；不加权；祖先不上卷；QC01 仍 🟡；D3/D4 未升未降"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "公式已定。缺口：DWD node_id 空、chain_code=IC-*；无项目叶子维表；region_id 缺列；结果列 mock 不当接通"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # ════════════ ENT-OVERVIEW（E-20/E-21/E-22 企业分析概述/类型/领域，10 条，L02 补录） ════════════
-  # 本段条目 cfg_metric-ENT-seed 已登记（2026-06-18 批），但未被 9 个 METRIC-OPEN 任务触达、
-  # 无 data-gap-catalog 依据：D1 按 seed 推导；D2 一律 pending（未逐条对照 DWD/ES/图 设计，
-  # 禁伪标 ready）；D3 一律 pending_ods（seed 旧 mapping_status 仅桌面推断，未经 GDF 字段级
-  # 核对，8/20 ODS 稳定后统一评估）；D4 一律 mock（Wave 0）。
-  - metric_id: M_ENT_TOTAL_COUNT
-    metric_name_zh: 企业总数
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_INNOVATIVE_COUNT
-    metric_name_zh: 创新型企业数
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q011
-    d1_note: "四码 little_giant/little_giant_pro/manufacturing_champion/innovative_sme；中文映射+曾获算；禁止 tag_name 含；Q011 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "公式可算。源 dwd_org_tech_tag 中文映射到四码；缺口：无 ads.ent_innovative_count"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_NEW_COUNT_Y
-    metric_name_zh: 历年新增企业数
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_note: "demo 页面以别名 M_ENT_NEW_COUNT 引用并展示「近 12 月」窗口；2026-08-01 项目负责人（淮政玮）确认与按年口径一致（展示窗口差异不阻塞），窗口正式表述随王惠正式化收口"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_AVG_RD_INVESTMENT
-    metric_name_zh: 平均研发投入
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_note: "demo 页面以别名 M_ENT_RD_INVEST_AVG 引用"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_TYPE_COUNT
-    metric_name_zh: 各类型企业数
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "标签源候选可见（dwd_org_tag_info / dwd_company_honor_tags / dwd_org_stock_base）；TRACE-ENT-KEYENT 标 mapped 但非 gap catalog 依据、未经 GDF 字段级核对；类型判定规则归 D1（Q010）"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_TYPE_MATCH_COUNT
-    metric_name_zh: 匹配企业总数
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q010
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "计算口径已定。中文标签→六码由项目对照，不算无法执行。外资/上市可不在 tech_tag，灌进 enterprise_tag 即可。D3/D4 本波不升。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_TYPE_RATIO
-    metric_name_zh: 类型占比
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_note: "派生自 M_ENT_TYPE_COUNT / M_ENT_TYPE_MATCH_COUNT，类型口径随 Q010 联动；UI-L02 防漏扫描补充发现（派单附录 28 条之外，demo 页面三元表达式引用致原审计漏检）"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "派生指标，随 M_ENT_TYPE_COUNT 源评估联动；未被 METRIC-OPEN 触达，8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "✅"
-
-  - metric_id: M_ENT_REGIONAL_COUNT
-    metric_name_zh: 区域企业数量
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q012
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "行政区字段源候选可见（dwd_org_reg_info / dwd_company_location_tags）；TRACE-ENT-KEYENT 标 mapped 但非 gap catalog 依据、未经 GDF 字段级核对；下钻精度归 D1（Q012）"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⚠️"
-
-  - metric_id: M_ENT_REGIONAL_DENSITY
-    metric_name_zh: 区域企业密度
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q012
-    d1_note: "与 CITY_DENSITY 同一套；分子挂 REGIONAL_COUNT 省市县；分母 code_region.area；国外/全国不算；area空该区空；Q012 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "分母已锁 gkxlumenx_dim.code_region.area（有表有列）；缺口：area 灌数空则该区空；region_id 缺列在 REGIONAL_COUNT 叶；无 ads.ent_regional_density"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_ENT_AGGLOMERATION_INDEX
-    metric_name_zh: 集聚指数
-    acceptance_unit_id: E-21
-    module: ENT-OVERVIEW
-    d1_def_status: draft
-    d1_pending_ref: Q012
-    d1_note: "demo 页面以别名 M_ENT_CLUSTER_INDEX 引用；formula（区位熵/基尼系数）待 algorithm-agent"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据；8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_ENT_DOMAIN_COVERAGE_COUNT
-    metric_name_zh: 覆盖领域数
-    acceptance_unit_id: E-22
-    module: ENT-OVERVIEW
+    metric_name_zh: "覆盖领域数"
+    acceptance_unit_id: "E-22"
+    module: "ENT-OVERVIEW"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据（seed mapping_status=✅ 仅桌面推断）；8/20 ODS 稳定后 GDF 统一评估"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_dim_admin_area、dwd_industry_chain_info、dwd_org_base_info、dwd_org_
+      industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。按 2026-08-27 锁定的 15 集群口径，本指标不可算——`industry_cluster` 与 `industry
+      _cluster_map` 在 gkx 280 表与 live 259 表中都不存在；按 12 条产业链根码代理可算，1,714,457 家去脏链属企业覆盖 12 条链，但**链不是集群*
+      *，故判 **部分支持**。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "✅"
 
   - metric_id: M_ENT_DOMAIN_COVERAGE_DEPTH
     metric_name_zh: "领域覆盖深度"
-    acceptance_unit_id: E-22
-    module: ENT-OVERVIEW
+    acceptance_unit_id: "E-22"
+    module: "ENT-OVERVIEW"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "chain_score 等源候选可见但未经 GDF 字段级核对；深度口径与加权归 D1（Q013）"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_base_info、dwd_industry_chain_info、dwd_org_industry_tags）；批量初
+      判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。王惠公式依赖 chain_info.level——实测全 0（[{'level': 0, 'n': 1273}]，1,273 
+      行无一例外），层级维无效；码深代理可得 12 条链的深度结构（最大深度分布 {3: 2, 4: 4, 5: 3, 6: 2, 7: 1}），tags 228 万行可关联企业命中深度。代理口
+      径需会签（语义=目录树深而非业务环节纵深）→ 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_ENT_DIVERSIFICATION_INDEX
-    metric_name_zh: "多元化指数"
-    acceptance_unit_id: E-22
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "未被 METRIC-OPEN 触达、无 gap catalog 依据；8/20 ODS 稳定后 GDF 统一评估"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # ════════════ ENT-DEMO-UNREGISTERED（demo 页面引用、seed 未登记，11 条，L02 补录） ════════════
-  # 本段 metric_id 未入 cfg_metric-ENT-seed：d1_def_status 一律 missing，d2~d4 = n/a
-  # （policy §2.3.1）；无 legacy_mapping_status（从未登记贴源状态）。正式注册待王惠正式化，
-  # UI 侧按 D1 missing 契约渲染红问号（只显治理引用，不显伪 8 件套）。
-  - metric_id: M_ENT_RESEARCHER_COUNT
-    metric_name_zh: 企业科研人数（未注册）
-    acceptance_unit_id: E-31
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；TRACE-E31 已登记为新增自定义指标（加工逻辑/ADS 来源未确认）"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
-    metric_name_zh: 覆盖未来产业数（未注册）
-    acceptance_unit_id: E-31
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；TRACE-E31 登记为按数据实际覆盖动态计算，正式 metric_id 未确认"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_KEY_TOTAL
-    metric_name_zh: 重点企业总数
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: aligned
-    d1_pending_ref: Q038
-    d1_note: "ALGO-LIB-T0X-REGISTER-L01 已写入 seed 身份；algorithm_type=UNKNOWN；阈值仍归 Q038，不视为王惠已正式化。D2/D3/D4 维持原值。"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_REGION_COVERAGE
-    metric_name_zh: 区域覆盖数（未注册）
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: missing
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；企业总览 tab KPI，覆盖口径（层级/分母）未定义"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_REGION_HOT_COUNT
-    metric_name_zh: 热点区域数（未注册）
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: missing
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；企业总览 tab KPI，「热点」判定语义未定义"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_CHAIN_STAGE_COVERAGE
-    metric_name_zh: 产业链环节覆盖（未注册）
-    acceptance_unit_id: E-20
-    module: ENT-OVERVIEW
-    d1_def_status: missing
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；与 M_ENT_CHAIN_COMPLETENESS（E-25）语义相近，是否合并未经确认、不做别名归一"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_PATENT_VALID_COUNT
-    metric_name_zh: 有效专利数（未注册）
-    acceptance_unit_id: E-30
-    module: ENT-EVAL
-    d1_def_status: missing
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；UX 权限交互规范曾引用；与 M_ENT_PATENT_TOTAL（授权累计）/ M_ENT_PATENT_GRANT_COUNT 口径不同（有效=在权），禁止别名合并；demo 竞争力/引育/查询配置均有引用"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_CITY_RANK
-    metric_name_zh: 多城市对标排名（未注册）
-    acceptance_unit_id: E-25
-    module: ENT-SHENZHEN
-    d1_def_status: missing
-    d1_pending_ref: Q016
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；对标城市集合归 Q016（UX 权限交互规范曾以 ⚠️Q016 引用）"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_STAR_PATENT_COUNT
-    metric_name_zh: 明星企业专利数（未注册）
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: missing
-    d1_pending_ref: Q048
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记（范围待 Q048，正式口径前标 DEMO）"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_STAR_RD_RATIO
-    metric_name_zh: 明星企业研发投入占比（未注册）
-    acceptance_unit_id: E-34
-    module: ENT-STAR
-    d1_def_status: missing
-    d1_pending_ref: Q048
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记，或可对齐 M_ENT_RD_INVESTMENT_RATIO（待口径确认，不预先别名合并）"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-  - metric_id: M_ENT_STATE_OWNED_COUNT
-    metric_name_zh: 国有企业数（未注册）
-    acceptance_unit_id: E-35
-    module: ENT-SHENZHEN
-    d1_def_status: missing
-    d1_pending_ref: Q049
-    d1_note: "未入 cfg_metric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.3 登记（UI 曾用本 ID、须补种子，正式建议 M_ENT_SZ_SOE_COUNT，归 Q049）"
-    d2_schema_status: n/a
-    d2_assessed: provisional
-    d3_source_mapping_status: n/a
-    d3_gap: ""
-    d4_ingestion_status: n/a
-
-
-  # --- METRIC-SEED-REGISTER-L01 OPEN 新号 ---
-  - metric_id: M_ENT_CITY_COMPARE_TOPIC
-    metric_name_zh: "多城市企业群对标值"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ENT-06"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
   - metric_id: M_ENT_DOMAIN_DIST_TOPIC
     metric_name_zh: "企业领域分布"
     acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
+    module: "TOPIC-ENT"
     d1_def_status: aligned
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_dim_admin_area、dwd_id、dwd_industry_chain_info、dwd_org_industry_ta
+      gs…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件能给出**单期 × 12 条产业链**的家数与占比，不能给出**年度 × 15 集群**的分布与同比：链归属表没有 `st
+      at_year`，15 集群目录与 map 两库均无，故判 **部分支持**。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_PAINPOINT_TOPIC
-    metric_name_zh: "发展痛难点诊断"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ENT-09"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_REGIONAL_COUNT_TOPIC
-    metric_name_zh: "区域企业数量规模占比"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: aligned
-    d1_pending_ref: "Q-MO-ENT-02"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_SUPPLY_STRUCT_TOPIC
-    metric_name_zh: "供应链结构指标"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_SZ_LIST_TOPIC
-    metric_name_zh: "深圳企业清单与链中角色"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: aligned
-    d1_pending_ref: "Q-MO-ENT-05"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_TYPE_DIST_TOPIC
-    metric_name_zh: "重点企业类型分布"
-    acceptance_unit_id: "TOPIC-ENT-05"
-    module: TOPIC-ENT
-    d1_def_status: aligned
-    d1_pending_ref: "Q-MO-ENT-01"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-# ============================================================================
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
-  - metric_id: M_ENT_BASE_97_4
-    metric_name_zh: "重点资讯统计"
-    acceptance_unit_id: "ALGO-ENT-BASE-97"
-    module: ENT
-    d1_def_status: aligned
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ENT_DEEP_142_1
-    metric_name_zh: "企业发展历程模型"
-    acceptance_unit_id: "ALGO-ENT-DEEP-142"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
   - metric_id: M_ENT_DS_02_ENTITY_004
     metric_name_zh: "[新增] 技术点影响力"
     acceptance_unit_id: "DS-02-ENTITY-004"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_base_info_patent_rel、dwd_org_tech_tag、dwd_p
+      atent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。技术点本体（graph_node 的技术实体类型）、技术点—实体边、tech_power_index 三者在 gkx 均无源；
+      本件用 IPC 小类 + 关联企业资质覆盖率做两处代理，只交付「规模×质量」的代理影响力，不交付甲方口径的综合影响力。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_004
     metric_name_zh: "科学影响力评估"
     acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-004"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 13 张 gkx 表可查（dwd_author_foreign_org_base_info_rel、dwd_author_org_base_info_rel、dw
+      d_en_author、dwd_en_paper…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。被引维可算（zh 论文 100,900 + 被引表 20,031 行合计 144020 次，100% 有值；en 论文仅 1,
+      387 且被引字段缺待建）；国际合作维断链：dwd_author_foreign_org_base_info_rel 缺表（境外关联无承载）；产业映射断链：dwd_author_org_b
+      ase_info_rel 缺表——作者→机构→产业 入集不可达。对象=产业科研产出集合，产业入集断则指标无法按口径产出（仅全库
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_005
     metric_name_zh: "技术影响力评估"
     acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-005"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_bid_target_item_out、dwd_org_base_info、dwd_patent、dwd_patent_cited
+      ）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。被引子项的结构在（`dwd_patent_cited` 有 `pn`、`cited_n`），数据只覆盖 2 万件（0.6803
+      %）；SEP 子项两库连表都没有。一个子项「样本受限」、一个子项「结构缺失」，合成总分不可算，故判**部分支持**，证型 `partial_sample`。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ENT_DS_07_INDUSTRY_POTENTIAL_006
     metric_name_zh: "产业发展潜力综合评估"
     acceptance_unit_id: "DS-07-INDUSTRY-POTENTIAL-006"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_industry_tags、dwd_org_shareholder_info、dwd_org_stock_finance_
+      info、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。eval_weight（用户权重表）不存在，但五维里有四维能找到链级代理且都是真数：专利密度、K 覆盖率、样本营收、专利总量，
+      12 链齐全。等权替代权重后综合分与排名可直接产出，故不判完全不支持；科学影响力维无载体、产值只有样本、权重非甲方值，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_FUTURE_INDUSTRY_COVERAGE_COUNT
+    metric_name_zh: "覆盖未来产业数"
+    acceptance_unit_id: "E-31"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；TRACE-E31 登记为按数据实际覆盖动态计算，正式 metric_id 未确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。核心依赖是「未来产业目录 + 企业/链到目录的映射」，这两张表在 gkx 与 live **都不存在**（不是空表，是无表）；
+      唯一能接住的是 12 条链的链名，而 12 条链最多只能覆盖 5 类中的 4 类。故判**部分支持**，证型为 `negative_evidence`（否定性证据），证据同时区分「gkx 
+      无表」与「live 无结果面」。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_ENT_GRAPH_108_1
     metric_name_zh: "企业实体识别构建"
     acceptance_unit_id: "ALGO-ENT-GRAPH-108"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_invest_info、dwd_org_shareholder_info、dwd_pa
+      tent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。graph_node 结果面不存在，但实体库的骨架可以从结构化表直接建起来：189,116 个节点（org_id 唯一）、11
+      7,001 条关系边（其中 116,997 条两端都在主档内）、属性覆盖率可逐项统计，图结构（连通分量、度分布、孤立率）也能算。缺的是新闻文本的 NER 抽取与实体链接，以及节点权重与标注
+      集验收，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ENT_GRAPH_109_1
     metric_name_zh: "企业实体关系抽取"
     acceptance_unit_id: "ALGO-ENT-GRAPH-109"
-    module: ENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_industry_tags、dwd_org_invest_info、dwd_org_shareholder_info、dw
+      d_patent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。9 类关系里，投资/归属/产业所属/技术应用 4 类有边（技术应用是「申请人 × IPC」代理），科研合作只有 14 对，人才
+      /政策/服务/合作 4 类连外键都没有。关系覆盖率 4/9 = 44.4444%，但其中 1 类是代理，严格直取只有 3/9 = 33.3333%。故判**部分支持**，证型 `parti
+      al_relation_coverage`。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-# 汇总（75 条 = L01 53 + L02 补录 22）：
-#   模块：EVAL 13+1 | SEARCH 3 新增（另复用 6 条）| RISK 8 | RECRUIT 9（含 GAP×4）| KEYPANO 8
-#         | STAR 5+2 | SHENZHEN 7+2 | OVERVIEW 11+6（L02，E-20~E-22/E-31）
-#   D1: aligned 15 | draft 44 | missing 16（GAP-RECRUIT-01/03/04/05 + GAP-SZSTATUS + L02 未注册 11）
-#   D2: ready 11 | partial 1（SHORTBOARD）| missing 1（MARKET_SHARE）| pending 46（非 EVAL 模块待评估，含 L02 OVERVIEW 11）| n/a 16
-#   D3: full 24 | partial 23 | none 1（MARKET_SHARE/Q019）| pending_ods 11（L02 OVERVIEW，8/20 后统一复判）| n/a 16
-#   D4: mock 59 | n/a 16
-#   别名：0 条（原 9 条已于 2026-08-01 按正名更新 demo 后收口，头部留存历史对照）
-# 待办：①非 EVAL 模块 D2 待架构/data-agent 首评（pending→ready/partial/missing）
-#       ②lineage-subcoord 核验 EVAL D2 → verified ③8/20 ODS 稳定后 GDF 复判 D3（含 L02 pending_ods 10 条）
-#       ④KEYPANO/STAR 未注册 metric_id 待王惠正式化提交时入 seed（KEYPANO 归 Q047）
-#       ⑤L02 未注册 11 条待王惠正式化入 seed 后升 D1（含窗口/合并口径确认：NEW_COUNT 窗口、CHAIN_STAGE_COVERAGE 合并、STAR_RD_RATIO 对齐）
-# ============================================================================
+  - metric_id: M_ENT_GROWTH_POTENTIAL
+    metric_name_zh: "成长潜力"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info）；批量初判 provisional，待 l
+      ineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      营收/研发/专利源字段可得；招引 vs 培育的归属语义（GAP-RECRUIT-METRIC-02）归 D1
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_HIGH_TECH_COUNT
+    metric_name_zh: "高新技术企业数（高企数量）"
+    acceptance_unit_id: "E-20"
+    module: "ENT-SEARCH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_tech_tag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。监管已确认口径（tag_code='high_tech'，中文洗数不算无法执行）：gkx dwd_org_tech_tag 20
+      2,424 行，三中文名命中 62,583 行、去重企业 27,936 家现算成功；LIKE 模糊核查无第四变体（fuzzy 列表可控）。结构与当前量均足、现转成功 → 完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_INDUSTRY_MATCH_SCORE
+    metric_name_zh: "产业匹配度"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_industr
+      y_tags、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：[ENT-20260822] 结构 C：缺《中国投入产出表》，无法按
+      原口径算产业匹配度/相关度
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_INNOVATION_INDEX
+    metric_name_zh: "创新能力指数"
+    acceptance_unit_id: "E-30"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（ads_ent_innovation_index、dwd_org_annual_financial_info、dwd_org_rd_ach
+      iev_info、dwd_org_tech_tag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。14 项三级指标中：专利三项原料足（294 万专利+法务 20,000 行）；财务侧薄填充（研发 0/90926、研发人员 0
+      、从业 3184）；五项 calc-logic 自标待建复核确认零承载（{'capitalized_rd_field': 0, 'research_platform_table': 0, 
+      'education_structure_field': 2, 'software_copyright_table': 0,
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_INNOVATIVE_COUNT
+    metric_name_zh: "创新型企业数"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：四码 littl
+      e_giant/little_giant_pro/manufacturing_champion/innovative_sme；中文映射+曾获算；禁止 tag_name 含；Q011 仍 🟡
+      ；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_tech_tag、dwd_patent）；
+      批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。库内没有「创新型企业数」现成结果面（live `ads` 侧无同名指标表），但依赖表 `gkx.dwd_org_tech_tag
+      ` 结构完整、202,424 行、32,322 家机构，四类名单标签全部命中，且 `org_id` 与 18.9 万行底册的主键匹配率 **99.997%**，城市维可直接落表——结构与数
+      据双满足，属**完全转换支持**。本档位与 `code/M_ENT_INNOVATIVE_COUNT_out.json` 的
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_KEYPANO_DOMAIN_SUMMARY
+    metric_name_zh: "领域摘要"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_en_paper、dwd_industry_chain_info、dwd_org_base_info、dwd_org_indust
+      ry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。王惠五步法逐环实测（三方库 gkx）：①链位归集断——chain_info.level 全 0（分布 [{'level': 0
+      , 'n': 1273}]），上/中/下游分组键无从取值，且 tags×chain_info 关联 0 行（链路码体系不匹配）；②文本源在——专利 2,939,895 行且 keyword
+      s 列样本填充率 100.0%，论文 zh 100900 篇 + 作者单位 23327 机构（名称可对齐企业），但英文侧仅 1
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_KEYPANO_ENTERPRISE_LIST
+    metric_name_zh: "企业清单（当前链位）"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；前端不展示评分/排名/风险/推荐
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_dim_admin_area、dwd_id、dwd_industry_chain_info、dwd_org_base_info…）
+      ；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。成员表结构可算：上链边（dwd_org_industry_tags，2,283,762 行）在，链位可由一级环节码映射，区域/
+      资质只在查询时 JOIN，公式可完整执行，实出 31 个链×链位格、5,196 行成员、2,105 家企业。但两条依赖不可靠：①名单是代理——gkx 280 张表按 keypano/key
+      _/important/focus/star/honor/roster 八个模式扫描只命中 dwd_org_important
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_MATCH_COUNT
+    metric_name_zh: "匹配企业数"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；正式注册归 Q047
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_dim_admin_area、dwd_industry_chain_info、dwd_org_base_info、dwd_org_
+      industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。COUNT 本身可以算完：上链边 2,283,762 行在，按 chain×node_stage 去重出 31 个非空格，去重
+      企业 2,105 家、格内合计 5,196 人次；链级去重 12 条、合计 4,464 对。但分子两端都不是库里的现成事实：①重点名单不存在——280 张表八个名单模式扫描只命中新闻表，只
+      能用专利授权≥50 的 4,561 家代理，命中率 50.2302% 是「代理名单的上链率」，不是「重点企业上链率」；②链位不
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_QUAL_DISTRIBUTION
+    metric_name_zh: "整链资质分布"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；正式 metric_id 与地域聚合规则归 Q047
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_corp_basic_info、dwd_dim_admin_area、dwd_org_base_info、dwd_org_indu
+      stry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      4×3 交叉分组源字段可得；资质口径依赖 Q010 闭合
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_COUNT
+    metric_name_zh: "覆盖区域数"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；密度分母与集聚指数公式归 Q012
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_dim_admin_area、dwd_org_base_info、dwd_org_industry_tags）；批量初判 prov
+      isional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      国家/省/市三级行政区字段可用；区县仅地图展示深化不新增指标层
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_REGIONAL_DISTRIBUTION
+    metric_name_zh: "区域分布"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；强度颜色仅表达数量，不冒充密度/集聚指数
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_dim_admin_area、dwd_org_base_info、dwd_org_industry_tags）；批量初判 prov
+      isional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      区域企业规模/占比（GAP-KEYENT-REGIONAL-SCALE/RATIO）无正式 metric_id 暂缺
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_TYPE_COUNT
+    metric_name_zh: "覆盖企业类型数"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；正式注册归 Q047
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags、dwd_o
+      rg_tech_tag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      enterprise_honor_tags.honor_type 可用；有效期口径歧义归 D1（Q010）
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEYPANO_TYPE_STRUCTURE
+    metric_name_zh: "企业类型分布（当前链位）"
+    acceptance_unit_id: "E-33"
+    module: "ENT-KEYPANO"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；多标签不可按互斥分类处理
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags、dwd_o
+      rg_tech_tag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。`COUNT(DISTINCT org_id)` 按三元组分组，动
+      作简单；但「类」要归并、「名单」要代理、「链位」要映射。三处都已在同族正例里摸过，本件不重复探路，直接沿用并补齐 `(链, 链位, 类)` 三元组的完整性检查，故判**部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_KEY_NODE_COUNT
+    metric_name_zh: "关键节点数"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。在 gkx 的 12 条重点产业链（1,273 个环节、954 个叶、最大深度 7）上跑 SDPS：同分同轮得到 **4 层 
+      shell**——SDPS=1 有 966 个（12 根 + 954 叶，占 75.8837%）、SDPS=2 有 235 个、SDPS=3 有 66 个、SDPS=4 有 6 个。若把「
+      关键」定义为 SDPS≥3，答案是 **72 个（5.6559%）**；定义为 ≥4 只有 **6 个（0.4713%）**；
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_KEY_TOTAL
+    metric_name_zh: "重点企业总数"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：ALGO-LIB
+      -T0X-REGISTER-L01 已写入 seed 身份；algorithm_type=UNKNOWN；阈值仍归 Q038，不视为王惠已正式化。D2/D3/D4 维持原值。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_id、dwd_org_base_info、dwd_patent）；批量初判 provisional，待 lineage-subco
+      ord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。专利阈值口径现算成功：dwd_patent 294 万按第一当前受让人聚合，≥50 件的去重受让人 6,917 家（分布 {'5
+      0-99': 4093, '100-499': 2398, '500-1999': 330, '2000+': 96}；头部 79,089 件）。受让人→org_id 映射为 ETL 对齐
+      步骤（名称归一），结构+当前量+现转成功 → 完全转换支持。（Q038 阈值 50 仍🟡临时值；技术交易额版搁置不影响本判定
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_MARKET_SHARE
+    metric_name_zh: "市场份额"
+    acceptance_unit_id: "E-24"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_finance_annual、dwd_org_finance_stock）；批量初判 
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。市场份额的分母（市场规模/行业产值/第三方市占率）在 gkx 完全没有来源，chain_market 表不存在；分子侧只有 0.7
+      3% 的企业有营收（1,388/189,116），且集中在上市公司。分母无源、分子极稀疏，比率不成立。链内样本份额试算已做，但其分母是样本营收而不是市场规模，属构造性偏差，明确否决。故判完
+      全不支持，只写需求与恢复路径。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "❌"
+
+  - metric_id: M_ENT_NEW_COUNT_Y
+    metric_name_zh: "历年新增企业数"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：demo 页面以
+      别名 M_ENT_NEW_COUNT 引用并展示「近 12 月」窗口；2026-08-01 项目负责人（淮政玮）确认与按年口径一致（展示窗口差异不阻塞），窗口正式表述随王惠正式化收口
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info）；批量初判 provisional，待 lineage-subc
+      oord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。国内主档 189,116 行中注册日有效 188,762（99.81%）、国外主档 20,000 行中有效 16,037（80.
+      19%），按年 GROUP BY 一次即得 1980—2026 共 47 年序列（累计 201,807）；结构与当前数据量均足、脚本已现转出数，缺的只是目标结果表而非数据。国外侧 coun
+      try 列全空不影响「按年计数」，只影响「按国家拆分」这一子维度（另见 §四）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_NODE_CENTRALITY
+    metric_name_zh: "供应链中心性"
+    acceptance_unit_id: "E-28"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_bid_purchase_agency_out、dwd_industry_chain_info、dwd_org_base_info
+      、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。公式 deg/(|V|-1) 与建图流程可复现，但 gkx 无企业×企业供应链边表，只能用投资/股东/子公司三类股权边建代理图
+      ；供应链语义维度整块缺失。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_COUNT
+    metric_name_zh: "企业痛点数量"
+    acceptance_unit_id: "E-29"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_company_abnormal、dwd_org_company_illegal、dwd_org_company_puni
+      sh、dwd_org_company_tax_punish…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。enterprise_diagnosis 结果面不存在，但痛点的六类原始表都是真表真数：经营异常 5,862 条、严重违法 2
+      47 条、行政处罚 65,997 条、失信 76,035 条、被执行 550,334 条、税务处罚 528 条，合计 69.9 万条、覆盖 35,000 家以上主体。逐企业计数可直接 GR
+      OUP BY org_id 得到，故判部分支持；缺口是痛点类型只覆盖合规侧（无经营/舆情痛点），且逐企业明细受查询时限限制只落
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_GAP
+    metric_name_zh: "痛难点改进差距"
+    acceptance_unit_id: "E-29"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_income_statem
+      ent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。差值的分组基线在库内无配置表（名称含 baseline/p25/p75/quantile/percentile/diagnos
+      is 的表 0 张），只能在线算分位；六项原料里研发人员占比整列为空（development_employee 非空 0/90926），营收增长率配对仅 17 家；其余四项可算但覆盖 69
+      9—1,242 家，行业门类样本≥30 的组 8 个、可打分主体 1131 家。有算子、有真数、缺维度与样本，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_SEVERITY
+    metric_name_zh: "痛难点严重度"
+    acceptance_unit_id: "E-29"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（ads_ent_painpoint_severity）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。阈值配置表（Q014）在 live 开发库 gkxlumenx_dwd/ads 均无——王惠口径的分档依赖阈值，缺配置即无法正
+      式出档；人才维研发人员全空（0 行）+ 财务原料填充 2-3%（营收 2.41%）不足以支撑全国企业分档；降级轨：行业 P25 代理 + 等权下可对 34 家出偏离度，其中 6 家存在偏离
+      （分档分布 {'无偏离(轻0)': 28, '轻度(0-20%)': 0, '中度(20-50%)': 1, '重度(>50%
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PAINPOINT_TOPIC
+    metric_name_zh: "痛点主题"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_company_abnormal、dwd_org_company_illegal、dwd_org_company_puni
+      sh、dwd_org_risk_shixin…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。痛点诊断结果面不存在，但主题构造所需的结构化原因字段在库内是真实的：经营异常 5,862 条带 abn_reason 原文（可
+      拆四类），失信 76,035、被执行 550,334、处罚 65,997、严重违法 247、税务处罚 528 都能直接映射主题，合计 69.9 万条。规则主题可复现、可对回原始记录，故判部
+      分支持；缺少经营侧痛点与语义主题，主题体系只覆盖合规侧。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_PATENT_GRANT_COUNT
+    metric_name_zh: "专利授权量"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_base_info、dwd_patent、dwd_patent_assignees、dwd_patent_bak_2026
+      0912…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。gkx 全库授权 2,140,420 件，其中 **1,903,793 件（88.9448%）** 能按名称归到企业主档，落到 
+      **143,754 家**「至少有一件授权」的企业（占底册 189,116 家的 76.0137%）；另有 13,609 家企业「有公开、无授权」。企业级中位 4 件、均值 12.0981
+      件、P99 107 件、最大 18,235 件（华南理工大学）。整体授权率 74.4469%，高于全库 72.806%。纯
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_PATENT_TOTAL
+    metric_name_zh: "专利总量"
+    acceptance_unit_id: "E-20"
+    module: "ENT-SEARCH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_forg_patent、dwd_org_base_info、dwd_patent、dwd_patent_assignees…）；批
+      量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。gkx 有 **2,939,895 件**专利，其中能按名称归到企业主档的有 **2,557,248 件（86.9843%）**
+      ，落到 **157,363 家**企业（占底册 189,116 家的 83.2098%）；另有 382,647 件（13.0157%）因申请人名称对不上而按口径 drop。平均每家 16.
+      2506 件、中位 5 件、P99 135 件、最大 81,376 件（华为）。授权口径 1,903,793 件，授权率 7
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_PATENT_VALID_COUNT
+    metric_name_zh: "有效专利数"
+    acceptance_unit_id: "E-30"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；UX 权限交互规范曾引用；与 M_ENT_PATENT_TOTAL（授权累计）/ M_ENT_PATENT_GRANT_COUNT 口径不同（有
+      效=在权），禁止别名合并；demo 竞争力/引育/查询配置均有引用
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info、dwd_patent、dwd_patent_…）；批量初判 pr
+      ovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。法律状态表仅 20,000 行（主表 2,939,895 件的 0.68%），且与主表按 patent_id / pn 仅 3
+      .0% 可连接（500 条探针命中 15 条），说明该样本是独立抽样、不是主表子集；样本内 12,658 件可判「授权」，经权利人名称归一映射仅落到 147 家底册企业、471 件专利，对
+      189,116 家底册覆盖率 0.07%——属抽样级证据，不能支撑企业级全量有效专利数。公式与链路闭合、可现算，但数据量不足
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_POLICY_MATCH_SCORE
+    metric_name_zh: "政策匹配度"
+    acceptance_unit_id: "E-26"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_tech_tag、dwd_policy_b
+      ase）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。政策侧 theme/keywords/keypoints 三列不可用、policy_support 全为 JSON null 
+      占位，三个子项只能退化为标题文本匹配；权重 Q015 未签，0.4/0.35/0.25 为本件默认值。分数可算、可排序，但不是甲方定义的政策匹配度。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_PROFIT_MARGIN
+    metric_name_zh: "企业净利率"
+    acceptance_unit_id: "E-24"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_annual_report_asset、dwd_org_bas
+      e_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。净利率公式本身在 gkx 可算：年报财务表 2,095 组「正营收
+      +非空净利」、资产表 11,650 组可解析数值对，合并去重后 6526 家企业出数；但相对 189,116 家底册只覆盖 3.4508%，且资产表 527,034 行里未披露营收的行占绝
+      大多数、研发投入两列（arch_development_am / development_employee）全为 0，无法做研发口径的交叉校验——
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_RD_INVESTMENT_RATIO
+    metric_name_zh: "研发投入占比"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_foreign_org_annual_financial_info、dwd_org_annual_financial_info、d
+      wd_org_stock_finance_info、dwd_rd…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。公式与源字段均已闭合（arch_development_am / operating_revenue / year 三列齐备）
+      ，但研发投入列在全库为空：ODS 年报财务 90,926 行填充 0、工商年报资产表 527,034 行填充 0、DWD 财务年表 80,531 行填充 0。唯一有研发费用的上市财务表被口
+      径明令禁止替代年报，且仅覆盖约 0.5% 底册。属「结构与公式齐、值侧为空」的值缺失，按 §〇「始终有部分依赖维度得不到足够数
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_RECOMMEND_COUNT
+    metric_name_zh: "推荐企业数"
+    acceptance_unit_id: "E-27"
+    module: "ENT-RECRUIT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：阈值=70 团队
+      临时；招引/培育同一条；能算；只缺目标表；Q015 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_invest_info、dwd_org_shareholder_info）；批量初判 
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。计数链路可跑通：95,652 个节点有度中心度，去重键 org_id 齐备，重算最大值 0.561416 与上游 0.5614
+      16 一致；但阈值 70 在原始 0—1 标度上不可达（最大 0.5614），严格计数只能得 0；按最大值拉到 0—100 才有 2 家过线，这一步是标度修复、需甲方确认；培育指数完全没有
+      企业级分数，只能输出 null。上游只覆盖有投资/股东边的企业，未建边的企业不参与，属覆盖缺口。故判部分支持，且拒绝把 0 当
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_REGIONAL_COUNT
+    metric_name_zh: "区域企业数量"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_dim_admin_area、dwd_forg_base_info、dwd_org_base_info）；批量初判 provisi
+      onal，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。省/市/县三级区域键在 gkx.dwd_org_base_info 全部有承载（30 省 / 66 市 / 142 区县名），一
+      次 GROUP BY 即得目标形态；区域码可由 gkx.dwd_dim_admin_area 中文名等值绑定，市级绑定覆盖 99.9995%（189115/189116），区县级绑定覆盖 
+      98.0462%（152407/155444）；缺的只是目标结果表（库内无企业区域汇总落表），属结构+数据均够、需一次转换。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_REGIONAL_COUNT_TOPIC
+    metric_name_zh: "区域企业数量规模占比"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。年 × 省/市的家数与份额在现有底册上「算得出、闭得上」，2025 年队列 3,061 家、深圳 1,495 家（48.84%
+      ）四市合计恰好 100.00%；但底册是**当前名录**而非逐年名录快照，且 99.82% 在广东、无 `region_id`，所以判 **部分支持**，不是完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_REGIONAL_DENSITY
+    metric_name_zh: "区域企业密度"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：与 CITY_D
+      ENSITY 同一套；分子挂 REGIONAL_COUNT 省市县；分母 code_region.area；国外/全国不算；area空该区空；Q012 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_dim_admin_area、dwd_heis_info、dwd_macro_index_data、dwd_org_base_in
+      fo…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。分子侧完全就绪（189,116 家企业可按省/市/县三级聚合），但分母「行政区土地面积」在 gkx 内不存在：informat
+      ion_schema 全库 15 个 area/面积 相关列全部是编码或名称，无数值型面积列；区划维表 dwd_dim_admin_area（20,000 行）也不含面积字段。按口径「ar
+      ea 空该区空」，交付 0 行；有分子、有层级、无分母，故判部分支持而非完全不支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_REGION_COVERAGE
+    metric_name_zh: "区域覆盖数"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；企业总览 tab KPI，覆盖口径（层级/分母）未定义
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_dim_admin_area、dwd_org_base_info）；批量初判 provisional，待 lineage-subc
+      oord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全直接支持 → D3=full。calc-logic 的源表字段就是 gkx.dwd_org_base_info(org_id, province, city)
+      ，去重计数即定义本身，无需换算、无需补维：实测 189,116 行底册可得 29 个省级、65 个市级、146 个县级覆盖格，province/city 非空率 99.9995%。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_REGION_HOT_COUNT
+    metric_name_zh: "区域热点企业数（未注册）"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；企业总览 tab KPI，「热点」判定语义未定义
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。区域家数分布可由 gkx.dwd_org_base_info 一次 GROUP BY city 得到，TOP N 求和与集中度均
+      为确定性派生；结构+数据量均够，缺的只是 N 的甲方取值与目标表。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_RELATION_STRENGTH
+    metric_name_zh: "关系强度"
+    acceptance_unit_id: "E-28"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_bid_base_out、dwd_org_base_info、dwd_org_industry_tags、dwd_org_inve
+      st_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。关系强度在 calc-logic 里是「一条边 + 一个档」，主口径只看投资金额落在哪个区间，两条辅证用来「作证」。gkx 里
+      主口径的源表与金额都在，档位当场可切；但两条辅证各自对应的表一张都没有。也就是说：**能算出主档，但算不出 calc-logic 要求的「三源互证」**。按四档定义，这属于「始终有部分依赖
+      维度无法得到足够数据」，判**部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_RESEARCHER_COUNT
+    metric_name_zh: "企业科研人数"
+    acceptance_unit_id: "E-31"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；TRACE-E31 已登记为新增自定义指标（加工逻辑/ADS 来源未确认）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_foreign_org_annual_financial_info、dwd_foreign_org_annual_financia
+      l_info_bak_20260911、dwd_org_annual_financial_info、dwd_org_annual_financial_info_bak_20260911…）
+      ；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。口径所需的两个字段在 gkx 内均为整列空值：国内 dwd_org_annual_financial_info.developme
+      nt_employee 在 90,926 行中非空 0 行、>0 0 行；国外 dwd_foreign_org_annual_financial_info.rd_staff 在 51 行中
+      非空 0 行、>0 0 行。第三候选 dwd_org_annual_report_asset.yfrysl 在 527,0
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_REVENUE_GROWTH_RATE
+    metric_name_zh: "营收增长率"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_report_asset、dwd_org_stock_finance_info）；批量初判 provisio
+      nal，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。gkx 里能算出 **782 个**「企业-年」营收同比，覆盖 *
+      *398 家**（占底册 0.2105%），中位数 **9.0409%**；但 2,193 行非空营收里有 **1,411 行**成不了对（上年缺行 373 行、上年为空 1,038 行、
+      上年为 0 行 0 行），且 **96 对**增幅超过 1,000%、**110 对**跌幅超过 90%，绝大多数是「元/万元」混填造成的量级跳变
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_REVENUE_LATEST
+    metric_name_zh: "营收（最新年度营业收入）"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_foreign_org_annual_financial_info、dwd_org_annual_financial_info、d
+      wd_org_annual_report_asset、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。gkx 里有 **1,302 家**机构能算出「最新年度营业收入」
+      ，中位数 **16,553.27 元**、均值 **138,963,840.3824 元**、P90 **80,058,401.21 元**、最大 **29,800,924,733.43 
+      元**（深圳市燃气集团 2025 年）；但占底册 189,116 家的 **0.6885%**，且 2,032 对跨表可比记录里 **70.62%
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_SHORTBOARD_COUNT
+    metric_name_zh: "短板指标数"
+    acceptance_unit_id: "E-30"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：同业=同链同年；
+      空值不判；L3 跟 SCORE；能算；只缺目标表；Q014 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_market、dwd_org_annual_financial_info）；批量初判 provisional，待 lineage-
+      subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。九个 L3 里 6 项可从 gkx 年报财务表算出、3 项无原料（学历无字段 / 研发人员整列为空 / 市占率仅 15 行），
+      且能判定的企业只占底册的极小比例；同链同年均值在本库是小样本，按 min_peers=5 有大量 cell 不判。结构与数据都在，但覆盖不足 → 部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_STAR_BASIC_INFO
+    metric_name_zh: "明星企业基础画像"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：口径无歧义（✅）
+      但未入 cfg_metric-ENT-seed；待王惠正式化时注册
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_stock_finance
+      _info、dwd_org_tech_tag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。gkx 280 张表无任何 star/honor/award/re
+      cogni 语义表，明星名单只能用「专利授权≥50」造代理；画像的属地/行业/成立年/规模字段近满覆盖，但营收 11.66%、员工 6.64%，规模画像基本空白。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_STAR_BY_INDUSTRY
+    metric_name_zh: "明星企业行业分布"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；待注册
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（ads_ent_star_industry、dwd_id、dwd_org_base_info、dwd_patent）；批量初判 provi
+      sional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      industry_category / is_star 字段覆盖完整；统计规则随 Q037 调整归 D1
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_BY_REGION
+    metric_name_zh: "明星企业区域分布"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；如按注册地而非总部展示需另确认区域口径
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（ads_ent_star_region、dwd_forg_、dwd_org_base_info、dwd_patent）；批量初判 prov
+      isional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      headquarters_city 字段覆盖完整
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_ENTERPRISE_COUNT
+    metric_name_zh: "明星企业数"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed；待注册
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_tech_tag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。名单真源在门户 CMS（star_roster_item / ads.ent_star_roster_count），gkx 2
+      80 张表与 live 开发库均无该结果面；本件交付的是以专利授权数≥50 构造的代理名单计数，语义与 CMS 已发布名单不等价（calc-logic 明禁以此当明星）。计数本身可复算，但
+      名单维度始终无源，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_STAR_HONOR_LIST
+    metric_name_zh: "明星企业荣誉清单"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：口径无歧义（✅）
+      但未入 cfg_metric-ENT-seed；待王惠正式化时注册
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_tech_tag）；批量初判 provisional，待 lineage-subcoo
+      rd 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。资质维真实且足量（202,424 行 / 55 类 / 32,32
+      2 家），但「明星企业」范围维在 gkx 无表，只能用专利授权≥50 的代理名单；且 55 类标签全是认定资质、无获奖类荣誉 → 内容侧可算、范围与语义侧有缺口。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_STAR_PATENT_COUNT
+    metric_name_zh: "明星企业专利数"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记（范围待 Q048，正式口径前标 DEMO）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_id、dwd_org_base_info、dwd_patent、dwd_patent_bak_20260912…）；批量初判 pr
+      ovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。代理名单 4,561 家名下累计**授权专利 699,284 件**（王惠「授权口径」），占全库授权 2,140,420 件的
+      **32.6704%**；若按 calc-logic 的 SQL 不过滤法律状态，同一批企业有**累计公开 1,069,438 件**，占全库 2,939,895 件的 **36.376
+      7%**。两个数差 370,154 件（34.612%），差在「申请公开但未见授权公告」的那部分。名单 4,561 家占底册
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_STAR_RD_RATIO
+    metric_name_zh: "明星企业研发投入占比"
+    acceptance_unit_id: "E-34"
+    module: "ENT-STAR"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.2 登记，或可对齐 M_ENT_RD_INVESTMENT_RATIO（待口径确认，不预先别
+      名合并）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_annual_report_asset、dwd_org_bas
+      e_info、dwd_org_income_statement…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。研发投入只剩「上市/发债主体财报」一条腿：calc-logic 首选年报口径 arch_development_am 在 90
+      ,926 行中非空 0 行，工商年报 yftrje 在 527,034 行中非空 0 行，均整列为空；可用的是 dwd_org_income_statement.yffy 与 dwd_or
+      g_stock_finance_info，覆盖 4,561 家明星企业中的 590 家（12.9358%）。有真数、可算比值，
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_STATE_OWNED_COUNT
+    metric_name_zh: "国有企业数量"
+    acceptance_unit_id: "E-35"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：未入 cfg_m
+      etric-ENT-seed，待王惠正式化；ADS-facts-contract-E31 §3.3 登记（UI 曾用本 ID、须补种子，正式建议 M_ENT_SZ_SOE_COUNT，归 
+      Q049）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_shareholder_info）；批量初判 provisional，待 lineag
+      e-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。本指标不需要任何缺失结果面：ent_type 是登记类型的枚举值，189,116 家企业 100% 有值，国有属性由登记类型确定
+      性判定，规则无阈值、无歧义、可逐行复核；去重键 org_id 唯一。城市、行业门类、登记类型三个下钻维齐全，计数即真值，故判完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_SUPPLIER_COUNT
+    metric_name_zh: "供应商数量"
+    acceptance_unit_id: "E-28"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_bid_base_out、dwd_bid_purchase_agency_out、dwd_bid_win_candidate_ou
+      t、dwd_enterprise_supply_chain_rows…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      以 gkx_dwd_org_invest_info 投资关系代理供应关系；缺直接供应关系与层级字段
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_SUPPLY_CHAIN_RISK
+    metric_name_zh: "断链风险等级"
+    acceptance_unit_id: "E-28"
+    module: "ENT-RISK"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_main_business_composition_area、dwd_org_company_abnormal、dwd_org_c
+      ompany_illegal、dwd_org_company_punish…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：[ENT-20260822] 结构 C：缺供应链边表（C10 长/宽
+      表仍未裁）。现有失信/异常/处罚事件源不能替代边表
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_SUPPLY_STRUCT_TOPIC
+    metric_name_zh: "供应链结构指标"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_bid_base_out、dwd_bid_win_candidate_out、dwd_org_base_info、dwd_org_
+      industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。目标口径要的是「谁向谁供货」的有向边及其交易强度，而 gkx 280 张表、6,312 列里没有任何供应边结构；live 唯一同名
+      表 `enterprise_supply_chain` 是 0 行，唯一的近似物 `graph_edge` 只有 152 条 supply 边、145 个节点（底册 189,116 家的 
+      0.08%），且 `relation_type='supply'` 里同时混着 `type=supplier` 与 `ty
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_SZ_CHAIN_POSITION
+    metric_name_zh: "链中角色"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_industry_chain_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：部分支持（未升档：旧矩阵 D3=full 档位更高；旧记录无 gap 文案，以本批证据为说明）。「链中角色」要回答的是「这家企业在链条的哪一段」。回答它需要两样东
+      西：一张把链环节分成上/中/下游的字典，和一份企业与环节的对应关系。gkx 有链树、有企业产业标签，但**没有官方字典**（`dwd_industry_chain_info` 的 12 条
+      INB 记录没有 position 列），所以字典由本工程自建（P17）；企业侧有标签但一企多标，去重后的企业级分布只在专利阈值名录上成立。两处
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_SZ_COUNT
+    metric_name_zh: "深圳企业数量"
+    acceptance_unit_id: "E-25"
+    module: "ENT-SHENZHEN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags）；批量初判 provisional，待 lineage-s
+      ubcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。底册有 city='深圳市' 中文市名，95,600 家可直接 GROUP BY 得到，且与广东省 188,776 家、全国 
+      189,116 家勾稽；但 calc-logic 钉死的 region_id LIKE '4403%' 行政区划码在 gkx dwd_org_base_info 中不存在（列字典 44 列
+      无 region_id/adcode），只能用中文市名代理，故判部分支持而非完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_SZ_LIST_TOPIC
+    metric_name_zh: "深圳企业清单与链中角色"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_bid_base_out、dwd_bid_base_out_bak_20260911、dwd_bid_base_out_bak_2
+      0260923、dwd_forg_executive_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。深圳键与链归属都可等价实现（深圳 92,930 家与已交付链企业快照逐项对上），但 calc-logic 要求的角色字段 no
+      de_stage（上/中/下游）在 gkx 全库 0 字段，链树只有目录层级与环节名，不能推出上中下游 → 清单可出、角色不可出。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_TECH_POWER_SCORE
+    metric_name_zh: "企业技术力评分"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。两张结果面（tech_power、enterprise_score）都不存在，旧稿六维里只有专利侧三维能从 dwd_paten
+      t 逐企业算出，人才/转化/投入三维在 gkx 没有任何企业级表可挂。专利三维本身结构与量都够（134,152 家企业有专利），可产出完整分布与排名；缺三维意味着分值是「专利技术力」而不是
+      「技术力」，故判部分支持而不是完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_TECH_RANK
+    metric_name_zh: "技术力排名"
+    acceptance_unit_id: "E-23"
+    module: "ENT-EVAL"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_en_project、dwd_org_annual_financial_info、dwd_org_base_info、dwd_or
+      g_rd_achiev_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。RANK 的算法面完全可实现（降序、同分并列、无分不进榜、盘内重算），四个盘也都能出；但排序键 tech_power_inde
+      x 的 11 个子指标里 10 个结构性无源（表不存在、列全空、项目表只命中 2/4561 家），只剩专利量与授权率可代理，故本件交付的是「可观测代理键」的名次，不是 tech_power
+      _index 的名次，不得以 M_ENT_TECH_RANK 名义发布。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_TOTAL_COUNT
+    metric_name_zh: "企业总数"
+    acceptance_unit_id: "E-20"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_forg_base_info、dwd_industry_chain_info、dwd_org_base_info、dwd_org_
+      industry_chain_dtl…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。国内主档完整可算（189,116 家、189,116 个 org_id/信用码），但国外主档 gkx.dwd_forg_bas
+      e_info 只有 20,000 行、3 个国家（GB 19,832 / US 159 / CA 9），其中 7,365 行 name_en 为字面 'null'，属样本性主档而非全球企业
+      名录；『全球企业总数』的国外维无法闭合。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+
+  - metric_id: M_ENT_TYPE_COUNT
+    metric_name_zh: "企业分类型数量"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_stock_base、dwd_org_tech_tag）；批量初判 provision
+      al，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。六类中四类（高企/专精特新/小巨人/小微）表结构+表数据直接可算；外资类 org_type 是工商登记类型自由文本，需关键词口
+      径且含港澳台；上市类底册 listing_status 仅 1,971 家、dwd_org_stock_base 只覆盖 A/B 股 975 家，缺港股/美股/新三板，六类口径不等权，合计
+      不可当『企业总数』使用。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⚠️"
+
+  - metric_id: M_ENT_TYPE_DIST_TOPIC
+    metric_name_zh: "重点企业类型分布"
+    acceptance_unit_id: "TOPIC-ENT-05"
+    module: "TOPIC-ENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_forg_base_info、dwd_org_base_info、dwd_org_industry_tags、dwd_org_st
+      ock_base…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。名单内三类（高企 2,804、科技型中小 1,663、上市 425）都能按 `org_id` 直取，占比与重叠也闭得上；但四类
+      里的「外资」在 gkx 6,312 列中没有任何 `foreign` 标签列，只有 226 家工商登记文本可作旁证，且名单与标签都没有 `stat_year`，环比无上年格。再加上 cal
+      c-logic 的 `sme`（科技型中小企业）与需规原文的「小微（注册资本 + 员工人数）」不是同一个分类，判 **部分支持
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ENT_TYPE_MATCH_COUNT
+    metric_name_zh: "企业分类型匹配数量"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_chain_dtl、dwd_org_industry_tags、dw
+      d_org_stock_base…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。12 条战略链真链属 28,031 家在底册内，与六类资质同源可交，链×类型矩阵 12×6 全部有数；但产业侧只有『链属』没有
+      『非链属但属该产业』，标签表 7,015 家只挂顶层链无细分链被排除，且链标签来自 dwd_org_industry_tags 单一表、无第二来源校验，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_ENT_TYPE_RATIO
+    metric_name_zh: "企业分类型占比"
+    acceptance_unit_id: "E-21"
+    module: "ENT-OVERVIEW"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：派生自 M_EN
+      T_TYPE_COUNT / M_ENT_TYPE_MATCH_COUNT，类型口径随 Q010 联动；UI-L02 防漏扫描补充发现（派单附录 28 条之外，demo 页面三元表达式引用
+      致原审计漏检）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_stock_base、dwd_org_te
+      ch_tag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。分子分母都来自 gkx，同源可算；但分母存在两套互不兼容口径：未选产业 189,116、选产业真链属 28,031（宽口径表内
+      成员 35,046）。报表若不在页脚声明分母口径，同一『占比』会相差数倍；另外资含港澳台、小微含『未知』下限问题使占比只能作结构性参考。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "✅"
+

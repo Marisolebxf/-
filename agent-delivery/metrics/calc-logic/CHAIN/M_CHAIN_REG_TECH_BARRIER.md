@@ -1,68 +1,65 @@
-# M_CHAIN_REG_TECH_BARRIER 区域技术壁垒（技术力叶子）计算口径细稿
+# 区域技术壁垒（技术力叶子）（M_CHAIN_REG_TECH_BARRIER）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（①kind DDL 钉死 ②空白=占比 ③封锁单窗口简化 ④rel DDL 确认+名称过渡轨）
-- **类型**：MODEL（两子项合成，负向——进 M_CHAIN_TECH_POWER 时取 1-x）
-- **is_mock**：true（rel 0 行走名称过渡轨；灌数后切 org_id 轨转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_BARRIER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_BARRIER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_BARRIER_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：区域产业评价页 `TOPIC-REG-014`，技术力叶子（QC11 四力，权重 8/100）。页面硬约束：**不得用 M_CHAIN_TECH_BARRIER_INDEX（关键环节侧）顶替**。A1 需规 `ALGO-CHAIN-DEEP-126`。
-- **白话**：深圳这条链上的企业技术上被卡得多惨——空白（做不出授权发明）+ 封锁（技术方向被同链其他区域隔离）。
-- **参考文献**：常晓涵, 何海燕, 等. 关键核心技术壁垒对中国产业链升级的影响[J]. 北京理工大学学报, 2023, 25(6)（Rosenkopf-Almeida 欧氏距离）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_TECH_BARRIER |
+| 指标名称 | 区域技术壁垒（技术力叶子） |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | CHAIN（产业链区域指数） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链区域指数 → 技术力 → 区域技术壁垒 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_BARRIER.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**区域技术壁垒 = (空白得分 + 封锁得分) / 2**，两子项各自同链各区域截面 min-max 到 0–100。
+公式的两个子项都能算出 48 个单元：空白子项 0.00—42.06（均值 22.02）、封锁子项 0.1705—0.5317（48 个不同值）、合成得分 0—100（42 个不同值）。但「统计年及前 3 年」的四年窗无法复现（缓存只有全期与 2024 单年两档），`kind='B'` 也无法单独切出（授权计数含实用新型与外观）→ 两处降级 → **部分支持**。本档位与 `code/M_CHAIN_REG_TECH_BARRIER_out.json` 的 `support_judgment.data_support_level` 一致。
 
-- **kind 语义（拍板①，DDL 注释钉死）**：A=发明申请、**B=发明授权**、U=实用新型授权、S=外观授权；**kind=D（51.9 万件）= 外观设计，等同 S 对待**（human:徐滕强 2026-10-14 二次拍板）。
-- **空白子项（拍板②）**：区域链上企业中，统计年及此前连续 3 年（共 4 年度窗）`kind='B'` 且 granted_number 非空的授权量为 0 的企业**占比** ×100（原稿区域级 0/1 太脆，单企业抖动即翻转）。
-- **封锁子项（拍板③，简化方案）**：统计年及前推 2 年（3 年窗）`main_classification_ipcr` **首字母 8 大维**占比向量；区域每家链上企业（有 IPC）vs 同链其他区域企业两两欧氏距离取均值；无 IPC 企业剔除，区域全无 IPC → 子项空值不进合成。**砍掉原稿"距离较上期变大记 1"**（两期窗口依赖 + 二值抖动）。
-- **链路（拍板④）**：`enterprise_industry_chain`(chain_code) → `dwd_org_base_info`(org_id 等值连 + city 区域筛) → 专利关联。
+## 计算逻辑说明
 
-## 3. Formula（SQL 骨架）
-
-```sql
--- 区域链上企业集合（org_id 全键）
-SELECT e.org_id, b.name_cn
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
-JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-  ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
-WHERE e.chain_code = :chain_code;
-
--- 专利关联（过渡名称轨，patent_id 去重）：
---   LEFT JOIN dwd_patent p ON p.first_current_assignee_name = b.name_cn AND p.is_deleted=0
--- rel 灌数后切换（org×patent 去重）：
---   JOIN enterprise_patent_org_rel r ON r.org_id = e.org_id
---        AND r.party_role IN ('APPLICANT','ASSIGNEE')
---   JOIN dwd_patent p ON p.patent_id = r.patent_id AND p.is_deleted = 0
-
--- 空白：100 * (无授权企业数 / 链上企业数)，窗=统计年及前3年 kind='B'
--- 封锁：IPC 首层占比向量（8维）欧氏距离均值（Python 侧计算，同链跨区域）
--- 合成：两子项 min-max 0-100 后等权平均；进 TECH_POWER 合成取 1-x
+```text
+Barrier=(minmax(BlankShare)+minmax(MeanEuclidDist))/2
 ```
 
-## 4. 表依赖与实核（2026-10-14 demo）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_BARRIER.md` §二（M_CHAIN_REG_TECH_BARRIER.py 零改语义复算）。
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd.enterprise_industry_chain` | 链桥 | **2000 行已灌**：INB1309=1984 / INB1204=8 / INB1354=7 / INB1323=1；深圳×INB1309=1004 家（org_id 实测通） |
-| `dwd_org_base_info` | 主档区域轴 | 189,116 行 org_id 唯一 |
-| `dwd_patent` | 专利主档 | 293 万条 patent_id 全唯一；ipcr 覆盖 82.4%；pbdt_year 2021–2026；kind∈{A,B,D,U}（B=35.3万 授权发明） |
-| `dwd.enterprise_patent_org_rel` | org_id 专利关联 | **DDL 满足需求**（patent_id+org_id+party_role APPLICANT/ASSIGNEE+party_sequence，uk 四元去重）；**0 行待灌** |
-| ~~`dwd_org_industry_tags`~~ | 老链路 | 104 行/73 企业与主档 **0 命中**（名称、信用代码都 0）——老 B 轨名称匹配链路在 demo 库已断，废 |
+## 源表字段
 
-## 5. 缺口分型与待办
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-| 项 | 分型 | 处置 |
-|---|---|---|
-| `enterprise_patent_org_rel` 0 行 | 数据未灌（DDL 在案且已确认满足） | 名称过渡轨；灌数即切 org_id 轨 |
-| rel.patent_id(general_ci) vs dwd_patent.patent_id(0900) collation 不一致 | 结构不一致（轻度） | 灌数时按用户通则 ALTER utf8mb4_0900_ai_ci（demo/正式/设计文档三同步） |
-| kind='D' 51.9 万件 DDL 注释未列 | 语义已拍板：=外观设计，等同 S | 不影响本指标（本指标只用 B）；全局口径供其他指标引用 |
-| `industry_chain_metric_dist` ADS 0 行 | 结果表未产出 | 派单计算任务后落 ADS |
+- `dwd_id`
 
-## 6. 验证记录（2026-10-14）
+## 待建表字段
 
-- 深圳×INB1309 org_id 全键链路实测 1004 家（CAST 双侧 utf8mb4_0900_ai_ci 归一连通）。
-- 293 万专利 ipcr 覆盖率 82.4%，封锁子项可用样本充足。
-- 6 年公开窗满足"统计年及前 3 年"空白判定窗。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：两个子项都算出了 48 个单元：空白占比 0.0%—42.063%，48/48 非空；封锁距离 0.1705—0.5317，48/48 有 IPC 样本；合成后 42 个不同取值。但口径有三个无法复原的缺口：①原稿的「统计年及前 3 年」窗口要求 2022—2025 逐年授权，缓存只有全期与 2024 单年两档；②原稿要求 `kind='B'`（发明授权），缓存只能给「granted_number 非空」，含实用新型与外观，导致空白占比被系统性低估；③封锁向量的 IPC 分布是全期而非 3 年窗。三项均为口径级降级，故判部分支持，不沿用旧版的完全转换支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 1.26 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_BARRIER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_BARRIER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_BARRIER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

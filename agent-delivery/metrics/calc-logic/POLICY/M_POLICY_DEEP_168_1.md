@@ -1,6 +1,7 @@
 # 政策效果评估模型（M_POLICY_DEEP_168_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-POLICY-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DEEP_168_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DEEP_168_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DEEP_168_1_out.json`。
 
 ## 基础信息
 
@@ -8,51 +9,54 @@
 |---|---|
 | 指标ID | M_POLICY_DEEP_168_1 |
 | 指标名称 | 政策效果评估模型 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 政策分析 |
-| 三级模块 | 深圳政策现状分析 |
-| 更新频率 | 季 |
-| 对齐状态判定 | 待甲方GAP-ALGO-TYPE-UNSIGNED；社会经济维无 ODS |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 所属域 | POLICY（政策分析） |
+| 一级模块 | 政策 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务算法库 → 深度分析模型 → 政策效果评估 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | ["2016", "2017", "2018", "2019", "2020", "2021"] |
+| 缺失年份 | ["2023"] |
+| calc-logic 引用 | `metrics/calc-logic/POLICY/M_POLICY_DEEP_168_1.md` |
 
 ## 口径定义
 
-从执行效果、社会经济效应、环境影响三维衡量政策实施成效的模型综合结果，输出政策效果评估指数（0—100）及分维报告。
+三维里 D1（执行）只剩「有效占比」，而 `status` 全表 20,000 行都是「有效」，这个 100% 是**样本框构造**而不是治理成效；及时性子项因实施日与失效日全是 `0000-00-00` 而不可算。D2（社会经济效应）需要「政策—企业」关联键与企业营收/就业序列，两样都没有，整维缺失。D3（环保导向）靠 25 词闭集在正文里命中 4,116 条（20.58%），是唯一有真值的一维。故落**部分支持**，且对外只发布 D3。
 
 ## 计算逻辑说明
 
-入集：国内政策库 dwd_policy_base；status=有效且 expire_date 空或不早于统计日；按 id 去重。综合统计默认仅国内（QPOL-05），国际政策 dwd_global_policy_base 不进综合分。本 ID 为算法库模型，原型页不挂本 metricId。
-
-第一步：各三级原始值与效果评分相同（见下表）。环保关键词为闭集，与 M_POLICY_EFFECT_SCORE 同表，不得临时扩词。长词优先、命中区间不重复计；一条政策命中任一即计 1。
-
-**环保关键词闭集：**  
-生态文明、生态环境保护、生态环境、环境保护、污染防治、节能减排、节能降碳、绿色低碳、绿色发展、清洁生产、循环经济、碳达峰、碳中和、双碳、低碳、环保、大气污染、水污染、土壤污染、固体废物、危险废物、生物多样性、自然保护、碳排放、温室气体。  不列入：光杆「绿色」「环境」「生态」「清洁」。扫描 title/keywords/theme/abstract/content。
-
-第二步：合成：各维截面 min-max 到 [0,1]，缺维不补 0、不进平均；等权（权重待 QPOL-02）后 ×100。全样本同值取 0.5。N<3 标「样本不足」。
-
-第三步：输出效果评估指数、分维结果、改进建议。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 政策效果评估模型 | 执行效果 | 有效政策占比 | 从有效政策占比与实施及时性评估政策体系执行状态的健康程度。 | 有效政策数 / 政策总数 × 100% | dwd_policy_base(id, status) — 去重, 有效状态 | 无 |
-| 政策效果评估模型 | 执行效果 | 政策及时性 | 从有效政策占比与实施及时性评估政策体系执行状态的健康程度。 | (统计日 − 实施日期) / (失效日期 − 实施日期) × 100% | dwd_policy_base(implementation_date, expire_date) — 实施日, 失效日 | 无 |
-| 政策效果评估模型 | 社会经济效应 | 营业收入增长率 | 从政策关联企业营收增速与就业贡献评估社会经济效应。 | 待建直读 | 无 | operating_revenue_growth-政策关联企业营收增速 |
-| 政策效果评估模型 | 社会经济效应 | 就业贡献率 | 从政策关联企业营收增速与就业贡献评估社会经济效应。 | 待建直读 | 无 | employment_contribution-政策关联就业贡献率 |
-| 政策效果评估模型 | 环境影响 | 绿色导向占比 | 从文本是否写明绿色/环保/低碳导向评估环境影响安排；是文本导向占比，不是实测排放或环评结论。 | I(title/keywords/theme/abstract/content 命中环保闭集任一词) 政策数 / 政策总数 × 100% | dwd_policy_base(title, keywords, theme, abstract, content) — 环保闭集检索 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DEEP_168_1.md` §二（M_POLICY_DEEP_168_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, status, expire_date, implementation_date, title, keywords, theme, abstract, content, keypoints) — 去重, 有效占比, 失效日及时性, 实施日及时性, 环保词检索
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链（仅产业锚点）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_policy_base`
 
-- operating_revenue_growth-政策关联企业营收增速
-- employment_contribution-政策关联就业贡献率
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-政策效果评分+上海市长宁区人民政府办公室+https://zwgk.shcn.gov.cn/xxgk/qzfwj-zfwj/2025/120/77489/4d78edd850f74679a72a397fa2e24eef.pdf
+## 数据支持度与缺口
 
-政策环境影响+生态环境部+https://www.mee.gov.cn/xxgk2018/xxgk/xxgk06/202011/t20201110_807267.html
+- **判档**：部分支持
+- **判档理由**：三维里 D1 只剩有效占比（且是样本构造性 100%）、及时性子项因零日期不可算；D2 社会经济效应在库内无表无键；D3 环保导向可用。缺一个必需维 + 一个子项 → 部分支持。
+- **基期声明**：政策级指数为截面口径，不涉时序分母；分年环保导向率只用 2016—2021 六个连续年份。2023 年库内 0 行、2022 年 289 条残片、2024 年 1 条均不入分母（DATA_FACTS §3.16）。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DEEP_168_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DEEP_168_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DEEP_168_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

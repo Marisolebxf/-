@@ -1,8 +1,7 @@
 # 多城市企业群对标值（M_ENT_CITY_COMPARE_TOPIC）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_COMPARE_TOPIC.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_COMPARE_TOPIC.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_COMPARE_TOPIC_out.json`。
 
 ## 基础信息
 
@@ -10,60 +9,58 @@
 |---|---|
 | 指标ID | M_ENT_CITY_COMPARE_TOPIC |
 | 指标名称 | 多城市企业群对标值 |
-| 一级模块 | 企业分析 |
-| 二级模块 | 重点企业类型分析 |
-| 三级模块 | - |
-| 更新频率 | 周（随评分批次） |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q009 / Q016 / Q077 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 区域分析／城市对标／议题生成 |
+| 更新频率 | 建议半年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 城市对标页议题卡、区域协同看板「差距提示」｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_CITY_COMPARE_TOPIC.md` |
 
 ## 口径定义
 
-统计窗口默认自然年。将深圳企业群与对照城市集合（北京/上海/苏州等，Q016 待甲方确认）横向对标，按城市聚合输出平均技术力、平均商业力、企业密度等城市对标值。对象=城市企业群的聚合值，不是单家企业。对照集合默认全国加权参照（Q-MO-ENT-06）。
+四市对标可出（技术力、企业规模、投资活跃、链覆盖四维），但北京 163 家、上海 16 家、苏州 1 家不可比，商业力无代理、密度无面积分母，判部分支持。
 
 ## 计算逻辑说明
 
-按城市 `GROUP BY` 聚合三类对标值，各自独立产出、不合并为一个总分。
+```text
+city_value = GROUP BY city 的均值/计数；技术力=专利三维分均值；投资活跃度=关系边/千家企业
+```
 
-### 第一步：入集
-
-企业落到城市：优先 `enterprise_base.region_id` 市码 `LEFT(region_id,4)`；无该列时以 `dwd_org_base_info.city` 中文名对齐（缺列缺口与 `M_ENT_REGIONAL_COUNT` 一致）。已出分企业进均；无分不进均。
-
-### 第二步：三个对标项
-
-1. **平均技术力** = `AVG(tech_power_index)`，五维分项同法 `AVG(talent/innovation/transfer/cooperation/investment_score)`。
-2. **平均商业力** = `AVG(biz_power_index)`，六维分项同法。
-3. **企业密度** = `COUNT(DISTINCT 企业)` ÷ 城市辖区面积，单位 家/km²。
-
-产业筛选：当前筛选产业 ∩ 已出分企业再聚合。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 多城市企业群对标值 | 平均技术力 | 城市平均技术力指数 | 城市企业群技术力指数算术平均。 | AVG(tech_power_index) | tech_power(org_id, enterprise_name, headquarters_city, talent_score, innovation_score, transfer_score, cooperation_score, investment_score, tech_power_index) — 技术力评分；dwd_org_base_info(org_id, external_id, city, province, area) — 城市入集 | 无 |
-|  |  | 技术力五维分项均值 | 人才/创新/转化/合作/投入五维均值。 | AVG(各维 score) | tech_power(org_id, talent_score, innovation_score, transfer_score, cooperation_score, investment_score) — 技术力五维 | 无 |
-| 多城市企业群对标值 | 平均商业力 | 城市平均商业力指数 | 城市企业群商业力指数算术平均。 | AVG(biz_power_index) | biz_power(org_id, enterprise_name, headquarters_city, market_score, product_score, brand_score, cooperation_score, chain_coverage_score, chain_keynode_score, biz_power_index) — 商业力评分；dwd_org_base_info(org_id, external_id, city, province, area) — 城市入集 | 无 |
-|  |  | 商业力六维分项均值 | 市场/产品/品牌/合作/链覆盖/关键节点六维均值。 | AVG(各维 score) | biz_power(org_id, market_score, product_score, brand_score, cooperation_score, chain_coverage_score, chain_keynode_score) — 商业力六维 | 无 |
-| 多城市企业群对标值 | 企业密度 | 城市企业密度 | 城市企业去重数 ÷ 城市辖区面积。 | COUNT(DISTINCT 企业)/面积 | dwd_org_base_info(org_id, external_id, city, province, area) — 企业密度分子 | 城市辖区面积字段 |
-|  |  | 目标产业企业密度 | 目标产业企业去重数 ÷ 城市辖区面积。 | COUNT(DISTINCT 产业内企业)/面积 | dwd_org_base_info(org_id, external_id, city, province, area, industry_l1_code, industry_l2_code) — 产业内企业密度分子；dwd_org_industry_tags(credit_code, industry_code) — 产业归类 | 城市辖区面积字段 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_COMPARE_TOPIC.md` §二（M_ENT_CITY_COMPARE_TOPIC.py 零改语义复算）。
 
 ## 源表字段
 
-- tech_power(org_id, enterprise_name, headquarters_city, talent_score, innovation_score, transfer_score, cooperation_score, investment_score, tech_power_index) — 技术力评分（ADS，依赖 M_ENT_TECH_POWER_SCORE）
-- biz_power(org_id, enterprise_name, headquarters_city, market_score, product_score, brand_score, cooperation_score, chain_coverage_score, chain_keynode_score, biz_power_index) — 商业力评分（ADS，依赖 M_ENT_BUSINESS_POWER_SCORE）
-- dwd_org_base_info(org_id, external_id, city, province, area, industry_l1_code, industry_l2_code) — 企业城市入集+产业归类
-- dwd_org_industry_tags(credit_code, industry_code) — 企业与产业链归类
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_org_invest_info`
 
-- 城市辖区面积字段：`gkxlumenx_dim.code_region.area` 现网全 NULL，需灌数或另建城市面积表；灌入前「企业密度」无法产出。
-- 对标城市集合（Q016）：待甲方确认，未闭合前只用已有 city_code 行。
-- 主档 `enterprise_base.region_id` 缺列：以 `city` 中文名暂代（缺口同 `M_ENT_REGIONAL_COUNT`）。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 深圳企业现状分析·多城市横向对标分析 | 需规 SRS《企业分析.md》序号48 | 平均技术力/商业力/企业密度 | 关联 Q009 / Q016 / Q077。
+## 数据支持度与缺口
 
-[2] 城市平均技术力 | 王惠已入库指标 M_ENT_CITY_AVG_TECH_POWER（AVG(tech_power_index) 口径对齐）。
+- **判档**：部分支持
+- **判档理由**：三类对标值里两类有代理（技术力→专利三维分均值、投资活跃度→关系边密度），企业密度只能出企业数（缺面积分母），商业力整维无源。更硬的约束是对标城市：北京 163 家、上海 16 家、苏州 0 家，需求点名的三个城市在本库不可比，对标只能落在深圳都市圈四市。两维可算、一维缺分母、一维整缺、对标集不完整，判部分支持。
+- **基期声明**：本件是截面城市对标（当前底册时点），不是年度序列，故无基期年份；底册不带历史版本，无法做「某年对标」。专利侧年份窗口 2021—2024 仅影响专利计数口径，不构成城市对标的基期。
 
-[3] 城市企业密度 | 王惠已入库指标 M_ENT_CITY_DENSITY（企业数/城市面积口径对齐）。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_COMPARE_TOPIC.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_COMPARE_TOPIC.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_COMPARE_TOPIC_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,80 +1,60 @@
-# 产业适配性（M_POLICY_INDUSTRY_FIT）
+# 政策产业适配性（M_POLICY_INDUSTRY_FIT）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-POLICY-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INDUSTRY_FIT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INDUSTRY_FIT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INDUSTRY_FIT_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_POLICY_INDUSTRY_FIT |
-| 指标名称 | 产业适配性 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 政策分析 |
-| 三级模块 | 区域政策对比 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待甲方QPOL-03；算法库无适配性专叶 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | QPOL-03 |
+| 指标名称 | 政策产业适配性 |
+| 所属域 | POLICY（政策分析） |
+| 一级模块 | 政策 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 城市产业政策适配度榜单、产业链招商页的「政策匹配强度」列 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md` |
 
 ## 口径定义
 
-对比城市政策与产业需求的适配综合评分，从政策-产业需求匹配、产业链覆盖广度、细分领域命中三维度评定，取值 0—100。分数越高表示政策导向与产业需求越吻合。
+结构完整（政策四字段、城市、链树都在），匹配也能跑（145 条政策命中链名），但**只有 4/12 条链满足「至少 3 个城市有本地命中」的出分门槛**，且分子只来自标题、国家级政策被重复计入每个市。可算一部分、不可算大半，因此判**部分支持**。
 
 ## 计算逻辑说明
 
-入集：国内政策库 dwd_policy_base；status=有效且 expire_date 空或不早于统计日；按 id 去重。综合统计默认仅国内（QPOL-05），国际政策 dwd_global_policy_base 不进综合分。对比单位为城市（`city` 含对比市名即计入；`rank` 含国家级可计入每个对比市）。
-
-记两个政策集合（数的是**政策条数**）：
-
-- $M_c$ = 该市全部有效政策数（不过滤产业/技术）。$M_c=0$ 该市不输出。
-- $N_c$ = 该市有效且四字段（`title` / `keywords` / `keypoints` / `theme`）子串命中**分析对象**的政策数。对象 = 产业链名（`industry_name`）或任一环节名（`industry_link_name`），或配置页勾选的技术名。
-
-第一步：三维原始值（见下表）。**政策-产业需求匹配**的分母必须是 $M_c$，禁止 $N_c/N_c$。**产业链覆盖广度**数的是清单项（环节或技术名），不数政策条数；一条政策点到多个环节，分子可 >1。
-
-**环节或技术名（覆盖广度用，二选一锚点，不是两个库字段并列）：**
-
-| 锚点 | 「名」取自哪 | 去重键 | 政策侧怎么判「点到」 |
-| --- | --- | --- | --- |
-| 产业锚点 | `dwd_industry_chain_info.industry_link_name` | `industry_link_code` | 该市有效政策四字段任一处子串含该 `industry_link_name` |
-| 技术领域锚点 | 配置页/对比篮**勾选的技术名**（无独立库字段） | 勾选列表内每个技术名 | 四字段任一处子串含该技术名；**不读** `dwd_industry_chain_info` |
-
-**清单总数（覆盖广度分母，必须写清）：**
-
-| 锚点 | 清单总数定义 | 为 0 时 |
-| --- | --- | --- |
-| 产业锚点 | `COUNT(DISTINCT industry_link_code)`，`WHERE industry_code = 当前选定产业链` | 该链无环节 → 本维缺失 |
-| 技术领域锚点 | 配置页勾选的技术名个数 | 未勾选 → 本维缺失 |
-
-**环节或技术名覆盖率：**
-
-$$\text{覆盖}_c = \frac{\text{被点到的环节或技术名个数}}{\text{清单总数}} \times 100\%$$
-
-- **分子**：清单中至少被 1 条该市有效政策（四字段子串）点到的环节名或技术名个数（按 `industry_link_code` 或技术名去重）。
-- **分母**：上表「清单总数」。
-- 例：集成电路链 5 个环节，政策文本只点到「设计」「封测」→ 分子 2、分母 5 → 40%。
-
-第二步：合成：各维截面 min-max 到 [0,1]，缺维不补 0、不进平均；等权（权重待 QPOL-02）后 ×100。全样本同值取 0.5。N<3 标「样本不足」。
-
-第三步：需求未给维度，二级按「目标—工具」匹配文献收口为匹配 / 覆盖广度 / 细分命中。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业适配性 | 政策-产业需求匹配 | 命中政策占比 | 从该市全部有效政策中命中产业或环节名的比例评估政策导向与产业需求的对准程度。 | $N_c / M_c$ × 100% | dwd_policy_base(id, city, status, expire_date, title, keywords, keypoints, theme) — 全市有效, 四字段命中 | 无 |
-| 产业适配性 | 产业链覆盖广度 | 环节或技术名覆盖率 | 从清单中被政策文本点到的环节占应覆盖清单的比例，评估政策对产业链/技术清单的铺开程度。 | 被点到的环节或技术名个数 / 清单总数 × 100%。产业锚点：清单总数=`COUNT(DISTINCT industry_link_code)`（选定链）；技术锚点：清单总数=配置页勾选技术名数。分子=清单内至少被 1 条该市有效政策四字段点到的 `industry_link_name` 去重数。清单总数=0 本维缺失 | dwd_industry_chain_info(industry_code, industry_link_code, industry_link_name) — 环节清单与分母；dwd_policy_base(title, keywords, keypoints, theme, city, status, expire_date) — 四字段子串命中 | 无 |
-| 产业适配性 | 细分领域命中 | 环节级政策占比 | 从已命中政策中写到环节名或具体技术名的比例评估文本精度；只写链名/总称、未写具体环节或技术名的不算。 | 点到 `industry_link_name` 或配置页技术名的政策数 / $N_c$ × 100%；$N_c$=0 本维缺失 | dwd_policy_base(title, keywords, keypoints, theme) — 环节名/技术名子串命中 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INDUSTRY_FIT.md` §二（M_POLICY_INDUSTRY_FIT.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, rank, city, status, expire_date, title, keywords, keypoints, theme) — 去重, 国家级计入各市, 对比城市, 有效, 失效, 四字段命中与细分
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业锚点定链；覆盖广度分母=该链 `industry_link_code` 去重数；环节名= `industry_link_name`（技术领域锚点不读本表）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_policy_base`
 
-- 无
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-产业适配性|河南财经政法大学公共管理学院|杨凯瑞, 班昂, 史可, 史伟杰. 中国芯片产业政策“目标—工具”匹配研究——基于文本量化分析[J]. 科技进步与对策, 2024, 41(8): 85-95.
+## 数据支持度与缺口
 
-产业适配性|华南理工大学公共管理学院|教育部人文社会科学基金青年项目（23YJC630211）；广州市哲学社会科学发展“十四五”规划课题（2022GZYB36）；华南理工大学中央高校基本科研业务费项目（ZLT3202305）|卢扬帆，张紫燕，卞潇. 地方竞争与区域协同导向下先进制造业政策适配性评估——以粤港澳大湾区九市为例[J]. 华南理工大学学报（社会科学版），2024，26（3）：17-28.
+- **判档**：部分支持
+- **判档理由**：结构完整（政策四字段、城市、链树都在），匹配也能跑（145 条政策命中链名），但**只有 4/12 条链满足「至少 3 个城市有本地命中」的出分门槛**，且分子只来自标题、国家级政策被重复计入每个市。可算一部分、不可算大半，因此判**部分支持**。
+- **基期声明**：截面指标，按城市 × 产业链计，不设年度分母。入集是库内全部「有效」政策 20,000 条（status 恒真、expire_date 全空，故「有效」等价于全表）；2023—2024 采集断档不改变截面分母，只在正文说明。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_INDUSTRY_FIT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INDUSTRY_FIT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_INDUSTRY_FIT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 

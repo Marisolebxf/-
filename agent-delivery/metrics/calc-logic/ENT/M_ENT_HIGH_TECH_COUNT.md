@@ -1,113 +1,60 @@
-# 高企数量（M_ENT_HIGH_TECH_COUNT）
+# 高新技术企业数（高企数量）（M_ENT_HIGH_TECH_COUNT）
 
-> 口径真源：王惠底稿 → COVER-STAT；**2026-09-04 监管确认：口径已定、源不缺；中文 `org_tag` 由项目映射到内部 `high_tech`，不算无法执行**。  
-> 判定只认 `enterprise_tag.tag_code='high_tech'`（不再 `tag_name` 模糊含）。  
-> Q010 🟡 = 待甲方书面，不改本口径。  
-> 维护：data-agent · 8 件套见 seed `0.3.2`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_HIGH_TECH_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_HIGH_TECH_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_HIGH_TECH_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_HIGH_TECH_COUNT`
-- **指标名称**：高企数量
-- **一级模块**：企业分析
-- **二级模块**：企业总览
-- **三级模块**：企业整体概况
-- **更新频率**：日
-- **对齐状态**：D1=`aligned`（8 件套齐）；Q010 仍待甲方书面
-- **是否在数据库**：ODS `dwd_org_tech_tag` 有数；D4 仍 mock（灌数未升）
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q010
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_HIGH_TECH_COUNT |
+| 指标名称 | 高新技术企业数（高企数量） |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 企业总览「高新技术企业数」一格；同判定码亦供企业类型分布（外企/高企/小微/上市）高新格子复用｜ **数据支持度**：**完全转换支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_HIGH_TECH_COUNT.md` |
 
 ## 口径定义
 
-高新技术企业去重家数。`enterprise_tag.tag_code = 'high_tech'`，按 `org_id` 去重。
+无独立「高企数量」结果表（建议落表 `ads.ent_high_tech_count` 待建）→ 非完全直接支持；但判定源 gkx `dwd_org_tech_tag` 202,424 行结构齐、监管确认的三中文名洗数后 62,583 行命中、去重企业 27,936 家**已现算成功** → **完全转换支持**；DWD 灌数与结果面落表是工程步骤，不构成源侧数据缺口。
 
-```
-COUNT(DISTINCT org_id)
-FROM enterprise_tag
-JOIN enterprise_base
-WHERE tag_code = 'high_tech'
-```
+## 计算逻辑说明
 
-- 只国内。无 `enterprise_forg_tag` / `dwd_forg_*tag*`，不造表。
-- **不按产业过滤**。选产业是别的页（`TYPE_COUNT` / KEYPANO），不进本条 8 件套。
-- 与 `TYPE_COUNT` 的高新格子同一判定码；本条是总览一个数，不是六类分布。
-- 无认定起止日：**码在就算**。
-- 计算键 `org_id`，JOIN `enterprise_base`，对不上 drop。
-- **禁止** `tag_name` 模糊含。
-- **禁止** `enterprise_type`。
-- **禁止** `M_ENT_KEY_TOTAL` / 专利≥50 当高企。
-- **禁止** 把六类 SUM 当本条。
-
-## 中文 → 内部码（洗数，不算无法执行）
-
-三方 `dwd_org_tech_tag.org_tag` 是中文名，不是 `high_tech`。项目自己对照落到内部码，**不写「当前无法执行」**。
-
-| `org_tag`（live） | 内部 `tag_code` |
-|---|---|
-| 高新技术企业 | `high_tech` |
-| 国家级高新技术企业 | `high_tech` |
-| 曾获国家级高新技术企业 | `high_tech` |
-
-对照可落 `tag_dict` / GDF Mapping，不进口径公式。禁止用 `tag_name LIKE '%高新%'` 在查询路径扫。
-
-## 两点分开（强制）
-
-### ① 能不能数
-
-ODS 列不空、对照可做 → 公式完整，**可以算完**。中文未落到码 = 洗数未跑，仍不算无法执行。
-
-### ② ODS → DWD（另一回事）
-
-有没有灌进 `enterprise_tag`、D4 是否 mock，只记接入。没灌 **不写「当前无法执行」**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_tag` + `enterprise_base` | 设计表在 |
-| 目标 | 建议 `ads.ent_high_tech_count`（全国一格 `high_tech_cnt`） | **缺口：无独立目标表**（落表工程，不是缺源） |
-
-源 ≠ 目标。本波不改 GDF DDL。生产预聚合一格；禁止请求路径全表扫标签。
-
-**计算公式文件**：`M_ENT_HIGH_TECH_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_HIGH_TECH_COUNT.md` §二（M_ENT_HIGH_TECH_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_tag <- ods: dwd_org_tech_tag
-enterprise_base <- ods: dwd_org_base_info
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-计算 FROM 只用左端 DWD。右端只作家谱。
+- `dwd_org_tech_tag`
 
-来源系统（`source_systems`）：国内机构要素库。
+## 待建表字段
 
-## 分场景 / 千万级（不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 场景 A · 企业总览「高企数量」：全国一格 COUNT。
-- 场景 B · 与类型分析高新格子对照：同一 `tag_code`，本条无产业维。
-- demo：标签量小可 JOIN 现算。生产：按 `tag_code` 预聚合；禁止全表 `tag_name LIKE`。
+## 数据支持度与缺口
 
-## 现网探针（live `gkx`，2026-09-04；不进 8 件套）
+- **判档**：完全转换支持
+- **判档理由**：监管已确认口径（tag_code='high_tech'，中文洗数不算无法执行）：gkx dwd_org_tech_tag 202,424 行，三中文名命中 62,583 行、去重企业 27,936 家现算成功；LIKE 模糊核查无第四变体（fuzzy 列表可控）。结构与当前量均足、现转成功 → 完全转换支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 
-- `dwd_org_tech_tag` `is_deleted=0`：202393 行 / 32297 企；空 `org_tag` = 0。
-- 高新技术企业 27634；国家级高新技术企业 20937；曾获国家级高新技术企业 14012。
-- 无国外标签表。
-- 源不缺。三种中文 → `high_tech` 见上表。
+## 溯源与复现
 
-## 待建 / 缺口
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_HIGH_TECH_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_HIGH_TECH_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_HIGH_TECH_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-- **缺口：无独立目标表**（落表，不是缺源）。
-- D3/D4 本波不升（D3 已 `full`；D4 仍 `mock`）。
-- 认定起止日若甲方后补，再开「有效认定期」；当前码在就算。
+## 更新记录
 
-## 备注
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
-bid `§1.1.1.2.4.2.3`；STAT。与 TYPE_COUNT / KEYPANO 高新码同一套。
-
----
-
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-27 只国内、含曾获；2026-08-31 改 `tag_code=high_tech`；2026-09-04 D1 aligned + 中文对照不算无法执行*

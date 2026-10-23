@@ -1,6 +1,7 @@
 # 创新能力指数（M_ENT_INNOVATION_INDEX）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_INNOVATION_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_INNOVATION_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_INNOVATION_INDEX_out.json`。
 
 ## 基础信息
 
@@ -8,88 +9,58 @@
 |---|---|
 | 指标ID | M_ENT_INNOVATION_INDEX |
 | 指标名称 | 创新能力指数 |
+| 所属域 | ENT（企业分析） |
 | 一级模块 | 企业分析 |
-| 二级模块 | 企业评估 |
-| 三级模块 | 综合竞争力评估 |
-| 更新频率 | 年度/模型版本发布时 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q014 |
-
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 算法库「深圳企业竞争力水平分析模型」§1.1.1.1.1.1.1.5.1 创新能力评估分支（SRS 需规清单序号 141）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_INNOVATION_INDEX.md` |
 
 ## 口径定义
 
-企业创新能力评估的综合得分，满分0—100分，综合反映企业在创新投入、创新产出及可持续发展能力的综合水平。
+无「创新能力指数」结果面（calc-logic 落表 `ads_ent_innovation_index` 待建）→ 非完全直接支持；14 个三级指标中——专利三项原料足（`dwd_patent` 294 万行 + 法务 20,000 行），财务侧薄填充（研发投入 0/90,926、研发人员 0、从业 3,184/90,926），五项 calc-logic 自标待建复核确认零承载（资本化研发/科研平台/学历结构/软件著作权/无形资产明细四空一误中），获奖类标签 LIKE 探针 0 命中 → 三准则层中投入层半缺、产出层两项缺、可持续层薄 → **部分支持**。
 
 ## 计算逻辑说明
 
-$$
-第一步：各指标层得分
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij}为企业 i 在第 j 个指标上的原始值，min(x_j)和max(x_j)分别为该指标在同产业所有企业中的最小值和最大值。
-$$
-
-$$
-第二步：准则层得分
-准则层得分_{ik} = \sum_{j \in S_k} w_j \times 指标得分_{ij}
-$$
-
-$$
-其中，S_k为第 k 个准则层下的指标集合，w_j为各指标权重。
-$$
-
-$$
-第三步：创新能力指数综合得分
-创新能力指数_i = \sum_{k=1}^{3} W_k \times 准则层得分_{ik}
-$$
-
-$$
-其中，W_k为各准则层权重，i为企业编号。
-$$
-
-
-
-| 指标一级         | 指标二级               | 指标三级                   | 计量方式                                                     | 源表字段 |
-| :--------------- | :----------------------- | :--------------------------- | :----------------------------------------------------------- | -------- |
-| **企业创新能力** | **创新投入能力**         | 研发投入占比                 | 研发投入 / 营业收入                                          | gkx.dwd_org_annual_financial_info(org_id, `arch development am`, operating_revenue, year) — 研发投入占比=`arch development am`÷营业收入×100%，优先年报 |
-|                  |                          | 资本化研发投入占比           | 资本化研发投入 / 研发投入                                    | gkx.dwd_org_annual_financial_info(org_id, `arch development am`, year) — 研发投入总额（分母）<br>gkx 现库无资本化研发投入字段（待建）— 资本化研发投入 |
-|                  |                          | 科研平台数量                 | 实验室（国家级、省级）及流动站的数量                         | gkx 现库无科研平台/实验室记录表（待建）— 科研平台数量 |
-|                  |                          | 技术人员占比                 | 技术人员人数 / 员工总人数                                    | gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 技术人员占比=研发人员数÷从业人数×100%，优先年报 |
-|                  |                          | 本科及以上学历员工占比       | 本科及以上学历人数 / 员工总人数                              | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 员工总人数（分母）<br>gkx 现库无学历结构字段（待建）— 本科及以上学历人数 |
-|                  | **创新产出能力**         | 专利申请数量                 | 专利申请数量                                                 | gkx.dwd_patent(patent_id, pn, first_current_assignee_name) — 专利申请数量 |
-|                  |                          | 专利质量                     | 有效发明专利数量 / 有效专利数量                              | gkx.dwd_patent(patent_id, pn, kind, first_current_assignee_name) — 专利类型与申请人<br>gkx.dwd_patent_legal(patent_id, status) — 法律状态过滤有效专利 |
-|                  |                          | 专利申请增长率               | （本期专利申请数量 / 上期专利申请数量）- 1                   | gkx.dwd_patent(patent_id, pn, first_current_assignee_name) — 专利申请数量<br>gkx.dwd_patent_legal(patent_id, isdt_year) — 按年份分组计算同比 |
-|                  |                          | 软件著作权数量               | 企业目前拥有的软件著作权数量                                 | gkx 现库无软件著作权表（待建）— 软件著作权数量 |
-|                  |                          | 技术型无形资产占比           | 技术型无形资产账面价值 / 总资产账面价值                      | gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 总资产（分母）<br>gkx 现库无形资产明细字段（待建）— 技术型无形资产账面价值 |
-|                  |                          | 技术型无形资产占比增长率     | （本期技术型无形资产占总资产比率 / 上期技术型无形资产占总资产比率）- 1 | gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 总资产（分母）<br>gkx 现库无形资产明细字段（待建）— 技术型无形资产账面价值 |
-|                  |                          | 科技获奖数量                 | 国家级、省级获奖数量                                         | gkx.dwd_org_tech_tag(org_id, org_tag) — 资质/荣誉标签筛选获奖类标签 |
-|                  | **创新的可持续发展能力** | 总资产增长率                 | （本期总资产 / 上期总资产）- 1                               | gkx.dwd_org_annual_financial_info(org_id, total_assets, year) — 按年报年度同比计算，优先年报 |
-|                  |                          | 营业收入增长率               | （本期营业收入 / 上期营业收入）- 1                           | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 按年报年度同比计算，优先年报 |
-|                  |                          | 净利润增长率                 | （本期净利润 / 上期净利润）- 1                               | gkx.dwd_org_annual_financial_info(org_id, pure_profit, year) — 按年报年度同比计算，优先年报 |
-|                  |                          | 研发投入增长率               | （本期研发投入 / 上期研发投入）- 1                           | gkx.dwd_org_annual_financial_info(org_id, `arch development am`, year) — 按年报年度同比计算，优先年报 |
-|                  |                          | 本科及以上学历员工占比增长率 | （本期本科及以上学历员工占比 / 上期本科及以上学历员工占比）- 1 | gkx.dwd_org_annual_financial_info(org_id, employees_number, year) — 员工总人数<br>gkx 现库无学历结构字段（待建）— 本科及以上学历人数 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_INNOVATION_INDEX.md` §二（M_ENT_INNOVATION_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, total_profit, pure_profit, total_assets, `arch development am`, development_employee, employees_number, year) — 创新投入维度（研发投入占比、技术人员占比）、创新产出维度（技术型无形资产占比）、可持续发展维度（总资产增长率、营业收入增长率、净利润增长率、研发投入增长率），优先年报，覆盖非上市企业
-gkx.dwd_patent(patent_id, pn, kind, first_current_assignee_name) — 创新产出维度（专利申请数量、专利质量、专利申请增长率）
-gkx.dwd_patent_legal(patent_id, status, isdt_year) — 创新产出维度（法律状态过滤有效专利、按年份计算增长率）
-gkx.dwd_org_tech_tag(org_id, org_tag) — 创新产出维度（科技获奖数量，资质/荣誉标签筛选）
-资本化研发投入字段 — 现库无此字段，待建
-科研平台/实验室记录表 — 现库无此表，待建
-学历结构字段 — 现库无此字段，待建
-软件著作权表 — 现库无此表，待建
-无形资产明细字段 — 现库无此字段，待建
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-注：创新能力指数由创新投入能力、创新产出能力、创新的可持续发展能力三个准则层加权汇总，各指标经极值归一化后按权重加权计算，权重待甲方确认（Q014）。结果表 ads_ent_innovation_index(score, org_id, 待建)。
+- `ads_ent_innovation_index`
+- `dwd_org_annual_financial_info`
+- `dwd_org_rd_achiev_info`
+- `dwd_org_tech_tag`
+- `dwd_patent`
+- `dwd_patent_legal`
+- `dwd_scholar_education_background`
 
-## 待建字段
+## 待建表字段
 
-资本化研发投入字段 — 现库无此字段，待建
-科研平台/实验室记录表 — 现库无此表，待建
-学历结构字段 — 现库无此字段，待建
-软件著作权表 — 现库无此表，待建
-无形资产明细字段 — 现库无此字段，待建
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：14 项三级指标中：专利三项原料足（294 万专利+法务 20,000 行）；财务侧薄填充（研发 0/90926、研发人员 0、从业 3184）；五项 calc-logic 自标待建复核确认零承载（{'capitalized_rd_field': 0, 'research_platform_table': 0, 'education_structure_field': 2, 'software_copyright_table': 0, 'intangible_asset_detail': 0} 全空）；获奖类标签 LIKE 探针 0 类命中（待口径确认）。三准则层中投入层半缺、产出层两项缺、可持续层薄 → 部分支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_INNOVATION_INDEX.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_INNOVATION_INDEX.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_INNOVATION_INDEX_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

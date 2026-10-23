@@ -1,65 +1,68 @@
-# 发展痛难点诊断（M_ENT_PAINPOINT_TOPIC）
+# 痛点主题（M_ENT_PAINPOINT_TOPIC）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PAINPOINT_TOPIC.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PAINPOINT_TOPIC.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PAINPOINT_TOPIC_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_ENT_PAINPOINT_TOPIC |
-| 指标名称 | 发展痛难点诊断 |
-| 一级模块 | 企业分析 |
-| 二级模块 | 风险洞察 |
-| 三级模块 | - |
-| 更新频率 | 月度/季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q009 / Q018 / Q080 |
+| 指标名称 | 痛点主题 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业服务／企业诊断／痛点归因 |
+| 更新频率 | 建议月度 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业画像「痛点主题」标签 + 主题分布饼图｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_PAINPOINT_TOPIC.md` |
 
 ## 口径定义
 
-输出企业发展痛难点的问题/瓶颈清单及建议报告（描述、成因、行业最佳实践、解决方案）。诊断维度按 §.5.3 经营/盈利/效率/人才四维（Q-MO-ENT-09），不复用 Q018 四维的 `M_ENT_PAINPOINT_COUNT`。对象=企业诊断报告，粒度=企业。
+699,003 条痛点记录可归入 9 个规则主题，债务违约占 89.61%；但主题只覆盖合规侧、无经营主题与语义聚类，判部分支持。
 
 ## 计算逻辑说明
 
-四维诊断：各维指标与分组基线比较，识别偏离方向，输出问题清单 + 建议。
+```text
+topic = f(风险表, 结构化原因字段)；records = Σ 命中条数；share = 该主题条数 / 全部痛点条数
+```
 
-### 第一步：四维判定
-
-1. **经营竞争力**：营收增长率低于分组 P25 判定经营竞争力不足。
-2. **盈利能力**：净利润率/ROE 低于分组 P25 判定盈利短板。
-3. **生产效率**：人均产值低于分组 P25 判定生产效率低。
-4. **人才状况**：研发人员占比低于分组 P25 或人才流失判定人才短板。
-
-### 第二步：报告生成
-
-$$ Report = \{ 问题描述, 成因分析, 行业最佳实践, 解决方案 \} $$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 发展痛难点诊断 | 经营竞争力诊断 | 营收增长异常识别 | 营收增长率低于分组基线判定。 | revenue_growth_rate < P25 | enterprise_finance_history(org_id, data_year, revenue_growth_rate) — 营收增长率 | 诊断阈值/规则配置表 |
-| 发展痛难点诊断 | 盈利能力诊断 | 净利润率异常识别 | 净利润率低于分组基线判定。 | profit_margin < P25 | enterprise_finance_history(org_id, data_year, profit_margin, net_profit) — 净利润率 | 诊断阈值/规则配置表 |
-| 发展痛难点诊断 | 生产效率诊断 | 人均产值异常识别 | 人均营收低于分组基线判定。 | 营收/从业人数 < P25 | dwd_org_annual_financial_info(org_id, year, operating_revenue, employees_number) — 营收,从业人数 | 诊断阈值/规则配置表 |
-| 发展痛难点诊断 | 人才状况诊断 | 研发人员占比异常识别 | 研发人员占比低于分组基线判定。 | 研发/从业人数 < P25 | dwd_org_annual_financial_info(org_id, year, development_employee, employees_number) — 研发人员,从业人数 | 诊断阈值/规则配置表 |
-| 发展痛难点诊断 | 诊断结果 | 问题清单与建议报告 | 描述/成因/实践/方案报告输出。 | 四维汇总 | enterprise_diagnosis(org_id, enterprise_name, weaknesses, suggestions, diag_level) — 诊断结果（ADS） | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PAINPOINT_TOPIC.md` §二（M_ENT_PAINPOINT_TOPIC.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_annual_financial_info(org_id, year, operating_revenue, pure_profit, employees_number, development_employee) — 经营/盈利/效率/人才指标
-- enterprise_finance_history(org_id, data_year, revenue_growth_rate, profit_margin, net_profit) — 增长率/利润率（DWD）
-- dwd_org_base_info(org_id, industry_l1_code) — 产业链分组
-- dwd_org_industry_tags(credit_code, industry_code) — 产业链分组
-- enterprise_diagnosis(org_id, enterprise_name, weaknesses, suggestions, diag_level) — 诊断结果（ADS）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_company_abnormal`
+- `dwd_org_company_illegal`
+- `dwd_org_company_punish`
+- `dwd_org_risk_shixin`
+- `dwd_org_risk_zhixing`
 
-- 诊断阈值/规则配置表：四维判定阈值与分组基线现无配置，需按组内分位数或专家阈值落表。
-- 行业最佳实践/解决方案知识库：建议报告生成所需实践库现无表。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 企业发展痛难点识别模型 | 算法库 §1.1.1.1.1.1.1.5.3 | 经营/盈利/效率/人才四维 | 关联 Q009 / Q018 / Q080。
+## 数据支持度与缺口
 
-[2] 智能痛难点诊断模型/分析建议报告输出 | 需规 SRS《企业分析.md》序号55/56 | 问题识别与建议报告。
+- **判档**：部分支持
+- **判档理由**：痛点诊断结果面不存在，但主题构造所需的结构化原因字段在库内是真实的：经营异常 5,862 条带 abn_reason 原文（可拆四类），失信 76,035、被执行 550,334、处罚 65,997、严重违法 247、税务处罚 528 都能直接映射主题，合计 69.9 万条。规则主题可复现、可对回原始记录，故判部分支持；缺少经营侧痛点与语义主题，主题体系只覆盖合规侧。
+- **基期声明**：风险表是事件流水，本件按「截至抓取时点的累计条数」归类，不做年度切分，故无基期年份；表内带发生日期，年度主题迁移需另做按年聚合。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_PAINPOINT_TOPIC.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PAINPOINT_TOPIC.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_PAINPOINT_TOPIC_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

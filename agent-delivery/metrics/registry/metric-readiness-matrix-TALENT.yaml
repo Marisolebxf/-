@@ -1,506 +1,841 @@
 # metric-readiness-matrix —— 人才域（TALENT）四维就绪度
 # ============================================================================
-# 生成任务：METRIC-SEED-REGISTER-L01 · 2026-08-22 · 监管 human:淮政玮
-# 模型：data-lineage-policy.md §2.3
-# D1=draft；D2=pending；D3=pending_ods；D4=mock。禁止改绿。
-# lifecycle_stage=open（已过 METRIC-OPEN 身份点名，公式未签）。
-# ============================================================================
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
+# 模型定义：data-lineage-policy.md §2.3
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-TALENT-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
+# ----------------------------------------------------------------------------
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 0 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
+# ----------------------------------------------------------------------------
+# 本域分布：32 条｜D1 aligned 32 / draft 0｜D3 full 3 / partial 26 / none 3 / pending_ods 0｜本批新增 0 条、D3 有据升级 0 条、派生件 0 条。
 
 version: 1
 module: TALENT
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
-as_of: "2026-08-22"
+updated: "2026-10-23"
+as_of: "2026-10-23"
 d2_verifier: lineage-subcoord
-d4_batch: open_draft_20260822
-register_task: METRIC-SEED-REGISTER-L01
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "OPEN 新号身份注册；D1=draft，公式/类型未签。"
-  - "不改 A2 库 missing 为 mapped。"
-  - "D2/D3/D4 本批不改绿。"
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
   - metric_id: M_TALENT_ACADEMIC_SCORE
-    metric_name_zh: "人才学术力指数"
+    metric_name_zh: "M_TALENT_ACADEMIC_SCORE"
     acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-03"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_scholar、dwd_scholar_coauthor、dwd_scholar_paper_relation、dwd_schol
+      ar_papers…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。需求五维中三维（论文/被引/H）在 gkx.dwd_scholar 100% 非空、可全量打分；期刊影响力维无任何期刊分区/影
+      响因子表（dwd_zh_journal.impact_score 2,796 行非空 0），学术合作广度维只有 dwd_scholar_coauthor 1,187,606 行的合著数量、
+      无期刊/机构维度，两维始终无法补齐 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_ATTRACT_SCORE
-    metric_name_zh: "引入人才推荐指数"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-06"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_CULTIVATE_SCORE
-    metric_name_zh: "培育人才推荐指数"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-06"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_FLOW_TRACK
-    metric_name_zh: "人才流动追踪"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_INDUSTRY_SCORE
-    metric_name_zh: "人才产业力指数"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-04"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_ORG_DIST
-    metric_name_zh: "重点人才机构分布"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-01"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_REGIONAL_DIST
-    metric_name_zh: "重点人才区域分布"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-10"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_RELATION_NET
-    metric_name_zh: "重点人才关系链结构"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-08"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_STRUCT_QUERY
-    metric_name_zh: "查询结果·人才结构"
-    acceptance_unit_id: "TOPIC-QUERY"
-    module: TOPIC-QUERY
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-QUERY-01"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_SUPPLY_STRUCT
-    metric_name_zh: "人才供给情况"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-02"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_SZ_STATUS
-    metric_name_zh: "深圳人才现状与优劣势"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-07"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_SZ_SUPPLY_DEMAND
-    metric_name_zh: "深圳人才供需评价"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-09"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_TALENT_UNIV_NEW
-    metric_name_zh: "高校新培育人才"
-    acceptance_unit_id: "TOPIC-TALENT-05"
-    module: TOPIC-TALENT
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-TALENT-05"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
+  - metric_id: M_TALENT_ATTRACT_SCORE
+    metric_name_zh: "M_TALENT_ATTRACT_SCORE"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_job、dwd_patent、dwd_patent_inventors、dwd_scholar…）；批量初判 provisiona
+      l，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。A/P/M 三维在外部池可算（A 全覆盖、P 约七成、M 约七成），但 C 维（深圳连接）只有约一成候选可测：深圳署名论文 1
+      0.3%、深圳履历受「子表 scholar_id 仅 9.3% 可连」限制；需求所指的招聘平台真源 `dwd_job` 仅 10 行、无投递/意向交互日志，「智能筛选」只能降级为规则化筛选
+      → 部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_BASE_98_1
-    metric_name_zh: "人才基础指标模型构建"
+    metric_name_zh: "M_TALENT_BASE_98_1"
     acceptance_unit_id: "ALGO-TALENT-BASE-98"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_heis_info、dwd_scholar、dwd_scholar_education_background、dwd_sc
+      holar_research_direction…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四族分组计数都能出数（学者 21,316、机构 2,108、方向标签 97,249、学历行 43,766），但三处硬缺口始终存
+      在：①「人才」只有学者口径，企业研发人员/技能人才无表；② D4 是存量学者学历回溯，不是学科×年份的官方供给流量，且无学科码；③ D3/D4 的 scholar_id 与主档仅 9.3%
+      可连，四族不能交叉切片、D2/D3 无年份列故增长率不可算 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_CULTIVATE_SCORE
+    metric_name_zh: "M_TALENT_CULTIVATE_SCORE"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_org_heis_info、dwd_scholar、dwd_scholar_education_background、dwd_sc
+      holar_talent_flag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中三维修（A 学术力、P 专利、R 平台资源）有可算数据；Po 留深黏性维的三个子信号里，「任职年限」与「深圳求学」受子表
+      scholar_id 跨域影响只覆盖可连子集，「深圳署名论文占比」可算但仅对有论文署名者；专利维两字姓名/池内同名一律缺测 → 部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_156_1
-    metric_name_zh: "重点人才识别模型"
+    metric_name_zh: "M_TALENT_DEEP_156_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-156"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（dwd_job、dwd_org_annual_financial_info、dwd_org_recruit_info、dwd_schol
+      ar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。学术影响力三列（h / citation_nums / paper_nums）在 gkx.dwd_scholar 21,316
+      行上 100% 非空、可全量打分，院士标识与中文论文面可作外部校验，识别主链成立；但需求输入第一项「企业人才库数据」与「招聘/薪资市场信号」在库内无表（dwd_job 仅 10 行），学
+      历/履历/研究方向三张子表与身份主档只有 9.3% 可行对齐，识别池退化为学者口径 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_157_1
-    metric_name_zh: "人才流动追踪模型"
+    metric_name_zh: "M_TALENT_DEEP_157_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-157"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_job、dwd_org_heis_info、dwd_org_industry_tags、dwd_scholar…）；批量初判 pr
+      ovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。履历表 57,117 段覆盖 20,028 名学者，机构序列/城际边/深圳三态可全量现转，流动骨架成立；但需求点名的社交网络、
+      招聘网站、简历数据库三类源在库内无表（dwd_job 仅 10 行），流失与流入只能用「现机构 vs 历史机构」代理，且履历表与身份主档只有 9.27% 可挂（姓名/职称仅在这部分可用），
+      深圳流入年样本集中在少数年份 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_158_1
-    metric_name_zh: "高校学院新培育人才模型"
+    metric_name_zh: "M_TALENT_DEEP_158_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-158"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_heis_info、dwd_scholar、dwd_scholar_education_background、dwd_zh
+      _paper…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。培养机构名单（教育部名录深圳 11 校 + 4 个深圳研究生院/院所）与全国培养分母（名录内博士学历段）可全量现转，产出层（深
+      圳机构署名中文论文 1,188 篇）可算；但「新培育」的核心时序腿在库内近乎不存在——全库学历表中命中深圳培养机构的记录只有 15 段、覆盖 13 名学者、2019 年后仅 3 段，无法支
+      撑逐年新增序列；且学历表与身份主档只有 9.25% 可挂、无学科代码 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_159_1
-    metric_name_zh: "深圳重点人才优势和短板分析模型"
+    metric_name_zh: "M_TALENT_DEEP_159_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-159"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_job、dwd_org_annual_financial_info、dwd_org_recruit_info、dwd_schola
+      r…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。学者画像五维（规模/影响力/产出/顶才/帽子）在 gkx.dwd_scholar 21,316 行上可全量现转，领域维可用 1
+      3,955 名学者的双锚定论文判簇、按区位商给出优势/短板，诊断骨架成立；但需求点名的技能匹配度、招聘难度、薪资水平、发展前景四项市场供需维在库内完全无源（dwd_job 仅 10 行、无
+      薪资字段），对标口径也只有学者库（全国样本实为都市圈 + 京沪）→ 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_160_1
-    metric_name_zh: "人才关系链模型"
+    metric_name_zh: "M_TALENT_DEEP_160_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-160"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_scholar、dwd_scholar_coauthor、dwd_scholar_research_direction、dwd_s
+      cholar_work_experience）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。关系边（1,187,606 行 / 20,011 ego / 899,662 合作者）与机构名可全量现读，深圳子图、跨城连接、
+      枢纽识别都能算；但（a）每个 ego 只保留前 100 个合作者，（b）ego 侧无姓名、只能靠履历表补机构，（c）表内无年份，趋势链不可算，（d）ego id 与主档 dwd_schol
+      ar 只有 1,839 个交集 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_161_1
-    metric_name_zh: "人才供需分析评价模型"
+    metric_name_zh: "M_TALENT_DEEP_161_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-161"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_id、dwd_job、dwd_org_recruit_info、dwd_scholar…）；批量初判 provisional，待 
+      lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。需求侧有 6,702,453 条真实招聘岗位流水、供给侧有 20,420 名学者与论文簇归属，两侧都能算；但（a）岗位表只有岗
+      位名与工作地，无学历/技能/薪资要求，（b）岗位名到 20+8 簇只能靠关键词，命中率 5.99%，（c）两侧单位不同（岗位 vs 人）、（d）本地培养段仅 15 段、供给侧只能用存量学者
+      代替「新增供给」→ 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_162_1
-    metric_name_zh: "人才学术力评估模型"
+    metric_name_zh: "M_TALENT_DEEP_162_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-162"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_scholar、dwd_scholar_papers、dwd_scholar_research_direction、dwd_sch
+      olar_talent_flag）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。成果数量与学术影响力两维在 20,420 名有姓名学者上 100% 可算；第三维「专业技能水平」只能代理：`dwd_schol
+      ar_research_direction` 与主档 scholar_id 只有 1,793 个交集（8.78%），本文改用姓名+机构双锚定的中文论文簇，覆盖 13,955 人（68.33
+      %），仍有 6,465 人没有第三维；且「簇个数」是产业领域广度，不是技能水平本身 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_163_1
-    metric_name_zh: "人才产业力评估模型"
+    metric_name_zh: "M_TALENT_DEEP_163_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-163"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_important_news_info、dwd_org_industry_product_tags、dwd_patent）
+      ；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。企业影响力（专利件数）与产业覆盖度（IPC 小类数）在 77,529 家深圳企业上可算，两维相关系数 0.78；但媒体知名度只
+      能在专利 TOP60 的 58 家上取数（新闻表 1,668,414 行按名称计数需逐名过滤，全池 7.7 万家不可行），且新闻条数含转载/重复、无情感与去重，只能作头部相对声量；IPC 
+      缓存覆盖 76.93%、深大等机构口径偏低 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_164_1
-    metric_name_zh: "招入人才推荐模型"
+    metric_name_zh: "M_TALENT_DEEP_164_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-164"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_industry_product_tags、dwd_org_recruit_info、dwd_scholar、dwd_sc
+      holar_education_background…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。学术力（20,183 人全覆盖）、产业力（机构专利 17,105 人 = 84.75%）、深圳连接度（合著 465 人 / 履
+      历 19 人）三维可算，但需求点名的「产品匹配度」没有数据：招聘表只有岗位名与工作地、无技能要求，产品标签表的 credit_code 与机构底册只有 3.5% 交集，无法逐人匹配；深圳连
+      接度有合著信号的人只占 2.30% → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DEEP_165_1
-    metric_name_zh: "培育人才布局模型"
+    metric_name_zh: "M_TALENT_DEEP_165_1"
     acceptance_unit_id: "ALGO-TALENT-DEEP-165"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_bid_、dwd_org_recruit_info、dwd_scholar、dwd_scholar_talent_flag）；批量
+      初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。方向匹配（59 人有 20+8 聚类命中）、成长信号（32 人 np≥3 有首末年份）、学术力（237 人全覆盖）、产业支撑（
+      210 人有机构专利）四维可算；但「培养布局」要求的培养项目/平台/经费/导师数据在 gkx 全缺（人才工程表只有称号与年份、无对象级培养措施），聚类方向来自论文题目关键词共现而非官方技术
+      目录 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_005
     metric_name_zh: "沟通障碍智能检测"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-005"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 15 张 gkx 表可查（dwd_en_paper、dwd_en_paper_abstract、dwd_en_paper_title、dwd_global_pol
+      icy_base…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。全库无个人语言能力字段（13 个 language 列全部指向论文/文档语种），无访谈/语音/会议/邮件语料，无沟通障碍标签；bi
+      o 文本里提到英语的仅 28/19,109（0.15%），是自述且无等级。检测对象（沟通行为）与标签（障碍程度）双双缺席，任何打分都是造数。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_006
     metric_name_zh: "文化融合风险评估"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-006"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_forg_base_info、dwd_scholar、dwd_scholar_edu、dwd_scholar_talent_fla
+      g）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。宗教/族群字段 0 列、文化/社区类表 0 张、国籍/签证字段 0 列；`dwd_forg_base_info` 是境外企业底册而
+      非境外人才，country 列去重为 0；bio 提到华裔/外籍合计 3 条。既无「外籍身份」也無「融合结果」，无法构建风险评分。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_007
     metric_name_zh: "国际流动壁垒分析"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-007"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_base_info、dwd_scholar、dwd_scholar_edu）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。海外学历 628 人、海外履历 896 人、国际合著 1,824 人三维可算，能刻画「流动经历强度」；但壁垒本身——签证/居留
+      、国籍、家庭随迁、学历认证——全库 0 字段，只能给出壁垒的逆向代理（经历越多=壁垒越低），无法直接测「被什么挡住」。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_010
     metric_name_zh: "引进阻力量化评分"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-010"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_scholar、dwd_scholar_talent_flag）；批量初判 provisional，待 lineage-subco
+      ord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。学术势能（20,420 全覆盖）、地理距离（全覆盖）、流动惯性（1,766 人有履历）、头衔阻力（80 名院士在面板）四维可算
+      ；但薪酬期望、家庭、语言、签证四类阻力在 gkx 全库 0 字段，评分只覆盖「可测阻力」，不能当全阻力使用。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_013
     metric_name_zh: "高精度成本模型构建"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-013"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_en_journal、dwd_main_business_composition_、dwd_main_business_compo
+      sition_area、dwd_main_business_composition_industry…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。成本模型的因变量不存在：37 个 cost/income 列全部是企业分部财务或期刊排版费，0 列薪酬/安家费/猎头费；798 万
+      条招聘记录无薪资字段；学者主档无薪酬职级。只能做「企业人均研发费用」这类宏观代理，无法落到个人引进成本，故完全不支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_DS_16_TALENT_RECRUIT_025
     metric_name_zh: "团队组合与协同分析"
     acceptance_unit_id: "DS-16-TALENT-RECRUIT-025"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_bid_、dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。在深 237 名学者中 59 人有 20+8 聚类（可算方向覆盖与重叠）、全池可算引用均衡、coauthor 边 2,250 
+      条可算内部合作密度；但团队产出、项目共担、角色分工、年龄职级全库无字段，关键词仅 1/237 非空，深圳机构内部合作边仅 7 条（密度 0.0%—0.4762%），协同效应本身无法验证。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_FLOW_TRACK
+    metric_name_zh: "M_TALENT_FLOW_TRACK"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。旧稿把"流动"等同于"换单位"，未区分同机构晋升与真流动，也未处理并行任职；分母在"有履历人数"与"全库人数"之间来回切。本件
+      固定三个分母并全程标注：
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_GRAPH_110_1
-    metric_name_zh: "人才实体识别构建"
+    metric_name_zh: "M_TALENT_GRAPH_110_1"
     acceptance_unit_id: "ALGO-TALENT-GRAPH-110"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。第一，两个宇宙的交集极小。主档 21,316 人里，有学位/职称/研究方向/履历任一属性的人只有 1,858 人；反过来，属性
+      宇宙 20,030 人里只有 9.28% 能在主档找到同名同机构的对应实体。这不是抽样缺失，而是两套数据来自不同采集批次、主键体系未打通。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_TALENT_GRAPH_111_1
     metric_name_zh: "人才实体关系抽取"
     acceptance_unit_id: "ALGO-TALENT-GRAPH-111"
-    module: TALENT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_scholar、dwd_scholar_coauthor、dwd_scholar_paper_relation、dwd_schol
+      ar_research_direction）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。需求明列的 5 类实体关系里只有「科研机构」可强建成（20,829 条，按机构名称串），「技术」只能弱建成（研究方向自由文本，
+      97,249 个不同标签、82.3% 只出现一次，无受控词表）；「企业 / 产业 / 服务机构 / 政策」四类在 gkx 无任何关系表或可映射字段。共著关系仅 0.73% 的行落在人才主档
+      内（8,675/1,187,606），机构 ID 整列为空，主档内网络 61.21% 的学者是孤点。骨架可建、六类关系只落实一
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_INDUSTRY_SCORE
+    metric_name_zh: "M_TALENT_INDUSTRY_SCORE"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_org_industry_tags、dwd_patent_transfer、dwd_scholar、dwd_scholar_res
+      earch_direction…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中 IND/H/PAT 三维可直接算，LINK 维只能由「企业任职履历 / 企业合作论文 / 深圳机构合作论文」三个 0/
+      1 信号拼装，需求原意中的横向课题经费、技术转让、企业委托合同三列在 gkx 全库不存在（见 §三 表级清单）→ 部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_ORG_DIST
+    metric_name_zh: "M_TALENT_ORG_DIST"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_heis_info、dwd_org_recruit_info、dwd_scholar、dwd_scholar_talent
+      _flag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。| 证据 | 实测值 | 落盘位置 | 对判档的作用 | |---|---|---|---| | 机构名填充 | 20,829 
+      / 21,316 = 97.72% | `coverage.org_filled` / `org_share` | 分母足够大，不存在「整列空」 | | 机构串去重 | 2,108 个 |
+      `coverage.distinct_org` | 足以做 CR/HHI，不需要外部机构库 | | 机构主键 | `sch
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_REGIONAL_DIST
+    metric_name_zh: "M_TALENT_REGIONAL_DIST"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_heis_info、dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验
+      。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。| 证据 | 实测值 | 产物键 | 对判档的作用 | |---|---|---|---| | 有机构名 | 20,829 |
+      `coverage.org_filled` | 推断的输入基数 | | 可定位 | 19,050（91.46%） | `coverage.locatable` | 主体可算 | | 未归
+      属 | 1,779（8.54%） | `coverage.unmatched` | 覆盖缺口，不能判完全支持 | | 海外 |
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_RELATION_NET
+    metric_name_zh: "M_TALENT_RELATION_NET"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_scholar、dwd_scholar_coauthor）；批量初判 provisional，待 lineage-subcoord
+      核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。第一，6,810 个 ego 的度正好等于 100，占 20,011 个 ego 的 34.03%。真实度大于 100 的人被
+      压到 100，于是均值 59.35、p75 100、p90 100、p99 100 全部失真。均值只能读作下界，不能读作"平均每人合作 59 人"。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_STRUCT_QUERY
+    metric_name_zh: "M_TALENT_STRUCT_QUERY"
+    acceptance_unit_id: "TOPIC-QUERY"
+    module: "TOPIC-QUERY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。第一，学位表 43,766 行是"多段学位"记录，一人可有多行。直接按行计数会把"本科 + 硕士 + 博士"的人算三次，博士占比
+      会被抬高。本件按人取最高，18,200 人有值，博士 15,813 人。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_SUPPLY_STRUCT
+    metric_name_zh: "M_TALENT_SUPPLY_STRUCT"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。第一，供给的价格维完全缺失。没有期望薪酬、最低可接受薪资、当前薪资，任何"某学科人才贵不贵""深圳薪资溢价能否吸人"的问题都无
+      法回答。供给曲线在本库内只有"量"的一侧。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_SZ_STATUS
+    metric_name_zh: "M_TALENT_SZ_STATUS"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。第一，深圳组用机构名判定，不能用面板 `city` 列。面板 `city` 把"哈尔滨工业大学(深圳)"判回哈尔滨、"北京大学深
+      圳医院"判回北京，共 23 人错分。本件改用 `is_sz_org()`，机构名含"深圳"或 `loc2` 判深圳，得 236 人；用面板 `city` 只得 213 人。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_SZ_SUPPLY_DEMAND
+    metric_name_zh: "M_TALENT_SZ_SUPPLY_DEMAND"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_recruit_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。第一，需求侧的域分布被岗位名主导。深圳岗位里经管/人文社科占 35.02%、其他/未归类占 31.74%，两者合计 66.76
+      %。这不是说深圳 67% 的岗位是文职，而是说"产品经理""销售经理""会计""招聘专员"这类泛称被归到了经管，而"工程师"类泛称大量落入"其他"。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_TALENT_UNIV_NEW
+    metric_name_zh: "M_TALENT_UNIV_NEW"
+    acceptance_unit_id: "TOPIC-TALENT-05"
+    module: "TOPIC-TALENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_scholar）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。第一，建校年只覆盖 46.13%。3,501 行里 1,353 所有 `est_year`，其余为空。更麻烦的是 `est_y
+      ear` 是"现校名成立年"，合并、更名、升格的院校会显得很新——例如某专科 2016 年升格为学院，`est_year` 就记 2016，但它并不是新设。因此"2016 年后建校 25 
+      所"是下限，且混有"更名"。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 

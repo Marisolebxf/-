@@ -1,96 +1,71 @@
 # 深圳企业清单与链中角色（M_ENT_SZ_LIST_TOPIC）
 
-> 口径真源：专题 OPEN seq 47 → 2026-08-31 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **Q076 / Q-MO-ENT-05 团队暂定 D**（human:徐滕强）：深圳跟 `M_ENT_SZ_COUNT`，`region_id LIKE '4403%'`。禁止 `headquarters_city`。Q076 仍 🟡。  
-> 角色 = `node_stage`（上中下游）。不 reuse `M_ENT_SZ_CHAIN_POSITION`（那是地区游分布 COUNT）。不走 ENT-D14 抽取。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_LIST_TOPIC.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_LIST_TOPIC.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_LIST_TOPIC_out.json`。
 
-## 元数据
+## 基础信息
 
-- 指标ID：`M_ENT_SZ_LIST_TOPIC`
-- 名称：深圳企业清单与链中角色
-- 模块：专题企业 / TOPIC-ENT-05
-- 更新频率：年
-- 关联Q：Q076 / Q-MO-ENT-05（暂定 D，仍 🟡）；深圳键同 `SZ_COUNT`
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_SZ_LIST_TOPIC |
+| 指标名称 | 深圳企业清单与链中角色 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 专题企业 / TOPIC-ENT-05 |
+| 更新频率 | 年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 专题页「深圳上链企业清单」表 + 选链筛选｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_SZ_LIST_TOPIC.md` |
 
 ## 口径定义
 
-自然年：国内行政落在深圳、且上链的企业成员行，并标注链中角色。
+深圳 12 条产业链上共 92,930 家企业可列，占全国同链企业 1,714,457 家的 5.42%；但「链中角色（上/中/下游）」这一列在 gkx 无字段，只能给到一级环节，故判部分支持。
 
+## 计算逻辑说明
+
+```text
+members = {(credit_code, chain_code, l1_code) | credit_code[2:6]=4403 AND chain_code != null}
 ```
-成员 = (org_id, chain_code, node_stage)
-FROM enterprise_base b
-JOIN enterprise_industry_chain e ON e.org_id = b.org_id
-WHERE b.region_id LIKE '4403%'
-```
 
-查询 JOIN（不进成员表主键）：
-
-- `enterprise_base`：名称
-
-- 深圳 = `region_id LIKE '4403%'`（市码 4403，含各区）。跟 `SZ_COUNT`。禁止 `headquarters_city` / `city` 中文名。
-- 角色 = `node_stage`（上 / 中 / 下游）。禁止 `chain_node.position` 顶本条；禁止节点名顶游。
-- **选链是 API**：ETL 全量链成员；禁止把「当前所选链」写进主键口径。
-- 只国内。不 UNION。
-- 不另造 CNT ID。清单规模 = 同核成员去重，不 reuse `SZ_COUNT` 结果表。
-- 禁止 reuse `SZ_CHAIN_POSITION`。禁止 ENT-D14 关系抽取进本核。禁止 `M_CHAIN_SZ_ENTERPRISE*` 顶替。
-
-8 件套只留这条成员行。下面实现不得改口径。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-主档 `region_id` + 上链边在就能列出。公式完整。
-
-### ② 灌数 / 绑码（另一回事）
-
-现网 `enterprise_base` 无 `region_id` 列（跟 `SZ_COUNT` 探针）。待 ETL 绑码。不进「无法执行」。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_base` / `enterprise_industry_chain` | 表在；主档无 `region_id` 列 |
-| 目标 | `enterprise_sz_chain_list`（建议：`org_id + chain_code + node_stage`） | **缺口：无此表** |
-
-源 ≠ 目标。GDF 暂缓。不要把 `enterprise_base` 整表复制进目标。
-
-## 分场景 / 千万级（不进 8 件套）
-
-| 层 | 做什么 |
-|----|--------|
-| ETL | 全量深圳上链成员写入目标表。 |
-| API | `WHERE chain_code=?`，分页。禁止请求路径全库扫。 |
-| 前端 | 选链 = 带链键查行。 |
-
-**计算公式文件**：`M_ENT_SZ_LIST_TOPIC.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_LIST_TOPIC.md` §二（M_ENT_SZ_LIST_TOPIC.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_base.region_id <- ods: dwd_org_base_info
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-计算 FROM 只用左端。维表不进 `source_systems`。
+- `dwd_bid_base_out`
+- `dwd_bid_base_out_bak_20260911`
+- `dwd_bid_base_out_bak_20260923`
+- `dwd_forg_executive_info`
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-来源系统：国内机构要素库、产业链要素库。
+## 待建表字段
 
-## 现网探针（2026-08-28 覆盖 SZ_COUNT 叶；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 正式 / demo `enterprise_base` 无 `region_id` 列。
-- ODS `city='深圳市'` 有样例行，不当计算键。
+## 数据支持度与缺口
 
-## 待建 / 缺口（不是口径算不全）
+- **判档**：部分支持
+- **判档理由**：深圳键与链归属都可等价实现（深圳 92,930 家与已交付链企业快照逐项对上），但 calc-logic 要求的角色字段 node_stage（上/中/下游）在 gkx 全库 0 字段，链树只有目录层级与环节名，不能推出上中下游 → 清单可出、角色不可出。
+- **基期声明**：本件是链属快照的截面清单（dwd_org_industry_tags 为当前态，无年度分区），不涉及多期基期；快照抓取日 2026-10-22/23。不把缺失年份按 0 摊入任何分母。
+- **复现实测耗时**：约 0.3 秒（源件落盘记录）
 
-1. `region_id` 绑码；Q076 🟡。
-2. **无独立目标表**。
-3. D3 / D4 本波不升。`is_mock: true`。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_LIST_TOPIC.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_LIST_TOPIC.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_LIST_TOPIC_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-acceptance `TOPIC-ENT-05`；STAT。Q076 A/B/C 不作本条口径。
+## 更新记录
 
----
-*2026-08-31 COVER-STAT-L01：深圳=4403%；角色=node_stage；选链是 API*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

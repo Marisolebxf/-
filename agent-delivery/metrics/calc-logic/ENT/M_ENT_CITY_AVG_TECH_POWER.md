@@ -1,123 +1,65 @@
 # 城市平均技术力（M_ENT_CITY_AVG_TECH_POWER）
 
-> 口径真源：王惠底稿「城市平均技术力」→ 2026-08-28 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT（ADS 特例，须先有 SCORE）**：本条只做城市均值，不算五维、不改权重。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_AVG_TECH_POWER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_AVG_TECH_POWER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_AVG_TECH_POWER_out.json`。
 
-## 依赖（强制，先于本条）
+## 基础信息
 
-必须先有 **`M_ENT_TECH_POWER_SCORE`（MODEL）** 跑完并写入 ADS `tech_power`：
-
-```
-ODS 原料 → 项目 DWD → M_ENT_TECH_POWER_SCORE → ADS tech_power.tech_power_index
-                                                         ↓
-                              本条 AVG → DWD sz_city_benchmark.avg_tech_power
-```
-
-| 顺序 | 指标 / 表 | 本条用它做什么 |
-|------|-----------|----------------|
-| 1 | `M_ENT_TECH_POWER_SCORE` | 出企业技术力分（Q014 权重在这一叶，本波不改） |
-| 2 | ADS `tech_power` | 读 `org_id` + `tech_power_index`；无分不进均 |
-| 3 | DWD `enterprise_base.region_id` | 市码 `LEFT(region_id,4)` 分组 |
-| 4 | 本条 | AVG 后写入 `sz_city_benchmark.avg_tech_power` |
-
-没有第 1 步出分、没有 `region_id`：标缺口，公式仍写 AVG。无分 = **该企不进均**（口径）。
-
-禁止用 `enterprise_score`（创新/经营/成长）、专利量、`tech_power.headquarters_city` 中文名顶替。禁止抄 `sz_city_benchmark.avg_tech_power` 现成值（深圳 77.0 等对不上 ADS 均分，mock）。
-
-## 元数据
-
-- **指标ID**：`M_ENT_CITY_AVG_TECH_POWER`
-- **指标名称**：城市平均技术力
-- **一级模块**：企业分析
-- **二级模块**：深圳企业现状分析
-- **三级模块**：多城市对标
-- **更新频率**：周（随 SCORE 批次）
-- **对齐状态**：FROM 锁 ADS `tech_power`；分组锁 `region_id`；缺口见下表
-- **是否在数据库**：ADS 有 demo 分；主档无 `region_id`；结果表有 mock 均分
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q014（SCORE 权重）；Q016（对标城市集合）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_CITY_AVG_TECH_POWER |
+| 指标名称 | 城市平均技术力 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 区域分析／城市对比／技术力 |
+| 更新频率 | 随上游 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 城市对比页「平均技术力」卡、区域技术力地图｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| 缺失年份 | [2017, 2018, 2019, 2020] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_CITY_AVG_TECH_POWER.md` |
 
 ## 口径定义
 
-对已出技术力分的企业，按市求 `tech_power_index` 算术平均。
+四市有专利企业的专利三维分均值：惠州 0.1079、东莞 0.1064、广州 0.1、深圳 0.0987，但无专利企业不入分母，且样本 <100 的城市被剔除，判部分支持。
 
-- 城市 = `LEFT(enterprise_base.region_id, 4)`（与区域企业数、深圳企业数同一套码）。
-- 只国内。国外无对等 `tech_power` 表，暂不并。
-- 无 `tech_power_index`：**该企不进均**。某市一个能进均的企业都没有：**该市无法计算**。
-- 对标展示哪些市：Q016 🟡；未闭合前只用 `sz_city_benchmark` 已有 `city_code` 行，不新造城市。
-- 选产业：用当前筛选 ∩ 已出分企业再均，不是另做一套 SCORE。
+## 计算逻辑说明
 
-## 落表
+```text
+city_avg = AVG(0.5*专利规模 + 0.3*IPC4广度 + 0.2*新鲜度) OVER 该市有专利企业
+```
 
-| 目标 | 粒度 | 写什么 |
-|------|------|--------|
-| `sz_city_benchmark.avg_tech_power` | `city_code` 一条 | 该市 `AVG(tech_power_index)` |
-
-**禁止读**现成 `avg_tech_power`。`avg_business_power` 不是本条。
-
-## 分场景 / 实现方案
-
-### 场景 A · 对标表（默认）
-
-SCORE 批次就绪后：`tech_power` JOIN `enterprise_base` ON `org_id`，`GROUP BY LEFT(region_id,4)`，UPDATE 结果表对应 `city_code`。
-
-### 场景 B · 单市 KPI（如深圳）
-
-`region_id LIKE '4403%'` 的子集上 AVG，写入 `city_code=440300`。
-
-### demo（`demo_gkxlumenx_*`）
-
-- ADS `tech_power` 行数少，可全表 JOIN 再 GROUP BY。
-- 主档同样无 `region_id`：**缺口：缺列**。不要用 ADS `headquarters_city` 凑。
-
-### 生产（`gkxlumenx_*`）
-
-- 按 `org_id` 关联后按市码聚合，禁止无过滤全表当常规方案。
-- 现网结果表均分是 mock（深圳 77 vs ADS 中文城均分约 53.5），必须重算。
-
-对应 seed `formula`：依赖 SCORE + AVG + 缺口（缺 `region_id` / SCORE 未出分）。
-
-**计算公式文件**：`M_ENT_CITY_AVG_TECH_POWER.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_AVG_TECH_POWER.md` §二（M_ENT_CITY_AVG_TECH_POWER.py 零改语义复算）。
 
 ## 源表字段
 
-本波例外：二次 STAT 左端允许 ADS 结果表，右端写指标依赖。
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-```
-tech_power <- metric: M_ENT_TECH_POWER_SCORE
-enterprise_base <- ods: dwd_org_base_info
-```
+- `dwd_org_base_info`
 
-完整链（细稿）：ADS `tech_power` ← SCORE/MODEL ← DWD 原料 ← ODS。GDF：DWD **勿建** `enterprise_score`。
+## 待建表字段
 
-产出（不进 `source_tables`）：`sz_city_benchmark.avg_tech_power`。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-来源系统：国内机构要素库（SCORE 原料侧）。
+## 数据支持度与缺口
 
-## 现网探针（2026-08-28；不进 8 件套）
+- **判档**：部分支持
+- **判档理由**：tech_power 结果面不存在，但城市平均量可由企业级专利三维分聚合得到：专利计数、IPC4 广度、2024 申请量都在 dwd_patent 里，企业城市在 dwd_org_base_info 里，聚合链完整。缺的是技术力的另外三维（人才/转化/投入）与「全部企业」分母口径，故判部分支持。
+- **基期声明**：专利表只有 2021—2026（2017—2020 零行），D1 分母为全期申请，D3 用 2024 年占比；2025/2026 残年不入分子。本件是截面均值，不做年度序列，故不列逐年基期。
 
-- `gkxlumenx_ads.tech_power`：120 行，`tech_power_index` + 五维；`headquarters_city` 为中文名（不当键）。
-- DWD `enterprise_base`：无 `region_id`、无 `tech_score`。
-- `sz_city_benchmark.avg_tech_power`：8 市有值（深圳 77.0），mock。
-- `enterprise_score`：不是技术力。
+## 溯源与复现
 
-## 待建 / 缺口（必须标；不是无法执行）
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_AVG_TECH_POWER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_AVG_TECH_POWER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_AVG_TECH_POWER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-| 类型 | 缺什么 | 现网 |
-|------|--------|------|
-| 缺列 | `enterprise_base.region_id` | 与 `SZ_COUNT` 同一缺口 |
-| 缺上游 | `M_ENT_TECH_POWER_SCORE` 出分 | MODEL 本波未出；无分该企不进均 |
-| 口径未闭合 | Q014 权重；Q016 对标集合 | 均 🟡 |
-| 其它 | 结果列 `avg_tech_power` | 深圳 77.0 mock，禁止当源 |
+## 更新记录
 
-D3 / D4 本波不升。`is_mock: true`。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
-## 备注
-
-bid `§1.1.1.2.4.2.3.5`；STAT。COVER-STAT-L01 ADS 例外：`M_ENT_TECH_RANK`、本条。商业力均值未点头不准套。
-
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-28 依赖 SCORE 再 AVG；2026-08-31 方案1 缺口标出*

@@ -1,32 +1,61 @@
-# M_SVC_PT_KEYORG_SCALE 计算细稿（重点机构规模档案值）
+# 重点机构规模档案值（M_SVC_PT_KEYORG_SCALE）
 
-- 版本：v0.2.0（2026-10-13 human:徐滕强 拍板落盘）
-- 任务：SVC-METRIC-COVER-STAT-L01 第 10 条；seed 版本同步 0.2.0
-- 锁版承继：2026-08-28 侯佳伟 1A2A3B + 2026-10-13 徐滕强（无值显「—」；名单归 Q-01）
-- 关联：M_SVC_PT_GLOBAL_SCALE_DIST（第 9 条）同名列 employees_number 写入卡面；名单来源 Q-SVCCHAIN-01（技术力 Top，唐绍祖 MODEL）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_KEYORG_SCALE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_KEYORG_SCALE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_KEYORG_SCALE_out.json`。
 
-## 口径
-1. 对象：重点机构名单（遴选归 Q-SVCCHAIN-01 技术力 Top，本条不定义名单）。
-2. 行为：逐机构读 ADS 卡面 org_size / employees_number / operating_revenue 三字段。档案直读，非计算指标，不按本条另灌数。
-3. 呈现：无值显示「—（未披露）」；禁显 0；禁注册资本顶充人数。
-4. 现网：人数/营收∩圈定=0（SVC-P0-2），卡面这两格现网预期「—」；org_size 有值（仅档案展示）。
+## 基础信息
 
-## 计算
-无聚合公式。SERVE：
-```sql
-SELECT org_id, org_size, employees_number, operating_revenue
-FROM <ads 卡面表> WHERE org_id IN (<重点机构名单>);
--- 本 ID 不出 fact/series/dist，不单独灌表
-```
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_PT_KEYORG_SCALE |
+| 指标名称 | 重点机构规模档案值 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（重点主体档案） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 重点机构档案卡；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库（机构详情） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_PT_KEYORG_SCALE.md` |
 
-## 三禁
-- 禁按本指标另灌数（卡面由第 9 条同名列与档案链路维护）。
-- 禁无值显 0。
-- 禁注册资本顶充人数显示。
+## 口径定义
 
-## 呈现与缺口
-- 无值格：「—」+ 悬停 SVC-P0-2 缺口说明。
-- pending：Q-SVCCHAIN-06（卡面契约）；名单依赖 Q-SVCCHAIN-01。
+规模档（org_size）在代理名单上 100% 有值；但员工数只有 **329/1,906（17.26%）**、营业收入只有 **266/1,906（13.96%）** 在年报里有值，且正式「重点机构名单」在 gkx 无源（Q-SVCCHAIN-01 未交付），名单本身是代理 → **部分支持**。
 
-## 覆盖注明
-- 2026-10-13 本文件整文件覆盖旧版（2026-08-21 初版，模拟王惠调研产出：staff_count / annual_revenue_yi / scale_band 字段方案与 svc_org_profile_card 0 行调查），旧字段口径随 v0.2.0 拍板作废；更名记录见 seed version 0.1.0 → 0.2.0。
+## 计算逻辑说明
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_KEYORG_SCALE.md` §二（M_SVC_PT_KEYORG_SCALE.py 零改语义复算）。
+
+## 源表字段
+
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：规模档（org_size）在代理名单上 100% 有值；但员工数只有 329/1906 家（17.26%）、营业收入只有 266/1906 家（13.96%）在年报里有值，且正式「重点机构名单」在 gkx 无源（Q-SVCCHAIN-01 未交付）→ 三格中两格量不足、名单本身是代理 → 部分支持
+- **基期声明**：档案截面：每格取「最近一个有值年」，不同机构的年份不同，不做跨年比较、不把缺失年补 0；年报字段的年份分布见 employees_year_dist / revenue_year_dist。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_KEYORG_SCALE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_KEYORG_SCALE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_KEYORG_SCALE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,37 +1,63 @@
-# 技术创新趋势预测（M_TECH_DS_07_TECH_INNOV_006）
+# 技术基础指标模型——技术动态资讯（王惠口径：技术创新趋势预测）（M_TECH_DS_07_TECH_INNOV_006）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-TECH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_006.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_006.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_006_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_TECH_DS_07_TECH_INNOV_006 |
-| 指标名称 | 技术创新趋势预测 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
+| 指标名称 | 技术基础指标模型——技术动态资讯（王惠口径：技术创新趋势预测） |
+| 所属域 | TECH（科技发展态势） |
+| 一级模块 | 技术 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | DS-07 技术基础指标 / 技术发展历程（专题库技术发展分析） ｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_006.md` |
 
 ## 口径定义
 
-同M_INNOV_TINN_FORECAST-技术创新趋势预测
+王惠 FORECAST 三维中**年申请量（D1）与年转移（D3）可逐年拟合外推**（40 个 IPC4 域已出点预测 + 80% 区间，转移序列 2021-2024 从 326 条增至 7,711 条），**年被引（D2）不可生成**——`dwd_patent_cited` 仅 20,515 行（覆盖 0.70%），且年度序列所依赖的 `cited_by_date` 大量为字面 `'null'`；因此三维外推在结构上缺一维，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。
 
 ## 计算逻辑说明
 
-同M_INNOV_TINN_FORECAST-技术创新趋势预测
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_006.md` §二（M_TECH_DS_07_TECH_INNOV_006.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_patent(pn, first_applicant_name, main_classification_ipcr, apdt_year) — 专利去重,申请人对齐,IPC领域,申请年；dwd_patent_cited(pn, cited_by_nums) — 专利被引次数；dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_base_info`
+- `dwd_patent`
+- `dwd_patent_cited`
+- `dwd_patent_transfer`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-OPEN draft 身份，口径/计算逻辑对齐正式指标 M_INNOV_TINN_FORECAST（技术创新趋势预测）。禁止 mapped 134/132。见 TINN-D06。统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：王惠 FORECAST 三维中**年申请量（D1）与年转移（D3）可逐年拟合外推**（40 个 IPC4 域已出点预测 + 80% 区间，转移序列 2021-2024 从 326 条增至 7,711 条），**年被引（D2）不可生成**——`dwd_patent_cited` 仅 20,515 行（覆盖 0.70%），且年度序列所依赖的 `cited_by_date` 大量为字面 `'null'`；因此三维外推在结构上缺一维，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_006.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_006.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_006_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,6 +1,7 @@
 # 事件影响力（M_INNOV_EVENT_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_INFLUENCE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_INFLUENCE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_INFLUENCE_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,57 @@
 |---|---|
 | 指标ID | M_INNOV_EVENT_INFLUENCE |
 | 指标名称 | 事件影响力 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技全域态势 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技发展态势 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q114 / Q-MO-DS01-07 |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 科创事件 GIS 标记点权重、重要性排序｜ **数据支持度**：**完全不支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_EVENT_INFLUENCE.md` |
 
 ## 口径定义
 
-科技政策事件的影响程度。统计对象为选定范围内的政策事件，从政策级别、区域覆盖、主题广度综合，取值 0—100。
+事件表只有 20 行公告，资讯表 108,052 条但没有 event_id、簇 id、媒体层级；没有事件簇就不能算影响力，判完全不支持。
 
 ## 计算逻辑说明
 
-入集同事件关注度。政策级别按国家级到区县级映射为 4 到 1；区域覆盖取省市区非空字段个数；主题广度取去重主题点数。三维在本窗事件内标准化后等权合成 0 到 100。不用关注度子项直接冒充。
+```text
+0.45×媒体层级 + 0.35×央媒报道量 + 0.20×周内报道跨度；本件因事件簇缺失不执行
+```
 
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 政策级别 |  | 发文级别映射分。 | 级别映射：国家级 4、省级 3、市级 2、区县级 1、其他 0。 | dwd_policy_base(id, rank) — 政策级别 |
-| 区域覆盖 |  | 省市区字段完备度。 | 省、市、区三个字段中非空的个数，取值 0 到 3。 | dwd_policy_base(id, province, city, district) — 区域 |
-| 主题广度 |  | 主题点数量。 | 解析主题列表后按主题去重计数。 | dwd_policy_base(id, theme) — 政策主题 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_INFLUENCE.md` §二（M_INNOV_EVENT_INFLUENCE.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_policy_base(id, title, publish_date, publish_year, rank, province, city, district, theme) — 政策事件,级别,区域,主题
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_event`
+- `dwd_industry_chain_news_info`
 
-无
+## 待建表字段
 
-## 备注
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-02-科技信息展示系统|科技发展态势|科技全域态势.md|序号 15「基于事件影响力、关注度等指标自动计算等级」。内部默认三角综合、权重未签（Q-MO-DS01-07）。禁止把要素影响力九子项算进本页。
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：事件表只有 20 行会议公告，无报道明细；资讯表虽有 108,052 条、206 个源，但没有 event_id/簇 id/媒体层级，8 个必需字段里资讯表原样只有 0 个；要算影响力必须先聚类并建媒体层级表，两者都不存在或未验收。旧稿用新闻聚类 + 称谓规则硬分级，属于模型/人工假设，不是库内事件数据；本批规则禁止用新闻串伪事件，故判完全不支持。
+- **基期声明**：事件表只有 2026-05-13/14 两天；资讯表覆盖 2025-02—2026-07，但没有事件簇，不能形成年度事件序列。used/missing 为空表示无年度基期，不是缺年补 0。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_INFLUENCE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_INFLUENCE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_INFLUENCE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

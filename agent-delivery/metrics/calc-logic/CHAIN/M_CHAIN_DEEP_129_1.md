@@ -1,8 +1,7 @@
 # 重点布局产业推荐模型（M_CHAIN_DEEP_129_1）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_129_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_129_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_129_1_out.json`。
 
 ## 基础信息
 
@@ -10,52 +9,53 @@
 |---|---|
 | 指标ID | M_CHAIN_DEEP_129_1 |
 | 指标名称 | 重点布局产业推荐模型 |
+| 所属域 | CHAIN（产业链分析） |
 | 一级模块 | 产业链分析 |
 | 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
 | 更新频率 | 季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_DEEP_129_1.md` |
 
 ## 口径定义
 
-基于深圳产业优势分析与问题识别，结合专家推荐策略（推荐标准、权重、评估规则），综合计算产业推荐指数，按指数排名筛选重点布局产业，输出重点产业布局建议。对象=深圳重点布局产业，推荐指数越高越优先布局。
+推荐指数 = 1/3 × 深圳产业优势分 + 1/3 × 产业机遇分 + 1/3 × 政策匹配分；>=70 优先布局，55—70 重点培育，<55 观察。权重与阈值均为本件自定义，非甲方确认参数
+
+> 一句话口径（源件 §0.3）：以深圳产业优势分、产业机遇分、政策匹配分三等权合成推荐指数，12 条链中 **集成电路 88.99 分排第 1**，是唯一进入“优先布局”的链；智能网联汽车 68.07、智能终端 59.83、生物医药 59.62 等 7 条链为“重点培育”，数字创意、合成生物、具身智能、低空经济 4 条为“观察”。但三个维度几乎不相关（Spearman −0.133—0.046），权重稍变排名就大幅换位，故判 **部分支持**。
 
 ## 计算逻辑说明
 
-① 输入：优势得分（advantage_score，复用优势识别）、机遇得分（opportunity_score，复用机遇分析）、政策匹配得分（policy_match_score，产业与深圳政策主题匹配度）。② 综合：三维加权得 recommend_index，按推荐标准与评估规则定级 recommend_level。③ 输出：按 recommend_index 排名生成重点布局产业清单。
-
-- 政策匹配得分 = 归一化(产业主题命中深圳政策数)
-- 推荐指数 recommend_index = Σ(Wi × {优势, 机遇, 政策匹配})
-- 推荐等级 = 阈值分档(recommend_index)
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 重点布局产业推荐模型 | 优势与机遇 | 优势得分 | 深圳产业优势指数。 | 复用优势识别 advantage_index | chain_sz_advantage(chain_id, chain_name, advantage_index, advantages, weaknesses) | 无 |
-|  |  | 机遇得分 | 深圳产业机遇指数。 | 复用机遇分析 opportunity_index | chain_sz_opportunity(chain_id, chain_name, opportunity_index, advantages, weaknesses) | 无 |
-| 重点布局产业推荐模型 | 政策匹配 | 政策匹配得分 | 产业与深圳/国家政策主题匹配度。 | 归一化(命中政策数×政策级别) | dwd_policy_base(id, title, publish_year, rank, type, theme, status, province, city) | 政策-产业主题匹配表 |
-| 重点布局产业推荐模型 | 推荐判定 | 推荐指数 | 优势/机遇/政策匹配三维加权分。 | Σ(Wi × 三维得分) | gkxlumenx_ads.chain_layout_recommend(chain_id, chain_name, advantage_score, opportunity_score, policy_match_score, recommend_index, recommend_level, rank_overall) | 专家推荐策略参数表（推荐标准/权重/评估规则） |
-|  |  | 推荐等级 | 按推荐指数分档的推荐等级。 | 阈值分档(recommend_index) | gkxlumenx_ads.chain_layout_recommend(recommend_level, rank_overall) | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_129_1.md` §二（M_CHAIN_DEEP_129_1.py 零改语义复算）。
 
 ## 源表字段
 
-- chain_sz_advantage(chain_id, chain_name, advantage_index, advantages, weaknesses, rank_overall) — 优势识别结果
-- chain_sz_opportunity(chain_id, chain_name, opportunity_index, advantages, weaknesses, rank_overall) — 机遇分析结果
-- chain_competitiveness(chain_id, chain_name, province, competitiveness_index, rank_in_chain) — 竞争力结果
-- chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模
-- dwd_policy_base(id, title, publish_year, rank, type, theme, status, province, city) — 政策（匹配）
-- gkxlumenx_ads.chain_layout_recommend(chain_id, chain_name, advantage_score, opportunity_score, policy_match_score, recommend_index, recommend_level, rank_overall) — 布局推荐结果
+源件未点名任何 dwd_/ads_/ods_ 物理表（纯派生/合成件，输入为兄弟件产物或快照）；依赖清单见源件 §〇/§三。
 
-## 待建字段
+## 待建表字段
 
-- 政策-产业主题匹配表（政策 theme/keywords 与产业映射）
-- 专家推荐策略参数表（推荐标准、权重、评估规则）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 参考资料
+## 数据支持度与缺口
 
-[1] 深圳市「20+8」产业集群行动方案|深圳市人民政府|重点产业布局依据|https://gxj.sz.gov.cn/
+- **判档**：部分支持
+- **判档理由**：本件回答“深圳应该优先布局哪几条产业链”。按 `calc-logic` 的三维框架：优势分取 `M_CHAIN_SZ_ADVANTAGE_SCORE_out.json` 的 `sz_score_available_dims`，机遇分取 `M_CHAIN_DEEP_128_1_out.json` 的 `opportunity_index`，政策分取 `M_CHAIN_POLICY_MATCH_SCORE_out.json` 的 `match_score`，三等权合成推荐指数。
+- **基期声明**：截面合成指标，无年度基期；三个输入件各自的口径与基期见其产物文件
 
-[2] 国家竞争优势「钻石模型」|Michael E. Porter, The Competitive Advantage of Nations, 1990.
+## 溯源与复现
 
-[3] 产业结构调整指导目录（2024年本）|国家发展改革委|https://www.ndrc.gov.cn/
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_129_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_129_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_129_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

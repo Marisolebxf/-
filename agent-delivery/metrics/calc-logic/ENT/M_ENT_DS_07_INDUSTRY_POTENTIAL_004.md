@@ -1,8 +1,7 @@
 # 科学影响力评估（M_ENT_DS_07_INDUSTRY_POTENTIAL_004）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json`。
 
 ## 基础信息
 
@@ -10,61 +9,64 @@
 |---|---|
 | 指标ID | M_ENT_DS_07_INDUSTRY_POTENTIAL_004 |
 | 指标名称 | 科学影响力评估 |
+| 所属域 | ENT（企业分析） |
 | 一级模块 | 企业分析 |
-| 二级模块 | 企业评估 |
-| 三级模块 | - |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q009 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·科技创新评估「产业发展潜力指标展示」科学影响力评估屏（SRS 序号 149）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md` |
 
 ## 口径定义
 
-基于论文引用与国际合作数据，评估特定产业的科学影响力，输出科学影响力指标（论文被引次数、国际合作论文比例）的分布情况与排名。对象=产业（领域）的科研产出集合，不是单篇论文。禁止 mapped 182 / 05 seq 149，禁止 also_in DS-01-FACTORS（见 POT-D04）。
+无现成「科学影响力评估」结果面 → 非完全直接支持；被引维可算（gkx 中文论文 100,900 篇 + 被引表 20,031 行合计 144,020 次、100% 有值），但**国际合作维断链**（`dwd_author_foreign_org_base_info_rel` 缺表，境外关联无承载）、**产业映射断链**（`dwd_author_org_base_info_rel` 缺表，作者→机构→产业入集不可达）、英文被引字段缺 → 双维缺一维半，按 §〇 归**部分支持**（脚本机判一致；先验档「完全转换支持」被实测否决——产业入集断则「特定产业」的科学影响力无从产出，仅全库级被引可算）。
 
 ## 计算逻辑说明
 
-两维加权：论文被引影响力 / 国际合作论文比例。
-
-### 第一步：入集
-
-统计窗默认自然年，年键=`cover_year_start`。产业→论文映射：经机构（企业/科研机构）与论文作者单位对齐（`dwd_author_org_base_info_rel` / `dwd_org_base_info_en_paper_rel`）或学者归属。中文论文被引用 `dwd_zh_paper_citation.citation_num`；英文被引次数字段现库缺失（待建）。
-
-### 第二步：两个子项
-
-1. **论文被引影响力**：
-   - 论文被引总次数 = `SUM(中文 citation_num)` + `SUM(英文 citation_count)`；
-   - 篇均被引 = 被引总次数 ÷ 论文去重数。
-2. **国际合作论文比例**：
-   - 国际合作论文数 = 一篇论文作者单位同时含境内与境外机构（`dwd_author_foreign_org_base_info_rel` 非空）的去重论文数；
-   - 国际合作论文比例 = 国际合作论文数 ÷ 论文总数 × 100%。
-
-两维极值归一后等权得科学影响力，输出产业分布与排名。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 科学影响力评估 | 论文被引影响力 | 论文被引总次数 | 产业论文被引次数合计。 | SUM(citation_num)+SUM(citation_count) | dwd_zh_paper(id, doi, cover_year_start) — 中文论文；dwd_en_paper(id, doi, cover_year_start) — 英文论文；dwd_zh_paper_citation(id, doi, citation_num) — 中文被引 | 英文论文被引次数字段 |
-|  |  | 篇均被引次数 | 论文被引总次数 ÷ 论文去重数。 | 被引合计/论文去重数 | dwd_zh_paper(id, cover_year_start) — 中文论文去重；dwd_en_paper(id, cover_year_start) — 英文论文去重；dwd_zh_paper_citation(id, citation_num) — 中文被引 | 英文论文被引次数字段 |
-| 科学影响力评估 | 国际合作论文比例 | 国际合作论文数 | 作者单位含境内+境外机构的论文去重数。 | COUNT(DISTINCT 国际合作论文) | dwd_zh_author(paper_id, author_id, institution) — 中文作者机构；dwd_en_author(paper_id, author_id, institution) — 英文作者机构；dwd_author_org_base_info_rel(author_id, org_id) — 境内机构关联；dwd_author_foreign_org_base_info_rel(author_id, org_id) — 境外机构关联；dwd_forg_base_info(org_id, country, country_code) — 境外国家 | 无 |
-|  |  | 国际合作论文占比 | 国际合作论文数 ÷ 论文总数。 | 国际合作论文/论文总数 | 同上 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md` §二（M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_zh_paper(id, doi, cover_year_start) — 中文论文去重,发表年
-- dwd_en_paper(id, doi, cover_year_start) — 英文论文去重,发表年
-- dwd_zh_paper_citation(id, doi, citation_num) — 中文被引次数
-- dwd_zh_author(paper_id, author_id, institution) — 中文作者机构
-- dwd_en_author(paper_id, author_id, institution) — 英文作者机构
-- dwd_author_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境内机构关联
-- dwd_author_foreign_org_base_info_rel(author_id, org_id, base_external_id) — 作者-境外机构关联
-- dwd_forg_base_info(org_id, country, country_code) — 境外机构国家
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_author_foreign_org_base_info_rel`
+- `dwd_author_org_base_info_rel`
+- `dwd_en_author`
+- `dwd_en_paper`
+- `dwd_forg_base_info`
+- `dwd_forg_research_org_info`
+- `dwd_forg_university_org_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_zh_author`
+- `dwd_zh_paper`
+- `dwd_zh_paper_citation`
+- `dwd_zh_paper_classification`
 
-- 英文论文被引次数字段：现 `dwd_en_paper_citation` / `dwd_en_paper_reference`（仅 gkxlumenx_ods）无被引次数字段，需补 `citation_count`。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 科学影响力评估 | 需规 SRS《科技创新评估.md》序号149 | 论文被引次数、国际合作论文比例分布与排名 | 关联 Q009。
+## 数据支持度与缺口
 
-[2] 产业科学影响力 | 学术计量通用口径：被引频次（citation count）与国际合作论文占比（internationally co-authored papers share）。
+- **判档**：部分支持
+- **判档理由**：被引维可算（zh 论文 100,900 + 被引表 20,031 行合计 144020 次，100% 有值；en 论文仅 1,387 且被引字段缺待建）；国际合作维断链：dwd_author_foreign_org_base_info_rel 缺表（境外关联无承载）；产业映射断链：dwd_author_org_base_info_rel 缺表——作者→机构→产业 入集不可达。对象=产业科研产出集合，产业入集断则指标无法按口径产出（仅全库级被引可算）→ 部分支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_004_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

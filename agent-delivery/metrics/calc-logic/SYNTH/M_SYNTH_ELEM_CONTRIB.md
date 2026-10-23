@@ -1,6 +1,7 @@
 # 要素贡献度与影响路径（M_SYNTH_ELEM_CONTRIB）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SYNTH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_CONTRIB.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_CONTRIB.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_CONTRIB_out.json`。
 
 ## 基础信息
 
@@ -8,73 +9,55 @@
 |---|---|
 | 指标ID | M_SYNTH_ELEM_CONTRIB |
 | 指标名称 | 要素贡献度与影响路径 |
-| 一级模块 | 综合智能分析 |
-| 二级模块 | 区域创新要素分析 |
-| 三级模块 | 要素影响关联分析 |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SYNTH-E-02 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合智能分析／区域创新要素分析／要素影响关联分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_ELEM_CONTRIB.md` |
 
 ## 口径定义
 
-选定区域内、统计年度，量化企业、科研机构、高层次人才、科研资金四类创新要素对产业发展与创新成果的贡献份额，并给出要素→产业 / 要素→成果的影响路径。取值各为 0—1（份额，同行和为 1）。对象=要素对产出的关联份额，不是因果归因，不是子指标对活力总指数的贡献（≠ `M_SYNTH_186_1` 权重）。
+正本要的是「四要素对两目标的贡献份额 + 影响路径」。份额能算，但**分子分母的边界在三个地方糊**：人才侧没有桥表（残差 0，只能用学者数做结构代理）、机构侧有两种分母（仅机构表 vs 含高校，差 29 倍）、产业侧四类主体互相重叠（高企也可能有研发投入）。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**；这不是算不出来，而是**算出来的数不能当归因读**。
 
 ## 计算逻辑说明
 
-采用份额分解。二维：贡献度 / 影响路径。需求序号 138 已写「贡献度与影响路径」；要素集合按序号 136 取企业、科研机构、高层次人才、科研资金，不扩到 187 的七类。本指标不作回归因果、不跑 Granger。地区生产总值不进本指标。
-
-### 第一步：入集
-
-区域与存续同 `M_SYNTH_187_1`。四类要素主体：
-
-- 企业：存续且 `org_type` 为企业（或非科研机构表内的经营主体）。
-- 科研机构：`dwd_research_institute_base_info`。
-- 高层次人才：区域学者；产出先记到其对齐机构。
-- 科研资金：有研发投入或融资记录的区域机构。资金不单独占产出件。
-
-产业发展靶点 = 高企去重数与营收合计（两子值先各自算区域总量，再按主体对齐份额）。创新成果靶点 = 授权专利去重数与论文去重数。
-
-主体产出对齐：专利 `first_applicant_name`、论文作者单位对齐 `name_cn`。一篇成果只计第一申请人或第一机构，避免重复。
-
-### 第二步：两个子项
-
-1. **贡献度**  
-   四类要素对「产业发展」与「创新成果」的份额。  
-   - 企业：企业对齐成果除以区域成果；产业侧高企记入企业，营收按企业加总。  
-   - 科研机构：机构对齐成果除以区域成果。  
-   - 人才：同一件成果优先记机构，不再记人才。人才行只统计「第一机构对齐不上、但作者单位仍落在区域学者」的残余。残余为 0 时，改用学者数除以企业、机构、学者三类主体数之和，作结构代理，结果标「结构代理」。不另待建人才—成果直接对齐键。  
-   - 资金：有研发投入机构的营收除以区域营收、有研发投入机构的成果除以区域成果。这是资金要素的正式代理，不是资金台账直读。不另待建资金直接贡献额。  
-   同一靶点下四类份额重新归一，使和为 1。输出 4×2 份额表。
-
-2. **影响路径**  
-   有向边：要素类型 → 产业发展、要素类型 → 创新成果。边权等于该格贡献份额。按边权从高到低取前 6 条。路径只表示关联强度，不表述「导致」。
-
-输出区域一张份额表 + 一条路径清单。页面演示态若只展示规模占比，须标非因果。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 要素贡献度与影响路径 | 贡献度 | 企业贡献份额 | 企业对产业与成果的对齐份额。 | 企业对齐产出除以区域产出 | dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续；dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗；dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位 | 无 |
-|  |  | 科研机构贡献份额 | 科研机构对成果的份额。 | 机构对齐产出除以区域成果 | dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗；dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 人才贡献份额 | 机构去重后的人才残余份额；残余为 0 时用学者数结构代理。 | 人才残余产出除以区域成果；残余为 0 则用学者数除以三类主体数 | dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者存量,所属机构；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗；dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 资金贡献份额 | 有研发投入机构对产业与成果的份额，正式代理资金要素。 | 有研发投入机构的营收或成果除以区域对应总量 | dwd_org_annual_financial_info(org_id, year, operating_revenue, development_employee, `arch development am`) — 营收,研发人员,研发投入；dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发；dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资额,融资时点；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续；dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗 | 无 |
-| 要素贡献度与影响路径 | 影响路径 | Top6影响路径 | 按边权从高到低取前 6 条路径。 | 边权等于贡献份额，取前 6 条 | 同贡献度四行源表 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_CONTRIB.md` §二（M_SYNTH_ELEM_CONTRIB.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 企业与区域入集,名称对齐
-- dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构
-- dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 高层次人才,所属机构
-- dwd_org_annual_financial_info(org_id, year, operating_revenue, `arch development am`) — 营收,研发投入
-- dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-- dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资（资金主体入集）
-- dwd_org_tech_tag(org_id, org_tag) — 高新技术企业（产业发展靶点）
-- dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 创新成果专利
-- dwd_zh_paper(id, cover_year_start) — 中文论文
-- dwd_en_paper(id, cover_year_start) — 英文论文
-- dwd_zh_author(paper_id, institution) — 中文作者单位
-- dwd_en_author(paper_id, institution) — 英文作者单位
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_ent_high_tech`
+- `dwd_ent_patent`
+- `dwd_paper`
+- `dwd_talent_scholar`
 
-- 无
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：份额分解与 Top6 路径都能算，但两处口径退化：① 创新成果侧只能拆企业与科研机构，人才残余实测为 0（库内无作者级机构字段），按 calc-logic 转结构代理；② 产业侧四类主体规模互不互斥（高企同时可能有研发投入），份额是结构代理不是归因，论文侧无机构类型字段、无法进份额分解。再加「科研机构」两种口径差 29 倍，读者必须同时看到两组数，故判部分支持。
+- **基期声明**：成果侧=2024 授权专利（去重公开号），产业侧=2024 时点的主体存量（高企/机构/学者/有研发投入机构四个数都不是年度流量），资金侧=2024 完成日融资与 2024 年报期研发额。2021—2023 未入集（单年截面设计）；2025/2026 不完整不进分母。四个数的时间语义不同（存量 vs 流量），故产业侧只作结构代理。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_CONTRIB.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_CONTRIB.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_CONTRIB_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,6 +1,7 @@
 # 产业科学影响力（M_INNOV_POT_SCI_INFL）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_SCI_INFL.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_SCI_INFL.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_SCI_INFL_out.json`。
 
 ## 基础信息
 
@@ -8,35 +9,61 @@
 |---|---|
 | 指标ID | M_INNOV_POT_SCI_INFL |
 | 指标名称 | 产业科学影响力 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业发展潜力评估页「科学影响力评估」——产业科学影响力指标的分布与排名 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_POT_SCI_INFL.md` |
 
 ## 口径定义
 
-按论文被引次数、国际合作论文比例综合评分，取值 0—100。
+被引维（`dwd_zh_paper_citation` 20,031 行、合计 144,020 次）与国际合作维（`dwd_zh_author` 62,002 行）**论文级都能算**；但口径要求的是**产业**，从作者机构串到行业门类的匹配率只有 **0.36%**（223/60,970 行），可归属论文仅 **127/20,031（0.63%）**，产业级排名做不出来；英文侧 77,144 行被引表对 `dwd_en_paper` 1,387 行只命中 5 行。故判**部分支持**：交付「论文级 + 机构级」结果，产业级只作覆盖诊断，不包装成排名。
 
 ## 计算逻辑说明
 
-选定产业入集。采用加权平均，二维：论文被引次数（citation_num）/ 国际合作论文比例（作者地址国别≥2）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 论文被引次数 |  | 产业相关论文被引合计。 | SUM(citation_num) | dwd_zh_paper_citation(id, citation_num) — 中文论文被引；dwd_scholar(scholar_id, scholar_org_name_zh, citation_nums) — 学者被引；dwd_zh_paper(id, cover_year_start) — 中文论文,发表年；dwd_en_paper(id, cover_year_start) — 英文论文,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位 |
-| 国际合作论文比例 |  | 作者地址跨两个及以上国家的论文占比。 | 国际合作论文数 / 论文数 | dwd_zh_author(paper_id, institution, affiliation) — 中文作者单位,地址国别；dwd_en_author(paper_id, institution, affiliation) — 英文作者单位,地址国别；dwd_zh_paper(id, cover_year_start) — 中文论文分母,发表年；dwd_en_paper(id, cover_year_start) — 英文论文分母,发表年 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_SCI_INFL.md` §二（M_INNOV_POT_SCI_INFL.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, external_id, industry, industry_l1_code, city, province, reg_status) — 机构入集,产业对齐,名称对齐；dwd_org_industry_tags(credit_code, industry_code, industry_name) — 产业标签；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_citation(id, citation_num) — 中文论文被引；dwd_zh_author(paper_id, institution, affiliation) — 中文作者单位,地址国别；dwd_en_author(paper_id, institution, affiliation) — 英文作者单位,地址国别；dwd_scholar(scholar_id, scholar_org_name_zh, citation_nums) — 学者被引
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_en_author`
+- `dwd_en_paper`
+- `dwd_en_paper_cited_by_info`
+- `dwd_org_base_info`
+- `dwd_scholar`
+- `dwd_zh_author`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
+- `dwd_zh_paper_citation`
+- `dwd_zh_paper_classification`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技创新评估.md|序号 149「基于论文引用、国际合作等数据，评估特定产业的科学影响力……（如论文被引次数、国际合作论文比例）」。对象=产业（非区域）。182「学术影响力」是区域科技成果分项，对象不符。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：被引维（`dwd_zh_paper_citation` 20,031 行、合计 144,020 次）与国际合作维（`dwd_zh_author` 62,002 行）**论文级都能算**；但口径要求的是**产业**，从作者机构串到行业门类的匹配率只有 **0.36%**（223/60,970 行），可归属论文仅 **127/20,031（0.63%）**，产业级排名做不出来；英文侧 77,144 行被引表对 `dwd_en_paper` 1,387 行只命中 5 行。故判**部分支持**：交付「论文级 + 机构级」结果，产业级只作覆盖诊断，不包装成排名。
+- **基期声明**：被引表与作者表均无发表年字段，且 paper_id 与 dwd_zh_paper.id 仅 0.78% 可连，无法构造年度分母；本指标按截面计算
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_POT_SCI_INFL.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_SCI_INFL.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_POT_SCI_INFL_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

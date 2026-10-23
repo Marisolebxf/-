@@ -1,6 +1,7 @@
 # 企业能力（M_CHAIN_ENTERPRISE_POWER）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ENTERPRISE_POWER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ENTERPRISE_POWER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ENTERPRISE_POWER_out.json`。
 
 ## 基础信息
 
@@ -8,41 +9,56 @@
 |---|---|
 | 指标ID | M_CHAIN_ENTERPRISE_POWER |
 | 指标名称 | 企业能力 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 年 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
-
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链（CHAIN |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 智慧服务门户·产业链深度分析（区域产业指数模型·企业能力竞争力维）｜ **数据支持度**：**部分支持**｜ **wanghui**: true（王惠表原条目） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_ENTERPRISE_POWER.md` |
 
 ## 口径定义
 
-指定区域在指定产业链上的企业能力竞争力得分，取值0—100。对齐算法库企业能力竞争力，由产业生态（企业数）、企业营收、产业化程度（专利）三维合成。
+三维公式的第一维（企业数）**结构与量都够**，12 条顶层链全部算出非零（5,450–1,014,992）；第二维（营收）**表在量不足**——年报财务表 90,926 行，2024 年 `operating_revenue>0` 仅 **47 家**；第三维（专利）**表大量足但无键**——`dwd_patent` 2,939,895 行，没有统一社会信用代码，只能按申请人名称匹配，而链上企业只有 3.59% 能落到主档；更关键的是王惠公式要求「同链同年跨区域 min-max」，而国内主档 99.82% 在广东、只有深圳一个有量区域，**截面退化** → **部分支持**。
 
 ## 计算逻辑说明
 
-三维等权。先按区域、链、年计算企业数、营业收入合计、专利去重件数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city="深圳市"。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业，再关联dwd_org_base_info筛区域。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- |
-| 区域产业指数 | 企业能力 | 产业生态 | 区域链上企业去重件数。credit_code关联dwd_org_base_info筛区域后COUNT(DISTINCT credit_code)。库无上下游协同度、公共服务配套度正式字段，本指标计企业集聚规模 | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联; dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市 | 无 |
-| 区域产业指数 | 企业能力 | 企业营收 | 区域链上企业营业收入合计。credit_code关联dwd_org_base_info筛区域，再关联dwd_org_annual_financial_info.external_id，按year汇总operating_revenue | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code) — 链上企业筛选, 信用代码关联; dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市; dwd_org_annual_financial_info(external_id, year, operating_revenue) — 企业信用代码关联, 年报年度, 营业收入 | 无 |
-| 区域产业指数 | 企业能力 | 产业化程度 | 区域链上企业专利去重件数。credit_code关联dwd_org_base_info筛区域后，用company_name匹配dwd_patent.first_applicant_name或assignees_2，按patent_id去重；申请年份用application_reference_4过滤统计年及以前。库无成果转化、技术交易额与产业链正式关联表，以专利作为产业化可计算代理 | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配; dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市; dwd_patent(patent_id, first_applicant_name, assignees_2, application_reference_4) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 申请年份 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ENTERPRISE_POWER.md` §二（M_CHAIN_ENTERPRISE_POWER.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配
-- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市
-- dwd_org_annual_financial_info(external_id, year, operating_revenue) — 企业信用代码关联, 年报年度, 营业收入
-- dwd_patent(patent_id, first_applicant_name, assignees_2, application_reference_4) — 专利去重, 第一申请人匹配, 当前专利权人匹配, 申请年份
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_patent`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 企业能力｜国家市场监督管理总局｜国家市场监督管理总局, 国家标准化管理委员会. 企业竞争力评价规范: GB/T 40957—2021[S/OL]. (2021-11-26)[2026-08-21]. https://std.samr.gov.cn/gb/search/gbDetailed?id=D1E86BE73A99430EE05397BE0A0A206B
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：产业生态维可算但仅覆盖可归域子集（35,046/2,283,762 = 1.53%），营收维非空 2,193/90,926 行（2.41%）、2024 正营收仅 47 家，无法做 4 城 × 12 链截面归一；专利维仅有 200k 样本（6.81%，非随机截取）作下限代理。三维中一维受限、一维缺失、一维样本级，故为部分支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ENTERPRISE_POWER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ENTERPRISE_POWER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ENTERPRISE_POWER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+
