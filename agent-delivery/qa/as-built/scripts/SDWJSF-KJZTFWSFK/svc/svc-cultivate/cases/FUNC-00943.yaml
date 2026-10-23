@@ -1,0 +1,24 @@
+id: FUNC-00943
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00943
+priority: P0
+title: 服务机构培育推荐模型 kind=cultivate
+entry_id: svc.cultivate
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/cultivate"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 服务机构培育推荐模型
+  - action: algo_fill
+    set: { kind: cultivate }
+  - action: algo_run
+expect:
+  - note: 含 metric_id、hint 与 responseFields 所列指标 ID
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=available，不断言 sample 具体数字。

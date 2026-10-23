@@ -1,0 +1,24 @@
+id: FUNC-00951
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00951
+priority: P0
+title: 市场热度评级 industry=人工智能
+entry_id: svc.market-heat
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/market-heat"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 市场热度评级
+  - action: algo_fill
+    set: { industry: 人工智能 }
+  - action: algo_run
+expect:
+  - note: 含 metric_id、hint 与 responseFields 所列 market_heat_level、series
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'market_heat_level', 'series']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=available，不断言 sample 具体数字。

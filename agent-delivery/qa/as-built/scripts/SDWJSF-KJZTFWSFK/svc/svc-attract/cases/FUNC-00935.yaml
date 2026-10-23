@@ -1,0 +1,24 @@
+id: FUNC-00935
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00935
+priority: P0
+title: 服务机构引入推荐模型 kind=attract
+entry_id: svc.attract
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/attract"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 服务机构引入推荐模型
+  - action: algo_fill
+    set: { kind: attract }
+  - action: algo_run
+expect:
+  - note: 含 metric_id、hint 与 responseFields 所列 metric_id
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。主流程以 sampleRequest kind=attract 为准（options 为 tech）。catalog status=available，不断言 sample 具体数字。

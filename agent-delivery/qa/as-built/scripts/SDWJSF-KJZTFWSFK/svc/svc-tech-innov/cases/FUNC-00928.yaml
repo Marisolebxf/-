@@ -1,0 +1,24 @@
+id: FUNC-00928
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00928
+priority: P0
+title: 科技创新服务机构技术力评价模型不传 kind
+entry_id: svc.tech-innov
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/tech-innov"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 科技创新服务机构技术力评价模型
+  - action: algo_fill
+    omit: [kind]
+  - action: algo_run
+expect:
+  - note: 仍含 metric_id、hint、tech
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'hint', 'tech']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit kind。catalog status=available，不断言 sample 具体数字。

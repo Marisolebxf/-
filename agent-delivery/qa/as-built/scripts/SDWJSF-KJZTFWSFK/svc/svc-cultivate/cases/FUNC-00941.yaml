@@ -1,0 +1,24 @@
+id: FUNC-00941
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00941
+priority: P0
+title: 培育推荐不传 kind
+entry_id: svc.cultivate
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/cultivate"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 培育推荐
+  - action: algo_fill
+    omit: [kind]
+  - action: algo_run
+expect:
+  - note: 不传 kind 仍含 cultivate 培育名单字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['cultivate', 'org_id', 'cultivation_index', 'priority_level', 'growth_stage', 'advice', 'ext', 'name', 'dimension_scores', 'scale', 'innovation', 'effect', 'marketGap']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit kind。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

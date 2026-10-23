@@ -1,0 +1,24 @@
+id: FUNC-00932
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00932
+priority: P0
+title: 引入推荐 kind=attract
+entry_id: svc.attract
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/attract"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 引入推荐
+  - action: algo_fill
+    set: { kind: attract }
+  - action: algo_run
+expect:
+  - note: attract 引入名单及元素、ext、dimension_scores 字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['attract', 'org_id', 'attraction_index', 'priority_level', 'rank_no', 'recommend_reason', 'ext', 'name', 'dimension_scores', 'industryFit', 'techLead', 'potential', 'willingness']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。

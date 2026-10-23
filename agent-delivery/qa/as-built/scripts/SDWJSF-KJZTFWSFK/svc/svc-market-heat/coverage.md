@@ -1,0 +1,12 @@
+# svc.market-heat 脚本覆盖
+
+| 脚本 id | 用例编号 | 场景 |
+|---------|----------|------|
+| FUNC-00948 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00948 | 市场热度，MH-01 主流程 |
+| FUNC-00949 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00949 | 市场热度，MH-02 省略 industry |
+| FUNC-00950 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00950 | 市场热度，MH-03 非法 industry |
+| FUNC-00951 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00951 | 市场热度评级，MHR-01 主流程 |
+| FUNC-00952 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00952 | 市场热度评级，MHR-02 省略 industry |
+| FUNC-00953 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00953 | 市场热度评级，MHR-03 非法 industry |
+| FUNC-00954 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00954 | （页面），接口信息-清单 |
+| FUNC-00955 | ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00955 | （页面），算法测试-清单 |

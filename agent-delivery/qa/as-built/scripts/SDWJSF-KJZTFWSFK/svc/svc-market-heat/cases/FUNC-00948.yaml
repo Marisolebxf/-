@@ -1,0 +1,24 @@
+id: FUNC-00948
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00948
+priority: P0
+title: 市场热度 industry=人工智能
+entry_id: svc.market-heat
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/market-heat"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 市场热度
+  - action: algo_fill
+    set: { industry: 人工智能 }
+  - action: algo_run
+expect:
+  - note: market_heat_level、trend_slope、volatility、series 与 year、new_org_count 字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['market_heat_level', 'trend_slope', 'volatility', 'series', 'year', 'new_org_count']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog status=unavailable，不断言 sample 具体数字。文档标记未交付。组合 MH-01 金样。

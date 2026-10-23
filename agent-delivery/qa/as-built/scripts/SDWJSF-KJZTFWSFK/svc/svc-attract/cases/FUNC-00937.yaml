@@ -1,0 +1,25 @@
+id: FUNC-00937
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00937
+priority: P1
+title: 服务机构引入推荐模型非法 kind
+entry_id: svc.attract
+tier: A
+steps:
+  - action: goto
+    target: "#/industry-service/attract"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 服务机构引入推荐模型
+  - action: algo_fill
+    set: { kind: __invalid__ }
+  - action: algo_run
+expect:
+  - note: 结果说明 kind 非法，且不返回 M_SVC_DEEP_180_1 成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/kind/.test(text)) throw new Error('结果未说明 kind');
+      if (/M_SVC_DEEP_180_1/.test(text) && /hint/.test(text)) throw new Error('结果含 M_SVC_DEEP_180_1 成功业务结果');
+as_built_note: 用例写点击调用，页面按钮是执行接口。kind=__invalid__。catalog status=available。
