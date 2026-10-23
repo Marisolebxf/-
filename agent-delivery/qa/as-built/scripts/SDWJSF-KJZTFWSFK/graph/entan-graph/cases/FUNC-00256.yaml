@@ -1,0 +1,28 @@
+id: FUNC-00256
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00256
+priority: P1
+title: C 人才 ENT_RE_TALENT 非法 id时返回指出该参数的错误说明
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "C 人才 ENT_RE_TALENT"
+  - action: algo_fill
+    set:
+      op_id: ENT_RE_TALENT
+      scope: one
+      id: __invalid__
+      mode: rule
+      dry_run: true
+      filter: '{"all":true}'
+      dest_types: '["talent"]'
+  - action: algo_run
+expect:
+  - note: 1、返回面板 的 message 或 msg 指出 id 非法或无法解析
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/id/.test(text)) throw new Error('结果未说明 id'); if (/written_nodes/.test(text)) throw new Error('结果含 written_nodes')
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

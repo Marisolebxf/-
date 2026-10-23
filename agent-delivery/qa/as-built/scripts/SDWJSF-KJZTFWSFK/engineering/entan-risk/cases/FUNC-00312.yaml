@@ -1,0 +1,25 @@
+id: FUNC-00312
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00312
+priority: P1
+title: 风险评分非法 level
+entry_id: entan.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/risk"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 风险评分
+  - action: algo_fill
+    set: { level: __invalid_level__, limit: 200 }
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 level 非法，且不返回含 risk_score、risk_level 的成功业务 rows
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/level/.test(text)) throw new Error('结果未说明 level');
+      if (/risk_score/.test(text) && /risk_level/.test(text) && /rows/.test(text)) throw new Error('结果含 risk_score、risk_level 成功业务 rows');
+as_built_note: 用例写点击调用，页面按钮是执行接口。level=__invalid_level__，limit=200。catalog status=unavailable，反向断言仍按文档。

@@ -1,0 +1,26 @@
+id: FUNC-00317
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00317
+priority: P1
+title: 异步评估契约缺 mode
+entry_id: entan.eval-async
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/eval-async"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 异步评估契约
+  - action: algo_fill
+    omit: [mode]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出缺少 mode，且不返回含 task_id 的成功契约对象
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/mode/.test(text)) throw new Error('结果未说明 mode');
+      const body = text;
+      if (/task_id/.test(body) && /technology/.test(body) && /business/.test(body) && /competitiveness/.test(body)) throw new Error('结果含 task_id 成功契约对象');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 mode。runner 对 radio 清空能力有限，仍以用例 omit 为准。catalog_status=unavailable，反向断言仍按文档。

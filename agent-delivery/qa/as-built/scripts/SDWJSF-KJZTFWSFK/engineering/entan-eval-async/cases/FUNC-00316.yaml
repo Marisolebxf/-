@@ -1,0 +1,25 @@
+id: FUNC-00316
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00316
+priority: P0
+title: 异步评估契约主流程
+entry_id: entan.eval-async
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/eval-async"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 异步评估契约
+  - action: algo_fill
+    set:
+      mode: 技术力
+  - action: algo_run
+expect:
+  - note: body 含 technology、business、competitiveness 及契约字段名（与 sampleResponse 一致）
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['technology', 'business', 'competitiveness', 'task_id', 'sub_type', 'report_status', 'enterprises', 'enterprise_code', 'enterprise_name', 'summary', 'max_score', 'enterprise_count', 'avg_score', 'high_risk_count', 'benchmark_avg_score', 'result', 'radar_dimensions', 'radar_series', 'values', 'ranking', 'score', 'rank', 'diagnosis_rows', 'total_score', 'confidence', 'gap_text', 'operating_indicators', 'indicators']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。mode=technology 按前置，单选填选项文案「技术力」。步骤未写 chainId，不写 algo_fill chainId。catalog_status=unavailable，断言仍按文档。不断言 sample 具体数字。

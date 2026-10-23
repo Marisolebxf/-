@@ -1,0 +1,28 @@
+id: FUNC-00318
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00318
+priority: P0
+title: 企业评估（异步）接口信息清单
+entry_id: entan.eval-async
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/eval-async"
+  - action: assert_visible
+    target: 1 个接口
+  - action: assert_visible
+    target: 前端演示契约（Java REST 尚未发布）
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 异步评估契约
+expect:
+  - note: 接口信息 tab；下拉 1 项；POST；catalog path 为空时展示前端演示契约文案
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true')
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST')
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('前端演示契约（Java REST 尚未发布）')
+      await expect(page.locator('.api-info-grid header')).toContainText('异步评估契约')
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1)
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('异步评估契约')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog path 原文为空，联调台 local_mock 展示「前端演示契约（Java REST 尚未发布）」。单接口页下拉仅 1 项。

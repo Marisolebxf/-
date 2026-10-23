@@ -1,0 +1,25 @@
+id: FUNC-00302
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00302
+priority: P0
+title: D 浏览 ENT_GRAPH_BROWSE 缺 hops时仍返回与文档一致的业务字段结构
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "D 浏览 ENT_GRAPH_BROWSE"
+  - action: algo_fill
+    set:
+      center: 'ent:ORG1'
+      limit: 90
+    omit: [o]
+  - action: algo_run
+expect:
+  - note: 返回面板含字段：source、space、nodes、edges、centers
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["source", "space", "nodes", "edges", "centers"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

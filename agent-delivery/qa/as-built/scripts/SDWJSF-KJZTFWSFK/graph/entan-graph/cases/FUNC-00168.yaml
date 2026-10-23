@@ -1,0 +1,27 @@
+id: FUNC-00168
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00168
+priority: P1
+title: A 实体识别 ENT_NER_ORG 不传 op_id时返回指出该参数的错误说明
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "A 实体识别 ENT_NER_ORG"
+  - action: algo_fill
+    set:
+      scope: one
+      id: 7bfe8fcda027df3c6dd94674b804c75b
+      mode: rule
+      dry_run: true
+      filter: '{"all":true}'
+    omit: [p]
+  - action: algo_run
+expect:
+  - note: 1、返回面板 的 message 或 msg 指出 op_id 缺失
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/op_id/.test(text)) throw new Error('结果未说明 op_id'); if (/written_nodes/.test(text)) throw new Error('结果含 written_nodes')
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

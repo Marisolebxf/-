@@ -1,0 +1,24 @@
+id: FUNC-00309
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00309
+priority: P0
+title: 风险评分主流程
+entry_id: entan.risk
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/risk"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 风险评分
+  - action: algo_fill
+    set: { level: 全部, limit: 200 }
+  - action: algo_run
+expect:
+  - note: 返回面板含 rows 及 enterprise_name、risk_score、risk_level、shixin_count、abnormal_count、punish_count 字段名
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['rows', 'enterprise_name', 'risk_score', 'risk_level', 'shixin_count', 'abnormal_count', 'punish_count']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。level 空串对应选项「全部」，limit=200。catalog status=unavailable，断言仍按文档字段名，不断言 sample 具体数字。

@@ -1,0 +1,25 @@
+id: FUNC-00162
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00162
+priority: P0
+title: 培育企业综合推荐算法测试清单
+entry_id: entan.cultivate
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/cultivate"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 培育企业推荐指数（企业集合）
+expect:
+  - note: 算法测试下拉 1 项；调用区 POST M_ENT_CULTIVATION_INDEX/compute
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST')
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/metric/M_ENT_CULTIVATION_INDEX/compute')
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('培育企业推荐指数（企业集合）')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1)
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('培育企业推荐指数（企业集合）')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。只核下拉与 method/path。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

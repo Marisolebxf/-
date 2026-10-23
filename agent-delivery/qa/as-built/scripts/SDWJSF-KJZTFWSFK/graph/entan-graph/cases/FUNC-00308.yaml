@@ -1,0 +1,27 @@
+id: FUNC-00308
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00308
+priority: P0
+title: 企业实体与关系算法测试清单
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: D 浏览 ENT_GRAPH_BROWSE
+expect:
+  - note: 算法测试下拉 12 项；切换后 GET /entan/v1/entan/graph
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/entan/graph');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('D 浏览 ENT_GRAPH_BROWSE');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(12);
+      for (const name of ["A 实体识别 ENT_NER_ORG", "B 合作 ENT_RE_COOP", "B 投资 ENT_RE_INVEST", "B 归属 ENT_RE_BELONG", "B′ 供应链 ENT_RE_SUPPLY", "C 产业 ENT_RE_INDUSTRY", "C 技术 ENT_RE_TECH", "C 人才 ENT_RE_TALENT", "C 政策 ENT_RE_POLICY", "C 科研 ENT_RE_RESEARCH", "C 服务 ENT_RE_SERVICE", "D 浏览 ENT_GRAPH_BROWSE"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

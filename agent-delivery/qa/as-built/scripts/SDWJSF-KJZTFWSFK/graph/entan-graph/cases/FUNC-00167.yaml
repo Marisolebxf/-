@@ -1,0 +1,28 @@
+id: FUNC-00167
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00167
+priority: P0
+title: A 实体识别 ENT_NER_ORG 缺 filter时仍返回与文档一致的业务字段结构
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "A 实体识别 ENT_NER_ORG"
+  - action: algo_fill
+    set:
+      op_id: ENT_NER_ORG
+      scope: one
+      id: 7bfe8fcda027df3c6dd94674b804c75b
+      mode: rule
+      dry_run: true
+    omit: [i]
+  - action: algo_run
+expect:
+  - note: 返回面板含字段：op_id、written_nodes、written_edges、skipped、source、model_version、calc_batch_id、mode_effective、llm_fallback、space
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["op_id", "written_nodes", "written_edges", "skipped", "source", "model_version", "calc_batch_id", "mode_effective", "llm_fallback", "space"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

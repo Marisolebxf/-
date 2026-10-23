@@ -1,0 +1,24 @@
+id: FUNC-00319
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00319
+priority: P0
+title: 企业评估（异步）算法测试清单
+entry_id: entan.eval-async
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/eval-async"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 异步评估契约
+expect:
+  - note: 算法测试下拉 1 项；调用区 POST；catalog path 为空
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('POST')
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('异步评估契约')
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click()
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(1)
+      await expect(page.locator('.arco-trigger-popup:visible')).toContainText('异步评估契约')
+as_built_note: 页面清单，不用 algo_*，不点执行接口。catalog path 为空，调用区仅展示 POST。只核下拉与 method/path 展示。选项标题交给 runner：只点已打开弹层里的 .arco-select-option。

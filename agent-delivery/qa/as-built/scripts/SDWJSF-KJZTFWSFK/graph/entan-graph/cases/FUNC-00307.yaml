@@ -1,0 +1,30 @@
+id: FUNC-00307
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00307
+priority: P0
+title: 企业实体与关系接口信息清单
+entry_id: entan.graph
+tier: A
+steps:
+  - action: goto
+    target: #/entan/graph
+  - action: assert_visible
+    target: "12 个接口"
+  - action: assert_visible
+    target: /entan/v1/entan/graph/ner
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: B 合作 ENT_RE_COOP
+expect:
+  - note: 接口信息 tab 下拉 12 项；默认 ner POST；切换后 intra POST
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/entan/v1/entan/graph/intra');
+      await expect(page.locator('.api-info-grid header')).toContainText('B 合作 ENT_RE_COOP');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(12);
+      for (const name of ["A 实体识别 ENT_NER_ORG", "B 合作 ENT_RE_COOP", "B 投资 ENT_RE_INVEST", "B 归属 ENT_RE_BELONG", "B′ 供应链 ENT_RE_SUPPLY", "C 产业 ENT_RE_INDUSTRY", "C 技术 ENT_RE_TECH", "C 人才 ENT_RE_TALENT", "C 政策 ENT_RE_POLICY", "C 科研 ENT_RE_RESEARCH", "C 服务 ENT_RE_SERVICE", "D 浏览 ENT_GRAPH_BROWSE"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认 ner path，再切换 B 合作。选项标题由 runner 在已打开弹层里点 .arco-select-option。
