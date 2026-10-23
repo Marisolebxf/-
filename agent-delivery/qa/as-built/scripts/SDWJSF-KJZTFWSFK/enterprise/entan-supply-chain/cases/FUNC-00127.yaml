@@ -1,0 +1,25 @@
+id: FUNC-00127
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00127
+priority: P0
+title: 企业供应链断链风险主流程
+entry_id: entan.supply-chain
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/supply-chain"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 企业供应链断链风险（企业集合）
+  - action: algo_fill
+    set:
+      enterprise_codes: 0218337e44ca794fee9850cf1627b03b,05dc8024336db695425572625773381b,0551ccfde6aa2b3c52e647e283204040,05ff69620c962ce3bbb852351f077299
+  - action: algo_run
+expect:
+  - note: 返回面板含 metric_id、metric_name_zh、value.result 及 summary、key_nodes、break_risks、data_source、confidence、calc_process 字段
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['metric_id', 'metric_name_zh', 'value', 'result', 'sub_type', 'report_status', 'summary', 'enterprises', 'relation_scope', 'display_mode', 'data_time', 'key_nodes', 'break_risks', 'id', 'name', 'relation_type', 'suggestion', 'influence_score', 'is_key', 'risk_level', 'impact', 'data_source', 'confidence', 'calc_process', 'definition', 'formula', 'model_version', 'source_tables']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。步骤未填 chainId，仅 enterprise_codes。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

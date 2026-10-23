@@ -1,0 +1,25 @@
+id: FUNC-00140
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00140
+priority: P1
+title: 技术影响力评估缺 enterprise_codes
+entry_id: entan.tech
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/tech"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 技术影响力评估
+  - action: algo_fill
+    omit: [enterprise_codes]
+  - action: algo_run
+expect:
+  - note: message 或 msg 说明缺少 enterprise_codes，且不返回含 metric_id 的成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/enterprise_codes/.test(text)) throw new Error('结果未说明 enterprise_codes');
+      if (/M_ENT_DS_07_INDUSTRY_POTENTIAL_005/.test(text)) throw new Error('结果含 metric_id 成功态');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 enterprise_codes。反向断言仍按文档。

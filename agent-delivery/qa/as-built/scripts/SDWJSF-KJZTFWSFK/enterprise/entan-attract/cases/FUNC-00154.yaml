@@ -1,0 +1,21 @@
+id: FUNC-00154
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00154
+priority: P1
+title: 招引企业推荐指数（企业集合）缺 enterprise_codes
+entry_id: entan.attract
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/attract"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 招引企业推荐指数（企业集合）
+  - action: algo_fill
+    set: {}
+    omit: [enterprise_codes]
+  - action: algo_run
+expect:
+  - note: 结果或错误说明出现 enterprise_codes，且不出现 recommendation_score、rankings 成功结果
+    assert: "const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/enterprise_codes/.test(text)) throw new Error('结果未说明 enterprise_codes'); if (/recommendation_score/.test(text)) throw new Error('结果含 recommendation_score'); if (/\"rankings\"/.test(text) || /rankings\\s*:/.test(text)) throw new Error('结果含 rankings')"
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 enterprise_codes。catalog_status=unavailable。

@@ -1,0 +1,27 @@
+id: FUNC-00142
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00142
+priority: P0
+title: 企业技术力评估算法测试清单
+entry_id: entan.tech
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/tech"
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: 评估报告
+expect:
+  - note: 算法测试下拉 5 项；切换后调用区 GET /entan/v1/enterprises/{orgId}/report
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/entan/v1/enterprises/{orgId}/report');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('评估报告');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(5);
+      for (const name of ['企业技术力得分（企业集合）', '技术力详情', '模型权重', '评估报告', '技术影响力评估']) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

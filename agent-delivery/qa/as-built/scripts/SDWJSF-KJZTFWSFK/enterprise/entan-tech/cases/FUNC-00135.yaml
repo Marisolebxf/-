@@ -1,0 +1,27 @@
+id: FUNC-00135
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00135
+priority: P0
+title: 模型权重主流程
+entry_id: entan.tech
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/tech"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 模型权重
+  - action: algo_fill
+    set:
+      chainId: INB1701
+      model: tech_power
+  - action: algo_run
+expect:
+  - note: 返回面板为 array，元素含 name_zh、weight、description
+    assert: |-
+      await expect(page.locator('.test-workbench .chain-cascader .arco-tag')).toContainText('INB1701');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ['name_zh', 'weight', 'description']) {
+        await expect(viewer).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。model=tech_power 按前置条件。catalog_status=unavailable，断言仍按文档。不断言 sample 具体权重数字。

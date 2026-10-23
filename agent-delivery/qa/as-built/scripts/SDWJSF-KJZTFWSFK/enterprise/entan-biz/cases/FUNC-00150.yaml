@@ -1,0 +1,25 @@
+id: FUNC-00150
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00150
+priority: P1
+title: 评估报告缺 orgId
+entry_id: entan.biz
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/biz"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 评估报告
+  - action: algo_fill
+    omit: [orgId]
+  - action: algo_run
+expect:
+  - note: message 或 msg 说明缺少 orgId，且不返回含 markdown 的成功结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/orgId/.test(text)) throw new Error('结果未说明 orgId');
+      if (/markdown/.test(text)) throw new Error('结果含 markdown');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 orgId。catalog_status=unavailable，反向断言仍按文档。

@@ -1,0 +1,25 @@
+id: FUNC-00134
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00134
+priority: P1
+title: 技术力详情缺 orgId
+entry_id: entan.tech
+tier: A
+steps:
+  - action: goto
+    target: "#/entan/tech"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 技术力详情
+  - action: algo_fill
+    omit: [orgId]
+  - action: algo_run
+expect:
+  - note: message 或 msg 说明缺少 orgId，且不返回含 talent_score 的成功业务结果
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/orgId/.test(text)) throw new Error('结果未说明 orgId');
+      if (/talent_score/.test(text) && /innovation_score/.test(text)) throw new Error('结果含 talent_score 成功态');
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit 清空 orgId。catalog_status=unavailable，反向断言仍按文档。
