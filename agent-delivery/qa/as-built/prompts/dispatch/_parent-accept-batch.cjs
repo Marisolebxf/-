@@ -50,7 +50,8 @@ function findFuncMd(cpid) {
       if (ent.isDirectory()) walk(p);
       else if (ent.name.startsWith('FUNC-') && ent.name.endsWith('-用例.md')) {
         const head = fs.readFileSync(p, 'utf8').slice(0, 2000);
-        if (head.includes(`catalog_page_id=${cpid}`)) {
+        const re = new RegExp(`catalog_page_id=${cpid.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|[\`·]|$)`);
+        if (re.test(head)) {
           found = 'agent-delivery/qa/test-cases/SDWJSF-KJZTFWSFK/' + path.relative(tcRoot, p).split(path.sep).join('/');
         }
       }

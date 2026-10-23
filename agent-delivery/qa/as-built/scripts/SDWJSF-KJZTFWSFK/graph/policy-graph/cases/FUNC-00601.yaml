@@ -1,0 +1,27 @@
+id: FUNC-00601
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00601
+priority: P0
+title: 政策实体与关系算法测试清单
+entry_id: policy.graph
+tier: A
+steps:
+  - action: goto
+    target: #/policy/graph
+  - action: click
+    target: role=tab 算法测试
+  - action: click
+    target: .test-workbench .tab-endpoint-select .arco-select-view
+  - action: click
+    target: D 浏览 POLICY_GRAPH_BROWSE
+expect:
+  - note: 算法测试下拉 6 项；切换后 GET /policy/v1/policy/graph
+    assert: |-
+      await expect(page.locator('.test-workbench .test-source')).toContainText('GET');
+      await expect(page.locator('.test-workbench .test-source')).toContainText('/policy/v1/policy/graph');
+      await expect(page.locator('.test-workbench .tab-endpoint-select .arco-select-view')).toContainText('D 浏览 POLICY_GRAPH_BROWSE');
+      await page.locator('.test-workbench .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["A 实体识别 POLICY_NER_POLICY","B 关系边上图 POLICY_RE_CITE","C 扶持 POLICY_RE_SUPPORT","C 适用 POLICY_RE_APPLY_TO","C 监管 POLICY_RE_REGULATE","D 浏览 POLICY_GRAPH_BROWSE"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。选项标题交给 runner：只点已打开弹层里的 .arco-select-option，不整页 getByText。

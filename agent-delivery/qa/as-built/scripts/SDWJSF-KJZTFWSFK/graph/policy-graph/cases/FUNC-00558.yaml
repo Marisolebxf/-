@@ -1,0 +1,29 @@
+id: FUNC-00558
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00558
+priority: P0
+title: C 扶持 POLICY_RE_SUPPORT 传入 filter时仍返回与文档一致的业务字段结构
+entry_id: policy.graph
+tier: A
+steps:
+  - action: goto
+    target: #/policy/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "C 扶持 POLICY_RE_SUPPORT"
+  - action: algo_fill
+    set:
+      op_id: POLICY_RE_SUPPORT
+      scope: one
+      id: POL202200001
+      mode: rule
+      dry_run: true
+      relation_whitelist: '["support"]'
+      filter: '{"policy_ids":["POL202200001"]}'
+  - action: algo_run
+expect:
+  - note: 返回面板含字段：op_id、 written_nodes、 written_edges、 skipped、 source、 model_version、 calc_batch_id、 mode_effective、 llm_fallback、 space
+    assert: |-
+      const viewer = page.locator('.test-workbench .json-viewer');
+      for (const f of ["op_id", "written_nodes", "written_edges", "skipped", "source", "model_version", "calc_batch_id", "mode_effective", "llm_fallback", "space"]) { await expect(viewer).toContainText(f); }
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

@@ -1,0 +1,27 @@
+id: FUNC-00605
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00605
+priority: P0
+title: 焦点识别省略 limit
+entry_id: policy.focus
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/focus"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 焦点识别
+  - action: algo_fill
+    omit: [limit]
+    set:
+      policy_id: POL_SZ_IC
+      region_code: "440300"
+  - action: algo_run
+expect:
+  - note: 省略 limit 仍含焦点字段结构
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['policy_id', 'region_code', 'focus_score', 'relation_degree', 'opportunity_cnt', 'ext', 'title']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit limit。catalog status=unavailable，不断言 sample 具体数字。

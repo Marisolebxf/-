@@ -1,0 +1,27 @@
+id: FUNC-00602
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00602
+priority: P0
+title: 焦点识别全参主流程
+entry_id: policy.focus
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/focus"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 焦点识别
+  - action: algo_fill
+    set:
+      policy_id: POL_SZ_IC
+      region_code: "440300"
+      limit: "20"
+  - action: algo_run
+expect:
+  - note: data 数组元素含 policy_id、region_code、focus_score、relation_degree、opportunity_cnt 及 ext.title 字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['policy_id', 'region_code', 'focus_score', 'relation_degree', 'opportunity_cnt', 'ext', 'title']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。测试内容含 chainId=INB1701 但步骤未填 chainId，本脚本不写 chainId。catalog status=unavailable，断言仍按文档字段。不断言 sample 具体数字。备注金样。

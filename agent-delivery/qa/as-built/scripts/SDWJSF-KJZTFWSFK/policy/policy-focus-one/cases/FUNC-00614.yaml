@@ -1,0 +1,29 @@
+id: FUNC-00614
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00614
+priority: P0
+title: 单条焦点识别省略 execution FO1-04
+entry_id: policy.focus-one
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/focus-one"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 单条焦点识别
+  - action: algo_fill
+    omit: [execution]
+    set:
+      mode: 规则
+      title: 深圳市加快集成电路产业发展若干措施
+      text: 推进先进封装产业化，支持科技型中小企业流片补贴。
+      aux: 行业解读认为先进封装是下一阶段焦点。
+  - action: algo_run
+expect:
+  - note: 不传 execution 仍含焦点、堵点与建议相关字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['mode', 'focus_list', 'bottleneck_list', 'suggestions', 'persisted', 'term', 'score', 'evidence', 'item', 'reason']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。omit execution。catalog status=unavailable，不断言 sample 具体数字。

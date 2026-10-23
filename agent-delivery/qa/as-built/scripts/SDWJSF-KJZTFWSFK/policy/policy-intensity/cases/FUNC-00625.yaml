@@ -1,0 +1,27 @@
+id: FUNC-00625
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00625
+priority: P0
+title: 力度评估传入 scope_code
+entry_id: policy.intensity
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/intensity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 力度评估
+  - action: algo_fill
+    set:
+      scope_type: 省级（力度指数 INDEX）
+      scope_code: 440000
+      limit: 20
+  - action: algo_run
+expect:
+  - note: 仍含力度字段名
+    assert: |-
+      const v = page.locator('.test-workbench .json-viewer');
+      for (const f of ['rank_no', 'scope_type', 'scope_code', 'scope_name', 'intensity_index', 'industry_coverage']) {
+        await expect(v).toContainText(f);
+      }
+as_built_note: 用例写点击调用，页面按钮是执行接口。scope_code=440000 取参数说明示例。catalog status=unavailable，不断言 sample 具体数字。

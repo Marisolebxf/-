@@ -1,0 +1,26 @@
+id: FUNC-00540
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00540
+priority: P1
+title: A 实体识别 POLICY_NER_POLICY 非法 dry_run时返回指出该参数的错误说明
+entry_id: policy.graph
+tier: A
+steps:
+  - action: goto
+    target: #/policy/graph
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: "A 实体识别 POLICY_NER_POLICY"
+  - action: algo_fill
+    set:
+      op_id: POLICY_NER_POLICY
+      scope: one
+      id: POL202200001
+      mode: rule
+      dry_run: __invalid__
+  - action: algo_run
+expect:
+  - note: 1、返回面板 的 message 或 msg 指出 dry_run
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert'); const viewer = page.locator('.test-workbench .json-viewer'); const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : ''); if (!/dry_run/.test(text)) throw new Error('结果未说明 dry_run'); if (/written_nodes/.test(text)) throw new Error('结果含 written_nodes')
+as_built_note: 用例写点击调用，页面按钮是执行接口。catalog_status=unavailable，断言仍按文档字段。不断言 sample 具体数字。

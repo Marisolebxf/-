@@ -1,0 +1,28 @@
+id: FUNC-00627
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00627
+priority: P1
+title: 力度评估非法 scope_type
+entry_id: policy.intensity
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/intensity"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 力度评估
+  - action: algo_fill
+    set:
+      scope_type: __invalid__
+      limit: 20
+    omit: [scope_code]
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 scope_type，且不返回含 intensity_index 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/scope_type/.test(text)) throw new Error('结果未说明 scope_type');
+      if (/intensity_index/.test(text) && /rank_no/.test(text)) throw new Error('结果含 intensity_index 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。scope_type=__invalid__。catalog status=unavailable。

@@ -1,0 +1,30 @@
+id: FUNC-00617
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00617
+priority: P1
+title: 单条焦点识别非法 mode FO1-07
+entry_id: policy.focus-one
+tier: A
+steps:
+  - action: goto
+    target: "#/policy/focus-one"
+  - action: algo_tab
+    target: test
+  - action: algo_pick
+    target: 单条焦点识别
+  - action: algo_fill
+    set:
+      mode: __invalid__
+      title: 深圳市加快集成电路产业发展若干措施
+      text: 推进先进封装产业化，支持科技型中小企业流片补贴。
+      execution: 流片补贴兑付率低，仅完成计划40%。
+      aux: 行业解读认为先进封装是下一阶段焦点。
+  - action: algo_run
+expect:
+  - note: message 或 msg 指出 mode 非法，且不返回含 focus_list 的成功业务 data
+    assert: |-
+      const alert = page.locator('.test-workbench .test-control-column .arco-alert');
+      const viewer = page.locator('.test-workbench .json-viewer');
+      const text = ((await alert.count()) ? await alert.first().innerText() : '') + '\n' + ((await viewer.count()) ? await viewer.first().innerText() : '');
+      if (!/mode/.test(text)) throw new Error('结果未说明 mode');
+      if (/focus_list/.test(text) && /bottleneck_list/.test(text)) throw new Error('结果含 focus_list 成功业务 data');
+as_built_note: 用例写点击调用，页面按钮是执行接口。mode=__invalid__。catalog status=unavailable，反向断言仍按文档。

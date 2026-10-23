@@ -1,0 +1,30 @@
+id: FUNC-00600
+func_id: ZNFWJQ-SDWJSF/KJZTFWSFK-v1.0-FUNC-00600
+priority: P0
+title: 政策实体与关系接口信息清单
+entry_id: policy.graph
+tier: A
+steps:
+  - action: goto
+    target: #/policy/graph
+  - action: assert_visible
+    target: "6 个接口"
+  - action: assert_visible
+    target: /policy/v1/policy/graph/ner
+  - action: click
+    target: .api-info-grid .tab-endpoint-select .arco-select-view
+  - action: click
+    target: B 关系边上图 POLICY_RE_CITE
+expect:
+  - note: 接口信息 tab 下拉 6 项；默认 ner POST；切换后 intra POST
+    assert: |-
+      await expect(page.getByRole('tab', { name: '接口信息' })).toHaveAttribute('aria-selected', 'true');
+      await expect(page.locator('.api-info-grid .endpoint-headline')).toContainText('POST');
+      await expect(page.locator('.api-info-grid .endpoint-path')).toContainText('/policy/v1/policy/graph/intra');
+      await expect(page.locator('.api-info-grid header')).toContainText('B 关系边上图 POLICY_RE_CITE');
+      await page.locator('.api-info-grid .tab-endpoint-select .arco-select-view').click();
+      await expect(page.locator('.arco-trigger-popup:visible .arco-select-option')).toHaveCount(6);
+      for (const name of ["A 实体识别 POLICY_NER_POLICY","B 关系边上图 POLICY_RE_CITE","C 扶持 POLICY_RE_SUPPORT","C 适用 POLICY_RE_APPLY_TO","C 监管 POLICY_RE_REGULATE","D 浏览 POLICY_GRAPH_BROWSE"]) {
+        await expect(page.locator('.arco-trigger-popup:visible')).toContainText(name);
+      }
+as_built_note: 页面清单，不用 algo_*，不点执行接口。进页默认接口信息 tab，步骤先确认 ner path，再切换 B 关系边上图。
