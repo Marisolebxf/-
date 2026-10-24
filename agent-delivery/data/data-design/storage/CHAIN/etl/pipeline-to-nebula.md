@@ -217,7 +217,7 @@ Java 不抽实体、不写 nGQL。LLM 若上，只许在 Python，经 `/internal
 | `participates` | 企业/机构参与链 | **C** | `ent:` / `inst:` | entity_rel 映射并 **新建** 点 | 目标态改为 FETCH 既有点 |
 | （无 EDGE） | 产业-技术 | **C** | 技术 | 未抽 | `not_in_wave` |
 | （无 EDGE） | 产业-人才 | **C** | 人才 | 未抽 | `not_in_wave` |
-| （无 EDGE / 复用已有） | 产业-政策 | **C** | `pol:` | 未抽 | FETCH `pol:`；无点则 `no_stable_id` |
+| `participates` | 产业-政策 | **C** | `pol:` | `policy_industry_rel` | FETCH `pol:` 与 `chain:`/`segment:`；缺一则 `no_stable_id`；不新建 `pol:` |
 
 ---
 
@@ -266,7 +266,7 @@ flowchart TB
 | 服务机构 | `service_institution`→institution | 禁止 | FETCH `inst:` |
 | 技术 | 无 | 可写 DWD 抽取表，不上图 | `not_in_wave` |
 | 人才 | 无 | 同上 | `not_in_wave` |
-| 政策 | 无 | 禁止新建 `pol:` | FETCH `pol:` |
+| 政策 | `policy_industry_rel` | 禁止新建 `pol:` | FETCH `pol:` 与链点后写 `participates` |
 
 **禁止**用名称相似度伪造 `ent:` / `inst:` / `pol:`。
 
@@ -321,7 +321,7 @@ flowchart TB
 |---|---|
 | 产业-技术 | 本波不上图 `OPEN-CHAIN-GRAPH-01` |
 | 产业-人才 | 同上 |
-| 产业-政策 | FETCH `pol:{policy_id}`；无稳定 ID 不上图；**不**新建政策点（政策 A 档负责） |
+| 产业-政策 | 读 `policy_industry_rel`（`is_deleted=0` 且 `industry_link_code` 为 `chain:`/`segment:`）；FETCH `pol:{policy_id}` 与该链码；缺一不上图；**不**新建政策点（政策 A 档负责） |
 
 ---
 
@@ -348,7 +348,7 @@ flowchart TB
 |---|---|---|
 | 灌数后面图被填满 / replace 整图清空 | `run_seed` 调用 `project_safe` | 全景页自己建图 |
 | 企业点被链投影新建 | as-built `map_graph` 造 ent/inst | C 档 FETCH 设计 |
-| tech/talent/政策零上图 | `OPEN-CHAIN-GRAPH-01` | 漏配 EDGE |
+| tech/talent 零上图 | `OPEN-CHAIN-GRAPH-01` | 漏配 EDGE；政策改读 `policy_industry_rel` |
 | `supplies` 零边 | 映射未抽 | schema 缺 EDGE |
 | 全景 `source=ads` | Nebula 空或 fail-soft | 必须先 Nebula |
 | 流图 §8 仍画「同一批 project」 | 文档债；**本文件 §18 才是剥离真源** | 本叶翻签 01-data-flow |
@@ -376,7 +376,7 @@ flowchart TB
 | `CHAIN_RE_INDUSTRY_SERVICE` | **C** | 产业-服务机构 | 103 | 同上 | 同上 | `participates` → FETCH `inst:` | **上图** |
 | `CHAIN_RE_INDUSTRY_TECH` | **C** | 产业-技术 | 103 | 同上 | 同上 | — | **本波不上图** |
 | `CHAIN_RE_INDUSTRY_TALENT` | **C** | 产业-人才 | 103 | 同上 | 同上 | — | **本波不上图** |
-| `CHAIN_RE_INDUSTRY_POLICY` | **C** | 产业-政策 | 103 | 同上 | 同上 | hang → FETCH `pol:` | FETCH 到才上图；**不新建 pol:** |
+| `CHAIN_RE_INDUSTRY_POLICY` | **C** | 产业-政策 | 103 | 同上 | 同上 | `participates`：`pol:` → `chain:`/`segment:` | **上图**（读 `policy_industry_rel`；两端都已有点；**不新建 pol:**） |
 | `CHAIN_GRAPH_PANORAMA` | **D 浏览** | 产业链全景 | 专题 25/26 | `GET /v1/chain/{chain_id}/panorama` | `GET /internal/chain/{id}/panorama`（或现网查询） | **不写库** | 只读 |
 | `CHAIN_GRAPH_TOPIC_PANORAMA` | **D** | 专题全景 | 专题 25/26 | 现网无独立 GET；页 `/chain/topic-panorama` 拼装 list+panorama | 同左 | **不写库** | 只读；步4 不得另造写接口 |
 
@@ -444,7 +444,7 @@ A 档**只认本域自身实体**：`chain` + `segment`。禁止 A 档 FETCH/挂
 | 产业-服务机构 | 服务 | `CHAIN_RE_INDUSTRY_SERVICE` | C | **上图** | FETCH `inst:` | service_institution | 常空 |
 | 产业-技术 | 技术 | `CHAIN_RE_INDUSTRY_TECH` | C | **本波不上图** `OPEN-CHAIN-GRAPH-01` | — | 未抽 | 无 Tag |
 | 产业-人才 | 人才 | `CHAIN_RE_INDUSTRY_TALENT` | C | **本波不上图** `OPEN-CHAIN-GRAPH-01` | — | 未抽 | 无 Tag |
-| 产业-政策 | 政策 | `CHAIN_RE_INDUSTRY_POLICY` | C | FETCH 到才上图 | FETCH `pol:` | 未抽 | 无 policy_id → `no_stable_id`；禁止新建 pol: |
+| 产业-政策 | 政策 | `CHAIN_RE_INDUSTRY_POLICY` | C | **上图** | `pol:` → `chain:`/`segment:`（`participates`） | `policy_industry_rel` | 无 policy_id → `empty_field`；链码不是 `chain:`/`segment:` 或 FETCH 未命中 → `no_stable_id`；禁止新建 pol: |
 
 ### 17.4 分 op 过程（目标态）
 
@@ -597,7 +597,7 @@ flowchart TB
     CH --> SVC["CHAIN_RE_INDUSTRY_SERVICE<br/>FETCH inst: · 上图"]
     CH --> TECH["CHAIN_RE_INDUSTRY_TECH<br/>本波不上图 OPEN-CHAIN-GRAPH-01"]
     CH --> TAL["CHAIN_RE_INDUSTRY_TALENT<br/>本波不上图 OPEN-CHAIN-GRAPH-01"]
-    CH --> POL["CHAIN_RE_INDUSTRY_POLICY<br/>FETCH pol: · 有点才上图"]
+    CH --> POL["CHAIN_RE_INDUSTRY_POLICY<br/>policy_industry_rel · FETCH 两端才写"]
   end
 
   subgraph menuD [D 双全景 · 不写库]
@@ -625,7 +625,7 @@ flowchart TB
 | 企业 | 复用 ENT `enterprise` | `ent:` | 是（须 FETCH） | C，不新建 Tag |
 | 科研机构 | 复用 `institution` | `inst:` | 是（须 FETCH） | C |
 | 服务机构 | 复用 `institution` | `inst:` | 是（须 FETCH） | C |
-| 政策 | 复用 POLICY Tag `policy` | `pol:` | FETCH 到才是 | C，不新建 |
+| 政策 | 复用 POLICY Tag `policy` | `pol:` | 是（须 FETCH，不新建） | C，读 `policy_industry_rel` |
 | 技术 | **无 Tag** | — | **否** `OPEN-CHAIN-GRAPH-01` | skipped `not_in_wave` |
 | 人才 | **无 Tag** | — | **否** `OPEN-CHAIN-GRAPH-01` | skipped `not_in_wave` |
 
@@ -637,7 +637,7 @@ flowchart TB
 | `depends_on` | 上下游 | `segment:` → `segment:` | `CHAIN_RE_DEPENDS_ON` |
 | `supplies` | 供需 | — | `CHAIN_RE_SUPPLIES`（本波不上图） |
 | `participates` | 主体参与链 | `ent:`/`inst:` → `segment:`/`chain:` | 企业/科研/服务三个 C op |
-| （政策 hang） | 产业-政策 | `chain:`/`segment:` → `pol:` 或只记 ADS，不重复政策边名 | `CHAIN_RE_INDUSTRY_POLICY`（不改政策已有 `support`/`apply_to` 边名） |
+| `participates` | 政策参与链 | `pol:` → `chain:`/`segment:` | `CHAIN_RE_INDUSTRY_POLICY`（源 `policy_industry_rel`；不改政策已有 `support`/`apply_to`） |
 
 ---
 
@@ -648,7 +648,7 @@ flowchart TB
 | `OPEN-CHAIN-GRAPH-01` | 无 tech/talent Tag；无六类专题库稳定 ID | §17.3 全部保留行；上图列写「本波不上图」；skipped=`not_in_wave` / `no_stable_id` | 漏配 EDGE |
 | 现网造 ent/inst 点 | `map_graph` 非 FETCH | 步2 C 档改 FETCH；禁止灌数造点 | 本叶改 Python |
 | `supplies` 空 | schema 有、映射无 | 保留 op_id；不上图 | 私自造供应边 |
-| 产业-政策边名 | 政策叶已用 `support`/`apply_to` | 本域 C 只 FETCH + hang 表/participates props；**不**发明 `industry_policy` EDGE | 第二套政策边 |
+| 产业-政策边名 | 政策叶已用 `support`/`apply_to` | 本域 C 读 `policy_industry_rel`，只写 `participates`；**不**发明 `industry_policy` EDGE，不改政策边 | 第二套政策边 |
 | 双全景无第二 GET | 专题全景是 UI 拼装 | D 档两个 op_id；共享 panorama 读 | 步1 造新写接口 |
 | L6 链指 | 名称 → 已有 VID | **须李伟拍板**；默认关闭 | 名称相似度伪造边 |
 | D12 | 本设计服务 Demo `demo-algo-science` + `demo-ui-system-test` | lumen apiview **禁止**直连 demo 服务；正式复刻走 `lumen-algo-py` | 步1 改 lumen 前端打 demo |
