@@ -31,7 +31,7 @@
 - `region` 列：`广东省深圳市` 872 行（区县列基本为空，深圳切片按 region 含「深圳」口径）。
 - `policy_industry_rel` 321 行有效（2026-10-23 淮政玮团队「抽取产业」批次灌入），覆盖 141 个政策。
 - `industry_chain_node` 194 节点 × `industry_chain` 34 条链（LEFT JOIN 带链名）。
-- gkx 三方库对照快照：`local-workspace/.../_snapshots/pol_portal_gap_probe_20261024.json`。
+- gkx 三方库对照快照：`local-workspace/docs/tasks/investiage/20261023_淮哥指标任务/20261023_门户政策扶持十条指标/实测快照/pol_portal_gap_probe_20261024.json`（20261024 归档迁入）。
 
 ## 三、修改内容（全部 demo-algo-ent-analysis，前端零改动）
 
