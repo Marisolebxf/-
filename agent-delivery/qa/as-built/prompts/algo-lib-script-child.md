@@ -17,9 +17,9 @@ goto 目标只写 #/【CATALOG_PATH】去掉开头的 /。
 【怎么做】
 1. 一条用例一个 cases/FUNC-00xxx.yaml。id 与 func_id 尾号用 FUNC-00xxx。entry_id 用带点的 catalog_page_id。tier: A。禁止 allow_skip。
 2. 另写 index.yaml、fixtures/testdata.yaml、coverage.md。index.yaml 只写 layout: cases-v1，all 列出本页每一个脚本 id，不要写 gold。fixtures 只写 base_url: https://edu.itic-sci.com/dma/algovwz/ 。coverage.md 写脚本 id、用例编号、场景。
-3. 调用类：goto、algo_tab=test、algo_pick 标题、algo_fill、algo_run。清单类不用 algo_*，不点执行接口：先点本 tab 的 .tab-endpoint-select .arco-select-view，下一步 target 写选项标题。页面按钮是「执行接口」，和用例「点击调用」的差异写 as_built_note。
+3. 调用类：goto、algo_tab=test、algo_pick 标题、algo_fill、algo_run。清单类不用 algo_*，不点执行接口：先点本 tab 的 .tab-endpoint-select .arco-select-view，下一步 target 写选项标题。页面按钮是「执行接口」，和用例「点击调用」的差异写 as_built_note。断言里再点某个下拉项时，hasText: '标题' 是包含匹配。短标题是另一项的前缀或子串时会命中两项，严格模式拒绝点击，例如「服务链短板」同时命中「服务链短板分析模型」。这种点选写成 filter({ hasText: /^\s*短标题\s*$/ })。只核对下拉里有这些名称时，仍用整段弹层的 toContainText。
 4. 不传的参数放 omit。chainId 的 set 写用例给出的 id。名称表没有的 id 仍按用例写入，as_built_note 写「名称表无此 id」，不要猜中文名。下拉 set 写选项可见文案。单选 set 写选项文案。普通输入按原值。文档标了必填的参数，留空仍按反向断言，不要改成「空表示查全部」。
-5. 主流程只断言用例点名的字段名出现在 .test-workbench .json-viewer；填了 chainId 的再断言 .arco-tag 含该 id。不断言 sample 里的具体数字。反向断言结果或错误提示里出现该参数名，且不出现用例禁止的成功字段。catalog_status=unavailable 照样写。页面未发布且没有这些字段时，断言仍按文档，禁止改断言迎合未发布。
+5. 主流程只断言用例点名的字段名出现在 .test-workbench .json-viewer 的第一条（locator(...).first()）；填了 chainId 的再断言 .arco-tag 含该 id。不断言 sample 里的具体数字。反向断言结果或错误提示里出现该参数名，且不出现用例禁止的成功字段。catalog_status=unavailable 照样写。页面未发布且没有这些字段时，断言仍按文档，禁止改断言迎合未发布。
 6. 只把本页「自动化用例ID」写成对应 FUNC-00xxx。
 7. 在 agent-delivery/qa/as-built/tools 执行：node run-apiview.mjs ../scripts/SDWJSF-KJZTFWSFK/【MODULE】/【PAGE_SLUG】 --check。输出条数必须等于本页 yaml 数，编译错误为 0。不启动浏览器。
 
