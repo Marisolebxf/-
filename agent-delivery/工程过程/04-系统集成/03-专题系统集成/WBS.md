@@ -61,10 +61,10 @@
 
 | 草案号 | 子项 | 监管人 | 仓 | 依赖 | 可对端 | 开始时间 | 完成日期要求 |
 |---|---|---|---|---|---|---|---|
-| WBS-03-02a · `SYSINT-03-02A-L01` | 运营正文。`pano_industry_intro`、`pano_dev_history`、`pano_sz_feature`、`pano_cluster_effect`、`pano_competitive_position`。节点简介和市场规模文案本轮不进 CMS | 李伟 | `lumen-ui-topic`、专题 Java | WBS-03-15。契约草案确认前不改字段。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 智树页面可编已发布正文。编辑页套通用表单框架。正文不内嵌企业数。菜单相对路径进统一用户中心 | 无开始时间 | 2026-10-19 |
-| WBS-03-02b · `SYSINT-03-02B-L01` | 指标与图谱数字。契约点名、对齐还没有：`M_CHAIN_ENTERPRISE_COUNT`、`M_CHAIN_INSTITUTION_COUNT`、`M_CHAIN_NODE_COUNT`、`M_CHAIN_SZ_ENTERPRISE_COUNT`、`M_CHAIN_SZ_INSTITUTION_COUNT`、`M_CHAIN_GLOBAL_REGION_COUNT`、`M_CHAIN_NATIONAL_REGION_COUNT`。深圳各区计数是缺口。节点和边不进 CMS。读图不在本叶新做 | 李伟 | 同上，算法在 `lumen-algo-py`。读图主路径不在本叶 | `PORTAL-CMS-METRIC-COVER-CHAIN-L01` | 已有 ID 走指标服务。区级缺口空态。读图归 WBS-03-06 与第 7 项 | 无开始时间 | 2026-10-19 |
-| WBS-03-02c · `SYSINT-03-02C-L01` | 产业资讯。不进 CMS。读 `dwd_industry_chain_news_info`，按 `industry_code` 过滤 | 李伟 | 专题 Java 只读 | 客户决策清单 2026-08-25 该表「禁止业务使用」未解除则不上屏 | 有记录则按发布时间倒序。无记录事件线为空，不从其他产业补，不用大模型生成 | 无开始时间 | 2026-10-19 |
-| WBS-03-02d | 已发布正文回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01`（ready_to_sign）五个 `pano_*`。资讯表禁止用 CMS 覆盖 | 徐滕强（回写定义单监管人。页面仍归李伟，不两人共管一叶） | 定义单在 `gkx-orchestration` | 该定义单 `done` 且架构师会签 | 只回写已发布的五个正文块。不改 2026-08-25 对资讯表的记录 | 无开始时间 | 2026-10-19 |
+| WBS-03-02a · `SYSINT-03-02A-L01`（前端）+ `SYSINT-03-02A-JAVA-L01`（Java，2026-10-24 拆叶） | 运营正文。`pano_industry_intro`、`pano_dev_history`、`pano_sz_feature`、`pano_cluster_effect`、`pano_competitive_position`。节点简介和市场规模文案本轮不进 CMS | 前端孔东、Java 徐滕强（2026-10-24 与李伟沟通，产业链 CMS 需求前端线孔东、后端徐滕强；李伟不再监管） | `lumen-ui-topic`、专题 Java | WBS-03-15。契约 PORTAL-CMS-专题全景.md 2026-10-24 已确认。2026-10-23 去掉对 `SYSINT-SCHEME-03-L01` 的依赖 | 智树页面可编已发布正文。编辑页套通用表单框架。正文不内嵌企业数。菜单相对路径进统一用户中心 | 无开始时间 | 2026-11-05 |
+| WBS-03-02b · `SYSINT-03-02B-L01` | 指标与图谱数字。契约点名、对齐还没有：`M_CHAIN_ENTERPRISE_COUNT`、`M_CHAIN_INSTITUTION_COUNT`、`M_CHAIN_NODE_COUNT`、`M_CHAIN_SZ_ENTERPRISE_COUNT`、`M_CHAIN_SZ_INSTITUTION_COUNT`、`M_CHAIN_GLOBAL_REGION_COUNT`、`M_CHAIN_NATIONAL_REGION_COUNT`。深圳各区计数是缺口。节点和边不进 CMS。读图不在本叶新做 | 徐滕强（2026-10-24 与李伟沟通接管；李伟不再监管） | 同上，算法在 `lumen-algo-py`。读图主路径不在本叶 | `PORTAL-CMS-METRIC-COVER-CHAIN-L01` | 已有 ID 走指标服务。区级缺口空态。读图归 WBS-03-06 与第 7 项 | 无开始时间 | 2026-11-05 |
+| WBS-03-02c · `SYSINT-03-02C-L01` | 产业资讯。不进 CMS。读 `dwd_industry_chain_news_info`，按 `industry_code` 过滤 | 徐滕强（2026-10-24 与李伟沟通接管；李伟不再监管） | 专题 Java 只读 | 客户决策清单 2026-08-25 该表「禁止业务使用」未解除则不上屏 | 有记录则按发布时间倒序。无记录事件线为空，不从其他产业补，不用大模型生成 | 无开始时间 | 2026-11-05 |
+| WBS-03-02d | 已发布正文回写 DWD。定义单 `PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01`（ready_to_sign）五个 `pano_*`。资讯表禁止用 CMS 覆盖 | 徐滕强（回写定义单监管人） | 定义单在 `gkx-orchestration` | 该定义单 `done` 且架构师会签 | 只回写已发布的五个正文块。不改 2026-08-25 对资讯表的记录 | 无开始时间 | 2026-11-05 |
 
 ### WBS-03-03 专题服务
 
