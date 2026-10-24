@@ -16,7 +16,7 @@
 | C2 | `lumen-svc-platform` | `origin/dev` | `SYSINT-04-05-API-L01` | 2026-10-24 已到 integration。`GET /topic/v1/policy/portal` |
 | D1 | `lumen-ui-topic` | `origin/dev` | `SYSINT-04-05-L01` | 政策查询两张单已 done。仍等 C2 ≥ `integration`。不要与 D2 同时改这个仓 |
 | D2 | `lumen-ui-topic` | `origin/dev` | `SYSINT-03-08-L01` | D1 有 handoff 且 ≥ `integration`。不要与 D1 同时改这个仓 |
-| D3 | `lumen-ui-algo-apiview` | `origin/dev` | `ALGO-LIB-POL-APIVIEW-PORTAL-L01` | B1 ≥ `integration`。与 D1/D2 不同仓，可以并行 |
+| D3 | `lumen-ui-algo-apiview` | `origin/dev` | `ALGO-LIB-POL-APIVIEW-PORTAL-L01` | 2026-10-24 开工。十条只读 Java `kind=all` 的 `portal_gaps` |
 | E | devops + qa | K8s `dev` | 本文件 §4 | D1、D2、D3 都 ≥ `pending_test` 后一次冒烟 |
 
 调用链：页面 → Java `GET /topic/v1/policy/indicators` 与时间线读接口 → `lumen-algo-py` `/internal/*`。禁止调用 `demo-*`。Java 不写算法。
