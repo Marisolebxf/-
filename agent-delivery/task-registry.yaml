@@ -28685,7 +28685,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 350000
     note: |
-      2026-10-21 增量交付（详见 handoff §0.1）：A. 外网前缀 base 正式接入四仓（lumen-ui-topic /tts/svcz commit e7c19d0、demo-ui-topic /tts/ptts b198de5、lumen-ui-science-mobile /tid/mobile 86a82b9、lumen-ui-topic-mobile /tts/msvcz 3e5d054，均 origin/dev ✅；demo-ui-science 免改），替换此前手工改 base 的临时构建，CI 发布不再回退 404；B. 门户权限菜单矫正：pickMenuTree 改 all+org 全桶合并、忽略 appPermissions（用户裁定），topic 菜单经 URL 反查命中 menu:topic:ent:search/type，不再误发 no.permission；portal.selfcheck ✅、vue-tsc ✅、生产构建 ✅；handoff 已补 §0.1（orchestration 9e47268b）。待门户侧配菜单后实嵌复验。
+      2026-10-24 增量：嵌入模式底色修正——is-portal-embed 原 background:none 简写连底色一并重置导致整页透白（违 D8），改为保留 --sci-bg-page #d8e7fc；lumen-ui-topic commit f76fd2c 已推 origin/dev（监管人聊天授权）；handoff 补 §0.2（orchestration e7ba9ea2）。待门户侧配菜单后实嵌复验
     depends_on: []
     touched_files:
       - "src/App.vue"
@@ -28701,7 +28701,7 @@ tasks:
       - "安全配置（方案 §12.4/§10.1）：部署侧配置 CSP frame-ancestors 仅允许门户域名嵌入，禁止 X-Frame-Options ALLOWALL/DENY"
       - "页面适配（方案 §12.6）：html/body/#app 100% 宽高自适应门户内容区，不强依赖浏览器全屏高度"
       - "联调验收：与门户体验环境 https://edu.itic-sci.com/portal 完成实际嵌入联调（PAGE_READY/路由/登录态/异常场景），handoff 附截图或录屏证据"
-    update_time: "2026-10-21T17:27:32+08:00"
+    update_time: "2026-10-24T11:13:50+08:00"
   - id: LUMEN-UAC-JAVA-FACADE-L01
     feishu_bitable_record_id: reczz28MTKaQhMH9
     claimed_at: "2026-10-12T10:11:09.972Z"
@@ -34047,7 +34047,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "demo-ui-science origin/dev 已推送 1485e31。lumen-ui-science-pc 未改。待 demo 评审通过后再同步 lumen。"
+    note: |
+      第三轮（2026-10-24 会议纪要）：外链跳转规则（相对路径站内 router 打开、绝对地址 window.open 新页签、无外链保留现有详情抽屉不删）；时间趋势保留，饼图改按主题分组的柱状图（成果/案例/建议三系列）；右侧三栏点击行为同外链规则；五个 tab 与全局筛选暂不动，仅智库专家 tab 禁用时间标签+时间范围两项筛选；筛选区移除排序。接口改造最晚 11-06 完成、10-28 前出接口文档，存量接口复用。关联 demo-ui-science 页面本轮布局/交互修改。
     touched_files:
       - "repos/demo-ui-science/src/pages/tech-service/ThinkTankService.jsx"
       - "repos/demo-ui-science/src/pages/tech-service/mockData.js"
@@ -34062,7 +34063,7 @@ tasks:
       - "页面单独展示重大事件、成果发布、政策建议；成果汇总与分类计数由当前清单现算，空值显示待补齐"
       - "每条数据可区分来源：供方、运营、系统、采集补充、待补齐；服务类型目录标待甲方确认；七种分析方法不顶替服务类型"
       - "交付 handoff，说明未接入的供方字段与演示样例边界"
-    update_time: "2026-10-21T23:21:26+08:00"
+    update_time: "2026-10-24T10:32:27+08:00"
   - id: GDF-ENT-WORKPACK-V4R2-L01
     evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V4R2-L01.md"
     title: "企业维 GDF 派单包 v4.0.1 — GDF round1 核对响应合并（277 列分类处置/母子 mapping 对齐/专利分表映射/抽取策略）"
@@ -34729,8 +34730,18 @@ tasks:
       - "企业不写成科研机构"
     update_time: "2026-10-23T00:37:01+08:00"
   - id: SYSINT-03-15-L01
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/系统集成-SYSINT/SYSINT-03-15-L01.md"
+    cost_warn: "green"
+    actual_tokens: 80000
+    actual_cost: 2.4
+    supervised_by: "human:孔东"
+    claimed_at: "2026-10-24T04:16:22.403Z"
+    last_seen_at: "2026-10-24T04:16:22.403Z"
+    lock_until: "2026-10-24T08:16:22.403Z"
+    claimed_by: "human:孔东"
     title: "专题内容管理 CMS 公共控件与通用表单框架"
-    status: "ready"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -34740,7 +34751,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "监管人 human:孔东。完成日期要求 2026-11-05。WBS-03-15。本叶 done 之后才允许 human:淮政玮 验收 SYSINT-SCHEME-03-L01。政策扶持不走这套表单。"
+    note: "2026-10-24 human:孔东确认可以验收。handoff 已写。本地预览通过。未接 Java 写接口。"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/WBS.md"
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/技术方案.md"
@@ -34748,7 +34759,7 @@ tasks:
       - "企业、产业全景、专题服务的正文编辑套同一框架：列表、新建、编辑、发布"
       - "富文本、名单、时间线、按产业切换可复用。控件用仓内 Arco，不另引组件库"
       - "政策扶持不做出 CMS 表单"
-    update_time: "2026-10-23T00:30:30+08:00"
+    update_time: "2026-10-24T13:23:23+08:00"
   - id: SYSINT-03-01C-L01
     title: "企业发展链上瓶颈解读与生态合作摘要"
     status: "ready"
@@ -36238,9 +36249,9 @@ tasks:
     update_time: "2026-10-23T13:06:07+08:00"
   - id: FE-ENT-EVAL-REPORT-REAL-L01
     cost_warn: "green"
-    actual_cost: 1.5
-    model_used: "glm-5.3 (Cursor)"
-    actual_tokens: 150000
+    actual_cost: 2.1
+    model_used: "glm-5.3"
+    actual_tokens: 210000
     evidence: "agent-handoffs/FE-ENT-EVAL-REPORT-REAL-L01.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-10-22T09:06:24.960Z"
@@ -36258,8 +36269,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 250000
-    note: |
-      重开轮：按监管人新口径重做完毕——①新评估报告专用模板（A4 分页、KPI 卡/排名条形图/维度雷达/明细表分块，D8 token）；②导出改 html2canvas+jsPDF 直下 PDF 文件（不弹打印预览）。jspdf+html2canvas 已获批准。selfcheck + vue-tsc + 回归 + eslint 全绿，改动停本地待人工验收走查
+    note: "验收通过（2026-10-24 监管人孔东走查，含两轮修正：满宽自适应+按块切页、封面紧凑化）。双仓已推 dev：lumen-ui-topic 2df95de；gkx-orchestration 858909c0。联调通过"
     touched_files:
       - "src/components/report/SystemReportReader.vue"
       - "src/components/report/enterpriseDomainReports.ts"
@@ -36272,7 +36282,7 @@ tasks:
       - "权限与埋点：沿用 ReportExportButton 现有 permCode 与付费闸门；导出动作埋点保留"
       - "自检：reportExport.selfcheck.mjs 断言七章节包含真实数据字段（排名/得分），无「同源摘要」「Wave 0 Mock」占位串；vue-tsc 绿"
       - "handoff + cost 四字段回填；ponytail: full"
-    update_time: "2026-10-23T15:24:21+08:00"
+    update_time: "2026-10-24T10:59:30+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-ENTAN-INNOVATION-L01
     cost_warn: "green"
     actual_cost: 0
