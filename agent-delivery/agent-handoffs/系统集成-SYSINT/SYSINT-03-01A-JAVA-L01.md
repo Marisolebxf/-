@@ -251,6 +251,55 @@ curl -s -o /dev/null -w "%{http_code}\n" -H "X-CMS-Api-Key: $KEY" $BASE/api/open
 - 网关页面轨路由：临时联调路由 `/cms/**` 已覆盖（§2）；长期正式路由与统一用户中心菜单角色名：**还没有**（属 WBS-03-18 收口范围）
 - **契约校验全覆盖**：body 侧 `page_key` 枚举（§0）与 `sort_order` 整数校验已补（非法值 40001，不再落 DB 报 50001）；全量 Reactor verify 绿（cms [29/46]）
 
+### 8.1 企业维度管理列表接口（前端设计文档 · 列表半边，用户拍板 2026-10-24 并入本叶）
+
+**用途**：运维列表页主数据源。主体=企业（dwd 真实 ∪ cms 虚拟，软删剔除，同 v_cms_ent 口径）；`blocks` = 该企业在 12 类 content_type 下的内容块状态摘要（按 draft/published 计数），供列表渲染「已配置哪些块、发布没发布」及「点开企业→编辑字段」导航。
+
+```http
+GET /cms-ops/v1/enterprise/content/enterprise-summary?keyword=芯&page=1&size=20
+```
+
+```json
+{ "code": 0, "msg": "ok", "data": {
+  "total": 1, "page": 1, "size": 20,
+  "records": [ {
+    "enterprise_code": "ENT-0001",
+    "name": "深芯微电子",
+    "blocks": {
+      "star_roster_item":       { "published": 1 },
+      "star_team_strength":     { "published": 2 },
+      "sz_enterprise_intro":    { "draft": 1 }
+    }
+  } ]
+} }
+```
+
+说明：`blocks` 里**没出现的 content_type = 该企业未配置**（前端显示「未配置」引导新建）；keyword 空查全量；分页 ≤200。
+
+### 8.2 bugbot 修复记录（两轮，全部修复）
+
+| 轮次 | Findings | 修复 |
+|---|---|---|
+| 一轮（2026-10-24 12:03） | HIGH roster 表缺 page_key 列；MEDIUM 状态机竞态；LOW HTML 黑名单基础绕过 | DDL 补列（建表前零迁移）；publish/unpublish 改原子条件 UPDATE+影响行数检查（0 行抛 40901）；正则补 / 属性分隔+实体解码 |
+| 二轮（2026-10-24 14:05 总审转介） | HTML5 无分号数字实体（`&#106avascript:`）+ scheme 夹 tab（`java&#9;script:`）绕过；契约 §2.2 `updated_at` 改名 `std_updated_at` 无映射（前端传参静默丢弃+审计列冒名输出）；烟测脚本 `WHERE id=5` 硬编码脆弱假绿 | 解码按 HTML5 十进制前缀解析（不吞字母）+ check 三遍检测（原文/解码/解码剥 tab·换行·CR）；`OpsContentType.COLUMN_ALIASES` 映射 + required 纳入 + sanitize/envelope 双向走映射，行审计时间不再冒名输出；脚本改 `MAX(id)` 动态引用 + bash 终态/审计断言 |
+
+最终回归：`Tests 27/27 BUILD SUCCESS`。两轮修复均已推送（`aa5df80` pipeline 2830 绿、`e5c6d3b` pipeline 2841 backend:build success）。
+
+### 8.3 WBS 待登记（用户拍板 2026-10-24）
+
+| 事项 | 状态 |
+|---|---|
+| 前台查询合并单（Python/ADS 底数 + cms published 覆盖，接口签名不动，cms 挂=老数据兜底） | 待登记 WBS（SYSINT-03 维），归属 topic-enterprise 门面层，需架构师圈范围 |
+
+**修订记录**
+
+| 版本 | 日期 | 作者 | 说明 |
+|---|---|---|---|
+| 8.1 | 2026-10-24 | api-agent | 企业维度管理列表接口并入本叶（列表半边）；新增 `GET /enterprise-summary`；单测 23→25 |
+| 8.2 | 2026-10-24 | api-agent | bugbot 一轮三修；单测 25→26 |
+| 8.3 | 2026-10-24 | api-agent | bugbot 二轮三修（HTML5 解码/updated_at 映射/烟测脚本断言）；单测 26→27 |
+| 8.4 | 2026-10-24 | api-agent | 主仓 reset 丢失恢复：§8.1–8.3 重建（内容同前） |
+
 ---
 
 **ponytail**: full——契约字段直译无删减；12 类元数据驱动零重复代码；HTML 校验黑名单有注释升级路径；无多余抽象（单 controller/service/enum 三件套）。
