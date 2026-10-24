@@ -210,7 +210,7 @@ export async function algoRun(page, caseDir) {
   page.on('response', onResponse);
   try {
     await page.locator('.test-workbench').getByRole('button', { name: '执行接口' }).click();
-    const viewer = page.locator('.test-workbench .json-viewer');
+    const viewer = page.locator('.test-workbench .json-viewer').first();
     const alert = page.locator('.test-workbench .test-control-column .arco-alert');
     await Promise.race([
       viewer.waitFor({ state: 'visible', timeout: 20000 }),
@@ -228,7 +228,7 @@ export async function algoRun(page, caseDir) {
     const alert = page.locator('.test-workbench .test-control-column .arco-alert');
     if (await alert.count()) response = (await alert.first().innerText()).trim();
     if (!response) {
-      const viewer = page.locator('.test-workbench .json-viewer');
+      const viewer = page.locator('.test-workbench .json-viewer').first();
       if (await viewer.count()) response = (await viewer.innerText()).trim();
     }
   }
