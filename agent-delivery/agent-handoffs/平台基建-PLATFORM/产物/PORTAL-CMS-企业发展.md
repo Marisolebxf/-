@@ -71,34 +71,34 @@
 
 ### 1.3 明星企业介绍 `page_key=star`
 
-| 区块 | 归类 | 取数 |
-|---|---|---|
-| 当前产业已发布名单、排序、入选标签、入选理由 | cms | `star_roster_item` |
-| 「共 N 家」 | metric | `M_ENT_STAR_ENTERPRISE_COUNT`。口径是对 CMS 已发布名单 `COUNT(DISTINCT enterprise_code)`，禁止算法 TopN、禁止用专利数或荣誉标签冒充。D1 aligned，D4 mock |
-| 入选标准名称、版本、适用产业、已确认维度 | cms | `star_selection_standard`。不下发权重、阈值、排名公式 |
-| 企业法定名称 | mixed | 主数据为准。CMS `display_name_alias` 只作别名，界面标明非法定名 |
-| 资质荣誉标签 | metric | 企业标签主数据。CMS「重点标识」不代替标签 |
-| 产品功能全景图（产品、模块、场景、案例、媒体 URL） | cms | `star_product_panorama`，字段见 §2.3。按产品、模块、场景、案例、媒体拆开存，不收成一整块 HTML |
-| 技术优势 · 专利数 | metric | 缺口。`M_ENT_STAR_PATENT_COUNT`、`M_ENT_PATENT_VALID_COUNT` 均未入种子，D1 missing。页面留位，CMS 不填这个数 |
-| 技术优势 · 研发投入占比 | metric | `M_ENT_RD_INVESTMENT_RATIO`。最近完整自然年研发投入/营收。未注册别名 `M_ENT_STAR_RD_RATIO` 不用。D1 aligned，D4 mock |
-| 技术优势 · 核心技术/原理/成果简介 | cms | `star_tech_narrative.body_html`，类型 `html`。专利数和研发投入占比不写进这段 HTML |
-| **团队实力多维展示** | **cms** | **`star_team_strength.body_html`，类型 `html`**。见 §3 |
-| 团队实力条带上的「科学家/核心人才比例」 | cms | 表单录入，字段见 §2.14。比例数字由运营填写，不是指标。不写进上方 HTML |
-| 产业生态图谱的正式边 | metric | 图谱边由智树图谱数据给出。合作摘要不参与画边。边的正式口径仍待确认（决策项 Q040） |
-| 产业生态的合作摘要 | llm | 来自企业供应链分析的大模型摘要。不进 CMS，不设 `star_ecosystem_note`。生成失败时只隐藏这段摘要，不补虚假节点 |
-| 发展历程、口碑摘要 | cms | `star_story` |
+| 区块                          | 归类      | 取数                                                                                                                        |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 当前产业已发布名单、排序、入选标签、入选理由      | cms     | `star_roster_item`                                                                                                        |
+| 「共 N 家」                     | metric  | `M_ENT_STAR_ENTERPRISE_COUNT`。口径是对 CMS 已发布名单 `COUNT(DISTINCT enterprise_code)`，禁止算法 TopN、禁止用专利数或荣誉标签冒充。D1 aligned，D4 mock |
+| 入选标准名称、版本、适用产业、已确认维度        | cms     | `star_selection_standard`。不下发权重、阈值、排名公式                                                                                   |
+| 企业法定名称                      | mixed   | 主数据为准。CMS `display_name_alias` 只作别名，界面标明非法定名                                                                              |
+| 资质荣誉标签                      | metric  | 企业标签主数据。CMS「重点标识」不代替标签                                                                                                    |
+| 产品功能全景图（产品、模块、场景、案例、媒体 URL） | cms     | `star_product_panorama`，字段见 §2.3。按产品、模块、场景、案例、媒体拆开存，不收成一整块 HTML                                                           |
+| 技术优势 · 专利数                  | metric  | 缺口。`M_ENT_STAR_PATENT_COUNT`、`M_ENT_PATENT_VALID_COUNT` 均未入种子，D1 missing。页面留位，CMS 不填这个数                                   |
+| 技术优势 · 研发投入占比               | metric  | `M_ENT_RD_INVESTMENT_RATIO`。最近完整自然年研发投入/营收。未注册别名 `M_ENT_STAR_RD_RATIO` 不用。D1 aligned，D4 mock                              |
+| 技术优势 · 核心技术/原理/成果简介         | cms     | `star_tech_narrative.body_html`，类型 `html`。专利数和研发投入占比不写进这段 HTML                                                            |
+| **团队实力多维展示**                | **cms** | `star_team_strength.body_html`**，类型** `html`。见 §3                                                                         |
+| 团队实力条带上的「科学家/核心人才比例」        | cms     | 表单录入，字段见 §2.14。比例数字由运营填写，不是指标。不写进上方 HTML                                                                                  |
+| 产业生态图谱的正式边                  | metric  | 图谱边由智树图谱数据给出。合作摘要不参与画边。边的正式口径仍待确认（决策项 Q040）                                                                               |
+| 产业生态的合作摘要                   | llm     | 来自企业供应链分析的大模型摘要。不进 CMS，不设 `star_ecosystem_note`。生成失败时只隐藏这段摘要，不补虚假节点                                                       |
+| 发展历程、口碑摘要                   | cms     | `star_story`                                                                                                              |
 
 ### 1.4 深圳企业介绍 `page_key=shenzhen`
 
-| 招标叶子 | 归类 | 取数 |
-|---|---|---|
-| 深圳企业数量 | metric | `M_ENT_SZ_COUNT` 深圳企业数。`region_id` 以 `4403` 开头，选产业再过滤。D1 aligned，D4 mock |
-| 深圳企业数量 · 历年趋势 | metric | 缺口。建议名 `M_ENT_SZ_INDUSTRY_TREND` 未入指标库 |
-| 深圳企业领域分布 | metric | `M_ENT_SZ_CHAIN_POSITION` 链中角色（上/中/下游计数）。它不是「已识别领域个数」，个数类另记缺口（建议名 `M_ENT_SZ_DOMAIN_DIST` 未入指标库） |
-| 深圳企业规模分析 | metric | 缺口。建议名 `M_ENT_SZ_SCALE_DIST` 未入指标库。禁止用资质标签冒充大/中/小/微 |
-| 上市数、国企数 | metric | 缺口。未查到已注册的深圳上市数、国企数 ID |
-| 深圳重点企业圈定与介绍文案 | mixed | 圈定与文案：CMS `sz_focus_set`、`sz_enterprise_intro`。名称与资质走主数据 |
-| 本地定位、优势、专家分析 | cms | `sz_enterprise_intro` |
+| 招标叶子          | 归类     | 取数                                                                                              |
+| ------------- | ------ | ----------------------------------------------------------------------------------------------- |
+| 深圳企业数量        | metric | `M_ENT_SZ_COUNT` 深圳企业数。`region_id` 以 `4403` 开头，选产业再过滤。D1 aligned，D4 mock                        |
+| 深圳企业数量 · 历年趋势 | metric | 缺口。建议名 `M_ENT_SZ_INDUSTRY_TREND` 未入指标库                                                          |
+| 深圳企业领域分布      | metric | `M_ENT_SZ_CHAIN_POSITION` 链中角色（上/中/下游计数）。它不是「已识别领域个数」，个数类另记缺口（建议名 `M_ENT_SZ_DOMAIN_DIST` 未入指标库） |
+| 深圳企业规模分析      | metric | 缺口。建议名 `M_ENT_SZ_SCALE_DIST` 未入指标库。禁止用资质标签冒充大/中/小/微                                             |
+| 上市数、国企数       | metric | 缺口。未查到已注册的深圳上市数、国企数 ID                                                                          |
+| 深圳重点企业圈定与介绍文案 | cms    | 圈定与文案：CMS `sz_focus_set`、`sz_enterprise_intro`。名称与资质走主数据                                        |
+| 本地定位、优势、专家分析  | cms    | `sz_enterprise_intro`                                                                           |
 
 ---
 
