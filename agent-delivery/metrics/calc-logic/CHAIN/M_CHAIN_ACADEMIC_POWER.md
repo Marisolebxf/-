@@ -1,6 +1,7 @@
 # 学术生态（M_CHAIN_ACADEMIC_POWER）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_POWER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_POWER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_POWER_out.json`。
 
 ## 基础信息
 
@@ -8,42 +9,59 @@
 |---|---|
 | 指标ID | M_CHAIN_ACADEMIC_POWER |
 | 指标名称 | 学术生态 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
-
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链评价 |
+| 二级模块 | 创新生态 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | ["2021", "2022", "2023", "2024"] |
+| 缺失年份 | ["2025", "2026"] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_ACADEMIC_POWER.md` |
 
 ## 口径定义
 
-指定区域在指定产业链上的学术生态竞争力得分，取值0—100。由论文产出、科研机构、人才储备三维合成。
+四表齐、四市面板可算，但「指定链 × 区域」的双限定闭合不了，故判 `部分支持`， 只交付四市面板与链轴否定性证据，不交付任何链级分数。
 
 ## 计算逻辑说明
 
-三维等权。先按区域、链、年计算科研机构数、学者数、论文数，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city="深圳市"。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上主体。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- |
-| 区域产业指数 | 学术生态 | 科研机构 | 区域链上高校与科研机构去重件数。国内科研用tags.credit_code关联dwd_research_institute_base_info.external_id，高校用tags.credit_code关联dwd_org_heis_info.external_id，均按province、city筛区域后按org_id去重； | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选, 信用代码关联, 机构名称匹配; dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市; dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市 | 无 |
-| 区域产业指数 | 学术生态 | 人才储备 | 上述机构下学者去重人数。scholar_org_id等于机构org_id，或scholar_org_name_zh包含机构name_cn，按scholar_id去重 | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选, 信用代码关联, 机构名称匹配; dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市; dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市;  dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构标识, 所属机构名称 | 无 |
-| 区域产业指数 | 学术生态 | 论文产出 | 上述学者在统计年及以前的论文去重件数。经dwd_scholar_paper_relation按scholar_id关联，paper_id去重，year过滤统计年 | dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称; dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选, 信用代码关联, 机构名称匹配; dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市; dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市;; dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构标识, 所属机构名称; dwd_scholar_paper_relation(scholar_id, paper_id, year) — 学者论文关联, 论文去重, 发表年份 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_POWER.md` §二（M_CHAIN_ACADEMIC_POWER.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上机构筛选, 信用代码关联, 机构名称匹配
-- dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市
-- dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市
-- dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构标识, 所属机构名称
-- dwd_scholar_paper_relation(scholar_id, paper_id, year) — 学者论文关联, 论文去重, 发表年份
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_heis_info`
+- `dwd_org_industry_tags`
+- `dwd_research_institute_base_info`
+- `dwd_scholar`
+- `dwd_zh_paper`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 学术生态｜中国科学院武汉文献情报中心｜钟永恒, 中国基础研究竞争力报告2020. 湖北省, 中国科学院武汉文献情报中心, 2020-10-01.
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：三维源齐且本件实测出数（机构 2189 家去重、学者 21316 人、窗口论文 52119 行），但「指定链 × 区域」限定的入集键不存在：链成员 credit_code 与学研机构 external_id 两个键域不相交（5 万行样本 0 命中），链级学术生态无法闭合；学者维还叠加 scholar_org_id 整列为空（0 行），只能用机构名含城市名的名称代理。按「始终有部分依赖维度拿不到足够数据」判部分支持，不抬档。
+- **基期声明**：论文维按 cover_year_start 2021—2024 截断，窗口内 52,119 行（占全库 100,900 行的 51.65%）；2025—2026 库内有值但收录不全（6,548 / 2,989 行），不摊进正式值、也不按 0 补；机构与学者为存量截面，无统计期，不参与年度窗口。
+- **复现实测耗时**：约 37.25 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_ACADEMIC_POWER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_POWER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_ACADEMIC_POWER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

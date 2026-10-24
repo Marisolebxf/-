@@ -1,56 +1,64 @@
-# M_CHAIN_SZ_ENTERPRISE_COUNT 深圳产业链企业数 计算口径细稿
+# 深圳产业链企业数（M_CHAIN_SZ_ENTERPRISE_COUNT）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（注册地语义 + city='深圳市' 全称 + 带链参数 + 口径为准不迁就 mock）
-- **类型**：STAT（去重计数）
-- **is_mock**：true（链桥仅 INB1309 mock 灌数；全量挂链 CHAIN-P0-5 交付后转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_COUNT_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：专题系统 · 产业链分析 · 深圳产业现状（链全景页 `CHAIN-SZ-PANORAMA`），"深圳在某条链上的家底数"。
-- **白话**：挂在这条链上的企业里，注册地在深圳的有多少家。
-- **旧稿三处矛盾（本版统一）**：seed v0.1.0 用「总部（headquarters_city）」+ 凭空字段/壳表（enterprise_code / dwd_org_reg_info / industry_chain_enterprise 均实测不存在）；细稿 2026-08-21 用「注册地」但走 ADS 壳聚合（chain_sz_dist/chain_sz_elements）；矩阵背书壳表路线。本版三处统一为「注册地 + 真源链桥直数」，旧 ADS 壳路线标 superseded。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_SZ_ENTERPRISE_COUNT |
+| 指标名称 | 深圳产业链企业数 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业发展分析／深圳产业现状 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「深圳产业现状」家底卡 / 链对比柱 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE_COUNT.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**指定产业链链上企业中，注册地（工商主档 city）为深圳市的企业去重家数。**
+链归属与企业规模都能在 gkx 单库内闭合，12 条链的深圳企业数当日全部非零（263–60,045 家）；但「深圳」这一维只能按统一社会信用代码第 3—6 位 `4403` 判定，语义是**登记机关辖区**而不是实际经营地，且 12 链深圳挂接 136,326 次只对应去重企业 116,017 家（跨链重复 20,309 次），底册 `city` 路径只覆盖 95,600 家、与挂链桥交集约 3.5 万家，无法作为独立校验 → 判**部分支持**。
 
-- **城市语义（拍板 ①）**：注册地（非总部——总部城市库中无源）；值统一全称 `'深圳市'`（主档实测值，同 SVC 波先例）；
-- **链路**：链桥 `enterprise_industry_chain(org_id, chain_code)` JOIN 主档 `dwd_org_base_info(org_id, city)`，org_id 全键（禁名称匹配，2026-10-14 通则）；
-- **参数（拍板 ②）**：带 `:chain_code`（页面按链下钻，与全景页交互一致）；去链过滤即深圳全量版（本条不覆盖）；
-- **与 `M_CHAIN_ENTERPRISE_COUNT` 同构**：该条为本条去 city 过滤的全国版（同去重键 org_id、同链桥真源）。
+## 计算逻辑说明
 
-## 3. Formula（SQL）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_COUNT.md` §二（M_CHAIN_SZ_ENTERPRISE_COUNT.py 零改语义复算）。
 
-```sql
-SELECT COUNT(DISTINCT eic.org_id) AS sz_chain_enterprise_cnt
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
-JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-  ON b.org_id = eic.org_id AND b.is_deleted = 0
-WHERE b.city = '深圳市' AND eic.chain_code = :chain_code;
-```
+## 源表字段
 
-## 4. 表依赖与实核（2026-10-14 demo）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd.enterprise_industry_chain` | 链桥（链 + org_id） | INB1309 mock 2000 行（1984 家）；深圳×INB1309 = 1004 家（org_id→city 全键实测通）；余链 0 行 |
-| `dwd_org_base_info` | 工商主档注册地 | 189,116 行 org_id 全唯一；city='深圳市' 95,600 家切片验证可用 |
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-## 5. 缺口分型
+## 待建表字段
 
-| 项 | 分型 | 处置 |
-|---|---|---|
-| 链桥仅 1 链 mock 灌数 | 数据未灌（DDL 在案） | 不报缺；口径为准（拍板 ③），CHAIN-P0-5 全量灌入即真数 |
-| 旧稿凭空字段（headquarters_city 等） | 表名/字段漂移 | 已按真实库重写；`dwd_org_reg_info` 不存在（工商主档即 base_info） |
-| ADS 壳路线（chain_sz_dist/chain_sz_elements） | mock 时代产物 | 标 superseded（拍板 ④），禁再引用 |
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 6. 验证记录（2026-10-14）
+## 数据支持度与缺口
 
-- org_id 全键链路：深圳×INB1309 = 1004 家实测通（CAST utf8mb4_0900_ai_ci 归一连通）。
-- 当前不在内网，回公网/内网通道后按 §3 SQL 复跑核值；余链预期 0 + ⚠️。
+- **判档**：部分支持
+- **判档理由**：链归属与企业规模都可在 gkx 单库内闭合，12 条链的深圳企业数全部非零；但「深圳」只能按统一社会信用代码第 3—6 位 4403 判定，是登记机关辖区而非实际经营地，且 12 链深圳挂接 136,326 次对应去重企业 116,017 家（多链重复计 20,309 次），跨链不可加总当总量；底册 city 路径只覆盖 95,600 家、与挂链桥交集约 3.5 万家，无法作为独立校验。注册地口径的系统性偏差不可在本库内修复，故判部分支持。
+- **基期声明**：截面存量指标，不设统计期；挂链桥无统计期字段，年度序列不在本件范围（见 M_CHAIN_ENTERPRISE_NEW_COUNT）。
+- **复现实测耗时**：约 0.16 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-21: 初版（模拟王惠调研，ADS 壳路线）
 - 2026-10-14: v0.2.0 口径迁移（注册地 + 真源链桥直数；human:徐滕强 拍板）
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

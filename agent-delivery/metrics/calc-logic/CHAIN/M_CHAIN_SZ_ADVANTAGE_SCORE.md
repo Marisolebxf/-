@@ -1,6 +1,7 @@
 # 深圳优势评分（M_CHAIN_SZ_ADVANTAGE_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json`。
 
 ## 基础信息
 
@@ -8,94 +9,65 @@
 |---|---|
 | 指标ID | M_CHAIN_SZ_ADVANTAGE_SCORE |
 | 指标名称 | 深圳优势评分 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业情况分析对比 |
-| 三级模块 | 综合优势 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q058+QC08 |
-
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业情况分析对比／综合优势 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「深圳产业现状」综合优势评分卡（总分 + 四分项条）｜ **数据支持度**：**部分支持**｜ **wanghui**: true |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_ADVANTAGE_SCORE.md` |
 
 ## 口径定义
 
-指定产业链上，深圳相对默认对标城市的四维综合得分，取值0—100。四维为企业、专利、政策、人才。先定链，再按城市筛区域。本综合分的三级以本表为准：专利只用数量、政策只用数量，不含专利质量与政策强度。
+四维中只有**企业维与专利维可算**：企业维受营收 0.65% 稀疏所限（见 `M_CHAIN_SZ_ENTERPRISE.md`），专利维是 20 万件样本（占 293.99 万件的 6.80%）的名称匹配计数；政策维 `keywords/keypoints` 全为 NULL，只能 title 字面命中，12 链合计 **15 条**（10 条链为 0）；人才维要求「链上高校/科研机构所属学者」，实测链上机构挂接 **0 行**。按 §〇「始终有部分依赖维得不到足够数据」判 **部分支持**。
 
 ## 计算逻辑说明
 
-默认对标城市集合 \(C=\) \{北京市、上海市、广州市、深圳市\}，用 `city` 字段匹配（含「北京」「上海」「广州」「深圳」即可）。甲方可扩集合。深圳取 `city` 匹配深圳市。权重默认如下，甲方可改，但须同一层权重和为1。
+```text
+每三级在四城集合 min-max 至 0–100；企业维=(数量+规模+质量)/3；可得维口径 =（企业+专利）等权；王惠满配口径 =0.25×(企业+专利+政策+人才)，缺维填 50
+```
 
-| 层级 | 默认权重 |
-| --- | --- |
-| 四维 | 各 25% |
-| 企业数量 / 规模 / 质量 | 各 1/3 |
-| 专利数量 | 1 |
-| 政策数量 | 1 |
-| 人才数量 / 人才综合水平 | 各 1/2 |
-
-第一步：定链后按城市取三级原始值
-
-从 `dwd_industry_chain_info` 按 `industry_code` 定链。对每个对标城市 \(c\in C\) 计算：
-
-- **企业数量**：`dwd_org_industry_tags` 链上企业，`credit_code` 关联 `dwd_org_base_info`，`city` 匹配 \(c\)，`COUNT(DISTINCT credit_code)`。
-- **企业规模**：上述企业关联 `dwd_org_annual_financial_info`，统计年 `operating_revenue` 合计。
-- **企业质量**：上述企业中能关联到 `dwd_org_stock_finance_info` 的上市样本，研发强度 = \(\sum\)`research_development_amount` / \(\sum\)`operating_revenue`。无上市样本则该市该三级取0。非上市不进入质量分。
-- **专利数量**：上述企业 `company_name` 匹配 `dwd_patent.first_applicant_name` 或 `first_current_assignee_name`，`pbdt_year`≤统计年，`COUNT(DISTINCT patent_id)`。
-- **政策数量**：`dwd_policy_base` 中 `status` 有效、`city` 匹配 \(c\)，且 `industry_name` 出现在 `title`/`keywords`/`keypoints`/`theme` 任一字段，`COUNT(DISTINCT id)`。
-- **人才数量**：链上机构限定为 tags 中的 `credit_code`/`company_name` 能对上的高校、科研机构（`dwd_org_heis_info` / `dwd_research_institute_base_info` 的 `external_id` 或 `name_cn`），再筛 `city` 匹配 \(c\)；学者 `scholar_org_id` 或 `scholar_org_name_zh` 与这些机构对应，`COUNT(DISTINCT scholar_id)`。未挂到该链的全市学者不计入。
-- **人才综合水平**：上述学者中，`dwd_scholar_education_background` 的 `degree_zh`/`degree_en` 含硕士、博士、Master、PhD、Doctor 等计为硕博。硕博占比 = 硕博人数 / 有学位记录的学者人数；分母为0则取0。
-
-第二步：对标截面标准化
-
-对每个三级指标 \(j\)，在集合 \(C\) 上 min-max 到 0—100：
-$$
-指标得分_{c,j} = \frac{x_{c,j}-\min_{c'\in C}(x_{c',j})}{\max_{c'\in C}(x_{c',j})-\min_{c'\in C}(x_{c',j})}\times 100
-$$
-全体对标城市该指标取值相同则得分取50。
-
-第三步：维度分与综合分
-
-企业维度 =（数量 + 规模 + 质量）/ 3  
-专利维度 = 专利数量得分  
-政策维度 = 政策数量得分  
-人才维度 =（人才数量 + 人才综合水平）/ 2  
-$$
-深圳优势评分 = 0.25\times(企业+专利+政策+人才)
-$$
-输出深圳市在该链上的综合分。得分越高，相对对标城市的综合优势越强。
-
-| 一级 | 二级 | 三级 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- |
-| 深圳优势评分 | 企业 | 企业数量 | 该链、该市企业去重件数 | dwd_org_industry_tags(credit_code); dwd_org_base_info(city) | 无 |
-| | | 企业规模 | 该链、该市企业统计年营业收入合计 | dwd_org_annual_financial_info(operating_revenue, year) | 无 |
-| | | 企业质量 | 该链、该市上市企业研发强度 | dwd_org_stock_finance_info(research_development_amount, operating_revenue) | 无 |
-| | 专利 | 专利数量 | 该链、该市企业专利去重件数（公开年≤统计年） | dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) | 无 |
-| | 政策 | 政策数量 | 该市有效政策且命中产业链名称的去重件数 | dwd_policy_base(id, city, title, keywords, keypoints, theme, status) | 无 |
-| | 人才 | 人才数量 | 该链上且位于该市的高校/科研机构所属学者去重人数 | dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh); dwd_org_heis_info(city); dwd_research_institute_base_info(city) | 无 |
-| | | 人才综合水平 | 上述学者中有学位记录者的硕博占比 | dwd_scholar_education_background(degree_zh, degree_en) | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_SCORE.md` §二（M_CHAIN_SZ_ADVANTAGE_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称匹配政策
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业/机构筛选, 信用代码关联, 名称匹配
-- dwd_org_base_info(external_id, city) — 信用代码关联, 对标城市筛选
-- dwd_org_annual_financial_info(external_id, year, operating_revenue) — 年报年度, 营业收入(企业规模)
-- dwd_org_stock_finance_info(external_id, occur_period, operating_revenue, research_development_amount) — 上市研发强度
-- dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) — 专利去重, 申请人匹配, 专利权人匹配, 公开年
-- dwd_policy_base(id, title, keywords, keypoints, theme, city, status) — 政策去重, 标题/关键词/要点/主题匹配产业, 城市, 有效状态
-- dwd_org_heis_info(org_id, external_id, name_cn, city) — 高校对链上机构, 城市
-- dwd_research_institute_base_info(org_id, external_id, name_cn, city) — 科研机构对链上机构, 城市
-- dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构
-- dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 硕博识别
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_heis_info`
+- `dwd_org_industry_tags`
+- `dwd_org_stock_finance_info`
+- `dwd_patent`
+- `dwd_policy_base`
+- `dwd_research_institute_base_info`
+- `dwd_scholar`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1]深圳优势评分｜深圳市统计局｜深圳市2025年国民经济和社会发展统计公报[EB/OL]. (2026-02-28)[2026-08-21]. https://www.sz.gov.cn/cn/xxgk/zfxxgj/tjsj/tjgb/content/post_12805133.html.
+## 数据支持度与缺口
 
-[2]深圳优势评分｜国家市场监督管理总局，国家标准化管理委员会｜企业竞争力评价规范：GB/T 40957-2021[S/OL]. (2021-11-26)[2026-08-21]. https://std.samr.gov.cn/gb/search/gbDetailed?id=D1E86BE73A99430EE05397BE0A0A206B.
+- **判档**：部分支持
+- **判档理由**：四维中只有企业维与专利维可算（企业维仍受营收 0.65%、研发 876 家稀疏所限；专利维为 6.80% 抽样），政策维 10/12 链无任何命中、人才维链级完全无数据；按 §〇「始终有部分依赖维得不到足够数据」判『部分支持』。另：需求原文要求『深圳与全国产业数据对比』，本库省外样本 0.18%，全国对标不可实现。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 0.0 秒（源件落盘记录）
 
-[3]深圳优势评分｜哈工大（深圳）课题组｜深圳企业高质量发展评价指标体系（2022）白皮书[R/OL]. (2022-11-23)[2026-08-21]. https://www.sznews.com.
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

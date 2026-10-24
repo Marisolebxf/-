@@ -1,92 +1,64 @@
 # 区域企业密度（M_ENT_REGIONAL_DENSITY）
 
-> 口径真源：算法 2026-09（分母=面积，全国不算，area 空或≤0 该区空，与 CITY_DENSITY 同一套）→ `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：分子 ← `M_ENT_REGIONAL_COUNT` 国内省/市/县；分母 = `gkxlumenx_dim.code_region.area`（有表有列，不是缺表）。GDP 不进。国外不算。Q012 仍 🟡。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REGIONAL_DENSITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REGIONAL_DENSITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REGIONAL_DENSITY_out.json`。
 
-## 依赖（强制）
+## 基础信息
 
-| 顺序 | 指标 / 表 | 本条用它做什么 |
-|------|-----------|----------------|
-| 1 | `M_ENT_REGIONAL_COUNT` | 国内省 2 / 市 4 / 县 6 去重企业数（`region_id` 缺列留在那一叶） |
-| 2 | `enterprise_region_summary` | 读区划键 + 家数 |
-| 3 | `gkxlumenx_dim.code_region.area` | 分母；项目 dim，不是三方 ODS |
-| 4 | 本条 | 相除。目标建议 `ads.ent_regional_density`，**当前无此表** |
-
-不重扫 `enterprise_base`。禁止 `headquarters_city`。禁止 GDP / 人口顶面积。COUNT 的国外国家行 **不除面积**。
-
-## 元数据
-
-- 指标ID：`M_ENT_REGIONAL_DENSITY`
-- 名称：区域企业密度
-- 更新频率：日
-- 关联Q：Q012
-- 对齐：D1 aligned（算法 2026-09）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_REGIONAL_DENSITY |
+| 指标名称 | 区域企业密度 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／区域分布／集聚效应 |
+| 更新频率 | 日 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 区域密度图层（省/市/县）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_REGIONAL_DENSITY.md` |
 
 ## 口径定义
 
-国内省 / 市 / 县：该区 `REGIONAL_COUNT` / 该区 `code_region.area`。单位 **家 / km²**（列注释只写「面积」，单位待核，⚠️）。
+分子齐（189,116 家、240 个格子）、分母无（0 个数值型面积列 / 0 张面积表 / 0 行宏观面积口径），按口径「area 空该区空」交付 0 行，判部分支持；另给一条「家/行政区」的降级读数，明确标注非交付值。
 
-- 键对齐：`RPAD(区划前缀, 6, '0') = code_region.code`。省 `44`→`440000`；市 `4403`→`440300`；县 `440305`。
-- `area` 空或 ≤0：**该区空**（不写 0）。不除零，不拿上级面积顶。
-- **全国行不算**。
-- **国外不算**：`city` / `code_country` 无面积列；COUNT 按国家合并的行不进本条。
-- 产业不是分组维。选产业跟 COUNT 过滤，本条不 JOIN chain。
+## 计算逻辑说明
 
-## 两点分开
-
-### ① 口径
-
-三级家数 / area。维表有 `area` 就能写除法。
-
-### ② 有没有数
-
-有表有列，不是缺表。灌数空该区空。`region_id` 缺列在 COUNT 叶。无独立目标表。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_region_summary` + `code_region.area` | COUNT 落表可能 0 行；area 可能仍空 |
-| 目标 | 建议 `ads.ent_regional_density`（区划键+粒度+密度） | **缺口：无此表** |
-
-源 ≠ 目标。本波不建 GDF DDL。禁止把对标表 `enterprise_density` 当本条（那是市密度）。
-
-## 分场景 / 实现方案
-
-### 场景 A · 跑批
-
-COUNT 国内三级就绪后，按粒度 JOIN `code_region` 除面积。`area` 空该行不写。生产按区划点查，禁止请求路径扫全库主档。
-
-### 场景 B · 换粒度
-
-省 / 市 / 县换键重算，禁止拿市密度冒充县。
-
-### demo
-
-行少可全表 JOIN。area 空则该区空，不用 mock 顶。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REGIONAL_DENSITY.md` §二（M_ENT_REGIONAL_DENSITY.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_region_summary <- metric: M_ENT_REGIONAL_COUNT
-code_region.area
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-分母进 8 件套，不写 `<- ods:`。来源系统：国内机构要素库。
+- `dwd_dim_admin_area`
+- `dwd_heis_info`
+- `dwd_macro_index_data`
+- `dwd_org_base_info`
+- `dwd_substance`
 
-## 现网探针（2026-08-27；不进 8 件套）
+## 待建表字段
 
-- `gkxlumenx_dim.code_region`：约 3349 行，有 `area` 列。当时全 NULL。无独立面积表。
-- 国外维无面积列。
-- 分子见 `M_ENT_REGIONAL_COUNT.md`。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 待建 / 缺口
+## 数据支持度与缺口
 
-1. `area` 灌数（有列不是缺表）。
-2. **无独立目标表**。
-3. `region_id` 在 COUNT 叶。
-4. D3/D4 本波不升。`is_mock: true`。
+- **判档**：部分支持
+- **判档理由**：分子侧完全就绪（189,116 家企业可按省/市/县三级聚合），但分母「行政区土地面积」在 gkx 内不存在：information_schema 全库 15 个 area/面积 相关列全部是编码或名称，无数值型面积列；区划维表 dwd_dim_admin_area（20,000 行）也不含面积字段。按口径「area 空该区空」，交付 0 行；有分子、有层级、无分母，故判部分支持而非完全不支持。
+- **基期声明**：截面件：分子取当前底册快照，分母（面积）不存在，故无年度序列与基期年份。面积一旦灌入，本件可直接按区划键出数，不需要改口径。
 
----
-*2026-09-07 COVER-STAT-L01：0.3.1 挂 REGIONAL_COUNT 省市县 + dim.area；国外/全国不算；D1 aligned*
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REGIONAL_DENSITY.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REGIONAL_DENSITY.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REGIONAL_DENSITY_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

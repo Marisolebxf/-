@@ -1,8 +1,7 @@
 # 关系强度（M_ENT_RELATION_STRENGTH）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RELATION_STRENGTH.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RELATION_STRENGTH.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RELATION_STRENGTH_out.json`。
 
 ## 基础信息
 
@@ -10,60 +9,56 @@
 |---|---|
 | 指标ID | M_ENT_RELATION_STRENGTH |
 | 指标名称 | 关系强度 |
+| 所属域 | ENT（企业分析） |
 | 一级模块 | 企业分析 |
-| 二级模块 | 风险洞察 |
-| 三级模块 | - |
 | 更新频率 | 月度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q009 / Q017 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业关系图谱边权着色、企业详情页「对外投资」列表的强度标签 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_RELATION_STRENGTH.md` |
 
 ## 口径定义
 
-企业间关系紧密度，以投资金额分档代理关系强度——>1亿元=强 / 1000万~1亿元=中 / <1000万元=弱；有 `chain_score`（产业链评分）时作辅证。对象=企业间关系（边），粒度=关系对。口径 Q017 临时默认闭合（2026-08-11）。
+关系强度在 calc-logic 里是「一条边 + 一个档」，主口径只看投资金额落在哪个区间，两条辅证用来「作证」。gkx 里主口径的源表与金额都在，档位当场可切；但两条辅证各自对应的表一张都没有。也就是说：**能算出主档，但算不出 calc-logic 要求的「三源互证」**。按四档定义，这属于「始终有部分依赖维度无法得到足够数据」，判**部分支持**。
 
 ## 计算逻辑说明
 
-主口径为投资金额分档，辅证为供应链关系强度与产业链评分。
-
-### 第一步：投资金额分档
-
-$$ Strength =
-\begin{cases}
-\text{强} & investment\_amount > 1\,亿元 \\
-\text{中} & 1000\,万 \leq investment\_amount \leq 1\,亿元 \\
-\text{弱} & investment\_amount < 1000\,万
-\end{cases}
-$$
-
-金额单位以 `investment_amount` 元为准（需与 `enterprise_invest.investment_amount` 统一）。
-
-### 第二步：辅证
-
-- 供应链 `enterprise_supply_chain.relation_strength` 直接给关系强度；
-- `enterprise_industry_chain.chain_score` 作产业链协同辅证。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 关系强度 | 投资关系强度 | 对外投资金额分档 | 投资金额分档代理关系强度。 | >1亿强/1000万~1亿中/<1000万弱 | dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资金额(元)+股权占比 | 投资金额单位统一映射 |
-|  |  | 股权占比强度 | 股权投资比例作关系强度辅证。 | investment_ratio 分档 | dwd_org_invest_info(org_id, inv_org_id, investment_amount, investment_ratio) — 股权占比(%)；enterprise_invest(org_id, inv_org_id, investment_amount, investment_ratio, event_date) — 投资（DWD） | 股权占比分档阈值 |
-| 关系强度 | 供应链关系强度 | 供应链 relation_strength | 供应链关系紧密度（辅证）。 | relation_strength | enterprise_supply_chain(org_id, related_org_id, relation_type, relation_strength, is_core_supplier, risk_level) — 供应链关系强度 | 无 |
-|  |  | 产业链评分辅证 | 产业链协同评分作关系强度辅证。 | chain_score | enterprise_industry_chain(org_id, chain_code, chain_name, node_id, node_name, is_chain_leader, chain_score) — 产业链评分 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RELATION_STRENGTH.md` §二（M_ENT_RELATION_STRENGTH.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_invest_info(org_id, inv_org_id, inv_name, investment_amount, investment_ratio) — 对外投资金额(元)+股权占比
-- enterprise_invest(org_id, inv_org_id, inv_name, investment_amount, investment_ratio, event_date) — 投资关系（DWD）
-- enterprise_supply_chain(org_id, related_org_id, relation_type, relation_strength, is_core_supplier, risk_level) — 供应链关系强度（DWD）
-- enterprise_industry_chain(org_id, chain_code, chain_name, node_id, node_name, is_chain_leader, chain_score) — 产业链评分（DWD）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_bid_base_out`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_org_invest_info`
+- `dwd_org_shareholder_info`
 
-- 投资金额单位统一映射：`dwd_org_invest_info.investment_amount`（元）与 `enterprise_invest.investment_amount` 单位需统一，避免分档错档。
-- 分档阈值配置表：>1亿/1000万~1亿/<1000万 阈值现无配置表，待建（Q017 正式闭合）。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 企业供应链关系分析模型 | 算法库 §1.1.1.1.1.1.1.5.4 | 需求ID ALGO-ENT-DEEP-144 | 关系紧密度 | 关联 Q009 / Q017。
+## 数据支持度与缺口
 
-[2] 供应链图谱构建与多级下钻 | 需规 SRS《企业分析.md》序号53 | 供应商/客户/合作伙伴关系。
+- **判档**：部分支持
+- **判档理由**：关系强度在 calc-logic 里是「一条边 + 一个档」，主口径只看投资金额落在哪个区间，两条辅证用来「作证」。gkx 里主口径的源表与金额都在，档位当场可切；但两条辅证各自对应的表一张都没有。也就是说：**能算出主档，但算不出 calc-logic 要求的「三源互证」**。按四档定义，这属于「始终有部分依赖维度无法得到足够数据」，判**部分支持**。
+- **基期声明**：截面件：投资边无统一发布年度键（仅有 created_time/updated_time），不做年度序列、不把缺失年摊 0。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RELATION_STRENGTH.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RELATION_STRENGTH.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RELATION_STRENGTH_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,25 +1,61 @@
-# M_CHAIN_REG_TECH_MATURITY 区域技术成熟度（技术力叶子）计算口径细稿
+# 区域技术成熟度（M_CHAIN_REG_TECH_MATURITY）
 
-- **版本**：v0.2.0（2026-10-14，链路升级随 Seq17 同拍板；增速映射保留原稿；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（链路 org_id 全键 + 名称过渡轨；kind 语义 DDL 钉死但本指标**不过滤 kind**）
-- **类型**：MODEL（增速→生命周期映射 0–100）
-- **is_mock**：true（rel 0 行走名称过渡轨）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_MATURITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_MATURITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_MATURITY_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：区域产业评价页 `TOPIC-REG-013`，技术力叶子（权重 8/100）。页面约束：**不得用周期侧 M_CHAIN_TECH_MATURITY_SCORE 顶替**。A1 需规 `ALGO-CHAIN-DEEP-126`。
-- **白话**：深圳这条链上的技术处在生命周期哪个位置——公开专利量增速趋缓=成熟，陡增=成长，负增长=衰退，输出 0–100 分。
-- **原稿口径**（王惠调研迁移版，**保留不变**）：时间戳 pbdt_year（不用授权年）、不要求 granted_number、patent_id 去重。P_t=该区域该年公开专利去重件数；窗口 k 优先 3、否则 2、仅 1 年同比；g_t=(P_t/P_{t-k})^(1/k)-1。P 连续 0→0 分；上期 0 本期有量→25（萌芽）；g>5% 且加速或缺上期 g→50（成长）；g>5% 且减速→70（趋于成熟）；|g|≤5%→90（成熟）；g<-5%→90×P_t/P_{t-k} 截断 [0,90)（衰退）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_TECH_MATURITY |
+| 指标名称 | 区域技术成熟度 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | CHAIN（产业链） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链分析 → 区域技术竞争力 → 技术成熟度 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_REG_TECH_MATURITY.md` |
 
-## 2. 链路变更（v0.2.0 唯一改动）
+## 口径定义
 
-老链路 `dwd_org_industry_tags`（demo 库与主档 0 命中，废）→ 新链路 **org_id 全键**：
-`enterprise_industry_chain`(chain_code) → `dwd_org_base_info`(org_id + city) → 专利关联（过渡 `first_current_assignee_name = name_cn`；rel 灌数后切 `enterprise_patent_org_rel`.org_id + party_role IN ('APPLICANT','ASSIGNEE')）。
+专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `code/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
 
-## 3. 实核（2026-10-14 demo）
+## 计算逻辑说明
 
-pbdt_year 2021–2026（6 年窗，k=3 可支撑两期）；其余同 Seq17 §4（链桥 2000 行已灌、深圳×INB1309=1004、rel 0 行待灌）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_MATURITY.md` §二（M_CHAIN_REG_TECH_MATURITY.py 零改语义复算）。
 
-## 4. 缺口分型
+## 源表字段
 
-同 Seq17 §5（rel 0 行=数据未灌；collation 统一待办；ADS fact 表待产出）。
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_patent`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年」的原式无法完整执行，故判**部分支持**。本档位与 `code/M_CHAIN_REG_TECH_MATURITY_out.json` 的 `support_judgment` 一致。
+- **基期声明**：由产物中实际出现的年度键反推：used=[2021, 2022, 2023, 2024]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。
+- **复现实测耗时**：约 0.45 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_TECH_MATURITY.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_MATURITY.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_TECH_MATURITY_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

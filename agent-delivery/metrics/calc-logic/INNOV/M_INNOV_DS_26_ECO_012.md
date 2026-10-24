@@ -1,6 +1,7 @@
 # 协同绩效与影响力智能评估（M_INNOV_DS_26_ECO_012）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_26_ECO_012.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_26_ECO_012.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_26_ECO_012_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,55 @@
 |---|---|
 | 指标ID | M_INNOV_DS_26_ECO_012 |
 | 指标名称 | 协同绩效与影响力智能评估 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 科技专题战略分析 |
-| 三级模块 | 服务生态分析 |
-| 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科学技术全景 / 创新生态 |
+| 更新频率 | 未定义 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科学技术全景 → 创新生态 → 协同绩效评估 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_DS_26_ECO_012.md` |
 
 ## 口径定义
 
-对生态内机构从产出规模、网络协同、协同绩效综合评分，取值 0—100。
+「协同绩效」要回答「哪个创新主体协同得好、影响大」。要回答它至少需要三样东西：产出（论文/专利）、协同关系（合作边）、协同成果占比（合作产出的份额）。gkx 有产出、有论文共著边，但**没有企业合作边表**、**项目表的资助机构整列为空**、**载体（园区/平台）无实体表**。所以本件能算「机构名粒度的论文+专利协同分」，算不了「载体粒度」和「项目合作维」。判**部分支持**，并且不用专利共现去冒充企业合作——专利共申只作「代理」并单独标注、不抬档。
 
 ## 计算逻辑说明
 
-机构名作节点，共现作边。三维等权 ×100：产出规模（专利+论文）/ 网络协同（合作邻居数）/ 协同绩效（合作成果占比）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 产出规模 |  | 机构专利与论文件数。 | COUNT(DISTINCT pn)+COUNT(DISTINCT 论文id) | dwd_patent(pn, first_applicant_name, apdt_year) — 专利去重,申请人对齐,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文,发表年；dwd_en_paper(id, cover_year_start) — 英文论文,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位 |
-| 网络协同 |  | 合作邻居数。 | COUNT(DISTINCT 合作机构名) | dwd_patent(pn, applicants, first_applicant_name) — 共申请人；dwd_zh_project(id, funded_institution, participating_institution) — 项目合作机构 |
-| 协同绩效 |  | 合作成果占自身成果比。 | 合作成果数 / 成果数 | 同上专利论文项目 — 合作占比 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_26_ECO_012.md` §二（M_INNOV_DS_26_ECO_012.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, org_type, reg_status) — 机构入集,名称对齐；dwd_research_institute_base_info(org_id, name_cn, city, province, reg_status) — 科研机构入集；dwd_patent(pn, first_applicant_name, applicants, apdt_year) — 专利去重,申请人对齐,共申请人,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位,机构对齐；dwd_en_author(paper_id, institution) — 英文作者单位,机构对齐；dwd_zh_project(id, funded_institution, participating_institution, approval_year) — 受资助机构,参与机构,立项年
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_patent`
+- `dwd_patent_applicants`
+- `dwd_zh_paper`
+- `dwd_zh_project`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-OPEN draft 身份。05 无生态协同绩效专叶，不发明 M_*，见 ECO-D12 / ECO-B02。04-科技专题服务系统 服务生态协同绩效与影响力，参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：「协同绩效」要回答「哪个创新主体协同得好、影响大」。要回答它至少需要三样东西：产出（论文/专利）、协同关系（合作边）、协同成果占比（合作产出的份额）。gkx 有产出、有论文共著边，但**没有企业合作边表**、**项目表的资助机构整列为空**、**载体（园区/平台）无实体表**。所以本件能算「机构名粒度的论文+专利协同分」，算不了「载体粒度」和「项目合作维」。判**部分支持**，并且不用专利共现去冒充企业合作——专利共申只作「代理」并单独标注、不抬档。
+- **基期声明**：截面评分件：P/N/S 三维均不按年切分，不做年度除法；论文 use 全区间（1980—2026），专利为全表（2021—2026 有值）。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_26_ECO_012.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_26_ECO_012.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_26_ECO_012_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

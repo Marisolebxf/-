@@ -1,111 +1,65 @@
 # 协同关系输入统计（M_SYNTH_COLLAB_RELATION_INPUT）
 
-> 口径真源：算法 2026-09 回填（临时默认，未甲方签）→ `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> 本条出**有效合作事件**。`M_SYNTH_COLLAB_COMPLETENESS` 读这些事件当有效边。  
-> Q-SYNTH-C-01 仍 🟡。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-SYNTH-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_COLLAB_RELATION_INPUT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_COLLAB_RELATION_INPUT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_COLLAB_RELATION_INPUT_out.json`。
 
-## 依赖
+## 基础信息
 
-联合专利走已有专利 DWD（与 `M_ENT_PATENT_TOTAL` 同表）。合作项目、人才流动无对等 DWD，标缺口，不编表。
-
-| 关系类型 | 匹配键 | 去重 | 有效门槛 |
-|----------|--------|------|----------|
-| 联合专利 | 专利申请号 | 同一专利多申请人合成一条事件 | 至少 2 个不同主体 |
-| 合作项目 | 项目号 | 同一项目一条 | 至少跨 2 个机构 |
-| 人才流动 | 人员唯一 ID + 机构变更时间 | 同一人同机构连续记录并一条 | 跨机构流动 ≥1 条起 |
-
-口径三种都要算。现网**只有联合专利有 DWD**；合作项目、人才流动标缺口，不算已接通。输出粒度=**事件**（`relation_event_id`）。完整度把事件两端主体当有效边，不在本条改成边 COUNT。
-
-## 元数据
-
-- 指标ID：`M_SYNTH_COLLAB_RELATION_INPUT`
-- 名称：协同关系输入统计
-- 模块：E8 区域创新协同
-- 更新频率：随源批次
-- 关联Q：Q-SYNTH-C-01
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SYNTH_COLLAB_RELATION_INPUT |
+| 指标名称 | 协同关系输入统计 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_RELATION_INPUT.md` |
 
 ## 口径定义
 
-窗口内：
+本指标不做打分，只做「协同关系的输入盘点」：按 calc-logic 0.3.2 的三类关系（联合专利 / 合作项目 / 人才流动），把库内原始表折算成事件级计数，并给出区域切片。
 
-```
-对每种 relation_type ∈ {joint_patent, coop_project, talent_flow}：
-  COUNT(DISTINCT relation_event_id)
-  GROUP BY relation_type, region, window
-```
+## 计算逻辑说明
 
-事件怎么成：
-
-```
-joint_patent:
-  relation_event_id = 专利申请号
-  申请人去重后 DISTINCT subject ≥ 2 才进
-
-coop_project:
-  relation_event_id = 项目号
-  DISTINCT 参与机构 ≥ 2 才进
-
-talent_flow:
-  relation_event_id = person_id + 机构变更时间
-  同人同机构连续记录先合并
-  必须跨机构，1 条起算
-```
-
-- 选区域 / 窗是 API。
-- 单主体专利、单机构项目、未跨机构的任职变动：**不算**。
-- **禁止**把完整度、密度、中心度当本条。禁止数 demo 边。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-三种门槛齐就能按类型 COUNT。现网只有 `joint_patent` 有表；后两种门槛写着，**不算能完整出三种数**。
-
-### ② 有没有表
-
-- 联合专利：`enterprise_patent_detail` 已有，申请人来自 `dwd_patent_assignees`。按申请号聚申请人，`COUNT DISTINCT org_id`（或权利人）≥2 即事件。灌数空是缺口，不进「无法执行」。
-- 合作项目 / 人才流动：**缺口：无项目 DWD**。不编 `pending_ods_*` 当 FROM。这两种本波公式仍写门槛，数算不出来。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_patent_detail`（专利） | 有表；项目/流动无对等 DWD |
-| 目标 | `ads.synth_collab_relation_input` 建议：`region + window + relation_type + event_count`；明细可另表 | **缺口：无此表** |
-
-源 ≠ 目标。本波不建 GDF DDL。
-
-## 分场景 / 实现方案
-
-### 场景 A · 跑批
-
-现网只洗专利一路 → 按门槛成联合专利事件 → 按类型+区域+窗 COUNT。`coop_project` / `talent_flow` 无源则该类型不出数（空，不当 0 假装扫过）。生产按窗分区，禁止请求路径扫全库。
-
-### 场景 B · 给完整度
-
-本条事件两端主体 = 有效边。完整度不重写门槛。
-
-### demo
-
-演示事件数 **不算接通**。
-
-**计算公式文件**：`M_SYNTH_COLLAB_RELATION_INPUT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_COLLAB_RELATION_INPUT.md` §二（M_SYNTH_COLLAB_RELATION_INPUT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_patent_detail <- ods: dwd_patent
-enterprise_patent_detail.assignee_name <- ods: dwd_patent_assignees
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-计算 FROM 只用左端。来源系统：国内机构要素库、国外机构要素库（与 `PATENT_TOTAL` 同）。项目库 / 人才库无对等 DWD，不进 `source_tables`。
+- `dwd_patent`
+- `dwd_patent_applicants`
+- `dwd_scholar_paper_relation`
+- `dwd_scholar_work_experience`
+- `dwd_zh_project`
 
-## 待建 / 缺口
+## 待建表字段
 
-1. 合作项目、人才流动明细 DWD（专利已有 `enterprise_patent_detail`）。
-2. **无独立目标表**。
-3. D2/D3/D4 本波不升。`is_mock: true`。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
----
-*2026-09-07 COVER-STAT-L01：0.3.2 8 件套 formula/definition 写明项目/流动缺口*
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：三类关系中联合专利与人才流动两路可现转（全国事件级 6477 / 18553；四城中可归城事件 122（1.88%）/ 32（0.17%）），但合作项目一路结构性缺失——dwd_zh_project 58453 行中funded_institution 非空 0 行，participating_institution 每项目仅 1 家机构、无参与单位列表字段，无法按『跨 ≥2 机构』成事件；三类口径只能出两类（66.7%），且联合专利一侧用的是 20,000 件抽样表、不是 293.99 万件全量，区域维可归城率不足 2%。按四档定义判部分支持。
+- **基期声明**：三类事件都是**全历史累计**口径（专利申请人表无年份字段、任职经历按 start_time 排序但不按年截断、项目表为存量），本指标不做跨年除法，因此没有分母年、也没有缺失年可摊 0。
+- **复现实测耗时**：约 0.5 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_COLLAB_RELATION_INPUT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_COLLAB_RELATION_INPUT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_COLLAB_RELATION_INPUT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

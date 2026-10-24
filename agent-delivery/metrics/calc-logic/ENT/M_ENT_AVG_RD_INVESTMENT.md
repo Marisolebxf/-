@@ -1,88 +1,64 @@
 # 平均研发投入（M_ENT_AVG_RD_INVESTMENT）
 
-> 口径真源：王惠底稿（选定产业、最近完整自然年、R&D 算术平均）→ 2026-08-31 回看：①② 分开；实现锁 **两张输入 + 查询半连接**。  
-> 正名：`M_ENT_RD_INVEST_AVG` → 本条（不另建）。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_AVG_RD_INVESTMENT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_AVG_RD_INVESTMENT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_AVG_RD_INVESTMENT_out.json`。
+
+## 基础信息
+
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_AVG_RD_INVESTMENT |
+| 指标名称 | 平均研发投入 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／企业总览／企业整体概况 |
+| 更新频率 | 年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业概览·平均研发投入 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2025] |
+| 缺失年份 | [2020, 2021, 2022, 2023, 2024] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_AVG_RD_INVESTMENT.md` |
 
 ## 口径定义
 
-选定产业内全部法人，最近一个完整自然年度 R&D 经费内部支出的算术平均。
+gkx 国内年报宽表的研发列 **`arch_development_am` 非空 0 行 / 90,926 行**（`development_employee`、`fixed_assets` 同为 0），按 calc-logic 口径算不出「全部法人平均研发投入」；唯一有数的是上市财务表 **645 家 FY2025**（研发费 > 0），合计 **153,500,926,172.53 元**、均值 **237,985,932.05 元**、中位 **67,217,167.37 元**，占底册 189,116 家的 **0.4632%**；其中 495 家能挂到 12 条未来产业链（76.7442%），链上样本占比最高的是集成电路（0.357499%），最低的是软件与信息服务（0.006864%）。
 
-- 产业键 = 未来产业 `cluster_id`（`CL-FUT-01`～`05`）。Q068 仍 🟡。
-- **多选 = 成员并集按 `org_id` 去重后再 AVG**（一企只进一次）。
-- 未选产业：**不计算**（请求必须带产业键）。
-- 只国内。国外无上链表，选产业时**不并**。
-- `rd` 空或占位 0：**该企不进均**，不是整条无法计算。
-- **禁止**上市 `dwd_org_stock_finance_info`（覆盖不到全部法人）。
-- **禁止**各产业预聚合 `sum_rd/n` 加总冒充去重平均。
-- **禁止**无过滤 `finance_history JOIN industry_chain`（一企多链会把 RD 算多次）。
+## 计算逻辑说明
 
-## 两点分开（强制）
-
-### ① DWD 能不能写
-
-`enterprise_finance_history.rd_investment` + `enterprise_industry_chain` 在，公式就能写完。与 `RD_INVESTMENT_RATIO` 同 RD 列。
-
-### ② ODS → DWD
-
-国内年报 `arch_development_am` 空、DWD mock 填数、国外 RD 全 0：只记灌数 / 不升 D3 D4。**不写「当前无法执行」**。
-
-## 实现：两张输入 + 查询半连接
-
-| 角色 | 表 | 一行 | 现网 |
-|------|-----|------|------|
-| 输入 1 | 建议 `ads.ent_rd_latest`（`org_id, data_year, rd_investment`） | 每企最近完整年一条；空/占位 0 不进 | **缺口：无此表**；源是 `enterprise_finance_history` |
-| 输入 2 | `enterprise_industry_chain` | `org_id + 产业键` | 表在 |
-| 本条 | 查询半连接，**不预计算产业组合** | 当前所选键的一个 AVG | 无独立 AVG 结果表 |
-
-```
-成员 = DISTINCT org_id
-       FROM enterprise_industry_chain
-       WHERE 产业键 ∈ :selected
-
-AVG(rd_investment)
-FROM ads.ent_rd_latest
-WHERE org_id ∈ 成员
-```
-
-去重只对**所选产业成员**，不是全国年报重跑。带 `org_id` / 产业键索引。
-
-禁止：请求路径扫 `finance_history` 全历史再 JOIN 全量上链。
-
-## 分场景 / 千万级（不进 8 件套）
-
-- 场景 A · 单选一个未来产业：半连接成员后 AVG。
-- 场景 B · 多选：同一条 SQL，`IN (:selected)`，`DISTINCT org_id` 一次。
-- demo：成员少可现算。生产：先落企级快照，查询只碰两张输入。
-
-**计算公式文件**：`M_ENT_AVG_RD_INVESTMENT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_AVG_RD_INVESTMENT.md` §二（M_ENT_AVG_RD_INVESTMENT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_finance_history <- ods: dwd_org_annual_financial_info
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-字段对照（细稿）：`rd_investment` ← `arch_development_am`；`data_year` ← `year`。计算 FROM 只用左端 DWD。
+- `dwd_foreign_org_annual_financial_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_industry_tags`
+- `dwd_org_stock_finance_info`
 
-来源系统：国内机构要素库、产业链要素库。国外财务不进本条 `source_tables`。
+## 待建表字段
 
-## 现网探针（live `gkx`，2026-08-27；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 国内年报 `arch_development_am`：样例行全 NULL（②）。
-- 正式 DWD `enterprise_finance_history`：有 `rd_investment`，709 行 mock 填满，不当接通。
-- 上市财务有非零 RD，不采用。
-- `dwd_rd` 是临床试验项目表，不是企业 R&D 经费。
+## 数据支持度与缺口
 
-## 待建 / 缺口
+- **判档**：部分支持
+- **判档理由**：gkx 国内年报宽表的研发列 **`arch_development_am` 非空 0 行 / 90,926 行**（`development_employee`、`fixed_assets` 同为 0），按 calc-logic 口径算不出「全部法人平均研发投入」；唯一有数的是上市财务表 **645 家 FY2025**（研发费 > 0），合计 **153,500,926,172.53 元**、均值 **237,985,932.05 元**、中位 **67,217,167.37 元**，占底册 189,116 家的 **0.4632%**；其中 495 家能挂到 12 条未来产业链（76.7442%），链上样本占比最高的是集成电路（0.357499%），最低的是软件与信息服务（0.006864%）。
+- **基期声明**：「最近一个完整自然年」= 2025（上市财报表 occur_period=202512 的 743 行年报口径）。2026 只有一季报、残年，不进均值；2020—2024 未单年出均值——vintage 差异会让同一家企业在不同年份进不同的样本，跨年不具可比性，故只取 2025 一个锚年，其余年份显式列为未用
 
-- **缺口：无 `ads.ent_rd_latest`。**
-- D3 / D4 本波不升。`is_mock: true`。Q068 🟡。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_AVG_RD_INVESTMENT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_AVG_RD_INVESTMENT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_AVG_RD_INVESTMENT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-bid `§1.1.1.2.4.2.3`；STAT。与 `RD_INVESTMENT_RATIO` 同 RD 列、不同粒度（本条=选定产业 AVG，占比=按企）。
+## 更新记录
 
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-27 曾误写成「无法计算」；2026-08-31 改为两张输入 + 半连接去重*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

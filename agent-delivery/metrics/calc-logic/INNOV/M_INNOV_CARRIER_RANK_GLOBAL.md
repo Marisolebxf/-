@@ -1,6 +1,7 @@
 # 创新载体多维度排名（M_INNOV_CARRIER_RANK_GLOBAL）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CARRIER_RANK_GLOBAL.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CARRIER_RANK_GLOBAL.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CARRIER_RANK_GLOBAL_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,58 @@
 |---|---|
 | 指标ID | M_INNOV_CARRIER_RANK_GLOBAL |
 | 指标名称 | 创新载体多维度排名 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 全球创新监测 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技信息展示系统·科技发展态势·全球创新监测→创新载体排行榜 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | — |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·全球创新监测→创新载体排行榜→多维度排名展示｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_CARRIER_RANK_GLOBAL.md` |
 
 ## 口径定义
 
-对全球入集载体按与 M_INNOV_CARRIER_INDEX_GLOBAL 同一套指数排序。对象=载体，可切总体 / 领域 / 地区三个名次宇宙。名次从 1 起。
+无现成「多维度排名」结果面 → 非完全直接支持；排名链路（指数→RANK→宇宙切片）结构与数据均可现转（本批自写脚本已产出总体 3,000、地区 269 城、领域 4 个 IPC4 演示名次），但上游指数的**创新资源维当前数据严重缺测**（批内覆盖 2/3,000，`development_employee` 全库 NULL），排名所依赖的打分语义被系统性削弱 → 按定义落入**部分支持**。
 
 ## 计算逻辑说明
 
-存续载体入集。指数同创新能力指数三维：创新资源 / 创新产出 / 创新能力。总体、领域、地区三个宇宙分别降序排名。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 总体排名 |  | 全部载体按指数降序的名次。 | RANK(index_score) 全局 | 同 M_INNOV_CARRIER_INDEX_GLOBAL — 创新能力指数 |
-| 领域排名 |  | 同 IPC4 有专利的载体宇宙内名次。 | RANK(index_score) 领域内 | dwd_patent(pn, first_applicant_name, main_classification_ipcr, apdt_year) — 申请人对齐,IPC领域 |
-| 地区排名 |  | 同城（或同国家）载体宇宙内名次。 | RANK(index_score) 地区内 | dwd_org_base_info(org_id, city, province) — 地区切宇宙；dwd_forg_base_info(org_id, country, city) — 海外地区 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CARRIER_RANK_GLOBAL.md` §二（M_INNOV_CARRIER_RANK_GLOBAL.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, org_type, reg_status, province, city) — 国内载体入集,名称对齐；dwd_research_institute_base_info(org_id, name_cn, org_type, reg_status, province, city) — 科研机构入集；dwd_forg_base_info(org_id, name_en, name_alias, country, city) — 海外载体入集；dwd_org_annual_financial_info(org_id, year, development_employee, employees_number, operating_revenue) — 年报研发人员,从业人数,营收；dwd_org_stock_finance_info(org_id, occur_period, operating_revenue) — 上市营收；dwd_org_tech_tag(org_id, org_tag) — 高新技术等标签；dwd_patent(pn, first_applicant_name, granted_number, main_classification_ipcr, apdt_year) — 专利去重,申请人对齐,授权号,IPC领域,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_forg_base_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_stock_finance_info`
+- `dwd_org_tech_tag`
+- `dwd_patent`
+- `dwd_zh_paper`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-依照需求文档构建。02-科技信息展示系统|科技发展态势|全球创新监测.md|多维度排名展示 · 序号 74(包括总体排名、领域排名、地区排名)
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：无现成「多维度排名」结果面 → 非完全直接支持；排名链路（指数→RANK→宇宙切片）结构与数据均可现转（本批自写脚本已产出总体 3,000、地区 269 城、领域 4 个 IPC4 演示名次），但上游指数的**创新资源维当前数据严重缺测**（批内覆盖 2/3,000，`development_employee` 全库 NULL），排名所依赖的打分语义被系统性削弱 → 按定义落入**部分支持**。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CARRIER_RANK_GLOBAL.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CARRIER_RANK_GLOBAL.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CARRIER_RANK_GLOBAL_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,0 +1,22 @@
+---
+description: 多会话并行保护铁律。主仓（gkx-orchestration）多 agent 会话并行工作时，禁止破坏性 git 操作；alwaysApply 对所有会话生效
+alwaysApply: true
+---
+
+# 多会话并行保护（2026-10-24 事故教训，全 Cursor 会话生效）
+
+> 背景：2026-10-24 多会话并行期间，一个会话执行 `git reset --hard` 清掉了另一个会话未提交的工作产物（PORTAL-CMS-企业发展.md 的契约修改等），无法从 git 恢复。本规则防复发。
+
+## 铁律（主仓 gkx-orchestration 多会话并行期间）
+
+1. **禁止 `git reset --hard`**：任何情况下不得对主仓执行。工作区清理只能用：
+   - `git stash push -u -m "说明"`（全量暂存，可恢复）
+   - `git checkout -- <具体文件>`（仅限确认无会话在写该文件时）
+2. **MCP 写 registry 后立即 commit**：task-registry.yaml 是全团队高频并发写文件，`task-create`/`task-update-*` 成功后必须马上 commit + push，防止 pull --rebase autostash 吞改动。
+3. **MCP 写 registry 前先 fetch**：`task-update-*` 基于本地文件快照，基线过时会挤掉远端新块（KG 块事件）。写前 `git fetch` 确认基线，落后先 pull。
+4. **push 被拒时禁止连续重试 rebase**：远端高频提交期，rebase 大概率撞车。改用：`git pull --no-rebase`（merge）或暂存后等低峰。
+5. **未提交文件 = 其他会话的活产物**：`git status` 里的非自己产生的 M/?? 文件，一律视为"别的会话正在写"，禁止 checkout/reset/stash 覆盖它们。
+
+## 违规代价参考（2026-10-24 实例）
+
+- 1 次 reset --hard → 另一会话数小时工作产物丢失且不可恢复 → 该会话需人工重述重写全部修改

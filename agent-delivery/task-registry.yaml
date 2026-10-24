@@ -28685,7 +28685,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 350000
     note: |
-      2026-10-21 增量交付（详见 handoff §0.1）：A. 外网前缀 base 正式接入四仓（lumen-ui-topic /tts/svcz commit e7c19d0、demo-ui-topic /tts/ptts b198de5、lumen-ui-science-mobile /tid/mobile 86a82b9、lumen-ui-topic-mobile /tts/msvcz 3e5d054，均 origin/dev ✅；demo-ui-science 免改），替换此前手工改 base 的临时构建，CI 发布不再回退 404；B. 门户权限菜单矫正：pickMenuTree 改 all+org 全桶合并、忽略 appPermissions（用户裁定），topic 菜单经 URL 反查命中 menu:topic:ent:search/type，不再误发 no.permission；portal.selfcheck ✅、vue-tsc ✅、生产构建 ✅；handoff 已补 §0.1（orchestration 9e47268b）。待门户侧配菜单后实嵌复验。
+      2026-10-24 增量：嵌入模式底色修正——is-portal-embed 原 background:none 简写连底色一并重置导致整页透白（违 D8），改为保留 --sci-bg-page #d8e7fc；lumen-ui-topic commit f76fd2c 已推 origin/dev（监管人聊天授权）；handoff 补 §0.2（orchestration e7ba9ea2）。待门户侧配菜单后实嵌复验
     depends_on: []
     touched_files:
       - "src/App.vue"
@@ -28701,7 +28701,7 @@ tasks:
       - "安全配置（方案 §12.4/§10.1）：部署侧配置 CSP frame-ancestors 仅允许门户域名嵌入，禁止 X-Frame-Options ALLOWALL/DENY"
       - "页面适配（方案 §12.6）：html/body/#app 100% 宽高自适应门户内容区，不强依赖浏览器全屏高度"
       - "联调验收：与门户体验环境 https://edu.itic-sci.com/portal 完成实际嵌入联调（PAGE_READY/路由/登录态/异常场景），handoff 附截图或录屏证据"
-    update_time: "2026-10-21T17:27:32+08:00"
+    update_time: "2026-10-24T11:13:50+08:00"
   - id: LUMEN-UAC-JAVA-FACADE-L01
     feishu_bitable_record_id: reczz28MTKaQhMH9
     claimed_at: "2026-10-12T10:11:09.972Z"
@@ -32998,7 +32998,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 280000
     note: |
-      2026-10-20 企业发展已确认并拆成单独文件。专题全景、政策扶持、专题服务各写一份草案，待确认。2026-10-21 本单是久新对接与实现方案的主设计任务，已触发并行子单：PORTAL-CMS-METRIC-COVER-L01、PORTAL-CMS-DWD-WRITEBACK-ENT-L01、PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01、PORTAL-CMS-DWD-WRITEBACK-SVC-L01、PORTAL-CMS-DWD-WRITEBACK-POL-L01。子单不把本单写成 depends_on 前置，因为本单尚未完成、子单已开工。总单 PORTAL-CMS-DWD-WRITEBACK-L01 已拆停。【2026-10-24 专题服务契约已确认】human:徐滕强 业务核对无异议，human:淮政玮 确认，文档状态行已改已确认。剩余草案：专题全景、政策扶持。
+      2026-10-20 企业发展已确认并拆成单独文件。专题全景、政策扶持、专题服务各写一份草案，待确认。2026-10-21 本单是久新对接与实现方案的主设计任务，已触发并行子单：PORTAL-CMS-METRIC-COVER-L01、PORTAL-CMS-DWD-WRITEBACK-ENT-L01、PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01、PORTAL-CMS-DWD-WRITEBACK-SVC-L01、PORTAL-CMS-DWD-WRITEBACK-POL-L01。子单不把本单写成 depends_on 前置，因为本单尚未完成、子单已开工。总单 PORTAL-CMS-DWD-WRITEBACK-L01 已拆停。
     depends_on:
       - "DATA-ENT-CMS-VS-APP-PARTITION-L01"
       - "CMS-JX-INT-DESIGN-L01"
@@ -33025,7 +33025,7 @@ tasks:
       - "产出《任欢对接说明》，汇总字段清单与接口，供监管人转交任欢；执行 agent 不直接联系对端"
       - "复用并标注差异：E-31 CMS 读契约、产业链总览 SPEC-CMS 五块、CMS-JX-INT 集群内只读接口（智树→CMS）；本单是门户←CMS 正文，不改已实现代码、不新开实现叶"
       - "handoff 按定义任务模板交付，cost 四字段回填；业务口径未定项只登记客户决策清单，不替甲方拍板"
-    update_time: "2026-10-24T12:10:08+08:00"
+    update_time: "2026-10-21T00:34:14+08:00"
   - id: PORTAL-CMS-DWD-WRITEBACK-L01
     blocked_by: "已按维度拆成四单，本单不再执行：PORTAL-CMS-DWD-WRITEBACK-ENT-L01、PORTAL-CMS-DWD-WRITEBACK-CHAIN-L01、PORTAL-CMS-DWD-WRITEBACK-SVC-L01、PORTAL-CMS-DWD-WRITEBACK-POL-L01"
     title: "门户四模块 CMS 已发布正文回写 DWD：字段对表与写入规则"
@@ -34047,7 +34047,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 120000
-    note: "demo-ui-science origin/dev 已推送 1485e31。lumen-ui-science-pc 未改。待 demo 评审通过后再同步 lumen。"
+    note: |
+      第三轮（2026-10-24 会议纪要）：外链跳转规则（相对路径站内 router 打开、绝对地址 window.open 新页签、无外链保留现有详情抽屉不删）；时间趋势保留，饼图改按主题分组的柱状图（成果/案例/建议三系列）；右侧三栏点击行为同外链规则；五个 tab 与全局筛选暂不动，仅智库专家 tab 禁用时间标签+时间范围两项筛选；筛选区移除排序。接口改造最晚 11-06 完成、10-28 前出接口文档，存量接口复用。关联 demo-ui-science 页面本轮布局/交互修改。
     touched_files:
       - "repos/demo-ui-science/src/pages/tech-service/ThinkTankService.jsx"
       - "repos/demo-ui-science/src/pages/tech-service/mockData.js"
@@ -34062,7 +34063,7 @@ tasks:
       - "页面单独展示重大事件、成果发布、政策建议；成果汇总与分类计数由当前清单现算，空值显示待补齐"
       - "每条数据可区分来源：供方、运营、系统、采集补充、待补齐；服务类型目录标待甲方确认；七种分析方法不顶替服务类型"
       - "交付 handoff，说明未接入的供方字段与演示样例边界"
-    update_time: "2026-10-21T23:21:26+08:00"
+    update_time: "2026-10-24T10:32:27+08:00"
   - id: GDF-ENT-WORKPACK-V4R2-L01
     evidence: "agent-delivery/agent-handoffs/企业战略分析-ENT/GDF-ENT-WORKPACK-V4R2-L01.md"
     title: "企业维 GDF 派单包 v4.0.1 — GDF round1 核对响应合并（277 列分类处置/母子 mapping 对齐/专利分表映射/抽取策略）"
@@ -34729,8 +34730,18 @@ tasks:
       - "企业不写成科研机构"
     update_time: "2026-10-23T00:37:01+08:00"
   - id: SYSINT-03-15-L01
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/系统集成-SYSINT/SYSINT-03-15-L01.md"
+    cost_warn: "green"
+    actual_tokens: 80000
+    actual_cost: 2.4
+    supervised_by: "human:孔东"
+    claimed_at: "2026-10-24T04:16:22.403Z"
+    last_seen_at: "2026-10-24T04:16:22.403Z"
+    lock_until: "2026-10-24T08:16:22.403Z"
+    claimed_by: "human:孔东"
     title: "专题内容管理 CMS 公共控件与通用表单框架"
-    status: "ready"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -34740,7 +34751,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "监管人 human:孔东。完成日期要求 2026-11-05。WBS-03-15。本叶 done 之后才允许 human:淮政玮 验收 SYSINT-SCHEME-03-L01。政策扶持不走这套表单。"
+    note: "2026-10-24 human:孔东确认可以验收。handoff 已写。本地预览通过。未接 Java 写接口。"
     design_refs:
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/WBS.md"
       - "agent-delivery/工程过程/04-系统集成/03-专题系统集成/技术方案.md"
@@ -34748,17 +34759,10 @@ tasks:
       - "企业、产业全景、专题服务的正文编辑套同一框架：列表、新建、编辑、发布"
       - "富文本、名单、时间线、按产业切换可复用。控件用仓内 Arco，不另引组件库"
       - "政策扶持不做出 CMS 表单"
-    update_time: "2026-10-23T00:30:30+08:00"
+    update_time: "2026-10-24T13:23:23+08:00"
   - id: SYSINT-03-01C-L01
-    model_used: "glm-5.3-Flash (Cursor agent)"
-    evidence: "agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-01C-L01.md"
-    supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-23T09:05:10.290Z"
-    last_seen_at: "2026-10-23T09:05:10.290Z"
-    lock_until: "2026-10-23T13:05:10.290Z"
-    claimed_by: "agent:algorithm-agent"
     title: "企业发展链上瓶颈解读与生态合作摘要"
-    status: "integration"
+    status: "ready"
     agent: "algorithm-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -34768,7 +34772,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 80000
-    note: "联调就绪：两端点实现+13例单测+全仓回归零回归+curl真实证据，handoff含复用清单/契约对照/降级验证"
+    note: |
+      监管人 human:徐滕强。完成日期要求 2026-11-05（2026-10-23 coordinator 改期：原 2026-10-19 倒挂，与企业发展内容管理组对齐）。WBS-03-01c。图谱边不从 CMS 画，边的正式口径仍是 Q040。本叶 done 之后才允许验收 SYSINT-SCHEME-03-L01。【派单预告 2026-10-23】即将派 algorithm-agent 执行（企业发展 LLM 生成：链上瓶颈解读+生态合作摘要）。
     collaborators:
       - "frontend-agent"
     design_refs:
@@ -34776,7 +34781,7 @@ tasks:
     definition_of_done:
       - "生成失败只隐藏文案"
       - "不补假节点，不设 star_ecosystem_note"
-    update_time: "2026-10-23T17:36:53+08:00"
+    update_time: "2026-10-23T16:21:36+08:00"
   - id: SYSINT-03-02C-L01
     title: "产业全景产业资讯只读"
     status: "ready"
@@ -34820,7 +34825,7 @@ tasks:
       - "SYSINT-04-05-API-L01 只消费本结果。不并进 CMS-JX-POL-LIST-L01"
     update_time: "2026-10-23T14:03:08+08:00"
   - id: SYSINT-03-01A-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T07:13:22.624Z"
     last_seen_at: "2026-10-23T07:13:22.624Z"
     lock_until: "2026-10-23T15:13:22.624Z"
@@ -34849,7 +34854,7 @@ tasks:
       - "智树页面可编、可发、可读已发布块。编辑页套 WBS-03-15 的通用表单框架"
       - "overview 无 CMS。法定名称走主数据，别名标明非法定名。专利数和研发占比不写进 HTML"
       - "菜单以相对路径进统一用户中心。地址不写主机名"
-    update_time: "2026-10-23T15:13:22+08:00"
+    update_time: "2026-10-23T15:38:51+08:00"
   - id: SYSINT-03-01B-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:28:12.529Z"
@@ -34880,6 +34885,7 @@ tasks:
       - "缺口不手填进 CMS，不用相邻指标顶替。COVER 未完成前缺口保持空态"
     update_time: "2026-10-23T14:28:29+08:00"
   - id: SYSINT-03-02A-L01
+    supervised_by: "human:李伟"
     title: "产业全景运营正文"
     status: "ready"
     agent: "frontend-agent"
@@ -34902,8 +34908,9 @@ tasks:
       - "智树页面可编已发布正文。编辑页套通用表单框架。正文不内嵌企业数"
       - "契约草案确认前不改字段。节点简介和市场规模文案本轮不进 CMS"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T13:42:42+08:00"
+    update_time: "2026-10-23T15:38:52+08:00"
   - id: SYSINT-03-02B-L01
+    supervised_by: "human:李伟"
     title: "产业全景指标与图谱数字"
     status: "ready"
     agent: "algorithm-agent"
@@ -34926,7 +34933,7 @@ tasks:
     definition_of_done:
       - "已有 metric_id 走指标服务。区级缺口空态"
       - "节点和边不进 CMS。读图不在本叶新做"
-    update_time: "2026-10-23T13:42:42+08:00"
+    update_time: "2026-10-23T15:38:53+08:00"
   - id: SYSINT-03-03A-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:28:12.628Z"
@@ -34986,6 +34993,7 @@ tasks:
       - "CMS 不另维护重点名单，不覆盖法定名称"
     update_time: "2026-10-23T14:29:00+08:00"
   - id: SYSINT-03-04B-L01
+    supervised_by: "human:淮政玮"
     title: "政策扶持指标页"
     status: "backlog"
     agent: "algorithm-agent"
@@ -35009,7 +35017,7 @@ tasks:
       - "力度排名用 M_POLICY_INTENSITY_SCORE"
       - "缺口空态。M_POLICY_OPPORTUNITY_COUNT 不顶替数量。CMS 不填名次和分数"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T14:03:08+08:00"
+    update_time: "2026-10-23T15:38:46+08:00"
   - id: SYSINT-03-05-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:28:43.713Z"
@@ -35041,6 +35049,7 @@ tasks:
       - "菜单以相对路径进统一用户中心"
     update_time: "2026-10-23T14:29:00+08:00"
   - id: SYSINT-03-06-L01
+    supervised_by: "human:李伟"
     title: "产业全景可视化"
     status: "ready"
     agent: "frontend-agent"
@@ -35063,9 +35072,9 @@ tasks:
       - "可视化菜单主路径可点，缺数为空态"
       - "不复用基础数据写侧，也不复用 WBS-03-02 的运营页"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T13:42:42+08:00"
+    update_time: "2026-10-23T15:38:53+08:00"
   - id: SYSINT-03-07-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:黄敬洲"
     claimed_at: "2026-10-23T04:06:39.726Z"
     last_seen_at: "2026-10-23T04:06:39.726Z"
     lock_until: "2026-10-23T08:06:39.726Z"
@@ -35092,9 +35101,9 @@ tasks:
       - "可视化菜单主路径可点，缺数为空态"
       - "不复用基础数据写侧，也不复用 WBS-03-03 的运营页"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T13:42:42+08:00"
+    update_time: "2026-10-23T15:39:09+08:00"
   - id: SYSINT-03-08-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:淮政玮"
     claimed_at: "2026-10-23T04:06:39.826Z"
     last_seen_at: "2026-10-23T04:06:39.826Z"
     lock_until: "2026-10-23T08:06:39.826Z"
@@ -35123,9 +35132,9 @@ tasks:
       - "不复用基础数据写侧，也不复用 WBS-03-04 的运营页"
       - "菜单以相对路径进统一用户中心"
       - "指标与需规 93–98 同一套，读 SYSINT-04-05-API-L01，不另开指标清单任务。允许 mock"
-    update_time: "2026-10-23T14:03:08+08:00"
+    update_time: "2026-10-23T15:38:46+08:00"
   - id: SYSINT-03-18-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:淮政玮"
     claimed_at: "2026-10-23T04:06:39.914Z"
     last_seen_at: "2026-10-23T04:06:39.914Z"
     lock_until: "2026-10-23T08:06:39.914Z"
@@ -35149,8 +35158,9 @@ tasks:
     definition_of_done:
       - "内容管理四菜单、可视化四菜单以相对路径可见，对应用户登录后能进"
       - "地址不写主机名。八个菜单的相对路径还没有，本叶不编造路径"
-    update_time: "2026-10-23T13:42:42+08:00"
+    update_time: "2026-10-23T15:38:47+08:00"
   - id: SYSINT-04-01-L01
+    supervised_by: "human:淮政玮"
     title: "专题一张图后台接口"
     status: "ready"
     agent: "api-agent"
@@ -35174,8 +35184,9 @@ tasks:
       - "智谱页面能调到智树接口；缺数为空态。智树不交这个页面"
       - "需规 99 里的技术、人才、科研深度不作为智树实现，对不上的接口给空"
       - "菜单相对路径由统一用户中心配置。地址不写主机名"
-    update_time: "2026-10-23T01:20:04+08:00"
+    update_time: "2026-10-23T15:38:47+08:00"
   - id: SYSINT-04-02-L01
+    supervised_by: "human:李伟"
     title: "门户产业全景展示页"
     status: "ready"
     agent: "frontend-agent"
@@ -35198,7 +35209,7 @@ tasks:
       - "普通用户页。门户菜单按相对路径打开即智树页面。缺数为空态"
       - "地址为相对路径，不写主机名。不是 WBS-03-06"
       - "名称产业全景 / 专题全景对照还没有，本叶不另做已签收对照表"
-    update_time: "2026-10-23T11:27:07+08:00"
+    update_time: "2026-10-23T15:38:54+08:00"
   - id: SYSINT-04-03-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:29:21.468Z"
@@ -35256,7 +35267,7 @@ tasks:
       - "地址为相对路径，不写主机名。不是 WBS-03-05"
     update_time: "2026-10-23T14:29:36+08:00"
   - id: SYSINT-04-05-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:淮政玮"
     claimed_at: "2026-10-23T04:06:40.003Z"
     last_seen_at: "2026-10-23T04:06:40.003Z"
     lock_until: "2026-10-23T08:06:40.003Z"
@@ -35284,8 +35295,9 @@ tasks:
       - "需规 93 概况统计、94 政策地图、95 产业覆盖、96 力度排名、97 最新政策、98 深圳对比都在普通用户页上"
       - "数只来自 SYSINT-04-05-API-L01。缺口空态。真实 ADS 未接前允许 mock"
       - "地址为相对路径，不写主机名。不是 WBS-03-08"
-    update_time: "2026-10-23T14:03:08+08:00"
+    update_time: "2026-10-23T15:38:48+08:00"
   - id: SYSINT-05-01A-L01
+    supervised_by: "human:孔东"
     title: "科学技术全景前端"
     status: "ready"
     agent: "frontend-agent"
@@ -35306,8 +35318,9 @@ tasks:
     definition_of_done:
       - "页面可开。图谱、关键实体、路径的读图归第 7 项，本叶不另接一套查图接口"
       - "未承诺的块空态。菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T01:20:21+08:00"
+    update_time: "2026-10-23T15:39:03+08:00"
   - id: SYSINT-05-01B-L01
+    supervised_by: "human:唐绍祖"
     title: "科学技术全景后端"
     status: "ready"
     agent: "api-agent"
@@ -35327,8 +35340,9 @@ tasks:
     definition_of_done:
       - "三要素以外的区块能调到，或返回空。不写假数"
       - "三要素算法不在本叶，供数依赖 WBS-02-02"
-    update_time: "2026-10-23T01:20:23+08:00"
+    update_time: "2026-10-23T15:39:06+08:00"
   - id: SYSINT-05-02A-L01
+    supervised_by: "human:孔东"
     title: "技术发展跟踪前端"
     status: "ready"
     agent: "frontend-agent"
@@ -35348,8 +35362,9 @@ tasks:
     definition_of_done:
       - "结果、参数、方法三个 Tab 可开，或空态"
       - "名称用技术发展跟踪"
-    update_time: "2026-10-23T01:20:25+08:00"
+    update_time: "2026-10-23T15:39:04+08:00"
   - id: SYSINT-05-02B-L01
+    supervised_by: "human:唐绍祖"
     title: "技术发展跟踪后端"
     status: "ready"
     agent: "api-agent"
@@ -35369,8 +35384,9 @@ tasks:
     definition_of_done:
       - "三个 Tab 的接口可调，或空"
       - "专家评估法、经济分析法没有已签收实现，不在本叶新定义口径"
-    update_time: "2026-10-23T01:20:28+08:00"
+    update_time: "2026-10-23T15:39:07+08:00"
   - id: SYSINT-05-03A-L01
+    supervised_by: "human:孔东"
     title: "科技人才态势菜单壳前端"
     status: "ready"
     agent: "frontend-agent"
@@ -35390,8 +35406,9 @@ tasks:
     definition_of_done:
       - "菜单可进。非三要素区块有数或空态。四子页不在本叶填数"
       - "资讯、职位变动、奖项荣誉、引进成本、尽调五类为空态"
-    update_time: "2026-10-23T01:20:30+08:00"
+    update_time: "2026-10-23T15:39:05+08:00"
   - id: SYSINT-05-03B-L01
+    supervised_by: "human:唐绍祖"
     title: "科技人才态势菜单壳后端"
     status: "ready"
     agent: "api-agent"
@@ -35411,9 +35428,9 @@ tasks:
     definition_of_done:
       - "非三要素接口可调，或空。四子页数据不在本叶填"
       - "五类缺失保持空态。不写假数"
-    update_time: "2026-10-23T01:20:32+08:00"
+    update_time: "2026-10-23T15:39:08+08:00"
   - id: SYSINT-05-04-L01
-    supervised_by: "human:孔东"
+    supervised_by: "human:淮政玮"
     claimed_at: "2026-10-23T04:06:40.090Z"
     last_seen_at: "2026-10-23T04:06:40.090Z"
     lock_until: "2026-10-23T08:06:40.090Z"
@@ -35439,7 +35456,7 @@ tasks:
     definition_of_done:
       - "四个视窗可切换"
       - "共建数据未到为空态。菜单进统一用户中心"
-    update_time: "2026-10-23T12:06:53+08:00"
+    update_time: "2026-10-23T15:38:48+08:00"
   - id: SYSINT-05-05-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T06:29:51.704Z"
@@ -35498,6 +35515,7 @@ tasks:
       - "菜单进统一用户中心"
     update_time: "2026-10-23T14:30:43+08:00"
   - id: SYSINT-05-07-L01
+    supervised_by: "human:李伟"
     title: "智库服务"
     status: "ready"
     agent: "frontend-agent"
@@ -35519,10 +35537,15 @@ tasks:
     definition_of_done:
       - "展示前端经网关、展示 Java 调到智谱接口"
       - "接口未到为空态。不按前端跳转。智树不做高端智库后台"
-    update_time: "2026-10-23T11:27:36+08:00"
+    update_time: "2026-10-23T15:38:55+08:00"
   - id: SYSINT-05-08-L01
+    claimed_at: "2026-10-23T09:35:24.849Z"
+    last_seen_at: "2026-10-23T09:35:24.849Z"
+    lock_until: "2026-10-23T17:35:24.849Z"
+    claimed_by: "human:liwei"
+    supervised_by: "human:liwei"
     title: "科技交流竞赛传播入口跳转"
-    status: "ready"
+    status: "claimed"
     agent: "frontend-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -35540,7 +35563,7 @@ tasks:
     definition_of_done:
       - "科技交流、科技竞赛、科技传播三个入口可用，或明确不可用并给出失败提示"
       - "不入库。不把评估文里不支持的字段做成已有数据"
-    update_time: "2026-10-23T11:27:36+08:00"
+    update_time: "2026-10-23T17:35:25+08:00"
   - id: SYSINT-06-01-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T02:49:51.184Z"
@@ -35597,6 +35620,7 @@ tasks:
       - "资讯表只贴，不洗入 industry_chain_news_event"
     update_time: "2026-10-23T10:49:51+08:00"
   - id: SYSINT-06-03-L01
+    supervised_by: "human:淮政玮"
     title: "政策 v1 包跑通到 policy_base_info"
     status: "ready"
     agent: "data-agent"
@@ -35617,8 +35641,9 @@ tasks:
       - "执行结果回传之后才算可对端"
       - "本包不含 ES，不在本叶加写 ES、ADS 或 Nebula"
       - "国内政策、国外政策不并进这张包"
-    update_time: "2026-10-23T01:20:57+08:00"
+    update_time: "2026-10-23T15:38:49+08:00"
   - id: SYSINT-06-04-L01
+    supervised_by: "human:淮政玮"
     title: "市场研究金融数据同步"
     status: "ready"
     agent: "data-agent"
@@ -35638,8 +35663,9 @@ tasks:
     definition_of_done:
       - "有包且执行结果回传后，Java 只读 ADS"
       - "没有包之前不算跑通。本任务不新编派单包"
-    update_time: "2026-10-23T01:20:59+08:00"
+    update_time: "2026-10-23T15:38:49+08:00"
   - id: SYSINT-06-05-L01
+    supervised_by: "human:淮政玮"
     title: "市场研究宏观行业同步"
     status: "ready"
     agent: "data-agent"
@@ -35659,8 +35685,9 @@ tasks:
     definition_of_done:
       - "有包且执行结果回传后，Java 只读 ADS"
       - "没有包之前不算跑通。本任务不新编派单包"
-    update_time: "2026-10-23T01:21:09+08:00"
+    update_time: "2026-10-23T15:38:50+08:00"
   - id: SYSINT-06-06-L01
+    supervised_by: "human:淮政玮"
     title: "市场研究行业分析同步"
     status: "ready"
     agent: "data-agent"
@@ -35681,8 +35708,9 @@ tasks:
       - "有包且执行结果回传后，Java 只读 ADS"
       - "不把六表洗进项目 DWD，除非本叶的派单包另行写明"
       - "没有包之前不算跑通"
-    update_time: "2026-10-23T01:21:10+08:00"
+    update_time: "2026-10-23T15:38:50+08:00"
   - id: SYSINT-06-07-L01
+    supervised_by: "human:淮政玮"
     title: "产业资讯同步"
     status: "ready"
     agent: "data-agent"
@@ -35703,7 +35731,7 @@ tasks:
       - "执行结果回传后 Java 只读"
       - "不洗成业务资讯表，不用大模型补"
       - "dwd_industry_chain_news_info 禁止业务使用未解除则不上屏"
-    update_time: "2026-10-23T01:21:12+08:00"
+    update_time: "2026-10-23T15:38:50+08:00"
   - id: SYSINT-06-15-L01
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-23T02:50:28.304Z"
@@ -35731,6 +35759,7 @@ tasks:
       - "没有包之前不算跑通。本任务不新编派单包"
     update_time: "2026-10-23T10:50:28+08:00"
   - id: SYSINT-06-17-L01
+    supervised_by: "human:淮政玮"
     title: "国内政策贴源加 Mapping 到 ADS"
     status: "ready"
     agent: "data-agent"
@@ -35751,8 +35780,9 @@ tasks:
       - "有包且执行结果回传后，Java 只读 ADS"
       - "没有包之前不算跑通"
       - "不并进 WBS-06-03 的 policy_base_info 包"
-    update_time: "2026-10-23T01:21:17+08:00"
+    update_time: "2026-10-23T15:38:51+08:00"
   - id: SYSINT-07-01-L01
+    supervised_by: "human:李伟"
     title: "查图主路径"
     status: "ready"
     agent: "frontend-agent"
@@ -35777,8 +35807,9 @@ tasks:
       - "查图主路径可点"
       - "无结果或未就绪则 HTTP 501，不返回假图"
       - "Java 不写 nGQL。路由字面还没有，本叶不编造路由"
-    update_time: "2026-10-23T11:27:50+08:00"
+    update_time: "2026-10-23T15:38:58+08:00"
   - id: SYSINT-07-02-L01
+    supervised_by: "human:李伟"
     title: "图指标展示与算法结果展示"
     status: "ready"
     agent: "frontend-agent"
@@ -35802,8 +35833,9 @@ tasks:
       - "有结果则展示。查询成功但无命中为空态"
       - "预测、社群未就绪是 501，不是 0。三者不混用"
       - "不做算法平台，不因未定义的黑名单发出告警"
-    update_time: "2026-10-23T11:27:50+08:00"
+    update_time: "2026-10-23T15:39:00+08:00"
   - id: SYSINT-07-03-L01
+    supervised_by: "human:李伟"
     title: "图服务对内赋能入口"
     status: "ready"
     agent: "frontend-agent"
@@ -35826,7 +35858,7 @@ tasks:
       - "分享、查询、分析入口可点"
       - "无权限是降级，不是白屏"
       - "不嵌亿集管理界面"
-    update_time: "2026-10-23T11:28:07+08:00"
+    update_time: "2026-10-23T15:39:02+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-ENTAN-BASIC-L01
     actual_tokens: 0
     cost_warn: "green"
@@ -36217,9 +36249,9 @@ tasks:
     update_time: "2026-10-23T13:06:07+08:00"
   - id: FE-ENT-EVAL-REPORT-REAL-L01
     cost_warn: "green"
-    actual_cost: 1.5
-    model_used: "glm-5.3 (Cursor)"
-    actual_tokens: 150000
+    actual_cost: 2.1
+    model_used: "glm-5.3"
+    actual_tokens: 210000
     evidence: "agent-handoffs/FE-ENT-EVAL-REPORT-REAL-L01.md"
     supervised_by: "human:孔东"
     claimed_at: "2026-10-22T09:06:24.960Z"
@@ -36237,8 +36269,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 250000
-    note: |
-      重开轮：按监管人新口径重做完毕——①新评估报告专用模板（A4 分页、KPI 卡/排名条形图/维度雷达/明细表分块，D8 token）；②导出改 html2canvas+jsPDF 直下 PDF 文件（不弹打印预览）。jspdf+html2canvas 已获批准。selfcheck + vue-tsc + 回归 + eslint 全绿，改动停本地待人工验收走查
+    note: "验收通过（2026-10-24 监管人孔东走查，含两轮修正：满宽自适应+按块切页、封面紧凑化）。双仓已推 dev：lumen-ui-topic 2df95de；gkx-orchestration 858909c0。联调通过"
     touched_files:
       - "src/components/report/SystemReportReader.vue"
       - "src/components/report/enterpriseDomainReports.ts"
@@ -36251,7 +36282,7 @@ tasks:
       - "权限与埋点：沿用 ReportExportButton 现有 permCode 与付费闸门；导出动作埋点保留"
       - "自检：reportExport.selfcheck.mjs 断言七章节包含真实数据字段（排名/得分），无「同源摘要」「Wave 0 Mock」占位串；vue-tsc 绿"
       - "handoff + cost 四字段回填；ponytail: full"
-    update_time: "2026-10-23T15:24:21+08:00"
+    update_time: "2026-10-24T10:59:30+08:00"
   - id: QA-KJZTFWSFK-SCRIPT-ENTAN-INNOVATION-L01
     cost_warn: "green"
     actual_cost: 0
@@ -38862,6 +38893,69 @@ tasks:
     claimed_by: "human:徐滕强"
     title: "企业发展内容管理 · Java 运营写接口"
     status: "in_progress"
+  - id: SYSINT-05-08-01-L01
+    supervised_by: "human:liwei"
+    claimed_at: "2026-10-23T09:39:33.090Z"
+    last_seen_at: "2026-10-23T09:39:33.090Z"
+    lock_until: "2026-10-23T13:39:33.090Z"
+    claimed_by: "human:liwei"
+    title: "科技服务全景对接分析（交流/竞赛/传播）"
+    status: "ready_to_sign"
+    agent: "architect-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P0"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "definition"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: |
+      父任务 SYSINT-05-08-L01 的第 1 个子任务。任务目的：明确深势接口能力边界、原型与接口字段映射、需规覆盖度、核心决策固化。任务内容：①会议纪要逐条核对深势 MD 接口文档 ②需规 S-04/S-07 等条目核对 ③原型 TechCompetition/TechExchange/TechCommunication 字段映射设计 ④字典枚举决策（不走接口） ⑤竞赛类型筛选器移除决策 ⑥整理完整纪要。计划完成日期 2026-10-23，**实际已完成**（2026-10-23 晚落盘纪要 271 行 + 深势 MD 接口审计）。evidence 回填后即 ready_to_sign，需监管人签收。
+    depends_on:
+      - "SYSINT-05-08-L01"
+    collaborators:
+      - "api-agent"
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/09-科技服务全景接口需求评估/科技服务全景-页面维度供数缺口自研对照表.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+    definition_of_done:
+      - "深势接口文档与会议纪要逐项核对无遗漏（12 项会议结论全覆盖）"
+      - "字典枚举决策已固化（不走接口，文档说明即可）"
+      - "原型字段与深势接口映射决策已完成（竞赛类型下拉移除、竞赛级别保留并做值映射）"
+      - "纪要 OpenAPI 合规性审计完成并经李伟审阅"
+      - "evidence 路径指向完整纪要和接口文档"
+    update_time: "2026-10-23T17:40:14+08:00"
+  - id: SYSINT-05-08-02-L01
+    title: "科技服务全景入口跳转壳开发（交流/竞赛/传播）"
+    status: "backlog"
+    agent: "frontend-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "3"
+    difficulty: "S"
+    estimated_tokens: 40000
+    note: "父任务 SYSINT-05-08-L01 的第 2 个子任务。任务目的：在展示系统门户注册科技交流/竞赛/传播三个菜单项，实现入口跳转（深势接口已全部 detailUrl 提供跳转）。前置：对接分析子任务（01）ready_to_sign 签收通过。计划完成日期 2026-10-28。"
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-01-L01"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/WBS.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+    definition_of_done:
+      - "科技交流、科技竞赛、科技传播三个门户入口菜单注册完成"
+      - "入口点击跳转深势 detailUrl 或 iframe 内嵌可用（方案由前端决定）"
+      - "入口不展示深势不支持的字段（奖金、竞赛类型下拉、点赞排序等）"
+      - "空态/加载态/错误态 UI 齐全"
+    update_time: "2026-10-23T17:39:07+08:00"
+  - id: SYSINT-05-08-03-L01
+    title: "科技交流页面对接（BFF + FE · 深势 3 接口代理）"
+    status: "backlog"
     agent: "api-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -38876,7 +38970,7 @@ tasks:
       - "gkxlumen-cms 新增运营写接口：12 个 content_type 正文的 list/create/update/publish"
       - "正文落 gkxlumenx_cms overlay（A5 冻结库）；真源零写；操作写 cms_op_audit"
       - "OpenAPI + 请求响应示例入 handoff，作为前端叶（SYSINT-03-01A-L01）联调依据"
-    update_time: "2026-10-24T11:57:02+08:00"
+    update_time: "2026-10-23T16:40:18+08:00"
   - id: LUMEN-DISPLAY-PORTAL-IFRAME-L01
     cost_warn: "green"
     actual_cost: 1.2
@@ -38956,8 +39050,11 @@ tasks:
       - "handoff 落盘 agent-delivery/agent-handoffs/KG-YANDA-SCHEMA-COMPARE-L01.md 并 git push origin/dev"
     update_time: "2026-10-23T16:09:49+08:00"
   - id: ALGO-LIB-POL-PORTAL-NATIONAL-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-NATIONAL-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-全国相关产业政策数量及连续性"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -38983,10 +39080,13 @@ tasks:
       - "不用 M_POLICY_TOTAL_COUNT、M_POLICY_TIMESERIES、M_POLICY_OPPORTUNITY_COUNT 填数量。相关产业范围或连续性公式未登记时结果为空并写明原因"
       - "不改 PORTAL-CMS-政策扶持.md、指标种子和就绪度矩阵，不拍板 QPOL-02。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-NATIONAL-L01.md"
-    update_time: "2026-10-23T17:13:47+08:00"
+    update_time: "2026-10-24T11:44:34+08:00"
   - id: ALGO-LIB-POL-PORTAL-PROVINCE-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-PROVINCE-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-各省政策数量对比及连续性"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39011,10 +39111,13 @@ tasks:
       - "不用 M_POLICY_LEVEL_DIST、M_POLICY_TOTAL_COUNT、M_POLICY_TIMESERIES 填省份对比。连续性公式未登记时结果为空并写明原因"
       - "不改契约、指标种子和就绪度矩阵，不拍板 QPOL-02。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-PROVINCE-L01.md"
-    update_time: "2026-10-23T17:13:47+08:00"
+    update_time: "2026-10-24T11:44:34+08:00"
   - id: ALGO-LIB-POL-PORTAL-CITY-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-CITY-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-重点城市政策数量对比及连续性"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39039,10 +39142,12 @@ tasks:
       - "重点城市名单未登记时市级对比为空并写明原因，不自造城市集。不用 M_POLICY_LEVEL_DIST、M_POLICY_TOTAL_COUNT、M_POLICY_TIMESERIES 填这一条"
       - "不改契约、指标种子和就绪度矩阵，不拍板 QPOL-02。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-CITY-L01.md"
-    update_time: "2026-10-23T17:13:48+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-DENS-NAT-L01
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-全国政策发布密度"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39052,7 +39157,9 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "前置 ALGO-LIB-POL-PORTAL-GAP-L01 已完成，升待认领。"
+    note: "已认领执行（agent:algorithm-agent 代 human:唐绍祖）。最小叠加实现：登记 portal_gaps.density_denominator=natural_month 后 density_national 行出逐月条/月序列；未登记保持空行。算法仓 commit 27ff3a5，前端零改动（复用 17:03 已推的十条占位页）。待淮政玮拍板口径。"
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-NAT-L01.md
+      - "agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-NAT-L01.md"
     depends_on:
       - "ALGO-LIB-POL-PORTAL-GAP-L01"
     collaborators:
@@ -39067,10 +39174,13 @@ tasks:
       - "没有已登记分母时结果为空并写明缺分母。不用 M_POLICY_NATIONAL_DIST 的按省计数与占比冒充密度"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-NAT-L01.md"
-    update_time: "2026-10-23T17:13:49+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-DENS-PROV-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-PROV-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-省发布密度"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39095,10 +39205,13 @@ tasks:
       - "没有已登记分母时结果为空并写明缺分母。按省计数不是省内发布密度，不用 M_POLICY_NATIONAL_DIST、M_POLICY_LEVEL_DIST 填这一条"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-PROV-L01.md"
-    update_time: "2026-10-23T17:13:50+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-DENS-CITY-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-CITY-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-市发布密度"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39123,10 +39236,13 @@ tasks:
       - "没有已登记分母时结果为空并写明缺分母。不用 M_POLICY_NATIONAL_DIST 填市级密度"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-DENS-CITY-L01.md"
-    update_time: "2026-10-23T17:13:58+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-NODE-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-NODE-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-产业链各节点政策覆盖"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39151,10 +39267,13 @@ tasks:
       - "不用 M_POLICY_INDUSTRY_COVERAGE 的覆盖率顶各节点。各节点覆盖公式未登记时结果为空并写明原因"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-NODE-L01.md"
-    update_time: "2026-10-23T17:13:59+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-SZ-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-深圳相关产业政策数量及趋势"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39179,10 +39298,13 @@ tasks:
       - "不用 M_POLICY_SZ_DIST、M_POLICY_TIMESERIES、M_POLICY_TOTAL_COUNT 填全市数量及趋势。趋势公式未登记时结果为空并写明原因"
       - "不改契约、指标种子和就绪度矩阵，不拍板 QPOL-02。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-L01.md"
-    update_time: "2026-10-23T17:13:59+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-SZ-DIST-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-DIST-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-深圳各区发布情况"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39207,10 +39329,13 @@ tasks:
       - "不用 M_POLICY_SZ_DIST、M_CHAIN_SZ_POLICY 的按区存量计数顶各区发布。发布口径未登记时结果为空并写明原因"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-DIST-L01.md"
-    update_time: "2026-10-23T17:14:00+08:00"
+    update_time: "2026-10-24T11:44:35+08:00"
   - id: ALGO-LIB-POL-PORTAL-SZ-NODE-L01
+    evidence: agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-NODE-L01.md
+    supervised_by: "human:淮政玮"
+    claimed_by: "agent:algorithm-agent"
     title: "政策扶持-深圳产业链节点政策覆盖"
-    status: "ready"
+    status: ready_to_sign
     agent: "algorithm-agent"
     epic: "E-ALGO-LIB-DEMO"
     priority: "P1"
@@ -39235,31 +39360,244 @@ tasks:
       - "不用 M_POLICY_INDUSTRY_COVERAGE 的全库覆盖率顶深圳节点。深圳各节点覆盖公式未登记时结果为空并写明原因"
       - "不改契约、指标种子和就绪度矩阵。不把 demo 接进 lumen。SYSINT-03-04B 对本条仍返回空"
       - "handoff：agent-delivery/agent-handoffs/算法库联调-ALGO-LIB/ALGO-LIB-POL-PORTAL-SZ-NODE-L01.md"
-    update_time: "2026-10-23T17:14:01+08:00"
-  - id: CMS-JX-JXFE-FIX-L01
-    title: "久新联调首轮 6 类问题修复（口径兼容+文案细化+契约对齐）"
-    status: "in_progress"
+    update_time: "2026-10-24T11:44:35+08:00"
+    effort_points: "8"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      父任务 SYSINT-05-08-L01 的第 3 个子任务。任务目的：科技交流完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/exchange/activity/list（四类活动，分页） + /exchange/activity/detail + /exchange/activity/sync（增量同步）。前置：入口壳（02）完成。计划完成日期 2026-11-04。
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-02-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+    definition_of_done:
+      - "BFF 代理深势 /szc/v1/open/exchange/activity/list + /detail + /sync 三接口"
+      - "BFF 层处理地址自由文本 → 正则解析 → 地图显示容错降级"
+      - "BFF 层枚举字典嵌入（activityType 4 值 / categoryId 6 值 / subjectAreaId 13 值 / liveType 6 值）"
+      - "前端 TechExchange 页对接 BFF，四类活动（exchange/reasoning/live/course）Tab 切换可用"
+      - "对接分析纪要中交流模块的全部决策（发布时间、活动规模降级、字典内嵌）落实"
+    update_time: "2026-10-23T17:39:08+08:00"
+  - id: SYSINT-05-08-04-L01
+    title: "科技竞赛页面对接（BFF + FE · 深势 4 接口代理）"
+    status: "backlog"
     agent: "api-agent"
-    epic: "CMS-JX-INT"
+    epic: "E-PM-DELIVERY"
     priority: "P1"
     repo: "lumen-svc-platform"
     delivery_phase: "implementation"
-    task_type: "bugfix"
-    effort_points: 5
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      父任务 SYSINT-05-08-L01 的第 4 个子任务。任务目的：科技竞赛完整页面对接，深势 4 接口 BFF 代理 + 前端联调。深势接口：/competition/list + /resource/list + /ranking + /discussion/list。核心决策：原型竞赛类型（赛题方向）下拉移除，改 keyword 搜 theme；竞赛级别下拉保留做值映射（原型 4 值 → 深势 6 值）。前置：入口壳（02）完成。计划完成日期 2026-11-11。
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-02-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+    definition_of_done:
+      - "BFF 代理深势 /szc/v1/open/competition/list + /resource/list + /ranking + /discussion/list 四接口"
+      - "BFF 层处理原型竞赛级别（国际/国内/区域/市级）→ 深势 competitionLevel（1~6）值映射"
+      - "前端 TechCompetition 页移除竞赛类型下拉（需规未要求），保留竞赛级别下拉 + keyword 搜 theme"
+      - "奖金字段深势恒 0 → 前端展示占位空态"
+      - "榜单讨论页对接深势 discussion/list"
+    update_time: "2026-10-23T17:39:09+08:00"
+  - id: SYSINT-05-08-05-L01
+    title: "科技传播页面对接（BFF + FE · 深势 3 接口代理）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "8"
+    difficulty: "M"
+    estimated_tokens: 120000
+    note: |
+      父任务 SYSINT-05-08-L01 的第 5 个子任务。任务目的：科技传播完整页面对接，深势 3 接口 BFF 代理 + 前端联调。深势接口：/communication/content/list + /detail + /sync。深势 contentType 7 值字典已给出（§8.3），前端直接使用；活跃用户 activeUserCount 深势已提供（line 526）。前置：入口壳（02）完成。计划完成日期 2026-11-18。
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-02-L01"
+    collaborators:
+      - "frontend-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
+    definition_of_done:
+      - "BFF 代理深势 /szc/v1/open/communication/content/list + /detail + /sync 三接口"
+      - "BFF 层处理 contentType 7 值字典（顶级期刊/学术会议/研究报告/专著/专利/标准/其他）"
+      - "前端 TechCommunication 页对接 BFF，contentTypes 多选筛选 + subjectAreaId 学科 + subjectCategoryId 产业集群"
+      - "移除点赞排序（深势无点赞数据，MD 明确不支持）"
+      - "activeUserCount / monthlyViewCount 统计卡对接深势真实字段"
+    update_time: "2026-10-23T17:39:10+08:00"
+  - id: SYSINT-05-08-06-L01
+    title: "科技服务全景三板块联调验收（交流/竞赛/传播）"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-ui-science-pc"
+    delivery_phase: "crosscut"
+    task_type: "feature"
+    effort_points: "5"
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-24 久新联调首轮反馈 6 类问题，逐条真库复现定位：②为设计符合（status 治理只读，报错文案误导）③④⑤为字段口径（关联字段要 id 不是名称——服务端做名称兼容解析最省联调成本）⑥实测父挂载正常待久新给复现 ⑦为 OpenAPI 误导（规格书 4.2 定稿无层级，文档有 parent 字段）。方案：服务端兼容+文案细化+契约对齐，一并修复
-    depends_on: []
+      父任务 SYSINT-05-08-L01 的第 6 个子任务。任务目的：三板块完整联调验收，验证全部对接分析决策落实。前置：交流（03）+ 竞赛（04）+ 传播（05）三个页面对接子任务全部 done。计划完成日期 2026-11-25。验收后父任务 SYSINT-05-08-L01 可推进 ready_to_sign → done。
+    depends_on:
+      - "SYSINT-05-08-L01"
+      - "SYSINT-05-08-03-L01"
+      - "SYSINT-05-08-04-L01"
+      - "SYSINT-05-08-05-L01"
+    collaborators:
+      - "frontend-agent"
+      - "api-agent"
+    design_refs:
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/对接文档/对端/2026-10-23-深势-科技服务全景对外开放接口.md"
+      - "agent-delivery/工程过程/04-系统集成/05-展示系统集成/纪要/2026-10-23-科技服务全景-深势对接-交流竞赛传播模块优化.md"
     definition_of_done:
-      - "① product/create：orgId 校验报错文案带「请先调 enterprise/list 获取 id」指引"
-      - "② policy/update：白名单外字段（如 status）报错细化为「status 为只读治理字段不可修改，可写字段：…」"
-      - "③ enterprise/news/create：company 兼容企业名数组——先按 org_id 查、查不到再按名称解析并回传映射"
-      - "④ enterprise/sz/create：name 兼容企业名称/企业 id 双态"
-      - "⑤ service-org/sz/create：name 兼容机构名称/机构 id 双态（名称先查圈定池∪虚拟）"
-      - "⑥ custom-class：定位久新『子级未挂正确父节点』case——补 list 接口按 parent 查询验证；确认无 bug 则给复现结论"
-      - "⑦ custom-link：按规格书 4.2 定稿（无层级、无 parent）——从 OpenAPI 文档删除 parent/level 字段消除误导，代码不动"
-      - "全部改动 mvn 编译绿 + 真库冒烟验证（每类至少一个成功案例）"
-      - "OpenAPI/久新 MD 同步（⑦契约删字段；①-⑤ 补字段说明）"
-      - "handoff 写入平台基建-PLATFORM/CMS-JX-JXFE-FIX-L01.md"
-    update_time: "2026-10-24T12:02:50+08:00"
+      - "交流/竞赛/传播三页全部接口代理联调通过，前端展示与深势真实返回一致"
+      - "枚举字典全部正确渲染（activityType 4 值 / competitionLevel 6 值 / contentType 7 值 / subjectAreaId 13 值）"
+      - "地址自由文本 → 正则地图解析容错降级验证通过"
+      - "原型竞赛类型下拉移除验证通过、竞赛级别值映射验证通过"
+      - "空态/加载态/错误态全覆盖验证通过"
+      - "DoD 全部 6 条父任务定义签收"
+    update_time: "2026-10-23T17:39:11+08:00"
+  - id: LUMEN-POLICY-PY-SEARCH-FILTER-L01
+    evidence: "agent-handoffs/政策模块-E7/LUMEN-POLICY-PY-SEARCH-FILTER-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-24T03:21:22.463Z"
+    last_seen_at: "2026-10-24T03:21:22.463Z"
+    lock_until: "2026-10-25T03:21:22.463Z"
+    claimed_by: "agent:algorithm-agent"
+    title: "政策检索高级筛选参数"
+    status: "integration"
+    agent: "algorithm-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    sprint_id: "2026-W43"
+    repo: "lumen-algo-py"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 80000
+    user_story: "US-E7-POL-01c"
+    note: "联调闸门。handoff 已落盘，INB170106 实库 17 条。不等 done。Java 透传仍在进行。"
+    touched_files:
+      - "repos/lumen-algo-py/**/policy/**/search.py"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
+      - "agent-delivery/qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md"
+      - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ABCDE-长任务总控.md"
+    definition_of_done:
+      - "新参数 publish_year_from/to、status、level、policy_type、region、ministry 多选、industry_code 有请求就按列筛选；没有就与现在检索一致"
+      - "用产业检索政策条数-20261024 里至少一条有数产业码（如 INB170106）能命中，且命中包含挂在其节点上的政策"
+      - "传入 support_strength 时出现在 honesty.ignored_fields，结果不被关键词化"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-PY-SEARCH-FILTER-L01.md；ponytail: full；留一条可跑的自检"
+    update_time: "2026-10-24T11:36:12+08:00"
+  - id: LUMEN-POLICY-C-SEARCH-FILTER-L01
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-24T03:21:27.061Z"
+    last_seen_at: "2026-10-24T03:21:27.061Z"
+    lock_until: "2026-10-25T03:21:27.061Z"
+    claimed_by: "agent:api-agent"
+    title: "政策检索高级筛选透传"
+    status: "in_progress"
+    agent: "api-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    sprint_id: "2026-W43"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    graph_role: "leaf"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-01c"
+    note: "2026-10-24 Java 透传代码已落本地，未 commit。PY 已在联调闸门，但本叶单测未跑（本机无 JDK 17/Maven），也未证明参数到达运行中的 Python。不进 integration。查询页仍不开工。"
+    depends_on:
+      - "LUMEN-POLICY-PY-SEARCH-FILTER-L01"
+    touched_files:
+      - "repos/lumen-svc-platform/**/gkxlumen-topic-policy/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
+    definition_of_done:
+      - "新参数能到达 Python，Java 不改写、不丢弃 industry_code"
+      - "CL-* 与未知字段的处理与 Python 一致（拒绝或 ignored_fields），Java 不自行解释集群"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-C-SEARCH-FILTER-L01.md；ponytail: full"
+    update_time: "2026-10-24T11:39:48+08:00"
+  - id: LUMEN-POLICY-D-POL-01C-FILTER-L01
+    evidence: "agent-handoffs/政策模块-E7/LUMEN-POLICY-D-POL-01C-FILTER-L01.md"
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-24T04:16:04.420Z"
+    last_seen_at: "2026-10-24T04:16:04.420Z"
+    lock_until: "2026-10-25T04:16:04.420Z"
+    claimed_by: "agent:frontend-agent"
+    title: "政策查询高级筛选对齐企业字段进查询"
+    status: "in_progress"
+    agent: "frontend-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    sprint_id: "2026-W43"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    graph_role: "leaf"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    user_story: "US-E7-POL-01c"
+    note: "2026-10-24 前端按合同改完，停本地未推送。Java 透传校验已由 human:淮政玮放过，online total 对齐未做。"
+    depends_on:
+      - "LUMEN-POLICY-C-SEARCH-FILTER-L01"
+    touched_files:
+      - "repos/lumen-ui-topic/**/policy/**"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
+      - "agent-delivery/templates/fe-replica-visual-dod.md"
+    definition_of_done:
+      - "选 INB170106 或条数材料中另一条有数产业，应用后请求带 industry_code，total 对齐"
+      - "只选集群、不选产业时请求不出现 CL-*"
+      - "无命中是空态，不是 5xx"
+      - "pnpm type-check 通过；handoff 含 V1–V7；ponytail: full"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-D-POL-01C-FILTER-L01.md；完工停本地不 commit/push"
+    update_time: "2026-10-24T12:24:59+08:00"
+  - id: LUMEN-POLICY-E-QA-SMOKE-FILTER-L01
+    title: "政策查询高级筛选冒烟"
+    status: "backlog"
+    agent: "qa-agent"
+    epic: "E-POLICY-PDR"
+    priority: "P0"
+    sprint_id: "2026-W43"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    graph_role: "leaf"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    user_story: "US-E7-POL-01c"
+    note: "须 D-POL-01C-FILTER 已推 dev，且 E0 点名 lumen-ui-topic、gkxlumen-topic-policy、lumen-algo-py 发布为绿后再领。期望未发生必红。"
+    depends_on:
+      - "LUMEN-POLICY-D-POL-01C-FILTER-L01"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-ADV-FILTER-派单说明.md"
+      - "agent-delivery/长任务执行规约.md"
+    definition_of_done:
+      - "只测已发布 http://192.168.88.50:30892/policy/search，禁止 localhost"
+      - "关键词半导体出卡且无加入对比篮/深度分析；有数产业筛选 total>0；无关联节点空态且非 5xx；请求无 support_strength/fund/tax/land/talent/CL-*"
+      - "失败先分 C1–C6，QA 不改代码"
+      - "handoff：agent-delivery/agent-handoffs/政策模块-E7/LUMEN-POLICY-E-QA-SMOKE-FILTER-L01.md"
+    update_time: "2026-10-24T11:21:14+08:00"

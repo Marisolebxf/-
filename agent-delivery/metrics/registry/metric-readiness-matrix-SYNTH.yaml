@@ -1,683 +1,1207 @@
-# metric-readiness-matrix —— 区域综合智能分析域（SYNTH）四维就绪度矩阵
+# metric-readiness-matrix —— 综合智能分析域（SYNTH）四维就绪度
 # ============================================================================
-# 真源角色：SYNTH 域指标四维就绪度（D1 定义 / D2 结构 / D3 源映射 / D4 接入）的机器真源；
-#           FE 只读消费（demo 阶段镜像到 readinessSeed.ts；Wave1 走 /metrics/v1/catalog）。
-# 模型定义：data-lineage-policy.md §2.3（v1.3；D2 `pending` 态为 v1.3.1 增补）
-# 生成任务：SYNTH-MOD-VITALITY-METRIC-OPEN-L01 / SYNTH-MOD-ELEMENT-METRIC-OPEN-L01 / SYNTH-MOD-COLLAB-METRIC-OPEN-L01
-# 生成日期：2026-08-11
-# 覆盖范围：E8-综合智能分析三叶 21 条指标（VITALITY 5 + ELEMENT 10 + COLLAB 6）
-# 输入真源：metrics/registry/cfg_metric-SYNTH-seed.yaml（8 件套 + mapping_status）
-#           agent-delivery/agent-handoffs/产品整体定义/E8-综合智能分析/
-#             SYNTH-VITALITY/TRACE-SYNTH-VITALITY.yaml
-#             SYNTH-ELEMENT/TRACE-SYNTH-ELEMENT.yaml
-#             SYNTH-COLLAB/TRACE-SYNTH-COLLAB.yaml
-#           agent-delivery/客户决策清单跟踪表.md#Q-SYNTH-*
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
+# 模型定义：data-lineage-policy.md §2.3
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-SYNTH-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
 # ----------------------------------------------------------------------------
-# ⚠️ 诚实性约束（不伪闭合）：
-#   - SYNTH 域全部计算型指标 Pack1 保持 D4 mock / 跑批预计算标注；
-#   - D1 missing 的指标（INDEX/WEIGHT/RANK/CONTRIB/OUTPUT_CORR）禁止伪 8 件套，D2~D4 = n/a；
-#   - D1 draft 的指标可展示明确标注的临时演示公式与 🧪 结果，但不作为正式算法结论；
-#   - D2 一律 pending（SYNTH 域 DWD/ES/图结构尚未逐条对照评估）；
-#   - D3 按 TRACE source_tables 推导；pending_ods 表示 ODS 表尚未建或未灌数；
-#   - D4 全部 mock（Wave 0），阶段清单全 todo；
-#   - 正式口径由王惠口径会签 + 唐绍祖算法共签双签闭合（方案 B 铁律）。
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 0 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
 # ----------------------------------------------------------------------------
-# 字段 schema（每条 metric）：
-#   metric_id / metric_name_zh / acceptance_unit_id / module（所属 METRIC-OPEN 模块）
-#   d1_def_status:        aligned | draft | missing
-#   d1_pending_ref:       Q-* / GAP-*（draft 时必填）
-#   d1_note:              补充说明
-#   d2_schema_status:     ready | partial | missing | pending | n/a
-#   d3_source_mapping_status: full | partial | none | pending_ods | n/a
-#   d3_gap:               缺什么（partial/none/pending_ods 时必填）
-#   d4_ingestion_status:  mock | ingesting | live | n/a
-#   d4_ingestion_stages:  { ods_synced, dwd_loaded, es_indexed, graph_loaded, verified }
-# ============================================================================
+# 本域分布：46 条｜D1 aligned 46 / draft 0｜D3 full 8 / partial 38 / none 0 / pending_ods 0｜本批新增 0 条、D3 有据升级 0 条、派生件 10 条。
 
 version: 1
 module: SYNTH
 model_ref: data-lineage-policy.md#2.3
-model_status: effective
-updated: "2026-08-24"
-as_of: "2026-08-11"
-d2_verifier: pending   # SYNTH 域 D2 尚未逐条评估
-d4_batch: mock_20260811
-
+model_status: provisional
+updated: "2026-10-23"
+as_of: "2026-10-23"
+d2_verifier: lineage-subcoord
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "SYNTH-VITALITY：5 条指标（1 missing INDEX + 1 missing WEIGHT + 1 missing RANK + 2 draft），全部 mapping_status=🔧，正式公式待 Q-SYNTH-01/Q-SYNTH-V-01 闭合"
-  - "SYNTH-ELEMENT：10 条指标（5 missing + 4 draft + 1 missing CONTRIB），七要素类型/层次/领域三维评价模型待 Q-SYNTH-02/Q-SYNTH-E-01 闭合；贡献路径待 Q-SYNTH-E-02 闭合"
-  - "SYNTH-COLLAB：6 条指标（4 draft + 2 missing INDEX/OUTPUT_CORR），三指标正式分母/图模型待 Q-SYNTH-C-01 闭合；协同指数合成待 Q-SYNTH-C-02 闭合；产出关联待 Q-SYNTH-C-03 闭合"
-  - "D2 一律 pending：SYNTH 域 DWD/ES/图结构尚未逐条对照评估，禁止伪标 ready"
-  - "D3 pending_ods：COLLAB 模块 source_tables 均为 pending_ods_*（ODS 表尚未建或未灌数）"
-  - "D4 全部 mock（Wave 0），阶段清单全 todo"
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
-  # ════════════ SYNTH-VITALITY（5 条） ════════════
-  - metric_id: M_SYNTH_VIT_INDEX
-    metric_name_zh: 区域创新活力指数
-    acceptance_unit_id: E8-VITALITY
-    module: SYNTH-VITALITY
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-01
-    d1_note: "正式维度权重、阈值来源与归一化基准待算法定义卡确认；临时默认四维等权"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_VIT_DIM_SCORE
-    metric_name_zh: 四维单维评分
-    acceptance_unit_id: E8-VITALITY
-    module: SYNTH-VITALITY
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-V-01
-    d1_note: "维度内分项指标加权求和后归一化；权重合计规则与阈值来源待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "区域创新科技/产业/人才/政策专题库 ODS 表尚未建"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_VIT_INDICATOR
-    metric_name_zh: 活力分项指标值与得分
-    acceptance_unit_id: E8-VITALITY
-    module: SYNTH-VITALITY
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-01
-    d1_note: "分项指标清单以算法库 §10.5 为准；正式指标池待算法定义卡确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "区域创新科技/产业/人才/政策专题库 ODS 表尚未建"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_VIT_WEIGHT
-    metric_name_zh: 维度权重分布
-    acceptance_unit_id: E8-VITALITY
-    module: SYNTH-VITALITY
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-V-01
-    d1_note: "权 0.25×4；formula 挂 DIM_SCORE 刷分；甲方 Q 仍 🟡；D3/D4 未动"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_VIT_RANK
-    metric_name_zh: 对比范围活力排名
-    acceptance_unit_id: E8-VITALITY
-    module: SYNTH-VITALITY
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-01
-    d1_note: "排名依赖 INDEX 公式闭合；公式未定前排名禁止对外决策展示"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  # ════════════ SYNTH-ELEMENT（10 条） ════════════
-  - metric_id: M_SYNTH_ELEM_INDEX
-    metric_name_zh: 区域创新要素指数（综合）
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-02
-    d1_note: "正式合成公式、三维权重与归一化基准待确认；临时默认三维等权"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_TYPE_INDEX
-    metric_name_zh: 区域创新要素类型指数
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "七要素类型综合评价模型；正式指标体系、阈值与权重待确认（§10.6）"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_TYPE_SCORE
-    metric_name_zh: 七要素类型维得分
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "七类要素各自类型维评分；正式指标池与权重待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: partial
-    d3_gap: "人才/企业/政策/服务机构/科研机构数据部分可用；资金/空间数据缺口见 Q-SYNTH-E-04"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_ELEM_LEVEL_INDEX
-    metric_name_zh: 区域创新要素层次指数
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "七要素结构层次综合评价模型（§10.7）；权重/阈值待确认"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_LEVEL_SCORE
-    metric_name_zh: 七大结构层次评价
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "七要素结构层次达标评价；评价方法与阈值待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: partial
-    d3_gap: "七要素结构数据部分可用；结构维度定义待确认"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
-    metric_name_zh: 区域创新要素领域指数
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "产业领域覆盖广度/技术领域应用深度等领域综合评价模型（§10.8）；权重待确认"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_INDICATOR
-    metric_name_zh: 要素分项指标值与得分
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-02
-    d1_note: "三维下各分项要素指标的原始值与归一化得分；正式指标池待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: partial
-    d3_gap: "七要素多源数据部分可用；资金/空间数据缺口见 Q-SYNTH-E-04"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_ELEM_WEIGHT
-    metric_name_zh: 类型/层次/领域权重分布
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-E-01
-    d1_note: "权 1/3×3；formula 挂 TYPE/LEVEL/DOMAIN INDEX 刷分；甲方 Q 仍 🟡；D3/D4 未动"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_CONTRIB
-    metric_name_zh: 要素贡献度与影响路径
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-E-02
-    d1_note: "贡献度量化与影响路径识别算法细则待确认；演示态仅展示规模占比推导"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_ELEM_RANK
-    metric_name_zh: 对比范围要素综合排名
-    acceptance_unit_id: E8-ELEMENT
-    module: SYNTH-ELEMENT
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-02
-    d1_note: "排名依赖 INDEX 公式闭合；公式未定前排名禁止对外决策展示"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  # ════════════ SYNTH-COLLAB（6 条） ════════════
-  - metric_id: M_SYNTH_COLLAB_COMPLETENESS
-    metric_name_zh: 协同网络完整度
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-C-01
-    d1_note: "n/N×100；分母含无边；挂 RELATION_INPUT；缺口：上游仅专利一路有表、无主体名册、无目标表；甲方 Q 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "挂 RELATION_INPUT（仅联合专利有 DWD）；缺口：coop_project/talent_flow 无表；无 ads.synth_collab_subject；无 ads.synth_collab_completeness"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-
-  - metric_id: M_SYNTH_COLLAB_CENTRALITY
-    metric_name_zh: 协同网络中心度
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-C-01
-    d1_note: "临时公式：节点度中心性 degree/(N-1)；正式算法（度/介数/其他）待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "pending_ods_cooperation_subject / pending_ods_cooperation_relation 表尚未建"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-
-  - metric_id: M_SYNTH_COLLAB_DENSITY
-    metric_name_zh: 协同网络密度
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: draft
-    d1_pending_ref: Q-SYNTH-C-01
-    d1_note: "临时公式：无向简单图 2E/[N×(N-1)]；正式图模型（有向/无向/加权）待确认"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "pending_ods_cooperation_subject / pending_ods_cooperation_relation 表尚未建"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: todo, verified: todo }
-
-  - metric_id: M_SYNTH_COLLAB_INDEX
-    metric_name_zh: 区域创新协同指数
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-C-02
-    d1_note: "三指标标准化、权重、校准窗口与集群/孤立判据待确认；禁止密度×强度冒充正式公式"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  - metric_id: M_SYNTH_COLLAB_RELATION_INPUT
-    metric_name_zh: 协同关系输入统计
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: aligned
-    d1_pending_ref: Q-SYNTH-C-01
-    d1_note: "三种事件门槛已写入 formula；联合专利有 enterprise_patent_detail；缺口：coop_project/talent_flow 无对等 DWD、无目标表；甲方 Q 仍 🟡；D3/D4 未升"
-    d2_schema_status: pending
-    d3_source_mapping_status: pending_ods
-    d3_gap: "联合专利有 enterprise_patent_detail；缺口：coop_project / talent_flow 无对等项目 DWD；无 ads.synth_collab_relation_input"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-
-  - metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
-    metric_name_zh: 协同—创新产出关联结果
-    acceptance_unit_id: E8-COLLAB
-    module: SYNTH-COLLAB
-    d1_def_status: missing
-    d1_pending_ref: Q-SYNTH-C-03
-    d1_note: "相关方法、滞后窗口、显著性和最小样本数均待确认；样本不足不画线、不出系数"
-    d2_schema_status: n/a
-    d3_source_mapping_status: n/a
-    d4_ingestion_status: n/a
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
   - metric_id: M_SYNTH_182_1
     metric_name_zh: "区域科技创新成果综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-182"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_patent_cited、dwd_
+      rd…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维在深莞惠广四城全部可算且非退化（论文/被引、2024 授权与高价值代理、机构存量与转化率均有量）；但①评价集被迫收缩到深圳
+      都市圈：专利申请人按底册归城时北京/上海不可归属（2024 年 40,888 件授权未归属），跨省横比在本数据面上不成立；②科研机构底册 2,074 行只覆盖深广莞惠，京沪零行；③高价值专
+      利只能用申请人级 value P90 代理，无法对齐国知局四要件；④论文城市归属仅 47.4% 可判（机构串含城市名或白名单高
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_183_1
     metric_name_zh: "区域产业创新成果综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-183"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_macro_index_data、dwd_org_industry_product_tags、dwd_org_org_produc
+      t_info、dwd_org_tech_tag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维里两维（企业创新、服务机构创新）有真值链且四城齐全；产品服务创新维的『第三产业增加值占比重』四城只有 1 城有同期间事实，
+      整列记 null，实际退化成一个子项（产品名称覆盖数）单撑；且产品标签只能覆盖底册 5.50% 的企业。按 §0.1 判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_184_1
     metric_name_zh: "区域产业创新人才综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-184"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_financing_inf
+      o、dwd_zh_journal…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维里两维出数：数量维（四市学者 1,174 人，深 247 / 广 918 / 莞 9 / 惠 0）与成果维（2024 授权
+      270,110 件、转移 172 件、论文+H 126,251、院士 6 人）都有真实非零读数且逐项可复现；但另外两维不可用：①数量维的企业研发人员分母整列为空（0/90,926 非空）
+      ；②学历维与年龄维只有深穗两城有样本（学位记录 116 条、履历记录 103 条），且两城差异用 Fisher 精确检验 p=
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_185_1
     metric_name_zh: "区域产业创新政策综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-185"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_policy_base）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。数量维在四市都有真实读数（深 879 / 广 325 / 莞 8 / 惠 0 条），类型维可用文件体裁覆盖度代理（深 11 /
+      广 10 / 莞 4 / 惠 0 类）；但效果维整维不可算：时间戳两列 20,000 行全是 '0000-00-00' 零日期，link 与 status 在四市是常数、零区分度；且王惠
+      的四类政策主题在库内无字段（theme 19,998/20,000 为 0）。三维里一维整缺、一维只能代理，不满足『完全转换支
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_186_1
     metric_name_zh: "区域创新活力综合分析模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-186"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维等权可算、四城都有四维，指数逐城可复算；但四维本身有两维只有一半子维在场（人才 2/4、政策 2/3），产业维有一个三级指
+      标四城全缺，四城盘上的极值归一又让每维的最小值恒为 0。按 §0.1「始终有部分依赖维度无法得到足够数据」判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_187_1
     metric_name_zh: "区域创新要素类型综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-187"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_financing_info、dwd_org_tech_tag
+      、dwd_patent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。七结构中五结构（企业/政策/科研机构/资金/空间）有 gkx 真实非零读数并逐叶可复现；但人才结构维的『研发人员占比』分母整列
+      为空（development_employee 0/90,926 非空）、高学历占比只有深穗两城有学历样本（116 条学位记录）；服务机构维的六类分类只存在于演示 ADS 的 svc_or
+      g_card，gkx 无此表，只能退化为行业口径；空间维仅有名称关键词代理、无面积与密度。存在至少四个维度被迫降级，不满足『完
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_188_1
     metric_name_zh: "区域创新要素层次综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-188"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。层次指数全部叶子继承 187 的类型指数口径，缺口同源：人才结构维研发人员分母整列为空、高学历占比只有深穗两城有样本；服务机构
+      维由演示 ADS 的六类分类退化为行业口径；空间维只有名称关键词代理；政策维库内止于 2022-06 且惠州零记录。七结构里六结构在四城均有读数、指数非退化，但至少四处叶子被迫降级，且惠州
+      在人才/政策/空间三结构上是真实 0 端，熵均衡度因此被采集偏差放大，判部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_189_1
     metric_name_zh: "区域创新要素领域综合评价模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-189"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_job、dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_recru
+      it_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。五维中四维（投入/主体/技术/载体）在四城均有真实非零读数，且互不重复取数；但人才维只有深圳（247 位）、广州（918 位）
+      达到可评分门槛，东莞 9 位、惠州 0 位，属学者表覆盖不足而非真实为零，故这两城人才维记 null（不补 0），指数由其余四维等权；研发投入只能取上市主体（856 家，占底册 0.45%
+      ），不是全口径 R&D；惠州 2024 年研发费用 175.39 亿元、较 2022 年 48.91 亿元增 258%，与 2
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_190_1
     metric_name_zh: "区域创新要素综合分析模型"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-190"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维入口全部可现转（类型 87.2/26.4/19.6/44.0、层次、领域三子指数已跑通）；但三子指数各自继承上游缺口：18
+      7 人才/科研机构维京沪缺失、188 熵均衡被采集偏差放大、189 宏观事实表京沪无行——综合指数为『缺叶降维合成』，判部分支持
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_191_1
-    metric_name_zh: "区域创新协同分析模型"
+    metric_name_zh: "区域创新协同分析模型（合作网络密度）"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-191"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_patent、dwd_patent_applicants、dwd_scholar_paper_relation、dwd_zh_pr
+      oject）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。王惠口径（边数 ÷ 完全图边数）可直接计算，节点与边都由真实论文署名构造，四市子图与城市对矩阵均有量；但只能覆盖学术协同：专利
+      共同申请表只有 2 万件抽样、合作项目表金额与参与方字段全空，产学研协同的另外两条腿缺失；论文机构串仅 47.4% 能判城（其余机构名不含城市与校名），密度绝对值偏低。故判部分支持，不抬到
+      完全转换支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_CENTRALITY
+    metric_name_zh: "协同网络中心度（平均点度中心性）"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：临时公式：节点度
+      中心性 degree/(N-1)；正式算法（度/介数/其他）待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_base_info、dwd_patent_applicants、dwd_research_institute_base_i
+      nfo、dwd_scholar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。联合专利边（dwd_patent_applicants 28,964 行）与人才流动边（dwd_scholar_work_ex
+      perience 57,117 行）可现转，平均点度中心性四城可算；但①合作项目边结构性缺失（dwd_zh_project.funded_institution 58,453 行全空，0 
+      边），三边并集缺一类；②节点分母失真（京沪企业主档仅 163/16 家，深广全量 95,600/49,605 家），中心度均值
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_COMPLETENESS
+    metric_name_zh: "协同网络完整度"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：n/N×100；
+      分母含无边；挂 RELATION_INPUT；缺口：上游仅专利一路有表、无主体名册、无目标表；甲方 Q 仍 🟡；D3/D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_base_info、dwd_patent_applicants、dwd_research_institute_base_i
+      nfo、dwd_scholar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。完整度公式可执行、四城覆盖率可算；但①分子侧三类边仅两类可建（合作项目边 funded_institution 全空），完整度
+      是『两类协同』而非『三类协同』的覆盖率；②分母含无边主体，京沪企业主档 163/16 家、深广 95,600/49,605 家，分母口径双向失真；③覆盖节点缓存值与 2E 图论上界冲突（3
+      城超界），且无 window 主体名册表（calc-logic 登记的 ads.synth_collab_subject 缺
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_DENSITY
+    metric_name_zh: "协同网络密度"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：临时公式：无向简
+      单图 2E/[N×(N-1)]；正式图模型（有向/无向/加权）待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_base_info、dwd_patent_applicants、dwd_research_institute_base_i
+      nfo、dwd_scholar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。密度公式可执行、四城原始密度可算（10^-9—10^-3 量级，跨 5.7 个数量级）；但①合作项目边 0 条，分子只含联合专
+      利与人才流动两类边；②分母为全量主体集，京沪企业主档 163/16 家与深广 95,600/49,605 家不可比，密度差异主要由分母采集口径驱动；③覆盖节点缓存值与 2E 上界冲突，无法
+      用覆盖子网复核。按四档口径判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_INDEX
+    metric_name_zh: "区域创新协同指数"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：三指标标准化、权
+      重、校准窗口与集群/孤立判据待确认；禁止密度×强度冒充正式公式
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_patent_applicants、dwd_scholar_work_experience、dwd_zh_project）；批量初
+      判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维可算、指数可合成、排序与 191 完全一致；但①三类边缺合作项目边（funded_institution 全空），三维中的
+      完整度与中心度均只反映两类协同；②三维共用同一套失真分母（京沪主档 163/16、深广 95,600/49,605），指数差异主要由分母口径而非真实协同水平驱动；③王惠口径等权、极值归一，
+      未做权重敏感性以外的校准，且需求要求的『历史数据校准机制』未落地。按四档口径判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
+    metric_name_zh: "协同—创新产出关联结果"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：相关方法、滞后窗
+      口、显著性和最小样本数均待确认；样本不足不画线、不出系数
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_patent、dwd_patent_applicants）；批量初判 provisional，
+      待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。协同侧 X 三件套可由 191 单窗事实算出，产出侧 Y（发明专利授权存量）按城可得；但①缺区域×年序列，无法按王惠口径组 n
+      >=3 的年样本，交付状态 insufficient；②合作项目边 0 条使 X 的结构维不完整；③X 与 Y 均受分母/归属采集缺口影响，4 城截面 r 为负且不可解释。按四档口径判部分
+      支持（有结构、有部分量，但关键年度序列与边维始终不足）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_COLLAB_RELATION_INPUT
+    metric_name_zh: "协同关系输入统计"
+    acceptance_unit_id: "E8-COLLAB"
+    module: "SYNTH-COLLAB"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：三种事件门槛已写
+      入 formula；联合专利有 enterprise_patent_detail；缺口：coop_project/talent_flow 无对等 DWD、无目标表；甲方 Q 仍 🟡；D3/
+      D4 未升
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_patent、dwd_patent_applicants、dwd_scholar_paper_relation、dwd_schol
+      ar_work_experience…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三类关系中联合专利与人才流动两路可现转（全国事件级 6477 / 18553；四城中可归城事件 122（1.88%）/ 32（
+      0.17%）），但合作项目一路结构性缺失——dwd_zh_project 58453 行中funded_institution 非空 0 行，participating_instituti
+      on 每项目仅 1 家机构、无参与单位列表字段，无法按『跨 ≥2 机构』成事件；三类口径只能出两类（66.7%），且联合专利一
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_005
-    metric_name_zh: "自动模式识别"
+    metric_name_zh: "产业链图谱结构分析"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-005"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把产业链拆成两层：12 条链 → 1,273 个叶节点，以及 12 条链 → 41 个一级环节。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_006
-    metric_name_zh: "预测分析"
+    metric_name_zh: "预测分析（城市专利年度序列外推）"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-006"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四市 2021–2024 专利件数是全量面板实测值（合计 2,086,838 件），序列干净、口径唯一，预测链条可完整复现；但
+      只有 4 个年度观测，ARIMA(1,1,0) 无法识别，回测只有 8 个一步预测点（4 城 × 2 原点），MAPE 的置信度很低；2025 年在城市维没有键（面板 2025 总量 44
+      0,401，为公开滞后截断），2026 为残年，都无法作为样本外验证。因此只能给趋势示意，不能作为阈值判定依据。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_007
-    metric_name_zh: "分类与聚类"
+    metric_name_zh: "分类与聚类（合著网络社区发现 + 企业资质向量聚类）"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-007"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_patent_applicants、dwd_scholar_paper_relation、dwd_zh_project）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。两层聚类都有真实输入：合著网 1,094 节点 / 1,174 边可算社区与模块度（Q=0.714468），32,322 家企
+      业的 55 个资质标签可算 KMeans 与轮廓系数（0.304095）；但 L1 的节点只覆盖「有中文论文且机构串可判城」的机构：4 年窗口 52,119 篇里只有 24,835 篇（4
+      7.65%）至少含一个可判城机构，署名对层面 37,597/103,263（36.41%）可判城；L2 的标签全部是资质认定类
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_008
-    metric_name_zh: "智能推荐"
+    metric_name_zh: "智能推荐（机构合作者推荐）"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-008"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_patent_applicants、dwd_zh_project）；批量初判 provisional，待 lineage-subc
+      oord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。图谱协同推荐链路已跑通并可离线评估：训练图 7742 节点 / 7736 边，2021 年后新增测试边 5801 条；PPR 
+      AUC=0.7666、Adamic-Adar AUC=0.5517、AA Precision@10=0.0205、PPR Precision@10=0.0258。但需求点名的『用户查询行为
+      /兴趣偏好』在 gkx 中没有任何日志表，『文献/研究项目/技术方案』三类对象也没有对应的推荐边，无法做个性化排序与在线 A/
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_001
     metric_name_zh: "多种路径搜索算法支持"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-001"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_patent、dwd_patent_applicants、dwd_zh_project）；批量初判 provisional，待 l
+      ineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。无现成「图算法服务」结果面，但依赖侧结构与数据量都够：在 20436 节点 / 38208 边（巨型分量 15223 节点 / 
+      36965 边）的真实机构合著图上，六种算法全部跑通——BFS/Dijkstra/A* 各 200/200 对、DFS 200/200 对、Bellman-Ford 20/20 对，BFS
+      /Dijkstra/A* 跳数一致 200/200 对，可直接作为路径搜索服务底座。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_002
     metric_name_zh: "最优路径发现与展示"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-002"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_patent、dwd_patent_applicants、dwd_zh_project）；批量初判 provisional，待 l
+      ineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。依赖侧结构与数据量足够：在 20436 节点 / 38208 边真实合著图上（巨型分量 15223 节点），加权最短路（代价=1
+      /共著篇数）可现算，Dijkstra 与 A* 代价 200/200 对完全一致、路径 193/200 对逐节点相同，Bellman-Ford 15/15 对一致；且 146/200 对的
+      『代价最低路径』与『跳数最短路径』不同，说明双口径有实质区分，不是同一结果的两种说法。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_006
     metric_name_zh: "度中心性计算与展示"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-006"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 11 张 gkx 表可查（dwd_en_paper_citation、dwd_en_paper_cited_by_info、dwd_org_invest_info
+      、dwd_org_subsidiary_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。两库均无现成的度中心性结果面（gkx 侧 enterprise_centrality 表不存在，逐表核对见附录 B），但依赖侧的
+      结构与数据量都够：dwd_zh_paper.author_info_list 可直接重建机构合著边，100,900 篇论文给出 20,436 节点 / 38,208 边，巨型分量 15,2
+      23 节点 / 36,965 边；度中心性在 P2 上精确算得（非抽样、非近似），最大值 广州中医药大学第一附属医院 的 1
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_007
     metric_name_zh: "紧密中心性计算与展示"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-007"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_en_paper_cited_by_info、dwd_org_invest_info、dwd_org_subsidiary_inf
+      o、dwd_scholar_coauthor…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。两库均无紧密中心性结果面（gkx 侧 enterprise_centrality 不存在，见附录 B），但所需结构只有一张边表：
+      dwd_zh_paper.author_info_list 重建的机构合著图。在巨型分量 15,223 节点 / 36,965 边上做 15,223 次全源 BFS，精确算得每个节点的 c
+      loseness（非抽样、非近似），最大值 华南理工大学 的 26.802%，反推分量内平均距离 3.731 跳。数据量足够
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_008
     metric_name_zh: "中介中心性计算与展示"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-008"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_scholar_coauthor、dwd_zh_paper）；批量初判 provisional，待 lineage-subcoor
+      d 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。两库均无中介中心性结果面（gkx 侧 enterprise_centrality 不存在，见附录 B），但边表可由 dwd_zh
+      _paper.author_info_list 重建。在 15,223 节点 / 36,965 边的巨型分量上跑完整 Brandes（15,223 个源、无抽样），算得最高 5.864% 
+      的桥节点，零值节点占比 36.98%，并用 k=400 抽样值反证精确值的必要性。结构与数据量都够，现在即可算出，故判完全转
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_009
     metric_name_zh: "PageRank算法计算与展示"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-009"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_zh_paper、dwd_zh_paper_citation、dwd_zh_paper_reference）；批量初判 provi
+      sional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。两库均无 PageRank 结果面，但边表可由 dwd_zh_paper.author_info_list 重建，算法本身在内存
+      里 40 次迭代收敛（残差 1.37e-08）。在 15,223 节点 / 36,965 边上算得头部 17.4269 万分比（均匀值的 26.53 倍），并用 alpha 扫描、加权版、
+      有向版三组对照证明头部不是参数假象。数据与算法都具备，故判完全转换支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_011
-    metric_name_zh: "多种社群发现算法支持"
+    metric_name_zh: "社群发现（图算法）"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-011"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_invest_info、dwd_org_subsidiary_info、dwd_zh_paper）；批量初判 provis
+      ional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。三张图表在 gkx 均不存在，但边源可重建：dwd_zh_paper 的 author_info_list 提供同篇共著关系，1
+      00,900 篇论文建成 20,436 节点 / 38,208 边，巨连通片 15,223 节点 / 36,965 边；四种社群发现算法在巨片上全部跑通，模块度 0.5—0.7 区间，社群
+      成员表可全量落盘。结构与数据量都够，现在就能算出该指标，故判完全转换支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_012
     metric_name_zh: "社群结构自动识别"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-012"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_scholar_coauthor、dwd_zh_paper）；批量初判 provisional，待 lineage-subcoor
+      d 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。社群识别不需要任何外挂业务字段，只需要边表；边表由 dwd_zh_paper.author_info_list 重建。在 15,
+      223 节点 / 36,965 边上一轮 Louvain 得 60 个社群、模块度 0.755103，零模型 z=158.926，且与已归档的 011（60 个社群 / 0.755103）
+      复算一致，说明结果可重复、不是随机划分。算法、数据、复算三者齐备，故判完全转换支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_013
     metric_name_zh: "社群属性与特征分析"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-013"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_zh_paper、dwd_zh_paper_classification）；批量初判 provisional，待 lineage-
+      subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。「社群属性与特征分析」要在社群划分之上回答「每个社群是谁、做什么、和谁来往」。划分本身完全可算（共著图 + Louvain，模
+      块度 0.755103）；但「做什么」依赖主题词表（只覆盖 0.7919% 论文）、「是谁」依赖机构底册（精确匹配 11.4038%），两样都薄。所以结果拆成两层：**拓扑属性（规模、密度
+      、电导、跨社群权重）可直接交付**，**语义属性（主题、类型、城市）只能标为线索**。判**部分支持**。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_014
-    metric_name_zh: "社群动态演化追踪"
+    metric_name_zh: "发明人—学者桥图算法"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-014"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_id、dwd_patent、dwd_patent_inventors、dwd_scholar…）；批量初判 provisional
+      ，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件在 20,000 件专利样本上建发明人共现图：31,188 个姓名节点、77,296 条共同发明边，1,725 个孤立点、
+      6,954 个连通片；
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
-  - metric_id: M_SYNTH_GRAPHAPI_116_1
-    metric_name_zh: "产业全要素图谱API服务开发"
-    acceptance_unit_id: "ALGO-SYNTH-GRAPHAPI-116"
-    module: SYNTH
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+
+  - metric_id: M_SYNTH_ELEM_CONTRIB
+    metric_name_zh: "要素贡献度与影响路径"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：贡献度量化与影响
+      路径识别算法细则待确认；演示态仅展示规模占比推导
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_ent_high_tech、dwd_ent_patent、dwd_paper、dwd_talent_scholar）；批量初判 p
+      rovisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。份额分解与 Top6 路径都能算，但两处口径退化：① 创新成果侧只能拆企业与科研机构，人才残余实测为 0（库内无作者级机构字段
+      ），按 calc-logic 转结构代理；② 产业侧四类主体规模互不互斥（高企同时可能有研发投入），份额是结构代理不是归因，论文侧无机构类型字段、无法进份额分解。再加「科研机构」两种口径差
+      29 倍，读者必须同时看到两组数，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
+    metric_name_zh: "区域创新要素领域指数"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：产业领域覆盖广度
+      /技术领域应用深度等领域综合评价模型（§10.8）；权重待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_macro_index_data、dwd_patent_transfer）；批量初判 provisional，待 lineage-
+      subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。领域指数要求的五个维里只有 3 个能从 gkx 侧凑出可加权叶子（产业领域覆盖广度、技术领域应用深度、创新产出强度），人才结构
+      合理性与经济贡献度两维在 2024 年四城上零承载：规上工业增加值与地区生产总值在 dwd_macro_index_data 里四城均无 2024 行，研发人员列整列为空、硕博学者四城仅 
+      111 人。三条可用维的等权均值可复算且与面板逐城一致，但指数只覆盖 3/5 维、其中 2 个维只有 1 个加权叶子，且 D2
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_INDEX
+    metric_name_zh: "区域创新要素指数（综合）"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：正式合成公式、三
+      维权重与归一化基准待确认；临时默认三维等权
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维指数的算术链在本批 4 城上完全闭合（elem_index = 三维均值，逐城复算一致），但两个输入维本身带缺：类型维 7
+      个维里创新人才维整维不可算（研发人员列 0 行灌数、硕博学者仅 111 人），领域维 5 个维只出 3 个（GDP 与规上工业营收无承载），且权重是自拟 1/3 而非甲方标定。合成分照跑
+      ，但只能读作「4 城内相对位置」，不能对外当绝对水平，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_INDICATOR
+    metric_name_zh: "要素分项指标值与得分"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：三维下各分项要素
+      指标的原始值与归一化得分；正式指标池待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_heis、dwd_macro_index_data、dwd_org_annual_financial_info、dwd_org_b
+      ase_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。17 个类型叶子中 7 个直读（ok）、5 个代理（proxy）、1 个退化（degenerate）、1 个样本不足（insu
+      fficient）、3 个无承载（missing），进加权 12 个；7 个类型维中 6 个可算（创新人才维全缺），5 个领域维中 3 个可算。缺的部分不是覆盖率低，是列建好未灌数（dev
+      elopment_employee 0/90,926）或全库无此列（空间面积/区域面积），故只能判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_INDEX
+    metric_name_zh: "区域创新要素层次指数"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：七要素结构层次综
+      合评价模型（§10.7）；权重/阈值待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。七个结构里 6 个可算（企业、政策、服务机构、科研机构、资金、空间），人才结构整结构空缺（叶子同类型指数：研发人员列整列为空、
+      硕博学者样本不足）；成熟度、熵均衡度、结构得分与六结构等权均值全部可复算，与面板逐城一致。但两个结构（服务机构、空间）只有 1 个叶子，均衡度按规则恒记 60，结构得分实际是「成熟度与常数
+      60 的平均」；加上人才结构空缺，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_SCORE
+    metric_name_zh: "七大结构层次评价"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：七要素结构层次达
+      标评价；评价方法与阈值待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。七个结构里 6 个能给出成熟度、均衡度与达标（人才结构因研发人员整列空、硕博学者样本不足而整结构空缺）；成熟度与均衡度逐城可复
+      算，达标按「成熟度 ≥ 本批均值」逐格可复算。但两个结构只有 1 个叶子（均衡度恒 60）、达标阈值是本批 4 城的相对均值而非绝对标准，且换一种阈值（中位数）就会让广州的资金结构从「未达
+      标」变「达标」——判档依赖阈值定义，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_RANK
+    metric_name_zh: "对比范围要素综合排名"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：排名依赖 IND
+      EX 公式闭合；公式未定前排名禁止对外决策展示
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_base_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。排序算子本身完整可执行（RANK，同分并列下一名跳号），4 城内名次在权重、留一维、序数归一三种扰动下都不变；但 calc-l
+      ogic 写死的默认对比范围 11 城里，只有广深两城在底册有足量主体，其余 9 城合计仅 224 行（占底册 0.1184%），做不出可比的极值归一，故默认 11 城榜不可执行，只能出 
+      4 城局部榜——据此判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_TYPE_INDEX
+    metric_name_zh: "区域创新要素类型指数"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：七要素类型综合评
+      价模型；正式指标体系、阈值与权重待确认（§10.6）
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_financing）；批量
+      初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。七个要素维里 6 个可算（企业、政策、服务机构、科研机构、资金、空间），创新人才整维不可算：研发人员列 90,926 行中 >
+      0 行为 0，硕博学者按机构名落城后四城仅 111 人、东莞与惠州为 0。指数 = 6 个可用维等权均值，逐城复算与面板一致；但 17 个类型叶子里 3 个无承载、1 个样本不足、1 个退
+      化（服务机构类型数四城恒 6），且资金维是上市口径、空间维只有名称弱代理，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_TYPE_SCORE
+    metric_name_zh: "七要素类型维得分"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：七类要素各自类型
+      维评分；正式指标池与权重待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。七个维里 6 个能出分（企业、政策、服务机构、科研机构、资金、空间），创新人才维整维空缺——研发人员列整列为空、硕博学者四城仅
+      111 人。6 个有值维的分与其叶子构成都能逐城复算（维得分 = 维内叶子 z 的等权均值，误差 < 1e-6），但每维的叶子覆盖参差（1/3、2/2、1/2、3/3），且空间维与资金维
+      均为代理口径，故判部分支持，不称完全转换支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_ELEM_WEIGHT
+    metric_name_zh: "类型/层次/领域权重分布"
+    acceptance_unit_id: "E8-ELEMENT"
+    module: "SYNTH-ELEMENT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：权 1/3×3；
+      formula 挂 TYPE/LEVEL/DOMAIN INDEX 刷分；甲方 Q 仍 🟡；D3/D4 未动
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。权重的算术部分可算且闭合（三维各 1/3、合计 1，四城 elem_score 与 M_SYNTH_ELEM_INDEX 逐城
+      一致），但权重本身不是甲方标定值：calc-logic 明写「可采用等权重，也可根据评估重点自行制定」，上游另标 is_mock: true、Q-SYNTH-E-01 仍 🟡，且这 1/3
+      落在的两个维（类型、领域）各自还有整维缺失，故判部分支持——公式能跑，权重没有权威出处。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_GRAPHAPI_116_1
+    metric_name_zh: "图谱 API 节点/边供给能力"
+    acceptance_unit_id: "ALGO-SYNTH-GRAPHAPI-116"
+    module: "SYNTH"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_org_invest_info、dwd_org_s
+      hareholder_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把「图谱 API 能不能做」拆成供给面与契约面。供给面统计 7 个节点域、9 类关系：节点域合计 3,570,548 行，
+      其中论文 100,900、专利 2,939,895、企业 189,116、申请人 169,226、发明人 69,647、学者 21,316、政策 20,000。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_VIT_DIM_SCORE
+    metric_name_zh: "四维单维评分"
+    acceptance_unit_id: "E8-VITALITY"
+    module: "SYNTH-VITALITY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：维度内分项指标加
+      权求和后归一化；权重合计规则与阈值来源待确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 12 张 gkx 表可查（dwd_en_paper、dwd_macro_index_data、dwd_org_annual_financial_info、dwd_
+      org_industry_product_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维分全部可算（四城 4/4 有值），但只有科技维是满维（3/3 子维）；产业维 5 个三级指标缺 1（第三产业占比重）、人才
+      维 4 个子维只有 2 个有值、政策维 3 个子维只有 2 个有值。四维「有值」不等于四维「齐」，按 §0.1 判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_VIT_INDEX
+    metric_name_zh: "区域创新活力指数"
+    acceptance_unit_id: "E8-VITALITY"
+    module: "SYNTH-VITALITY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：正式维度权重、阈
+      值来源与归一化基准待算法定义卡确认；临时默认四维等权
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。指数三步（归一 / 维内加权 / 四维加权）都能落地，四城四维都有值；但 12 个正本分项里 3 个四城全缺、人才与政策两维只
+      有一半子维在场，权重没有官方表（自定义 + 熵权对照），且极值归一是四市盘内相对尺度。按 §0.1 判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_VIT_INDICATOR
+    metric_name_zh: "活力分项指标值与得分"
+    acceptance_unit_id: "E8-VITALITY"
+    module: "SYNTH-VITALITY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：分项指标清单以算
+      法库 §10.5 为准；正式指标池待算法定义卡确认
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 12 张 gkx 表可查（dwd_en_paper_reference、dwd_macro_index_data、dwd_org_annual_financial
+      _info、dwd_org_annual_org_financial_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。12 个分项里 8 个有标准化得分并进维、1 个（高学历人才占比）有值但因饱和未进维、3 个（新产品销售收入占比 / 研发人员
+      数量 / 政策实施效果指数）四城全缺；其中两个缺项是整列空（研发人员、政策日期），一个是指标码不存在（a77234）。按 §0.1 判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_VIT_RANK
+    metric_name_zh: "对比范围活力排名"
+    acceptance_unit_id: "E8-VITALITY"
+    module: "SYNTH-VITALITY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：排名依赖 IND
+      EX 公式闭合；公式未定前排名禁止对外决策展示
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_tech_tag、dwd_patent、dwd_policy_base、dwd_scholar_education_bac
+      kground…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。RANK 公式本身完整（指数降序 + 同分并列 + 无指数不进榜），四维也都能在四市上算出真值；但对比范围是 11 城：声明范
+      围内只有 2 城达到数据充足度门槛（11 城被排除：北京市、上海市、杭州市、南京市、武汉市、重庆市、宁波市、成都市、合肥市、东莞市、惠州市），严格『四维齐全』口径下只剩 2 城（深圳市、广
+      州市），排名退化为一次两两比较。根因是底册 99.82% 落在大湾区四市、高企与专利申请人名称两侧都无全国样本，扩量救不了，只
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_SYNTH_VIT_WEIGHT
+    metric_name_zh: "活力指数权重配置与权重弹性"
+    acceptance_unit_id: "E8-VITALITY"
+    module: "SYNTH-VITALITY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：权 0.25×4
+      ；formula 挂 DIM_SCORE 刷分；甲方 Q 仍 🟡；D3/D4 未动
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_patent、dwd_scholar、dwd_zh_paper、dwd_zh_paper_citation）；批量初判 provi
+      sional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。权重公式（加权和 + 名次）完整可执行，四维分在 4 个城市上都是真值，熵权与弹性都能算；但三处结构性缺口把它压在『部分支持』
+      ：① 官方权重表 eval_weight 在 gkx 不存在，权重只能自定义，交付物里的 0.30/0.35/0.20/0.15 不是原系统标定值；② 四维齐全的城市只有 2 个（深圳市、
+      广州市），东莞与惠州缺人才、政策两维，四维加权盘上永远只有两城，权重怎么调都只是一次两两比较；③ 熵权只能在这 2 城 × 4
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 

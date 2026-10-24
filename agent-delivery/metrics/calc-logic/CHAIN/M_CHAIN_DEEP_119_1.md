@@ -1,8 +1,7 @@
 # 产业发展路线历程模型（M_CHAIN_DEEP_119_1）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_119_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_119_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_119_1_out.json`。
 
 ## 基础信息
 
@@ -10,58 +9,58 @@
 |---|---|
 | 指标ID | M_CHAIN_DEEP_119_1 |
 | 指标名称 | 产业发展路线历程模型 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
-| 更新频率 | 季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链深度／链发展历程 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链详情页「发展历程」时间轴、链对比页「当前阶段」标记 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_DEEP_119_1.md` |
 
 ## 口径定义
 
-针对目标产业，基于产业基础指标与资讯基础指标，利用事件识别算法判定「指标数值超出阈值」的重大事件（政策发布、投融资、里程碑、重大资讯四类），按时间排序生成产业发展历程的重大事件时间线，反映产业历史演进逻辑与关键拐点。对象=产业重大事件，不是普通资讯流水。
+「路线历程」需要**事件**与**阶段定义**两样东西。event 侧有两腿可用（企业成立年 52,607 家、融资事件 14,463 起）；阶段定义侧的三块——里程碑表、阈值参数表、政策链标签——在 gkx 全部不存在。两腿能算，定义不能定义，故按 §〇 判**部分支持**。
 
 ## 计算逻辑说明
 
-① 事件采集与清洗：政策事件取 `dwd_policy_base`（publish_date 非空且 status 有效），投融资事件取 `dwd_org_financing_info`（completion_date），里程碑事件取 `industry_chain_milestone_event`，资讯事件取 `dwd_news_base`/`dwd_industry_chain_news_info`。② 事件识别：按「重大事件指标体系与阈值」判定事件级别，指标值超阈值才计入。③ 时间线生成：按 event_date/publish_time 升序，统计事件总数、时间跨度（首末事件年份差）、事件密度。
-
-- 政策事件数 = COUNT(DISTINCT id) WHERE 政策主题命中目标产业 AND 指标超阈值
-- 投融资事件数 = COUNT(DISTINCT org_id+completion_date) WHERE 金额/轮次超阈值
-- 里程碑事件数 = COUNT(DISTINCT event_id) FROM industry_chain_milestone_event
-- 资讯事件数 = COUNT(DISTINCT news_id) WHERE 热度/重要性超阈值
-- 时间跨度(年) = MAX(事件年) − MIN(事件年)
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业发展路线历程模型 | 重大事件识别 | 政策事件数 | 与产业相关的重大政策发布去重数。 | COUNT(DISTINCT id) WHERE 主题命中 AND 级别≥阈值 | dwd_policy_base(id, title, publish_code, publish_date, publish_year, rank, type, theme, status, ministry) | 重大事件指标体系及阈值设定表 |
-|  |  | 投融资事件数 | 产业内重大投融资事件去重数。 | COUNT(DISTINCT org_id, completion_date) WHERE 金额≥阈值 | dwd_org_financing_info(org_id, name_cn, external_id, funding_round, funding_amount, completion_date, investors_name)；demo_gkxlumenx_dwd.industry_chain_investment_event(event_id, chain_id, investment_type, financing_round, amount, event_date) | 重大事件指标体系及阈值设定表 |
-|  |  | 里程碑事件数 | 产业里程碑类型重大事件去重数。 | COUNT(DISTINCT event_id) | demo_gkxlumenx_dwd.industry_chain_milestone_event(event_id, chain_id, node_id, event_name, milestone_type, phase_name, event_date, event_level, region_code) | 无 |
-|  |  | 资讯事件数 | 产业相关重大资讯去重数。 | COUNT(DISTINCT news_id) WHERE 热度≥阈值 | dwd_news_base(yqwyj, fbsj, lymc, lx, bt, zy, xgqyxx)；dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract, source)；demo_gkxlumenx_dwd.industry_chain_news_event(event_id, chain_id, title, summary, news_type, source_name, publish_time) | 重大事件指标体系及阈值设定表 |
-| 产业发展路线历程模型 | 事件时间线 | 事件总数 | 时间线中全部重大事件去重数。 | COUNT(DISTINCT 事件ID) 跨四类事件 | dwd_policy_base(id)；dwd_org_financing_info(org_id, completion_date)；demo_gkxlumenx_dwd.industry_chain_milestone_event(event_id)；demo_gkxlumenx_dwd.industry_chain_news_event(event_id) | 无 |
-|  |  | 时间跨度(年) | 时间线首末事件的年份差。 | MAX(事件年) − MIN(事件年) | dwd_policy_base(publish_year)；dwd_org_financing_info(completion_date)；industry_chain_milestone_event(event_date)；industry_chain_news_event(publish_time) | 无 |
-|  |  | 事件密度(件/年) | 平均每年重大事件数。 | 事件总数 ÷ 时间跨度 | 同上 | 无 |
-| 产业发展路线历程模型 |  | 发展路线汇总 | 时间线 JSON 与事件总数汇总。 | 读取 timeline/total_events/year_span | gkxlumenx_ads.chain_roadmap(chain_id, chain_name, timeline, total_events, year_span, model_version) | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_119_1.md` §二（M_CHAIN_DEEP_119_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, title, publish_code, publish_date, publish_year, rank, type, theme, status, ministry) — 政策事件
-- dwd_org_financing_info(org_id, name_cn, external_id, funding_round, funding_amount, completion_date, investors_name) — 投融资事件
-- dwd_news_base(yqwyj, fbsj, lymc, lx, bt, zy, xgqyxx) — 资讯事件
-- dwd_industry_chain_news_info(industry_code, industry_name, id, title, publish_date, abstract, source) — 产业资讯
-- demo_gkxlumenx_dwd.industry_chain_milestone_event(event_id, chain_id, node_id, event_name, milestone_type, phase_name, event_date, event_level, region_code) — 里程碑事件
-- demo_gkxlumenx_dwd.industry_chain_news_event(event_id, chain_id, node_id, title, summary, news_type, source_name, publish_time, region_code) — 归一化资讯事件
-- demo_gkxlumenx_dwd.industry_chain_investment_event(event_id, chain_id, node_id, investment_type, financing_round, amount, currency, event_date, region_code) — 归一化投融资事件
-- gkxlumenx_ads.chain_roadmap(chain_id, chain_name, timeline, total_events, year_span, model_version) — 路线历程汇总结果
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_news_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
+- `dwd_patent`
+- `dwd_policy_base`
 
-- 重大事件指标体系及阈值设定表（事件类型、关联指标、判定阈值、权重）——用于事件识别算法的阈值判定
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业生命周期理论|Gort, M. & Klepper, S. (1982). Time Paths in the Diffusion of Product Innovations, The Economic Journal, 92(367), 630-653.
+## 数据支持度与缺口
 
-[2] 产业链供应链韧性与安全|工业和信息化部|产业链重大事件监测相关|https://www.miit.gov.cn/
+- **判档**：部分支持
+- **判档理由**：成长曲线可用两条全量时间序列重建：链内企业成立年（窗口内 52607 家）与链内融资事件年（窗口内 14463 起；融资表 25654 行中 14626 行可按企业名挂到 12 条链，占 57.01%）。但旧稿的三块核心依赖在 gkx 均不存在：里程碑事件表、阶段阈值参数表、政策表的链标签（缺表三态见 TABLE_ABSENCE_EVIDENCE.md）；资讯腿只有 108052 行、覆盖 2025-02-01 至 2026-07-27 共 18 个月，不足以支撑「历程」。成立年份字段也只覆盖底册 189116 家中的 52621 家（27.82%），早期年份左截断。故判部分支持：能给「按年事件密度 + 阶段切分」，不能给「带里程碑的路线图」。
+- **基期声明**：序列窗口 1990—2025 全部入图，未做任何「缺年按 0 摊入」的插补：某年计数为 0 就是当年 0 起事件/0 家新设，不是缺数。2026 年为不完整年（数据截至 2026-07），整年排除，不入分母。资讯腿另按 2025-02—2026-07 的18 个月窗口统计，与 1990—2025 的年度序列不同源，不混算。
+- **复现实测耗时**：约 1.8 秒（源件落盘记录）
 
-[3] 中华人民共和国国民经济和社会发展统计公报|国家统计局|https://www.stats.gov.cn/sj/tjgb/ndtjgb/
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_119_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_119_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_119_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

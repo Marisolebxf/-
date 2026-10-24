@@ -1,75 +1,64 @@
----
-metric_id: M_CHAIN_HOT_NEWS_COUNT
-metric_name_zh: 热门资讯数
-algorithm_type: STAT
-version: 0.2.0
-updated: 2026-10-14
-owner: data-agent / human:淮政玮
-status: 临时口径生效中（三段式：临时出数 + 正式锁定 + 切换条件）
----
+# 链热门资讯数（M_CHAIN_HOT_NEWS_COUNT）
 
-# M_CHAIN_HOT_NEWS_COUNT 热门资讯数 — 计算逻辑说明
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOT_NEWS_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOT_NEWS_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOT_NEWS_COUNT_out.json`。
 
-> 2026-10-14 human:徐滕强 拍板「路径A：三段式」。本指标当前**不可诚实出真热门数**（`heat_score` 字段现库不存在），采用「临时出数 + 正式口径锁定 + 切换条件写明」策略，UI 侧不体现临时标注。
+## 基础信息
 
-## 1. 业务定义
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_HOT_NEWS_COUNT |
+| 指标名称 | 链热门资讯数 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链概览「热门资讯」卡片、链详情资讯流排序｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_HOT_NEWS_COUNT.md` |
 
-- **临时口径（当前生效）**：以链资讯全量代热点，与 `M_CHAIN_NEWS_COUNT` 同源同数。定义层如实标注「临时=全量代热点，热门语义未实现，当前值≠真热门数」。
-- **正式口径（锁定待切换）**：heat_score 落地后，链内 P90 分位 Top 10% 资讯计数（至少 1 条）。
+## 口径定义
 
-## 2. 数据源
+资讯量与链归属都可算，但 heat_score 整库不存在；用跨源转载、周报道峰值、标题显著度三项代理后，12 链共 1,972 条热门（1.83%），只能判部分支持。
 
-| 表 | 字段 | 说明 |
-|---|---|---|
-| `demo_gkxlumenx_ods.dwd_industry_chain_news_info` | `pk_id`（主键）、`industry_code`、`publish_date`、`is_deleted` | 临时与正式同源；demo 实测 90 行 |
-| 同上（待增） | `heat_score` | **现库不存在**。NLP 打分管线产出，缺口登记 `GAP-CHAIN-HEAT-SCORE`，归算法侧 |
+## 计算逻辑说明
 
-## 3. SQL
-
-### 3.1 临时口径（当前生效，可执行）
-
-```sql
-SELECT COUNT(*) AS hot_news_cnt
-FROM demo_gkxlumenx_ods.dwd_industry_chain_news_info n
-WHERE n.is_deleted = 0
-  AND n.industry_code = :chain_code;
+```text
+hot_item = I_reprint + I_burst + I_salience ≥ 2；hot_count(c) = Σ hot_item·[标题命中链 c 的实体词表]
 ```
 
-### 3.2 正式口径（锁定待切换；heat_score 字段落地后可执行）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOT_NEWS_COUNT.md` §二（M_CHAIN_HOT_NEWS_COUNT.py 零改语义复算）。
 
-```sql
-SELECT COUNT(*) AS hot_news_cnt
-FROM (
-  SELECT
-    n.*,
-    ROW_NUMBER() OVER (ORDER BY n.heat_score DESC) AS rk,
-    COUNT(*) OVER () AS total
-  FROM demo_gkxlumenx_ods.dwd_industry_chain_news_info n
-  WHERE n.is_deleted = 0
-    AND n.industry_code = :chain_code
-) t
-WHERE t.rk <= GREATEST(CEIL(t.total * 0.1), 1);
-```
+## 源表字段
 
-- NULL `heat_score` 排序沉底（自然不进 Top10%）。
-- `GREATEST(..., 1)` 保证小样本链至少 1 条。
-- 旧稿 `heat_score >= 80` 绝对阈值**废除**：字段不存在，且绝对阈值抗不住分布漂移。
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 4. 参数
+- `dwd_industry_chain_news_info`
 
-| 参数 | 含义 | 默认 |
-|---|---|---|
-| `:chain_code` | 产业链编码 | 必填 |
+## 待建表字段
 
-## 5. 版本与变更
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-| 版本 | 日期 | 变更 | 拍板 |
-|---|---|---|---|
-| 0.1.0 | — | 旧稿：heat_score>=80 绝对阈值（字段不存在，不可执行） | — |
-| 0.2.0 | 2026-10-14 | 三段式：临时全量代热点 + 正式 P90 分位 Top10% 锁定 + 切换条件写明；UI 不体现临时标注 | human:徐滕强 |
+## 数据支持度与缺口
 
-## 6. 切换条件（临时 → 正式）
+- **判档**：部分支持
+- **判档理由**：链资讯 108,052 行真实、可计数，2025-02 至 2026-07 连续 18 个月；但 heat_score 字段整库不存在，本件只能用三项可观测替代量定义热度，代理在 12 条链上产出 1,972 条热门资讯（1.83%），热度语义（读者触达/传播效果）无法与原文口径对齐；标题词表只覆盖 31.89% 的资讯，industry_code 多值且 48.2% 被截断，不能作为链归属依据；窗口仅 18 个月，无法支撑年度趋势。故最高判部分支持。
+- **基期声明**：本指标不做年度同比，分母不是年度序列：资讯窗口为 2025-02-01—2026-07-27 的全量截面。used/missing 为空表示没有年度基期，不是「缺年按 0 摊入」。
 
-1. NLP 打分管线（`GAP-CHAIN-HEAT-SCORE`，算法侧）在 `dwd_industry_chain_news_info` 落 `heat_score` 字段并完成首灌；
-2. 首灌完成后弃临时口径、启用正式口径，本指标与 `M_CHAIN_NEWS_COUNT` 自然分离；
-3. 正式口径签名待 human:唐绍祖 会签（分位规则属 D1 决策点）。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOT_NEWS_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOT_NEWS_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOT_NEWS_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

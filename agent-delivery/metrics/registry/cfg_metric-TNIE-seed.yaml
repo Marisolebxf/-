@@ -1,51 +1,40 @@
 # cfg_metric 种子 —— 科技新闻四要素抽取（TNIE）
 # ============================================================================
-# 作用：Wave0 将复核页指标升级为 cfg_metric 8 件套种子（D9）
-# 维护：data-agent / frontend-agent  ·  创建：2026-07-27  ·  Wave 0（Mock）
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-#         YAML 键 algorithm_type；未填视为 UNKNOWN，禁止据此标 D1=aligned
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：1 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-07-27"
+updated: "2026-10-23"
 domain: TNIE
-seed_version: "0.1.0"
-batch: mock_20260727
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 1
-
 defaults:
-  source_systems: ["demo-algo-science tech_news_ie", "Java gkxlumen-innov 透传"]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
-  owner_agent: algorithm-agent
-  version: "0.1.0"
+  owner_agent: data-agent
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
   - metric_id: M_TNIE_EVENT_COUNT
-    metric_name_zh: 抽取事件条数
-    definition: >
-      单次科技新闻四要素抽取响应中 events 数组的长度；统计窗口为单次请求；
-      对象为启发式/LLM 抽取得到的事件对象；不去重（同文多次抽取可重复计数）；
-      Wave0 默认 MODE=mock，口径待甲方确认后是否纳入正式看板。
-    formula: "len(response.events)"
+    metric_name_zh: "抽取事件条数"
+    definition: "「抽取事件条数」要回答的是「发生了多少场创新活动」。它需要的是一张事件表：每行一场活动，有名称、时间、地点、主办方、参与规模。gkx 的 `dwd_event` 有名称、时间、主办方、URL，看起来像，但只有 20 行、只覆盖两天、全部是同一家主办方的展会系列。用这 20 行算「事件条数」，得到的不是创新活动总量，而是「某场展会的分论坛数」。真事件面不存在，本件只能退到媒体报道侧数「活动型标题」，并反复声明媒体 ≠ 事件，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TNIE_EVENT_COUNT.py 为准）。"
     algorithm_type: STAT
-    source_tables:
-      - ads_tech_news_extraction
-      - ads_tech_news_event
-      - sandbox_sqlite_extractions
-    source_systems:
-      - "demo-algo-science /internal/tech-news/*"
-      - "Java /v1/tech-news/** → 网关 /innov/v1/tech-news/**"
-      - "Mock @ batch=mock_20260727"
+    source_tables: ["ads_tech_news_event", "ads_tech_news_extraction", "dwd_event", "dwd_industry_chain_news_info", "dwd_innovation_event", "dwd_org_important_news_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: on_request
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/tech_news_ie/（计算） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TNIE/M_TNIE_EVENT_COUNT.md"
+    data_support_level: "部分支持"
+    support_reason: "真事件计数不可建：`dwd_event` 仅 20 行、只覆盖 2026-05-13/14 两天、20 个名称 19 个组织者全部是国药励展系展会；事件表与抽取结果表在 gkx 均 0 张。只能交「媒体报道中的活动型标题条数」代理，且逐条标注媒体≠事件，故判部分支持。"
     is_mock: true
-    mapping_status: "⚠️"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "创新活动监测、区域活动密度对比、活动型报道专题"
     pending_ref: "客户决策：是否将抽取事件数纳入正式 KPI"
-    source_status: wave0_persist_sqlite_or_ads_ddl
-    owner_agent: algorithm-agent
-    ui_alias: TNIE.event_count
-    ui_locations:
-      - "lumen-ui-science-pc /service/tech-news-review 页头「事件数」"
-    bid_ref: "E-TECH-NEWS-IE-M1 Phase C"
-    acceptance_unit_id: E-TECH-NEWS-IE-M1-L03
+    acceptance_unit_id: "E-TECH-NEWS-IE-M1-L03"
+    updated: "2026-10-23"

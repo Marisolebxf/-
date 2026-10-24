@@ -23,7 +23,9 @@ task_id: DATA-POLICY-STORAGE-ETL-FILL-L01
 | Demo 贴源 Mock 全景 | [`pipeline-demo-mock.md`](./pipeline-demo-mock.md) | **as-built** · `run_all_policy` 15 步灌数总图（正式 GDF 虚线） |
 | Demo 算子验收对照 | [`demo-operator-accept-matrix.md`](./demo-operator-accept-matrix.md) | **as-built** · 35 条算子 / 两套 UI / lumen 接手边界 |
 | DWD → ADS | [`pipeline-dwd-to-ads.md`](./pipeline-dwd-to-ads.md) | **as-built** · `basic` / `graph` / `eval` / `text` 十二步 |
+| 抽取产业切块匹配 | [`industry-match-optimize.md`](./industry-match-optimize.md) | **as-built** · demo `polan/industry_enrich.py`；门槛待抽样 |
 | → Nebula | [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) | **as-built** · `POLICY-NEBULA-PROJECT-CHAIN-L01` |
+| 产业关联实查 | [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md) | 2026-10-24 demo · 按产业 / 节点可命中的政策数。企业、服务机构见 [企业](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md)、[服务机构](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md) |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | draft · 前缀 `policy/{task_id}/` |
 | DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | **not-built** · 本域不建独立索引 |
 | Mock 直写 ADS | [`pipeline-mock-to-ads.md`](./pipeline-mock-to-ads.md) | **not-built** · 本域无此旁路 |

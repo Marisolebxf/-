@@ -1,68 +1,72 @@
 # 环节平均服务深度（M_SVC_CHAIN_SEGMENT_AVG_DEPTH）
 
-## 基本信息
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_SEGMENT_AVG_DEPTH_out.json`。
 
-- 指标ID: M_SVC_CHAIN_SEGMENT_AVG_DEPTH
-- 指标名称: 环节平均服务深度
-- 一级模块: 产业服务链分析
-- 二级模块: 服务链分析
-- 三级模块: 短板分析 / 生态地铁图
-- 更新频率: 日
-- 对齐状态判定: 目标口径已锁（0.2.0；双缺口未闭合）
-- 关联Q编号: Q-SVCCHAIN-08（成员表缺口）+ Q-SVCCHAIN-02（深度分口径未签）
+## 基础信息
+
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_CHAIN_SEGMENT_AVG_DEPTH |
+| 指标名称 | 环节平均服务深度 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·产业服务链分析·全链路可视化（SRS seq 123）的节点深度标签 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md` |
 
 ## 口径定义
 
-某服务链环节内，各机构在该环节的服务深度分的算术平均（0-100）。
+这个指标的结构最干净：分母是六环节机构数（可算），分子是「机构×环节服务深度分」（不存在）。公式 avg_depth = AVG(depth_i) 本身没有争议，争议在于 depth_i 从哪来——需规只给了维度名，旧稿登记为待建（SVC 侧 `svc_*` 深度表未建、口径 Q-SVCCHAIN-02 未签）。
 
-| 项 | 锁定值 |
+## 计算逻辑说明
+
+```text
+avg_depth(s) = AVG(depth_i), i ∈ {org: stage(org)=s}；空 → null（不伪造 0）
+```
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md` §二（M_SVC_CHAIN_SEGMENT_AVG_DEPTH.py 零改语义复算）。
+
+## 源表字段
+
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_org_annual_financial_info`
+- `dwd_org_company_punish`
+- `dwd_org_important_news_info`
+- `dwd_org_invest_info`
+- `dwd_org_org_product_info`
+- `dwd_org_recruit_info`
+- `dwd_org_risk_shixin`
+- `dwd_org_shareholder_info`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：分母与分组可算（六环节 44,153 家口径）；分子「机构×环节服务深度分」无源：口径未签（Q-SVCCHAIN-02）且 gkx 无任何 svc_* 深度表/列 → 全部分格为「—」
+- **基期声明**：本件不产出任何深度数值：分子（机构×环节服务深度分）在 gkx 与 live 均无来源，口径未签（Q-SVCCHAIN-02），故不存在可声明的基期窗口；分母侧的环节计数为截面存量。
+
+## 溯源与复现
+
+| 项 | 值 |
 |---|---|
-| 人口 | `demo_gkxlumenx_dwd.svc_org_circle.org_id` |
-| 环节字典 | CT-SVC-PT-01 六环节（唯一真源） |
-| 分组 | 按 `stage_id` 出六行 |
-| 分子 | 机构在该环节的服务深度分（0-100）；沿 `M_SVC_ORG_COVERAGE_DEPTH`，**公式未签** |
-| 空环节 | 无机构返回空；页面显示「—」，不伪造 0 |
-| 选产业 | API 过滤（半连接），不进口径分母 |
-
-### 环节字典（CT-SVC-PT-01）
-
-`stage-research` / `stage-ip` / `stage-transfer` / `stage-pilot` / `stage-testing` / `stage-market`。
-
-语义 = **环节内平均服务强度**，不是产业链节点覆盖比例。
-
-## 计算公式
-
-```sql
--- 目标口径（当前无源表 + 分子未签，不可执行）：
-SELECT stage_id, AVG(depth) AS avg_depth
-FROM <机构×服务链环节服务记录 + 机构服务深度分>   -- 缺口①：待供方交付 SVC-P0-3
-WHERE org_id IN (SELECT org_id FROM demo_gkxlumenx_dwd.svc_org_circle)
-GROUP BY stage_id;
-```
-
-**当前无法执行**：① 机构×服务链环节服务记录不存在；② 服务深度分口径未签（Q-SVCCHAIN-02）。
-
-禁止：产业链 `industry_link_code` / `node_stage` / 覆盖节点比例（语义不同）；服务六类；国标 `industry`；15 集群；`svc_chain_gap.avg_depth`（汇总壳，现网 0 行）；前端 fixture 深度分。
-
-## 依赖说明（2026-10-13 人拍：本条不写 metric: 引用）
-
-- 分子本应来自 `M_SVC_ORG_COVERAGE_DEPTH`（MODEL，D1 draft，待唐绍祖会签）。
-- 但该 MODEL 叶 seed 的 `source_tables` 把「环节」写成产业链 `dwd_org_industry_tags.industry_link_code` + `dwd_industry_chain_info`（产业链节点），与 CT-SVC-PT-01 服务六环节冲突（同 Q-SVCCHAIN-08 追记）。
-- 若本条在 `source_tables` 写 `metric: M_SVC_ORG_COVERAGE_DEPTH`，会**继承错误环节轴**。故本条**只写目标口径与缺口，不写 `metric:` 引用**；待 MODEL 侧按六环节重判后再定是否转正式二次 STAT。
-
-## 源库表字段
-
-```
-svc_org_circle
-（缺口）机构×服务链环节服务记录 <- ods: 待供方交付（SVC-P0-3）
-（缺口）机构服务深度分 <- metric: M_SVC_ORG_COVERAGE_DEPTH（未签；本条不写引用）
-```
-
-## 参考文献 / 依据
-
-`TRACE-SVCCHAIN-ECOSYSTEM.yaml`；CT-SVC-PT-01；`M_SVC_CHAIN_SEGMENT_ORG_COUNT.md`（同环节轴）；2026-10-13 human:徐滕强 拍板。
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_SEGMENT_AVG_DEPTH.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_CHAIN_SEGMENT_AVG_DEPTH_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-21: 初版（演示态）
 - 2026-10-13: 0.2.0 目标口径锁定（六环节 + circle 人口 + AVG(depth)）；不挂 MODEL 引用；双缺口写明
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

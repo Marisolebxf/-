@@ -1,53 +1,66 @@
-# 技术能力（M_CHAIN_TECH_POWER）
+# 技术能力（链技术力）（M_CHAIN_TECH_POWER）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_TECH_POWER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_TECH_POWER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_TECH_POWER_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_CHAIN_TECH_POWER |
-| 指标名称 | 技术能力 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 区域产业指数评价 |
-| 三级模块 | 区域产业指数 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q055+QC05 |
-
+| 指标名称 | 技术能力（链技术力） |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链总览／技术实力 |
+| 更新频率 | 建议季度 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「技术实力」评分卡、链条横向对比雷达｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| 缺失年份 | [2017, 2018, 2019, 2020] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_TECH_POWER.md` |
 
 ## 口径定义
 
-指定区域在指定产业链上的技术能力得分，取值0—100。由区域专利（M_CHAIN_REG_PATENT）、区域技术壁垒（M_CHAIN_REG_TECH_BARRIER）、区域技术成熟度（M_CHAIN_REG_TECH_MATURITY）三维合成。
+专利规模与新鲜度两维可用（链内专利 973,769 件），壁垒维只有深圳 K 覆盖，12 链等权合成后人工智能 0.598 居首，但第三维语义已偏，判部分支持。
 
 ## 计算逻辑说明
 
-三维等权。先按各子指标口径计算区域、链、年原始值，再在同一产业链、同一统计年度对全部对比区域做截面min-max归一化到[0,1]，算术平均后乘100。某维全部区域取值相同则该维取0.5。默认等权，前端可调权重但不另建权重表。区域用机构所在省、市过滤，深圳场景取city="深圳市"。从dwd_industry_chain_info确定目标产业链，关联dwd_org_industry_tags取链上企业，再关联dwd_org_base_info筛区域。
+```text
+tech_power = (D1专利规模 + D2断链壁垒 + D3近一年申请占比) / 3，各维 min-max 归一
+```
 
-区域技术壁垒为负向指标（壁垒越高，技术能力越低）：该维先按壁垒原始值min-max到[0,1]，再取 \(1-x\) 后参与合成。区域专利、区域技术成熟度为正向指标。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- |
-| 区域产业指数 | 技术能力 | 区域专利 | 对齐M_CHAIN_REG_PATENT：区域链上企业专利去重件数。筛区域后，用company_name匹配dwd_patent.first_applicant_name或first_current_assignee_name，按patent_id去重；公开年pbdt_year≤统计年 | dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) | 无 |
-| 区域产业指数 | 技术能力 | 区域技术壁垒 | 对齐M_CHAIN_REG_TECH_BARRIER：断链壁垒=（核心技术空白得分+核心技术封锁得分）÷2。空白为连续3年发明专利授权量为0取1否则取0；封锁为区域企业与同链其他企业IPC占比向量的平均欧氏距离。合成时作负向处理 | dwd_patent(kind, granted_number, pbdt_year, main_classification_ipcr, first_applicant_name, first_current_assignee_name) | 无 |
-| 区域产业指数 | 技术能力 | 区域技术成熟度 | 对齐M_CHAIN_REG_TECH_MATURITY：按公开年pbdt_year汇总近k年复合增速并映射到0—100。 | dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, pbdt_year) | 无 |
-
-子指标计算步骤与对应md相同，此处不重复公式。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_TECH_POWER.md` §二（M_CHAIN_TECH_POWER.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配专利权人
-- dwd_org_base_info(external_id, province, city) — 企业信用代码关联, 省份, 城市(区域筛选)
-- dwd_patent(patent_id, first_applicant_name, first_current_assignee_name, kind, granted_number, pbdt_year, main_classification_ipcr) — 专利去重, 申请人匹配, 专利权人匹配, 发明识别, 授权判定, 公开年, IPC主分类
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_industry_tags`
+- `dwd_patent`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 技术能力｜耶拿大学｜Haupt R, Kloyer M, Lange M. Patent indicators for the technology life cycle development[J]. Research Policy, 2007, 36(3): 387-398. DOI: 10.1016/j.respol.2006.12.004.
-- 技术能力｜经济合作与发展组织（OECD）；欧盟委员会联合研究中心（JRC）｜OECD, European Commission Joint Research Centre. Handbook on constructing composite indicators: methodology and user guide[R]. Paris: OECD Publishing, 2008. DOI: 10.1787/9789264043466-en.
-- 技术能力｜北京理工大学管理与经济学院，清华大学公共管理学院｜常晓涵, 何海燕, 孙磊华, 李浩然. 关键核心技术壁垒对中国产业链升级的影响[J]. 北京理工大学学报（社会科学版）, 2023, 25(6): 184-198.
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：tech_power 结果面不存在，但三维里有二维半可用：专利规模与近一年申请占比都能从 dwd_patent 的 2,939,895 行按申请人名聚合出来（12 链合计专利见 totals），断链壁垒可以用 K 节点未覆盖率算，但只有深圳口径。权重是等权默认值、甲方未裁定。结构与数据都够跑，缺的是全国 K 覆盖与官方权重，判部分支持。
+- **基期声明**：专利表 apdt_year 只有 2021—2026，2017—2020 零行（DATA_FACTS 陷阱 3.13），所以「近一年占比」的分母是 2021—2024 全期申请，不是十年存量；2025/2026 为不完整年，不进分母。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_TECH_POWER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_TECH_POWER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_TECH_POWER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

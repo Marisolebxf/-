@@ -1,70 +1,66 @@
-# M_CHAIN_INVEST_COUNT 投融资事件数 计算口径细稿
+# 投融资事件数（M_CHAIN_INVEST_COUNT）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（方案A 融资事件同构 + 复合业务键去重 + 窗口参数化）
-- **类型**：STAT（事件计数）
-- **is_mock**：true（链桥 INB1309 mock 可算；全量挂链跟 CHAIN-P0-5）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_INVEST_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_INVEST_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_INVEST_COUNT_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：链详情页"资本"区——这条链上发生了多少笔投融资事件。
-- **白话**：链上企业（被投视角）的融资事件去重件数——谁融到了资、哪天、什么轮次。
-- **旧稿问题**：v0.1.0 = `COUNT(DISTINCT news_id) WHERE news_type='financing'`——①`news_type` 字段实测不存在（90 行链新闻表无此列）；②拿新闻当投资事件源是语义借用；③QC07 🔴 挂起。**不可执行，废除**。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_INVEST_COUNT |
+| 指标名称 | 投融资事件数 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | CHAIN（产业链分析） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 产业链详情页「资本」区 / 产业总览·产业投融资规模 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_INVEST_COUNT.md` |
 
-## 2. 指标定义（v0.2.0，方案A）
+## 口径定义
 
-**指定产业链链上企业的融资事件去重件数（被投视角），与 `M_CHAIN_REG_FINANCING` 同构（去 region 换 chain_code）。**
+原读表面 `chain_investment` 在 ADS 与 DWD 均为空表族成员，`industry_chain_metric_fact` 的产业链实测值为造数批次产物；真实融资明细在 `dwd_org_financing_info`（25,654 行），经「企业 org_id → 主档 credit_code → 12 条顶层链」映射后去重得 17,583 起、其中 10,530 起可挂链，12 条链全部非零 → **完全转换支持**。
 
-| 决策点 | 拍板 | 说明 |
-|---|---|---|
-| ① 语义 | 融资事件（被投视角） | 与 REG_FINANCING / SUPPORT_POWER 融资维全族同尺；"投资方视角（对外投资）"未来另立指标（见 §4 QC07 处置） |
-| ② 去重键 | 复合业务键 `(org_id, completion_date, funding_round)` | **业务去重规则 ≠ 物理唯一索引**：表无 event_id 无 UNIQUE 约束，同企业同日同轮可能多行，`SELECT DISTINCT` 塌缩成 1 件；同日同轮多笔碰撞风险如实注记；供应方补 event_id 后 DISTINCT 冗余可去、口径不动 |
-| ③ 时间窗 | 默认全量 + 近 N 年查询参数 | `completion_date` 时间轴（FINANCING 先例同款） |
-| ④ 链路 | org_id 全键：融资表 org_id → 链桥 org_id + chain_code | 禁名称匹配（2026-10-14 通则） |
+## 计算逻辑说明
 
-## 3. Formula（SQL）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_INVEST_COUNT.md` §二（M_CHAIN_INVEST_COUNT.py 零改语义复算）。
 
-```sql
--- 全量版（口径本体）
-SELECT COUNT(*) AS chain_fin_cnt FROM (
-  SELECT DISTINCT f.org_id, f.completion_date, f.funding_round
-  FROM demo_gkxlumenx_ods.dwd_org_financing_info f
-  JOIN demo_gkxlumenx_dwd.enterprise_industry_chain e
-    ON e.org_id = f.org_id AND e.chain_code = :chain_code
-  WHERE f.is_deleted = 0
-) k;
+## 源表字段
 
--- 近 N 年窗口版（查询参数，不进口径）：追加 AND f.completion_date >= :window_start
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 4. QC07 处置（🔴 → 🟡）
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
+- `dwd_org_invest_info`
 
-- 融资事件源已活：`dwd_org_financing_info` 25,654 行实测（completion_date 真业务日期 1963→2026、funding_round 干净中文枚举）；
-- QC07 残余问题只剩**投资方视角无事件级源**：`dwd_org_invest_info`（46,967 行）是股权投资关系存量（org_id/inv_org_id/金额/占比），无事件日期、无轮次、无事件 id——"链上企业投了谁"若页面将来要，另立新指标（改名"对外投资关系数"），不混入本条；
-- QC07 降 🟡 跟踪，不销项。
+## 待建表字段
 
-## 5. 执行模式建议
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 总量（无窗口）：预计算候选（ADS 快照）；
-- 窗口查询：实时参数化 SQL（N 开放集合）；
-- 量级评估届时用真实数据（2026-10-14 规则：量级不进口径）。
+## 数据支持度与缺口
 
-## 6. 表依赖与实核（2026-10-14 demo）
+- **判档**：完全转换支持
+- **判档理由**：gkx 真实融资表 25,654 行，去重后 17,583 起事件；10,530 起（59.89%）可经 org_id→credit_code→产业标签挂到 12 条链，12/12 链非零（5,783—266 起）；城市侧 16,807 起可落四市（95.59%）。结构与当前数据量均足，现转即可产出非退化计数。
+- **基期声明**：由产物中实际出现的年度键反推：used=[2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。
+- **复现实测耗时**：约 8.5 秒（源件落盘记录）
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd_org_financing_info` | 分子（融资事件） | 25,654 行 / 6,503 家企业；completion_date 真业务日期；轮次中文枚举（股权投资/新三板/战略投资/A轮/IPO 等）；无 event_id（DDL 18 列实核） |
-| `dwd.enterprise_industry_chain` | 链桥 | INB1309 mock 2000 行（深圳 1004 家 org_id 全键通）；余链 0 行 |
+## 溯源与复现
 
-## 7. 缺口分型
-
-| 项 | 分型 | 处置 |
-|---|---|---|
-| 链桥仅 1 链 mock | 数据未灌 | 跟 CHAIN-P0-5；灌数即真数 |
-| 投资方视角无事件级源 | 残余缺口 | QC07 🟡 跟踪；未来另立指标 |
-| 旧稿 news_type 写法 | 字段不存在 | 已废除重写 |
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_INVEST_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_INVEST_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_INVEST_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-24: 初版 v0.1.0（news_type 不可执行稿）
 - 2026-10-14: v0.2.0 方案A 重写（human:徐滕强 拍板：融资事件同构 + 复合键去重 + QC07 降级）
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

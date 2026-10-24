@@ -1,356 +1,586 @@
 # metric-readiness-matrix —— 科研机构域（ORG）四维就绪度
 # ============================================================================
-# 生成任务：METRIC-SEED-REGISTER-L01 · 2026-08-22 · 监管 human:淮政玮
-# 模型：data-lineage-policy.md §2.3
-# D1=draft；D2=pending；D3=pending_ods；D4=mock。禁止改绿。
-# lifecycle_stage=open（已过 METRIC-OPEN 身份点名，公式未签）。
-# ============================================================================
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
+# 模型定义：data-lineage-policy.md §2.3
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-ORG-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
+# ----------------------------------------------------------------------------
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 0 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
+# ----------------------------------------------------------------------------
+# 本域分布：22 条｜D1 aligned 22 / draft 0｜D3 full 0 / partial 22 / none 0 / pending_ods 0｜本批新增 0 条、D3 有据升级 0 条、派生件 0 条。
 
 version: 1
 module: ORG
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-08-24"
-as_of: "2026-08-22"
+updated: "2026-10-23"
+as_of: "2026-10-23"
 d2_verifier: lineage-subcoord
-d4_batch: open_draft_20260822
-register_task: METRIC-SEED-REGISTER-L01
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "OPEN 新号身份注册；D1=draft，公式/类型未签。"
-  - "不改 A2 库 missing 为 mapped。"
-  - "D2/D3/D4 本批不改绿。"
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
   - metric_id: M_ORG_ATTENTION_TREND
     metric_name_zh: "科研关注度"
     acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-02"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_important_news_info、dwd_policy_base、dwd_zh_paper、dwd_zh_paper
+      _citation…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。有人会提议「用论文数代理被引」，但这两者度量的是不同东西：论文数度量产出规模，被引度量同行认可。一家机构可以年产 200 篇但
+      篇均被引 0.3，另一家年产 20 篇但篇均被引 30，前者「关注度高」后者「影响力高」，用论文数代理会把后者彻底埋掉。本件选择**不设被引维**，把论文数明确标为「学术产出曝光量」，并在
+      §四 把「不能读作学术影响力」写成硬约束。这比造一个看起来很专业的代理值更负责。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_ATTRACT_SCORE
     metric_name_zh: "科研机构招引推荐指数"
     acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-07"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_industry_tags、dwd_scholar、dwd_zh_paper、dwd_zh_paper_citation…
+      ）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。需求序号 154「科研机构引入推荐模型」在算法库 §1.1.1.1.1.1.1.6.6 里对应的产物就是「招引推荐指数」。也就
+      是说，本件与已入库的 `M_ORG_DEEP_154_1` **同属一个需求项**，不是两个指标。二者的差别是实现分工：154 件是候选清单模型（只算 1,060 家省内非深机构、五维含学
+      科契合 Q 与稀缺 S、输出 9 家名单），本件是全体 2,074 家的单值指数（含深圳本地机构、含动量维 R、输出 0–10
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_COLLAB_CHAIN
-    metric_name_zh: "科研合作关系链条"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-05"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_CULTIVATE_SCORE
-    metric_name_zh: "科研机构扶持推荐指数"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-07"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_INDUSTRY_COVER
-    metric_name_zh: "科研机构产业领域覆盖"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_NEW_TREND
-    metric_name_zh: "新增科研机构趋势"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-01"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_PERF_QUERY
-    metric_name_zh: "查询结果·科研机构绩效"
-    acceptance_unit_id: "TOPIC-QUERY"
-    module: TOPIC-QUERY
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-QUERY-02"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_SZ_ADVANTAGE
-    metric_name_zh: "深圳科研机构优势"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-08"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_SZ_PAINPOINT
-    metric_name_zh: "深圳科研机构痛难点"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-09"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_SZ_STATUS
-    metric_name_zh: "深圳科研机构现状解读"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-04"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_TECH_LAYOUT
-    metric_name_zh: "科研机构技术领域布局"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-03"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_ORG_TECH_SCORE
-    metric_name_zh: "科研机构技术力评价与对比"
-    acceptance_unit_id: "TOPIC-ORG-05"
-    module: TOPIC-ORG
-    d1_def_status: draft
-    d1_pending_ref: "Q-MO-ORG-06"
-    d1_note: "OPEN 身份注册；formula / algorithm_type 未签；禁止把赋号建议类型当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
   - metric_id: M_ORG_BASE_99_1
     metric_name_zh: "科研机构基础指标模型构建"
     acceptance_unit_id: "ALGO-ORG-BASE-99"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_important_news_info、dwd_org_in
+      dustry_tags、dwd_patent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。ORG 家族的 8 个模型（本件与后续 153–157、154、155 等）都以「一家机构」为计算单元。如果各件各用一套机构清
+      单，会出现同一家机构在 A 页面有分、在 B 页面查不到的情况，且总数对不上。因此本件把底册、城市映射、名称归一、同族识别全部固化在 `code/_snapshots21/org_fami
+      ly_panel_20261021.json` 与 `code/_org_family_common.py` 里，后续指标只读
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_COLLAB_CHAIN
+    metric_name_zh: "科研合作关系链条"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_patent、dwd_scholar_coauthor、dwd_zh_project）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件构建了两层合作网络。机构层：163 家机构出现在网络中，其中 83 家有机构-机构边，共 90 条（原始 96 条，剔除 
+      6 条同族伪边），密度 0.0264，连通分量 9 个、最大连通块 43 家。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_CULTIVATE_SCORE
+    metric_name_zh: "科研机构扶持推荐指数"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_annual_financial_info、dwd_scholar、dwd_zh_project）；批量初判 provis
+      ional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。按需求原文三维（成果 0.35 / 经费效率 0.25 / 人才 0.20）算出来的分数与招引指数秩相关 0.95，即两个页面
+      会给出几乎相同的排序。这不是实现问题，而是需求问题：§6.6（引入推荐）与 §6.7（扶持推荐）在维度定义上高度同构，都是「成果 + 经费 + 人才」，只是权重不同。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_149_1
     metric_name_zh: "科研机构重点技术领域布局模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-149"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_industry_tags、dwd_research_inst
+      itute_base_info、dwd_zh_project）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家科研机构的专利存量按 IPC4 小类拆进 7 个技术领域，得到 194 家有布局证据的机构、545 个机
+      构×领域对。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_150_1
     metric_name_zh: "科研机构发展历程模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-150"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（dwd_news、dwd_org_changerecord_info、dwd_patent、dwd_patent_transfer…）；
+      批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件从六类信号里抽出 9 类事件，共 2,487 条，覆盖 2,007 家机构。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_151_1
     metric_name_zh: "深圳科研机构优势分析模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-151"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_heis_info、dwd_patent、dwd_schola
+      r…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。评价宇宙 1014 家深圳机构中 95 家有可核实产出（9.37%），三维分位与优势指数可复现；但只有经费维是真全国对标（NS
+      FC 1592 家承担机构），专利维无全国属地只能内部相对分位（87 家），人才维仅 12 家有记录（省内底册）。需求要求的「科研成果水平/科研经费投入/人才队伍素质」三线里，两条是代理或
+      内部相对，且权重的阈值为本件自定义，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_152_1
     metric_name_zh: "深圳科研机构痛难点识别模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-152"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_patent、dwd_zh_paper）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件与 `M_ORG_SZ_PAINPOINT` 的区别是：PB 件出「每一路多少」，本件出「合起来多痛、分几档」。要打分就必
+      须定权重、定点集、定分级规则，三件事都会把数据缺口放大——尤其当打分集只有 25 家时，一个维度的缺失就能改变前几名。因此本件把点集、权重、分级规则、稳定性检验全部落盘，判**部分支持**
+      。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_153_1
     metric_name_zh: "科研合作关系链条模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-153"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_patent、dwd_patent_applicants、dwd_scholar、dwd_scholar_coauthor…）；批
+      量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。可用真实共著关系构建机构级加权合作网络（清洗后 1519 条深圳相关边、137 个深圳节点，核心节点与伙伴可解释），但项目合作
+      无字段、专利共同申请仅 0.68% 采样、跨领域特征无标签 → 部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_154_1
-    metric_name_zh: "科研机构引入推荐模型"
+    metric_name_zh: "科研机构引入推荐模型（重建件）"
     acceptance_unit_id: "ALGO-ORG-DEEP-154"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_research_institute_base_info）；批量初判 
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家广东科研机构里非深圳的 1,060 家作为候选池，其中 205 家（19.34%）至少有一项产出信号，2
+      03 家达到「至少三维可算」的评分门槛。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_DEEP_155_1
     metric_name_zh: "科研机构扶持推荐模型"
     acceptance_unit_id: "ALGO-ORG-DEEP-155"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_annual_financial_info、dwd_research_institute_base_info、dwd_sc
+      holar、dwd_scholar_work_experience…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件对 2,074 家机构算了三个维度的分位分，加权得到扶持推荐指数。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_GRAPH_114_1
     metric_name_zh: "科研机构实体识别构建"
     acceptance_unit_id: "ALGO-ORG-GRAPH-114"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_changerecord_
+      info、dwd_patent_transfer…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件以 2,074 家科研机构为实体主表，建了 2,241 条别名词典（规范名 + 去尾括号写法），对 100,900 篇论文
+      的 435,937 条署名机构串做匹配。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
+
   - metric_id: M_ORG_GRAPH_115_1
-    metric_name_zh: "科研机构实体关系抽取"
+    metric_name_zh: "机构关系图结构（投资/股权代理）"
     acceptance_unit_id: "ALGO-ORG-GRAPH-115"
-    module: ORG
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
+    module: "ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_forg_research_org_info、dwd_forg_university_org_info、dwd_org_base_
+      info、dwd_org_invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件用投资边与股东边构建企业资本关系图：底册 189,116 家，有边企业 19,768 家（10.4528%），去重无向边 
+      19,628 条（投资 9,312、股东 17,082，去重后 19,628）。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_INDUSTRY_COVER
+    metric_name_zh: "科研机构产业领域覆盖"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家科研机构中 194 家（9.35%）有 IPC4 证据的机构，按 IPC 首字母归入 8 个技术部类，共
+      5,781 件专利入图，用到 259 个 IPC4 小类（全库 634 个的 40.85%）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_NEW_TREND
+    metric_name_zh: "新增科研机构趋势"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_research_institute_base_info、dwd_zh_project）；批量初判 provisional，待 l
+      ineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。时间面完整可算：2,074 家机构中 1,996 家有登记年（96.24%），2001—2026 年度新增序列、3 年斜率、5
+      年移动平均全部可复现；但需求要的「选定产业/技术领域内」无法闭合——库内无机构×产业领域直接标签（技术标签仅命中 1 家），只能用 IPC 部（219 家，10.56%）与国基金项目（5
+      3 家，2.56%）两条代理面，且底册 100% 在广东省，不能称全国趋势。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_PERF_QUERY
+    metric_name_zh: "查询结果·科研机构绩效"
+    acceptance_unit_id: "TOPIC-QUERY"
+    module: "TOPIC-QUERY"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_patent）；批量初判 provisional，待 lineage-
+      subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家机构中 325 家「至少一项产出大于 0」的机构物化为查询宽表：广州 173 家、深圳 120 家、东莞
+      21 家、惠州 11 家；
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_SZ_ADVANTAGE
+    metric_name_zh: "深圳科研机构优势"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_research_institute_base_info）；批量初判 provisional，待 lineage-subcoord
+      核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家机构按城市分成四组：深圳 1,014、广州 822、东莞 127、惠州 111，用五维（机构数、专利、论
+      文、项目、学者）算总量指数，用四维人均当量（专利/机构、论文/机构、项目/机构、学者/机构）算强度指数。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_SZ_PAINPOINT
+    metric_name_zh: "深圳科研机构痛难点"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_patent、dwd_patent_transfer、dwd_policy_base、dwd_research_institute
+      _base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。痛点分析要回答「这家机构卡在哪」。gkx 里能当作「卡点」观测面的有五路：纵向项目（拿不拿得到钱）、专利转让（成果卖不卖得掉）
+      、论文（学术产出）、专利（技术产出）、政策提及（政府关不关注）。五路都能算，所以不是一个「无数据」的件；但产学研合作这一路（机构与企业联合攻关）在 gkx 没有边表，而它恰恰是「痛点」最常
+      见的成因，缺了它就只能看结果、看不到过程。按四档定义，这属于「始终有部分依赖维度无法得到」，判**部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_SZ_STATUS
+    metric_name_zh: "深圳科研机构现状解读"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_research_institute_base_info、dwd_scholar、dwd_zh_paper、dwd_zh_proj
+      ect）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。规模/结构/成长三维在 1014 家深圳机构上可直接计算，四城同口径可比；产出/经费/人才三维只对有证据子集可算：专利 87 
+      家、国基金 20 家、学者 12 家，分别占深圳机构 8.58% / 1.97% / 1.18%，且经费只是 NSFC 资助额、不是全口径科研经费；需求要求的「在该产业」切片无法闭合（机构
+      ×产业领域标签仅命中 1 家），只能给城市级总体现状。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_TECH_LAYOUT
+    metric_name_zh: "科研机构布局技术领域分析"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_zh_project）；批量初判 provisional，待 lineage-subc
+      oord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件给 194 家有 IPC4 证据的机构各生成一张技术画像：7 个领域的份额、件数、IPC4 小类数、四档标签，加上 top
+      5 IPC4 小类与论文/项目侧的潜在方向。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_ORG_TECH_SCORE
+    metric_name_zh: "科研机构技术力对比分析"
+    acceptance_unit_id: "TOPIC-ORG-05"
+    module: "TOPIC-ORG"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：OPEN 身份注
+      册；formula / algorithm_type 未签；禁止把赋号建议类型当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_patent_apply）；批量初判 provisional，待 li
+      neage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件把 2,074 家底册中「7 项核心指标至少 2 项有值」的 234 家机构入池，对 7 项指标各算池内百分位，再按调用方
+      给的权重加权平均（缺项不进分母），输出分数、排名、top20 与 top12 雷达。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 

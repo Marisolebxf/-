@@ -1,784 +1,861 @@
-# cfg_metric 种子 —— 技术链域（TECH）M_TECH_* 指标 8 件套
+# cfg_metric 种子 —— 科技发展态势域（TECH）M_TECH_* 指标
 # ============================================================================
-# 作用：METRIC-SEED-REGISTER-L01 把 OPEN 新号身份写入 seed（D1=draft）。
-# 维护：data-agent  ·  监管：human:淮政玮  ·  创建：2026-08-22
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-# algorithm_type 本批一律 UNKNOWN（未签）。禁止把赋号卡 suggested_unsigned 当已签。
-# 禁止 D1=aligned。存量口径/公式/源表不在本文件改（本文件为该域首份 seed）。
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：39 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
-# 2026-09-04 更新：按王惠调研结果（指标建模任务/王惠阶段性成果/20260904_创新技术）正式化 MODEL/MIXED 指标口径/公式/源表；formula/algorithm_type 待唐绍祖会签，D1=draft。
+
 version: 1
-updated: '2026-09-04'
+updated: "2026-10-23"
 domain: TECH
-seed_version: 0.1.0
-batch: open_draft_20260822
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 39
 defaults:
-  source_systems:
-  - pending_ods
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
   owner_agent: data-agent
-  version: 0.1.0
-  algorithm_type: UNKNOWN
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
+
 metrics:
-- metric_id: M_TECH_COMPOSITE_SCORE
-  metric_name_zh: 评估综合得分
-  definition: 对该技术多项评价指标加权后的综合评价结果，供本页读面与下钻报告展示。本页只读 ADS 已落库字段，不跑综合评价 Job，不把 seq 182–191 抄成我方公式。分项与权重未冻。不是专题深圳潜力与阶段综合评估。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-04
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_CONVERT_BOTTLENECK
-  metric_name_zh: 技术转化瓶颈识别
-  definition: 输入 technology_id，标识转化堵点并给出原因与改进建议（清单/报告）。 流程图/时间轴为同叶流程面，无独立统计核。不是历程 CMS。 实现类 G3 Job（05 seq 136）；专家知识库步骤未签，不伪展开归因公式。 禁止 M_CHAIN_BOTTLENECK_COUNT 及产业链瓶颈族。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-TECH-02
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_EDGE_STRENGTH
-  metric_name_zh: 技术–技术关联强度
-  definition: 技术点之间边权重（半成品本五级只消费技术–技术边）。对象=技术–技术边；窗口=当前图快照。 实体–技术点排序强度归 M_TECH_ENTITY_TOP5，不进本号。禁止 seq 116 / M_SVC_GRAPH_*。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-02-TECHGRAPH
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_ENTITY_INFLUENCE
-  metric_name_zh: 技术点影响力 / 实体优先级
-  definition: 按影响力等指标自动排序、优先展示重要实体（xlsx 行 19）。 关联强度排序已由 M_TECH_ENTITY_TOP5 覆盖，本号不重复边权 Top-K。 05 无「技术点关联实体优先级」专叶 → A2 missing 保持。赋号 ≠ mapped。 禁止伪公式、禁止 PATH 中心度改挂、禁止 M_SVC_GRAPH_INFLUENCE / M_CHAIN_TECH_POWER。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS02-03
-  acceptance_unit_id: DS-02-ENTITY
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_ENTITY_REL
-  metric_name_zh: 实体关联关系网
-  definition: 以连线或网络图展示与当前技术点相关的实体之间关联。消费 seq 105 关系面，不另开模型。 禁止 seq 116；禁止用 PATH 关键路径顶替。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-02-ENTITY
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_ENTITY_TOP5
-  metric_name_zh: 根节点 Top5 关键实体与关联强度
-  definition: 按已有 105 边权截取与当前根技术点关联的 Top5 实体（人/机构/论文/专利）， 卡片含名称、类型、关联强度。不另造排序模型。维护面候选同源不同面，见 TEMP_DS02_MENT_REC_TOP 复用本号。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS02-01
-  acceptance_unit_id: DS-02-ENTITY
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_GRAPH_STRUCT
-  metric_name_zh: 技术点网图结构
-  definition: 当前 Nebula A 面技术点子图（entity_type=technology）上，按已有技术点计算技术–技术关联， 生成可视化图谱结构。对象=技术点主键去重；边=技术–技术；窗口=当前图快照。 层级/类型配色与布局是图壳，不另开 ID。禁止用 M_CHAIN_NODE_COUNT / EDGE_COUNT 顶替。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-02-TECHGRAPH
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_HEAT_INDEX
-  metric_name_zh: 技术热点热度指数
-  definition: 对象为已对齐技术点。对文献/频次做聚类对齐后，输出该点热度指数、增长曲线与热点报告， 并区分短期热点与长期趋势（同核切片，不另造 ID）。页上不做 NER（建图面抽点）。 实现类 G3 Job（05 seq 134）；不伪展开热度公式。 不 reuse DS-02（TECHGRAPH 热度不进该页）。 不 reuse DS-03 TEMP_DS03_TOPIC_HEAT：展示读面是时间窗话题关注度热力图，对象/窗/产出不同页不同口径。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-TECH-02
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_HEAT_QUERY
-  metric_name_zh: 查询结果·技术热度
-  definition: 对当前查询结果集中的技术术语/主题做词频统计，以热力图或词云呈现热点。 默认分母=结果集内 term 频次 TF，不做全域 DF（Q-MO-QUERY-03）。 词云/热力图是可视化形态，不另造 ID。不是 05 技术链热点识别 seq 134， 不 mapped 图谱API seq 116，不 reuse M_CHAIN_HOTSPOT_* / TEMP_TOPIC_TECH_HEAT_INDEX。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-QUERY-03
-  acceptance_unit_id: TOPIC-QUERY
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-QUERY-METRIC-OPEN-L01
-- metric_id: M_TECH_INVEST_AMOUNT
-  metric_name_zh: 技术投资额
-  definition: 选定时间窗内对该技术的资金投入合计（政府专项与社会资本合计；不含技术交易额、不含产业链企业营收合计）。本页气泡大小或地理「投资分布」读 ADS 字段。无窗口/对象歧义到需单独 Q。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_LIFE_STAGE
-  metric_name_zh: 技术发展阶段
-  definition: 单一技术所处生命周期阶段（内部默认分档：萌芽 / 成长 / 成熟；是否含衰退待算法卡）。作为本页气泡图另一位置维。对照 05 seq 137。与专题 TEMP_TOPIC_TECH_STAGE 默认同口径同号（本页读 ADS，专题跑 Job 写同一结果）；禁止产业链阶段号。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-03
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_MATURITY_LEVEL
-  metric_name_zh: 技术成熟度
-  definition: 单一技术从概念到应用转化的成熟水平（连续或分档），作为本页气泡图位置维之一。对象=技术点，不是产业链环节。对照 05 seq 137 成熟度输入；实现类不伪展开。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-05
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_OUTPUT_SCALE
-  metric_name_zh: 技术规模
-  definition: 选定时间窗内该技术的成果与应用体量（内部默认不含资金投入——投入走 M_TECH_INVEST_AMOUNT）。ADS 读面计数/加总。禁止用论文量、专利量或技术交易额冒充「技术规模」专名。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-01
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_PAPER_PATENT_CNT
-  metric_name_zh: 技术点论文量 / 专利量
-  definition: 对象为已对齐技术点（entity_type=technology，按 technology_id）。 统计窗口默认累计全量；页上年份筛选为交互壳，不另开 ID。 计量为该点关联论文去重数量与关联专利去重数量（材料+清单上的计数面）。 去重：COUNT(DISTINCT paper_id) / COUNT(DISTINCT patent_id)。 不铺 seq 96 交易额/资讯；禁止 M_CHAIN_SZ_PATENT / M_CHAIN_REG_PAPERS / M_CHAIN_REG_PATENT。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: STAT
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_PATH_CENTRALITY
-  metric_name_zh: 中心度
-  definition: 节点在技术点网中的核心程度；作为关键节点识别输入（xlsx 行 17）。 对象=技术点节点；窗口=当前图快照。偏 GRAPH（度/介数/PageRank 公式未签，不拆子号）。 禁止 mapped seq 116；禁止消费 M_SVC_GRAPH_CENTRALITY / M_SYNTH_COLLAB_CENTRALITY / M_ENT_NODE_CENTRALITY。 库 missing 保持；赋号 ≠ mapped。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-02-PATH
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_PATH_KEYNODE
-  metric_name_zh: 关键节点重要性
-  definition: 按中心度、影响力自动识别关键节点并特殊样式标记（xlsx 行 20）。放大/变色/图标是同一结果的前端壳。 禁止改挂 seq 131 深圳链；禁止 M_CHAIN_KEY_NODE_COUNT。05 无专叶 → missing 保持；赋号 ≠ mapped。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS02-02
-  acceptance_unit_id: DS-02-PATH
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_PATH_PRIORITY
-  metric_name_zh: 节点优先级 / 重要度
-  definition: 图谱节点关键程度，用于识别核心节点（xlsx 行 22）。与 KEYNODE 同识别族、半成品分行： 本号默认=重要度级别（可供筛选）；KEYNODE 默认=识别结果+样式。筛选交互壳不另开 ID。 missing 保持；赋号 ≠ mapped。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS02-02
-  acceptance_unit_id: DS-02-PATH
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-02-METRIC-OPEN-L01
-- metric_id: M_TECH_POTENTIAL_SCORE
-  metric_name_zh: 技术产业化潜力评分
-  definition: 按 technology_id 输出产业化潜力综合分；多技术雷达/排名/对比报告为同核对比面，不另造 ID。 特征含论文量/专利量（本页 M_TECH_PAPER_PATENT_CNT 作输入材料，不把本分改挂为 STAT）+ A 面子图结构。 实现类 G3 Job（05 seq 135）；禁止把「科研/转化/市场三维加权」抄成我方公式。 禁止 M_CHAIN_HIGH_VALUE_RATIO。DS-03 明文潜力语义归本页，不改挂展示跟踪。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-TECH-02
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_REL_STRENGTH
-  metric_name_zh: 技术关联强度
-  definition: 技术–技术边上的关联紧密程度，编码为本页弦线图线粗。影响路径=弦上关系流向可视化，不是 DS-02 关键路径，不是中心度 KPI。边权内部默认随 05 seq 105 关系抽取。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-06
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_STAGE_JUDGE
-  metric_name_zh: 技术阶段判定
-  definition: 输出选定技术点所处阶段及简要说明（状态、关键瓶颈、发展潜力）。 用户参数嵌入提示词后重跑为同核定制面，不另造 ID。 实现类 G3 Job + LLM 未注册 501（TECH-B03）；不伪展开阶段公式；禁止联网检索散文冒充已注册模型。 禁止 M_CHAIN_PHASE_DETERMINATION / M_CHAIN_CYCLE_STAGE（产业链环节/周期，非技术点）。 不 reuse DS-03 TEMP_DS03_TECH_STAGE：展示气泡位置维是读面编码，本页是 Job 宿主判定卡。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-TECH-02
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_SZ_ASSESS
-  metric_name_zh: 深圳技术潜力与阶段综合评估
-  definition: 基于深圳切片输出潜力评分、发展阶段、优劣势与建议（问题/机遇/布局/细分同层 Job，不另造 ID）。 潜力/阶段计算复用 M_TECH_POTENTIAL_SCORE / M_TECH_STAGE_JUDGE 的核，不发明第二套公式； 本号是深圳综合评估包（独立消费面），不是那两条的地理过滤别名——见 Q-MO-TECH-01。 实现类 G3 Job（seq 133/138/139/140）；公开数据提取与子图 A 过滤无独立核。 禁止 M_CHAIN_SZ_*。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-TECH-01
-  acceptance_unit_id: TOPIC-TECH-05
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: TOPIC-TECH-METRIC-OPEN-L01
-- metric_id: M_TECH_TOPIC_HEAT
-  metric_name_zh: 技术话题热度
-  definition: 在用户选定时间窗内，按技术领域关键词/主题聚合的关注度与活跃程度；对象为技术话题（非单一技术点、非产业链热点领域）。本页热力图只读 ADS 已落库结果，对照算法库 05 seq 134，不在本页跑专题 Job、不伪展开热度公式。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: Q-MO-DS03-02
-  acceptance_unit_id: DS-03-RESULT
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: METRIC-SEED-REGISTER-L01
-  open_task: DS-03-METRIC-OPEN-L01
-- metric_id: M_TECH_BASE_96_1
-  metric_name_zh: 技术基础指标模型构建
-  definition: 技术基础指标模型构建：对应算法库 SRS ALGO-TECH-BASE-96，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-BASE-96
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_130_1
-  metric_name_zh: 全景技术链模型
-  definition: 全景技术链模型：对应算法库 SRS ALGO-TECH-DEEP-130，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-130
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_131_1
-  metric_name_zh: 深圳技术链模型
-  definition: 深圳技术链模型：对应算法库 SRS ALGO-TECH-DEEP-131，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-131
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_132_1
-  metric_name_zh: 技术发展历程模型
-  definition: 技术发展历程模型：对应算法库 SRS ALGO-TECH-DEEP-132，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-132
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_133_1
-  metric_name_zh: 深圳细分领域分布模型
-  definition: 深圳细分领域分布模型：对应算法库 SRS ALGO-TECH-DEEP-133，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-133
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_134_1
-  metric_name_zh: 技术前沿热点领域识别模型
-  definition: 技术前沿热点领域识别模型：对应算法库 SRS ALGO-TECH-DEEP-134，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-134
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_135_1
-  metric_name_zh: 技术产业化潜力识别模型
-  definition: 技术产业化潜力识别模型：对应算法库 SRS ALGO-TECH-DEEP-135，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-135
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_136_1
-  metric_name_zh: 技术转化瓶颈堵点原因识别模型
-  definition: 技术转化瓶颈堵点原因识别模型：对应算法库 SRS ALGO-TECH-DEEP-136，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-136
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_137_1
-  metric_name_zh: 技术阶段分析模型
-  definition: 技术阶段分析模型：对应算法库 SRS ALGO-TECH-DEEP-137，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-137
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_138_1
-  metric_name_zh: 深圳技术发展问题识别模型
-  definition: 深圳技术发展问题识别模型：对应算法库 SRS ALGO-TECH-DEEP-138，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-138
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_139_1
-  metric_name_zh: 深圳技术发展机遇识别模型
-  definition: 深圳技术发展机遇识别模型：对应算法库 SRS ALGO-TECH-DEEP-139，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-139
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DEEP_140_1
-  metric_name_zh: 深圳技术发展重点布局领域推荐模型
-  definition: 深圳技术发展重点布局领域推荐模型：对应算法库 SRS ALGO-TECH-DEEP-140，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-DEEP-140
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_DS_07_TECH_INNOV_002
-  metric_name_zh: 专利质量评估
-  definition: M_INNOV_TINN_PATENT_QUALITY-专利质量
-  formula: M_INNOV_TINN_PATENT_QUALITY-专利质量
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_patent(pn, first_applicant_name, main_classification_ipcr, further_classification_ipcr, claims, other_Versions, apdt_year) — 专利去重,申请人对齐,主分类,附加分类,权利要求,同族,申请年
-  - dwd_patent_cited(pn, cited_by_nums) — 专利被引次数
-  - dwd_patent_legal(pn, status, expiration_year) — 专利状态,到期年
-  - dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
-  source_systems:
-  - pending_ods
-  update_freq: 待确认（pending）
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-07-TECH-INNOV-002
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-science/innov/metrics/metrics.py（计算） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_002.md
-- metric_id: M_TECH_DS_07_TECH_INNOV_004
-  metric_name_zh: 技术创新力综合评估
-  definition: 同M_INNOV_TINN_COMPOSITE-技术创新力综合评估
-  formula: 同M_INNOV_TINN_COMPOSITE-技术创新力综合评估
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_patent(pn, kind, granted_number, first_applicant_name, main_classification_ipcr, further_classification_ipcr, claims, other_Versions, apdt_year) — 专利去重,授权号,申请人对齐,主分类,附加分类,权利要求,同族,申请年
-  - dwd_patent_cited(pn, cited_by_nums) — 专利被引次数
-  - dwd_patent_legal(pn, status, expiration_year, legal_events) — 专利状态,到期年,法律事件
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日
-  - dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
-  source_systems:
-  - pending_ods
-  update_freq: 待确认（pending）
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-07-TECH-INNOV-004
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-science/innov/metrics/metrics.py（计算） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_004.md
-- metric_id: M_TECH_DS_07_TECH_INNOV_006
-  metric_name_zh: 技术创新趋势预测
-  definition: 同M_INNOV_TINN_FORECAST-技术创新趋势预测
-  formula: 同M_INNOV_TINN_FORECAST-技术创新趋势预测
-  algorithm_type: MODEL
-  source_tables:
-  - dwd_patent(pn, first_applicant_name, main_classification_ipcr, apdt_year) — 专利去重,申请人对齐,IPC领域,申请年
-  - dwd_patent_cited(pn, cited_by_nums) — 专利被引次数
-  - dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日
-  - dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
-  source_systems:
-  - pending_ods
-  update_freq: 待确认（pending）
-  version: 1
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: DS-07-TECH-INNOV-006
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-  updated: '2026-09-04'
-  algo_server_location: repos/demo-algo-science/innov/metrics/metrics.py（计算） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）
-  calc_logic_ref: metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_006.md
-- metric_id: M_TECH_GRAPH_104_1
-  metric_name_zh: 技术实体识别构建
-  definition: 技术实体识别构建：对应算法库 SRS ALGO-TECH-GRAPH-104，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-GRAPH-104
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
-- metric_id: M_TECH_GRAPH_105_1
-  metric_name_zh: 技术实体关系抽取
-  definition: 技术实体关系抽取：对应算法库 SRS ALGO-TECH-GRAPH-105，统计窗口与对象范围以需规文本为准。
-  formula: 'pending_cosign: human:唐绍祖（未签）'
-  algorithm_type: third_party
-  source_tables:
-  - pending_ods
-  source_systems:
-  - pending_ods
-  update_freq: pending
-  version: 0.1.0
-  is_mock: true
-  mapping_status: ⏳
-  pending_ref: GAP-ALGO-TYPE-UNSIGNED
-  acceptance_unit_id: ALGO-TECH-GRAPH-105
-  owner_agent: data-agent
-  owner_human: human:淮政玮
-  register_task: ALGO-LIB-T0X-REGISTER-L01
-  open_task: ALGO-LIB-T0X-REGISTER-L01
+  - metric_id: M_TECH_BASE_96_1
+    metric_name_zh: "技术基础能力分析"
+    definition: "11 维里 3 维直接、4 维代理、4 维无源。代理维能出数但口径降级，无源维连降级都不能，因此既有可交付内容、又始终补不齐，按 §〇 落**部分支持**，不上抬到「完全转换支持」。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_BASE_96_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_bid_base_out", "dwd_deal", "dwd_industry_chain_news_info", "dwd_patent", "dwd_patent_transfer", "dwd_zh_author", "dwd_zh_paper", "dwd_zh_paper_classification"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_BASE_96_1.md"
+    data_support_level: "部分支持"
+    support_reason: "11 子指标中专利计数与深圳/区域专利维可直接出数（主分类 IPC4 2,420,915 件、2024 深圳 275,908 件），论文维只能给「学科上界 + 机构代理」两套降级读数；前沿机构质量维因影响因子列缺失、download_num 整列 0、论文级被引 ID 不通而不可算；技术交易额两维无技术合同登记表（dwd_deal 10 行无金额、dwd_patent_transfer 无成交价、dwd_bid_base_out 是招投标买方口径），技术动态资讯维无技术域标签。始终存在无法补齐的依赖维，故落部分支持，不抬档。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "技术基础能力页的 11 个卡片（论文 4 张、专利 4 张、交易 2 张、资讯 1 张）"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-BASE-96"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_COMPOSITE_SCORE
+    metric_name_zh: "技术域综合评价分"
+    definition: "综合分的**算法面**没有任何障碍：归一、加权、排序三步都能落地，10 个域都能出分。卡住的是**权重该乘什么**——11 个子指标里 4 个无源（前沿论文机构、技术交易额、区域交易额、技术资讯），4 个只有代理（论文四维都靠学科上界与机构归属），只有 3 个专利维是真值。也就是说，一个「综合评价」里六成以上的语义（前沿性、市场化、动态性）没有数据承接。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_COMPOSITE_SCORE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_deal", "dwd_deal_bak_20260912", "dwd_patent", "dwd_patent_transfer", "dwd_scholar_paper_relation", "dwd_zh_paper", "dwd_zh_paper_classification"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_COMPOSITE_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "综合分的计算面（归一 + 加权 + 排序）完全可实现，10 个域都能出分；但 11 个子指标里 4 个无源（前沿质量、技术交易额两项、资讯），2 个只有机构代理且城市覆盖 37.09%，可用维只有 5 个；且主分与「只看专利规模」的秩相关达 0.9 以上——说明缺的那几维本来承担区分，去掉后综合分退化为专利规模的不同写法。按「始终有部分依赖维无法得到」判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "技术域总览页的六边形雷达、「优先布局技术域」卡片"
+    pending_ref: "Q-MO-DS03-04"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_CONVERT_BOTTLENECK
+    metric_name_zh: "技术转化瓶颈诊断"
+    definition: "三个结构算子能算、排序稳定、区分度正常，但需求点名的「成果转化」一类无源。诊断类指标缺一维就等于缺一类病因，故按 §〇 落**部分支持**，且消费侧必须对缺维加标签。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_CONVERT_BOTTLENECK.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_CONVERT_BOTTLENECK.md"
+    data_support_level: "部分支持"
+    support_reason: "承接集中度、技术陈旧度、收缩度三个结构量在 253 个实质性 IPC4 域上可复算（覆盖有 IPC 专利的 0.9488），判瓶颈率 0.3004 由阈值直接决定，P60/P70/P80 名单 Jaccard 0.7525 / 0.6711，区分度正常且不随规模漂移；但需求三类指标中的成果转化类在 gkx 无源，五维资源框架（人才/市场/技术/政策/资金）只有技术维与市场结构维有算子。始终存在无法补齐的依赖维，故落部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "技术转化瓶颈页的「瓶颈域排行」、产业布局推荐页的「技术域风险」标签"
+    pending_ref: "Q-MO-TECH-02"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_130_1
+    metric_name_zh: "全景技术链模型"
+    definition: "节点面（634 个 IPC4 域、2,009,365 件基期专利）与边面（同专利共类共现、五段等距抽样 58,165 行）可以在 gkx 上当日重建，图结构指标（连通分量、度分布、密度）可复算；但结果面 `tech_chain_node` / `tech_chain_edge` / `tech_chain_events` 与域名字典 `tech_domain` 在 280 张基表中零命中，需求点名的论文、技术标准、产品三类节点属性也找不到可挂接键——结构缺结果面、数据缺三维属性，按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_130_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_event", "dwd_id", "dwd_merger_acquisition_events_party_info", "dwd_patent", "dwd_patent_title", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_130_1.md"
+    data_support_level: "部分支持"
+    support_reason: "节点面（634 个 IPC4 域）与边面（同专利共类共现，抽样）可当日重建，图结构指标可复算；但结果面 tech_chain_* 三表在 gkx 不存在，需求点名的论文/标准/产品三类节点属性均无可挂接键，边集为抽样共类而非标注依赖——结构与数据两侧都始终缺维。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术链全景视图（DS-02-TECHGRAPH / TOPIC-TECH-05）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-130"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_131_1
+    metric_name_zh: "深圳技术链模型"
+    definition: "深圳切片可当日重切：2021—2024 有 IPC 的专利归属次 890,009 件、覆盖 609 个 IPC4 域、占全国有 IPC 专利 2,420,915 件的 36.76%；区级矩阵覆盖深圳有 IPC 专利的 99.996%；企业数与科技资质可算。但产业规模无域级营收字段、应用领域经信用代码桥仅覆盖 12.99%、区级矩阵是「全期截面」而非逐年、论文与标准无深圳切片源——属地多维属性始终缺维，落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_131_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_base_info", "dwd_org_industry_product_tags", "dwd_org_stock_finance_info", "dwd_org_tech_tag", "dwd_patent", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_131_1.md"
+    data_support_level: "部分支持"
+    support_reason: "深圳切片（890,009 件归属次、609 域）、区级矩阵（覆盖有 IPC 专利 99.996%）、企业数与科技资质可复算；但产业规模无域级字段、应用领域经信用代码桥仅覆盖 12.99%、区级年度序列与论文/标准切片缺源——属地多维属性始终缺维。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·深圳技术链视图（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-131"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_132_1
+    metric_name_zh: "技术发展历程模型"
+    definition: "专利主轴（2021—2024 四完整年、634 域）可在 gkx 当日重算时间线，按自定阈值检出 15 条重大事件；论文与政策两条辅轴的历史段可用，但各有一处采集断点（论文 2024 年入库批次跳变 z=22.81、政策 2022 年后截断 -84.23%）。需求点名的七类数据源里，标准/媒体/博客三源在 gkx 无表，资讯只有 2025—2026 两年且无技术域键，事件类型只能覆盖专利一族——落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_132_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_event", "dwd_industry_chain_news_info", "dwd_merger_acquisition_events_party_info", "dwd_patent", "dwd_policy_base", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_132_1.md"
+    data_support_level: "部分支持"
+    support_reason: "专利主轴（2021—2024 四完整年、634 个 IPC4 域）与论文/政策两条辅轴可当日重建时间线（Top20 域检出 15 条重大事件）；但需求七源中标准/媒体/博客三源在 gkx 无表，资讯只有 2025—2026 两年且无技术域键，事件类型覆盖始终锁死在专利一族——缺的是供给侧，不是算子。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术发展时间线（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-132"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_133_1
+    metric_name_zh: "深圳细分领域分布模型"
+    definition: "深圳 2021—2024 年有 IPC 的专利 **890,009 件归属次**，落在 **609 个 IPC4 域**；20+8 产业映射 **28/28 全覆盖**，域级 HHI **174.52**（分散形态），区级矩阵覆盖有 IPC 专利的 **99.996%**，链标签企业 **19,909 家**、机构技术标签 **18,090 家**都可交付。但需求点名的「特征提取与历史数据训练，形成预测模型」缺「域×行业×年」面板，只能降级为四点描述序列，故按四档口径落**部分支持**（`out.json` 的 `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_133_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_base_info", "dwd_org_industry_tags", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_133_1.md"
+    data_support_level: "部分支持"
+    support_reason: "深圳 2021—2024 年 IPC4 分布 890,009 件、609 个域、20+8 覆盖 28/28、HHI 174.52 均可复算；区级矩阵覆盖有 IPC 专利的 99.996%、产业链承接面 19,909 家可交付。但需求点名的「机器学习预测领域覆盖率与集中度」缺「域×行业×年」特征面板，只能降级为四点描述序列，故按四档口径判部分支持，不抬档。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·深圳技术细分领域分布（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-133"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.0
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_134_1
+    metric_name_zh: "技术前沿热点领域识别模型"
+    definition: "深圳专利侧可以给出可复算的「热点域」榜单：634 个 IPC4 域中 **285 个**通过最低样本门槛，按「近端增长 2023→2024」与「2024 年规模对数」各半合成热点分，Top20 合计 **88,647 件**、占全国 2024 年有 IPC 专利的 **17.92%**、占深圳 2024 年归属次的 **41.27%**，正增长域 108 个（37.89%）。但需求点名的论文、新闻两维只有城市/学科或事件粒度，没有 IPC4 挂接，热度合成只能退化为专利单源；加上 H10D/B60G 等域的增长率受新码迁入与小基数放大，故按四档口径落**部分支持**（`out.json` 的 `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_134_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_134_1.md"
+    data_support_level: "部分支持"
+    support_reason: "专利侧热点排序可交付：285 个合格域、Top20 合成分、增长分布（正增长 37.89%）均由全量面板复算；但论文维（100,900 篇，深圳 9,520 篇）只有城市/学科粒度、新闻维无技术域挂接，需求的多源热度合成只能退化为专利单源，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术前沿热点领域（TOPIC-TECH-06 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-134"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.2
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_135_1
+    metric_name_zh: "技术产业化潜力识别模型"
+    definition: "「技术强度」与「科研强度」两维有真值：专利 634 域、基期 2,009,365 件；科研项目 58,453 个、连续窗口 2015—2020 共 26,783 个。但「市场验证」维的融资金额只披露 34.40%（8,826 / 25,654），且无技术域外键；「转化实绩」维的转让记录虽有 22,809 行，能回连专利主体的只有 534 行（2.341%）；交易表 `dwd_deal` 只有 10 行、金额列不存在。产业化闭环的验证侧不可算，落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_135_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_deal", "dwd_org_financing_info", "dwd_patent", "dwd_patent_transfer", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_135_1.md"
+    data_support_level: "部分支持"
+    support_reason: "潜力值/成熟度无结果面可读，只能以专利技术强度与科研项目强度双源重建；市场验证维（融资）金额披露率 34.40% 且无技术域外键，转化实绩维（专利转让）仅 2.341% 的行能回连专利主体、交易表仅 10 行——产业化闭环的验证侧不可算，故落部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术潜力评估（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-135"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_136_1
+    metric_name_zh: "技术转化瓶颈堵点原因识别模型"
+    definition: "专利侧可以给出「堵点候选面」：634 个 IPC4 域中 **238 个**有足够历史量，148 个负增长、115 个跌幅不低于 10%，其中 **18 个**同时满足「2024 年不少于 1,000 件」与「2021→2024 跌幅不低于 10%」，按「跌幅×规模」排序输出，并附申请人集中度、头部结构与头部授权率。但需求要的是「原因识别」——转化流量、市场融资、政策工具、链环停留四类证据全部缺键：转让表名称命中 2.07% 且无 IPC4、融资表无技术域、政策 theme 19,998/20,000 为空、链环无运营表。因此只能交付**候选面 + 归因框架**，不能交付因果结论，按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_136_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_financing_info", "dwd_patent", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_136_1.md"
+    data_support_level: "部分支持"
+    support_reason: "候选面可交付：238 个域中筛出 18 个「规模≥1000 且 2021→2024 跌幅≥10%」的堵点候选，含集中度、头部授权率与结构类型；但转化流量（转让命中 2.07%、无域字段）、市场融资（无域键）、政策 theme 空值（19,998/20,000）与链环运营数据四类归因证据均缺，故只能给候选面+框架，判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术转化瓶颈堵点（TOPIC-TECH-07 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-136"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.8
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_137_1
+    metric_name_zh: "技术阶段分析模型"
+    definition: "专利侧可以给出「形态三档」：634 个 IPC4 域中 **238 个**有足够历史量，按「2021→2024 总增长」与「2023→2024 近端增长」双信号分为初级 **24**、中级 **114**、高级 **100**。但这个分档是**增长率分档**，不是技术成熟度分档；需求点名的 S 曲线成熟度指数在四点窗上只有插值意义（3 点拟合 3 参数，自由度 0），创新度指数受被引 0.70% 上限覆盖钳制，专家阈值无登记表。因此按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_137_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_cited"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_137_1.md"
+    data_support_level: "部分支持"
+    support_reason: "形态三档可交付：238 个域按双信号分为初级 24 / 中级 114 / 高级 100；但需求点名的技术成熟度指数（S 曲线）在四点窗上留出预测中位误差 8.0%、创新度指数受被引 0.70% 上限覆盖钳制、专家阈值无登记表，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术阶段分析（TOPIC-TECH-08 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-137"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 6.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_138_1
+    metric_name_zh: "深圳技术发展问题识别模型"
+    definition: "专利侧可以给出「落后维」问题清单：634 个 IPC4 域中 231 个有足够样本，**114 个 LQ（区位熵）下行、148 个绝对收缩、60 个同时达到双阈值**；深圳总件数 231,736→214,810（-7.30%），快于全国 -3.02%，本地份额从 45.44% 降到 43.43%。但需求点名的侵权、司法、盗窃三维全部缺源：法律状态表仅 20,000 行（上限覆盖 0.68%）且不等于侵权、司法两表无专利号挂接列、技术秘密无专表。因此只能交付「落后维」清单，按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_138_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_case_detail", "dwd_patent", "dwd_patent_legal"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_138_1.md"
+    data_support_level: "部分支持"
+    support_reason: "落后维可交付：231 个域中 114 个 LQ 下行、60 个同时绝对收缩，深圳总件数 231,736→214,810（-7.3%）快于全国（-3.02%），问题清单可复算；但侵权维（法律状态上限覆盖 0.68%）、司法挂接（无专利号列）与盗窃专源（无表）三支始终缺源，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术发展问题识别（TOPIC-TECH-09 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-138"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.1
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_139_1
+    metric_name_zh: "深圳技术发展机遇识别模型"
+    definition: "以**深圳**为唯一主体，用 2021—2024 年 IPC4 主分类面板算 LQ、四年增长与近端增长，231 个合格域里给出**优势领域 38 个、潜在方向 20 个、高潜力企业 40 家**；全国只作 LQ 分母、分表列示。但需求点名的「成果转化率」「创新人才数量」「专家策略」三维在本库无可用键：转让表仅 22,809 行且深圳主体只命中 134 家，发明人只有全库姓名计数，专家无登记表。故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_139_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_agg"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_139_1.md"
+    data_support_level: "部分支持"
+    support_reason: "以**深圳**为唯一主体，用 2021—2024 年 IPC4 主分类面板算 LQ、四年增长与近端增长，231 个合格域里给出**优势领域 38 个、潜在方向 20 个、高潜力企业 40 家**；全国只作 LQ 分母、分表列示。但需求点名的「成果转化率」「创新人才数量」「专家策略」三维在本库无可用键：转让表仅 22,809 行且深圳主体只命中 134 家，发明人只有全库姓名计数，专家无登记表。故按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术机遇识别（TOPIC-TECH-09 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-139"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.9
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DEEP_140_1
+    metric_name_zh: "深圳技术发展重点布局领域推荐模型"
+    definition: "以**深圳**为主体，把 IPC4 域按 `SZ208_MAP` 归入 20+8 产业的 28 个集群，用 LQ、四年增长、规模、政策供给四维打分，24 个产业可评分、Top8 可推荐（网络与通信 72.01 分居首）。但 28 个产业里有 4 个（数字创意、细胞与基因、量子信息、区块链）在 `SZ208_MAP` 中没有 IPC4 前缀，无法进入专利面板；科技项目、技术文献、专家策略三维也没有产业级键。故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DEEP_140_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_policy", "dwd_zh_paper", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DEEP_140_1.md"
+    data_support_level: "部分支持"
+    support_reason: "以**深圳**为主体，把 IPC4 域按 `SZ208_MAP` 归入 20+8 产业的 28 个集群，用 LQ、四年增长、规模、政策供给四维打分，24 个产业可评分、Top8 可推荐（网络与通信 72.01 分居首）。但 28 个产业里有 4 个（数字创意、细胞与基因、量子信息、区块链）在 `SZ208_MAP` 中没有 IPC4 前缀，无法进入专利面板；科技项目、技术文献、专家策略三维也没有产业级键。故按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·重点领域推荐（TOPIC-TECH-10 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-DEEP-140"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DS_07_TECH_INNOV_002
+    metric_name_zh: "专利质量评估"
+    definition: "专利质量评估要求按 **IPC4 技术领域**输出 0—100 分，五个维度（家族规模、权利要求数、被引次数、技术宽度、法律状态稳定性）都必须先落到「域 × 年」再聚合。实测四张价值附表各约 2 万行，对 294 万行主表覆盖 **0.68%—0.70%**；附表没有 IPC4 与申请年字段，按 `patent_id` 回连主表的三条查询各在 60 秒超时；主表 `other_Versions` 抽样 3,000 行全空，技术宽度连单件都算不出。五维没有一维能在域级闭环，本报告**不产出任何领域分**，只产出覆盖率与样本画像作为证据。按四档口径落**完全不支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DS_07_TECH_INNOV_002.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_patent", "dwd_patent_cited", "dwd_patent_claim", "dwd_patent_family", "dwd_patent_legal"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 待确认（pending）
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_002.md"
+    data_support_level: "完全不支持"
+    support_reason: "专利质量评估要求按 **IPC4 技术领域**输出 0—100 分，五个维度（家族规模、权利要求数、被引次数、技术宽度、法律状态稳定性）都必须先落到「域 × 年」再聚合。实测四张价值附表各约 2 万行，对 294 万行主表覆盖 **0.68%—0.70%**；附表没有 IPC4 与申请年字段，按 `patent_id` 回连主表的三条查询各在 60 秒超时；主表 `other_Versions` 抽样 3,000 行全空，技术宽度连单件都算不出。五维没有一维能在域级闭环，本报告**不产出任何领域分**，只产出覆盖率与样本画像作为证据。按四档口径落**完全不支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·专利质量评估（TOPIC-TECH-11 / DS-07-TECHINNOV）｜ **数据支持度**：**完全不支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-TECH-INNOV-002"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DS_07_TECH_INNOV_004
+    metric_name_zh: "技术基础指标模型——领先专利主体机构（王惠口径：技术创新力综合评估）"
+    definition: "王惠 11 子项中 **4 项全量可算**（专利申请量 / 专利授权量 / 技术宽度 / 转让占比）、**3 项为 0.68%-0.70% 抽样级**（家族规模 / 被引次数 / 法律状态稳定性）、**4 项近零或缺列**（权利要求数、许可 2 例、诉讼 0 例、质押 10 例、开放许可 1 例，均出自 2,000 条 legal_events 抽样）——因此 **0-100 综合分不可闭合**，但「领先主体机构」的阈值识别（需求 (8) 的原始语义）当日可交付：220 家 ≥60 件主体中，按「≥500 件且授权率 ≥40%」筛出 **10 家**领先机构。按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DS_07_TECH_INNOV_004.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_id", "dwd_org_base_info", "dwd_patent", "dwd_patent_cited", "dwd_patent_claim", "dwd_patent_family", "dwd_patent_legal", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 待确认（pending）
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_004.md"
+    data_support_level: "部分支持"
+    support_reason: "王惠 11 子项中 **4 项全量可算**（专利申请量 / 专利授权量 / 技术宽度 / 转让占比）、**3 项为 0.68%-0.70% 抽样级**（家族规模 / 被引次数 / 法律状态稳定性）、**4 项近零或缺列**（权利要求数、许可 2 例、诉讼 0 例、质押 10 例、开放许可 1 例，均出自 2,000 条 legal_events 抽样）——因此 **0-100 综合分不可闭合**，但「领先主体机构」的阈值识别（需求 (8) 的原始语义）当日可交付：220 家 ≥60 件主体中，按「≥500 件且授权率 ≥40%」筛出 **10 家**领先机构。按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "DS-07 技术基础指标（专题库技术发展分析） ｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-TECH-INNOV-004"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_DS_07_TECH_INNOV_006
+    metric_name_zh: "技术基础指标模型——技术动态资讯（王惠口径：技术创新趋势预测）"
+    definition: "王惠 FORECAST 三维中**年申请量（D1）与年转移（D3）可逐年拟合外推**（40 个 IPC4 域已出点预测 + 80% 区间，转移序列 2021-2024 从 326 条增至 7,711 条），**年被引（D2）不可生成**——`dwd_patent_cited` 仅 20,515 行（覆盖 0.70%），且年度序列所依赖的 `cited_by_date` 大量为字面 `'null'`；因此三维外推在结构上缺一维，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_DS_07_TECH_INNOV_006.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_org_base_info", "dwd_patent", "dwd_patent_cited", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: 待确认（pending）
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_DS_07_TECH_INNOV_006.md"
+    data_support_level: "部分支持"
+    support_reason: "王惠 FORECAST 三维中**年申请量（D1）与年转移（D3）可逐年拟合外推**（40 个 IPC4 域已出点预测 + 80% 区间，转移序列 2021-2024 从 326 条增至 7,711 条），**年被引（D2）不可生成**——`dwd_patent_cited` 仅 20,515 行（覆盖 0.70%），且年度序列所依赖的 `cited_by_date` 大量为字面 `'null'`；因此三维外推在结构上缺一维，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "DS-07 技术基础指标 / 技术发展历程（专题库技术发展分析） ｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-07-TECH-INNOV-006"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_EDGE_STRENGTH
+    metric_name_zh: "技术–技术关联强度"
+    definition: "「技术–技术关联强度」在库内**没有结果表**（无「技术关系」「边强度」字段），但依赖侧结构完整：`dwd_patent` 的 `main_classification_ipcr` + `further_classification_ipcr` 可直接构造 IPC4 共类网络——20 万件 PK 分片样本产出 **620 个 IPC4 节点、17,085 个共现对、4,032 条 co≥5 边**（co≥10 为 2,136 条），最大共现 4,376 次，边权 AS 中位 2.487、p90 36.612、跨三个数量级、具充分区分度——**结构与当前数据量均足，现转成立**，按四档口径落 **完全转换支持**（out.json `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_EDGE_STRENGTH.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_cited"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_EDGE_STRENGTH.md"
+    data_support_level: "完全转换支持"
+    support_reason: "「技术–技术关联强度」在库内**没有结果表**（无「技术关系」「边强度」字段），但依赖侧结构完整：`dwd_patent` 的 `main_classification_ipcr` + `further_classification_ipcr` 可直接构造 IPC4 共类网络——20 万件 PK 分片样本产出 **620 个 IPC4 节点、17,085 个共现对、4,032 条 co≥5 边**（co≥10 为 2,136 条），最大共现 4,376 次，边权 AS 中位 2.487、p90 36.612、跨三个数量级、具充分区分度——**结构与当前数据量均足，现转成立**，按四档口径落 **完全转换支持**（out.json `support_judgment` 同档）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统 · 技术评估 · 弦线图（线条粗细 = 技术间关联强度） ｜ **数据支持度**：**完全转换支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-02-TECHGRAPH"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_ENTITY_INFLUENCE
+    metric_name_zh: "技术点影响力 / 实体优先级"
+    definition: "「技术点影响力 / 实体优先级」在库内**没有结果面**（无「技术影响力分」「实体优先级」字段），但依赖侧齐备：IPC4 共类网络（378 节点 / 3,855 条 co≥5 边）可算出**尺度一致**的 PageRank（$d=0.85$、40 轮、和恒为 1.0），叠加规模对数与 2021→2024 增速后得技术点影响力（G06F 92.59、G06N 72.06、G06V 52.37，中位约 18，跨 0-93 有区分度）；再以「实体在各技术点上的 PR 加权计数」得实体优先级（4,200 家 ≥5 件实体，华为 83.05、华南理工 80.08、广东工大 76.72，中位 18.8、p90 25.65、≥50 仅 46 家）——**结构与量双足、当日可算**，按四档口径落 **完全转换支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_ENTITY_INFLUENCE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_patent_cited"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_ENTITY_INFLUENCE.md"
+    data_support_level: "完全转换支持"
+    support_reason: "「技术点影响力 / 实体优先级」在库内**没有结果面**（无「技术影响力分」「实体优先级」字段），但依赖侧齐备：IPC4 共类网络（378 节点 / 3,855 条 co≥5 边）可算出**尺度一致**的 PageRank（$d=0.85$、40 轮、和恒为 1.0），叠加规模对数与 2021→2024 增速后得技术点影响力（G06F 92.59、G06N 72.06、G06V 52.37，中位约 18，跨 0-93 有区分度）；再以「实体在各技术点上的 PR 加权计数」得实体优先级（4,200 家 ≥5 件实体，华为 83.05、华南理工 80.08、广东工大 76.72，中位 18.8、p90 25.65、≥50 仅 46 家）——**结构与量双足、当日可算**，按四档口径落 **完全转换支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统 · 技术评估 · 技术关系网络「核心节点」+ 创新主体评估（实体排序） ｜ **数据支持度**：**完全转换支持**"
+    pending_ref: "Q-MO-DS02-03"
+    acceptance_unit_id: "DS-02-ENTITY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_ENTITY_REL
+    metric_name_zh: "实体关联关系网"
+    definition: "「实体关联关系网」在库内**没有结果表**，依赖侧则**部分足、部分缺**：`dwd_patent_transfer`（转移 22,809 行）、`dwd_patent_applicants`（共同申请）、`dwd_zh_paper`（论文合著）三源可现转出 **30,704 个实体节点 / 39,055 条唯一边 / 66,136 条边实例**（转移 27,024、合著 23,756、共申 15,356 实例），度分布 p50=2、p90=4、max=66；但需求所含的**引用边**（`dwd_patent_cited` 仅 0.70%、`cited_by` 多为 `'null'`）、**许可边**（法事件 2/2000）、**诉讼边**（0/2000）均无可用量，**始终缺一类以上关键边**，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_ENTITY_REL.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent_applicants", "dwd_patent_cited", "dwd_patent_transfer", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_ENTITY_REL.md"
+    data_support_level: "部分支持"
+    support_reason: "「实体关联关系网」在库内**没有结果表**，依赖侧则**部分足、部分缺**：`dwd_patent_transfer`（转移 22,809 行）、`dwd_patent_applicants`（共同申请）、`dwd_zh_paper`（论文合著）三源可现转出 **30,704 个实体节点 / 39,055 条唯一边 / 66,136 条边实例**（转移 27,024、合著 23,756、共申 15,356 实例），度分布 p50=2、p90=4、max=66；但需求所含的**引用边**（`dwd_patent_cited` 仅 0.70%、`cited_by` 多为 `'null'`）、**许可边**（法事件 2/2000）、**诉讼边**（0/2000）均无可用量，**始终缺一类以上关键边**，按四档口径落 **部分支持**（out.json `support_judgment` 同档）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技信息展示系统 · 技术评估 · 创新主体关系网络（企业/高校/院所之间的合作、转移、合著关系） ｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-02-ENTITY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_ENTITY_TOP5
+    metric_name_zh: "根节点 Top5 关键实体与关联强度"
+    definition: "四类实体里两类（机构/企业）有全量 IPC4×申请人可算，一类（论文）有 10.09 万篇标题关键词桥可算但歧义大，一类（人才）完全无表——gkx 无「发明人×IPC」落盘，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_ENTITY_TOP5.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_id", "dwd_patent", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_ENTITY_TOP5.md"
+    data_support_level: "部分支持"
+    support_reason: "5 个根技术点、5 组卡片可出：机构/企业卡有全量 IPC4×申请人（581,585 行），论文卡有 100,900 篇标题+关键词桥；但**人才卡整类不可算**——gkx 无「发明人×IPC」落盘，dwd_patent 聚合被 DATA_FACTS §3.13 禁止；专利卡无标题字段（快照未落 title），只能给公开号。四类实体缺一类、弱一类，判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/技术点头部实体"
+    pending_ref: "Q-MO-DS02-01"
+    acceptance_unit_id: "DS-02-ENTITY"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_GRAPH_104_1
+    metric_name_zh: "技术实体识别构建"
+    definition: "本件以**深圳专利申请人名称**为实体主键，构建 **77,846 个技术实体**、覆盖 **1,336,877 件专利**的实体表，实体类型按「企业 77,443 / 科研机构 119 / 医疗机构 44 / 高校 42 / 其他 198」五分；名称、行业、区县、专利件数、授权件数五项属性填充率 99.74%—100%，主 IPC4 填充 76.97%，技术标签只覆盖 16.22%。论文属性 0 命中、技术交易只有条数没有金额、文本 NER 未训练，三项无法交付，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_GRAPH_104_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_base_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_GRAPH_104_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件以**深圳专利申请人名称**为实体主键，构建 **77,846 个技术实体**、覆盖 **1,336,877 件专利**的实体表，实体类型按「企业 77,443 / 科研机构 119 / 医疗机构 44 / 高校 42 / 其他 198」五分；名称、行业、区县、专利件数、授权件数五项属性填充率 99.74%—100%，主 IPC4 填充 76.97%，技术标签只覆盖 16.22%。论文属性 0 命中、技术交易只有条数没有金额、文本 NER 未训练，三项无法交付，故按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术图谱（TOPIC-TECH-12 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-GRAPH-104"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_GRAPH_105_1
+    metric_name_zh: "技术实体关系抽取"
+    definition: "本件在前 200 个 IPC4 技术域（覆盖 91.47% 的 IPC 专利）上抽七类关系：**技术—技术 2,643 条**（申请人共现骨干）、**技术—企业 225,097 条**（57,333 家企业）、**技术—机构 2,661 条**（169 家机构）、**技术—产业 23 条**（规则映射）、**技术—政策 28 条**（产业代理）；**技术—人才、技术—服务机构两类为 0**。前五类里只有三类是「从数据抽取」，两类是「规则/代理」，两类缺键，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_GRAPH_105_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_base_info", "dwd_patent", "dwd_policy"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_GRAPH_105_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件在前 200 个 IPC4 技术域（覆盖 91.47% 的 IPC 专利）上抽七类关系：**技术—技术 2,643 条**（申请人共现骨干）、**技术—企业 225,097 条**（57,333 家企业）、**技术—机构 2,661 条**（169 家机构）、**技术—产业 23 条**（规则映射）、**技术—政策 28 条**（产业代理）；**技术—人才、技术—服务机构两类为 0**。前五类里只有三类是「从数据抽取」，两类是「规则/代理」，两类缺键，故按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术图谱（TOPIC-TECH-12 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "ALGO-TECH-GRAPH-105"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.1
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_GRAPH_STRUCT
+    metric_name_zh: "技术点网图结构"
+    definition: "本件在 200 个 IPC4 技术域的共现骨干图上复算结构指标：**200 节点、2,643 边、密度 0.1328、平均度 26.43、最大度 73、4 个连通分量（最大 197）、平均聚类系数 0.5782、权重合计 1,085,258**。结构指标本身可以全量复算，但节点是「IPC4 域」而不是 Nebula 的「技术点实体」，图壳属性（层级、类型配色、布局坐标）不在本库，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_GRAPH_STRUCT.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_GRAPH_STRUCT.md"
+    data_support_level: "部分支持"
+    support_reason: "本件在 200 个 IPC4 技术域的共现骨干图上复算结构指标：**200 节点、2,643 边、密度 0.1328、平均度 26.43、最大度 73、4 个连通分量（最大 197）、平均聚类系数 0.5782、权重合计 1,085,258**。结构指标本身可以全量复算，但节点是「IPC4 域」而不是 Nebula 的「技术点实体」，图壳属性（层级、类型配色、布局坐标）不在本库，故按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术图谱（TOPIC-TECH-12 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-02-TECHGRAPH"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.0
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_HEAT_INDEX
+    metric_name_zh: "技术热点热度指数"
+    definition: "以**深圳**为唯一主体、IPC4 主分类前 4 位为技术点，取 2021—2024 年四个完整年，用「规模 lnN（0.40）+ 平滑 CAGR（0.35）+ 近端占比（0.25）」z 标准化加权后 min-max 到 0—100，在 **238 个 2024 年不少于 100 件的合格域**上给出五档热度；全国 IPC4 只作 LQ 分母、分表列示。专利侧三维齐备、指数非退化，但需求点名的论文、新闻与博客、行业资讯、专家活动四类输入在库内都没有能挂到「技术点」上的键，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_HEAT_INDEX.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_id", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_HEAT_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "专利单源的规模/增长/近端三维齐备，238 个域全部可算、指数非退化；需求点名的多源输入（学术论文、新闻与技术博客、行业资讯、专家活动）四项在库内均无「技术点」回连字段，无法合成，故落部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术热点看板（TOPIC-TECH-01 / DS-02-TECHHEAT）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-TECH-02"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 153.7
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_HEAT_QUERY
+    metric_name_zh: "查询结果·技术热度"
+    definition: "以**深圳**为规模与年度分布的分母，用 40 个 IPC4 × 各 3,000 件的专利关键词抽样（117,500 条有效数组）反查 9 个查询词，给出「命中样本数 / 覆盖域数 / 子标签 TF 与份额 / 术语集中度 HHI / 深圳年度估算件数」五列。9 个查询里 7 个非空、2 个零命中（生物医药、大模型）；需求另点名的资讯侧三项（资讯数量、发布时间、阅读量）在库内没有任何承载，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_HEAT_QUERY.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_id", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_HEAT_QUERY.md"
+    data_support_level: "部分支持"
+    support_reason: "「子标签出现频次 + 出现时间」两要素在专利关键词侧可算（9 个查询里 7 个非空、TF/HHI/年度矩阵齐备）；需求另点名的资讯侧三项（资讯数量、发布时间、阅读量）在库内零承载，故落部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术搜索热词（TOPIC-TECH-02 / DS-02-TECHQUERY）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-QUERY-03"
+    acceptance_unit_id: "TOPIC-QUERY"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.87
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_INVEST_AMOUNT
+    metric_name_zh: "技术投入金额"
+    definition: "以**深圳上市主体**为唯一金额主体，用 2021—2024 年年报研发费用（784.24 → 1,545.04 亿元）按各主体在 238 个 IPC4 合格域上的专利件数结构分摊，得到域级年度金额合计 **4,039.75 亿元**；非上市企业研发、政府科技专项、基金投资项目金额三项在本库无字段可算（`arch_development_am` 整列为空 0/90,926，基金表只有基金级资本、无项目与 IPC），故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_INVEST_AMOUNT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_industrial_fund_basic_info", "dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_stock_finance_info", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_INVEST_AMOUNT.md"
+    data_support_level: "部分支持"
+    support_reason: "金额侧只有上市主体年报研发费用（深圳 412 家、1,545.04 亿元），非上市企业、政府专项、基金投资项目金额三项缺源：`dwd_org_annual_financial_info` 的`arch_development_am` 整列为空（0/90,926），基金表只有基金级认缴/实缴、无项目级金额与 IPC 字段。故只能交付「上市主体研发费用域级分摊」，不能交付「政府专项+社会资本」全口径技术投入。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术投入结构（TOPIC-TECH-05 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.2
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_LIFE_STAGE
+    metric_name_zh: "技术生命周期阶段"
+    definition: "以**深圳**为唯一主体，用 2021—2024 年 IPC4 主分类面板的四年形态判四阶段：**萌芽 15、成长 27、成熟 109、衰退 87**（238 个合格域），2024 年件数占比分别为 1.98% / 13.24% / 60.92% / 20.17%；但生命周期本体需要技术替代关系、法律状态与更长序列，库内专利只有主分类、无替代关系字段，2017—2020 为零行，被引覆盖仅 0.70%，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_LIFE_STAGE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_LIFE_STAGE.md"
+    data_support_level: "部分支持"
+    support_reason: "四年申请年面板可复算四阶段形态（238 域），但生命周期需要技术替代关系、法律状态与更长序列；库内 patent 只有主分类、无替代关系，2017—2020 零行，被引覆盖 0.70%，因此只能交付「申请量形态阶段」，不能交付技术生命周期本体。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术生命周期（TOPIC-TECH-06 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS03-03"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.1
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_MATURITY_LEVEL
+    metric_name_zh: "技术成熟度等级"
+    definition: "以**深圳**为唯一主体，用 2021—2024 年 IPC4 面板在五个维度打分（规模 25%、授权比 25%、发明占比 15%、集中度 15%、近端稳定性 20%），按 30/42/50/58 四条切线分 **L1 2、L2 54、L3 89、L4 67、L5 26**；L5 只占域数 10.92%、却占 2024 年件数 46.45%。但成熟度的核心证据（TRL、被引、标准/中试、市场渗透）在本库均不存在，授权数只能按申请人份额分摊、无 pn 级授权位，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_MATURITY_LEVEL.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_MATURITY_LEVEL.md"
+    data_support_level: "部分支持"
+    support_reason: "五维里规模、授权比、发明占比、集中度、稳定性都有结构，但成熟度的核心证据（技术就绪度 TRL、被引、标准/中试、市场渗透）在本库不存在：被引表仅 20,515 行（覆盖 0.70%），无 TRL、无技术标准表；授权数只能按申请人份额分摊、无 pn 级授权位。故只能交付「专利形态五级」，不是 TRL 1—9。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术成熟度（TOPIC-TECH-07 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS03-05"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.3
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_OUTPUT_SCALE
+    metric_name_zh: "技术规模"
+    definition: "seed 把「技术规模」定义为「成果 + 应用体量」，并明文禁止用论文量、专利量、技术交易额冒充；本库**应用侧四类承载（产品/产值/装机/交易额）全缺**，成果侧只有专利与论文两类且都在禁止之列——因此本文只能交付**专利体量代理**并改名，判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_OUTPUT_SCALE.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_patent", "dwd_patent_transfer", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_OUTPUT_SCALE.md"
+    data_support_level: "部分支持"
+    support_reason: "成果侧可算：378 个技术点中 366 个有专利体量，合计 2380595 件，CR10 27.9%、HHI 150.0，分布非退化（{'S1 超大（≥2万件）': 25, 'S2 大（5千–2万）': 83, 'S3 中（1千–5千）': 164, 'S4 小（200–1千）': 94, 'S5 长尾（<200）': 0}）。但 seed 定义的「应用体量」四类承载（产品/产值/装机/交易额）全部缺失，且 seed 明文禁止以专利量冒名——故只能判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术点气泡图（大小维）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS03-01"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.07
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_PAPER_PATENT_CNT
+    metric_name_zh: "技术点论文量 / 专利量"
+    definition: "两侧的「全量计数」都能算：论文 100,900 篇（doi 去重后仍 100,900）、专利 2,939,895 件（IPC 覆盖 82.35%）。但需求要的是**按技术点对齐后的双计数**：gkx 280 张表里没有任何 `technology_id` / 技术点实体表（`domain`、`technology`、`tech_point`、`techpoint` 四组关键词全零命中），机构桥只能精确同名覆盖 10.85% 的论文机构，标题桥 0.75 以上命中 0/200。技术点粒度不成立，只能交付机构级双计数与双侧总量，落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_PAPER_PATENT_CNT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_id", "dwd_org_tech_tag", "dwd_patent", "dwd_patent_family", "dwd_patent_title", "dwd_zh_paper", "dwd_zh_paper_classification"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_PAPER_PATENT_CNT.md"
+    data_support_level: "部分支持"
+    support_reason: "两侧计数都能算（论文 100,900 / 专利 2,939,895），但需求要求按 technology_id 输出技术点粒度：gkx 无技术点实体表；主体桥精确同名覆盖 10.85% 的论文机构、42.88% 的论文；标题桥 0.75 以上命中 0/200，上限 0.6829 低于强匹配线——技术点粒度对齐不成立，只能交付机构级双计数与双侧总量。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术点详情（论文数/专利数双计数）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_PATH_CENTRALITY
+    metric_name_zh: "技术路径中心性（深圳 IPC4 技术点图五维中心性）"
+    definition: "以**深圳**为唯一主体，把 238 个 IPC4 技术点作为节点、把「同一深圳申请人名下共现 ≥20 户且 Jaccard ≥0.05」作为边（1,464 条），在 226 点的巨连通块上算五维中心性。实测结果：度、强度、PageRank 三维可用，介数因阈值敏感降为**有条件可用**，调和接近中心性在巨块内 p95/p05 只有 1.99 倍、70.8% 的节点挤在 0.30—0.51 的窄带里，判**退化**。按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_PATH_CENTRALITY.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_PATH_CENTRALITY.md"
+    data_support_level: "部分支持"
+    support_reason: "以**深圳**为唯一主体，把 238 个 IPC4 技术点作为节点、把「同一深圳申请人名下共现 ≥20 户且 Jaccard ≥0.05」作为边（1,464 条），在 226 点的巨连通块上算五维中心性。实测结果：度、强度、PageRank 三维可用，介数因阈值敏感降为**有条件可用**，调和接近中心性在巨块内 p95/p05 只有 1.99 倍、70.8% 的节点挤在 0.30—0.51 的窄带里，判**退化**。按四档口径落**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术路径中心性（TOPIC-TECH-05 / DS-02-TECHPATH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
+    acceptance_unit_id: "DS-02-PATH"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 5.8
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_PATH_KEYNODE
+    metric_name_zh: "技术路径关键节点（深圳 IPC4 卡位域识别）"
+    definition: "本件先做了一次**证伪实验**：如果「关键节点」指「不可替代的割点」，那深圳技术图上 16 个割点里最强的 B62D 移除后也只带走 5 个节点（2.21%），说明网络里**没有不可替代的单点**；于是把定义改成「流量型卡位」，用「介数 40% + 跨部类共现 35% + 强度 25%」三合一打分，分层得到 T1 7 个、T2 21 个、T3 210 个。三合一分在 ±50% 阈值档的 Spearman 为 0.8798—0.9332，稳健；但收紧 100% 时降到 0.6523、T1 只保住 3/7，且 T1 七个点彼此密度 0.9524（几乎是完全图），不是七个独立卡位。判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_PATH_KEYNODE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_PATH_KEYNODE.md"
+    data_support_level: "部分支持"
+    support_reason: "本件先做了一次**证伪实验**：如果「关键节点」指「不可替代的割点」，那深圳技术图上 16 个割点里最强的 B62D 移除后也只带走 5 个节点（2.21%），说明网络里**没有不可替代的单点**；于是把定义改成「流量型卡位」，用「介数 40% + 跨部类共现 35% + 强度 25%」三合一打分，分层得到 T1 7 个、T2 21 个、T3 210 个。三合一分在 ±50% 阈值档的 Spearman 为 0.8798—0.9332，稳健；但收紧 100% 时降到 0.6523、T1 只保住 3/7，且 T1 七个点彼此密度 0.9524（几乎是完全图），不是七个独立卡位。判**部分支持**。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术路径关键节点（TOPIC-TECH-05 / DS-02-TECHPATH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS02-02"
+    acceptance_unit_id: "DS-02-PATH"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 4.9
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_PATH_PRIORITY
+    metric_name_zh: "技术路径优先级（卡位 × 势头 × 体量）"
+    definition: "本件把「先布哪个域」拆成三个 238 点内百分位：**卡位 P**（与关键节点件同一三合一分，40%）、**势头 S**（平滑 CAGR 60% + 2024 同比 40%，35%）、**体量 V**（窗口件数 ln，25%），加权后按 0.75 / 0.55 两条线切三层，得 T1 20 个、T2 70 个、T3 148 个。四套权重情景的 Spearman 最低 0.8875、top20 最小保留 14 个，按自定门禁（tau≥0.90 且 ov≥18 才算完全转换支持）落**部分支持**。关键实测发现是 **P 与 S 的秩相关只有 −0.0899**：卡位与势头几乎正交，所以三因子不是重复计数；但加权后总分与 P 的相关 0.8394、与 V 0.7625、与 S 只有 0.3801，排序仍由卡位与体量主导。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_PATH_PRIORITY.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_PATH_PRIORITY.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把「先布哪个域」拆成三个 238 点内百分位：**卡位 P**（与关键节点件同一三合一分，40%）、**势头 S**（平滑 CAGR 60% + 2024 同比 40%，35%）、**体量 V**（窗口件数 ln，25%），加权后按 0.75 / 0.55 两条线切三层，得 T1 20 个、T2 70 个、T3 148 个。四套权重情景的 Spearman 最低 0.8875、top20 最小保留 14 个，按自定门禁（tau≥0.90 且 ov≥18 才算完全转换支持）落**部分支持**。关键实测发现是 **P 与 S 的秩相关只有 −0.0899**：卡位与势头几乎正交，所以三因子不是重复计数；但加权后总分与 P 的相关 0.8394、与 V 0.7625、与 S 只有 0.3801，排序仍由卡位与体量主导。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术路径优先级（TOPIC-TECH-05 / DS-02-TECHPATH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS02-02"
+    acceptance_unit_id: "DS-02-PATH"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 6.4
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_POTENTIAL_SCORE
+    metric_name_zh: "技术产业化潜力评分"
+    definition: "以**深圳**为唯一主体（份额维的 LQ 分母用全国），在 238 个 IPC4 合格域上按「规模 20%、四年增长 30%、LQ 25%、发明占比 15%、转让主体覆盖 10%」打分，得到 **H04W 87.75、H01M 74.47、H04L 71.81** 的头部榜；但需求点名的「基础科研（论文）」与「产品市场（销售、市场调研）」两维在本库无可用键，转化维只能用 **134 家**深圳转让活跃主体作代理（覆盖率中位 **4.6%**），故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_POTENTIAL_SCORE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_POTENTIAL_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "专利侧四维与 LQ 可复算，但需求点名的「基础科研（论文）」与「产品市场（销售、市场调研）」两维缺源：论文表无 IPC/技术域标引，库内无市场销售或市场规模表；转化维只能用 134 家深圳转让活跃主体作代理，覆盖率中位 4.79%，单家企业即可把一个域推到 80% 以上。故只能交付「专利侧产业化潜力分」。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术潜力评分（TOPIC-TECH-08 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-TECH-02"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.4
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_REL_STRENGTH
+    metric_name_zh: "技术关联强度"
+    definition: "以**深圳主体**唯一口径（77,846 个申请人名称），用「同一申请人在两个 IPC4 域都有 ≥3 件专利」构造共主体矩阵，再用 NPMI 算 238 个域两两关联，得到 **12,797 条边**、**0 个孤立节点**、度中位数 114、最强边 C01B—C01G（NPMI 0.8187、强度 90.94）；但共类关联做不了（1,720,243 个 pn 中跨 IPC4 的 pn = 0，面板按主分类落盘），关系流向（引用、许可、上下游）无字段，故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_REL_STRENGTH.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_REL_STRENGTH.md"
+    data_support_level: "部分支持"
+    support_reason: "关联强度可复算（12,797 条边、238 个节点），但两条关键证据缺源：① 共类关联做不了——面板只保留主分类，跨域 pn = 0；② 关系流向（引用、许可、上下游方向）无字段，`dwd_patent_transfer` 的 pn 为公开号、与面板内部哈希不同码域，无法落域。故只能交付「深圳主体共同布局强度」无向图，不能交付弦线图的关系流向。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术关联网络（TOPIC-TECH-09 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-DS03-06"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.9
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_STAGE_JUDGE
+    metric_name_zh: "技术阶段判定"
+    definition: "以**深圳**为唯一主体，在 238 个 IPC4 合格域上按「规模 40%、成熟度 40%、动能 20%」打分，按 40 / 60 两个切点分成 **初级 113 域、中级 99 域、高级 26 域**，头部为 **H04W 83.19、H01M 82.54、G06F 77.76**；但需求点名的「技术成熟度指数、技术创新度指数、专家阈值」三项本库都没有现成登记表，成熟度只能用五维专利形态替代、创新度依赖被引（覆盖 0.70%），故按四档口径落**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_STAGE_JUDGE.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_STAGE_JUDGE.md"
+    data_support_level: "部分支持"
+    support_reason: "「阶段判定」在算法库要求「成熟度指数 + 技术创新度指数 + 专家阈值」，本库三项都不完整：成熟度只能用五维专利形态替代（无 TRL/被引/标准），创新度依赖被引（20,515 行、覆盖 0.70%），专家阈值无登记表。因此本件交付「得分表 + 瓶颈 + 潜力位」，阶段阈值是经验值，不是专家口径。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·技术阶段判定（TOPIC-TECH-09 / DS-02-TECHGRAPH）｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-MO-TECH-02"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.6
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_SZ_ASSESS
+    metric_name_zh: "深圳技术潜力与阶段综合评估"
+    definition: "238 个 IPC4 技术点在「深圳 2024 年 ≥100 件」门槛上可算六项指标，四象限与三阶段可复现；但「产业化潜力」只有专利结构代理——转让密度算不出、营收/订单/技术合同无表，区位商也只能是「语料内」而非全国，故判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_SZ_ASSESS.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_patent", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_SZ_ASSESS.md"
+    data_support_level: "部分支持"
+    support_reason: "238 个 IPC4 技术点可算：规模、区位商、增速、授权率、发明占比、申请人结构六项均有落盘数据，四象限与阶段分级可复现；但需求要的「产业化」只有专利侧代理——转让密度不可算（转让表只有 pn，专利缓存已哈希去 pn），市场/营收/政策维度未进入算路，「潜力」是专利结构分而非商业潜力分。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "智慧认知大脑/深度挖掘算法/算法工具库/科技专题服务算法库/技术领域深度分析模型构建/深圳技术领域评估"
+    pending_ref: "Q-MO-TECH-01"
+    acceptance_unit_id: "TOPIC-TECH-05"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_TECH_TOPIC_HEAT
+    metric_name_zh: "技术话题热度"
+    definition: "技术话题热度要回答的是「哪些技术方向正在变热」。回答它需要两样东西：一套把原始分类码归到「人可读主题」的字典，和一份跨专利、论文、媒体三侧一致的计数。gkx 有原始分类码（IPC4、中图分类号、产业链节点名），也有足量记录，但没有官方主题字典：`dwd_tech_topic` 0 张，`dwd_industry_analysis_topics` 只有 3 个主题名且是英文残片。字典只能自建，权重也只能自定，加上论文分类覆盖率不足两成，故判 **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_TECH_TOPIC_HEAT.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_industry_analysis_topics", "dwd_industry_chain_info", "dwd_industry_chain_news_info", "dwd_patent", "dwd_tech_topic", "dwd_zh_paper_classification"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: quarterly
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，TECH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/TECH/M_TECH_TOPIC_HEAT.md"
+    data_support_level: "部分支持"
+    support_reason: "专利 IPC、论文中图分类、产业链新闻三侧都有真实数据可算，但「技术词→主题」没有官方映射：`dwd_tech_topic` 0 张表，`dwd_industry_analysis_topics` 只有 3 个不同主题名（字典残片），IPC 与中图分类也无官方对照表。主题字典为自建，且论文分类只覆盖 20,048/100,900（19.87%），有整维口径缺口，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "技术热点榜、技术趋势雷达、招商技术方向推荐"
+    pending_ref: "Q-MO-DS03-02"
+    acceptance_unit_id: "DS-03-RESULT"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"

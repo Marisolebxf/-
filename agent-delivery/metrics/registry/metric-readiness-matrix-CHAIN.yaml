@@ -1,1295 +1,2535 @@
-# metric-readiness-matrix —— 产业链域（CHAIN）深圳专题及相关页触及指标
+# metric-readiness-matrix —— 产业链域（CHAIN）四维就绪度
 # ============================================================================
-# 真源角色：CHAIN 域四维就绪度机器真源（本批先覆盖深圳专题 M2/M5/M11/M12 及历程·热点·布局）。
+# 真源角色：本域 D1 定义 / D2 结构 / D3 源映射 / D4 接入 的机器真源；FE 只读消费。
 # 模型定义：data-lineage-policy.md §2.3
-# 生成任务：FE 联调台 UI 完善（唐绍祖）· 2026-08-05
-# 输入真源：metrics/registry/cfg_metric-CHAIN-seed.yaml
-# 说明：D4 全部 mock（Wave 0）；D2 未逐条对照 DWD 设计，一律 pending。
-# ============================================================================
+# 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23 · 全量重生成。
+# 输入真源：metrics/registry/cfg_metric-CHAIN-seed.yaml（8 件套+version）
+#           + 20261021 王惠批实测（extract_ledger.json）+ 旧矩阵强证据合并（只升不降）。
+# ----------------------------------------------------------------------------
+# 诚实性约束（不伪闭合）：
+#   - D2 全部 provisional/partial：20261021 批实测表存在≠结构核验通过；未核验不得 ready。
+#   - D3 旧证据强于批口径的 5 条保留旧判定与 gap 文案（只升不降，无凭据不降级）。
+#   - D4 全部 mock：算法服务未上线；is_mock 同步诚实；阶段2 上线后按接入清单翻转。
+#   - D1=aligned 仅当 8 件套+version 全齐（definition≥50 字、algorithm_type≠UNKNOWN 等）。
+# ----------------------------------------------------------------------------
+# 本域分布：100 条｜D1 aligned 100 / draft 0｜D3 full 8 / partial 84 / none 8 / pending_ods 0｜本批新增 10 条、D3 有据升级 11 条、派生件 2 条。
 
 version: 1
 module: CHAIN
 model_ref: data-lineage-policy.md#2.3
 model_status: provisional
-updated: "2026-10-16"
-as_of: "2026-08-05"
+updated: "2026-10-23"
+as_of: "2026-10-23"
 d2_verifier: lineage-subcoord
-d4_batch: mock_20260623
-
+d4_batch: algolib_launch_20261023
+register_task: E-METRIC-ALGOLIB-LAUNCH-L01
 coverage_notes:
-  - "本文件首批覆盖深圳专题与历程·热点·布局页正式统计点位；其余 CHAIN 指标待 CHAIN-READINESS-MATRIX 全量任务补齐。"
-  - "FE 角标经 MetricHint status 映射：aligned+✅→ok；🔧→wip；⚠️/pending_data_lead→warn；missing→missing。"
-  - "D1=aligned 条目均已在 cfg_metric-CHAIN-seed.yaml 登记；未新建平行真源。"
+  - "2026-10-23 E-METRIC-ALGOLIB-LAUNCH-L01 阶段1：按 20261021 王惠批（565 份）全量重生成，覆盖本域全部 seed 指标。"
+  - "支持度口径：完全直接/完全转换→D3=full；部分支持→partial；完全不支持→none；与旧矩阵冲突时只升不降。"
+  - "修复 20260831 遗留解析缺陷：coverage_notes 列表项全部加引号，metric-registry-lib.mjs 可完整解析本文件（POLICY 旧文件曾被吞段）。"
+  - "D4=mock 属诚实现状：阶段2 算法服务上线后按服务接入清单翻转并回写本矩阵，禁止提前改绿。"
 
 metrics:
-  - metric_id: M_CHAIN_SZ_REGION_COUNT
-    metric_name_zh: 深圳产业分布区域数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
+  - metric_id: M_CHAIN_ACADEMIC_COOP_SCORE
+    metric_name_zh: "产学研合作强度"
+    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
+    module: "CHAIN"
     d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=深圳域内非零区数（读法 A）；深圳判定=city+十区 IN 复合条件（同名区防线）；对齐 M_SVC_PT_SZ_REGION_ORG v0.2.1（十区常显+未分配桶不计数）；弃 chain_sz_dist 壳。"
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d2_gap: "桥表齐 0 行；area 值域实核（深圳 95,600 行：9 标准区 + 空串 19；外地同名区现网 0 行，防线为口径要求）。"
-    d3_source_mapping_status: none
-    d3_gap: "桥缺口：enterprise_industry_chain 0 行（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_NATIONAL_REGION_COUNT
-    metric_name_zh: 全国分布区域数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=链上主体总部省级区划去重数（34 全集不滤；空值不计数；自治区简称 ETL 归一不进口径；市级下钻不另开 ID）；删 scope 伪条件。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "桥表齐 0 行；province 值域待 ETL 规范（自治区简称 4 例 14 行 + 空串 1 行，2026-10-14 demo 实核）。"
-    d3_source_mapping_status: none
-    d3_gap: "桥缺口：enterprise_industry_chain 0 行，全量挂链明细待交付（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_GLOBAL_REGION_COUNT
-    metric_name_zh: 全球分布区域数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=链上主体总部国家去重数；现阶段只算国内档（CN 恒 1/桥空 0）；海外缺口保留挂 CHAIN-P0-7 + Q-SVCCHAIN-07（SVC GLOBAL 模式）。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "国内桥表齐但 0 行；海外 forg 族表齐（DDL 实核）但与链零挂接。"
-    d3_source_mapping_status: none
-    d3_gap: "双缺口：国内 enterprise_industry_chain 0 行（tags 228 万待灌）；海外主体现无产业链挂接概念（SIC 码非 INB，2026-10-14 live 实核）→ CHAIN-P0-7。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_INSTITUTION_COUNT
-    metric_name_zh: 产业链关联机构数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=挂链科研机构/高校去重数（与企业互斥，企业法人研究所归 ENTERPRISE_COUNT）；真源 industry_chain_entity_rel（entity_type=institution 原生维）；摘 ads:chain_institution_stat 壳。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "表齐（25 字段 DDL 实核，entity_type/subtype 原生维+拉链 valid_from/to）；机构挂链 0 行。"
-    d3_source_mapping_status: none
-    d3_gap: "机构挂链数据缺失：demo entity_rel 仅 product 319 行；live tags 228 万行双路径核验真机构仅 1 家/0；已开 CHAIN-P0-6 问供应方机构挂链交付计划。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
-    metric_name_zh: 新增关联企业数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=年度首挂企业去重数（org_id；first_link_date 目标态）；重挂不计；分链链内首挂。临时方案=首灌批全量即首挂+create_time 分批增量（仅运营注记不进口径）。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "表齐但缺 first_link_date 字段；挂链明细 0 行。"
-    d3_source_mapping_status: none
-    d3_gap: "源级字段缺失：入站 tags/product_tags 均无业务挂链日期（created_time 同秒批量戳，ODS 实核 2026-10-14）；已开 CHAIN-P0-5 问供应方。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_ENTERPRISE_COUNT
-    metric_name_zh: 产业链关联企业数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_note: "0.2.0 口径钉死=挂链企业去重数（org_id）；真源唯一 enterprise_industry_chain；严格真实口径优先，0 行如实。摘 ads:chain_overview 壳。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "表齐（DDL 实核 12 字段）；上游全量挂链明细未供应，现 0 行。"
-    d3_source_mapping_status: none
-    d3_gap: "上链明细源确认缺失：ods 侧仅 dwd_org_industry_tags 104 行过渡样本（无 org_id 主键），全量挂链明细待供应方交付后灌入。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_TOTAL_COUNT
-    metric_name_zh: 产业链总数
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d1_pending_ref: "Q068"
-    d1_note: "0.2.0 四层语义定案：集群(dim15)→产业(L0,industry_id 15)→产业链(L1,28条)→节点；本指标数 L1=28。摘 ads 壳。公式可执行。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d2_gap: "industry_chain 表齐（L0/L1 同表）；上游 ods dwd_industry_chain_info 供应归属待核。"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_en_paper、dwd_org_heis_info、dwd_org_industry_tags、dwd_patent…）；批量初
+      判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "dwd 链表有数（demo 批次）；cluster_map 15 条旧编码段(INB13xx/12xx)与现网 INB17xx 不匹配=样本数据缺口待数据工厂刷新（口径正确，挂 Q068；本条公式不含 map 不受影响）。"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。gkx 源在且合作论文维实测命中 305 篇真校企共现；但联合专利维缺 applicants 列（结构断）、人才流动维缺轨迹表
+      且 scholar_org_id 全空 → 三维缺两维，仅部分依赖维可算
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
-    metric_name_zh: 深圳产业链企业数
-    acceptance_unit_id: CHAIN-SZ-PANORAMA
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：注册地语义 + city=深圳市全称 + 带链参数）；字段漂移已修正（headquarters_city→dwd_org_base_info.city）；链桥 INB1309 mock 可算，全量挂链跟 CHAIN-P0-5。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
-    metric_name_zh: 深圳产业链机构数
-    acceptance_unit_id: CHAIN-SZ-PANORAMA
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：机构=高校+科研院所双表判型、不含服务机构、org_id 去重）；矩阵行本波补录；链桥 INB1309 mock 可算，机构挂链跟 CHAIN-P0-6。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
-    metric_name_zh: 深圳关键环节数
-    acceptance_unit_id: CHAIN-SZ-PANORAMA
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "依赖 chain_sz_panorama.nodes"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_KEY_NODE_COVERAGE
-    metric_name_zh: 深圳关键环节覆盖
-    acceptance_unit_id: CHAIN-SZ-PANORAMA
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强，B 方案归一 L1：两侧 COALESCE 折 L1 + importance_level 判关键；公式结构已定，:key_node_enum 枚举占位）；importance_level DDL 实核在（varchar20）但 live 114 行全 NULL、值集未知——待 GAP-CHAIN-IMPORTANCE-ENUM 答复填枚举解锁；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
-    metric_name_zh: 深圳企业份额
-    acceptance_unit_id: CHAIN-SZ-ADVANTAGE
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：单趟条件聚合，分子分母同 JOIN 同软删同链参数；父指标 SZ_ENTERPRISE_COUNT / ENTERPRISE_COUNT 均 v0.2.0 已定；分母 0 → NULL 不伪造 0%）；正式签名待 human:唐绍祖 会签；全量跟 CHAIN-P0-5。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
-    metric_name_zh: "深圳优势评分"
-    acceptance_unit_id: CHAIN-SZ-ADVANTAGE
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "算法轻量实现已有 share/rank/growth；正式口径待 QC08"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
-    metric_name_zh: 深圳优势排名
-    acceptance_unit_id: CHAIN-SZ-ADVANTAGE
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：有目标表先基于表结构定版，无数据不挡口径）——读表版 rank_no 直读 industry_chain_model_result_detail（42 字段 DDL 实核在）JOIN model_run 取最新 run，region_code='440300'；表现 0 行如实 NULL；QC08 对标城市继续 🟡 客户决策清单（影响模型不影响读表 SQL）；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
-    metric_name_zh: 深圳产业问题数
-    acceptance_unit_id: CHAIN-SZ-PROBLEM
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径=ADS v2 industry_chain_metric_fact + region_code='440300' 等值切片；旧稿 LIKE '4403%' 基于废弃壳表废止）；模型未跑现 0 行出 NULL 属数据事不挡口径；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_OPPORTUNITY_SCORE
-    metric_name_zh: 深圳产业机遇评分
-    acceptance_unit_id: CHAIN-SZ-OPPORTUNITY
-    module: CHAIN-SZ
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "trend/policy/market 三维已有算法轻量实现"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_SZ_OPPORTUNITY_COUNT
-    metric_name_zh: 深圳产业机遇数
-    acceptance_unit_id: CHAIN-SZ-OPPORTUNITY
-    module: CHAIN-SZ
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "机遇计数口径待甲方"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_HOTSPOT_SCORE
-    metric_name_zh: 热点综合评分
-    acceptance_unit_id: CHAIN-HOTSPOT
-    module: CHAIN-HOTSPOT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "依赖 chain_hotspot"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_HOTSPOT_COUNT
-    metric_name_zh: 热点/历程事件数
-    acceptance_unit_id: CHAIN-ROADMAP
-    module: CHAIN-HOTSPOT
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "历程事件与热点资讯计数共用演示页"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_LAYOUT_PRIORITY_SCORE
-    metric_name_zh: "布局优先级评分"
-    acceptance_unit_id: CHAIN-LAYOUT
-    module: CHAIN-LAYOUT
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "chain_layout_recommend 已有轻量产出"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  - metric_id: M_CHAIN_CYCLE_STAGE
-    metric_name_zh: "产业周期阶段"
-    acceptance_unit_id: CHAIN-CYCLE
-    module: CHAIN-CYCLE
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "阶段阈值待甲方"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "🔧"
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份 ---
-  - metric_id: M_CHAIN_BASE_95_1
-    metric_name_zh: "产业链基础指标模型构建"
-    acceptance_unit_id: "ALGO-CHAIN-BASE-95"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_CHOKE_LINK_COUNT
-    metric_name_zh: "卡脖子环节数"
-    acceptance_unit_id: "TOPIC-DIAG-017"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_117_1
-    metric_name_zh: "产业链全景模型构建"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-117"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_118_1
-    metric_name_zh: "深圳产业链模型构建"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-118"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_119_1
-    metric_name_zh: "产业发展路线历程模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-119"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_120_1
-    metric_name_zh: "产业热点领域识别模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-120"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_121_1
-    metric_name_zh: "深圳产业优势识别模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-121"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_122_1
-    metric_name_zh: "产业周期分析模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-122"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_123_1
-    metric_name_zh: "产业阶段分析模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-123"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_124_1
-    metric_name_zh: "产业链关键环节识别模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-124"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_125_1
-    metric_name_zh: "产业瓶颈堵点识别模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-125"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_126_1
-    metric_name_zh: "区域产业指数模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-126"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_127_1
-    metric_name_zh: "深圳问题识别模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-127"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_128_1
-    metric_name_zh: "深圳机遇分析模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-128"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEEP_129_1
-    metric_name_zh: "重点布局产业推荐模型"
-    acceptance_unit_id: "ALGO-CHAIN-DEEP-129"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_GLOBAL_CASE_MATCH
-    metric_name_zh: "全球成功案例匹配"
-    acceptance_unit_id: "TOPIC-SZ-016"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_GRAPH_102_1
-    metric_name_zh: "产业实体识别构建"
-    acceptance_unit_id: "ALGO-CHAIN-GRAPH-102"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_GRAPH_103_1
-    metric_name_zh: "产业实体关系抽取"
-    acceptance_unit_id: "ALGO-CHAIN-GRAPH-103"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "T0-X 分析清单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_LINK_HEALTH
-    metric_name_zh: "环节健康度"
-    acceptance_unit_id: "TOPIC-DIAG-018"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_COMMERCIALIZATION
-    metric_name_zh: "区域产业化程度"
-    acceptance_unit_id: "TOPIC-REG-009"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_COMP_ACADEMIC
-    metric_name_zh: "竞争力-学术生态"
-    acceptance_unit_id: "TOPIC-REG-022"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_COMP_ENTERPRISE
-    metric_name_zh: "竞争力-企业能力"
-    acceptance_unit_id: "TOPIC-REG-021"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_COMP_SUPPORT
-    metric_name_zh: "竞争力-配套环境"
-    acceptance_unit_id: "TOPIC-REG-023"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_ECOSYSTEM
-    metric_name_zh: "区域产业生态"
-    acceptance_unit_id: "TOPIC-REG-020"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：方案A 环节覆盖度 + 分母 L1）；链桥 INB1309 mock 灌数可用，全量挂链跟 CHAIN-P0-5；环节字典 industry_chain_node 在库。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_REG_FINANCING
-    metric_name_zh: "融资事件"
-    acceptance_unit_id: "TOPIC-REG-011"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "0.2.0 口径前置写实（路径A，human:徐滕强 2026-10-14）：分子 dwd_org_financing_info 25,654 行实核；复合键 org_id+completion_date+funding_round；formula 签名位维持 pending_cosign: human:唐绍祖，签后升 aligned。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "桥缺口：enterprise_industry_chain 0 行（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。event_id 缺列（复合键代，碰撞风险注记）。金额 varchar 中文单位不解析（归 M_CHAIN_INVEST_TOTAL）。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_PAPERS
-    metric_name_zh: "高校论文"
-    acceptance_unit_id: "TOPIC-REG-016"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "0.2.0 口径前置写实（路径A）：高校+院所双桶 UNION、paper_id 去重、4 表精简 formula（弃 papers JOIN）；签名位维持 pending_cosign: human:唐绍祖。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "机构挂链 0 行（CHAIN-P0-6）+ 企业桥 0 行（CHAIN-P0-5）；学者↔机构名称匹配覆盖误差注记（32,215 匹配面实测）。papers.status 唯一值 1，status JOIN 弃用。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_PATENT
-    metric_name_zh: "专利"
-    acceptance_unit_id: "TOPIC-REG-012"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
-    d1_note: "0.2.0 口径前置写实（路径A）：org_id 全键链路（禁名称匹配）；不限 kind；六连接键 collation 同序实核；数据未灌不挂缺口号；签名位维持 pending_cosign: human:唐绍祖。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口（2026-10-14 human:徐滕强 拍板修正）：enterprise_patent_org_rel / enterprise_industry_chain 均为 DWD 在案表（结构齐备），当前数据未灌=样本性，先不管不报缺；灌数后即出真数。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_POLICY_COVERAGE
-    metric_name_zh: "政策覆盖率"
-    acceptance_unit_id: "TOPIC-REG-019"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "pending_cosign: human:唐绍祖"
-    d1_note: "0.2.0 口径前置写实（路径A）：饱和加权覆盖（hit/(hit+5)）、拆词 OR 匹配（实体词表防误判）、分母 L1 环节、国家级覆盖全国；深圳×INB1701 真值 61.8% 实测回填。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: full
-    d3_gap: "无缺口：源表在案有数（demo 20,000 行）；词表维护为算法侧职责；live 库无此表=跨库同步注记非缺口。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_RESEARCH_ORG
-    metric_name_zh: "科研机构"
-    acceptance_unit_id: "TOPIC-REG-015"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "pending_cosign: human:唐绍祖"
-    d1_note: "0.2.0 口径前置写实（路径A）：高校+院所双桶、org_id 去重、区域轴=机构主档 city、唯一真源 industry_chain_entity_rel（entity_id 灌数对齐 org_id）；过渡桥提法已撤销（tags 与机构无关）。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：entity_rel 结构在案（25 列含 chain_id/entity_type/entity_id/软删），institution 行数据未灌=样本性，先不管不报缺；灌数时 entity_id 须对齐机构 org_id（禁 Demo 合成键模式）。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_REVENUE
-    metric_name_zh: "营收"
-    acceptance_unit_id: "TOPIC-REG-010"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "pending_cosign: human:唐绍祖"
-    d1_note: "0.2.0 口径前置写实（路径A）：固定统计年 SUM（禁跨年混加）；缺失如实 0 不推算；同 org 同年 0 重复实核；深圳×2024 端到端 289.74 亿真值验证。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：链桥未灌+营收填充薄（2.4%）均为数据态；口径不受影响，全缺为 0。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_SERVICE_ORG
-    metric_name_zh: "服务机构"
-    acceptance_unit_id: "TOPIC-REG-018"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "pending_cosign: human:唐绍祖"
-    d1_note: "0.2.0 口径前置写实（路径A）：池=svc_org_circle 跨域复用不另造、链上=机构自身挂链、六类候选仅下钻（Q-SVC-008）；org_id 全键。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：三表在案（circle 43,296 / 主档 / 链桥 DDL 齐备）；链桥数据未灌=样本性，先不管不报缺。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_TALENT_STRUCTURE
-    metric_name_zh: "人才结构"
-    acceptance_unit_id: "TOPIC-REG-017"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "pending_cosign: human:唐绍祖"
-    d1_note: "0.2.0 口径前置写实（路径A）：主值硕博占比+四桶分布；分母=有学历记录学者；只做学历维（TAL-B04）；覆盖率强制同显、<50% ⚠️。org_id 未灌走名称轨。"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：四表在案；scholar_org_id 全空=数据未灌（名称轨过渡）；职称/年龄无源不发明（TAL-B04）。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_TECH_BARRIER
-    metric_name_zh: "区域技术壁垒"
-    acceptance_unit_id: "TOPIC-REG-014"
-    module: CHAIN
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：链桥已灌（INB1309=1984）；rel 0行=数据未灌走名称轨；collation 统一待办（general vs 0900 → ALTER utf8mb4_0900_ai_ci 三同步）。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_REG_TECH_MATURITY
-    metric_name_zh: "区域技术成熟度"
-    acceptance_unit_id: "TOPIC-REG-013"
-    module: CHAIN
-    d1_def_status: draft
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "非缺口：链桥已灌；rel 0行=数据未灌走名称轨；同 Seq17 collation 统一待办。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_SZ_ENTERPRISE
-    metric_name_zh: "深圳企业维度"
-    acceptance_unit_id: "TOPIC-SZ-011"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_SZ_PATENT
-    metric_name_zh: "深圳专利维度"
-    acceptance_unit_id: "TOPIC-SZ-012"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_SZ_POLICY
-    metric_name_zh: "深圳政策维度"
-    acceptance_unit_id: "TOPIC-SZ-013"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_SZ_TALENT
-    metric_name_zh: "深圳人才维度"
-    acceptance_unit_id: "TOPIC-SZ-014"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_TECH_POWER
-    metric_name_zh: "技术能力"
-    acceptance_unit_id: "TOPIC-REG-008"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "身份已入 seed；三方 ODS 字段尚未核验。未核 ≠ 已确认缺口，禁止写成 none/full。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
   - metric_id: M_CHAIN_ACADEMIC_POWER
     metric_name_zh: "学术生态"
-    acceptance_unit_id: CHAIN-REGION
-    module: CHAIN-REGION
+    acceptance_unit_id: "CHAIN-REGION"
+    module: "CHAIN-REGION"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_heis_info、dwd_org_industry_tags、dwd_research_institute_base_i
+      nfo、dwd_scholar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维源齐且本件实测出数（机构 2189 家去重、学者 21316 人、窗口论文 52119 行），但「指定链 × 区域」限定的
+      入集键不存在：链成员 credit_code 与学研机构 external_id 两个键域不相交（5 万行样本 0 命中），链级学术生态无法闭合；学者维还叠加 scholar_org_id
+      整列为空（0 行），只能用机构名含城市名的名称代理。按「始终有部分依赖维度拿不到足够数据」判部分支持，不抬档。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_BASE_95_1
+    metric_name_zh: "产业链基础指标模型构建"
+    acceptance_unit_id: "ALGO-CHAIN-BASE-95"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_annual_f
+      inancial_info、dwd_org_base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。九维中八维可由 gkx 现算（营收、企业、机构、投融资、全国分布、资讯、深圳要素、深圳分布）；全球区域分布维在库内无源，容器只
+      能登记八维，缺一维即按 §〇 降档。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_BOTTLENECK_COUNT
+    metric_name_zh: "产业链瓶颈堵点数"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_bid_、dwd_en_paper_citation、dwd_industry_chain_info、dwd_macro_inde
+      x_data…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      口径已定（2026-10-14 human:徐滕强：口径=读表口径，ADS v2 metric_fact 最新发布快照直读；模型卡未冻结/QC04 只影响何时有数不进口径；旧稿 dwd.i
+      ndustry_bottleneck 为 v1 废弃壳禁止引用）；正式签名待 human:唐绍祖 会签。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_BOTTLENECK_SEVERITY
+    metric_name_zh: "瓶颈严重度"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_financing_info、dwd_org_industry
+      _product_tags、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维强度（技术/产品/资本/政策）在本件全部现算、12 条链全部非空，但旧稿口径的第五维「人才」在 gkx 无链级源：dwd_
+      scholar 的 scholar_org_id 整列为空（0/21,316），学者与高校/院所都无法挂到产业链节点上，因此只能用产品维顶替，维数从 5 降到 4；同时严重度是中位数相对量
+      、阈值 60/40 为本件自定义，未经甲方会签。缺一维 + 阈值未会签 = 部分支持，不抬档。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
+    metric_name_zh: "瓶颈类型分布"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_financing_info、dwd_org_industry_product_tags、dwd_org_industry
+      _tags、dwd_patent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。48 个「链 × 类型」判定位全部现算、四类型均有非零命中（合计 22 个），但两处口径无法闭合：①旧稿的 bucket 枚举
+      取自演示库 metric_dist 结果面，gkx 内不存在该表，本件的四类型是按强度维重定义，名称对齐而枚举不等价；②「类型」在这里是相对短板（低于 0.8 倍中位数），不是政策文本或专
+      家标注的瓶颈成因，且 0.8 倍阈值是本件自定义。语义降格 + 阈值未会签 = 部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_BREAK_RISK_COUNT
+    metric_name_zh: "产业链断链风险数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析／产业链总览／产业概况"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。环节空位可用链树 + 标签现算，整体空位率 3.98%；但语义只能是「没有企业挂接的环节」，不是供应链断供风险，后者需要上下游
+      交易关系。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_CHOKE_LINK_COUNT
+    metric_name_zh: "卡脖子环节数"
+    acceptance_unit_id: "TOPIC-DIAG-017"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_forg_base_info、dwd_industry_analysis_countries、dwd_industry_chain
+      _info、dwd_industry_chain_news_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。环节级「对外技术受制」判定需要两类前提，gkx 两类都不成立。（N1 度量）全库 280 张表 / 6312 列：受制类 14 组
+      列名模式（choke/self_suff/import_dep/selfsuffic/customs/tariff/hs_code/input_output/localization 等）
+      命中 0 列；国别类 4 组（country/nation/overseas/abroad）命中 42 列、落在 28 张
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
   - metric_id: M_CHAIN_COMPETITIVENESS_INDEX
-    metric_name_zh: "区域产业竞争力指数"
-    acceptance_unit_id: CHAIN-COMP
-    module: CHAIN-COMP
+    metric_name_zh: "产业链竞争力指数"
+    acceptance_unit_id: "CHAIN-COMP"
+    module: "CHAIN-COMP"
     d1_def_status: aligned
-    d2_schema_status: pending
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_base_in
+      fo、dwd_org_financing_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。王惠三维八项里只有 2 项在 gkx 有全量源（有效专利、融资事件），企业维的另外两项（人均营收、研发强度）字段存在但不可用：
+      研发额仅 876 家企业有正值（0.46%）；人均营收的分子分母都存在但交集极小——employees_number 在 stock 表 40,239 行中 0 行有值、annual 表 
+      3,170 行 >0，operating_revenue 在 annual 表 2,191 行 >0，两者同时 >0 仅 1,
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-  - metric_id: M_CHAIN_ENTERPRISE_POWER
-    metric_name_zh: "企业能力"
-    acceptance_unit_id: CHAIN-REGION
-    module: CHAIN-REGION
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_PHASE_DETERMINATION
-    metric_name_zh: "产业阶段判定"
-    acceptance_unit_id: CHAIN-CYCLE
-    module: CHAIN-CYCLE
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_REGION_INDEX
-    metric_name_zh: "区域产业指数"
-    acceptance_unit_id: CHAIN-REGION
-    module: CHAIN-REGION
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_STAGE_SCORE
-    metric_name_zh: "产业阶段评分"
-    acceptance_unit_id: CHAIN-CYCLE
-    module: CHAIN-CYCLE
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
-    metric_name_zh: "战略重要性"
-    acceptance_unit_id: CHAIN-KEYNODE
-    module: CHAIN-KEYNODE
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_SUPPORT_POWER
-    metric_name_zh: "配套服务"
-    acceptance_unit_id: CHAIN-REGION
-    module: CHAIN-REGION
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-
-  - metric_id: M_CHAIN_TECH_MATURITY_SCORE
-    metric_name_zh: "技术成熟度评分"
-    acceptance_unit_id: CHAIN-CYCLE
-    module: CHAIN-CYCLE
-    d1_def_status: aligned
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "王惠口径已入库；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_ACADEMIC_COOP_SCORE
-    metric_name_zh: "产学研合作强度"
-    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
   - metric_id: M_CHAIN_COMPLETENESS_SCORE
     metric_name_zh: "产业链完整度评分"
     acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "QC01"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_industr
+      y_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。覆盖与均匀度两维可用链树 + 标签现算，12 条链均有分；产值维在 gkx 不存在，评分只反映结构完整度，不能替代含产值的完整
+      度。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
-    metric_name_zh: "发展里程碑数"
-    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_INVEST_TOTAL
-    metric_name_zh: "投融资总额"
-    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "QC07"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_POLICY_MATCH_SCORE
-    metric_name_zh: "产业政策匹配度"
-    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_TREND_INDEX
-    metric_name_zh: "产业链变化趋势指数"
-    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "GAP-AI-FORMULA-UNSIGNED"
-    d1_note: "AI 补漏口径/公式已起草入库；formula/algorithm_type 待算法 Lead 会签"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: pending_ods
-    d3_gap: "AI 补漏调研；三方 ODS 字段级映射待 data-agent 核验"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: open
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "⏳"
 
-  - metric_id: M_CHAIN_PATENT_COUNT
-    metric_name_zh: "产业链关联专利数"
-    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
+  - metric_id: M_CHAIN_CONCENTRATION_INDEX
+    metric_name_zh: "产业集中度"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
     d1_def_status: aligned
-    d2_schema_status: assessed
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_financi
+      ng_info、dwd_org_industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：全量 kind + patent_id 去重 + org_id 三跳 + pbdt_year 时间轴/窗口作参数）；旧稿表名漂移已重写；enterprise_patent_org_rel 0 行待灌跟 CHAIN-P0-5。"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。HHI 可用 2,283,762 行标签的叶级企业数现算，12 条链全部有值；但份额只能按企业数，gkx 无环节级营收/市值，
+      故是结构集中度而非市场集中度。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
-  - metric_id: M_CHAIN_PRODUCT_COUNT
-    metric_name_zh: "产业链关联产品数"
-    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
+  - metric_id: M_CHAIN_CYCLE_STAGE
+    metric_name_zh: "产业周期阶段"
+    acceptance_unit_id: "CHAIN-CYCLE"
+    module: "CHAIN-CYCLE"
     d1_def_status: aligned
-    d2_schema_status: assessed
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_financing_info、dwd_org_industry_tags）；批量初判 
+      provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：product_name 直数 + industry_code 等值匹配 + 无窗口）；列表字面量脏数据 ETL 清洗待办；demo 169 行小样本跟 CHAIN-P0-5。"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。chain_stage 结果面不存在，三条候选腿里营收腿被数据证据否决（样本从 198 家塌到 11 家），但融资腿与年龄结构
+      腿成立：25,654 条融资事件中 14,626 条可挂链，12 链各有 175—5,024 条事件，跨窗口样本均 >=50 的有 11 链。阶段标签可由「资本热度方向 + 年龄结构」规则
+      映射得到，不需要外部参数表与结果面，故判部分支持；但热度≠产出，且 8 链落在衰退期的结论主要由 2022—2024 融资退潮
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_DEEP_117_1
+    metric_name_zh: "产业链全景模型构建"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-117"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。全景子图可由链树 + 标签表端到端构建（1,273 节点、1,261 条父子边、叶级覆盖 96.0%）；但边只有父子一种，跨环
+      节的供应/合作/技术流边在 gkx 无源，图谱只能作结构全景。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_118_1
+    metric_name_zh: "深圳产业链模型构建"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-118"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_heis_info、dwd_org_i
+      ndustry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三张深圳切片结果面都不存在，但切片所需的四类原料在 gkx 齐备且量足：深圳标签行 116,017、12 链深圳企业可逐链汇总
+      、K 节点树 1,273 节点且已有 coverage 计算（90/90 等）、深圳高校与院所可按 city 直接数出。切片是可现在加工的，故不判完全不支持；但链归属靠多标签表、K 覆盖靠
+      企业名 token，两项都是弱归属，切片只能作「分布画像」不能作「环节强度」结论，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_119_1
+    metric_name_zh: "产业发展路线历程模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-119"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_industry_chain_news_info、dwd_org_base_info、dwd_org_financing_info
+      、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。成长曲线可用两条全量时间序列重建：链内企业成立年（窗口内 52607 家）与链内融资事件年（窗口内 14463 起；融资表 2
+      5654 行中 14626 行可按企业名挂到 12 条链，占 57.01%）。但旧稿的三块核心依赖在 gkx 均不存在：里程碑事件表、阶段阈值参数表、政策表的链标签（缺表三态见 TABLE
+      _ABSENCE_EVIDENCE.md）；资讯腿只有 108052 行、覆盖 2025-02-01 至 2026-07-27
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_120_1
+    metric_name_zh: "产业热点领域识别模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-120"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_base_inf
+      o、dwd_org_financing_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。链级热度可用两条可比时间序列合成：融资事件近三年 1630 起（占挂链事件 11.14%）、新设企业近三年 2430 家（占可
+      挂链新设 4.62%），12 条链全部有值。但产品要的「领域」是叶级：954 个叶级环节中，具备叶级时间序列的来源为 0/3——资讯标签最深只到 7 位根链（叶级标签 0 个）、融资表无环
+      节字段（8 列）、成立年份只到链级。资讯腿本身还只覆盖 9/12 条链（智能网联汽车、软件与信息服务、智能终端 为 0），极差
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_121_1
+    metric_name_zh: "深圳产业优势识别模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-121"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_financing_info、dwd_
+      org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。识别所需的三条判据中，规模判据（企业数）与结构判据（专利份额、融资份额）在 gkx 均有全量源：12 条链合计 1714458
+      家企业、其中深圳 92930 家（5.42%），专利可按申请人名挂到链与城市（链内申请量 1127340 件，其中深圳 682209 件），融资事件 25654 行可挂 14626 行（
+      57.01%）。但「优势」的营收与利润内核不可得：有营收的链内企业仅个位数，研发强度字段存在但覆盖极低（stock 表 res
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_122_1
+    metric_name_zh: "产业链周期分析模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-122"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_financing_info、dwd_
+      org_industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。时间轴上的双动能（链内新设企业数、挂链融资事件数）可从 gkx 快照得到，12 条链全部出标签；但旧稿的「产业周期」以市场规模
+      /增长率/利润率/投融资额为状态量，gkx 无 chain_market、无 chain_cycle 等 7 张结果表（information_schema 实测 absent），财务表营
+      收仅 2,193/90,926 行有值，故只交付相对动能周期，不交付价格/产能/利润周期。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_123_1
+    metric_name_zh: "产业阶段分析模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-123"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_financi
+      ng_info、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。企业规模、增长、投资强度、技术密度、结构完整度五个横截面维度可从 gkx 快照构造，12 条链全部出阶段；但旧稿的「生产能力=
+      资产合计」「销售规模=营收合计」「利润率」三项，在 gkx 财务表分别只有 2,629 / 2,193 / 2,349 行有值（占 90,926 行的 2.6%~2.9%），且无 chai
+      n_enterprise_stat / enterprise_industry_summary 汇总面（280 张表 abse
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_124_1
+    metric_name_zh: "产业链关键环节识别模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-124"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_chain_pat_dtl、dwd_org_indust
+      ry_tags、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。节点结构（1,273 个节点、父子关系、企业挂接）完整，可算企业密度、子树规模、度数与层级，12 条链共 1082 个有企业节
+      点全部出关键性排序；但旧稿的高端化指数三因子（环节附加值、技术壁垒、市场集中度）需要环节级营收与环节级专利，gkx 无 dwd_org_industry_chain_pat_dtl、无 c
+      hain_key_node 等结果面，财务表也无环节码，故高端化指数空置，只交付结构关键性。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_125_1
+    metric_name_zh: "产业瓶颈堵点识别模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-125"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_financing_info、dwd_org_industry_product_tags、dwd_org_industry
+      _tags、dwd_patent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。旧稿的结果面在 `gkx` 里不存在，但五维原子量全部可从源表现算，属「结果面缺失、 原子量齐备」，故判 `部分支持`：重算五
+      维、合成综合分，同时声明人才维被规模替代。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_126_1
+    metric_name_zh: "区域产业指数模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-126"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_org_financing_info、dwd_org_industry_tags、dwd_org_service_info、dwd
+      _org_tech_tag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。链×城市的企业数、高企数、专利数、融资事件、服务机构五项可算，四城×12 链全部出指数与名次；但旧稿三维里的「企业营收」「论文
+      /科研机构」「政策支持强度」三项没有链标签或覆盖率过低：论文 100,900 条只有机构城市、机构表 2,074 行无链码、政策 20,000 条只有城市，财务表营收仅 2,193/90,
+      926 行，故学术与配套两维只能用「专利 + 融资 + 服务机构」代理，区域也只覆盖四个城市，不能做全国排名。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_127_1
+    metric_name_zh: "深圳问题识别模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-127"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_industry_chain_info、dwd_org_financing_info、dwd_org_industry_produ
+      ct_tags、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。旧稿的结果面 `chain_sz_problem` 在 `gkx` 内零行，但五个判定位的原子量全部可得， 本件用「深圳 vs
+      全国强度差 + 完整度绝对线」现算，判 `部分支持`： 能给出逐链问题计数，但「问题」的定义是本件自定义，不是旧表的外部模型口径。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_128_1
+    metric_name_zh: "深圳机遇分析模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-128"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_financing_info、dwd_
+      org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。趋势（融资/新设两窗增速）与优势（LQ、专利/融资超配）两维可从 gkx 快照算，12 条链全部出机会指数与名次；但旧稿三维里
+      的政策维（政策 20,000 条无链标签、深圳 879 条无法拆链）与市场维（链级营收不可得，财务表营收仅 2,193/90,926 行）均不可算，且 chain_sz_opportuni
+      ty / chain_sz_advantage / chain_sz_problem 三张结果表不存在，故只交付「趋势×优势×
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEEP_129_1
+    metric_name_zh: "重点布局产业推荐模型"
+    acceptance_unit_id: "ALGO-CHAIN-DEEP-129"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件回答“深圳应该优先布局哪几条产业链”。按 `calc-logic` 的三维框架：优势分取 `M_CHAIN_SZ_ADVA
+      NTAGE_SCORE_out.json` 的 `sz_score_available_dims`，机遇分取 `M_CHAIN_DEEP_128_1_out.json` 的 `opport
+      unity_index`，政策分取 `M_CHAIN_POLICY_MATCH_SCORE_out.json` 的 `matc
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DEVELOPMENT_MILESTONE_COUNT
+    metric_name_zh: "产业链发展里程碑数"
+    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_event、dwd_industry_chain_news_info、dwd_org_financing_info、dwd_org
+      _invest_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。calc-logic 的真源 industry_chain_milestone_event 两库均无（gkx 280 表 mi
+      lestone 零命中，唯一事件表 dwd_event 只有 20 行且无链键；live 同名表不存在）。三类里程碑里，政策出台可用政策×链×年命中重建、龙头入驻可用大额融资事件代理，两类
+      都能按链汇总并下钻到事件；重大技术突破既无事件表、资讯表也没有 event_type/level 字段、专利表无突破标签，无法
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_DOWNSTREAM_COUNT
+    metric_name_zh: "下游环节数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件回答“12 条产业链各有多少个下游环节”。源表没有阶段字段，无法按 `chain_stage='downstream'` 
+      直接筛选；
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_EDGE_COUNT
+    metric_name_zh: "产业链边数（链位关系数）"
+    acceptance_unit_id: "BATCH-20261021/产业链分析"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_industry
+      _tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件回答“12 条产业链的图谱里到底有多少条边”。以 `gkx.dwd_industry_chain_info` 全量 1,2
+      73 行为母体，按 `industry_code` 的层级编码与 `industry_link_code` 父指针还原树结构，得到 12 个链根、319 个容器节点、954 个叶子节点和 
+      **1,261 条父子边**；
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_ENTERPRISE_COUNT
+    metric_name_zh: "关联企业数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=挂链企业去重数（org_id）；真源唯一 enterprise_industry_chain；严格真实口径优先，0 行如实。摘 ads:chain_overview 壳。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_tags、dwd_org_base_info、dwd_org_i
+      ndustry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：上链明细源确认缺失：ods 侧仅 dwd_org_industry_
+      tags 104 行过渡样本（无 org_id 主键），全量挂链明细待供应方交付后灌入。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_ENTERPRISE_NEW_COUNT
+    metric_name_zh: "新增关联企业数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=年度首挂企业去重数（org_id；first_link_date 目标态）；重挂不计；分链链内首挂。临时方案=首灌批全量即首挂+create_time 分批增量（仅运营注记不进口径）
+      。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_id、dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_b
+      ase_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。本件回答“每年有多少家企业第一次挂上产业链”。官方口径在 2026-10-14 已拍板：按 `first_link_date` 取
+      每年最早挂链时间，按 `org_id` 去重，退出后重挂不计。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_ENTERPRISE_POWER
+    metric_name_zh: "企业能力"
+    acceptance_unit_id: "CHAIN-REGION"
+    module: "CHAIN-REGION"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_base_in
+      fo、dwd_org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。产业生态维可算但仅覆盖可归域子集（35,046/2,283,762 = 1.53%），营收维非空 2,193/90,926 行
+      （2.41%）、2024 正营收仅 47 家，无法做 4 城 × 12 链截面归一；专利维仅有 200k 样本（6.81%，非随机截取）作下限代理。三维中一维受限、一维缺失、一维样本级，故
+      为部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_GLOBAL_CASE_MATCH
+    metric_name_zh: "全球成功案例匹配"
+    acceptance_unit_id: "TOPIC-SZ-016"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_forg_base_info、dwd_forg_research_org_info、dwd_opt_judicial_case_d
+      etail、dwd_org_bankruptcy_public_cases…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。全库没有案例库（280 张表里 case/benchmark 类为 0），唯一境外实体是外资企业名录 6 张各 2 万行，但它与链
+      标签零重叠（extid/name/orgid 三项命中均为 0），挂不上任何一条链；「成功」没有判据表，案例级营收/份额/增速序列都不存在。案例库、链归属、成功判据三项全缺，无法闭环，判完
+      全不支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_GLOBAL_REGION_COUNT
+    metric_name_zh: "全球分布区域数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=链上主体总部国家去重数；现阶段只算国内档（CN 恒 1/桥空 0）；海外缺口保留挂 CHAIN-P0-7 + Q-SVCCHAIN-07（SVC GLOBAL 模式）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_forg_base_info、dwd_forg_research_org_info、dwd_forg_university_org
+      _info、dwd_org_base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。需求定义是「每个国家对应的企业和机构总数」，而 gkx 侧企业底册 189,116 行只有省/市、无国别字段，境内科研机构 2,0
+      74 家全在中国境内，三张境外主体表各 20,000 行却无产业链列，外国企业表与工业标签交集为 0、与链上企业名交集为 0；唯一带国别的 `dwd_patent.country_code
+      ` 只有 6 个代码，China 占 96.9%、WO(PCT) 占 3.06%，其余四码合计不足 0.04%。按链聚合后
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_GRAPH_102_1
+    metric_name_zh: "产业实体识别构建"
+    acceptance_unit_id: "ALGO-CHAIN-GRAPH-102"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_org_base_info、dwd_org_heis_info、dwd_org_industry_tags、dwd_patent…
+      ）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。六类实体在 gkx 均有源表且量足（3,175,902 条：企业 189,116、高校 3,501、科研机构 2,074、人才
+      21,316、政策 20,000、专利 2,939,895）；但只有企业与专利存在链级挂接面（企业走 industry_code、专利走申请人名称桥，挂链率 75.07% / 38.35
+      %），高校、科研机构、人才、政策四类没有 chain_id 或 industry_code，链挂接只能覆盖 2/6，故判部分支
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_GRAPH_103_1
+    metric_name_zh: "产业实体关系抽取"
+    acceptance_unit_id: "ALGO-CHAIN-GRAPH-103"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：T0-X 分析清
+      单身份注册；formula / algorithm_type 未签；禁止把 A1 表2 type 当已签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_financing_info、dwd_org_industry_tags、dwd_patent、dwd_policy_ba
+      se…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。需求点名的六族关系中，只有「产业—企业」（1,714,458 条）与「产业—技术」（29,631 个企业—链对，经专利申请人名
+      称桥）可由 gkx 现算；产业—人才、产业—科研机构、产业—服务机构、产业—政策四族在 gkx 均无链码（源表有行数但没有 chain_id / industry_code），六族只能覆盖
+      2/6，故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_HIGH_VALUE_RATIO
+    metric_name_zh: "产业链高价值环节占比"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info）；批量初判 provisiona
+      l，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      口径已定（2026-10-14 human:徐滕强，B 方案归一 L1：分母全链 L1 同 REG_ECOSYSTEM、分子 importance_level 高价值值集折 L1；公式结构
+      已定，:high_value_enum 枚举占位）；与 SZ_KEY_NODE_COVERAGE 共用 GAP-CHAIN-IMPORTANCE-ENUM（一次问值域字典+标注层级，两指标
+      解锁）；正式签名待 human:唐绍祖 会签。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_HOTSPOT_COUNT
+    metric_name_zh: "热点/历程事件数（热点领域数）"
+    acceptance_unit_id: "CHAIN-ROADMAP"
+    module: "CHAIN-HOTSPOT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_industry
+      _chain_pat_dtl）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。本件回答“12 条产业链里有哪些环节正在变热”。按 `calc-logic` 的三路信号：企业增速（2021—2025 成立企
+      业占比）、投融资热度（2021—2025 融资事件/可映射企业）、专利密度（累计专利/可映射企业），在 28 个达到证据门槛的 L1 上做 min-max 归一，按 0.34/0.33/0
+      .33 加权，综合分 ≥ 0.60 记为热点。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_HOTSPOT_SCORE
+    metric_name_zh: "产业链热点综合评分"
+    acceptance_unit_id: "CHAIN-HOTSPOT"
+    module: "CHAIN-HOTSPOT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_industry
+      _chain_pat_dtl）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。calc-logic 的四维结果表 chain_hotspot 在 gkx 侧 0 张（280 表里 hotspot 关键词零
+      命中），live 侧只有 8 行未来产业种子样例、与 12 链仅 1 条重名，不能当结果面。企业增速、投融资、专利、资讯四个原始字段都没有真源，只能用可核代理重建：成立年分布、融资事件、申
+      请人专利、资讯挂链次数。四维结构与 min-max 合成方式对得上，但每个代理与模型原分不是同一把尺（事件数不是热度、专利件数
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_HOT_NEWS_COUNT
+    metric_name_zh: "链热门资讯数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_industry_chain_news_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。链资讯 108,052 行真实、可计数，2025-02 至 2026-07 连续 18 个月；但 heat_score 字段整
+      库不存在，本件只能用三项可观测替代量定义热度，代理在 12 条链上产出 1,972 条热门资讯（1.83%），热度语义（读者触达/传播效果）无法与原文口径对齐；标题词表只覆盖 31.89%
+      的资讯，industry_code 多值且 48.2% 被截断，不能作为链归属依据；窗口仅 18 个月，无法支撑年度趋势。故
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_INSTITUTION_COUNT
+    metric_name_zh: "关联机构数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=挂链科研机构/高校去重数（与企业互斥，企业法人研究所归 ENTERPRISE_COUNT）；真源 industry_chain_entity_rel（entity_type=inst
+      itution 原生维）；摘 ads:chain_institution_stat 壳。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_heis_info、dwd_research_institute_base
+      _info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：机构挂链数据缺失：demo entity_rel 仅 product
+      319 行；live tags 228 万行双路径核验真机构仅 1 家/0；已开 CHAIN-P0-6 问供应方机构挂链交付计划。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
+    metric_name_zh: "产业链国际化程度"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 13 张 gkx 表可查（dwd_enterprise_industry_chain、dwd_forg_、dwd_forg_base_info、dwd_forg_
+      executive_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。三条候选路径全部断裂：① 海外主体 dwd_forg_base_info 20,000 行仅 GB 19,832 / US 159
+      / CA 9 三国，与国内主档 org_id 交集 0、与产业标签 credit_code 交集 0、与企业—链归属交集 0，无法挂到任何产业链；② 专利表无申请人国别字段，countr
+      y_code 实为公开国别，WO 公开的申请人 94.15% 直接命中国内企业主档名（华为、OPPO、中兴等），用它算「海
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_INVEST_COUNT
     metric_name_zh: "投融资事件数"
     acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
+    module: "CHAIN"
     d1_def_status: aligned
-    d2_schema_status: assessed
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：方案A 融资事件同构 REG_FINANCING + 复合业务键去重）；QC07 降🟡跟踪（融资源已活，残余=投资方视角无事件级源）；链桥跟 CHAIN-P0-5。"
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_financing_info、dwd_
+      org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：口径已钉（2026-10-14 human:徐滕强：方案A 融资
+      事件同构 REG_FINANCING + 复合业务键去重）；QC07 降🟡跟踪（融资源已活，残余=投资方视角无事件级源）；链桥跟 CHAIN-P0-5。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_INVEST_TOTAL
+    metric_name_zh: "投融资总额"
+    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_financing_info、dwd_org_industry_tags）
+      ；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。事件数与单币种金额可算，但 65.6% 的事件无金额、43.6% 的事件挂不上链、三种币种不能相加，且增长率只在 CNY 子集
+      内成立——按四档定义属「始终有部分维度不可得」。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_KEY_NODE_COUNT
+    metric_name_zh: "关键节点数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析 / 产业诊断 / 关键环节识别"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_industr
+      y_tags、dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。12 条链的叶级环节企业数均可得（916/954 个叶级环节有企业），但王惠 V2 的三因子里只有「企业规模」一维可算；附加值
+      率与 CR4 卡在环节级营收、技术壁垒卡在环节—专利键，故只能给分位代理值（463，占比 50.55% 由中位数规则决定），不是三因子结论，判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_LAYOUT_PRIORITY_SCORE
+    metric_name_zh: "布局优先级评分"
+    acceptance_unit_id: "CHAIN-LAYOUT"
+    module: "CHAIN-LAYOUT"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_industry_tags
+      、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四指标中 D1/D3/D4 可实测（D3 覆盖 972 家上市公司，2024 年报期 750 条），但 D2 市场占有率的分母
+      『全国该产业产值』在开发库与三方库均无承载，且企业底册 99.82% 在广东，无法构造全国分母；空间可行性维（土地/园区/载体面积）同样为零。四维中一维结构性不可得 + 一维为零 → 按 
+      §〇 判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
+    metric_name_zh: "产业链重点布局推荐数"
+    acceptance_unit_id: "CHAIN-LAYOUT"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_annual_f
+      inancial_info、dwd_org_industry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。calc-logic v0.2.0（方案A）是读发布快照：industry_chain_metric_fact 按单链直读推荐
+      条数，模型侧由 industry_chain_model_result_detail.priority_level 定档。gkx 侧无这两张表（280 表里 layout/recommen
+      d 关键词零命中），live 侧 metric_fact 0 行，推荐模型的权重、档位阈值、评分口径均无真源。本件用链树 +
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_LINK_HEALTH
+    metric_name_zh: "环节健康度"
+    acceptance_unit_id: "TOPIC-DIAG-018"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_industry_chain_pat_dtl、dwd_pate
+      nt、dwd_policy_base）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。五维里只有技术成熟度与融资资本两维能在 L1 节点层闭合（合计权重 2/5=0.40）；人才列整列为空、营收覆盖 <1%、政策
+      无环节码，三维永久不可得，故不能输出 0—100 总分。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_MARKET_GROWTH
+    metric_name_zh: "产业链市场增长"
+    acceptance_unit_id: "BATCH-20261021/产业链分析"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_market、dwd_org_annual_financial_info、dwd_org_base_info）；批量初判 prov
+      isional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。市场规模型指标本身不成立；增长率还额外要求两期主体可比，而全库 2023→2024 同企配对只有 17 对，12 条链中仅 8 条
+      有 2024 年记录、4 条为 0。结构与数据均不具备可算闭环 → 完全不支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_MARKET_SIZE
+    metric_name_zh: "市场规模"
+    acceptance_unit_id: "BATCH-20261021/产业链分析／产业链全景／规模体量"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_stock_finance_info）；批量初判 provis
+      ional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。「部分支持」的定义是「**部分**依赖维可得、其余缺」。本件的**唯一核心依赖维就是金额**：链归属有了（12 链、1,714,4
+      57 家）、统计年有了（2024）、企业主键也有了（credit_code），但没有可加的金额，等于核心维不具备。金额缺失不是「少一列辅助信息」，而是「被加数不存在」——$0$ 个可加项之
+      和不是 0，是**未定义**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_MIDSTREAM_COUNT
+    metric_name_zh: "中游环节数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析／产业链全景／链条结构"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。中游是「三段里最难定义的一段」：上游可靠首段界定、下游可靠末段界定，中游只能取「剩下的」。源表无 `chain_stage`、
+      `level` 恒 0，本件用「中间 L1 分支」代理，得到 493；这个值在结构上完全可复算，但 17 个中间分支里有 4 个的语义与编码位置不一致，其中 3 个是明确反例，故判 **部
+      分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_NATIONAL_REGION_COUNT
+    metric_name_zh: "全国分布区域数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=链上主体总部省级区划去重数（34 全集不滤；空值不计数；自治区简称 ETL 归一不进口径；市级下钻不另开 ID）；删 scope 伪条件。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_forg_、dwd_org_base_info、dwd_org_industry_tags）；批量初判 provisional，待
+      lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：桥缺口：enterprise_industry_chain 0 行，
+      全量挂链明细待交付（跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
 
   - metric_id: M_CHAIN_NEWS_COUNT
     metric_name_zh: "动态资讯数"
     acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
+    module: "CHAIN"
     d1_def_status: aligned
-    d2_schema_status: assessed
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info）；批量初判 provisiona
+      l，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强：pk_id 直数 + industry_code 等值 + 窗口参数化）；demo 90 行实测在（Group1 唯一当前可跑）；值域比对仅质量参考；全量跟 CHAIN-P0-5。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_HOT_NEWS_COUNT
-    metric_name_zh: "热门资讯数"
-    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已钉（2026-10-14 human:徐滕强，三段式：临时全量代热点（今天可跑，与 NEWS_COUNT 同数）→ 正式 heat_score 链内 P90 分位 Top10%（字段现库不存在，语义锁定）→ 切换条件=管线落 heat_score+首灌）；UI 侧不体现临时标注（2026-10-14 拍板）；正式签名待 human:唐绍祖 会签；NLP 打分管线归算法侧 GAP-CHAIN-HEAT-SCORE。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: n/a, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_SZ_COMPLETENESS
-    metric_name_zh: "深圳产业链完整度"
-    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
-    module: CHAIN-SZ
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：完全复用 M_CHAIN_REG_ECOSYSTEM @ region_city='深圳市'，L1 口径同构不另立；细稿引用 REG_ECOSYSTEM 文档不复制逻辑；旧稿 QC01 三选一废弃）；正式签名待 human:唐绍祖 会签；全量跟 CHAIN-P0-5。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_HIGH_VALUE_RATIO
-    metric_name_zh: "高价值环节占比"
-    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强，B 方案归一 L1：分母全链 L1 同 REG_ECOSYSTEM、分子 importance_level 高价值值集折 L1；公式结构已定，:high_value_enum 枚举占位）；与 SZ_KEY_NODE_COVERAGE 共用 GAP-CHAIN-IMPORTANCE-ENUM（一次问值域字典+标注层级，两指标解锁）；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_BOTTLENECK_COUNT
-    metric_name_zh: "瓶颈堵点数"
-    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：口径=读表口径，ADS v2 metric_fact 最新发布快照直读；模型卡未冻结/QC04 只影响何时有数不进口径；旧稿 dwd.industry_bottleneck 为 v1 废弃壳禁止引用）；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_BOTTLENECK_SEVERITY
-    metric_name_zh: "瓶颈严重度"
-    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径 + metric_value 评分/metric_label 分级双字段同返，无需等模型卡选形态）；severity_level 枚举冻结挂 v5 §9 开放项（算法 Lead 模型卡）属写入侧；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_BOTTLENECK_TYPE_DIST
-    metric_name_zh: "瓶颈类型分布"
-    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强：读表口径=ADS v2 metric_dist 桶直读 bucket_code/bucket_value/bucket_ratio；v2 §6 本条唯一分布映射）；五维字典+一多类型计数方式属模型写入侧（QC04/模型卡），影响写哪些桶不影响读 SQL；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
-    metric_name_zh: "环节健康度分"
-    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "QC04"
-    d1_note: "2026-10-16 瓶颈识别真表接线新增（lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health）；健康分=四核心维（tech/talent/capital/policy）均值，缺维 NULL，market_demand 只参与最弱维标注；档位阈值（75/60）与五维写入字典未冻结挂 QC04；公式/algorithm_type 待会签。"
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d2_gap: "ADS metric_fact/series 表结构实核可用（node_id=环节键 + 支撑 ID M_CHAIN_STAGE_*_SCORE 五个，demo 批已入 1075+1075 行）；五支撑 ID 不单列注册，作为本条源字段。"
-    d3_source_mapping_status: partial
-    d3_gap: "支撑分由演示批 seed_chain_bottleneck_demo.py（mock_20261016_bottleneck_seed）写入；正式生产数据待模型侧 ETL 接管（QC04 冻结后）。"
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。108,052 行资讯真实可取，industry_code 数组解析后 9/12 链有数（合计 183,758 条）；但 46
+      .69% 的行 industry_code 恰为 255 字符被截断、45.85% 的 JSON 不可解析，且软件与信息服务、智能终端、智能网联汽车三条链的根码在全表 0 次出现（标签体系
+      缺口，非真实无资讯），可计不可全信，故判部分支持。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: n/a, dwd_loaded: partial, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: open
-    legacy_mapping_status: "⏳"
-  - metric_id: M_CHAIN_LAYOUT_RECOMMEND_COUNT
-    metric_name_zh: "重点布局推荐数"
-    acceptance_unit_id: "CHAIN-LAYOUT"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
-    d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强 方案A：统计对象=单链发展方案条数 object_type=chain 带链参数，贴 demo 页面语义；旧稿全局链数+阈值口径废止）；QC09 降级随附待办挂模型写入侧；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
   - metric_id: M_CHAIN_NEWS_SENTIMENT_RATIO
     metric_name_zh: "资讯正面情感占比"
     acceptance_unit_id: "CHAIN-DETAIL-POOLS"
-    module: CHAIN
+    module: "CHAIN"
     d1_def_status: aligned
-    d2_schema_status: assessed
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
     d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "2026-10-14 human:徐滕强 确认：情感字段缺失无法完整完成，非伪闭合。口径已定（读表口径=ADS v2 metric_fact 直读；分母同 NEWS_COUNT 全量口径；正面值集随管线契约）；实核 sentiment 字段/表全库不存在——GAP-CHAIN-SENTIMENT（NLP 情感管线，归算法侧，可与 GAP-CHAIN-HEAT-SCORE 并同一条管线任务）；无临时口径（情感无诚实代理值），管线落地前 NULL 如实展示；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_CONCENTRATION_INDEX
-    metric_name_zh: "产业集中度"
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: aligned
-    d2_schema_status: assessed
-    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_industry_chain_news_info）；批量初判 provisional，待 lineage-subcoord 核验。
     d3_source_mapping_status: partial
-    d3_gap: "口径已定（2026-10-14 human:徐滕强 三段式：临时=HHI+融资额份额资本集中度代市场集中度（万/亿中文金额解析、非CNY/空值企业剔除、UI 不体现临时标注）→ 正式四决策点（HHI/CR_N、营收基准、粒度、形态）完整保留挂 QC02+唐绍祖 → 解挂=QC02 签发+营收聚合落库）；融资路径实核 25654 行可用、桥现 0 行出 NULL 属数据事；旧稿 chain_score 置信分冒充禁止；正式签名待 human:唐绍祖 会签。"
-    d4_ingestion_status: ingesting
-    d4_ingestion_stages: { ods_synced: done, dwd_loaded: done, es_indexed: n/a, graph_loaded: n/a, verified: partial }
-    lifecycle_stage: ready
-    legacy_mapping_status: "🔧"
-  - metric_id: M_CHAIN_INTERNATIONALIZATION_INDEX
-    metric_name_zh: "产业链国际化程度"
-    acceptance_unit_id: "CHAIN-PANORAMA"
-    module: CHAIN
-    d1_def_status: draft
-    d1_pending_ref: "QC-NEW-INTERNATIONALIZATION（待开号，建议并入 QC02 组）"
-    d2_schema_status: pending
-    d2_assessed: provisional
-    d3_source_mapping_status: none
-    d3_gap: "2026-10-14 human:徐滕强 拍板挂起（无好临时方案，非伪闭合）：① 算法本体未签（因子集+权重）且无 QC 号（登记缺口待开号）；② 数据三缺（进出口全库无源、海外判定契约未定义、链专利挂链误差已知）；③ 唯一近源案A 需先核 dwd_patent 国别字段。解挂=补 QC 号+因子/权重签发+对应源落库；正式签名待 human:唐绍祖 会签。"
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：2026-10-14 human:徐滕强 确认：情感字段缺失无法完整
+      完成，非伪闭合。口径已定（读表口径=ADS v2 metric_fact 直读；分母同 NEWS_COUNT 全量口径；正面值集随管线契约）；实核 sentiment 字段/表全库不存在—
+      —GAP-CHAIN-SENTIMENT（NLP 情感管线，归算法侧，可与 GAP-CHAIN-HEAT-SCORE 并同一条管线任务）；无临时口径（情感无诚实代理值），管线落地前 NUL
+      L 如实展示；正式签名待 human:唐绍祖 会签。
     d4_ingestion_status: mock
-    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: n/a, graph_loaded: n/a, verified: todo }
-    lifecycle_stage: blocked
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
     legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_NODE_COUNT
+    metric_name_zh: "产业链节点数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（ads_chain_node_count、dwd_industry_chain_info）；批量初判 provisional，待 line
+      age-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。链树 1,273 行、12 条顶层链、319 个非叶环节码在 gkx 当日全量可取；COUNT(DISTINCT industr
+      y_link_code) 端到端跑通，逐链 9—71、区分度充分，无外部依赖。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_PATENT_COUNT
+    metric_name_zh: "产业链关联专利数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_patent）；批量初判 provisional，
+      待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：口径已钉（2026-10-14 human:徐滕强：全量 kin
+      d + patent_id 去重 + org_id 三跳 + pbdt_year 时间轴/窗口作参数）；旧稿表名漂移已重写；enterprise_patent_org_rel 0 行待灌跟
+      CHAIN-P0-5。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_PHASE_DETERMINATION
+    metric_name_zh: "产业链阶段判定"
+    acceptance_unit_id: "CHAIN-CYCLE"
+    module: "CHAIN-CYCLE"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_industry_tags）；批量初判 provisional
+      ，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。12 条链都有阶段分，等频三分可直接执行；但只有 8/12 条链实测维度 ≥3，低空经济/生物医药 4 维全空、分数恒 50，
+      机械分段会把空值送进成熟期；跨年阶段翻转 7/12，其中人工智能 79.50→12.26、集成电路 71.38→32.85，阶段结论对统计年高度敏感；两套分段法（等频 vs 阈值）结果不一
+      致。故判部分支持，并把不可判定链单独列出，不硬贴阶段。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_POLICY_MATCH_SCORE
+    metric_name_zh: "产业政策匹配度"
+    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_policy_base）；批量初判 provisional，待 lineage-sub
+      coord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三维里只有「标题命中密度」与「国家级占比」可算，政策支持覆盖度维因 policy_support 整列为字符串 'null' 
+      而永久不可得，标签维也因 keywords/keypoints 全空退化为只读标题。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_PRODUCT_COUNT
+    metric_name_zh: "产业链关联产品数"
+    acceptance_unit_id: "CHAIN-DETAIL-POOLS"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_product_tags、dwd_org_industr
+      y_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。产品标签表 80,258 行真实可取，拆项后 9/12 条链有产品；但 INB1209/INB1236/INB2503 在产品
+      表 industry_link_name 中零行（SQL 实测），且产品条目无行业标准编码、同物异名严重、不做归并则不可跨链比较——覆盖与口径两侧都有缺口。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_REGION_INDEX
+    metric_name_zh: "区域产业指数（区域产业指数评价页壳指标）"
+    acceptance_unit_id: "CHAIN-REGION"
+    module: "CHAIN-REGION"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 11 张 gkx 表可查（dwd_id、dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_finan
+      cing_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。8 个子项只有 4 个在链×城粒度可算（企业数、专利、政策覆盖率、融资事件），48 个单元全部闭合；学术生态维 3 个子项不可
+      算——2,074 家科研机构与 3,501 家高校与工业标签的链码交集 0、0，`dwd_scholar_info.scholar_org_id` 21,316 行全为空串。营收子项可算但
+      29/48 单元无披露。可算部分合成的两维指数分布 0.0–100.0（中位 24.1，31 个不同取值），可区分但缺一整个
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_COMMERCIALIZATION
+    metric_name_zh: "区域产业化程度"
+    acceptance_unit_id: "TOPIC-REG-009"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags、dwd_p
+      atent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。王惠口径所需三段数据全部落在真实表白名单：工业标签 2,283,786 行（链码→企业）、机构底册 189,116 行（企业→城
+      市）、专利主表 2,939,895 件（申请人→专利）。当日已现转：48 个链×城单元全部算出非零专利数，分布 min=564 / median=26455 / max=345534，非退
+      化、可区分；结构（链树 1,273 节点、12 顶层链）与当前数据量均足。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_COMP_ACADEMIC
+    metric_name_zh: "竞争力-学术生态"
+    acceptance_unit_id: "TOPIC-REG-022"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 8 张 gkx 表可查（dwd_org_heis_info、dwd_org_industry_tags、dwd_research_institute_base_i
+      nfo、dwd_scholar…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三项均有真实底层（高校 3,501 家、科研机构 2,074 家、学者 21,316 人、学者—论文关系 1,065,385 
+      条、带机构信息的论文 100,865 篇），但「链上」这一层无标签：4 市高校/机构在 `dwd_org_industry_tags` 命中 0 条（heis_city4_tagged=0
+      、inst_city4_tagged=0），只能经产学研共著反推（企业提及 37,991 次，名称匹配 9,832 次，命中链
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_COMP_ENTERPRISE
+    metric_name_zh: "竞争力-企业能力"
+    acceptance_unit_id: "TOPIC-REG-021"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_industry_tags
+      、dwd_org_stock_finance_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。三个三级指标中 C 满覆盖（2,939,895 件专利按第一申请人现转，发明授权 kind=B 353,020 件）；B 仅覆
+      盖 875 家上市主体（40,239 行财务），占 4 市链上企业 35,046 家的 2.5%；A 仅 850 家有营收+人数有效配对（90,926 行年报），最新年度集中在 2025 
+      及以前（2013–2018 为主），且 64.8% 的公司-年「营收÷人数」低于 1,000 元/人（量纲不一致，疑为万元与元
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_COMP_SUPPORT
+    metric_name_zh: "竞争力-配套环境"
+    acceptance_unit_id: "TOPIC-REG-023"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_financing_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      20261021 批口径：完全转换支持 → D3=full。主值所需的三个输入全部在 gkx 闭合：链归属 `dwd_org_industry_tags → dwd_org_base_in
+      fo` 命中 35,046 家链上企业，区域轴 `city` 已规范到市级，融资事件表 `dwd_org_financing_info` 25,654 行 / 6,503 家。按「一行=一
+      次事件」落 48 个链×城单元，48/48 单元非零，事件数 2—5,462（中位 305.5），48 个单元 48 个不同
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_ECOSYSTEM
+    metric_name_zh: "区域产业生态"
+    acceptance_unit_id: "TOPIC-REG-020"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。L1 覆盖率可由链树 + 2,283,762 行标签现算，48 个链×市单元均可产出；但每链仅 3—6 个 L1，覆盖率天然易
+      饱和到 1.0，分辨力弱于环节级口径。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_REG_FINANCING
+    metric_name_zh: "区域融资"
+    acceptance_unit_id: "TOPIC-REG-011"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A，human:徐滕强 2026-10-14）：分子 dwd_org_financing_info 25,654 行实核；复合键 org_id+completion_date
+      +funding_round；formula 签名位维持 pending_cosign: human:唐绍祖，签后升 aligned。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_dim_admin_area、dwd_org_base_info、dwd_org_financing_info、dwd_org_i
+      ndustry_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：桥缺口：enterprise_industry_chain 0 行（
+      跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。event_id 缺列（复合键代，碰撞风险注记）。金额 varchar 中文单位不解析（归 M_CHAIN_INVEST_TO
+      TAL）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_PAPERS
+    metric_name_zh: "高校论文（区域）"
+    acceptance_unit_id: "TOPIC-REG-016"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：高校+院所双桶 UNION、paper_id 去重、4 表精简 formula（弃 papers JOIN）；签名位维持 pending_cosign: human:唐
+      绍祖。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_zh_paper、dwd_zh_paper_classification）；批量初判 provisional，待 lineage-
+      subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：机构挂链 0 行（CHAIN-P0-6）+ 企业桥 0 行（CHAI
+      N-P0-5）；学者↔机构名称匹配覆盖误差注记（32,215 匹配面实测）。papers.status 唯一值 1，status JOIN 弃用。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_PATENT
+    metric_name_zh: "专利（链维/区域维）"
+    acceptance_unit_id: "TOPIC-REG-012"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：org_id 全键链路（禁名称匹配）；不限 kind；六连接键 collation 同序实核；数据未灌不挂缺口号；签名位维持 pending_cosign: human
+      :唐绍祖。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_patent）；批量初判 provisional，
+      待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。专利主表 293.9 万件真实可用，名称桥接后 12 条链均有值；但官方口径要求的机构—专利关系键与机构—链关系表在 gkx 
+      均不存在（information_schema 零命中），名称匹配会漏计更名/同名主体，链归属与城市归属都只能作代理。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_POLICY_COVERAGE
+    metric_name_zh: "区域政策覆盖率"
+    acceptance_unit_id: "TOPIC-REG-019"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：饱和加权覆盖（hit/(hit+5)）、拆词 OR 匹配（实体词表防误判）、分母 L1 环节、国家级覆盖全国；深圳×INB1701 真值 61.8% 实测回填。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_policy_base）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      无缺口：源表在案有数（demo 20,000 行）；词表维护为算法侧职责；live 库无此表=跨库同步注记非缺口。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_RESEARCH_ORG
+    metric_name_zh: "科研机构（链维/区域维）"
+    acceptance_unit_id: "TOPIC-REG-015"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：高校+院所双桶、org_id 去重、区域轴=机构主档 city、唯一真源 industry_chain_entity_rel（entity_id 灌数对齐 org_id
+      ）；过渡桥提法已撤销（tags 与机构无关）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_heis_info、dwd_research_institute_base
+      _info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。官方唯一桥 industry_chain_entity_rel 的 institution 行在 gkx 不存在，链维没有现成
+      归属；但区域维所需的两张载体底册齐全（院所 2,074 + 高校 3,501，city 字段 100% 有值），四市列合计可直接数出、可对账。链维用机构名匹配环节名得到 134 家、10 
+      链非零，只能作下限。区域完整 + 链维弱，判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_REVENUE
+    metric_name_zh: "区域营收"
+    acceptance_unit_id: "TOPIC-REG-010"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：固定统计年 SUM（禁跨年混加）；缺失如实 0 不推算；同 org 同年 0 重复实核；深圳×2024 端到端 289.74 亿真值验证。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_industry_tags
+      、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。营收—链—城市三段管道在真实表白名单内跑通，12 条链均有值；但年报营收字段九成以上为空，覆盖企业数远小于链内企业数，只能作「
+      有披露企业营收和」。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_SERVICE_ORG
+    metric_name_zh: "区域服务机构"
+    acceptance_unit_id: "TOPIC-REG-018"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：池=svc_org_circle 跨域复用不另造、链上=机构自身挂链、六类候选仅下钻（Q-SVC-008）；org_id 全键。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。服务机构可用主档国标行业重建，42/48 个链×市单元有值；但原服务机构池在 gkx 不存在，重建准入规则与原池不等价，须甲方
+      确认后才能定版。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_TALENT_STRUCTURE
+    metric_name_zh: "人才结构（区域）"
+    acceptance_unit_id: "TOPIC-REG-017"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      前置写实（路径A）：主值硕博占比+四桶分布；分母=有学历记录学者；只做学历维（TAL-B04）；覆盖率强制同显、<50% ⚠️。org_id 未灌走名称轨。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_scholar、dwd_scholar_education_background、dwd_scholar_research_dir
+      ection、dwd_scholar_talent_flag…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      非缺口：四表在案；scholar_org_id 全空=数据未灌（名称轨过渡）；职称/年龄无源不发明（TAL-B04）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_TECH_BARRIER
+    metric_name_zh: "区域技术壁垒（技术力叶子）"
+    acceptance_unit_id: "TOPIC-REG-014"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_id）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。两个子项都算出了 48 个单元：空白占比 0.0%—42.063%，48/48 非空；封锁距离 0.1705—0.5317，4
+      8/48 有 IPC 样本；合成后 42 个不同取值。但口径有三个无法复原的缺口：①原稿的「统计年及前 3 年」窗口要求 2022—2025 逐年授权，缓存只有全期与 2024 单年两档；
+      ②原稿要求 `kind='B'`（发明授权），缓存只能给「granted_number 非空」，含实用新型与外观，导致空白占比
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_REG_TECH_MATURITY
+    metric_name_zh: "区域技术成熟度"
+    acceptance_unit_id: "TOPIC-REG-013"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。专利面板 `patent_panel_innov_20261021.json` 有 2,939,895 行「申请人×年」记录，
+      覆盖 2021—2024 四个申请年；链上企业按 `credit_code` 落主档 35,046 家，专利按第一申请人名匹配 25,294 家、933,873 件（31.77%）。结构和
+      量都够跑 48 个单元，但三个受限点——时间轴只有申请年、无 2025、2017—2020 零行——使「公开年 + 近 k 年
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_STAGE_SCORE
+    metric_name_zh: "产业阶段评分"
+    acceptance_unit_id: "CHAIN-CYCLE"
+    module: "CHAIN-CYCLE"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_annual_financial_info、dwd_org_industr
+      y_tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维公式全部可复现，但 t=2024 只有 7/12 条链四维齐备；可比集合规模：生产能力 1–46 家、销售规模 2–9 家
+      、利润率 1–9 家。销售规模维仅 7/12 条链有值，5/12 条链至少一维被 0.5 填充。年报正营收全库仅 2,191 条（占 90,926 行的 2.41%），且逐年 34–92 
+      家——关键依赖『年度可比样本』量不足，属结构性缺口，判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_STRATEGIC_IMPORTANCE
+    metric_name_zh: "战略重要性"
+    acceptance_unit_id: "CHAIN-KEYNODE"
+    module: "CHAIN-KEYNODE"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_industry_product_tags、dwd_org_i
+      ndustry_tags、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。公式可复现，但三维只剩两维：D2 研发人员占比整列 0/90,926 行非空，直接不可算；D1 依赖的年报正营收全库仅 2,1
+      91 行（2.41%），2024 年 47 行，落到 12 条链后只有 8/12 条链有营收、4 条链（智能网联汽车/低空经济/数字创意/生物医药）为零；链归属只有顶层码，旧稿的 L2 环
+      节评价无法复现，本件已上移评价单元；营收高度集中（HHI=0.3794，人工智能占 58.0%），min-max 后排名对单一
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SUPPLY_RELATION_COUNT
+    metric_name_zh: "产业链供应链关系数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析／产业链图谱／供应链关系"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 7 张 gkx 表可查（dwd_bid_base_out、dwd_bid_purchase_agency_out、dwd_bid_win_candidate_ou
+      t、dwd_en_paper_related…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: none
+    d3_gap: >
+      20261021 批口径：完全不支持 → D3=none。gkx 有采购方表 `dwd_bid_purchase_agency_out`（39975 行、带信用代码 39628 行），也有
+      中标方表（39520 行、带 external_id 39403 行，99.70%），但两端按 project_number 连接时，公告侧 32029 个不同项目号只有 106 个命中（
+      覆盖率 0.33%）。关系边只能在 0.33% 的子集上成立，不足以支撑「供应链关系数」；gkx 亦无任何企业—企业关系表
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SUPPORT_POWER
+    metric_name_zh: "配套服务"
+    acceptance_unit_id: "CHAIN-REGION"
+    module: "CHAIN-REGION"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_financing_info、dwd_
+      org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。政策侧依赖 `dwd_policy_base`（20,000 条存量），但环节命中所需的 `keywords`、`keypoi
+      nts`、`theme` 三列全部为占位 `'NULL'`，实际只能匹配 `title`，41 个 L1 环节里 19 个退化为链级词、23 个零命中；融资侧依赖 `dwd_org_fin
+      ancing_info`（25,654 行），可用链上企业匹配 15,405 行，但表内**无事件 ID**，无法做事件级去重
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
+    metric_name_zh: "深圳优势排名"
+    acceptance_unit_id: "CHAIN-SZ-ADVANTAGE"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_org_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。排名本身是纯计算：给定四城得分，排序即可。卡点在**得分**——官方结果表 `industry_chain_model_res
+      ult_detail` 当日 0 行，父指标 `M_CHAIN_SZ_ADVANTAGE_SCORE` 的四维里只有企业、专利两维有数，政策维 10/12 链无命中、人才维链级 0 行。名
+      次可算且可复现，但它继承父指标的全部缺口，故判 **部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_ADVANTAGE_SCORE
+    metric_name_zh: "深圳优势评分"
+    acceptance_unit_id: "CHAIN-SZ-ADVANTAGE"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 9 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_heis_info、dwd
+      _org_industry_tags…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四维中只有企业维与专利维可算（企业维仍受营收 0.65%、研发 876 家稀疏所限；专利维为 6.80% 抽样），政策维 10
+      /12 链无任何命中、人才维链级完全无数据；按 §〇「始终有部分依赖维得不到足够数据」判『部分支持』。另：需求原文要求『深圳与全国产业数据对比』，本库省外样本 0.18%，全国对标不可实现
+      。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_COMPLETENESS
+    metric_name_zh: "深圳产业链完整度"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：口径已定（2026-10-14 human:徐滕强：完全复用 M
+      _CHAIN_REG_ECOSYSTEM @ region_city='深圳市'，L1 口径同构不另立；细稿引用 REG_ECOSYSTEM 文档不复制逻辑；旧稿 QC01 三选一废弃）；
+      正式签名待 human:唐绍祖 会签；全量跟 CHAIN-P0-5。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_ENTERPRISE
+    metric_name_zh: "深圳企业维度"
+    acceptance_unit_id: "TOPIC-SZ-011"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 4 张 gkx 表可查（dwd_org_annual_financial_info、dwd_org_base_info、dwd_org_industry_tags
+      、dwd_org_stock_finance_info）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。企业数量维可用底册现算（12 链 100–8,402 家）；企业规模维虽有真实年报营收，但四城合计仅 1,225 家企业有正营
+      收（占底册 0.65%），深圳仅 0.94%（901/95,600）；企业质量维仅 876 家上市企业有研发投入记录（深圳 559 家）。三个三级中两个是稀疏样本聚合，城市间排序由个别龙头
+      是否入库决定，不满足『依赖维都能得到足够数据』，故判『部分支持』。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SZ_ENTERPRISE_COUNT
+    metric_name_zh: "深圳产业链企业数"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。链归属与企业规模都可在 gkx 单库内闭合，12 条链的深圳企业数全部非零；但「深圳」只能按统一社会信用代码第 3—6 位 4
+      403 判定，是登记机关辖区而非实际经营地，且 12 链深圳挂接 136,326 次对应去重企业 116,017 家（多链重复计 20,309 次），跨链不可加总当总量；底册 city 路
+      径只覆盖 95,600 家、与挂链桥交集约 3.5 万家，无法作为独立校验。注册地口径的系统性偏差不可在本库内修复，故判部分支
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
+    metric_name_zh: "深圳产业链企业占比"
+    acceptance_unit_id: "CHAIN-SZ-ADVANTAGE"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags）；批量初判 provisional，待 lineage-s
+      ubcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。分子分母都能从 gkx 标签 × 主档城市直接算，12 条链全部有值；但分母是深圳都市圈底册（189,116 家，99.82%
+      在广东），不是全国该链企业总数，语义须降为「底册内占比」。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_INSTITUTION_COUNT
+    metric_name_zh: "深圳产业链机构数"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_org_base_info、dwd_org_industry_tags、dwd_research_institute_base_i
+      nfo）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。「深圳有多少家机构」可算（名称口径 1,030 家，与 inst_city 快照一致）；「机构属哪条链」只能名称代理，覆盖率低
+      且机构表无产业链字段，链维度只能作下限展示。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COUNT
+    metric_name_zh: "深圳关键节点数"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。深圳关键环节可由标签表的深圳切片直接现算；但门槛仍是集聚度代理，且深圳切片按主档城市判定，跨市注册的深圳企业在库内不可追。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_KEY_NODE_COVERAGE
+    metric_name_zh: "深圳关键环节覆盖率"
+    acceptance_unit_id: "CHAIN-SZ-PANORAMA"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。覆盖率的分子分母都能在同一条链树上闭合：954 个叶级环节、463 个按全国中位数门槛判定的关键叶、其中 411 个有深圳企业
+      （88.77%），与已交付 M_CHAIN_SZ_KEY_NODE_COUNT 的411/463 逐位一致。但 calc-logic 的『关键』由 importance_level 值集定
+      义，该列在 gkx 不存在（GAP-CHAIN-IMPORTANCE-ENUM 未签），本件只能用全国中位数分位代理；且 ca
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_OPPORTUNITY_COUNT
+    metric_name_zh: "深圳产业机遇数"
+    acceptance_unit_id: "CHAIN-SZ-OPPORTUNITY"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 5 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags、dwd_p
+      atent…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。机遇的『链×深圳 vs 全国』对照可以在链树上重算：463 个关键叶里，52 个深圳为零、202 个深圳份额低于全国基准 7.
+      952%，合计 254 个薄弱环节，可作为『产业发展方向机遇』的可算代理。但 calc-logic 的三类机遇（产业发展方向/政策优化/创新方向）里，后两类需要政策建议与专利主题到环节的配
+      对，gkx 无环节级标注，只能记缺口；且原结果表 chain_sz_opportunity 在 gkx 零表、live 侧仅
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_OPPORTUNITY_SCORE
+    metric_name_zh: "深圳产业机遇评分"
+    acceptance_unit_id: "CHAIN-SZ-OPPORTUNITY"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_news_info、dwd_org_industry_tags、dwd_policy_base）；批
+      量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。calc-logic 的三维是 trend_score / policy_score / market_score，源表 ch
+      ain_sz_opportunity 在 gkx 侧零表；live 侧同名表只有 8 行未来产业种子样例（model_version 后缀 -demo），与 12 链只重名 1 条，不能当
+      结果面。三列本身没有真源，只能各自用可核代理重建：链级新闻关注度增速、深圳市政策按链命中数、深圳挂链次数。三维结构、等权公式、
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_PATENT
+    metric_name_zh: "深圳专利维度"
+    acceptance_unit_id: "TOPIC-SZ-012"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_id、dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tag
+      s…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。数量维可算（2,939,895 件真实专利，深圳归属 1,336,877 件，两种归因口径差 246,243 件已量化）；质量
+      维只能代理（发明占比可算、value 填充 67.9%、法律状态表仅覆盖主表 0.68%）；链切片为关键词代理，仅覆盖 8/15 条顶层链且 60.52% 集中在新一代信息技术 —— 故判
+      部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SZ_POLICY
+    metric_name_zh: "深圳政策维度"
+    acceptance_unit_id: "TOPIC-SZ-013"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_policy_base）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。政策数量维可算（20,000 条真题录政策，深圳 879 条，正文可用 18,763 条）；强度维无承载（fiscal_sci
+      _tech_exp / general_public_budget 两列不存在，theme/keywords/policy_support/keypoints 全部空或字面 NULL），只
+      能用「市级/区级占比」代理；status 20,000 行恒为「有效」使有效性筛选恒真；publish_year 2023 年
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_SZ_PROBLEM_COUNT
+    metric_name_zh: "深圳产业问题数"
+    acceptance_unit_id: "CHAIN-SZ-PROBLEM"
+    module: "CHAIN-SZ"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_industry_chain_news_info、dwd_org_industry
+      _tags）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。calc-logic v0.2.0 是读发布快照（industry_chain_metric_fact 按 region_co
+      de=440300 直读），gkx 侧无该表、live 侧该表 0 行，诊断模型结果面不存在。本件改用链树 + 1,714,457 家链属企业重算结构短板：98 个严重空白环节 + 133
+      个严重单点环节 = 231 个问题，可按 12 链汇总、逐环节下钻。但『诊断问题』的语义（技术/人才/市场/资本/政策五维打
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_REGION_COUNT
+    metric_name_zh: "深圳产业分布区域数"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 口径
+      钉死=深圳域内非零区数（读法 A）；深圳判定=city+十区 IN 复合条件（同名区防线）；对齐 M_SVC_PT_SZ_REGION_ORG v0.2.1（十区常显+未分配桶不计数）；弃
+      chain_sz_dist 壳。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 部分支持（D3=partial）；原判定 none，原依据：桥缺口：enterprise_industry_chain 0 行（
+      跟 CHAIN-P0-5）；过渡桥 tags 228 万可用。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_SZ_TALENT
+    metric_name_zh: "深圳人才维度"
+    acceptance_unit_id: "TOPIC-SZ-014"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 10 张 gkx 表可查（dwd_industry_chain_info、dwd_org_heis_info、dwd_org_industry_tags、dwd_
+      research_institute_base_info…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。人才数量可按机构名归集（深圳 194–199 位学者，主档 21,316），但：① 人才属性宇宙与身份主档 ID 交集仅 1,
+      858（8.72%）；② scholar_org_id 整列为空，机构只能按名称字符串匹配；③ 深圳学者中有教育记录的仅 29 人（14.6%），硕博占比的分母过小；④ 学者表无产业/链归
+      属字段，链切片无承载 —— 故判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_TECH_MATURITY_SCORE
+    metric_name_zh: "技术成熟度评分"
+    acceptance_unit_id: "CHAIN-CYCLE"
+    module: "CHAIN-CYCLE"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 1 张 gkx 表可查（dwd_patent）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。「技术成熟度」在文献里是**技术就绪度（TRL）**一类的多维评估，本库没有 TRL 字段、没有专利引证、没有权利要求数；能拿
+      到的只有「申请年 × 申请人」的件数。本件用「件数增速趋缓 = 技术趋于成熟」这一条单因子代理，方法可执行、结果可复算，但三个前提（公开年、足够长的历史窗口、链级申请人的完整匹配）都只能降
+      级满足，故判 **部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_TECH_POWER
+    metric_name_zh: "技术能力（链技术力）"
+    acceptance_unit_id: "TOPIC-REG-008"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_org_industry_tags、dwd_patent）；批量初判 provisional，待 lineage-subcoord
+      核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。tech_power 结果面不存在，但三维里有二维半可用：专利规模与近一年申请占比都能从 dwd_patent 的 2,939
+      ,895 行按申请人名聚合出来（12 链合计专利见 totals），断链壁垒可以用 K 节点未覆盖率算，但只有深圳口径。权重是等权默认值、甲方未裁定。结构与数据都够跑，缺的是全国 K 覆盖
+      与官方权重，判部分支持。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_TOTAL_COUNT
+    metric_name_zh: "产业链数量"
+    acceptance_unit_id: "CHAIN-PANORAMA"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：0.2.0 四层
+      语义定案：集群(dim15)→产业(L0,industry_id 15)→产业链(L1,28条)→节点；本指标数 L1=28。摘 ads 壳。公式可执行。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 3 张 gkx 表可查（dwd_industry_chain_info、dwd_org_base_info、dwd_org_industry_tags）；批量初判
+      provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: full
+    d3_gap: >
+      【20261023 升级】20261021 批实测证据支持 完全转换支持（D3=full）；原判定 partial，原依据：dwd 链表有数（demo 批次）；cluster_map 15
+      条旧编码段(INB13xx/12xx)与现网 INB17xx 不匹配=样本数据缺口待数据工厂刷新（口径正确，挂 Q068；本条公式不含 map 不受影响）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "🔧"
+
+  - metric_id: M_CHAIN_TREND_INDEX
+    metric_name_zh: "产业链变化趋势指数"
+    acceptance_unit_id: "ALGO-CHAIN-AI-GAP"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：AI 补漏口径/
+      公式已起草入库；formula/algorithm_type 待算法 Lead 会签
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 6 张 gkx 表可查（dwd_industry_chain_news_info、dwd_org_base_info、dwd_org_financing_info
+      、dwd_org_industry_chain_pat_dtl…）；批量初判 provisional，待 lineage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。四因子里企业增减（底册覆盖 2.04%）与资讯热度（窗口内零行）不可得，只剩专利增速与融资事件增速两维，且融资降幅无法区分真实
+      降温与源表覆盖下降。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_UPSTREAM_COUNT
+    metric_name_zh: "上游环节数"
+    acceptance_unit_id: "BATCH-20261021/产业链分析／产业链全景／链条结构"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: "n/a", graph: pending }
+    d2_assessed: provisional
+    d2_gap: >
+      20261021 批实测 2 张 gkx 表可查（dwd_industry_chain_info、dwd_org_industry_tags）；批量初判 provisional，待 lin
+      eage-subcoord 核验。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      20261021 批口径：部分支持 → D3=partial。「上游环节」需要两样东西：**阶段标注**（哪些节点是上游）与**环节清单**（这些节点有多少个）。清单在 `gkx.dwd_
+      industry_chain_info` 完整（1,273 节点），阶段标注**完全没有**——16 列里没有 `chain_stage`，唯一可能承载层级的 `level` 全表恒为 0
+      。本件用「编码序位」代理阶段，等于用结构假设换掉语义字段，因此判 **部分支持**。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: "n/a", graph_loaded: todo, verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+
+  - metric_id: M_CHAIN_STAGE_HEALTH_SCORE
+    metric_name_zh: "环节健康度分"
+    acceptance_unit_id: "CHAIN-DIAG-BOTTLENECK"
+    module: "CHAIN"
+    d1_def_status: aligned
+    d1_note: >
+      8 件套+version 齐（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1 seed 重写；口径/公式/源表以 20261021 王惠批为准）。 原记录：2026-10-
+      16 瓶颈识别真表接线新增（lumen-algo-py key_link._load_stage_health_raws + bottleneck.mean_health）；健康分=四核心
+      维（tech/talent/capital/policy）均值，缺维 NULL，market_demand 只参与最弱维标注；档位阈值（75/60）与五维写入字典未冻结挂 QC04；公式/
+      algo
+    d2_schema_status: partial
+    d2_schema_detail: { mysql_dwd: pending, es: pending, graph: "n/a" }
+    d2_assessed: provisional
+    d2_gap: >
+      派生/复合件：无独立源表，输入为上游指标产出（见 seed source_tables 派生输入注记）；结构待核验。 原记录：ADS metric_fact/series 表结构实核可用（
+      node_id=环节键 + 支撑 ID M_CHAIN_STAGE_*_SCORE 五个，demo 批已入 1075+1075 行）；五支撑 ID 不单列注册，作为本条源字段。
+    d3_source_mapping_status: partial
+    d3_gap: >
+      支撑分由演示批 seed_chain_bottleneck_demo.py（mock_20261016_bottleneck_seed）写入；正式生产数据待模型侧 ETL 接管（QC04 
+      冻结后）。
+    d4_ingestion_status: mock
+    d4_ingestion_stages: { ods_synced: todo, dwd_loaded: todo, es_indexed: todo, graph_loaded: "n/a", verified: todo }
+    d4_note: >
+      算法服务未上线，保持 mock（is_mock 同步诚实）；阶段2 服务上线后随接入清单翻转，verified 由 QA 四段链路核验（policy §7.6）。
+    lifecycle_stage: kit_complete
+    legacy_mapping_status: "⏳"
+

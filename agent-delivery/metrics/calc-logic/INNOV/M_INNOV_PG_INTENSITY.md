@@ -1,6 +1,7 @@
 # 政策扶持力度（M_INNOV_PG_INTENSITY）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_INTENSITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_INTENSITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_INTENSITY_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,57 @@
 |---|---|
 | 指标ID | M_INNOV_PG_INTENSITY |
 | 指标名称 | 政策扶持力度 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | — |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 政策与条件保障力 → 政策扶持力度分析 → 扶持力度评分与城市排序 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_PG_INTENSITY.md` |
 
 ## 口径定义
 
-评估政策扶持的广度与深度。对象=城市（可切领域）。从政策数量、政策类型、政策覆盖面综合，取值 0—100。
+没有「政策扶持力度」现成结果面，所以不是完全直接支持；`dwd_policy_base` 的 `id`、`type`、`city` 三列完整，数量维与类型维可在四城直接归一，所以不是完全不支持；但覆盖面维依赖的 `district` 在深圳只有 4 个不同值、广州与东莞为 0、惠州无记录，回退用的 `theme` 全表只有 0/1 两值，三维中**始终有一维缺测**，故判**部分支持**。
 
 ## 计算逻辑说明
 
-选定城市入集。采用加权平均，三维：政策数量（有效政策）/ 政策类型（类型去重）/ 政策覆盖面（区县或主题）。与综合评估扶持力度维同一套。
+```text
+score = mean(norm(COUNT(DISTINCT id)), norm(COUNT(DISTINCT type))) × 100（D3 缺测，权重重归一）
+```
 
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 政策数量 |  | 有效政策去重件数。 | COUNT(DISTINCT id) | dwd_policy_base(id, city, status, expire_date, publish_year) — 政策件数,有效 |
-| 政策类型 |  | 政策类型覆盖数。 | COUNT(DISTINCT type) | dwd_policy_base(id, city, type, status, expire_date, publish_year) — 政策类型 |
-| 政策覆盖面 |  | 区县广度；全空则主题数。 | COUNT(DISTINCT district)；全空则 COUNT(DISTINCT theme) | dwd_policy_base(id, city, district, theme, status, expire_date, publish_year) — 区县,主题 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_INTENSITY.md` §二（M_INNOV_PG_INTENSITY.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_policy_base(id, title, theme, city, province, district, type, status, expire_date, publish_year) — 政策去重,类型,区县,主题,有效
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_patent`
+- `dwd_policy_base`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-依照需求文档构建。02-科技信息展示系统|科技发展态势|科技创新评估.md|政策扶持力度分析 · 序号 153(政策数量、政策类型、政策覆盖面)
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：没有「政策扶持力度」现成结果面，所以不是完全直接支持；`dwd_policy_base` 的 `id`、`type`、`city` 三列完整，数量维与类型维可在四城直接归一，所以不是完全不支持；但覆盖面维依赖的 `district` 在深圳只有 4 个不同值、广州与东莞为 0、惠州无记录，回退用的 `theme` 全表只有 0/1 两值，三维中**始终有一维缺测**，故判**部分支持**。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_INTENSITY.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_INTENSITY.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_INTENSITY_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

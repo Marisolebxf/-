@@ -1,6 +1,7 @@
 # 落地实效性（M_POLICY_IMPLEMENTATION_EFFECT）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-POLICY-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_IMPLEMENTATION_EFFECT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_IMPLEMENTATION_EFFECT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_IMPLEMENTATION_EFFECT_out.json`。
 
 ## 基础信息
 
@@ -8,48 +9,52 @@
 |---|---|
 | 指标ID | M_POLICY_IMPLEMENTATION_EFFECT |
 | 指标名称 | 落地实效性 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 政策分析 |
-| 三级模块 | 深圳政策现状分析 |
-| 更新频率 | 季 |
-| 对齐状态判定 | 待甲方QPOL-02；实施反馈无调查表 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | QPOL-02 |
+| 所属域 | POLICY（政策分析） |
+| 一级模块 | 政策 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 政策分析页「落地实效」城市对比卡（设计位）、深圳政策现状分析指标体系（设计位） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/POLICY/M_POLICY_IMPLEMENTATION_EFFECT.md` |
 
 ## 口径定义
 
-对比城市（默认深圳，可选北京、上海、广州）政策落地实效综合评分，从落地执行启动、受益覆盖、实施反馈三维度评定，取值 0—100。分数越高表示落地执行越充分。
+三维各要一个输入：启动维要有效实施日、覆盖维要支持对象清单、反馈维要调查表。第一个字段在表内但 100% 是零日期，第二个在 JSON null 里，第三个两库都没有。**三维全断**，不是「缺一维」，是「一维都拼不起来」。
 
 ## 计算逻辑说明
 
-入集：国内政策库 dwd_policy_base；status=有效且 expire_date 空或不早于统计日；按 id 去重。综合统计默认仅国内（QPOL-05），国际政策 dwd_global_policy_base 不进综合分。对比单位是城市。rank 含国家级可计入每个对比市。$N_c$=该市有效命中政策数，$N_c$=0 不输出。
-
-第一步：三维原始值（见下表）。实施反馈无表则本维缺失。
-
-第二步：合成：各维截面 min-max 到 [0,1]，缺维不补 0、不进平均；等权（权重待 QPOL-02）后 ×100。全样本同值取 0.5。N<3 标「样本不足」。 现行综合 = (启动得分+覆盖得分)/2×100。
-
-第三步：需求未给维度，二级按科技部组织实施 / 范围和对象 / 效果与影响及 Sabatier 实施框架收口。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 落地实效性 | 落地执行启动 | 实施日填写率 | 从是否已填写实施日期评估政策落地是否启动，是启动率不是兑现率。 | COUNT(DISTINCT id WHERE implementation_date 非空) / $N_c$ × 100% | dwd_policy_base(id, implementation_date, status, expire_date) — 去重, 实施日, 有效, 失效 | 无 |
-| 落地实效性 | 受益覆盖 | 支持对象种类数 | 从支持对象种类评估政策受益覆盖广度；无受益企业名单，不用企业数冒充覆盖。 | COUNT(DISTINCT support_object)，空值不计入 | dwd_policy_base(id, policy_support.support_object) — 去重, 支持对象 | benefit_enterprise_list-受益企业名单 |
-| 落地实效性 | 实施反馈 | 实施反馈满意度 | 从实施反馈满意度评估政策落地后的对象评价；现库无调查表，本维不计算。 | 待建直读 | 无 | feedback_score-实施反馈满意度 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_IMPLEMENTATION_EFFECT.md` §二（M_POLICY_IMPLEMENTATION_EFFECT.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, rank, city, implementation_date, policy_support, status, expire_date, title, keywords, keypoints, theme) — 去重, 国家级计入各市, 对比城市, 启动率, 受益对象, 有效, 失效, 四字段命中
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_policy_base`
 
-- benefit_enterprise_list-受益企业名单
-- feedback_score-实施反馈满意度
+## 待建表字段
 
-## 参考资料
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-政策评估+中华人民共和国科学技术部+https://www.most.gov.cn/ztzl/zdzx/tztg/201612/t20161222_4804.html
+## 数据支持度与缺口
 
-落地实效性-落地执行启动、服务对象满意度|天祝藏族自治县卫生健康局.《2023年度天祝藏族自治县卫生健康局（汇总）部门决算》[EB/OL].（2024-09-26）.https://www.gstianzhu.gov.cn/art/2024/9/26/art_5585_1368776.html
+- **判档**：完全不支持
+- **判档理由**：三维全部不可算：启动维的 implementation_date 全为 0000-00-00（归零后 0 行有效），覆盖维的 support_object 在 20,000 行 JSON null 里取不到，反馈维两库均无调查表。按正本「缺维不进平均」，可进平均的完整维 0 个，分数不存在；强行出 0 分等于把导入缺陷写成政策事实。
+- **基期声明**：截面评估：正本按「统计日」取当前有效政策，不设年度序列；本件不出分，故无基期年。若将来补数后按年出分，须先解决 2022-09 起 16 个月的发布断档，否则某年启动率为 0 会是断档而不是真实归零。
 
-落地实效性-受益覆盖|梓潼县财政局.[梓潼2024年重点绩效评价报告_梓潼县人民政府](https://www.zitong.gov.cn/ztxrmzf/c100156/202411/f54dacc6913548228b940b232dbed15d.shtml#30#5)
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_IMPLEMENTATION_EFFECT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_IMPLEMENTATION_EFFECT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_IMPLEMENTATION_EFFECT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 

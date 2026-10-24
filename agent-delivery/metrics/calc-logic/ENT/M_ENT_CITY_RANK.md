@@ -1,104 +1,67 @@
 # 多城市对标排名（M_ENT_CITY_RANK）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化入仓。
-> 本指标含 4 行子指标（L1+L2+L3），已合并为单文件。
-> 维护：data-agent · 对齐状态见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_RANK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_RANK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_RANK_out.json`。
 
-## L1 指标元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_CITY_RANK`
-- **指标名称（一级）**：多城市对标排名
-- **一级模块**：企业分析
-- **二级模块**：深圳企业现状分析
-- **三级模块**：多城市对标排名
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **是否在数据库（L1）**：部分
-- **关联Q编号**：Q014
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_CITY_RANK |
+| 指标名称 | 多城市对标排名 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 年度 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_CITY_RANK.md` |
 
-## L1 口径定义
+## 口径定义
 
-在预设对标城市集合中，以选定未来产业范围为筛选条件，从企业规模（平均营业收入）、企业密度（每百平方公里企业数）、产业链完整度三个维度计算各城市综合得分并排名。依照需求文档提供的构建方法。
+规模维部分可算（营收覆盖 0.31%—0.75%，注册资本填充 99% 以上）、完整度维可算（tags 228 万行、全国 98.53%、深圳 74.63%）、密度维恒缺、评分维 0 张表；名次不出，判部分支持。
 
-## L1 计算逻辑说明
+## 计算逻辑说明
 
-```
-三维极值归一化加权汇总：企业规模(40%) + 企业密度(30%) + 产业链完整度(30%)。
-```
-
-**计算公式文件**：`M_ENT_CITY_RANK.md`
-
-## L1 源表字段
-
-```
-gkx.dwd_org_industry_tags(credit_code, company_name, industry_name) — 未来产业筛选（按 industry_name 正则归类）、企业城市提取（company_name 前缀）、去重企业数（三维度共用前置筛选）
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, development_employee, employees_number, `arch development am`, year) — 平均技术力与平均商业力的底层输入（优先年报，覆盖非上市企业）
-gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 平均技术力的底层输入（研发成果产出，专利预聚合）
-gkx.dwd_org_tech_tag(org_id, org_tag) — 平均技术力的底层输入（企业资质标签，辅助五维计算）
+```text
+score_c = 0.4*s_scale,c + 0.3*s_density,c + 0.3*s_complete,c（极值归一化后），rank_c = RANK(score_c desc)；权重来自王惠底稿，Q014 未闭合
 ```
 
-## L1 备注
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_RANK.md` §二（M_ENT_CITY_RANK.py 零改语义复算）。
 
-1.1.1.2.4.2.3.5.2；依照需求文档提供的构建方法
+## 源表字段
 
-## 子指标详情（L2 / L3）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-### L2：平均技术力
+- `dwd_industry_chain_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-#### L2 详情：平均技术力
+## 待建表字段
 
-- **口径定义**：多城市对标排名中平均技术力维度的得分。
-- **计算逻辑**：`各城市该未来产业范围内企业的技术力得分均值。依赖ads_ent_tech_score结果表。`
-- **源表字段**：`gkx.dwd_org_industry_tags(credit_code, company_name, industry_name) — 未来产业筛选（按 industry_name 正则归类）、企业城市提取（company_name 前缀）、去重企业数（三维度共用前置筛选）
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, development_employee, employees_number, `arch development am`, year) — 平均技术力与平均商业力的底层输入（优先年报，覆盖非上市企业）
-gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 平均技术力的底层输入（研发成果产出，专利预聚合）
-gkx.dwd_org_tech_tag(org_id, org_tag) — 平均技术力的底层输入（企业资质标签，辅助五维计算）`
-- **待建表字段**：`目标结果表 ads_ent_tech_score(tech_score, org_id, 待建) — 企业技术力得分（算法侧五维加权产出，平均技术力维度直接取用）
-目标结果表 ads_ent_business_score(business_score, org_id, 待建) — 企业商业力得分（算法侧六维加权产出，平均商业力维度直接取用）
-城市辖区面积(百km2) — 外部数据源（现库 dim_admin_area 无面积字段，待补）`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.5.2；依照需求文档提供的构建方法；依赖技术力得分结果表
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-### L2：商业力
+## 数据支持度与缺口
 
-#### L2 详情：商业力
+- **判档**：部分支持
+- **判档理由**：三维中 D1 部分可算（营收>0 2,191/90,926，城市均值只覆盖 4 个广东城市）、D3 可算（tags 228 万行、全国 98.53%、深圳 74.63%）、D2 恒缺（无城市面积载体）、D4 恒缺（0 张评分表）；权重 40/30/30 亦未甲方闭合（Q014）。综合得分无法在分母缺失下合成，名次不可交付，故判部分支持而非完全转换支持。
+- **基期声明**：截面排名：按最新可得年数据合成；因名次未出，不涉及基期序列。
 
-- **口径定义**：多城市对标排名中商业力维度的得分。
-- **计算逻辑**：`各城市该未来产业范围内企业的商业力得分均值。依赖ads_ent_business_score结果表。`
-- **源表字段**：`gkx.dwd_org_industry_tags(credit_code, company_name, industry_name) — 未来产业筛选（按 industry_name 正则归类）、企业城市提取（company_name 前缀）、去重企业数（三维度共用前置筛选）
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, development_employee, employees_number, `arch development am`, year) — 平均技术力与平均商业力的底层输入（优先年报，覆盖非上市企业）
-gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 平均技术力的底层输入（研发成果产出，专利预聚合）
-gkx.dwd_org_tech_tag(org_id, org_tag) — 平均技术力的底层输入（企业资质标签，辅助五维计算）`
-- **待建表字段**：`目标结果表 ads_ent_tech_score(tech_score, org_id, 待建) — 企业技术力得分（算法侧五维加权产出，平均技术力维度直接取用）
-目标结果表 ads_ent_business_score(business_score, org_id, 待建) — 企业商业力得分（算法侧六维加权产出，平均商业力维度直接取用）
-城市辖区面积(百km2) — 外部数据源（现库 dim_admin_area 无面积字段，待补）`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q014
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.5.2；依照需求文档提供的构建方法；依赖商业力得分结果表
+## 溯源与复现
 
-### L2：企业密度
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_CITY_RANK.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_RANK.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_CITY_RANK_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-#### L2 详情：企业密度
+## 更新记录
 
-- **口径定义**：多城市对标排名中企业密度维度的得分。
-- **计算逻辑**：`各城市该未来产业范围内去重企业数 / 城市辖区面积(百km2)。`
-- **源表字段**：`gkx.dwd_org_industry_tags(credit_code, company_name, industry_name) — 未来产业筛选（按 industry_name 正则归类）、企业城市提取（company_name 前缀）、去重企业数（三维度共用前置筛选）
-gkx.dwd_org_annual_financial_info(org_id, operating_revenue, development_employee, employees_number, `arch development am`, year) — 平均技术力与平均商业力的底层输入（优先年报，覆盖非上市企业）
-gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 平均技术力的底层输入（研发成果产出，专利预聚合）
-gkx.dwd_org_tech_tag(org_id, org_tag) — 平均技术力的底层输入（企业资质标签，辅助五维计算）`
-- **待建表字段**：`目标结果表 ads_ent_tech_score(tech_score, org_id, 待建) — 企业技术力得分（算法侧五维加权产出，平均技术力维度直接取用）
-目标结果表 ads_ent_business_score(business_score, org_id, 待建) — 企业商业力得分（算法侧六维加权产出，平均商业力维度直接取用）
-城市辖区面积(百km2) — 外部数据源（现库 dim_admin_area 无面积字段，待补）`
-- **更新频率**：年度/模型版本发布时
-- **对齐状态**：未对齐
-- **关联Q编号**：Q016
-- **是否在数据库**：部分
-- **备注**：1.1.1.2.4.2.3.5.2；依照需求文档提供的构建方法；城市辖区面积需外部数据
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
----
-*生成自王惠 20260816 Excel 底稿（4 行），data-agent 正式化 2026-08-18*

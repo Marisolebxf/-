@@ -1,6 +1,7 @@
 # 要素聚类（M_INNOV_FACTOR_CLUSTER）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_CLUSTER.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_CLUSTER.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_CLUSTER_out.json`。
 
 ## 基础信息
 
@@ -8,30 +9,57 @@
 |---|---|
 | 指标ID | M_INNOV_FACTOR_CLUSTER |
 | 指标名称 | 要素聚类 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技全域态势 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | INNOV |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 → 科技发展态势 → 科技全域态势 → 要素聚类分析 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_FACTOR_CLUSTER.md` |
 
 ## 口径定义
 
-对会议、项目（含课题）、专利、期刊四类科创要素，用各自影响力得分做无监督分簇。输出簇标签与簇规模，不是 0—100 分。
+聚类算法本身可跑（81,249 个样本、K-Means 全本地实现、K=2—8 全扫），三类要素各有影响力分可算；但口径点名的**会议类 0 条**（`publication_type` 全表只有「期刊」，无会议实体表），且期刊影响力只能代理（`impact_score` 整列为空）、专利影响力只覆盖被引表 20,000 件（占全库 0.68%）。四类要素缺一类、两类影响力是代理量，故判**部分支持**。
 
 ## 计算逻辑说明
 
-对会议/项目/专利/期刊四类要素，分别取对应影响力得分后聚类。特征为类型独热 + 影响力分。样本≥30用K-Means（K=2到8取最大轮廓），5到29用层次聚类。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_CLUSTER.md` §二（M_INNOV_FACTOR_CLUSTER.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_zh_journal(publication_id, publication_type, impact_score, paper_nums, cite_nums) — 会议/期刊入集,影响指数,发文量,被引用量；dwd_en_journal(publication_id, publication_type, impact_score, paper_nums) — 会议/期刊入集,影响指数,发文量；dwd_zh_paper(id, publication_id, publication_type, download_num, cover_year_start) — 会议论文,下载量,期刊发文回退,统计年；dwd_en_paper(id, publication_id, publication_type, cover_year_start) — 会议论文,期刊发文回退,统计年；dwd_zh_author(paper_id, author_id, zh_name, en_name) — 中文作者,会议参与人数；dwd_en_author(paper_id, author_id, zh_name, en_name) — 英文作者,会议参与人数；dwd_zh_project(id, funded_amount, participating_institution, funded_institution, final_report_abstract, approval_year) — 国内项目入集,资助金额,参与机构,结题摘要,立项年；dwd_en_project(id, funded_amount, participating_institution, funded_institution, final_report_abstract, approval_year) — 国外项目入集,资助金额,参与机构,结题摘要,立项年；dwd_patent(pn, value, apdt_year, pbdt_year) — 专利去重,专利价值,申请年,公开年；dwd_patent_cited(pn, cited_by_nums) — 专利对齐,被引次数
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_en_journal`
+- `dwd_patent`
+- `dwd_patent_cited`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
+- `dwd_zh_project`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技全域态势.md|序号 11「提供要素聚类分析，将相似要素进行自动分类和归纳」。库无专叶，保持 missing。禁止把 seq 96 区域论文「数据处理/聚类分析」写成 mapped。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：聚类算法本身可跑（81,249 个样本、K-Means 全本地实现、K=2—8 全扫），三类要素各有影响力分可算；但口径点名的**会议类 0 条**（`publication_type` 全表只有「期刊」，无会议实体表），且期刊影响力只能代理（`impact_score` 整列为空）、专利影响力只覆盖被引表 20,000 件（占全库 0.68%）。四类要素缺一类、两类影响力是代理量，故判**部分支持**。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_CLUSTER.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_CLUSTER.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_CLUSTER_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

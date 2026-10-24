@@ -1,72 +1,65 @@
-# M_CHAIN_PATENT_COUNT 产业链关联专利数 计算口径细稿
+# 产业链关联专利数（M_CHAIN_PATENT_COUNT）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（全量 kind / patent_id 去重 / pbdt_year 时间轴 / 窗口作查询参数 / 量级不进口径）
-- **类型**：STAT（池计数，去重计数）
-- **is_mock**：true（`enterprise_patent_org_rel` 0 行待灌；灌数后转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_PATENT_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_PATENT_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_PATENT_COUNT_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：链详情页"成果资本"区池计数三件套之一（专利数 / 产品数 / 资讯数并排）——"这条链上攒了多少件专利"。
-- **白话**：挂在这条链上的企业名下共有多少件专利（去重）。
-- **旧稿问题**：v0.1.0 引用 `dwd.industry_chain_patent` ← ods `dwd_org_industry_chain_pat_dtl`——**两表实测均不存在**（表名漂移且断桥）；mapping 却标 ✅（乐观失实）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_PATENT_COUNT |
+| 指标名称 | 产业链关联专利数 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 链详情页「创新」卡片主数字 + 12 链对比柱 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | ["2021", "2022", "2023", "2024"] |
+| 缺失年份 | ["2025", "2026"] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_PATENT_COUNT.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**指定产业链链上企业关联专利的去重件数（存量池计数）。**
+专利池 `gkx.dwd_patent` 当日 **2,939,895 件**、企业底册 189,116 家、链标签 2,283,762 行，三段数据齐备；按「企业名精确桥接第一申请人 + 链标签归属 + 申请年 ≤2024 截断」端到端跑通，12/12 链全部非零（16,300—537,046 件），合计 **3,026,291 件** → **完全转换支持**。
 
-| 决策点 | 拍板 | 理由 |
-|---|---|---|
-| ① 范围 | **全量 kind**（申请+授权，不过滤） | 池计数语义；TECH_BARRIER 的 kind='B' 是"授权空白率"特殊语义，不传染本条；REG_PATENT / TECH_MATURITY 同为全量 |
-| ② 去重键 | `patent_id` | 同一专利多 party_role（申请后又转让）天然只计 1 件 |
-| ③ 链路 | **org_id 全键三跳**：链桥 → 关系表 → 专利主档 | 禁名称匹配（2026-10-14 通则）；申请人/权利人已结构化在 `party_role`（APPLICANT/ASSIGNEE），池计数不选边，未来细分加一个 WHERE 即可 |
-| ④ 时间窗 | 默认**全量**；近 N 年 = **查询参数** | 存量池语义不写死窗口；唯一时间轴 `pbdt_year`（公开年，全量可得——未授权专利也有公开年，用授权年会漏未授权与①矛盾；与 REG_PATENT/TECH_MATURITY 同尺） |
+## 计算逻辑说明
 
-## 3. Formula（SQL）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_PATENT_COUNT.md` §二（M_CHAIN_PATENT_COUNT.py 零改语义复算）。
 
-```sql
--- 全量版（口径本体）
-SELECT COUNT(DISTINCT r.patent_id) AS chain_patent_cnt
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
-JOIN demo_gkxlumenx_dwd.enterprise_patent_org_rel r
-  ON r.org_id = e.org_id
-JOIN demo_gkxlumenx_ods.dwd_patent p
-  ON p.patent_id = r.patent_id
-WHERE e.chain_code = :chain_code;
+## 源表字段
 
--- 近 N 年窗口版（查询参数，不进口径）
---   追加：AND p.pbdt_year >= :stat_year - :years + 1
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 4. 计算模型（防混淆，2026-10-14 讨论定稿）
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_patent`
 
-| 图景 | 模型 | 说明 |
-|---|---|---|
-| **池计数（本条）** | `COUNT(DISTINCT patent_id) WHERE 窗口条件` 一次性过滤 | 存量去重，**永不逐年累加**——同一专利持续存在，逐年统计再相加会重复计 N 次 |
-| 年度新增量（趋势图，非本条） | `GROUP BY pbdt_year` 只计当年新公开 | 若页面将来要趋势图，另立指标或本条分组视图，不动本条口径 |
+## 待建表字段
 
-## 5. 执行模式建议（2026-10-14 讨论定稿）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- **总量（无窗口）**：预计算候选——每次结果一样，适合 ADS 快照（`chain_panorama` / `ads_sci_metric_summary` 先例）；
-- **窗口查询（近 N 年）**：实时参数化 SQL——N 开放集合无法预计算穷举；
-- 大批量预案：org_id 强制过滤走索引；必要时 ADS 按年分桶快照（近 N 年 = N 桶现加，数据工厂实现选择）。**量级评估届时用真实数据，禁用 demo 现量做决策**（2026-10-14 规则：现库数据不全，量级判断只用于验收/性能阶段，不进口径）。
+## 数据支持度与缺口
 
-## 6. 表依赖与实核（2026-10-14 demo）
+- **判档**：完全转换支持
+- **判档理由**：专利池 2,939,895 件、机构底册 189,116 家、链标签 2,283,762 行三段真实数据齐备，12/12 链全部算出非零值（16,300—537,046 件），截断与去重规则可执行、脚本可复跑；名称桥的已知漏计（非第一申请人、更名、同名）写入 gaps，属口径下界而非数据缺口。
+- **基期声明**：统计期 2025 年，专利按申请年 ≤2024 截断：发明专利公开滞后 18 个月，2025—2026 年申请量不完整，纳入会系统性低估近年值；池内 2021—2026 全覆盖，2025/2026 两年仅作观察不入正式值。
+- **复现实测耗时**：约 0.01 秒（源件落盘记录）
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd.enterprise_industry_chain` | 链桥 | INB1309 mock 2000 行；余链 0 行跟 CHAIN-P0-5 |
-| `dwd.enterprise_patent_org_rel` | 企业↔专利关系 | **0 行**（数据未灌，结构在案：patent_id/org_id/party_role/party_sequence 四元组唯一键）→ 如实 0 + ⚠️ |
-| `dwd_patent` | 专利主档 | 实测 2,939,895 行（demo，不全）；pbdt_year/apdt_year/granted_number/kind 字段齐 |
+## 溯源与复现
 
-## 7. 缺口分型
-
-| 项 | 分型 | 处置 |
-|---|---|---|
-| 关系表 0 行 | 数据未灌 | 不报缺；灌数即真数 |
-| 旧稿表名漂移 | 已重写 | `industry_chain_patent`/`dwd_org_industry_chain_pat_dtl` 弃 |
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_PATENT_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_PATENT_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_PATENT_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-24: 初版 v0.1.0（表名漂移稿）
 - 2026-10-14: v0.2.0 口径重写（human:徐滕强 拍板：全量/去重/时间轴/窗口参数化/量级不进口径）
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

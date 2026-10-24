@@ -1,89 +1,63 @@
----
-metric_id: M_CHAIN_CONCENTRATION_INDEX
-metric_name_zh: 产业集中度
-algorithm_type: COMPUTE
-version: 0.2.0
-updated: 2026-10-14
-owner: data-agent / human:淮政玮
-status: 三段式（临时出数 + 正式口径完整保留 + 切换条件）
----
+# 产业集中度（M_CHAIN_CONCENTRATION_INDEX）
 
-# M_CHAIN_CONCENTRATION_INDEX 产业集中度 — 计算逻辑说明
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_CONCENTRATION_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_CONCENTRATION_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_CONCENTRATION_INDEX_out.json`。
 
-> 2026-10-14 human:徐滕强 拍板三段式：「就想定一个出来，错一点无所谓，毕竟是临时的」+「**真实口径计算也要保留，临时不污染正式**」。结构同 `M_CHAIN_HOT_NEWS_COUNT` 先例。
+## 基础信息
 
-## 1. 三段结构
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_CONCENTRATION_INDEX |
+| 指标名称 | 产业集中度 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链总览／竞争格局 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「关键环节识别 / 竞争格局」卡片、环节份额条形图 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_CONCENTRATION_INDEX.md` |
 
-| 段 | 内容 | 状态 |
-|---|---|---|
-| 临时口径 | HHI + 融资额份额（资本集中度代市场集中度） | **当前生效** |
-| 正式口径 | 四决策点（HHI/CR_N、营收基准、粒度、形态）| **锁定待签，零预拍** |
-| 切换条件 | QC02 签发 + 营收聚合落库 | 择期 |
+## 口径定义
 
-## 2. 临时口径（当前生效）
+HHI 的公式与数据都齐：916 个有企业的叶级环节、1,566,734 家可落叶企业，12 条链全部能算出 HHI、CR1 与等效环节数。但标准的市场集中度要求用**营收或销售额份额**，`gkx` 没有环节级营收，只能用企业数份额代替——份额口径一变，HHI 的含义就从「市场集中」变成「企业分布集中」 → 按 §〇 判**部分支持**。
 
-**基准**：企业 `i` 在该链的**累计融资额（元）**份额。
+## 计算逻辑说明
 
-**金额解析规则**（`funding_amount` 为中文带单位文本）：
-- `亿人民币` 前缀数字 × 1e8；`万人民币` 前缀数字 × 1e4
-- 非 CNY（USD 397 行）或空值（16,828 行 / 65.6%）**逐企业剔除**
-- 剔除语义：剔"无金额记录的企业"非"无融资的企业"——占比公式里零融资企业本就不进分母，不构成幸存者偏差的一部分
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_CONCENTRATION_INDEX.md` §二（M_CHAIN_CONCENTRATION_INDEX.py 零改语义复算）。
 
-**公式**：`HHI = Σ share_i² × 10000`（0-10000 点分；司法部分级叙事可借用：<100 分散 / 100-1500 未集中 / 1500-2500 中度 / >2500 高集中）
+## 源表字段
 
-**桥接**：`enterprise_industry_chain`（复用 `M_CHAIN_INVEST_COUNT` v0.2.0 已定路径）；现 0 行 → NULL（无数据，数据事不挡口径）。
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-**语义偏移声明**（定义层如实标注）：临时=资本集中度代市场集中度。融资额集中 ≠ 市场份额集中（重资产链 vs 风投驱动链会系统性偏移）。UI 侧不体现临时标注（沿 HOT_NEWS 2026-10-14 拍板先例）。
+- `dwd_industry_chain_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
 
-```sql
-WITH ent_amt AS (
-  SELECT e.org_id,
-         SUM(CASE
-           WHEN f.funding_amount LIKE '%亿%' THEN CAST(REGEXP_SUBSTR(f.funding_amount,'^[0-9.]+') AS DECIMAL(20,2)) * 100000000
-           WHEN f.funding_amount LIKE '%万%' THEN CAST(REGEXP_SUBSTR(f.funding_amount,'^[0-9.]+') AS DECIMAL(20,2)) * 10000
-           ELSE NULL END) AS amt_cny
-  FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
-  JOIN demo_gkxlumenx_ods.dwd_org_financing_info f
-    ON f.org_id = e.org_id AND f.is_deleted = 0
-  WHERE e.chain_code = :chain_code
-  GROUP BY e.org_id
-  HAVING amt_cny IS NOT NULL
-)
-SELECT ROUND(SUM(POWER(amt_cny / SUM(amt_cny) OVER (), 2)) * 10000, 1) AS temp_concentration_hhi
-FROM ent_amt;
-```
+## 待建表字段
 
-**实核数据基础**（2026-10-14）：`dwd_org_financing_info` 25,654 行；万 4,783 / 亿 4,043 / 空 16,828 / USD 397。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 3. 正式口径（锁定待签，完整保留）
+## 数据支持度与缺口
 
-| 决策点 | 候选 | 状态 |
-|---|---|---|
-| 公式形态 | HHI（Σ份额²）vs CR_N（TopN 份额和；N=4/8） | QC02 + 唐绍祖 |
-| 份额基准 | **营收份额**（目标）/ 专利 / 其他 | 营收聚合表未建（QC06 后置） |
-| 统计粒度 | 环节级（每环节一个集中度）vs 全链级 | 未签（seed 旧稿"企业分布"与 calc 旧稿"环节级"分叉待并） |
-| 输出形态 | 连续指数 vs 分级（中高/中低） | 未签 |
+- **判档**：部分支持
+- **判档理由**：HHI 可用 2,283,762 行标签的叶级企业数现算，12 条链全部有值；但份额只能按企业数，gkx 无环节级营收/市值，故是结构集中度而非市场集中度。
+- **基期声明**：截面指标：统计当前存量，不设年度分母。
 
-**两案参考**（决策卡素材，非预拍）：
+## 溯源与复现
 
-- HHI：捕捉全部企业分散/集中，平方项天然稀释小企业份额噪声、对数据精度容忍度高；无 N 参数；阈值体系成熟（司法部 0.01/0.15/0.25 小数制 ≈ 100/1500/2500 点分制）。
-- CR_N：直观（"前 4 家占 X%"）；但 N 是额外决策点，头部边界企业份额精度要求高。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_CONCENTRATION_INDEX.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_CONCENTRATION_INDEX.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_CONCENTRATION_INDEX_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-**禁止项**：`dwd_org_industry_chain_dtl.chain_score` 是链企匹配置信分**不是市场份额**，正式与临时口径均禁止冒充（语义事故风险，证据卡已警告）。
+## 更新记录
 
-**解挂双条件**：① QC02 签发（四决策点拍定）② 企业×链营收聚合表落库。解挂后弃临时、启用正式、ⓘ 卡口径说明同步切换。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
-## 4. 参数
-
-| 参数 | 含义 | 默认 |
-|---|---|---|
-| `:chain_code` | 产业链编码（INB） | 必填 |
-
-## 5. 版本与变更
-
-| 版本 | 日期 | 变更 | 拍板 |
-|---|---|---|---|
-| 0.1.0 | — | 旧稿：pending_algorithm，源指向废弃壳 | — |
-| 0.2.0 | 2026-10-14 | 三段式：临时 HHI+融资额份额；正式四决策点完整保留 | human:徐滕强 |
-
-正式签名待 human:唐绍祖 会签。

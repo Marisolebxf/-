@@ -1,103 +1,64 @@
-# 各类型企业数（M_ENT_TYPE_COUNT）
+# 企业分类型数量（M_ENT_TYPE_COUNT）
 
-> 口径真源：王惠底稿 → 2026-08-27 COVER-STAT-L01；**2026-08-30 六类一律改挂 `enterprise_tag.tag_code`**（外资/上市/小微不再走主档或「无法计算」）。  
-> **① DWD 能数**：`enterprise_tag` 有六类关系就能 COUNT。  
-> **② ODS→DWD**：灌数另一步，不进「无法执行」。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_TYPE_COUNT`
-- **指标名称**：各类型企业数
-- **一级模块**：企业分析
-- **二级模块**：重点企业类型分析
-- **三级模块**：类型与区域分析
-- **更新频率**：月度/年度
-- **对齐状态**：六类全部走 DWD 标签关系；小微=`sme`
-- **关联Q编号**：Q010（判定边界，不否定 ①）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_TYPE_COUNT |
+| 指标名称 | 企业分类型数量 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 二级模块 | 重点企业类型分析 |
+| 三级模块 | 类型与区域分析 |
+| 更新频率 | 月度/年度 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业分析·类型与区域分析「各类型企业数」六卡｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md` |
 
 ## 口径定义
 
-按六类分别 `COUNT(DISTINCT org_id)`：外资 / 高新 / 小微 / 上市 / 专精特新 / 小巨人。
-
-- 六类不是互斥维，**一企可进多类**。禁止把六类 SUM 当企业总数。
-- **一律** `enterprise_tag.tag_code`（`tag_dict`），不再分类走主档。
-
-| 类型 | `tag_code` | 禁止 |
-|------|------------|------|
-| 高新 | `high_tech` | 仅用 `tag_name` 含（本条改码） |
-| 专精特新 | `little_giant` | — |
-| 小巨人 | `little_giant_pro` | — |
-| 小微 | `sme` | `org_size`；`sme_tech` |
-| 外资 | `foreign` | `enterprise_type` 含外商 |
-| 上市 | `listed` | `is_listed` |
-
-- 只国内。无 `enterprise_forg_tag`，不造表。选产业后国外无上链，不并入。
-- 计算键 `org_id`，JOIN `enterprise_base`，对不上 drop。
+六类在 gkx 上都能给出数：高企 27,936、专精特新 14,830、小巨人 2,006、外资 10,417、小微 125,477、上市 1,971，六类求和 182,637（因重叠不可当总数）。但 calc-logic 指定的六码表 `enterprise_tag` 在 gkx 与 live 都不存在，本件只能用「科技标签表 + 主档工商字段」重建六类；其中上市只有 1,971 家、A/B 股仅 975 家，外资是 `org_type` 自由文本关键词且含港澳台，小微有 46,897 家规模未知。六类口径不等权、数据完备度差异大，故判 **部分支持**。
 
 ## 计算逻辑说明
 
-```
-对每一类 t ∈ 上表六个 tag_code:
-  COUNT(DISTINCT org_id)
-  FROM enterprise_tag
-  JOIN enterprise_base
-  WHERE tag_code = t
-```
-
-选产业：再 JOIN `enterprise_industry_chain`。
-
-曾获/过期：无起止日则码在就算，与 HIGH_TECH 临时默认一致。
-
-## 两步分开（强制）
-
-### ① DWD 能不能数
-
-`enterprise_tag` 有该 `tag_code` 关系就能 COUNT。六类公式完整，**可以算完**（含小微/外资/上市）。
-
-### ② ODS → DWD（另一回事）
-
-ODS 有没有灌进左端标签表，只记灌数 / D3。没灌 **不写「当前无法执行」**。
-
-现网 ODS `dwd_org_tech_tag` 可能没有「小微/外资/上市」字样，**不能据此说本条算不了**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_tag` + `enterprise_base`（+ 选产业时上链表） | 表在 |
-| 目标 | 建议 `enterprise_type_count`（`tag_code + chain_code? + type_count`） | **缺口：无独立目标表** |
-
-源 ≠ 目标。GDF 暂缓。生产按六类（×可选链）预聚合；查询带条件键。
-
-**计算公式文件**：`M_ENT_TYPE_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md` §二（M_ENT_TYPE_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_tag <- ods: dwd_org_tech_tag
-enterprise_base <- ods: dwd_org_base_info
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-计算 FROM 只用左端 DWD。右端只作家谱。不写 `is_listed` / `enterprise_type` / `org_size`。
+- `dwd_org_base_info`
+- `dwd_org_stock_base`
+- `dwd_org_tech_tag`
 
-来源系统：国内机构要素库、产业链要素库。
+## 待建表字段
 
-## 现网探针（不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- DWD `tag_dict` 已有六类码（2026-08-30 对照 `gkxlumenx_dwd_tag_dict_align.sql`）。
-- ODS 标签样例原先多是高新/专精特新/小巨人：记在 ②，不改 ①。
-- 无国外标签表。
+## 数据支持度与缺口
 
-## 待建 / 缺口
+- **判档**：部分支持
+- **判档理由**：六类中四类（高企/专精特新/小巨人/小微）表结构+表数据直接可算；外资类 org_type 是工商登记类型自由文本，需关键词口径且含港澳台；上市类底册 listing_status 仅 1,971 家、dwd_org_stock_base 只覆盖 A/B 股 975 家，缺港股/美股/新三板，六类口径不等权，合计不可当『企业总数』使用。
+- **基期声明**：截面资质计数，无年度序列；资质本身有授予年（高企 3 年有效），但 gkx 标签表无生效/失效日期列，故不拆年份
 
-- 无独立目标表。
-- D3 / D4 本波不升。`is_mock: true`。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-bid `§1.1.1.2.4.2.3`；STAT。与 KEYPANO_TYPE_COUNT / TYPE_RATIO 同一套码。
+## 更新记录
 
----
-*2026-08-27 六类分类 COUNT；2026-08-30 外资/上市/小微改挂 tag_code*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,113 +1,63 @@
-# 深圳企业数（M_ENT_SZ_COUNT）
+# 深圳企业数量（M_ENT_SZ_COUNT）
 
-> 口径真源：王惠底稿「深圳企业数」→ 2026-08-28 `ENT-SYNTH-METRIC-COVER-STAT-L01`。深圳键 = `region_id` 市前缀 `4403`，不是中文城市名。  
-> **落表目标**（产出，禁止当源）：`shenzhen_enterprise_summary`（`stat_type=enterprise_total`，`dim_code=440300`）。  
-> **过滤源**：`enterprise_base`。缺 `region_id` 标缺口，不写无法执行。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_SZ_COUNT`
-- **指标名称**：深圳企业数
-- **一级模块**：企业分析
-- **二级模块**：企业总览 / 深圳企业现状
-- **三级模块**：企业整体概况
-- **更新频率**：日
-- **对齐状态**：计算键已钉 `region_id LIKE '4403%'`；缺列见缺口表
-- **是否在数据库**：结果表有壳；主档无 `region_id`；ODS `city='深圳市'` 有样例行
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q-E25（区域码规则同 Q012 三级前缀，本条城市已钉死深圳）
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_SZ_COUNT |
+| 指标名称 | 深圳企业数量 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 二级模块 | 企业总览 / 深圳企业现状 |
+| 三级模块 | 企业整体概况 |
+| 更新频率 | 日 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业分析·企业总览「深圳企业数」卡｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_SZ_COUNT.md` |
 
 ## 口径定义
 
-国内主档中，行政区划落在深圳市的企业去重数。
+按底册 `city='深圳市'` 统计，深圳有 **95,600** 家企业，占全国底册 189,116 的 50.55%，占广东 188,776 的 50.64%；深穗莞惠四市合计 188,774 家，占广东 100.00%（差 2 家为佛山、中山各 1 家）。这个数在库内闭合，能勾稽到省、市、类型三层。
 
-- 深圳 = `enterprise_base.region_id LIKE '4403%'`（市码 4403，含各区；完整市码 `440300`）。
-- 计算键 `org_id`。只国内。国外不并（深圳不是外国城市）。
-- **禁止** `headquarters_city` / `city` 中文名（「深圳」「深圳市」）当计算键。
-- 未选产业：全市。选产业：国内 `enterprise_industry_chain` 按 `chain_code` / `chain_name` 过滤后再数（同 `M_ENT_TOTAL_COUNT`）。
-## 两点分开（强制）
+## 计算逻辑说明
 
-### ① formula
-
-主档有 `region_id` 就能 `LIKE '4403%'` 去重 COUNT。
-
-### ② 有没有数 / 缺列
-
-正式 / demo 主档都没有 `region_id`：**缺口：缺列**。ODS `city='深圳市'` 有 17562 行，只说明源有市名，不是已绑码。**不写「当前无法执行」**。
-
-## 落表
-
-| 目标 | 粒度 | 写什么 |
-|------|------|--------|
-| `shenzhen_enterprise_summary` | 全市一条 KPI | `stat_type='enterprise_total'`，`dim_code='440300'`，`dim_name='深圳市'`，`stat_value`=去重企业数 |
-
-同表其它 `stat_type`（重点企业、分年、分产业分布）不是本条 KPI，本波不写。
-
-**禁止读**现成 `stat_value`（现网 12860，mock）。
-
-不要写入：`sz_city_benchmark.sz_count`（对标城市表，列全空）、ADS `chain_sz_advantage.sz_enterprise_count`（产业链）、`enterprise_region_summary`（正式库 0 行）。
-
-## 分场景 / 实现方案
-
-### 场景 A · 全市 KPI（默认）
-
-`COUNT(DISTINCT org_id) FROM enterprise_base WHERE region_id LIKE '4403%'` → 写入结果表 `enterprise_total`。
-
-### 场景 B · 选产业
-
-先 JOIN `enterprise_industry_chain` 过滤，再按同一 `region_id` 条件计数。国外无上链表，不并。
-
-### demo（`demo_gkxlumenx_dwd`）
-
-- 主档无 `region_id`。有 `shenzhen_enterprise_summary` 壳的话仍禁止读 mock。
-- 全表扫补不出缺列。本波不改 GDF 加列。
-
-### 生产（`gkxlumenx_dwd`）
-
-- 主档 120 行 mock，`headquarters_city='深圳'` 仅 15 条，且无 `region_id`。
-- 结果表已有 `enterprise_total=12860`，**不可信**。
-- `region_id` 绑上后按 `org_id` 过滤计数再写回；禁止用中文城市名凑数。
-
-对应 seed `formula`：COUNT + ①能写 + 缺口：无 `region_id`。
-
-**计算公式文件**：`M_ENT_SZ_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_COUNT.md` §二（M_ENT_SZ_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_base <- ods: dwd_org_base_info
-enterprise_industry_chain <- ods: dwd_org_industry_tags
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-- 输入：`region_id`（待绑码；ODS 现有 `city`）
-- 产出（不进 `source_tables`）：`shenzhen_enterprise_summary.stat_value`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-来源系统：国内机构要素库、产业链要素库。
+## 待建表字段
 
-## 现网探针（live `gkx` + 项目 DWD，2026-08-28；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- ODS `dwd_org_base_info.city='深圳市'`：17562 / 40020。无 `region_id`。
-- 正式 / demo DWD `enterprise_base`：**无 `region_id` 列**。
-- `shenzhen_enterprise_summary`：22 行；KPI `enterprise_total` / `440300` = 12860（mock）。
-- `enterprise_region_summary`：0 行。
-- `sz_city_benchmark.sz_count`：全 NULL。
+## 数据支持度与缺口
 
-## 待建 / 缺口（必须标；不是无法执行）
+- **判档**：部分支持
+- **判档理由**：底册有 city='深圳市' 中文市名，95,600 家可直接 GROUP BY 得到，且与广东省 188,776 家、全国 189,116 家勾稽；但 calc-logic 钉死的 region_id LIKE '4403%' 行政区划码在 gkx dwd_org_base_info 中不存在（列字典 44 列无 region_id/adcode），只能用中文市名代理，故判部分支持而非完全转换支持。
+- **基期声明**：截面计数；不按成立年拆分（底册成立年跨 1900—2026，无『当年新增』语义）
 
-| 类型 | 缺什么 | 现网 |
-|------|--------|------|
-| 缺列 | `enterprise_base.region_id` | 正式/demo 主档都无此列 |
-| 未绑码 | ODS `city` → `region_id` | `city='深圳市'` 17562 行，未进 DWD 码 |
-| 其它 | 结果表 `stat_value` | 12860 mock，禁止当源 |
+## 溯源与复现
 
-D3 / D4 本波不升。`is_mock: true`。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SZ_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SZ_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-## 备注
+## 更新记录
 
-bid `§1.1.1.2.4.2.3.5`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-28 深圳=4403；2026-08-31 方案1 缺列标缺口*

@@ -1,6 +1,7 @@
 # 技术市场潜力（M_INNOV_TINN_MARKET）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_MARKET.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_MARKET.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_MARKET_out.json`。
 
 ## 基础信息
 
@@ -8,38 +9,57 @@
 |---|---|
 | 指标ID | M_INNOV_TINN_MARKET |
 | 指标名称 | 技术市场潜力 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 技术创新力指标展示页「技术市场潜力分析」卡片（五维雷达 + 领域活跃度排名） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| 缺失年份 | [2021, 2022, 2023, 2024, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_TINN_MARKET.md` |
 
 ## 口径定义
 
-按转让、许可、诉讼、质押、开放许可综合评分，取值 0—100。不另建许可/诉讼/质押专表。
+五维**全部无法在 IPC4 粒度闭环**。转让维 22,809 行、20,000 个互异 `pn`，但**只有 `pn` 与生效日，没有 `patent_id`、没有 IPC**；主表 `pn` 无索引，按 `pn` 回连即 294 万行扫描。许可（56 条）、质押（104 条）、开放许可（6 条）三维都来自同一张 20,000 行的法律事件表（覆盖 0.68%），且**无法拆到 IPC4**；诉讼维**全表 0 条命中**，在任何领域都恒等于 0。`dwd_market` 只有 15 行，除 `market_name` 外所有度量列全空，连全域兜底都做不了。三条 IPC4 回连查询各 60 秒超时（4 次复现）。故判**完全不支持**。
 
 ## 计算逻辑说明
 
-按 IPC 前 4 位入集技术领域。采用加权平均，五维：转让（转移专利/专利）/ 许可 / 诉讼 / 质押 / 开放许可（后四项由 legal_events 解析）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 转让 |  | 发生权利转移的专利占比。 | 转移专利数 / 专利数 | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日；dwd_patent(pn, main_classification_ipcr, apdt_year) — 专利分母,IPC领域 |
-| 许可 |  | 实施许可（不含开放许可）的专利占比。 | 许可专利数 / 专利数 | dwd_patent_legal(pn, legal_events) — 法律事件 |
-| 诉讼 |  | 涉及诉讼或无效宣告的专利占比。 | 诉讼专利数 / 专利数 | dwd_patent_legal(pn, legal_events) — 法律事件 |
-| 质押 |  | 发生质押登记的专利占比。 | 质押专利数 / 专利数 | dwd_patent_legal(pn, legal_events) — 法律事件 |
-| 开放许可 |  | 声明开放许可的专利占比。 | 开放许可专利数 / 专利数 | dwd_patent_legal(pn, legal_events) — 法律事件 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_MARKET.md` §二（M_INNOV_TINN_MARKET.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_patent(pn, first_applicant_name, main_classification_ipcr, apdt_year) — 专利去重,申请人对齐,IPC领域,申请年；dwd_patent_transfer(pn, transfer_effective_date) — 专利转移,生效日；dwd_patent_legal(pn, legal_events) — 法律事件（许可,诉讼,质押,开放许可）；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 名称对齐,空间过滤
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_id`
+- `dwd_market`
+- `dwd_patent`
+- `dwd_patent_legal`
+- `dwd_patent_transfer`
 
-无
+## 待建表字段
 
-## 备注
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-02-科技信息展示系统|科技发展态势|科技创新评估.md|序号 142「基于专利转让、许可、诉讼等市场活动数据，分析技术的市场潜力和商业化价值……（技术市场活跃度、技术成熟度、商业化前景）」。对照 seq 135 实现类（专题已 third_party 同叶）。本页不跑 TOPIC-TECH Job、不伪展开三维加权。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：五维**全部无法在 IPC4 粒度闭环**。转让维 22,809 行、20,000 个互异 `pn`，但**只有 `pn` 与生效日，没有 `patent_id`、没有 IPC**；主表 `pn` 无索引，按 `pn` 回连即 294 万行扫描。许可（56 条）、质押（104 条）、开放许可（6 条）三维都来自同一张 20,000 行的法律事件表（覆盖 0.68%），且**无法拆到 IPC4**；诉讼维**全表 0 条命中**，在任何领域都恒等于 0。`dwd_market` 只有 15 行，除 `market_name` 外所有度量列全空，连全域兜底都做不了。三条 IPC4 回连查询各 60 秒超时（4 次复现）。故判**完全不支持**。
+- **基期声明**：转让表有生效年（2021—2026 六档），但无法按 IPC4 归属；其他四维无年度字段，故不构造任何年度分母
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_TINN_MARKET.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_MARKET.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_TINN_MARKET_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

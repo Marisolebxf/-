@@ -1,8 +1,7 @@
 # 全球成功案例匹配（M_CHAIN_GLOBAL_CASE_MATCH）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_GLOBAL_CASE_MATCH.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_GLOBAL_CASE_MATCH.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_GLOBAL_CASE_MATCH_out.json`。
 
 ## 基础信息
 
@@ -10,65 +9,60 @@
 |---|---|
 | 指标ID | M_CHAIN_GLOBAL_CASE_MATCH |
 | 指标名称 | 全球成功案例匹配 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业链对标／全球案例 |
 | 更新频率 | 年度 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | - |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 链路对标页「全球案例」卡片、产业链招商参考｜ **数据支持度**：**完全不支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_GLOBAL_CASE_MATCH.md` |
 
 ## 口径定义
 
-从全球同类产业成功发展案例库中，识别与目标产业链在产业结构、发展阶段、要素禀赋上相近的典型案例，并输出匹配程度评分，取值 0—100。对象=全球可对标成功案例，用于为区域产业发展路径提供借鉴。本指标算法库 13 叶无专叶，为 OPEN draft 身份，口径为学术补定义。
+全库 280 张表无任何案例库：7 张 case 表全是司法/破产案件，外资名录无产业结构，专利国家码只到国别；案例、链映射、成功判据三件全缺，判完全不支持。
 
 ## 计算逻辑说明
 
-算法库「产业链深度分析模型」13 叶中无「全球成功案例匹配」叶子，V1 不宣称正式交付，本指标仅以学术定义落档。按案例对标法（Benchmarking）与产业转移雁行理论（Flying-Geese，Akamatsu），以三维修补：案例匹配数量、产业结构相似度、阶段可迁移度。
+```text
+match(本地链, 全球案例) = 产业结构余弦相似度 × 成功判据过滤；本件缺案例库与成功判据
+```
 
-### 第一步：构建案例库
-
-以全球同类产业成功案例为对象，暂借 `dwd_global_policy_base`（全球政策/报告）、`dwd_forg_base_info`（海外企业）、`chain_global_dist`（全球产业分布）辅助构建候选案例集。正式案例库需待建。
-
-### 第二步：三个子项
-
-1. **案例匹配数量**：与目标产业链标签匹配的全球成功案例去重数。
-2. **产业结构相似度**：案例产业与目标产业在环节结构上的相似度（环节集合 Jaccard 相似度）。
-3. **阶段可迁移度**：案例产业所处发展阶段与目标产业阶段的可比/可借鉴程度（阶段邻近度评分）。
-
-### 第三步：综合评分
-
-各子项 min-max 归一到 0—100，加权求和：
-$$
-全球成功案例匹配 = W_1×案例匹配数量得分 + W_2×产业结构相似度得分 + W_3×阶段可迁移度得分
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 全球成功案例匹配 | 案例匹配数量 | 全球案例去重数 | 与目标产业标签匹配的全球成功案例去重数 | COUNT(DISTINCT case_id WHERE 产业标签匹配) | dwd_global_policy_base(id, title, category, country) — 全球案例/政策报告；chain_global_dist(chain_id, country, enterprise_count) — 全球分布 | 全球成功案例库表 |
-|  | 产业结构相似度 | 环节结构相似度 | 案例产业与目标产业环节集合 Jaccard 相似度 | \|A∩B\|/\|A∪B\|，A/B=案例/目标环节集合 | dwd_industry_chain_info(industry_code, industry_link_code) — 目标环节；dwd_forg_base_info(org_id, country, industry_code) — 海外产业结构 | 案例产业结构表 |
-|  | 阶段可迁移度 | 阶段邻近度评分 | 案例产业阶段与目标产业阶段可比程度 | 阶段邻近度评分（0-100） | chain_stage(chain_id, cycle_stage, sub_stage) — 目标阶段；chain_cycle(chain_id, cycle_stage, trend) — 周期趋势 | 案例发展阶段字段 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_GLOBAL_CASE_MATCH.md` §二（M_CHAIN_GLOBAL_CASE_MATCH.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_global_policy_base(id, title, category, country, year, theme) — 全球政策/报告（案例辅助）
-- dwd_forg_base_info(org_id, name_en, country, industry_code, incorporation_year) — 海外企业/机构（案例主体）
-- chain_global_dist(chain_id, chain_name, country, enterprise_count, institution_count) — 全球产业分布
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code) — 目标产业链环节
-- chain_stage(chain_id, chain_name, cycle_stage, sub_stage) — 目标产业阶段
-- chain_cycle(chain_id, chain_name, cycle_stage, trend) — 周期趋势
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_forg_base_info`
+- `dwd_forg_research_org_info`
+- `dwd_opt_judicial_case_detail`
+- `dwd_org_bankruptcy_public_cases`
+- `dwd_patent`
 
-- 全球成功案例库表（案例ID、产业标签、环节结构、发展阶段、成功要素）
-- 案例产业结构环节明细字段
-- 案例发展阶段字段
-- 匹配权重与相似度阈值（学术补定义，待甲方确认）
+## 待建表字段
 
-## 参考资料
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-[1] 对标管理 Benchmarking｜Robert C. Camp｜Benchmarking: The Search for Industry Best Practices that Lead to Superior Performance（1989）。
+## 数据支持度与缺口
 
-[2] 产业转移雁行理论｜Akamatsu K.｜A Historical Pattern of Economic Growth in Developing Countries（1962）。
+- **判档**：完全不支持
+- **判档理由**：全库没有案例库（280 张表里 case/benchmark 类为 0），唯一境外实体是外资企业名录 6 张各 2 万行，但它与链标签零重叠（extid/name/orgid 三项命中均为 0），挂不上任何一条链；「成功」没有判据表，案例级营收/份额/增速序列都不存在。案例库、链归属、成功判据三项全缺，无法闭环，判完全不支持。
+- **基期声明**：没有案例库就没有案例年份；本件不产出任何年度序列，used/missing 为空表示「无时间维可挂」，不是「缺年补 0」。
 
-[3] 全球产业链案例对标｜国务院发展研究中心｜产业国际竞争力对标分析框架（案例匹配数量/结构相似度/阶段可迁移度）。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_GLOBAL_CASE_MATCH.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_GLOBAL_CASE_MATCH.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_GLOBAL_CASE_MATCH_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

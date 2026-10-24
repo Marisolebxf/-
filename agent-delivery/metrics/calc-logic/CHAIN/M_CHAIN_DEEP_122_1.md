@@ -1,66 +1,63 @@
-# 产业周期分析模型（M_CHAIN_DEEP_122_1）
+# 产业链周期分析模型（M_CHAIN_DEEP_122_1）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_122_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_122_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_122_1_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_CHAIN_DEEP_122_1 |
-| 指标名称 | 产业周期分析模型 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 产业周期分析 |
-| 三级模块 | - |
-| 更新频率 | 季度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 指标名称 | 产业链周期分析模型 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业周期分析／周期阶段判定 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链详情页「周期位置」标签、首页 12 链周期热力条 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_DEEP_122_1.md` |
 
 ## 口径定义
 
-基于历史与实时产业数据，构建产业周期阶段划分体系（起始期、成长期、成熟期、衰退期），依据市场规模、行业增长率、利润率、投融资趋势、企业数量趋势等指标值计算并判定产业所处周期阶段，预测未来趋势。对象=产业的整体生命周期阶段。
+周期模型的四个状态量里，只有两个能用「事件计数」在本库重建：链内新设企业数（底册成立年 ∩ 链标签）与挂链融资事件数（融资表按企业名挂链）。市场规模、增长率、利润率三个金额量都在财务表，而财务表的营收只有 2,193/90,926 行有值（2.41%），链级汇总面 `chain_market` 不存在。**两条腿能算、四条腿缺两条，且缺的恰是旧稿的主状态量**，故判**部分支持**。
 
 ## 计算逻辑说明
 
-① 数据采集：市场规模（`chain_market.total_revenue`）、行业增长率（`chain_market.growth_rate`）、投融资趋势（`chain_investment` 金额/数量增速）、企业趋势（`chain_enterprise_stat.growth_rate`）、利润率（由 `dwd_org_annual_financial_info` 汇总 pure_profit/operating_revenue）。② 阶段判定：按周期阶段评价指标与阈值（起始期=低规模高增速、成长期=高增速、成熟期=增速放缓、衰退期=负增长）映射 cycle_stage。③ 趋势预测：结合机器学习/统计模型输出 trend。
-
-- 市场规模 = SUM(total_revenue)
-- 行业增长率 = (本期规模 − 上期规模) ÷ 上期规模
-- 利润率 = SUM(pure_profit) ÷ SUM(operating_revenue)
-- 投融资趋势 = 当期投融资额增速
-- 周期阶段 = 阈值映射(增长率, 投资趋势, 企业趋势)
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业周期分析模型 | 规模与增长 | 市场规模(营收) | 产业内企业营收合计。 | SUM(total_revenue) | chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate)；enterprise_industry_summary(chain_code, chain_name, stat_year, revenue_total) | 无 |
-|  |  | 行业增长率 | 产业规模同比增速。 | (本期 − 上期) ÷ 上期 | chain_market(growth_rate)；chain_enterprise_stat(growth_rate) | 无 |
-| 产业周期分析模型 | 盈利与资本 | 利润率 | 产业整体净利润率。 | SUM(pure_profit) ÷ SUM(operating_revenue) | dwd_org_annual_financial_info(org_id, year, operating_revenue, total_profit, pure_profit)；dwd_org_industry_tags(credit_code) | 利润率汇总表（按产业归集） |
-|  |  | 投融资趋势 | 产业投融资额/数量增速。 | 当期投融资额增速 | chain_investment(chain_id, chain_name, investment_id, amount, invest_date)；gkxlumenx_ads.chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate, count_growth_rate) | 无 |
-| 产业周期分析模型 | 主体动态 | 企业数量趋势 | 产业内企业数量增速。 | (本期企业数 − 上期) ÷ 上期 | chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate)；enterprise_industry_summary(enterprise_count) | 无 |
-| 产业周期分析模型 | 阶段判定 | 周期阶段 | 判定起始期/成长期/成熟期/衰退期。 | 阈值映射(增长率, 投资趋势, 企业趋势) | gkxlumenx_ads.chain_cycle(chain_id, chain_name, growth_rate, investment_trend, enterprise_trend, cycle_stage, trend) | 周期阶段评价指标与阈值设定表 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_122_1.md` §二（M_CHAIN_DEEP_122_1.py 零改语义复算）。
 
 ## 源表字段
 
-- chain_market(chain_id, chain_name, stat_year, total_revenue, enterprise_count, growth_rate) — 市场规模与增长率
-- enterprise_industry_summary(chain_code, chain_name, stat_year, enterprise_count, high_tech_count, research_staff_total, patent_total, revenue_total) — 产业汇总
-- chain_investment(investment_id, chain_id, chain_name, enterprise_id, enterprise_name, round, amount, investor, invest_date, data_year) — 投融资明细
-- chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, high_tech_count, growth_rate) — 企业数量与增长
-- dwd_org_annual_financial_info(org_id, year, operating_revenue, main_business_revenue, total_profit, pure_profit, total_assets) — 财务（利润率）
-- dwd_org_industry_tags(industry_code, industry_link_code, credit_code) — 企业-产业挂接
-- gkxlumenx_ads.chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount, amount_growth_rate, count_growth_rate) — 投融资年度汇总
-- gkxlumenx_ads.chain_cycle(chain_id, chain_name, growth_rate, investment_trend, enterprise_trend, cycle_stage, trend) — 周期判定结果
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_financing_info`
+- `dwd_org_industry_tags`
 
-- 利润率按产业归集汇总表（当前需由企业财报按产业挂接二次汇总）
-- 周期阶段评价指标与阈值设定表（各阶段指标区间与判定阈值）
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业生命周期理论|Gort, M. & Klepper, S. (1982). Time Paths in the Diffusion of Product Innovations, The Economic Journal, 92(367), 630-653.
+## 数据支持度与缺口
 
-[2] 产品生命周期阶段划分|Vernon, R. (1966). International Investment and International Trade in the Product Cycle, The Quarterly Journal of Economics, 80(2), 190-207.
+- **判档**：部分支持
+- **判档理由**：时间轴上的双动能（链内新设企业数、挂链融资事件数）可从 gkx 快照得到，12 条链全部出标签；但旧稿的「产业周期」以市场规模/增长率/利润率/投融资额为状态量，gkx 无 chain_market、无 chain_cycle 等 7 张结果表（information_schema 实测 absent），财务表营收仅 2,193/90,926 行有值，故只交付相对动能周期，不交付价格/产能/利润周期。
+- **基期声明**：两窗各 6 年：2013—2018 与 2019—2024，端点年份在 params.windows 与 compute.national_by_year 双落盘。2025/2026 为不完整年，主动排除并已写入 counter_checks（新设 2025 年 429 家、2026 年 14 家），不按 0 摊入分母。
 
-[3] 研究与试验发展（R&D）投入统计规范（试行）|国家统计局（国统字〔2019〕47号）|https://www.gov.cn/zhengce/zhengceku/2019-09/19/content_5426634.htm
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_122_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_122_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_122_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

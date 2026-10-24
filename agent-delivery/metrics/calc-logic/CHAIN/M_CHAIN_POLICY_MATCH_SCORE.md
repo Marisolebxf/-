@@ -1,8 +1,7 @@
 # 产业政策匹配度（M_CHAIN_POLICY_MATCH_SCORE）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_POLICY_MATCH_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_POLICY_MATCH_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_POLICY_MATCH_SCORE_out.json`。
 
 ## 基础信息
 
@@ -10,63 +9,54 @@
 |---|---|
 | 指标ID | M_CHAIN_POLICY_MATCH_SCORE |
 | 指标名称 | 产业政策匹配度 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
-| 更新频率 | 月度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析 / 深圳产业发展分析 / 政策匹配 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链详情页「政策匹配度」仪表、政策专题页链筛选 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024] |
+| 缺失年份 | [2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_POLICY_MATCH_SCORE.md` |
 
 ## 口径定义
 
-指定产业链与当前政策导向的匹配程度综合评分，从政策标签匹配度、政策支持覆盖度、政策支持强度三维加权评定，取值 0—100。分数越高表示该产业链越契合政策扶持方向。对象=产业链与政策体系的匹配关系，需跨政策域数据。权重与口径待甲方确认。
+三维里「标签匹配」只剩 `title` 可读（`keywords`/`keypoints` 各 0 行有值、`theme` 仅 2 行）， 「支持覆盖」整维不可算（`policy_support` 20,000 行全为小写 `'null'`）， 「支持强度」只能用 `level=4` 占比代理；**两维可得、一维永久缺失**，故判**部分支持**。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：政策标签匹配度 / 政策支持覆盖度 / 政策支持强度。算法库「产业实体关系抽取」（1.1.1.1.1.1.1.2.2）与「政策实体关系抽取」（.2.6）明确需构建「产业-政策」关系，但无独立匹配度评分专叶；按政策匹配度测度惯例补齐三维，默认等权（ΣW=1）。
-
-### 第一步：入集
-
-- 按 `dwd_industry_chain_info.industry_code`/`industry_name` 定链。
-- 有效政策取 `dwd_policy_base` 中 `status` 含「有效」的记录。
-
-### 第二步：三个子项
-
-1. **政策标签匹配度**：产业链名称/环节名命中政策 `title`/`keywords`/`keypoints`/`theme` 的政策数，归一。
-2. **政策支持覆盖度**：政策 `policy_support` 支持对象/支持行为命中该产业链主体的覆盖程度。
-3. **政策支持强度**：命中的政策按级别（`rank`：国家级/省级/市级）加权后的强度分。
-
-### 第三步：综合评分
-
-各子项 min-max 归一到 0—100，等权求和：
-$$
-产业政策匹配度 = \frac{1}{3}(标签匹配度得分 + 支持覆盖度得分 + 支持强度得分)
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 产业政策匹配度 | 政策标签匹配度 | 标签命中政策数 | 产业名称/环节命中政策文本的有效政策数归一 | min-max(COUNT 有效政策 WHERE 产业名∈title/keywords/keypoints/theme) | dwd_policy_base(id, title, keywords, keypoints, theme, status) — 政策标签；dwd_industry_chain_info(industry_code, industry_name, industry_link_name) — 产业/环节标签 | 无 |
-|  | 政策支持覆盖度 | 支持对象覆盖数 | 政策支持对象/行为命中该产业主体的覆盖度 | min-max(COUNT 政策 WHERE policy_support 命中产业主体) | dwd_policy_base(id, policy_support, status) — 政策支持目标；dwd_org_industry_tags(industry_code, company_name) — 产业主体 | 支持对象结构化字段 |
-|  | 政策支持强度 | 级别加权强度分 | 命中政策按级别加权后的强度分 | Σ(级别权重) 归一 | dwd_policy_base(id, rank, status) — 政策级别；policy_match(subject_id, match_score) — 匹配分 | 级别权重配置 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_POLICY_MATCH_SCORE.md` §二（M_CHAIN_POLICY_MATCH_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_policy_base(id, title, keywords, keypoints, theme, policy_support, rank, status, city) — 政策文本/标签/级别
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_code, industry_link_name) — 产业链/环节标签
-- dwd_org_industry_tags(industry_code, company_name, credit_code) — 产业主体
-- policy_match(id, subject_type, subject_id, subject_name, policy_id, match_score, match_reasons) — 政策匹配结果（gkxlumenx_ads / demo_gkxlumenx_ads）
-- policy_entity_relation(policy_id, entity_id, relation_type, relation_weight, confidence) — 政策-实体关系
-- policy_entity(id, entity_type, entity_name) — 政策实体
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_industry_tags`
+- `dwd_policy_base`
 
-- 产业-政策图谱关系（`industry_chain_entity_rel` entity_type=政策）的匹配度评分字段
-- `policy_match` 的 subject_type 是否覆盖「产业链」的确认（当前多为企业/用户画像）
-- 匹配度权重与口径（待甲方确认）
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业实体关系抽取 / 政策实体关系抽取｜科技专题服务算法库 1.1.1.1.1.1.1.2.2 / 1.1.1.1.1.1.1.2.6（产业-政策关系）。
+## 数据支持度与缺口
 
-[2] 政策匹配度测度｜国家信息中心｜产业政策匹配度评估方法（标签匹配/支持覆盖/支持强度加权）。
+- **判档**：部分支持
+- **判档理由**：三维里只有「标题命中密度」与「国家级占比」可算，政策支持覆盖度维因 policy_support 整列为字符串 'null' 而永久不可得，标签维也因 keywords/keypoints 全空退化为只读标题。
+- **基期声明**：政策表是存量表，2015—2024 为可用区间；表内最晚发布日 2024-02-18，2025、2026 年零行，故不把这两年按 0 摊入任何年度均值。本件是截面（全窗口累计），不做年度增速。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_POLICY_MATCH_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_POLICY_MATCH_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_POLICY_MATCH_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

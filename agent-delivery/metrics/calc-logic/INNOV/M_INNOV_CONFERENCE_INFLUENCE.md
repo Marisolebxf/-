@@ -1,6 +1,7 @@
 # 会议影响力（M_INNOV_CONFERENCE_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CONFERENCE_INFLUENCE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CONFERENCE_INFLUENCE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CONFERENCE_INFLUENCE_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,61 @@
 |---|---|
 | 指标ID | M_INNOV_CONFERENCE_INFLUENCE |
 | 指标名称 | 会议影响力 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技全域态势 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技信息展示系统·科技发展态势·科技全域态势（要素影响力分析 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **完全不支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·科技全域态势（要素影响力分析，需规序号 11 语境）｜ **数据支持度**：**完全不支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_CONFERENCE_INFLUENCE.md` |
 
 ## 口径定义
 
-科技会议作为科创要素的影响程度。统计对象为选定范围内的科技会议实体，从会议热度、投稿数、参与人数三个维度综合评分，取值 0—100。
+「会议影响力」要求把**会议实体**当作科创要素打分（热度 0.5 + 投稿数 0.25 + 参与人数 0.25），但库内出版物侧 `publication_type` 没有任何会议/Proceedings 类型（中文侧全为「期刊」2,796 条、英文侧为 Journal 578 / Book in series 21 / Book 6），论文侧中文 100,900 条全为「期刊论文」、英文 1,387 条仅 43 条 Proceedings Paper + 10 条 Meeting Abstract；同时两枚热度代理字段 `impact_score`（2,796 + 605 行全空）与 `download_num`（100,900 行全空或 0）**100% 无值**——会议实体与度量字段双缺，三维均无输入，按定义为**完全不支持**。
 
 ## 计算逻辑说明
 
-用出版物类型识别会议。热度优先读影响指数，没有则用该会论文下载量合计；投稿取统计年会议论文数；参与取会议论文去重作者数。三维在本批会议内标准化后按 0.5/0.25/0.25 加权合成 0 到 100。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 会议热度 |  | 会议影响指数；没有则用该会论文下载量合计。 | 优先读 impact_score；没有则对该会论文 download_num 求和，空当 0。 | dwd_zh_journal / dwd_en_journal(publication_id, publication_type, impact_score) — 会议,影响指数；dwd_zh_paper(id, publication_id, publication_type, download_num, cover_year_start) — 会议论文,下载量 |
-| 投稿数 |  | 统计年该会已发表会议论文数。 | 统计年中英文会议论文按 id 去重计数。 | dwd_zh_paper(id, publication_id, publication_type, cover_year_start) — 中文会议论文；dwd_en_paper(id, publication_id, publication_type, cover_year_start) — 英文会议论文 |
-| 参与人数 |  | 统计年该会会议论文去重作者数。 | 作者优先按 author_id 去重，没有 id 时用姓名去重。 | dwd_zh_author(paper_id, author_id, zh_name, en_name) — 中文作者；dwd_en_author(paper_id, author_id, zh_name, en_name) — 英文作者 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CONFERENCE_INFLUENCE.md` §二（M_INNOV_CONFERENCE_INFLUENCE.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_zh_journal(publication_id, publication_type, zh_name, en_name, impact_score) — 中文侧会议,影响指数；dwd_en_journal(publication_id, publication_type, zh_name, en_name, impact_score) — 英文侧会议,影响指数；dwd_zh_paper(id, publication_id, publication_type, publication_zh_name, download_num, cover_year_start) — 中文会议论文,下载量,统计年；dwd_en_paper(id, publication_id, publication_type, publication_en_name, cover_year_start) — 英文会议论文,统计年；dwd_zh_author(paper_id, author_id, zh_name, en_name) — 中文作者；dwd_en_author(paper_id, author_id, zh_name, en_name) — 英文作者
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_conference_`
+- `dwd_conference_paper`
+- `dwd_en_author`
+- `dwd_en_journal`
+- `dwd_en_paper`
+- `dwd_en_paper_citation`
+- `dwd_zh_author`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
+- `dwd_zh_paper_citation`
 
-无
+## 待建表字段
 
-## 备注
+按 20261021 判档：关键依赖维在开发库+三方库均不可构建，暂无待建清单；补数据方向见源件 §四。
 
-02-科技信息展示系统|科技发展态势|科技全域态势.md|序号 11「支持要素影响力分析，通过算法模型评估各要素的重要性和影响力」。05 无会议评价专叶，内部默认以会议热度为主、投稿数/参与人数为辅，公式未签。参考权威机构方案。会议实体评价表数据源标准缺失，需郭经理与数据采购方沟通。
+## 数据支持度与缺口
+
+- **判档**：完全不支持
+- **判档理由**：「会议影响力」要求把**会议实体**当作科创要素打分（热度 0.5 + 投稿数 0.25 + 参与人数 0.25），但库内出版物侧 `publication_type` 没有任何会议/Proceedings 类型（中文侧全为「期刊」2,796 条、英文侧为 Journal 578 / Book in series 21 / Book 6），论文侧中文 100,900 条全为「期刊论文」、英文 1,387 条仅 43 条 Proceedings Paper + 10 条 Meeting Abstract；同时两枚热度代理字段 `impact_score`（2,796 + 605 行全空）与 `download_num`（100,900 行全空或 0）**100% 无值**——会议实体与度量字段双缺，三维均无输入，按定义为**完全不支持**。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CONFERENCE_INFLUENCE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CONFERENCE_INFLUENCE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CONFERENCE_INFLUENCE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

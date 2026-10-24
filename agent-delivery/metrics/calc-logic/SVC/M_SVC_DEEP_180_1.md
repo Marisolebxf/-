@@ -1,103 +1,61 @@
 # 服务机构引入推荐模型（M_SVC_DEEP_180_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_180_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_180_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_180_1_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_DEEP_180_1 |
 | 指标名称 | 服务机构引入推荐模型 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 引入服务机构推荐分析 |
-| 更新频率 | 按需 |
-| 对齐状态判定 | 已按算法库9.9展开；与前端招引四维分列 |
-| 是否在数据库 | 否 |
-| 关联Q编号 |  |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | 产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2026] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_DEEP_180_1.md` |
 
 ## 口径定义
 
-对外部服务机构的引入推荐指数，从竞争力、产业相关度、政策匹配度、深圳连接度四个维度评定，取值 0—100，并生成优先级排序。
+四维在外部池上均可实测并合成，但竞争力维因年报无研发两列只能走产出侧代理、政策维因无命中表只能用标题关键词近似、连接度因对端城市仅池内可见只能当下界，三处均为结构性缺口，故判**部分支持**。
 
 ## 计算逻辑说明
 
-
-
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法消除量纲，转换为 0—100 之间的标准化得分：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij}为第 i 个机构在第 j 个指标上的原始值，\min(x_j)和 \max(x_j)分别为该指标在所有机构中的最小值和最大值。
-$$
-
-第二步：各维度得分计算
-
-各维度得分为其下各指标标准化得分的加权平均（可采用等权重，也可根据评估重点自行制定各指标权重）：
-$$
-竞争力得分 = w_1 \times研发投入强度得分+ w_2 \times研发人员占比得分
-$$
-
-$$
-产业相关度得分 = w_3 \times 产业契合度得分+ w_4 \times产业链协同度得分
-$$
-
-$$
-政策匹配度得分 = 政策契合度得分
-$$
-
-$$
-深圳连接度= 深圳供应链关联度得分
-$$
-
-第三步：培育推荐综合得分
-
-四个维度得分加权汇总（可采用等权重，各维度权重 = 1/4；也可根据评估重点自行制定各维度权重）：
-$$
-培育推荐得分 = W_1 \times 竞争力得分 + W_2 \times 产业相关度得分 + W_3 \times 政策匹配度得分 + W_4 \times 深圳连接度得分
-$$
-其中，W_1、W_2、W_3、W_4 为各维度权重，可采用等权重（各占 25%），也可根据评估重点自行制定，\sum W = 1。得分越高，表明该服务机构越值得被推荐引入。
-
-第四步：优先级排序
-
-将各机构按引入推荐得分从高到低排序，生成服务机构引入优先级排名。
-
-### 服务机构引入推荐模型指标体系
-
-| 维度           | 指标             | 指标说明                                   | 计算方法                                                     | 源表字段 | 待建字段 |
-| :------------- | :--------------- | :----------------------------------------- | :----------------------------------------------------------- | -------- | -------- |
-| **竞争力** | 研发投入强度 | 从研发投入强度和研发人员占比评估竞争力。 | 研发费用 ÷ 营业收入 × 100% | dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, year) — 研发投入,营收 | 无 |
-|  | 研发人员占比 | 从研发投入强度和研发人员占比评估竞争力。 | 研发人员数 ÷ 从业人员总数 × 100% | dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员,从业人数 | 无 |
-| **产业相关度** | 产业契合度 | 从产业契合度和产业链协同度评估产业相关度。 | 匹配关键词数 ÷ 目标产业关键词库总数 × 100% | demo_gkxlumenx_ods.svc_org_card(org_id, industry) — 机构行业；dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业；dwd_industry_chain_info(industry_name, industry_link_name) — 目标词表 | 无 |
-|  | 产业链协同度 | 从产业契合度和产业链协同度评估产业相关度。 | 机构上下游关联企业数量 ÷ 目标产业链总企业数 × 100% | dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 机构覆盖环节；dwd_industry_chain_info(industry_code, industry_link_code) — 目标链环节；dwd_org_invest_info(org_id, inv_org_id) — 上下游关联代理 | 无 |
-| **政策匹配度** | 政策契合度 | 从政策契合度评估政策匹配度。 | 政策关键词匹配度评估（或按机构参与政策宣贯、产业规划等项目数占比计分） | dwd_policy_base(id, title, keywords, theme, keypoints, status) — 政策文本；dwd_org_industry_tags(credit_code, industry_name) — 机构产业词 | svc_org_policy_hit-机构与政策匹配标记 |
-| **深圳连接度** | 深圳供应链关联度 | 从深圳供应链关联度评估深圳连接度。 | 机构在深圳地区的客户/供应商数量 ÷ 机构总客户/供应商数量 × 100% | dwd_org_invest_info(org_id, inv_org_id) — 投资连接；dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 机构股东；dwd_org_subsidiary_info(org_id, sub_org_id) — 子公司；dwd_org_base_info(org_id, city) — 对端城市 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_180_1.md` §二（M_SVC_DEEP_180_1.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, industry, service_type_candidate) — 服务机构清单,外部城市筛选
-- dwd_org_base_info(org_id, external_id) — 信用代码对齐
-- dwd_org_industry_tags(credit_code, industry_code, industry_name) — 已挂产业
-- dwd_industry_chain_info(industry_code, industry_name, industry_link_name) — 目标产业词表
-- dwd_org_annual_financial_info(org_id, arch development am, operating_revenue, development_employee, employees_number, year) — 研发投入,营收,研发人员,从业人数
-- dwd_policy_base(id, title, keywords, theme, keypoints, status) — 政策文本
-- dwd_org_invest_info(org_id, inv_org_id) — 深圳连接
-- dwd_org_shareholder_info(org_id, inv_org_id, owners_type) — 深圳连接
-- dwd_org_subsidiary_info(org_id, sub_org_id) — 深圳子公司
-- dwd_org_base_info(org_id, city) — 对端城市
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_policy_base`
 
-- svc_org_policy_hit-机构与政策匹配标记
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1]服务机构引入推荐模型 ｜河北省软件集成电路与人工智能协会｜软件和信息技术服务企业核心竞争力评价规范：T/HASIC 001-2025｜2025-12-30｜[T/HASIC 001-2025-软件和信息技术服务企业核心竞争力评价规范-国家标准馆·国家数字标准馆](https://ndls.cnis.ac.cn/standard/detail/a9fafb1645a480f9fecc37291a57ba3d)
+## 数据支持度与缺口
 
-[2]服务机构培育推荐模型 | 科技部 | “创新积分制”工作指引（全国试行版） | 2024-08-12 | https://kjj.hebi.gov.cn/kjdt/art/2024/art_d7af249cd56041c38c5227b4e92af48f.html.
+- **判档**：部分支持
+- **判档理由**：四维在外部池 18535 家上均可实测：竞争力维用专利代理（9995 家有专利）、产业相关度用深圳 20+8 标签（7139 家有标签）、政策匹配用 20,000 条政策标题关键词、深圳连接度用双端在池的资本边；但两处是结构性缺口——(1) 年报无研发投入/研发人员两列，竞争力只能走产出侧代理；(2) 资本边对端城市只在池内可见（30,219 个对端只有 8820 个有城市），连接度是下界。缺政策命中表 svc_org_policy_hit，政策维只能用标题关键词近似。故判部分支持。
+- **基期声明**：招引排序是截面决策（快照时点存量），不做年度序列；专利与政策均按存量计，政策库跨 2000—2025 年发布，不按年拆窗。
 
-[3]服务机构引入推荐模型｜深圳市工业和信息化局、深圳市商务局｜《深圳市加快推进供应链创新与发展三年行动计划（2023-2025年）》｜2023年9月｜[https://www.sz.gov.cn](https://www.sz.gov.cn/).
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_180_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_180_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_180_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

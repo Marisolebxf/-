@@ -1,72 +1,68 @@
 # 研发投入占比（M_ENT_RD_INVESTMENT_RATIO）
 
-> 口径真源：王惠底稿「R&D / 营业收入」→ 2026-08-31：`formula` 只写怎么算；有没有数是另一回事。  
-> **粒度=企业**。不挂产业。不 reuse `M_ENT_AVG_RD_INVESTMENT`（那条是选定产业 AVG + 半连接）。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO_out.json`。
+
+## 基础信息
+
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_RD_INVESTMENT_RATIO |
+| 指标名称 | 研发投入占比 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题·企业评估·技术力评估「技术投入」维；企业画像与门户「技术优势可视化」看板｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_RD_INVESTMENT_RATIO.md` |
 
 ## 口径定义
 
-**每个企业一条**：最近一个完整自然年度，研发投入占营业收入的比例（×100）。
+`enterprise_base.rd_investment_ratio` 与 `enterprise_finance_history.rd_investment` **结构全在**（含分子 `arch_development_am`、分母 `operating_revenue`、研发人员数 `development_employee` 三列），但 2026-10-21 实测 gkx 年报表 90,926 行中**研发投入有效填充 0 行、研发人员有效填充 0 行**——分子恒空、成对可算 0 企，按 §〇 归**部分支持**（值缺失型，灌数即通；不是结构缺失，也不是方法不可行）。
 
+## 计算逻辑说明
+
+```text
+rd_ratio = rd_investment / revenue × 100；每企最近完整自然年；分母 0/空或分子空 → 该企不可算
 ```
-rd_investment / revenue * 100
-FROM enterprise_finance_history
-WHERE data_year = 该 org 最近完整自然年
-```
 
-- 分子：`rd_investment` ← ODS `arch_development_am`（血缘，不是 FROM）。
-- 分母：同表 `revenue` ← `operating_revenue`。
-- 营收空或 0、分子空：**该企业无法计算**（除零）。不是整条指标算不了。
-- 不挂产业。不是筛选范围加总，也不是 AVG_RD。
-- 国外暂不并。不造表。
-- **禁止**上市财务。
-- **禁止**读 `rd_investment_ratio` / 主档 `enterprise_base.rd_investment_ratio`（产出，不当输入）。
-
-## 两点分开（强制）
-
-### ① formula
-
-DWD 有 `rd_investment`、`revenue` 就能写完。与 AVG_RD 同 RD 列。
-
-### ② 有没有数
-
-ODS `arch_development_am` 空、DWD mock 填数、国外财务 0 行：只记灌数 / 不升 D3 D4。**不写「当前无法执行」**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `enterprise_finance_history` | 表在，有列 |
-| 目标 | 建议 `ads.ent_rd_ratio_latest`（`org_id + data_year + ratio`） | **缺口：无此表** |
-
-源 ≠ 目标。禁止把产出列当已接通。
-
-**计算公式文件**：`M_ENT_RD_INVESTMENT_RATIO.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md` §二（M_ENT_RD_INVESTMENT_RATIO.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_finance_history <- ods: dwd_org_annual_financial_info
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-来源系统：国内机构要素库。
+- `dwd_foreign_org_annual_financial_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_stock_finance_info`
+- `dwd_rd`
+- `dwd_rd_probe`
 
-## 分场景（不进 8 件套）
+## 待建表字段
 
-- 场景 A · 单企画像：按 `org_id` 取最新完整年一行。
-- 场景 B · 列表：批量按企，禁止全集加总当「产业占比」。
-- 生产按 `org_id` 查快照；禁止请求路径全表扫年报。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 现网探针（2026-08-27；不进 8 件套）
+## 数据支持度与缺口
 
-- DWD `enterprise_finance_history`：709 行，`rd_investment`/`revenue` 有值（mock，不当接通）。
-- ODS `arch_development_am`：全 NULL（②）。
-- 正式 `enterprise_forg_finance_history`：0 行。
+- **判档**：部分支持
+- **判档理由**：公式与源字段均已闭合（arch_development_am / operating_revenue / year 三列齐备），但研发投入列在全库为空：ODS 年报财务 90,926 行填充 0、工商年报资产表 527,034 行填充 0、DWD 财务年表 80,531 行填充 0。唯一有研发费用的上市财务表被口径明令禁止替代年报，且仅覆盖约 0.5% 底册。属「结构与公式齐、值侧为空」的值缺失，按 §〇「始终有部分依赖维度得不到足够数据」判部分支持；灌入真实研发投入后即可现算，方法无需改造。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
 
-## 待建 / 缺口
+## 溯源与复现
 
-- **缺口：无独立目标表。**
-- D3 / D4 本波不升。`is_mock: true`。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-27 误把 ODS 空写入无法执行；2026-08-31 方案1：formula 与有数分开*
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

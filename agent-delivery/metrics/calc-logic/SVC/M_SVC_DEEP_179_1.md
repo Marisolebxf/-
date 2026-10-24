@@ -1,71 +1,61 @@
 # 科技创新服务机构技术力评价模型（M_SVC_DEEP_179_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_179_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_179_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_179_1_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_DEEP_179_1 |
 | 指标名称 | 科技创新服务机构技术力评价模型 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 服务机构技术力评估分析 |
-| 更新频率 | 按需 |
-| 对齐状态判定 | 已按算法库9.8展开；四维均可落现表 |
-| 是否在数据库 | 否 |
-| 关联Q编号 |  |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | 产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2026] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_DEEP_179_1.md` |
 
 ## 口径定义
 
-选定科技创新服务机构在统计年度的技术力指数，从合作科研机构数、合作企业数、科技创新成果数量、技术转化成果数量四个维度评定，取值 0—100。
+D2（合作企业）、D3（专利产出）、D4（技术转化）三维在 gkx 实测可算并已合成；D1（合作科研机构）只有 2.9 万行申请人抽样（覆盖约 1% 专利），无法构成全量产学研「研」侧指标，故判**部分支持**，并明确旧稿的「完全转换支持」不成立。
 
 ## 计算逻辑说明
 
-demo_gkxlumenx_ads.svc_org_card(service_type_candidate=INNOV) — 科技创新服务机构认定。
-
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法转换为 0—100 之间的标准化得分：
-$$
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij}为第 i个机构在第 j个指标上的原始值，\min(x_j)和 \max(x_j)分别为该指标在所有机构中的最小值和最大值。
-$$
-
-第二步：技术力综合得分
-
-四个指标加权汇总（可采用等权重，各指标权重 = 1/4；也可根据评估重点自行制定各指标权重）：
-$$
-技术力得分 = \sum_{j=1}^{4} w_j \times 指标得分_{ij}
-$$
-其中，w_j 为第 j个指标的权重，可采用等权重（各占 25%），也可根据评估重点自行制定，\sum w = 1。得分越高，表明该科技创新服务机构的技术力越强。
-
-| 指标             | 指标说明                                                     | 计算方法                            | 源表字段 | 待建字段 |
-| :--------------- | :----------------------------------------------------------- | :---------------------------------- | -------- | -------- |
-| 合作科研机构数 | 机构建立合作关系的科研机构（高校、科研院所等）数量 | 统计近三年累计合作科研机构总数 | dwd_patent(patent_id, first_applicant_name, applicants) — 联合申请人；dwd_org_heis_info(name_cn, univ_type) — 高校识别；dwd_zh_project(id, funded_institution) — 项目承担单位 | 无 |
-| 合作企业数 | 机构建立合作关系的中小企业或规模以上企业数量 | 统计近三年累计合作企业总数 | dwd_patent(patent_id, applicants) — 联合企业申请人；dwd_org_invest_info(org_id, inv_org_id) — 投资连接 | 无 |
-| 科技创新成果数量 | 机构累计有效发明专利、实用新型专利、软件著作权等知识产权总数 | 统计近三年累计知识产权授权/登记总数 | dwd_patent(patent_id, first_applicant_name, kind) — 专利类型,申请人对齐；dwd_patent_legal(pn, status, isdt_year) — 授权有效 | software_copyright_count-软件著作权数 |
-| 技术转化成果数量 | 机构科技成果转化项目数（含技术转让、许可、作价投资等） | 统计近三年累计科技成果转化项目总数 | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移生效 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_179_1.md` §二（M_SVC_DEEP_179_1.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, service_type_candidate) — 服务机构清单,科技创新类型筛选
-- dwd_patent(patent_id, first_applicant_name, applicants, kind) — 联合申请人,成果专利
-- dwd_org_heis_info(name_cn, univ_type) — 高校识别
-- dwd_zh_project(id, funded_institution, title) — 国内项目承担单位
-- dwd_patent_legal(pn, status, isdt_year) — 专利授权有效
-- dwd_patent_transfer(pn, transfer_effective_date) — 专利转移
-- dwd_org_invest_info(org_id, inv_org_id) — 合作企业代理
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_patent_applicants`
+- `dwd_patent_transfer`
 
-- software_copyright_count-软件著作权数
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[2]科技创新服务机构技术力评价模型｜洛阳市科学技术局、洛阳市财政局｜洛阳市新型研发机构备案和绩效评价办法（试行）｜2024-02-28｜[洛阳市科学技术局 洛阳市财政局 关于印发《洛阳市新型研发机构备案和绩效评价办法（试行）》的通知_市科学技术局_洛阳市人民政府](https://www.ly.gov.cn/2024/05-07/118645.html)
+## 数据支持度与缺口
 
-[3]科技创新服务机构技术力评价模型｜三门峡市科学技术局｜省级新型研发机构绩效考核｜2025-09-19｜[文章详情-三门峡市科学技术局](http://kjj.smx.gov.cn/4/2025/9/2126236.html)
+- **判档**：部分支持
+- **判档理由**：四维里 D2（资本型合作边）、D3（专利 1228959 件 / 19249 家，含发明占比分层）、D4（专利转移 491 件触达 119 家）三维在 gkx 实测可算并已合成；D1 合作科研机构数缺全量联合申请人明细——gkx 只导出了 28964 行申请人抽样（对 293.9 万件专利约 1%），只能给出稀疏下界，不足以进合成。四维缺一且缺的是产学研「研」侧，判部分支持；旧稿称本指标可「完全转换支持」，在 gkx 侧不成立，已如实降档。
+- **基期声明**：创新成果与转化按「存量登记」计（专利表无申请年字段入快照，转移表有效年 2021—2026 共 6 个年份有值），故不设滚动窗、也不按年摊平；统计年 2026 仅用于口径标注，不做增速。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_179_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_179_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_179_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

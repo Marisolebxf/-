@@ -1,60 +1,66 @@
-# 技术力得分（M_ENT_TECH_POWER_SCORE）
+# 企业技术力评分（M_ENT_TECH_POWER_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TECH_POWER_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TECH_POWER_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TECH_POWER_SCORE_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_ENT_TECH_POWER_SCORE |
-| 指标名称 | 技术力得分 |
-| 一级模块 | 企业分析 |
-| 二级模块 | 企业评估 |
-| 三级模块 | 技术力评估 |
-| 更新频率 | 年度/模型版本发布时 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q014 |
-
+| 指标名称 | 企业技术力评分 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业服务／企业评价／技术力 |
+| 更新频率 | 建议半年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业画像「技术力」卡、技术型企业榜、招商技术尽调参考｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| 缺失年份 | [2017, 2018, 2019, 2020] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_TECH_POWER_SCORE.md` |
 
 ## 口径定义
 
-企业技术力评估的综合得分，满分0—100分，综合反映企业技术人才储备、技术创新产出、技术转化效率、技术合作能力及研发投入水平。
+专利三维（规模 0.5 / 广度 0.3 / 新鲜度 0.2）在 134,152 家有专利企业上出分，中位 0.0911、最高 0.7867，但人才与研发投入两维缺失，判部分支持。
 
 ## 计算逻辑说明
 
-| 一级维度     | 权重 | 三级指标                           | 指标说明                                         | 源表字段 |
-| :----------- | :--- | :--------------------------------- | :----------------------------------------------- | -------- |
-| **技术人才** | 20%  | 研发人员占职工总数的比重           | 反映企业技术人力投入规模                         | gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员占比=研发人员数÷从业人数×100% |
-|              |      | 高级研发人才数量                   | 副高级及以上职称或硕士及以上学历的专职研发人员数 | gkx.dwd_org_annual_financial_info(org_id, development_employee, year) — 研发人员总数（分母参考）<br>gkx 现库无学历/职称结构字段（待建）— 高级研发人才数 |
-| **技术创新** | 25%  | 有效发明专利数量                   | 企业拥有的有效发明专利总量                       | gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num) — 有效发明专利授权数（累计预聚合） |
-|              |      | 发明专利占比                       | 有效发明专利 ÷ 有效专利总数                      | gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 发明专利占比=发明专利授权数÷(发明+实用新型+外观设计)×100% |
-|              |      | 当年新增发明专利申请数             | 衡量核心技术产出活跃度                           | gkx.dwd_patent(patent_id, first_applicant_name, application_reference) — 专利申请信息<br>gkx.dwd_patent_legal(patent_id, status, isdt_year) — 法律状态与申请年份筛选 |
-| **技术转化** | 20%  | 新产品销售收入占主营业务收入的比重 | 反映技术成果的市场化水平                         | gkx.dwd_org_annual_financial_info(org_id, operating_revenue, year) — 主营业务收入（分母）<br>gkx 现库无新产品销售收入字段（待建）— 新产品销售收入 |
-|              |      | 技术合同成交额                     | 反映技术对外转移和交易活跃度                     | gkx 现库无技术合同成交额字段（待建）— 技术合同交易数据 |
-| **技术合作** | 15%  | 产学研合作项目数量                 | 企业与高校/科研院所合作项目数                  | gkx.dwd_zh_project(id, project_host, participating_institution) + gkx.dwd_en_project(id, project_host, participating_institution) — 产学研合作项目 |
-|              |      | 外部专家参与研发的人月数           | 来企业从事研发工作的外部专家工作量               | gkx 现库无外部专家人月数字段（待建）— 外部专家工作量数据 |
-| **技术投入** | 20%  | 研发经费支出占主营业务收入的比重   | 衡量企业研发投入强度                             | gkx.dwd_org_annual_financial_info(org_id, `arch development am`, operating_revenue, year) — 研发投入强度=`arch development am`÷营业收入×100% |
-|              |      | 研发人员人均研发经费支出           | 反映人均研发资源保障水平                         | gkx.dwd_org_annual_financial_info(org_id, `arch development am`, development_employee, year) — 人均研发经费=`arch development am`÷研发人员数 |
+```text
+score = 0.5*minmax(log1p(专利数)) + 0.3*minmax(IPC4广度) + 0.2*minmax(2024申请占比)
+```
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TECH_POWER_SCORE.md` §二（M_ENT_TECH_POWER_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-gkx.dwd_org_annual_financial_info(org_id, development_employee, employees_number, `arch development am`, operating_revenue, year) — 技术人才维度（研发人员占比）、技术投入维度（研发经费强度、人均研发经费），优先年报，覆盖非上市企业
-gkx.dwd_org_rd_achiev_info(org_id, inv_pat_auth_num, util_pat_auth_num, des_pat_auth_num) — 技术创新维度（有效发明专利数、发明专利占比，专利授权累计预聚合）
-gkx.dwd_patent(patent_id, first_applicant_name, application_reference) — 技术创新维度（当年新增发明专利申请数，按申请年份筛选）
-gkx.dwd_patent_legal(patent_id, status, isdt_year) — 技术创新维度（法律状态过滤有效专利、申请年份筛选）
-gkx.dwd_zh_project(id, project_host, participating_institution) — 技术合作维度（中文产学研合作项目）
-gkx.dwd_en_project(id, project_host, participating_institution) — 技术合作维度（英文产学研合作项目）
-高级研发人才数字段 — 现库无学历/职称结构字段，待建
-新产品销售收入字段 — 现库无此字段，待建
-技术合同成交额字段 — 现库无此字段，待建
-外部专家参与研发人月数字段 — 现库无此字段，待建
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-注：技术力得分由技术人才(20%)、技术创新(25%)、技术转化(20%)、技术合作(15%)、技术投入(20%)五个维度加权汇总，各指标经极值归一化后按权重加权计算，权重待甲方确认（Q014）。结果表 ads_ent_tech_score(tech_score, org_id, 待建)。
+- `dwd_org_base_info`
+- `dwd_patent`
 
-## 待建字段
+## 待建表字段
 
-高级研发人才数字段 — 现库无学历/职称结构字段，待建
-新产品销售收入字段 — 现库无此字段，待建
-技术合同成交额字段 — 现库无此字段，待建
-外部专家参与研发人月数字段 — 现库无此字段，待建
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：两张结果面（tech_power、enterprise_score）都不存在，旧稿六维里只有专利侧三维能从 dwd_patent 逐企业算出，人才/转化/投入三维在 gkx 没有任何企业级表可挂。专利三维本身结构与量都够（134,152 家企业有专利），可产出完整分布与排名；缺三维意味着分值是「专利技术力」而不是「技术力」，故判部分支持而不是完全转换支持。
+- **基期声明**：专利表只有 2021—2026（2017—2020 零行），D1 分母是全期申请，D3 用 2024 年申请占比；2025/2026 为残年不入分子。人才/转化维不涉及年份，因整维缺失而不存在基期。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TECH_POWER_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TECH_POWER_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TECH_POWER_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,7 +1,13 @@
 # LUMEN-PORTAL-IFRAME-L01 · lumen-ui-topic 统一门户 iframe 嵌入对接
 
 > **状态**：开发完成，待联调（integration） · **监管**：human:孔东 · **执行**：agent:frontend-agent
-> **commit**：`34f61c5`（重做版）→ `a4549cf`（契约对齐，2026-10-16）→ `f1825fe`（外网子路径 base，2026-10-21） · **强度**：ponytail full
+> **commit**：`34f61c5`（重做版）→ `a4549cf`（契约对齐，2026-10-16）→ `f1825fe`（外网子路径 base，2026-10-21）→ `f76fd2c`（嵌入模式底色修正，2026-10-24） · **强度**：ponytail full
+
+---
+
+## 0.2 增量交付（2026-10-24 · 嵌入模式整页底色修正）
+
+实嵌走查发现嵌入模式整页透白：`.layout-page.is-portal-embed` 原 `background: none` 是简写，把 `.layout-page` 正常态三层背景（左右装饰 SVG + 底色 `#d8e7fc`）连同底色一并重置，内容壳透明时整页透出 body 白底，违反 D8 页面底色。修正为只清装饰层、保留底色：`background: var(--sci-bg-page, #d8e7fc)`。commit `f76fd2c` 已推 origin/dev（监管人聊天授权）。
 
 ---
 

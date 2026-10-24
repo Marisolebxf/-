@@ -1,6 +1,7 @@
 # 研究领域等级划分（M_INNOV_RES_GRADE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_GRADE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_GRADE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_GRADE_out.json`。
 
 ## 基础信息
 
@@ -8,35 +9,53 @@
 |---|---|
 | 指标ID | M_INNOV_RES_GRADE |
 | 指标名称 | 研究领域等级划分 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技发展规划 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | INNOV（创新技术 / RES-CI） |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q151 / Q-MO-DS09-03 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 · 科技发展态势 · 科技发展规划 · 研究领域分析 · 研究领域等级划分（SRS 序号 192） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| 缺失年份 | [2017, 2018, 2019, 2020] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_RES_GRADE.md` |
 
 ## 口径定义
 
-对企业对重叠度分高/中/低。复用 M_INNOV_RES_OVERLAP，不另建等级字段。默认 P70/P30，页面可改。
+12 家头部企业、66 对组合的 IPC4 Jaccard 可算，P70/P30 切档可复现；但王惠定义的 overlap 三维里只有 IPC 一维有数据，学者维实测 0 对可用，「研究领域」被压缩成专利分类重叠，故判**部分支持**。
 
 ## 计算逻辑说明
 
-选定企业入集。复用重叠度，按阈值分档：高 / 中 / 低（默认 P70 / P30，页面可改）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 重叠度 |  | 企业对研究领域合成重叠度。 | 复用 M_INNOV_RES_OVERLAP | dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 企业入集,名称对齐,空间过滤；dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, further_classification_ipcr, apdt_year) — 专利去重,关键词,申请人对齐,主分类,附加分类,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构名 |
-| 等级 |  | 按阈值把重叠度分成高/中/低。 | ≥P70高；P30–P70中；<P30低（可改） | 本批 overlap 分位或页面阈值 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_GRADE.md` §二（M_INNOV_RES_GRADE.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 企业入集,名称对齐,空间过滤；dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, further_classification_ipcr, apdt_year) — 专利去重,关键词,申请人对齐,主分类,附加分类,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构名
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_scholar`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技发展规划.md|序号 192「通过量化指标分析，对不同的研究领域重叠度进行等级划分，用户可查看等级划分标准和结果，支持自定义等级划分阈值」。与 M_INNOV_RES_CI_LEVEL 同族不同核（本号=重叠度分档）。阈值同一缺口参数面。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：66 对企业的 overlap 与三档划分可复现，阈值、分档、边界样例全部落盘；但上游 overlap 的两维里学者实体维实测 0 对可用（0% 的对有学者 Jaccard），合成实际只由 IPC 一维决定；「研究领域」被压缩成 IPC4 集合重叠，不含论文主题、项目学科与人才方向。
+- **基期声明**：IPC 集合取全期累计（专利表申请年只覆盖 2021—2026，2017—2020 零行）；学者/论文为截面快照，无年度基期。未按年切窗，故本件不产出年度趋势。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_GRADE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_GRADE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_GRADE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

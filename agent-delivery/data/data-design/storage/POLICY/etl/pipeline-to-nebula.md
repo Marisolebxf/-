@@ -35,6 +35,8 @@ amendment: "§10 起补 106/107 需规 + 边清单 + LLM 场景 + 入库过程�
 
 源是 **ADS 镜像**，不是 DWD 直读。镜像两表同时是 Nebula 不可用时的读兜底（见 [`../stores/mysql/ads.md`](../stores/mysql/ads.md)）。
 
+2026-10-24 demo 实查：按产业、产业节点能命中多少政策，见 [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md)。企业、服务机构同口径见 [产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md)、[产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md)。
+
 ## 3. Space 与 VID 约束（代码强制）
 
 `polan/common/nebula.py` 把一张 G 写死为常量并在 `conf()` 校验，配置成别的 space 直接抛错：

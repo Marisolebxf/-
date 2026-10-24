@@ -1,59 +1,61 @@
----
-metric_id: M_CHAIN_SZ_ENTERPRISE_RATIO
-metric_name_zh: 深圳产业链企业占比
-algorithm_type: STAT
-version: 0.2.0
-updated: 2026-10-14
-owner: data-agent / human:淮政玮
-status: 口径已定（单趟条件聚合）
----
+# 深圳产业链企业占比（M_CHAIN_SZ_ENTERPRISE_RATIO）
 
-# M_CHAIN_SZ_ENTERPRISE_RATIO 深圳产业链企业占比 — 计算逻辑说明
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_RATIO.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_RATIO.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_RATIO_out.json`。
 
-> 2026-10-14 human:徐滕强 拍板：单趟条件聚合。父指标 `M_CHAIN_SZ_ENTERPRISE_COUNT`（分子）与 `M_CHAIN_ENTERPRISE_COUNT`（分母）均 v0.2.0 已定，本条为其派生比。
+## 基础信息
 
-## 1. 业务定义
-
-深圳产业链关联企业数占全国该链企业总数比例 × 100。
-
-**为什么单趟**：分子分母同 JOIN、同 `base_info.is_deleted=0` 软删、同 `chain_code` 参数——一趟内 `CASE WHEN` 分流，天然同过滤口径，杜绝两次查询间口径漂移。
-
-## 2. 数据源
-
-| 表 | 用途 |
+| 项目 | 内容 |
 |---|---|
-| `demo_gkxlumenx_dwd.enterprise_industry_chain` | 上链桥（`chain_code=:chain_code`） |
-| `demo_gkxlumenx_ods.dwd_org_base_info` | 深圳判定（`city='深圳市'`）+ 软删（`is_deleted=0`） |
+| 指标ID | M_CHAIN_SZ_ENTERPRISE_RATIO |
+| 指标名称 | 深圳产业链企业占比 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业发展分析／深圳产业现状 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 链全景页「深圳产业现状」占比条 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_ENTERPRISE_RATIO.md` |
 
-## 3. SQL
+## 口径定义
 
-```sql
-SELECT ROUND(100 * COUNT(DISTINCT CASE WHEN b.city = '深圳市' THEN eic.org_id END)
-                 / COUNT(DISTINCT eic.org_id), 2) AS sz_enterprise_ratio_pct
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain eic
-JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-  ON b.org_id = eic.org_id AND b.is_deleted = 0
-WHERE eic.chain_code = :chain_code;
-```
+分子分母都能从标签表 × 主档城市直算，12 条链全有值；但分母是 189,116 家都市圈底册的链内子集，不是全国该链企业总数 → **部分支持**。
 
-注：`enterprise_industry_chain` 表 DDL 实核无 `is_deleted`，不加该表软删过滤（与 `M_CHAIN_SZ_ENTERPRISE_COUNT` 口径一致）。
+## 计算逻辑说明
 
-## 4. 参数
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_RATIO.md` §二（M_CHAIN_SZ_ENTERPRISE_RATIO.py 零改语义复算）。
 
-| 参数 | 含义 | 默认 |
-|---|---|---|
-| `:chain_code` | 产业链编码 | 必填 |
+## 源表字段
 
-## 5. 边界语义
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-- 分母 0（该链无上链企业）→ NULL（MySQL 除零），UI 显「无数据」，不伪造 0%。
-- 上链桥当前 0 行 → NULL，如实展示。
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-## 6. 版本与变更
+## 待建表字段
 
-| 版本 | 日期 | 变更 | 拍板 |
-|---|---|---|---|
-| 0.1.0 | — | 旧稿：两父指标相除（无 SQL 本体） | — |
-| 0.2.0 | 2026-10-14 | 单趟条件聚合定版 + 同过滤口径说明 | human:徐滕强 |
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-正式签名待 human:唐绍祖 会签。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：分子分母都能从 gkx 标签 × 主档城市直接算，12 条链全部有值；但分母是深圳都市圈底册（189,116 家，99.82% 在广东），不是全国该链企业总数，语义须降为「底册内占比」。
+- **基期声明**：截面指标：统计当前存量，不设年度分母。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ENTERPRISE_RATIO.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_RATIO.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ENTERPRISE_RATIO_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

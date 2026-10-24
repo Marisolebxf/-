@@ -1,54 +1,63 @@
-# M_SVC_PT_SZ_REGION_ORG 计算细稿（深圳机构区域分布）
+# 深圳机构区域分布（M_SVC_PT_SZ_REGION_ORG）
 
-- 版本：v0.2.1（2026-10-13 拍板 v0.2.0 + 同日修正取数链；覆盖 2026-08-21 模拟王惠调研版，旧版基于旧池 3,525/svc_org_card.area 与 svc_region_dist，一律作废）
-- 任务：SVC-METRIC-COVER-STAT-L01 第 13 条；seed 版本同步 0.2.1
-- SRS 对应：05·101（5）深圳各区域服务机构分布
-- 关联：第 11 条 M_SVC_PT_SZ_TOTAL 同池同切片（十区+未分配计数之和=第 11 条深圳总数）；第 8 条 M_SVC_PT_REGION_ORG 同空值单列风格
-- 修正记录：v0.2.0 误 JOIN 废弃表 dwd_service_org.district（50 行 demo 样本表，多份 handoff 已标废弃非真源）→ v0.2.1 改 JOIN 企业最全信息主档 dwd_org_base_info.area
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_SZ_REGION_ORG.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_SZ_REGION_ORG.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_SZ_REGION_ORG_out.json`。
 
-## 口径
+## 基础信息
 
-1. 人口：圈定池 svc_org_circle（43,296）。⚠️ 池表无 city/district 列，城市与区级字段经 org_id JOIN ods.dwd_org_base_info（企业最全信息主档）取。
-2. 切片与聚合：`b.city='深圳市'` 切片，GROUP BY `b.area`。
-3. 十区字典（标准十区全集常显）：福田区/罗湖区/南山区/盐田区/宝安区/龙岗区/龙华区/坪山区/光明区/大鹏新区。无值区显 0 不隐藏。
-4. 空值处理：area 为空或 JOIN 不上主档 → 单列「未分配」桶常显，禁静默剔除（不丢数，同第 8 条省份空值处理风格）。
-5. 数随池联动：禁写死旧 ADS svc_sz_dist 十行（旧池产物作废）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_PT_SZ_REGION_ORG |
+| 指标名称 | 深圳机构区域分布 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（深圳供给面 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL 深圳专题；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库（区块筛选位） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_PT_SZ_REGION_ORG.md` |
 
-## 计算（SEED 演示）
+## 口径定义
 
-```sql
-SELECT t.district, COUNT(DISTINCT x.org_id) AS cnt
-FROM (SELECT '福田区' AS district UNION ALL SELECT '罗湖区' UNION ALL SELECT '南山区'
-      UNION ALL SELECT '盐田区' UNION ALL SELECT '宝安区' UNION ALL SELECT '龙岗区'
-      UNION ALL SELECT '龙华区' UNION ALL SELECT '坪山区' UNION ALL SELECT '光明区'
-      UNION ALL SELECT '大鹏新区' UNION ALL SELECT '未分配') t
-LEFT JOIN (
-  SELECT COALESCE(NULLIF(b.area,''),'未分配') AS district, c.org_id
-  FROM svc_org_circle c
-  JOIN dwd_org_base_info b ON b.org_id = c.org_id
-  WHERE b.city = '深圳市'
-) x ON x.district = t.district
-GROUP BY t.district;
--- 现网真数（2026-10-13 实测）：南山 3655 / 宝安 2850 / 龙岗 2039 / 福田 1829 / 龙华 1795
---   / 光明 798 / 罗湖 553 / 坪山 388 / 盐田 121 / 大鹏 0 / 未分配 5（area 空 5 家）；合计 14033 = 第 11 条
-```
+深圳切片的区级分布可现转且闭合：**25,597** 家，9 个有值行政区 25,587＋未分配 10＋区外/异名 0＝25,597，与 `M_SVC_PT_SZ_TOTAL` 同数；区字段非空率 99.96%。无代理维度、无外部依赖 → **完全转换支持**。
 
-注：JOIN 侧 city 取自主档 b；池机构主档无深圳行（广州 19600/东莞 7908/惠州 1751/京甬 4）不入深圳切片。SERVE：落 svc_metric_fact（维度 district，11 行全集含 0）。
+## 计算逻辑说明
 
-## 三禁
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_SZ_REGION_ORG.md` §二（M_SVC_PT_SZ_REGION_ORG.py 零改语义复算）。
 
-- 禁写死历史分布（旧 svc_sz_dist/svc_region_dist 十行作废）。
-- 禁静默剔除空 area/JOIN 不上主档机构。
-- 禁造无机构区假数。
-- 禁再引用废弃表 dwd_service_org（50 行 demo 样本）。
+## 源表字段
 
-## 呈现与缺口
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-- 地图/柱状按十区+未分配常显（含 0 项）；悬停同门户提醒（Q-SVCCHAIN-06/07）。
-- 正式 ODS 侧 JOIN 完整性待核验：见 matrix d3_gap。
+- `dwd_org_base_info`
+- `dwd_org_org_product_info`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：完全转换支持
+- **判档理由**：深圳切片的区级分布可现转且闭合：切片 25597 家，9 个行政区＋未分配 10＋区外/异名 0 ＝25597（与 M_SVC_PT_SZ_TOTAL 同池同数）；区字段非空率 99.96%，未分配单列不剔除
+- **基期声明**：截面指标：区级分布是当前时点存量的空间切分，不含年度分母；切片总量与成立年序列由 M_SVC_PT_SZ_TOTAL 承担。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_SZ_REGION_ORG.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_SZ_REGION_ORG.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_SZ_REGION_ORG_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-10-13: v0.2.1 修正取数链（dwd_service_org.district → dwd_org_base_info.area）+ 落真数 14,033/十区分布；口径（十区全集/未分配/数随池联动）不动。
 - 2026-10-13: v0.2.0 落盘（标准十区、空值单列「未分配」）。
 - 2026-08-21: 初版（模拟王惠调研产出，基于旧池 3,525，已作废）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

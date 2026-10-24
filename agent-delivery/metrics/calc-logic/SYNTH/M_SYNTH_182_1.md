@@ -1,6 +1,7 @@
 # 区域科技创新成果综合评价模型（M_SYNTH_182_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SYNTH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_182_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_182_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_182_1_out.json`。
 
 ## 基础信息
 
@@ -8,63 +9,59 @@
 |---|---|
 | 指标ID | M_SYNTH_182_1 |
 | 指标名称 | 区域科技创新成果综合评价模型 |
-| 一级模块 | 综合智能分析 |
-| 二级模块 | 区域创新活力分析 |
-| 三级模块 | 科技创新成果 |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024] |
+| 缺失年份 | [2017, 2018, 2019, 2020] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_182_1.md` |
 
 ## 口径定义
 
-选定区域内、统计年度的科技创新成果指数，从基础科学、应用科技、科研机构三维评定，取值 0—100。分数越高表示科技成果水平越强。对象=区域科技成果，不是单篇论文、不是企业技术力。
-
-本版不进分：重大科学发现、技术成熟度、研究人员结构、国际合作、科研平台。算法库原文有这五项，现表算不了或不进本指数，也不再挂待建。
+本指标把「区域科技创新成果」拆成基础科学、应用科技、科研机构三维，维内两子项批内极值归一、维内等权、三维等权，得到 0—100 的综合指数。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：基础科学 / 应用科技 / 科研机构。算法库序号 182 已给这三维，不另起维度。各维极值归一后等权（也可按评估重点改权，ΣW=1）。
-
-### 第一步：入集
-
-统计窗默认自然年。区域落到 `dwd_org_base_info.city` / `province` / `area`。存续：`reg_status` 含「存续」。专利第一申请人、论文作者单位对齐 `name_cn` 后入该区域。论文年键=`cover_year_start`，专利年键=`pbdt_year`（授权看 `granted_number` 非空）。本批=同一次评估窗口内全部对比区域。
-
-### 第二步：三个子项
-
-1. **基础科学**  
-   高质量论文 + 被引影响力。高质量论文口径：被引 ≥ 本批 P70 的论文去重数。中文被引用 `dwd_zh_paper_citation.citation_num`，英文 `dwd_en_paper_reference.citation_count`；无被引行当 0，不进 P70 分子。被引影响力=区域论文被引合计。两子值分别极值归一后等权。
-
-2. **应用科技**  
-   高价值专利 + 专利转移。高价值专利=发明授权且 `dwd_patent.value` ≥ 本批 P70（`value` 空不进分位、不算高价值）。专利转移去重数即产业化应用，年键=`transfer_effective_date` 的年。两子值分别极值归一后等权。
-
-3. **科研机构**  
-   科研机构存量 + 成果转化率。存量=`dwd_research_institute_base_info` 区域内去重数。成果转化率=机构对齐专利转移去重数 ÷ 机构对齐发明授权去重数。分母为 0 则本子项记空、不进该维。两子值分别极值归一后等权。
-
-维内子项先归一再等权得维得分，三维再等权得指数。输出区域一行，含三维得分与综合分。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 区域科技创新成果综合评价模型 | 基础科学 | 高质量论文 | 被引≥本批P70的论文去重数。 | COUNT(DISTINCT paper \| citation≥P70) | dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_zh_paper_citation(id, citation_num) — 中文被引；dwd_en_paper_reference(id, citation_count) — 英文被引；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 被引影响力 | 区域论文被引合计。 | SUM(citation) | dwd_zh_paper_citation(id, citation_num) — 中文被引；dwd_en_paper_reference(id, citation_count) — 英文被引；dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域科技创新成果综合评价模型 | 应用科技 | 高价值专利 | 发明授权且专利价值≥本批P70。 | COUNT(DISTINCT 发明授权 \| value≥P70) | dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year, value) — 发明授权,专利价值,申请人对齐,年窗；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 专利转移量 | 专利转移去重数，即产业化应用。 | COUNT(DISTINCT 转移专利) | dwd_patent_transfer(pn, transfer_effective_date) — 专利转移；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 授权专利,申请人对齐,年窗；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-| 区域科技创新成果综合评价模型 | 科研机构 | 科研机构存量 | 区域内科研机构去重数。 | COUNT(DISTINCT 科研机构) | dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
-|  |  | 成果转化率 | 科研机构对齐的专利转移数 ÷ 发明授权数。 | 机构转移数/机构发明授权数 | dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集；dwd_patent_transfer(pn, transfer_effective_date) — 专利转移；dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year) — 发明授权,申请人对齐,年窗；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_182_1.md` §二（M_SYNTH_182_1.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集,名称对齐,机构类型,存续
-- dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集
-- dwd_patent(pn, kind, granted_number, first_applicant_name, pbdt_year, value) — 发明授权,专利价值,申请人对齐,年窗
-- dwd_patent_transfer(pn, transfer_effective_date) — 专利转移
-- dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年
-- dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年
-- dwd_zh_author(paper_id, institution) — 中文作者单位,区域对齐
-- dwd_en_author(paper_id, institution) — 英文作者单位,区域对齐
-- dwd_zh_paper_citation(id, citation_num) — 中文被引
-- dwd_en_paper_reference(id, citation_count) — 英文被引
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_patent_cited`
+- `dwd_rd`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
+- `dwd_zh_paper_cited`
 
-- 无
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：三维在深莞惠广四城全部可算且非退化（论文/被引、2024 授权与高价值代理、机构存量与转化率均有量）；但①评价集被迫收缩到深圳都市圈：专利申请人按底册归城时北京/上海不可归属（2024 年 40,888 件授权未归属），跨省横比在本数据面上不成立；②科研机构底册 2,074 行只覆盖深广莞惠，京沪零行；③高价值专利只能用申请人级 value P90 代理，无法对齐国知局四要件；④论文城市归属仅 47.4% 可判（机构串含城市名或白名单高校）。两条以上依赖维结构性不可得，判部分支持。
+- **基期声明**：论文窗口 2021–2024（4 个真实年份）；专利授权与转移为 2024 单年；专利库 2017–2020 零行，故这四年不进任何分母；2025 年库内件数回落、2026 为残年，均不取。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_182_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_182_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_182_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

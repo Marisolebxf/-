@@ -1,36 +1,44 @@
-# calc-logic/POLICY/ —— 政策域指标计算逻辑真源（王惠口径）
+# calc-logic/POLICY/ — 政策分析域指标计算逻辑
 
-> **真源**：王惠《政策分析指标字段清单》20260829 V2 底稿（Excel 工作底稿，不进 git）。
-> **本目录**：底稿经 data-agent 正式化后的 md 文件，供编排智能体按需读取。
-> **生成日期**：2026-08-29
-> **指标总数**：18 个唯一指标 ID（MODEL 类型）
+> 生成任务：E-METRIC-ALGOLIB-LAUNCH-L01（阶段1）· 2026-10-23。本目录 = 口径细稿真源；
+> 8 件套+version 以 `metrics/registry/cfg_metric-POLICY-seed.yaml` 为准，四维就绪度以
+> `metrics/registry/metric-readiness-matrix-POLICY.yaml` 为准。条数：**35**
+> （20261021 王惠批全量入库；支持度图例：直=完全直接支持，转=完全转换支持，部=部分支持，否=完全不支持）。
 
-## 文件清单
-
-| # | 指标ID | 指标名称 | 算法类型 | 文件 |
-|---|--------|---------|---------|------|
-| 1 | `M_POLICY_EFFECT_SCORE` | 政策效果评分 | MODEL | [M_POLICY_EFFECT_SCORE.md](./M_POLICY_EFFECT_SCORE.md) |
-| 2 | `M_POLICY_FOCUS_INDEX` | 政策焦点指数 | MODEL | [M_POLICY_FOCUS_INDEX.md](./M_POLICY_FOCUS_INDEX.md) |
-| 3 | `M_POLICY_IMPLEMENTATION_EFFECT` | 落地实效性 | MODEL | [M_POLICY_IMPLEMENTATION_EFFECT.md](./M_POLICY_IMPLEMENTATION_EFFECT.md) |
-| 4 | `M_POLICY_INDUSTRY_FIT` | 产业适配性 | MODEL | [M_POLICY_INDUSTRY_FIT.md](./M_POLICY_INDUSTRY_FIT.md) |
-| 5 | `M_POLICY_INTENSITY_INDEX` | 政策力度指数 | MODEL | [M_POLICY_INTENSITY_INDEX.md](./M_POLICY_INTENSITY_INDEX.md) |
-| 6 | `M_POLICY_INTENSITY_SCORE` | 政策力度评分 | MODEL | [M_POLICY_INTENSITY_SCORE.md](./M_POLICY_INTENSITY_SCORE.md) |
-| 7 | `M_POLICY_DEEP_166_1` | 政策焦点识别模型 | MODEL | [M_POLICY_DEEP_166_1.md](./M_POLICY_DEEP_166_1.md) |
-| 8 | `M_POLICY_DEEP_167_1` | 政策力度评估模型 | MODEL | [M_POLICY_DEEP_167_1.md](./M_POLICY_DEEP_167_1.md) |
-| 9 | `M_POLICY_DEEP_168_1` | 政策效果评估模型 | MODEL | [M_POLICY_DEEP_168_1.md](./M_POLICY_DEEP_168_1.md) |
-| 10 | `M_POLICY_DEEP_169_1` | 政策短板识别模型 | MODEL | [M_POLICY_DEEP_169_1.md](./M_POLICY_DEEP_169_1.md) |
-| 11 | `M_POLICY_DEEP_170_1` | 政策机遇识别模型 | MODEL | [M_POLICY_DEEP_170_1.md](./M_POLICY_DEEP_170_1.md) |
-| 12 | `M_POLICY_DEEP_171_1` | 政策布局推荐模型 | MODEL | [M_POLICY_DEEP_171_1.md](./M_POLICY_DEEP_171_1.md) |
-| 13 | `M_POLICY_DS_07_POLICY_GUARD_001` | 发展战略引导力评估 | MODEL | [M_POLICY_DS_07_POLICY_GUARD_001.md](./M_POLICY_DS_07_POLICY_GUARD_001.md) |
-| 14 | `M_POLICY_DS_07_POLICY_GUARD_008` | 政策与条件保障力综合评估 | MODEL | [M_POLICY_DS_07_POLICY_GUARD_008.md](./M_POLICY_DS_07_POLICY_GUARD_008.md) |
-| 15 | `M_POLICY_DS_11_POLICY_EVAL_012` | 智能摘要与结论推送 | MODEL | [M_POLICY_DS_11_POLICY_EVAL_012.md](./M_POLICY_DS_11_POLICY_EVAL_012.md) |
-| 16 | `M_POLICY_MATCH` | 政策匹配推送 | MODEL | [M_POLICY_MATCH.md](./M_POLICY_MATCH.md) |
-| 17 | `M_POLICY_SIMULATE` | 政策效果推演 | MODEL | [M_POLICY_SIMULATE.md](./M_POLICY_SIMULATE.md) |
-| 18 | `M_POLICY_TEXT_PARSE` | 政策文本解析 | MODEL | [M_POLICY_TEXT_PARSE.md](./M_POLICY_TEXT_PARSE.md) |
-
-## 维护规则
-
-1. **口径变更流程**：王惠更新 Excel 底稿 → data-agent 重新生成对应 md → commit 标注「正式化自 王惠 政策分析 20260829 V2 底稿」。
-2. **与 seed yaml 的关系**：`cfg_metric-POLICY-seed.yaml` 中 `calc_logic_ref` 指向本目录 md 文件。
-3. **文件命名**：`{metric_id}.md`，与 `metric_id` 一一对应。
-4. **算法库模型身份**：`M_POLICY_DEEP_*` 为算法库深度分析模型身份（与 `M_POLICY_FOCUS_INDEX`/`INTENSITY_SCORE`/`EFFECT_SCORE` 同维同词表，多数「原型页不挂本 metricId」）；`M_POLICY_DS_*` 为科技信息展示系统缺口身份（PG-D01 / PG-D07 / EVAL-012）。
+| # | 指标ID | 标题 | 算法类型 | 支持度 | 文件 |
+|---|--------|------|----------|--------|------|
+| 1 | `M_POLICY_BASE_100_1` | 政策基础指标模型构建 | STAT | 部 | [M_POLICY_BASE_100_1.md](./M_POLICY_BASE_100_1.md) |
+| 2 | `M_POLICY_DEEP_166_1` | 政策焦点识别模型 | MODEL | 部 | [M_POLICY_DEEP_166_1.md](./M_POLICY_DEEP_166_1.md) |
+| 3 | `M_POLICY_DEEP_167_1` | 政策力度评估模型 | MODEL | 部 | [M_POLICY_DEEP_167_1.md](./M_POLICY_DEEP_167_1.md) |
+| 4 | `M_POLICY_DEEP_168_1` | 政策效果评估模型 | MODEL | 部 | [M_POLICY_DEEP_168_1.md](./M_POLICY_DEEP_168_1.md) |
+| 5 | `M_POLICY_DEEP_169_1` | 政策短板识别模型 | MODEL | 部 | [M_POLICY_DEEP_169_1.md](./M_POLICY_DEEP_169_1.md) |
+| 6 | `M_POLICY_DEEP_170_1` | 政策机遇识别模型 | MODEL | 部 | [M_POLICY_DEEP_170_1.md](./M_POLICY_DEEP_170_1.md) |
+| 7 | `M_POLICY_DEEP_171_1` | 政策布局推荐模型 | MODEL | 部 | [M_POLICY_DEEP_171_1.md](./M_POLICY_DEEP_171_1.md) |
+| 8 | `M_POLICY_DS_07_POLICY_GUARD_001` | 发展战略引导力评估 | MODEL | 部 | [M_POLICY_DS_07_POLICY_GUARD_001.md](./M_POLICY_DS_07_POLICY_GUARD_001.md) |
+| 9 | `M_POLICY_DS_07_POLICY_GUARD_008` | 政策与条件保障力综合评估（王惠五维口径 v2 复现） | MODEL | 部 | [M_POLICY_DS_07_POLICY_GUARD_008.md](./M_POLICY_DS_07_POLICY_GUARD_008.md) |
+| 10 | `M_POLICY_DS_11_POLICY_EVAL_012` | 智能摘要与结论推送 | MODEL | 部 | [M_POLICY_DS_11_POLICY_EVAL_012.md](./M_POLICY_DS_11_POLICY_EVAL_012.md) |
+| 11 | `M_POLICY_DS_11_POLICY_EVAL_015` | 实施路径与风险辅助 | GRAPH | 部 | [M_POLICY_DS_11_POLICY_EVAL_015.md](./M_POLICY_DS_11_POLICY_EVAL_015.md) |
+| 12 | `M_POLICY_EFFECT_SCORE` | 政策效果评分（王惠三维口径 v2 复现） | MODEL | 部 | [M_POLICY_EFFECT_SCORE.md](./M_POLICY_EFFECT_SCORE.md) |
+| 13 | `M_POLICY_FOCUS_INDEX` | 政策焦点指数 | MODEL | 部 | [M_POLICY_FOCUS_INDEX.md](./M_POLICY_FOCUS_INDEX.md) |
+| 14 | `M_POLICY_GRAPH_106_1` | 政策实体识别构建 | GRAPH | 转 | [M_POLICY_GRAPH_106_1.md](./M_POLICY_GRAPH_106_1.md) |
+| 15 | `M_POLICY_GRAPH_107_1` | 政策实体关系抽取 | GRAPH | 部 | [M_POLICY_GRAPH_107_1.md](./M_POLICY_GRAPH_107_1.md) |
+| 16 | `M_POLICY_IMPLEMENTATION_EFFECT` | 落地实效性 | MODEL | 否 | [M_POLICY_IMPLEMENTATION_EFFECT.md](./M_POLICY_IMPLEMENTATION_EFFECT.md) |
+| 17 | `M_POLICY_INDUSTRY_COVERAGE` | 政策产业链覆盖率 | STAT | 部 | [M_POLICY_INDUSTRY_COVERAGE.md](./M_POLICY_INDUSTRY_COVERAGE.md) |
+| 18 | `M_POLICY_INDUSTRY_FIT` | 政策产业适配性 | MODEL | 部 | [M_POLICY_INDUSTRY_FIT.md](./M_POLICY_INDUSTRY_FIT.md) |
+| 19 | `M_POLICY_INTENSITY_INDEX` | 政策力度指数 | MODEL | 否 | [M_POLICY_INTENSITY_INDEX.md](./M_POLICY_INTENSITY_INDEX.md) |
+| 20 | `M_POLICY_INTENSITY_SCORE` | 政策力度评分 | MODEL | 否 | [M_POLICY_INTENSITY_SCORE.md](./M_POLICY_INTENSITY_SCORE.md) |
+| 21 | `M_POLICY_LAYOUT_REC_COUNT` | 政策布局建议条数（王惠对冲计数 v2 复现） | STAT | 部 | [M_POLICY_LAYOUT_REC_COUNT.md](./M_POLICY_LAYOUT_REC_COUNT.md) |
+| 22 | `M_POLICY_LEVEL_DIST` | 政策级别分布 | STAT | 转 | [M_POLICY_LEVEL_DIST.md](./M_POLICY_LEVEL_DIST.md) |
+| 23 | `M_POLICY_MATCH` | 政策匹配推送 | MODEL | 部 | [M_POLICY_MATCH.md](./M_POLICY_MATCH.md) |
+| 24 | `M_POLICY_NATIONAL_DIST` | 全国政策分布 | STAT | 转 | [M_POLICY_NATIONAL_DIST.md](./M_POLICY_NATIONAL_DIST.md) |
+| 25 | `M_POLICY_OPPORTUNITY_COUNT` | 政策机遇清单条数（王惠机遇计数 v2 全维复现） | STAT | 部 | [M_POLICY_OPPORTUNITY_COUNT.md](./M_POLICY_OPPORTUNITY_COUNT.md) |
+| 26 | `M_POLICY_RELATION_DEGREE` | 政策关联度 | GRAPH | 否 | [M_POLICY_RELATION_DEGREE.md](./M_POLICY_RELATION_DEGREE.md) |
+| 27 | `M_POLICY_SHORTBOARD_COUNT` | 政策短板清单条数 | STAT | 部 | [M_POLICY_SHORTBOARD_COUNT.md](./M_POLICY_SHORTBOARD_COUNT.md) |
+| 28 | `M_POLICY_SIMULATE` | 政策效果推演 | MODEL | 否 | [M_POLICY_SIMULATE.md](./M_POLICY_SIMULATE.md) |
+| 29 | `M_POLICY_SUPPORT_STRENGTH` | 支持力度 | COMPUTE | 部 | [M_POLICY_SUPPORT_STRENGTH.md](./M_POLICY_SUPPORT_STRENGTH.md) |
+| 30 | `M_POLICY_SZ_DIST` | 深圳政策分布 | STAT | 部 | [M_POLICY_SZ_DIST.md](./M_POLICY_SZ_DIST.md) |
+| 31 | `M_POLICY_TEXT_PARSE` | 政策文本解析 | MODEL | 部 | [M_POLICY_TEXT_PARSE.md](./M_POLICY_TEXT_PARSE.md) |
+| 32 | `M_POLICY_TIMESERIES` | 政策时序指标 | STAT | 部 | [M_POLICY_TIMESERIES.md](./M_POLICY_TIMESERIES.md) |
+| 33 | `M_POLICY_TOTAL_COUNT` | 政策总数 | STAT | 转 | [M_POLICY_TOTAL_COUNT.md](./M_POLICY_TOTAL_COUNT.md) |
+| 34 | `M_POLICY_TYPE_DIST` | 政策类型分布 | STAT | 部 | [M_POLICY_TYPE_DIST.md](./M_POLICY_TYPE_DIST.md) |
+| 35 | `M_POLICY_VALIDITY_RATE` | 政策有效率 | STAT | 否 | [M_POLICY_VALIDITY_RATE.md](./M_POLICY_VALIDITY_RATE.md) |

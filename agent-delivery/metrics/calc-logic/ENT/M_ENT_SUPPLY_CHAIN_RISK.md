@@ -1,6 +1,7 @@
 # 断链风险等级（M_ENT_SUPPLY_CHAIN_RISK）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SUPPLY_CHAIN_RISK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SUPPLY_CHAIN_RISK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SUPPLY_CHAIN_RISK_out.json`。
 
 ## 基础信息
 
@@ -8,76 +9,60 @@
 |---|---|
 | 指标ID | M_ENT_SUPPLY_CHAIN_RISK |
 | 指标名称 | 断链风险等级 |
-| 一级模块 | 企业分析 |
-| 二级模块 | 风险洞察 |
-| 三级模块 | 供应链关系 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／风险洞察／供应链关系 |
 | 更新频率 | 月度/事件触发 |
-| 对齐状态判定 | 未对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q014 |
-
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业画像「断链风险」卡 + 风险清单｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | ["1989—2026（occur_period 实际覆盖，D4 取各企业最近 8 期）"] |
+| 缺失年份 | ["2026 年后续季度（库内止于 202603）"] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_SUPPLY_CHAIN_RISK.md` |
 
 ## 口径定义
 
-指对企业供应链因内外部因素导致中断的可能性及其影响程度的综合评价等级。
+四维韧性指数里，应收账款、前五大客户、存货周转三维在 gkx 无字段（全库 0 列），仅绩效波动维可由 40,239 行财务序列真算、覆盖 918 家上市公司；等级不可出，故判部分支持。
 
 ## 计算逻辑说明
 
-第一步：各指标标准化
-
-各指标原始数据通过极值归一化法消除量纲，将每个指标的实际值转换为0—100之间的标准化得分。
-$$
-正向指标（数值越大越好）：
-指标得分_{ij} = \frac{x_{ij} - \min(x_j)}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-逆向指标（数值越小越好）：
-指标得分_{ij} = \frac{\max(x_j) - x_{ij}}{\max(x_j) - \min(x_j)} \times 100
-$$
-
-$$
-其中，x_{ij}为企业 i在第 j个指标上的原始值，\max(x_j)和 \min(x_j) 分别为该指标在所有企业中的最小值和最大值。
-$$
-
-第二步：供应链韧性指数计算
-
-对各指标标准化得分按等权重或熵值法确定权重后加权求和：
-$$
-韧性指数_i = \sum_{j=1}^{4} w_j \times 指标得分_{ij}
-$$
-
-其中，w_j为第 j 个指标的权重（可采用等权重各占 25%，或通过熵值法客观赋权），韧性指数满分 100 分。
-
-第三步：映射断链风险等级
-
-将韧性指数从高到低排序，韧性越高表明断链风险越低。断链风险等级划分标准如下：
-
-| 风险等级   | 韧性指数区间 | 说明                                                         |
-| :--------- | :----------- | :----------------------------------------------------------- |
-| **低风险** | 70—100分     | 供应链韧性较强，抵抗力和恢复力良好，断链可能性低，保持常规监测 |
-| **中风险** | 40—69分      | 供应链韧性一般，存在一定脆弱性，需关注薄弱环节并制定预案     |
-| **高风险** | 0—39分       | 供应链韧性较弱，面临重大断链隐患，需立即采取干预措施         |
-
-
-
-| 一级维度         | 二级维度 | 具体指标                             | 指标方向 | 源表字段 |
-| :--------------- | :------- | :----------------------------------- | :------- | :------- |
-| **供应链抵抗力** | 资金关系 | 应收账款与收入比的自然对数           | 逆向     | 现库无应收账款字段（待建） |
-|                  | 供需稳固 | 企业前五大客户中非新出现客户数量 ÷ 5 | 正向     | 现库无客户关系表（待建） |
-| **供应链恢复力** | 产品流动 | 企业库存周转率                       | 正向     | 现库无存货余额字段（待建） |
-|                  | 绩效波动 | 经济绩效敏感性指数                   | 逆向     | gkx.dwd_org_stock_finance_info(org_id, operating_revenue, total_profit, occur_period) — 营收与利润波动性计算 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SUPPLY_CHAIN_RISK.md` §二（M_ENT_SUPPLY_CHAIN_RISK.py 零改语义复算）。
 
 ## 源表字段
 
-gkx.dwd_org_stock_finance_info(org_id, operating_revenue, total_profit, occur_period) — 营收与利润波动性计算（绩效波动维度）
-gkx.dwd_org_company_abnormal(org_id, abn_reason, abn_date) — 经营异常（供应链关联企业风险信号）
-gkx.dwd_org_company_illegal(org_id, category, abn_date) — 严重违法（供应链关联企业风险信号）
-gkx.dwd_org_company_punish(org_id, penalty_date, penalty_type, violation_type) — 行政处罚（供应链关联企业风险信号）
-供应链边表(source_org_id, target_org_id, relation_type) — 供应链上下游关系边表（现库无此表，待建）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-注：资金关系（应收账款）、供需稳固（前五大客户）、产品流动（存货余额）三个维度所需字段在现库中不存在，需新建。供应链风险计算需先建供应链关系边表，再关联上述风险信号表统计关联企业中存在经营异常/违法/处罚的企业占比。
+- `dwd_main_business_composition_area`
+- `dwd_org_company_abnormal`
+- `dwd_org_company_illegal`
+- `dwd_org_company_punish`
+- `dwd_org_risk_shixin`
+- `dwd_org_risk_zhixing`
+- `dwd_org_stock_finance_info`
+- `dwd_safety`
 
-## 待建字段
+## 待建表字段
 
-供应链边表(source_org_id, target_org_id, relation_type) — 供应链上下游关系边表（现库无此表，待建）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：四维韧性指数中 D1 应收账款、D2 前五大客户、D3 存货周转三个维度在 gkx 与开发库均无字段/无表；仅 D4 经济绩效敏感性（营收/利润波动）可由 gkx.dwd_org_stock_finance_info 真算，覆盖 972 家上市公司。等级需要四维加权 + 归一化总体，缺三维不可出，故判部分支持、只交付 D4 单维得分。
+- **基期声明**：D4 不用固定自然年窗口，而是每家取最近 8 个有值期次（季度），避免早年稀疏年份被当成 0；occur_period 为 YYYYMM 文本，198912 起有值，202603 为库内最新期。没有把缺失年份按 0 摊入分母：期次不足 4 期的企业直接不进样本。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_SUPPLY_CHAIN_RISK.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SUPPLY_CHAIN_RISK.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_SUPPLY_CHAIN_RISK_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

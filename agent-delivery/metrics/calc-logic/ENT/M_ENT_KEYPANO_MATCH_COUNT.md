@@ -1,113 +1,63 @@
 # 匹配企业数（M_ENT_KEYPANO_MATCH_COUNT）
 
-> 口径真源：全部产业链 × 链位上的重点企业去重 → 2026-08-30 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：挂重点名单 `M_ENT_KEY_TOTAL`（Q038）+ 上链 `enterprise_industry_chain`。  
-> **口径可算完**：名单和上链边一出，本条就能 COUNT。Q038 / 上链 ODS / CMS 是另一回事。  
-> **选链不进口径**：前端选链是展示过滤；后端 ETL 把所有链 × 链位都算完落表，API 按键查行。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_MATCH_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_MATCH_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_MATCH_COUNT_out.json`。
 
-## 依赖（标明，不改上游叶）
+## 基础信息
 
-| 顺序 | 依赖 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_ENT_KEY_TOTAL` / Q038 | 重点企业名单（先用专利数阈值；技术交易额搁置） |
-| 2 | `enterprise_industry_chain` | 企业上了哪条链、链位是上/中/下游 |
-| 3 | 本条 | 每个 `(chain_code, node_stage)` 一格 `COUNT(DISTINCT org_id)` |
-
-不改 KEY_TOTAL 叶。Q038 仍 🟡。不把资质标签（高新/专精特新…）在本条重写成「重点企业」。
-
-## 元数据
-
-- 指标ID：`M_ENT_KEYPANO_MATCH_COUNT`
-- 名称：匹配企业数
-- 模块：企业分析 / 重点企业概览（E-33）
-- 更新频率：周
-- 关联Q：Q038（名单）；CMS 发布只在场景，不进 8 件套
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_KEYPANO_MATCH_COUNT |
+| 指标名称 | 匹配企业数 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 → 重点企业全景 → 选定链位后的「匹配企业数」KPI 与链级汇总 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_KEYPANO_MATCH_COUNT.md` |
 
 ## 口径定义
 
-**按全部产业链 × 上中下游链位**，该格上的重点企业去重数。
+COUNT 这个动作本身没有技术难度：上链边在、名单在、链位能定，一条 `GROUP BY` 就能出。难的是**三个分母**——名单是谁（库里没有）、链位是什么（库里没有）、格子能不能加（不能）。前两条让本件从「直算」退到「代理算」，第三条让「总数」这个最常见的问法失效。故按 §〇 判**部分支持**。
 
-```
-COUNT(DISTINCT org_id)
-WHERE 该企上了该链且 chain 的 node_stage 匹配
-  AND org_id ∈ 重点企业名单
-GROUP BY chain_code, node_stage
-```
+## 计算逻辑说明
 
-- 链位 = `enterprise_industry_chain.node_stage`（上 / 中 / 下游），不是目录叶子 `node_id`，也不是产业链 tags。
-- 同一企业同一格多节点：去重后仍计 1。跨链各计各的。
-- **链级合计**另 `GROUP BY chain_code` 再去重；禁止把各链位 `match_count` 相加（一企可能跨上中下游）。
-- **禁止**把「当前所选产业链」写进口径。选链 / 选链位 = API 过滤预聚合行，不是计算条件。
-- **禁止** `is_published` 进公式（CMS 发布是列表场景过滤）。
-- **禁止**把不存在的 `enterprise_keypano_chain_node_summary` 当源（那是目标）。
-- **禁止** ADS `key_enterprise` 87 行 demo 当接通。
-- 只国内。无对等国外上链表则不 UNION。
-
-8 件套只留这条 GROUP BY COUNT。下面实现不得改口径。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-名单 ∩ 上链边 → 按链 × 链位 COUNT。公式完整，**可以算完**。ETL 必须覆盖**所有**已有 `chain_code × node_stage`，不是「用户选了才算」。
-
-### ② 上游出不出 / 上链 ODS（另一回事）
-
-Q038 未闭合、KEY_TOTAL 仍 OPEN、上链 ODS 弱、demo 名单 87 行。不是本条 COUNT 缺条件。  
-现网没有 keypano 汇总表可抄。demo 名单 **不当接通**。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | `key_enterprise`（KEY_TOTAL 出数）+ `enterprise_industry_chain` | 名单 demo 87 行；上链表在 |
-| 目标 | `enterprise_keypano_chain_node_summary`（建议：`chain_code + node_stage + match_count`） | **缺口：无此表** |
-
-源 ≠ 目标。GDF 暂缓。
-
-页面若要链级 KPI：同目标表加 `grain='chain'`（`node_stage` 空）或另表，按 `chain_code` 再去重 COUNT。禁止 `SUM(match_count)`。
-
-## 分场景 / 千万级（不进 8 件套）
-
-| 层 | 做什么 |
-|----|--------|
-| ETL | 名单 ∩ 上链边，**所有** `chain_code × node_stage` 都 COUNT 写入目标表。没有企业的格可写 0 或不落行，API 无行当 0。 |
-| API | 只读目标表。带 `chain_code` / `node_stage` 查对应行；不带条件可返回全量格子（下拉/地图）。**不算**「未选链无数」。禁止请求路径对全库 JOIN 现算。 |
-| 前端 | 用户选链/链位 → 调 API 展示那一格。空态是页面行为。 |
-
-demo 可现算对照口径，不算接通。生产只读预聚合。
-
-**计算公式文件**：`M_ENT_KEYPANO_MATCH_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_MATCH_COUNT.md` §二（M_ENT_KEYPANO_MATCH_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-二次 STAT：
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-```
-enterprise_industry_chain
-key_enterprise <- metric: M_ENT_KEY_TOTAL
-```
+- `dwd_dim_admin_area`
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-左端上链表在；名单随 KEY_TOTAL 出数。不写 `gkx.dwd_*` 当 FROM。不写 CMS。
+## 待建表字段
 
-来源系统：国内机构要素库、产业链要素库。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 现网探针（2026-08-30；不进 8 件套）
+## 数据支持度与缺口
 
-- 无 `enterprise_keypano_chain_node_summary`。
-- ADS `key_enterprise` 87 行 demo（含 `patent_grant_count` / `key_score`），不当接通。
-- `enterprise_industry_chain` 表在；ODS 上链仍弱（C 类）。
+- **判档**：部分支持
+- **判档理由**：COUNT 本身可以算完：上链边 2,283,762 行在，按 chain×node_stage 去重出 31 个非空格，去重企业 2,105 家、格内合计 5,196 人次；链级去重 12 条、合计 4,464 对。但分子两端都不是库里的现成事实：①重点名单不存在——280 张表八个名单模式扫描只命中新闻表，只能用专利授权≥50 的 4,561 家代理，命中率 50.2302% 是「代理名单的上链率」，不是「重点企业上链率」；②链位不存在——industry_tags 无 node_stage、chain_info.level 全 0，上中下游是自建映射。两维都靠自建，故判部分支持。
+- **基期声明**：截面件：名单按专利授权累计量（>=50）一次性截取，上链关系、链位、区域、资质均无年度键，产物与参数中不存在年份窗口，故 used/missing 均为空。不是「缺年按 0 摊入」的情形，也不得用 created_time 反推年份。
 
-## 待建 / 缺口（不是口径算不全）
+## 溯源与复现
 
-1. **上游**：KEY_TOTAL / Q038 名单未闭合；上链 ODS 弱。名单和上链边一出，本条就能数。
-2. **无独立目标表**。
-3. D3 / D4 本波不升。`is_mock: true`。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_MATCH_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_MATCH_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_MATCH_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-## 备注
+## 更新记录
 
-bid `E-33 重点企业概览`；STAT。不改 KEY_TOTAL / MODEL 叶。
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
 
----
-*2026-08-30 COVER-STAT-L01：全量链×链位预聚合；选链是 API 过滤*

@@ -10,6 +10,14 @@
 | 调研方式 | Playwright 深度遍历平台 16 个页面 + 直连平台 20 余个 REST API 抓取全量 Schema/脚本/任务/审核数据；对照我方 3 系统 Nebula 代码与需规 SRS |
 | 证据归档 | 本目录 `code/`（46 份抽取脚本、6 份 API 快照、19 张页面截图、Schema 全量导出） |
 
+demo 库按产业、产业节点能命中的条数（2026-10-24 实查，上图前的关联事实）：
+
+| 要素 | 实查 |
+|---|---|
+| 政策 | [产业检索政策条数](../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md) |
+| 企业 | [产业检索企业条数](../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md) |
+| 服务机构 | [产业检索服务机构条数](../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md) |
+
 ---
 
 ## 1. 执行摘要

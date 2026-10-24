@@ -1,85 +1,60 @@
 # 对比范围要素综合排名（M_SYNTH_ELEM_RANK）
 
-> 口径真源：Q-SYNTH-02 → 2026-08-31 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：只排 `M_SYNTH_ELEM_INDEX`，不算类型/层次/领域。跟 `M_SYNTH_VIT_RANK` / 企业 `TECH_RANK` 同规矩。  
-> 指数未出数前禁止对外决策展示。Q-SYNTH-02 仍 🟡。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-SYNTH-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_RANK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_RANK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_RANK_out.json`。
 
-## 依赖（强制）
+## 基础信息
 
-| 顺序 | 指标 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_SYNTH_ELEM_INDEX` | 要素综合指数（MODEL，本波不算） |
-| 2 | 本条 | 当前对比范围内按指数降序 RANK |
-
-## 元数据
-
-- 指标ID：`M_SYNTH_ELEM_RANK`
-- 名称：对比范围要素综合排名
-- 模块：E8 区域创新要素
-- 更新频率：随指数批次
-- 关联Q：Q-SYNTH-02
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SYNTH_ELEM_RANK |
+| 指标名称 | 对比范围要素综合排名 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合智能分析／区域创新要素分析／要素影响关联分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md` |
 
 ## 口径定义
 
-目标区域在所选对比范围内，按要素综合指数降序的名次。
+排序算子是**一行 SQL 就能写清**的东西（`RANK() OVER (ORDER BY elem_index DESC)`），本件的全部风险不在算子，而在**排名范围**：正本写死 11 城，底册里这 11 城只有深圳 95,600 行、广州 49,605 行是有效样本，其余 9 城 1—163 行。用这样的样本做极值归一，等于让一行北京的数据决定全国的最大值。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。
 
-默认对比范围与 `VIT_RANK` 同一份：北京、上海、广州、深圳、杭州、南京、武汉、重庆、宁波、成都、合肥（宁=宁波，可追加）。
+## 计算逻辑说明
 
-```
-RANK() OVER (ORDER BY elem_index DESC)
-  于当前对比范围 ∩ 已出指数的区域
-无指数 → 不进榜
-同分并列（RANK，下一名跳号）
-```
-
-- 选对比范围 / 时间窗是 API。筛选变了必须对当前可比集重算，禁止抄全库总榜。
-- 本条不算三维权重、不写贡献路径。
-- **禁止**用类型指数 / 层次指数 / 领域指数单独冒充综合指数来排。
-- **禁止**对外决策使用，直到 Q-SYNTH-02 闭合。
-
-8 件套只留这条 RANK。
-
-## 两点分开（强制）
-
-### ① 本条口径
-
-RANK 公式完整。依赖已钉 `ELEM_INDEX`。
-
-### ② 当前无法执行
-
-指数 MODEL 未出数。演示等权指数不当接通。不进「口径未定」。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | 指数结果（`<- metric: M_SYNTH_ELEM_INDEX`） | 无正式指数表 |
-| 目标 | `ads.synth_elem_rank`（建议：对比范围键 + `region_id` + `elem_rank`） | **缺口：无此表** |
-
-源 ≠ 目标。生产禁止请求路径全表窗口现算。
-
-## 分场景 / 千万级（不进 8 件套）
-
-- 默认快照：深圳 × 全国重点城市 × 近 3 年，读跑批排名。
-- 改条件：跟指数批次重算后再 RANK。
-- demo 有演示指数：**不算接通**。
-
-**计算公式文件**：`M_SYNTH_ELEM_RANK.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_RANK.md` §二（M_SYNTH_ELEM_RANK.py 零改语义复算）。
 
 ## 源表字段
 
-```
-<- metric: M_SYNTH_ELEM_INDEX
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-无 ODS 右端。`source_systems` 不写 `Mock @ batch`。
+- `dwd_org_base_info`
 
-## 待建 / 缺口
+## 待建表字段
 
-1. `M_SYNTH_ELEM_INDEX` 出数（MODEL 波）。
-2. **无独立目标表**。
-3. D3 / D4 本波不升。`is_mock: true`。Q-SYNTH-02 🟡。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
----
-*2026-08-31 COVER-STAT-L01：RANK 挂 ELEM_INDEX；当前无法执行*
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：排序算子本身完整可执行（RANK，同分并列下一名跳号），4 城内名次在权重、留一维、序数归一三种扰动下都不变；但 calc-logic 写死的默认对比范围 11 城里，只有广深两城在底册有足量主体，其余 9 城合计仅 224 行（占底册 0.1184%），做不出可比的极值归一，故默认 11 城榜不可执行，只能出 4 城局部榜——据此判部分支持。
+- **基期声明**：名次是 2024 单年截面名次，不是多年均值名次。2021—2023 未入集（本族单年截面设计），2025/2026 不完整不进分母。名次只在同一批区域集合内可比——扩城会改极值，名次可能变。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_RANK.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_RANK.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_RANK_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,8 +1,7 @@
 # 技术影响力评估（M_ENT_DS_07_INDUSTRY_POTENTIAL_005）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-ENT-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_005_out.json`。
 
 ## 基础信息
 
@@ -10,55 +9,55 @@
 |---|---|
 | 指标ID | M_ENT_DS_07_INDUSTRY_POTENTIAL_005 |
 | 指标名称 | 技术影响力评估 |
+| 所属域 | ENT（企业分析） |
 | 一级模块 | 企业分析 |
-| 二级模块 | 企业评估 |
-| 三级模块 | - |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | Q009 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业潜力评估 → 技术影响力雷达图的「被引影响力」轴；SEP 轴置灰并标注「未测」 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md` |
 
 ## 口径定义
 
-基于专利引用与技术标准数据，评估特定产业的技术影响力，输出技术影响力指标（专利被引次数、标准必要专利数量）的分布情况与排名。对象=产业（领域）的专利技术产出集合，不是单件专利。禁止 mapped 145 / 05 seq 150，禁止 also_in DS-01-FACTORS（见 POT-D05）。
+被引子项的结构在（`dwd_patent_cited` 有 `pn`、`cited_n`），数据只覆盖 2 万件（0.6803%）；SEP 子项两库连表都没有。一个子项「样本受限」、一个子项「结构缺失」，合成总分不可算，故判**部分支持**，证型 `partial_sample`。
 
 ## 计算逻辑说明
 
-两维加权：专利被引影响力 / 标准必要专利（SEP）。
-
-### 第一步：入集
-
-统计窗默认自然年。产业→专利映射：经权利人（`first_applicant_name` / `first_current_assignee_name`）与机构名称对齐，或 `dwd_org_base_info_patent_rel`。专利被引 `dwd_patent_cited.cited_by_nums`。
-
-### 第二步：两个子项
-
-1. **专利被引影响力**：
-   - 专利被引总次数 = `SUM(cited_by_nums)`；
-   - 篇均专利被引 = 被引总次数 ÷ 专利去重数。
-2. **标准必要专利（SEP）**：
-   - SEP 数量 = `COUNT(DISTINCT 专利 WHERE SEP标签)`；
-   - SEP 占比 = SEP 数量 ÷ 专利去重数 × 100%。
-
-两维极值归一后等权得技术影响力，输出产业分布与排名。
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 技术影响力评估 | 专利被引影响力 | 专利被引总次数 | 产业专利被引次数合计。 | SUM(cited_by_nums) | dwd_patent(pn, patent_id, kind, granted_number, first_applicant_name, pbdt_year) — 专利入集,权利人,年窗；dwd_patent_cited(pn, patent_id, cited_by_nums) — 专利被引 | 无 |
-|  |  | 篇均专利被引 | 被引总次数 ÷ 专利去重数。 | 被引合计/专利去重数 | dwd_patent(pn, patent_id, kind, first_applicant_name, pbdt_year) — 专利去重；dwd_patent_cited(pn, cited_by_nums) — 专利被引 | 无 |
-| 技术影响力评估 | 标准必要专利 | 标准必要专利数量 | 属于标准必要专利的专利去重数。 | COUNT(DISTINCT SEP专利) | dwd_patent(pn, patent_id, kind, first_applicant_name, pbdt_year) — 专利入集 | 标准必要专利标签表 |
-|  |  | SEP 占比 | SEP 数量 ÷ 专利去重数。 | SEP数/专利去重数 | dwd_patent(pn, patent_id, first_applicant_name) — 专利去重 | 标准必要专利标签表 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md` §二（M_ENT_DS_07_INDUSTRY_POTENTIAL_005.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_patent(pn, patent_id, kind, granted_number, first_applicant_name, pbdt_year) — 专利去重,权利人,年窗
-- dwd_patent_cited(pn, patent_id, cited_by_nums) — 专利被引次数
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_bid_target_item_out`
+- `dwd_org_base_info`
+- `dwd_patent`
+- `dwd_patent_cited`
 
-- 标准必要专利（SEP）标签表：现库无标准/SEP 相关表（`standard` 无匹配），需新建 SEP 标签或从专利法律状态/外部标准库标注。
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 技术影响力评估 | 需规 SRS《科技创新评估.md》序号150 | 专利被引次数、标准必要专利数量分布与排名 | 关联 Q009。
+## 数据支持度与缺口
 
-[2] 标准必要专利（Standard-Essential Patent）| 欧洲电信标准协会（ETSI）IPR 数据库 | https://ipr.etsi.org/。
+- **判档**：部分支持
+- **判档理由**：被引子项的结构在（`dwd_patent_cited` 有 `pn`、`cited_n`），数据只覆盖 2 万件（0.6803%）；SEP 子项两库连表都没有。一个子项「样本受限」、一个子项「结构缺失」，合成总分不可算，故判**部分支持**，证型 `partial_sample`。
+- **基期声明**：截面/存量件：被引次数是截至库内快照的累计值，可回连样本集中在 2021—2023 申请年；不设年度基期，不做跨年 CAGR，不把无被引年份按 0 摊入。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_005.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_DS_07_INDUSTRY_POTENTIAL_005_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

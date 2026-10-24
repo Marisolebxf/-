@@ -89,6 +89,7 @@ GDF 日批走 Job，禁止在调度线程里同步等模型返回。正式面须
 | `structured_elements.clauses` | 条款数组 |
 | `structured_elements.clause_meta` | `source`（`rule` 或 `llm`）、`content_hash`、`llm_tried` |
 | `title` / `model_version` | 与本次结果一致 |
+| `update_time` | 本次写入时间。旧表没有该列时先补列 |
 
 按 `policy_id` 合并。没有行则插入。**禁止** `TRUNCATE` 这张表。不写 ES。不回写 DWD。
 

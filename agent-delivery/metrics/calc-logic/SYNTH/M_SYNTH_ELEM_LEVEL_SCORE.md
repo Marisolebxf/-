@@ -1,6 +1,7 @@
 # 七大结构层次评价（M_SYNTH_ELEM_LEVEL_SCORE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SYNTH-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_LEVEL_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_LEVEL_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_LEVEL_SCORE_out.json`。
 
 ## 基础信息
 
@@ -8,104 +9,50 @@
 |---|---|
 | 指标ID | M_SYNTH_ELEM_LEVEL_SCORE |
 | 指标名称 | 七大结构层次评价 |
-| 一级模块 | 综合智能分析 |
-| 二级模块 | 区域创新要素分析 |
-| 三级模块 | 要素评价模型构建 |
-| 更新频率 | 年度 |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SYNTH-E-01 |
+| 所属域 | SYNTH（综合智能分析） |
+| 一级模块 | 综合智能分析／区域创新要素分析／要素评价模型构建 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2024] |
+| calc-logic 引用 | `metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_SCORE.md` |
 
 ## 口径定义
 
-选定区域内、统计年度，对七大结构（人才/企业/政策/服务机构/科研机构/资金/空间）分别给出成熟度、均衡度、达标。页面「层次·结构」Tab 展示 7 行，未达标橙/红。
-
-本指标不是层次指数。层次指数见 `M_SYNTH_ELEM_LEVEL_INDEX`。本指标使用 `M_SYNTH_ELEM_TYPE_INDEX` 已算好的各结构叶子标准化得分，输出结构层评价（成熟度、均衡度、达标），不再加权成总指数。
+结构评价的算法只有四步：成熟度（维内等权）、均衡度（熵比）、结构分（两者均值）、达标（成熟度 ≥ 本批均值）。四城 24 个格子逐格可复算，达标标记与阈值也逐格可复算。卡住的是覆盖面与标准性质：人才结构整结构空缺，两个结构均衡度为常数，达标阈值是相对值。按 §0.1 判**部分支持**。
 
 ## 计算逻辑说明
 
-叶子口径、源表一律同 `M_SYNTH_ELEM_TYPE_INDEX`（高学历用学者学历表；服务机构用 svc_org_card 规则 A 六类；园区用机构名称弱代理）。缺叶子不进分母，不填 0。成熟度与均衡度公式与层次指数相同。
-
-记结构 \(k\) 下有值叶子标准化得分为 \(s_{k1},\ldots,s_{kn}\)，\(n\) 为该结构本区域有值叶子数，\(s_{kj}\in[0,100]\)。本批入集区域集合记为 \(R\)，与类型指数做极值归一化的区域集合相同。二级下可能只有一个三级，\(n=1\) 时该结构仍应有均衡度得分。
-
-第一步：成熟度
-
-$$
-成熟度_k = \sum_{j=1}^{n} w_{kj}\, s_{kj},\qquad \sum_{j=1}^{n} w_{kj}=1
-$$
-
-默认等权 \(w_{kj}=1/n\)。\(n=0\) 时该结构成熟度空缺，不填 0。
-
-第二步：均衡度（熵）
-
-叶子得分占该结构合计的份额：
-
-$$
-p_{kj}=\frac{s_{kj}}{\sum_{i=1}^{n}s_{ki}}
-$$
-
-$$
-H_k=-\sum_{j=1}^{n} p_{kj}\ln p_{kj}
-$$
-
-约定 \(p_{kj}=0\) 时 \(p\ln p=0\)。均衡度：
-
-$$
-均衡度_k=
-\begin{cases}
-0 & n=0 \text{ 或 } \sum_{i=1}^{n}s_{ki}=0 \\
-60 & n=1 \\
-\dfrac{H_k}{\ln n}\times 100 & n\ge 2
-\end{cases}
-$$
-
-\(n\ge 2\) 时叶子得分越均匀，\(H_k\) 越接近 \(\ln n\)，均衡度越接近 100。\(n=1\)（该二级下只有一个有值三级）记 60，表示单叶子仍有得分、但无从判断内部是否齐整。合计为 0 记 0。
-
-第三步：达标
-
-$$
-达标_k=\begin{cases}
-1 & 成熟度_k \ge \overline{成熟度}_k\\
-0 & 成熟度_k < \overline{成熟度}_k
-\end{cases}
-,\qquad \overline{成熟度}_k=\frac{1}{|R_k|}\sum_{r\in R_k}成熟度_{r,k}
-$$
-
-\($R_k$\) 为本批中该结构成熟度非空的区域。达标=1 为达标，=0 为未达标（页面橙/红）。本区域该结构成熟度空缺则达标空缺。
-
-第四步：输出
-
-输出 7 行，每行三列：成熟度、均衡度、达标。不汇总成总指数。
-
-| 维度 | 指标说明 | 计算方法 | 源表字段 | 待建字段 |
-| :----------- | :----------------------------------------------------------- | :------------------------------------------------- | -------- | -------- |
-| **人才结构** | 研发人员占比、高学历人才占比的结构评价 | 成熟度=两叶子极值归一后等权；均衡度=熵（n=1记60，合计0记0）；达标=成熟度≥本批人才结构均值 | dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集；dwd_org_annual_financial_info(org_id, year, employees_number, development_employee) — 从业人员,研发人员；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集 | 无 |
-| **企业结构** | 企业注册数量、科技型企业占比、企业规模分布的结构评价 | 同上三步，叶子为 INDEX 企业维。大型企业=org_size='大型' | dwd_org_base_info(org_id, name_cn, city, province, area, org_size, org_type, reg_status, incorporation_year) — 区域入集,机构规模,成立年；dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签 | 无 |
-| **政策结构** | 政策文件数量、政策类型覆盖率的结构评价 | 同上三步，叶子为 INDEX 政策维 | dwd_policy_base(id, city, status, expire_date, type, theme, publish_year, rank) — 有效政策去重,城市,类型,主题,级别 | 无 |
-| **服务机构结构** | 服务机构数量、服务机构类型数的结构评价 | 同上三步；入集=svc_org_card 规则 A 六类 | demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,规则A六类；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集 | 无 |
-| **科研机构结构** | 科研机构数量、类型数、科研产出总量的结构评价 | 同上三步，叶子为 INDEX 科研机构维 | dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集；dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利；dwd_zh_paper(id, cover_year_start) — 中文论文；dwd_en_paper(id, cover_year_start) — 英文论文；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集 | 无 |
-| **资金结构** | R&D经费投入规模、融资总额的结构评价 | 同上三步。已删除财政科技支出占比 | dwd_org_annual_financial_info(org_id, year, `arch development am`, operating_revenue) — 研发投入；dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发；dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资额,融资时点；dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status) — 区域入集 | 无 |
-| **空间结构** | 产业园区数量、创新空间面积、创新空间密度的结构评价 | 同上三步；面积/密度无值不进分母；园区数量用机构名称弱代理 | dwd_org_base_info(org_id, name_cn, city, province, area, org_type, reg_status, incorporation_year) — 区域入集,机构类型,名称 | innovation_space_area-创新载体/园区面积；regional_area-区域总面积 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_LEVEL_SCORE.md` §二（M_SYNTH_ELEM_LEVEL_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_org_base_info(org_id, name_cn, city, province, area, org_type, org_size, reg_status, incorporation_year) — 区域入集,名称对齐,机构类型,机构规模,存续,成立年
-- dwd_org_annual_financial_info(org_id, year, operating_revenue, development_employee, employees_number, total_assets, `arch development am`) — 营收,研发人员,从业人数,资产,研发投入
-- dwd_org_stock_finance_info(org_id, occur_period, research_development_amount) — 上市研发
-- dwd_org_financing_info(org_id, funding_amount, completion_date) — 融资额,融资时点
-- dwd_org_tech_tag(org_id, org_tag) — 高新技术企业等科技型标签
-- dwd_policy_base(id, city, status, expire_date, type, theme, publish_year, rank) — 有效政策
-- dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_id) — 学者入集
-- dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 最高学历
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, city, service_type_candidate) — 服务机构清单,规则A六类
-- dwd_research_institute_base_info(org_id, city, org_type, name_cn) — 科研机构入集
-- dwd_patent(pn, kind, granted_number, first_applicant_name, applicants, pbdt_year, apdt_year) — 专利
-- dwd_zh_paper(id, cover_year_start) — 中文论文
-- dwd_en_paper(id, cover_year_start) — 英文论文
-- dwd_zh_author(paper_id, institution) — 中文作者单位
-- dwd_en_author(paper_id, institution) — 英文作者单位
+源件未点名任何 dwd_/ads_/ods_ 物理表（纯派生/合成件，输入为兄弟件产物或快照）；依赖清单见源件 §〇/§三。
 
-## 待建字段
+## 待建表字段
 
-- innovation_space_area-创新载体/园区面积
-- regional_area-区域总面积
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：七个结构里 6 个能给出成熟度、均衡度与达标（人才结构因研发人员整列空、硕博学者样本不足而整结构空缺）；成熟度与均衡度逐城可复算，达标按「成熟度 ≥ 本批均值」逐格可复算。但两个结构只有 1 个叶子（均衡度恒 60）、达标阈值是本批 4 城的相对均值而非绝对标准，且换一种阈值（中位数）就会让广州的资金结构从「未达标」变「达标」——判档依赖阈值定义，故判部分支持。
+- **基期声明**：结构评价是 2024 单年截面，叶子与类型指数同源。2021—2023 未入集（单年截面设计），2025/2026 不完整不进分母。达标阈值取本批四城该结构成熟度均值——换一批城市阈值就变，达标结果不可跨批复用。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_LEVEL_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_LEVEL_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_LEVEL_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

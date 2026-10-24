@@ -1,58 +1,63 @@
-# M_CHAIN_REG_REVENUE 营收（链维 / 区域维 / 年维）计算口径细稿
+# 区域营收（M_CHAIN_REG_REVENUE）
 
-- **版本**：v0.2.0（2026-10-14，路径A：口径前置写实；正式签名待 human:唐绍祖 会签）
-- **口径拍板**：human:徐滕强 2026-10-14（固定统计年；缺失如实 0）
-- **类型**：STAT（求和）
-- **is_mock**：true（链桥数据未灌；灌数后转 live）
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_REVENUE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_REVENUE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_REVENUE_out.json`。
 
-## 1. 原始定义档案
+## 基础信息
 
-- **页面语境**：专题系统 · 产业链分析 · 区域产业评价页（`CHAIN-TOPIC-REGIONAL.yaml` `row_id: TOPIC-REG-010`），主项"营收"，子项"商业力叶子"；页面定义"区域内相关企业营收规模"；页面约束"**不把门户 MARKET_SIZE 算进本页 KPI**"；A1 需规 `ALGO-CHAIN-DEEP-126`；上游合成 `M_CHAIN_ENTERPRISE_POWER`（企业能力）。
-- **白话**：深圳这条链上的企业，某一年加起来挣了多少钱——商业体量。
-- **兄弟条目先例**：`M_CHAIN_COMPETITIVENESS_INDEX` v1"规模=年报营收合计"（本条为其营收面的独立成条版）。
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_REG_REVENUE |
+| 指标名称 | 区域营收 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链分析 → 区域产业指数评价 → 区域产业指数 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2016, 2023, 2025] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_REG_REVENUE.md` |
 
-## 2. 指标定义（v0.2.0）
+## 口径定义
 
-**指定统计年度、指定区域内、指定产业链链上企业的营业收入合计。**
+三段依赖（年报营收 → 链归属 → 城市/上市主体）结构全在真实表白名单，管道当日跑通并产出 12 条链的营收；但**营收字段本身极稀**：12 条链最近一个有正营收的年度合计只有 37 家企业年记录、对应链内企业 6,728 家（覆盖率 **0.55%**），深圳侧只能从上市主体表取到 **15 家**、合计 11.62 亿元，其余 6 条链深圳列为 0 → 结构可算、数据不足，判**部分支持**。
 
-- **固定统计年**（拍板 ①）：`:stat_year` 必填（如 2024）；营收规模必须同年可比，**禁止**跨多年混加、**不做**"各 org 最新年"回退；
-- 求和：`SUM(operating_revenue)`，单位元（库原值），展示层转亿；
-- **缺失处理**（拍板 ②）：`operating_revenue IS NULL` 的行不进 SUM（SUM 语义天然忽略），链上企业全缺 → 输出 0；**不推算、不放大、不搞覆盖率注记**——缺失是数据态，不进口径判定；
-- 企业集：链桥 `enterprise_industry_chain`（`chain_code` 定链，org_id 维）∩ 主档 `city = :region_city`；
-- 键位全 org_id（2026-10-14 已定：企业侧关联禁名称匹配）。
+## 计算逻辑说明
 
-## 3. Formula（SQL）
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_REVENUE.md` §二（M_CHAIN_REG_REVENUE.py 零改语义复算）。
 
-```sql
-SELECT SUM(f.operating_revenue) AS revenue_sum
-FROM demo_gkxlumenx_dwd.enterprise_industry_chain e
-JOIN demo_gkxlumenx_ods.dwd_org_base_info b
-  ON b.org_id = e.org_id AND b.is_deleted = 0 AND b.city = :region_city
-JOIN demo_gkxlumenx_ods.dwd_org_annual_financial_info f
-  ON f.org_id = e.org_id AND f.is_deleted = 0
- AND f.year = :stat_year
- AND f.operating_revenue IS NOT NULL
-WHERE e.chain_code = :chain_code;
-```
+## 源表字段
 
-## 4. 表依赖与实核（2026-10-14 demo）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-| 表 | 角色 | 实核 |
-|---|---|---|
-| `dwd_org_annual_financial_info` | 分子（operating_revenue） | 90,926 行 / 8,127 org / 19 年（2007–2025）；**同 org 同年 0 重复组**——SUM 无重复累加风险；营收非空 2,193 行（2.4%），2024 年 47 行 |
-| `dwd_org_base_info` | 主档（city 区域轴） | 189,116 行，org_id 全唯一 |
-| `dwd.enterprise_industry_chain` | 链桥 | 1 行测试数据（INB1309）= 数据未灌 |
+- `dwd_org_annual_financial_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_org_stock_finance_info`
 
-老稿表名漂移回执：`chain_enterprise`(120) / `chain_enterprise_stat`(209) 为老 mock ADS 表，弃。
+## 待建表字段
 
-## 5. 缺口分型
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-| 项 | 分型 | 处置 |
-|---|---|---|
-| 链桥未灌 | 数据未灌（DWD 在案表） | 不报缺；灌数后即真数 |
-| 营收填充率 2.4% | 数据态（供应侧覆盖薄） | 不进口径；全缺为 0；F13 的 live 5,352 行旧观测已被 demo 90,926 行覆盖 |
+## 数据支持度与缺口
 
-## 6. 验证记录（2026-10-14）
+- **判档**：部分支持
+- **判档理由**：营收—链—城市三段管道在真实表白名单内跑通，12 条链均有值；但年报营收字段九成以上为空，覆盖企业数远小于链内企业数，只能作「有披露企业营收和」。
+- **基期声明**：逐链取该链最近一个有正营收的年度，再跨链求和：9 条链落在 2025、生物医药与智能网联汽车落 2023、低空经济落 2016（该链 2017—2025 全无正营收记录，不按 0 摊、不补插值）。2026 年全库 0 行，未纳入；不做同比、不做 CAGR。
 
-- 唯一性：`GROUP BY org_id, year HAVING c>1` → **0 组**。
-- 端到端（不带链过滤，桥未灌）：**深圳 × 2024 = 14 家 / 2,897,422.84 万元 ≈ 289.74 亿元**——管道真实可出数。
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_REVENUE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_REVENUE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_REVENUE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

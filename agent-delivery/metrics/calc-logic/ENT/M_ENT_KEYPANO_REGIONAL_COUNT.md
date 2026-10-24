@@ -1,123 +1,62 @@
 # 覆盖区域数（M_ENT_KEYPANO_REGIONAL_COUNT）
 
-> 口径真源：每条链重点名单点亮的区域去重 → 2026-08-30 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：挂 `M_ENT_KEY_TOTAL` + 上链 + `enterprise_base.region_id` + DIM 复合区域。  
-> **① DWD 能数**：`region_id` 有值就能点亮省/市/县；再比 `region_scope_member` 点亮大湾区/长三角/京津冀。  
-> **② ODS→DWD**：绑码灌数另一步，不进「无法执行」。  
-> **选链不进口径**：ETL 算全部链；API 按键查。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_REGIONAL_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_REGIONAL_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_REGIONAL_COUNT_out.json`。
 
-## 依赖（标明，不改上游叶）
+## 基础信息
 
-| 顺序 | 依赖 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_ENT_KEY_TOTAL` / Q038 | 重点企业名单 |
-| 2 | `enterprise_industry_chain` | 企业上了哪条链 |
-| 3 | `enterprise_base.region_id` | 省 2 / 市 4 / 县 6 |
-| 4 | `region_scope` / `region_scope_member`（DIM） | 复合区域成员（Q056🟢） |
-| 5 | 本条 | 每条链一个 `cover_count` |
-
-不改 `M_ENT_REGIONAL_COUNT`（那条是按区 COUNT 企业，不是覆盖数）。
-
-## 元数据
-
-- 指标ID：`M_ENT_KEYPANO_REGIONAL_COUNT`
-- 名称：覆盖区域数
-- 模块：企业分析 / 重点企业概览（E-33）
-- 更新频率：周
-- 关联Q：Q012（行政区精度）；复合区域 Q056 已 🟢；名单 Q038
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_KEYPANO_REGIONAL_COUNT |
+| 指标名称 | 覆盖区域数 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 重点企业全景 → 链路卡片上的「覆盖区域 N 个」与地图点亮 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_KEYPANO_REGIONAL_COUNT.md` |
 
 ## 口径定义
 
-每条产业链上，重点名单点亮了多少个区域。**一个 COUNT DISTINCT**，集合如下。
+「`COUNT(DISTINCT region_key)`」这个公式没有任何执行障碍：省码、市码从 `dwd_dim_admin_area` 换算，市县都齐；复合区域按规划纲要自建。真正的限制在**名单**：4,561 家全部落在广东省 4 市，区域键的母集只有 29 个，所以 `cover_count` 只能在 21—28 之间摆动，全国 31 个省、339 个市、2,836 个区县里绝大多数永远点不亮。按 §〇 判**部分支持**——不是算不出，是算出来的覆盖面没有代表性。
 
-| 进集合 | `region_key` | 怎么点亮 |
-|--------|----------------|----------|
-| 省 | `admin:` + `LEFT(region_id, 2)` | DWD `region_id` |
-| 市（含热门城市） | `admin:` + `LEFT(region_id, 4)` | 同上。热门城市 `region_scope` 是导航别名，`bind_admin_code` 对到同一市，**不另加** `scope:shenzhen` |
-| 县/区 | `admin:` + `region_id`（6 位） | 南山区 → `admin:440305` |
-| 复合区域 | `scope:` + `scope_code` | `parent_code='regional'`：`gba` 大湾区 / `yrd` 长三角 / `jjj` 京津冀。`region_id` 前缀命中 `region_scope_member.admin_code` |
+## 计算逻辑说明
 
-深圳南山一家：广东 + 深圳 + 南山区 + 大湾区 = **4**。
-
-```
-COUNT(DISTINCT region_key)
-WHERE org_id ∈ 该链重点名单
-  AND region_id 非空
-  AND region_key ∈ {省} ∪ {市} ∪ {县} ∪ {已点亮的复合区域}
-GROUP BY chain_code
-```
-
-**不进覆盖集合**：`national` / `global` / `china-all` 目录节点；国外 G20 城市（本条只国内）；热门城市叶子（已并入市）。
-
-- 禁止城市中文名、经纬度当键。
-- 禁止「当前所选产业链」进口径。
-- 禁止把不存在的 `enterprise_keypano_chain_region_summary` 当源。
-- 主粒度 = 整链。页面要链位切片，ETL 可加 `node_stage` 一行，不把「必须选链位」写进口径。
-- 空 `region_id` 不点亮任何键。
-
-## 两步分开（强制）
-
-### ① DWD + 维表能不能数
-
-`region_id` 在 → 省/市/县可点亮；复合成员表在 → 大湾区等可点亮。公式完整，**可以算完**。
-
-### ② ODS → DWD（另一回事）
-
-省市区有没有绑成 `region_id` 灌进主档，只记灌数 / D3。没绑 **不写「当前无法执行」**。  
-复合区域成员是 DIM（Q056），不是 ODS 缺口。
-
-名单 / 上链出不出是依赖，不跟 ② 混写。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | 名单 + 上链 + `enterprise_base.region_id` + DIM 成员 | 上链表/主档在；名单 demo |
-| 目标 | `enterprise_keypano_chain_region_summary`（`chain_code + cover_count`；可另存点亮 key 列表） | **缺口：无此表** |
-
-源 ≠ 目标。GDF 暂缓。
-
-## 分场景 / 千万级（不进 8 件套）
-
-| 层 | 做什么 |
-|----|--------|
-| ETL | 名单 ∩ 上链，**所有** `chain_code` 展开省/市/县/复合区域后 COUNT DISTINCT 写入。 |
-| API | 只读目标表，`WHERE chain_code=?`。不带条件可回全量链。 |
-| 前端 | 选链 / 选大湾区是过滤或看该 scope 是否在点亮集。热门城市筛选走市键。 |
-
-禁止请求路径对全库 JOIN 现算。demo 可现算对口径，不算接通。
-
-**计算公式文件**：`M_ENT_KEYPANO_REGIONAL_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_REGIONAL_COUNT.md` §二（M_ENT_KEYPANO_REGIONAL_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_industry_chain
-enterprise_base.region_id
-key_enterprise <- metric: M_ENT_KEY_TOTAL
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-维表（不进 `source_systems`）：`gkxlumenx_dim.region_scope`、`region_scope_member`。  
-右端 ODS 只作家谱。
+- `dwd_dim_admin_area`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
 
-来源系统：国内机构要素库、产业链要素库。
+## 待建表字段
 
-## 现网探针（2026-08-30；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 无 `enterprise_keypano_chain_region_summary`。
-- DIM 已有 `gba` / `yrd` / `jjj` 及成员（Q056）。
-- `region_id` 绑码是 ②，不改 ①。
+## 数据支持度与缺口
 
-## 待建 / 缺口（不是口径算不全）
+- **判档**：部分支持
+- **判档理由**：公式可完整执行，实出 12 条链的 cover_count（21—28 个键），并集 30 个键 = 1 省 + 4 市 + 23 区县 + 1 个复合区域（大湾区）。但有两条依赖缺口：①重点名单不存在，4,561 家是专利授权≥50 的代理名单，且这 4,561 家全部落在广东省 4 市（深圳 2,590、广州 1,020、东莞 775、惠州 176），区域维因此退化为单省切片——31 个省级行政区只点亮 1 个（3.2258%）、339 个市只点亮 4 个（1.1799%）、2,836 个区县只点亮 23 个（0.8110%）、3 个复合区域只点亮 1 个；②复合区域维表不存在——gkx 里 %scope% 表 0 张，scope 成员是按国务院三份规划纲要的行政范围自建的，不是 region_scope_member。对照证据表明这不是表结构的问题：同一张 dwd_org_industry_tags 全库聚合时每条链覆盖 31—32 个省、250—339 个市。所以判部分支持，不判完全不支持，也不抬成完全转换支持。
+- **基期声明**：截面件：名单按专利授权累计量（>=50）一次性截取，上链关系、链位、区域、资质均无年度键，产物与参数中不存在年份窗口，故 used/missing 均为空。不是「缺年按 0 摊入」的情形，也不得用 created_time 反推年份。
 
-1. 名单 / 上链依赖。
-2. 无独立目标表。
-3. D3 / D4 本波不升。`is_mock: true`。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_REGIONAL_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_REGIONAL_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_REGIONAL_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-bid `E-33 重点企业概览`；STAT。不是 `M_ENT_REGIONAL_COUNT`，也不是后面的区域分布。
+## 更新记录
 
----
-*2026-08-30 COVER-STAT-L01：省+市+县+复合区域；热门城市并入市*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

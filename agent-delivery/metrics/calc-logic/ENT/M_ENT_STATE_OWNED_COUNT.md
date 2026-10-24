@@ -1,50 +1,65 @@
-# 国有企业数（M_ENT_STATE_OWNED_COUNT）
+# 国有企业数量（M_ENT_STATE_OWNED_COUNT）
 
-> 口径真源：王惠《企业分析模型指标字段清单》20260816 底稿 → data-agent 正式化入仓。
-> 维护：data-agent · 对齐状态见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STATE_OWNED_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STATE_OWNED_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STATE_OWNED_COUNT_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_STATE_OWNED_COUNT`
-- **指标名称**：国有企业数
-- **一级模块**：企业分析
-- **二级模块**：企业总览
-- **三级模块**：企业整体概况
-- **更新频率**：日
-- **对齐状态**：部分对齐
-- **是否在数据库**：是
-- **是否在需求文档**：是
-- **是否在原型页面**：否
-- **是否在原型代码**：否
-- **关联Q编号**：Q-E32
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_STATE_OWNED_COUNT |
+| 指标名称 | 国有企业数量 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业服务／企业结构／所有制 |
+| 更新频率 | 建议年度 |
+| 数据支持度（四档） | **完全转换支持** |
+| UI 挂载 | 区域企业结构卡「国企数量」、所有制分布图｜ **数据支持度**：**完全转换支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_STATE_OWNED_COUNT.md` |
 
 ## 口径定义
 
-统计范围内国有且当前有效状态的在营企业去重数量。
+按 ent_type 关键词确定性分类，189,116 家企业中识别出 550 家国有（0.29%），广州 310、深圳 156、惠州 45、东莞 22，判完全转换支持。
 
 ## 计算逻辑说明
 
-```
-（待补充）
+```text
+COUNT(DISTINCT org) WHERE ent_type ∈ {国有独资, 国有控股, 全民所有制, 国有经营单位}，排除「非国有」前缀
 ```
 
-**计算公式文件**：`M_ENT_STATE_OWNED_COUNT.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STATE_OWNED_COUNT.md` §二（M_ENT_STATE_OWNED_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-```
-gkx.dwd_org_shareholder_info（org_id, owners_type, ownership_percentage）— 股东类型与持股比例
-gkx.dwd_org_base_info（org_id, city, province）— 企业所在地筛选（深圳）
-gkx.dwd_forg_shareholder_info（org_id, ownership_percentage）— 海外企业股东持股（补充）
-判定逻辑：
-- 国有独资：owners_type = 单位 且 ownership_percentage = 100%
-- 国有控股：owners_type = 单位 且 ownership_percentage > 50%
-- 需进一步通过股东名称判断是否为国有主体（如国资委、国有资产监督管理部门等）
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 备注
+- `dwd_org_base_info`
+- `dwd_org_shareholder_info`
 
-1.1.1.2.4.2.3；国有判定规则待确认
+## 待建表字段
 
----
-*生成自王惠 20260816 Excel 底稿，data-agent 正式化 2026-08-18*
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：完全转换支持
+- **判档理由**：本指标不需要任何缺失结果面：ent_type 是登记类型的枚举值，189,116 家企业 100% 有值，国有属性由登记类型确定性判定，规则无阈值、无歧义、可逐行复核；去重键 org_id 唯一。城市、行业门类、登记类型三个下钻维齐全，计数即真值，故判完全转换支持。
+- **基期声明**：本件是截面计数（底册当前时点），不做年度序列，故无基期年份。底册不带历史登记类型快照，无法回溯往年国企数；若要做年增量，只能用成立年份近似，且需声明「成立年 ≠ 当前国有属性」。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STATE_OWNED_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STATE_OWNED_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STATE_OWNED_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

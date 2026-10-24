@@ -1,6 +1,7 @@
 # 创新价值排名（M_INNOV_DS_06_CARRIER_003）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003_out.json`。
 
 ## 基础信息
 
@@ -8,30 +9,63 @@
 |---|---|
 | 指标ID | M_INNOV_DS_06_CARRIER_003 |
 | 指标名称 | 创新价值排名 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 深圳创新监测 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | 科技创新 / 深圳创新监测 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统·科技发展态势·深圳创新监测·创新载体综合展示（载体详情 / 创新价值排名展示）｜ **数据支持度**：**部分支持** |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_DS_06_CARRIER_003.md` |
 
 ## 口径定义
 
-同M_INNOV_CARRIER_VALUE_RANK_SZ-深圳创新载体创新价值排名
+深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `code/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
 
 ## 计算逻辑说明
 
-同M_INNOV_CARRIER_VALUE_RANK_SZ-深圳创新载体创新价值排名
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md` §二（M_INNOV_DS_06_CARRIER_003.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, org_type, reg_status) — 深圳载体入集,名称对齐；dwd_research_institute_base_info(org_id, name_cn, city, province, org_type, reg_status) — 科研机构入集；dwd_patent(pn, first_applicant_name, value, apdt_year) — 专利去重,申请人对齐,专利价值,申请年；dwd_patent_cited(pn, cited_by_nums) — 专利被引次数；dwd_patent_transfer(pn, transfer_effective_date, transfer_before, transfer_after) — 专利转移,生效日,转移前后权利人；dwd_zh_paper(id, publication_id, download_num, cover_year_start) — 中文论文,挂刊,下载量,发表年；dwd_en_paper(id, publication_id, cover_year_start) — 英文论文,挂刊,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位,机构对齐；dwd_en_author(paper_id, institution) — 英文作者单位,机构对齐；dwd_zh_journal(publication_id, impact_score) — 中文刊影响指数；dwd_en_journal(publication_id, impact_score) — 英文刊影响指数；dwd_zh_paper_citation(id, citation_num) — 中文论文被引次数
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_en_author`
+- `dwd_en_journal`
+- `dwd_en_paper`
+- `dwd_org_base_info`
+- `dwd_patent`
+- `dwd_patent_cited`
+- `dwd_patent_transfer`
+- `dwd_research_institute_base_info`
+- `dwd_zh_author`
+- `dwd_zh_journal`
+- `dwd_zh_paper`
+- `dwd_zh_paper_citation`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-OPEN draft 身份，口径/计算逻辑对齐正式指标 M_INNOV_CARRIER_VALUE_RANK_SZ（深圳创新载体创新价值排名）。05 无载体创新价值专叶。also_in: DS-04-CARRIER-RANK。统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：深圳载体 2,000 家，三维中技术价值覆盖 537 家（26.85%）、应用价值覆盖 1 家（0.05%）、潜在影响力覆盖 0 家，实际入榜 538 家（26.90%）；**综合排名退化为技术维单维排序，另有 1 家仅凭 2 件专利转移跃居第 1** → **部分支持**，与 `code/M_INNOV_DS_06_CARRIER_003_out.json` 的 `support_judgment` 一致。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

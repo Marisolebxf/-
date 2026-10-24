@@ -1,83 +1,67 @@
-# 企业清单（M_ENT_KEYPANO_ENTERPRISE_LIST）
+# 企业清单（当前链位）（M_ENT_KEYPANO_ENTERPRISE_LIST）
 
-> 口径真源：重点名单 ∩ 链×链位的成员集 → 2026-08-30 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **二次 STAT**：不是 COUNT，是成员行。展示字段查询 JOIN。  
-> **① DWD 能列**：名单 + 上链边在就能出成员。  
-> **② ODS→DWD**：灌数另写。  
-> **选链/链位/类型/区域/分页不进口径**：ETL 全量成员表；API 过滤分页。  
-> CMS 发布不进 8 件套。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_ENTERPRISE_LIST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_ENTERPRISE_LIST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_ENTERPRISE_LIST_out.json`。
 
-## 依赖
+## 基础信息
 
-| 顺序 | 依赖 | 本条用它做什么 |
-|------|------|----------------|
-| 1 | `M_ENT_KEY_TOTAL` / Q038 | 重点名单 |
-| 2 | `enterprise_industry_chain` | 链 + 链位 |
-| 3 | `enterprise_base` / `enterprise_tag` | 查询时名称、`region_id`、六类标签 |
-| 4 | 本条 | 成员表 `(org_id, chain_code, node_stage)` |
-
-不改 KEY_TOTAL。Q039 是文案，不进口径。
-
-## 元数据
-
-- 指标ID：`M_ENT_KEYPANO_ENTERPRISE_LIST`
-- 名称：企业清单（当前链位）
-- 模块：E-33
-- 更新频率：周
-- 关联Q：Q038
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_KEYPANO_ENTERPRISE_LIST |
+| 指标名称 | 企业清单（当前链位） |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 → 重点企业全景 → 选定产业链与链位后的企业列表 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_KEYPANO_ENTERPRISE_LIST.md` |
 
 ## 口径定义
 
-```
-成员 = (org_id, chain_code, node_stage)
-WHERE org_id ∈ 重点名单
-  AND 上了该链且 node_stage 匹配
-```
+成员表的三块拼图里，**上链边**是最硬的一块：`dwd_org_industry_tags` 2,283,762 行、去重后覆盖全国 31—32 个省级行政区，按 `credit_code` 去脏（2 行非 18 位）后可直接连接。**名单**与**链位**两块都不在库里：前者 280 张表零命中，只能用专利授权≥50 的 4,561 家代理；后者 `dwd_org_industry_tags` 15 个列里没有 `node_stage`，`dwd_industry_chain_info.level` 1,273 行全 0，只能把 41 个一级环节按产业位置手工归到上/中/下游。一块直取、两块自建，按 §〇 判**部分支持**。
 
-查询 JOIN（不进成员表主键）：
+## 计算逻辑说明
 
-- `enterprise_base`：名称、`region_id`
-- `enterprise_tag`：六类 `tag_code`
-
-禁止 honor 表、禁止 `honor_type_list`、禁止把不存在的 list ADS 当源。  
-禁止 `is_published` 进公式（CMS 是列表场景再滤）。  
-只国内。选链/链位/类型/区域/分页是 API。
-
-## 两步分开
-
-① 名单 + 上链在即可列出。  
-② ODS 灌数另写，不进「无法执行」。
-
-## 落表
-
-| 角色 | 表 | 现网 |
-|------|-----|------|
-| 源 | 名单 + 上链 + 主档/标签（查询） | 表在；名单 demo |
-| 目标 | `enterprise_keypano_node_enterprise_list`（`org_id + chain_code + node_stage`） | **缺口：无此表** |
-
-源 ≠ 目标。GDF 暂缓。不要把 `enterprise_base` 整表复制进目标。
-
-## 分场景 / 千万级
-
-ETL 写全部链×链位成员。API：`WHERE chain_code=? AND node_stage=?`，再按 `tag_code` / `region_key` 过滤，分页。禁止请求路径全库扫 JOIN。
-
-**计算公式文件**：`M_ENT_KEYPANO_ENTERPRISE_LIST.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_ENTERPRISE_LIST.md` §二（M_ENT_KEYPANO_ENTERPRISE_LIST.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_industry_chain
-enterprise_base
-enterprise_tag
-key_enterprise <- metric: M_ENT_KEY_TOTAL
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-来源系统：国内机构要素库、产业链要素库。
+- `dwd_dim_admin_area`
+- `dwd_id`
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_important_news_info`
+- `dwd_org_industry_tags`
+- `dwd_org_tech_tag`
+- `dwd_patent`
 
-## 待建 / 缺口
+## 待建表字段
 
-无独立目标表。D3/D4 本波不升。`is_mock: true`。
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
----
-*2026-08-30 COVER-STAT-L01：成员表；CMS/honor 不进口径*
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：成员表结构可算：上链边（dwd_org_industry_tags，2,283,762 行）在，链位可由一级环节码映射，区域/资质只在查询时 JOIN，公式可完整执行，实出 31 个链×链位格、5,196 行成员、2,105 家企业。但两条依赖不可靠：①名单是代理——gkx 280 张表按 keypano/key_/important/focus/star/honor/roster 八个模式扫描只命中 dwd_org_important_news_info（新闻表，非名单），没有「重点企业」名单表，只能用专利授权≥50 的 4,561 家代理；②链位是自建映射——dwd_org_industry_tags 15 列无 node_stage，dwd_industry_chain_info.level 1,273 行全 0，只能把 41 个一级环节手工归到上/中/下游。名单与链位两维都不在库里，故判部分支持，不抬档。
+- **基期声明**：截面件：名单按专利授权累计量（>=50）一次性截取，上链关系、链位、区域、资质均无年度键，产物与参数中不存在年份窗口，故 used/missing 均为空。不是「缺年按 0 摊入」的情形，也不得用 created_time 反推年份。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEYPANO_ENTERPRISE_LIST.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_ENTERPRISE_LIST.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEYPANO_ENTERPRISE_LIST_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

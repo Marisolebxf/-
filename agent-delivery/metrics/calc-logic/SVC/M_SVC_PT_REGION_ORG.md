@@ -1,33 +1,62 @@
-# M_SVC_PT_REGION_ORG 计算细稿（区域服务机构数 / 全球服务机构分布）
+# 区域服务机构数（M_SVC_PT_REGION_ORG）
 
-- 版本：v0.2.0（2026-10-13 human:徐滕强 拍板：口径先写对，数据有无另论）
-- 任务：SVC-METRIC-COVER-STAT-L01 第 8 条；seed 版本同步 0.2.0
-- SRS 对应：05·101（2）全球服务机构分布——「通过对接服务数据库，计算各个国家所有的服务机构数量」，字段「所在国家/地区」
-- 关联：M_SVC_PT_GLOBAL_TOTAL（第 6 条）同池同世界图；M_SVC_PT_SZ_REGION_ORG（第 13 条）深圳切片同地理字段
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG_out.json`。
 
-## 口径
-1. 人口：圈定池 svc_org_circle（demo 43,296，规则 svc_rule_demo_kw_v1.1，全广东）。高校/院所本体不在池（第 7 条拍板口径）。
-2. 维度轴：国家/地区（全球口径，不收窄）。国内展开到省级（province 字段）；国外按国家归并（供方灌数后启用）。
-3. 呈现按真数据：现网仅中国·广东 43,296 单省一行；国外（含港澳台）空白不渲染、不造行（2026-08-28 侯佳伟锁：不 UNION 港澳台/海外；Q-SVCCHAIN-07）。
+## 基础信息
 
-## 计算（SEED 演示）
-```sql
--- 国内省级（现网唯一真数源）
-SELECT province AS region, COUNT(DISTINCT org_id) AS value
-FROM svc_org_circle
-GROUP BY province;
--- 现网预期：广东 43296 一行；占比=43296/43296=100%
--- 海外（灌数后）：GROUP BY country，与国内 UNION（去重按 org_id）
-```
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_PT_REGION_ORG |
+| 指标名称 | 区域服务机构数 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（全球供给面 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（区域筛选位） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_PT_REGION_ORG.md` |
 
-SERVE：结果落 svc_region_dist(region, value)，海外灌数后国家行自然出现，无需改口径。
+## 口径定义
 
-## 三禁
-- 禁造国家/地区假行（含港澳台、美日等）。
-- 禁用 89600 缩放数顶替真数。
-- 禁空着不出数：国内真数必出（承 08-28 锁版「不空着」）。
+省/市两级区域轴在 gkx 可实算且闭合（广东 44,132＋未分配 21＝44,153；四市＋未分配＝44,153），但需求写的「各个国家」轴无源：`dwd_forg_base_info` 只有 GB/US/CA 三值、且不是服务机构名录、与池无对齐键 → 国家维度始终缺 → **部分支持**。
 
-## 呈现与缺口
-- 地图/列表仅广东省着色；国外空白区不渲染假数。
-- 悬停：「目前只有国内数据，全球待接入」（与 GLOBAL_TOTAL 同文案，Q-SVCCHAIN-07）。
-- pending：Q-SVCCHAIN-06（口径字典）、Q-SVCCHAIN-07（海外灌数时点）。
+## 计算逻辑说明
+
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md` §二（M_SVC_PT_REGION_ORG.py 零改语义复算）。
+
+## 源表字段
+
+gkx（183.240.141.251:3318，只读）源件点名表：
+
+- `dwd_forg_base_info`
+- `dwd_org_base_info`
+- `dwd_org_org_product_info`
+
+## 待建表字段
+
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
+
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：省/市两级区域轴在 gkx 可实算（44132/44153 有省级归属，覆盖 2 个省级区划、4 个市级区划）；但需求要求的「各个国家」轴无源：dwd_forg_base_info 只有 GB/US/CA 三值且不是服务机构名录，与池无对齐键 → 国家/海外维度始终缺 → 部分支持
+- **基期声明**：截面指标：区域分布是当前时点存量的空间切分，不含年度分母；机构成立年序列由 M_SVC_PT_GLOBAL_TOTAL 承担。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

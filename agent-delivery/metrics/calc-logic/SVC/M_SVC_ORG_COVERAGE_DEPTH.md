@@ -1,82 +1,58 @@
 # 服务机构产业领域覆盖评分（M_SVC_ORG_COVERAGE_DEPTH）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_COVERAGE_DEPTH.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_COVERAGE_DEPTH.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_COVERAGE_DEPTH_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_ORG_COVERAGE_DEPTH |
 | 指标名称 | 服务机构产业领域覆盖评分 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 服务机构产业领域分析 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待甲方Q-SVCCHAIN-02；环节覆盖已对extract |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q-SVCCHAIN-02 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构（产业领域覆盖度） |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业服务链分析·服务机构画像·覆盖评分 / 算法库·服务机构基础指标模型（序号 101） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_ORG_COVERAGE_DEPTH.md` |
 
 ## 口径定义
 
-指从服务广度和服务深度两个维度，对服务机构在目标产业服务链中的覆盖能力进行综合量化评估的得分。得分越高，表明机构在产业领域的覆盖能力越强。
+本件是「广度 × 深度」两轴等权评分：广度轴取六类服务类型（M_SVC_ORG_COVERAGE_BREADTH），深度轴取六环节（research/transfer/ip/testing/market/pilot），各归一化到 0—1 后 50/50 合成 0—100。两轴都全池可算，但都已语义降级——原广度是 15 产业集群，原深度是 1,261 个 `link_code`；gkx 既无集群字典，`tags` 的 INB13xx 与 `chain_info` 的 INB12xx 也不是同一码域。故落 **部分支持**。本件与 `M_SVC_ORG_TOTAL` 等九件同池（44,153 家）。
 
 ## 计算逻辑说明
 
-第一步：服务广度计算
-
-统计机构在目标产业服务链中覆盖的产业领域数量，覆盖领域越多，服务广度越大：
-$$
-服务广度 = \sum_{i=1}^{N} I(机构在产业领域 i 有服务活动)
-$$
-其中，N为目标产业服务链包含的全部产业领域总数，I 为指示函数。
-
-第二步：服务深度计算
-
-将产业服务链分解为若干核心环节，统计机构在特定产业领域内覆盖的环节数量：
-$$
-服务深度 = \frac{机构在特定产业覆盖的服务环节数}{该产业服务链总环节数} \times 100\%
-$$
-第三步：服务机构产业领域覆盖得分合成
-
-将服务广度和服务深度两个维度得分加权汇总：
-$$
-服务机构产业领域覆盖得分 = W_1 \times 服务广度 + W_2 \times 服务深度
-$$
-其中，W_1、W_2 可采用等权重（各占 50%），也可根据评估重点自行制定，\sum W = 1。得分越高，表明机构在产业领域的覆盖能力越强。
-
-第四步：矩阵图可视化呈现
-
-将服务广度（横轴）与服务深度（纵轴）结合，通过矩阵图进行可视化呈现，直观展示各机构在不同产业领域的覆盖情况。
-
-第五步：机构分类定位
-
-根据机构在矩阵图中的位置，划分为四种类型：
-
-| 类型           | 服务广度 | 服务深度 | 说明                         |
-| :------------- | :------- | :------- | :--------------------------- |
-| **全面深耕型** | 高       | 高       | 跨多个产业领域且服务深度强   |
-| **专注深耕型** | 低       | 高       | 聚焦少数产业领域但服务深度强 |
-| **广泛覆盖型** | 高       | 低       | 覆盖产业领域多但服务深度一般 |
-| **浅层探索型** | 低       | 低       | 覆盖领域少且服务深度浅       |
-
-
-
-| 维度         | 指标           | 指标说明                                                     | 源表字段 | 待建字段 |
-| :----------- | :------------- | :----------------------------------------------------------- | -------- | -------- |
-| **服务广度** | 产业领域覆盖数 | 机构覆盖的产业领域数量，反映机构服务范围的广泛程度。 | demo_gkxlumenx_ods.svc_org_card(org_id) — 服务机构清单；dwd_org_industry_tags(credit_code, industry_code) — 覆盖产业领域；dwd_industry_chain_info(industry_code) — 标准产业领域 | 无 |
-| **服务深度** | 环节覆盖深度 | 机构在特定产业领域内覆盖的环节数占该产业服务链总环节数的比例，反映机构在该领域的垂直渗透能力。 | dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 覆盖环节；dwd_industry_chain_info(industry_code, industry_link_code) — 标准环节 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_COVERAGE_DEPTH.md` §二（M_SVC_ORG_COVERAGE_DEPTH.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(org_id, name_cn, industry) — 服务机构清单
-- dwd_org_base_info(org_id, external_id) — 信用代码对齐
-- dwd_org_industry_tags(credit_code, industry_code, industry_link_code) — 覆盖产业领域,覆盖环节
-- dwd_industry_chain_info(industry_code, industry_link_code) — 标准产业领域,标准环节
+源件未点名任何 dwd_/ads_/ods_ 物理表（纯派生/合成件，输入为兄弟件产物或快照）；依赖清单见源件 §〇/§三。
 
-## 待建字段
+## 待建表字段
 
-- 无
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-## 参考资料
+## 数据支持度与缺口
 
-[1]服务机构产业领域分析 ｜国家工业信息安全发展研究中心｜科学评价体系是中小企业服务平台建设关键｜2018-05-18｜https://www.sohu.com/a/231995104_115495.
+- **判档**：部分支持
+- **判档理由**：两轴可算但都已语义降级：广度轴由 15 产业集群降为六类服务类型（gkx 无集群字典），深度轴由产业服务链 1,261 个 link_code 降为六环节（tags 与 chain_info 码域不通、底册对齐仅 3.5%）；评分只适合同池相对比较，不能当原口径的绝对覆盖评分
+- **基期声明**：截面评分：两轴都取自当前经营范围文本，无年度分母；成立年不参与评分。不按年补 0、不做年度序列
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_COVERAGE_DEPTH.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_COVERAGE_DEPTH.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_COVERAGE_DEPTH_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

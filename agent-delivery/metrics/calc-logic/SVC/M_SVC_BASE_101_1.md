@@ -1,66 +1,72 @@
-# 服务机构基础指标模型构建（M_SVC_BASE_101_1）· 封面号说明
+# 服务机构基础指标模型构建（M_SVC_BASE_101_1）
 
-## 基本信息
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_BASE_101_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_BASE_101_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_BASE_101_1_out.json`。
 
-- 指标ID: M_SVC_BASE_101_1
-- 指标名称: 服务机构基础指标模型构建
-- 定位: 算法库 SRS **ALGO-SVC-BASE-101 整叶封面**（需求目录页）
-- 一级归属: 05 深度挖掘算法 / 科技专题服务算法库 / 产业服务 / 基础指标
-- 算法类型: STAT（T0-X 建议类型，未签——封面无算法语义，纯占位）
-- 更新频率: n/a
-- 对齐状态判定: 封面身份（2026-08-27 侯佳伟 1A 2A 3A；2026-10-13 human:徐滕强 选 B 落 seed v0.2.0）
-- 是否在数据库: 否（恒 0 行是设计）
-- 验收单元: ALGO-SVC-BASE-101（L−F 未挂页，无 UI 落点，不挂 MetricSpecCard）
+## 基础信息
 
-## 这不是指标，是目录
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_SVC_BASE_101_1 |
+| 指标名称 | 服务机构基础指标模型构建 |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | SVC 服务机构 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技专题服务系统·产业服务链分析（SRS seq 120 页面族的基础模型登记项） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| 缺失年份 | [2026] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_BASE_101_1.md` |
 
-需规 101 正文是**六大核心指标体系**，不是"算一个什么数"。T0-X 注册时给整叶挂的占位身份证。它：
+## 口径定义
 
-- **不是复合指标 / 不是加权总分**（侯佳伟口述拍板原话）——不聚合、不加权、不出数
-- **无统计口径可定义**：对象、度量、公式全在分项各自定义（每条分项 8 件套自己齐）
-- 分项**回指** 05·101 作需求来源（srs_refs 挂本叶），但**不回写**封面任何数
+封面号的第一条纪律是「不出数」：它登记的是「服务机构基础指标模型」这一族指标的构建任务，本身不是可展示的数值。因此若按「有没有对应结果面」去判档，会得到「完全不支持」这种看似严谨、实则答错问题的结论。本件的做法是把封面号展开成它登记的六大体系，逐个体系判「今天能不能算出数」，再按体系聚合出档位。
 
-## 六套对照（谁出哪块）
+## 计算逻辑说明
 
-| 六套（需规 101） | 分项 ID | 类型 | 出处 |
-|---|---|---|---|
-| ① 全球服务机构产业布局 | `M_SVC_INDUSTRY_LAYOUT` | UNKNOWN（不在 STAT 21 批） | 50100 A1 |
-| ② 全球服务机构分布 | `M_SVC_PT_GLOBAL_TOTAL` / `M_SVC_PT_REGION_ORG` / `M_SVC_PT_GLOBAL_TYPE_DIST` | STAT | STAT 21 序号 6/8/7 |
-| ③ 投融资动态资讯 | `M_SVC_INVEST_Y` | UNKNOWN（不在本批） | 50100 A3 |
-| ④ 新增动态 | `M_SVC_ORG_NEW_COUNT` | STAT | STAT 21 序号 2 ✅ |
-| ⑤ 深圳规模 | `M_SVC_PT_SZ_TOTAL` / `M_SVC_PT_KEYORG_SCALE` | STAT | STAT 21 序号 11/10 |
-| ⑥ 深圳分布 | `M_SVC_PT_SZ_REGION_ORG` / `M_SVC_PT_SZ_TYPE_DIST` / `M_SVC_PT_SZ_FIELD_DIST` | STAT | STAT 21 序号 13/12/14 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_BASE_101_1.md` §二（M_SVC_BASE_101_1.py 零改语义复算）。
 
-另：①③底下真正做"分析"的是 MODEL 叶（`M_SVC_ORG_COVERAGE_DEPTH` 服务深度模型分、`M_SVC_ORG_TECH_SCORE` 技术力模型分，归唐绍祖模型轨），同样不回写封面。
+## 源表字段
 
-## 三禁（治理规则）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-1. **本 ID 不出数、不灌 ADS**：`svc_metric_fact` / `svc_metric_series` / `svc_metric_dist` 里本编号恒 0 行；出现即错
-2. **分项回指、不回写**：分项需求来源继续挂 `05·101`，实现写"本合同叶=101，本条只出这一块"；禁止把分项 COUNT 加总写进本 ID、禁止用封面号顶替任一分项
-3. **禁止 `COUNT(*)` / `compute_metric('M_SVC_BASE_101_1')` 顶替**：50100 `/industry-service/basic` 继续只出 A1–A6 六折叠块，各挂分项 ID
+- `dwd_forg_base_info`
+- `dwd_org_annual_financial_info`
+- `dwd_org_company_punish`
+- `dwd_org_financing_info`
+- `dwd_org_important_news_info`
+- `dwd_org_invest_info`
+- `dwd_org_org_product_info`
+- `dwd_org_recruit_info`
+- `dwd_org_risk_shixin`
+- `dwd_org_shareholder_info`
 
-再灌一格"101 总数"会和第 1 条（ORG_TOTAL）、门户全球（第 6 条）、深圳规模（第 11 条）撞车。
+## 待建表字段
 
-## 计算公式
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-无。封面号不出数。
+## 数据支持度与缺口
 
-## 源库表字段
+- **判档**：部分支持
+- **判档理由**：封面号自身不出数（三禁）；以其登记的六大体系为评估对象：①③④⑥ 四体系可现转，②（海外轴）与⑤（服务能力子维）各有一处结构性缺口 → 六体系中 4 全支持 / 2 部分支持
+- **基期声明**：③投融资序列用 2010—2025（2026 是残年，事件只到采集日，不进分母）；④成立年序列覆盖 1978—2025 全段，分母只用真实存在年份，未按 0 补齐
 
-无。不建表、不灌数。
+## 溯源与复现
 
-## 验收
-
-- fact / series / dist 本编号保持 **0 行**
-- 算法路由表（`lumen-algo-py`）没有本 ID
-- 50100 A1–A6 不改挂本 ID
-
-## 参考文献 / 依据
-
-需规 `bid-reference/srs/05-深度挖掘算法/科技专题服务算法库/产业服务/基础指标.md`（ALGO-SVC-BASE-101）；`SVC-ALGO-STAT-21-L01-侯佳伟待办.md` 序号 5（2026-08-27 1A 2A 3A + 封面回指规则表）；`ALGO-LIB-T0X-REGISTER-L01`（T0-X 占位注册）；`SVC-METRIC-COVER-STAT-L01` 2026-10-13 选 B。
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_BASE_101_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_BASE_101_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_BASE_101_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ## 更新记录
 
 - 2026-08-24: T0-X 注册占位身份证（0.1.0，definition 空话）
 - 2026-08-27: 侯佳伟拍板封面不出数 + 六套对照 + 三禁（未落 seed）
 - 2026-10-13: human:徐滕强 选 B，封面身份落 seed v0.2.0（本文档建立）
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

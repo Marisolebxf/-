@@ -1,61 +1,66 @@
----
-metric_id: M_CHAIN_SZ_ADVANTAGE_RANK
-metric_name_zh: 深圳优势排名
-algorithm_type: STAT
-version: 0.2.0
-updated: 2026-10-14
-owner: data-agent / human:淮政玮
-status: 读表版口径已定（结构先定，无数据不挡口径）
----
+# 深圳优势排名（M_CHAIN_SZ_ADVANTAGE_RANK）
 
-# M_CHAIN_SZ_ADVANTAGE_RANK 深圳优势排名 — 计算逻辑说明
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK_out.json`。
 
-> 2026-10-14 human:徐滕强 拍板：MODEL 类指标已有目标表存储 → **基于表结构先定一版，无数据是另一回事**。排名算法本体（优势评分怎么算）归 MODEL 父指标 `M_CHAIN_SZ_ADVANTAGE_SCORE` 与算法侧；本条只定**读表口径**。
+## 基础信息
 
-## 1. 业务定义
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_CHAIN_SZ_ADVANTAGE_RANK |
+| 指标名称 | 深圳优势排名 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／区域竞争力／深圳位势 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 区域对比页「深圳名次」徽标、链详情页「在本链四城中排第几」 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_ADVANTAGE_RANK.md` |
 
-深圳优势排名 = MODEL 产出的深圳在指定产业链对标城市中的排名（`rank_no` 直读）。
+## 口径定义
 
-## 2. 数据源（DDL 实核）
+深圳在指定产业链上相对对标城市集合（深/穗/莞/惠）的优势名次。名次由父指标 M_CHAIN_SZ_ADVANTAGE_SCORE 的得分决定，本指标只读名次、不另算分数。
 
-| 表 | 关键字段 | 现状 |
-|---|---|---|
-| `demo_gkxlumenx_dwd.industry_chain_model_result_detail`（42 字段） | `rank_no`（int）、`result_value`、`benchmark_id`、`region_code`、`metric_id`、`chain_id` | **0 行**（模型未跑） |
-| `demo_gkxlumenx_dwd.industry_chain_model_run` | `run_id`、`created_time`（最新 run 判定） | run 主表 |
+> 一句话口径（源件 §0.3）：排名本身是纯计算：给定四城得分，排序即可。卡点在**得分**——官方结果表 `industry_chain_model_result_detail` 当日 0 行，父指标 `M_CHAIN_SZ_ADVANTAGE_SCORE` 的四维里只有企业、专利两维有数，政策维 10/12 链无命中、人才维链级 0 行。名次可算且可复现，但它继承父指标的全部缺口，故判 **部分支持**。
 
-## 3. SQL
+## 计算逻辑说明
 
-```sql
-SELECT d.rank_no, d.result_value, d.benchmark_id
-FROM demo_gkxlumenx_dwd.industry_chain_model_result_detail d
-JOIN demo_gkxlumenx_dwd.industry_chain_model_run r
-  ON r.run_id = d.run_id AND r.is_deleted = 0
-WHERE d.is_deleted = 0
-  AND d.chain_id = :chain_code
-  AND d.metric_id = 'M_CHAIN_SZ_ADVANTAGE_SCORE'
-  AND d.region_code = '440300'   -- 深圳
-ORDER BY r.created_time DESC, d.rank_no ASC
-LIMIT 1;   -- 取最新一次 run
+```text
+rank_c = rank of 深圳市 in {V_c(city) : city ∈ C}，V_c 取父指标「可得维口径」得分（企业维 + 专利维等权），C = 深/穗/莞/惠
 ```
 
-- 表 0 行 / 无匹配 → NULL，UI 显「无数据」，不伪造排名。
-- 多次 run 并存时取 `created_time` 最新，防止读到历史快照。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md` §二（M_CHAIN_SZ_ADVANTAGE_RANK.py 零改语义复算）。
 
-## 4. 参数
+## 源表字段
 
-| 参数 | 含义 | 默认 |
-|---|---|---|
-| `:chain_code` | 产业链编码 | 必填 |
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 5. 未决项（不挡读表口径）
+- `dwd_org_info`
 
-- **QC08 对标城市集合**：继续挂 🟡 客户决策清单——影响模型怎么算（评分与对比范围），不影响本读表 SQL。
+## 待建表字段
 
-## 6. 版本与变更
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-| 版本 | 日期 | 变更 | 拍板 |
-|---|---|---|---|
-| 0.1.0 | — | 旧稿：QC08 待确认，RANK() OVER 草案 | — |
-| 0.2.0 | 2026-10-14 | 读表版 rank_no 直读 + 最新 run；QC08 转 🟡 决策清单跟踪 | human:徐滕强 |
+## 数据支持度与缺口
 
-正式签名待 human:唐绍祖 会签。
+- **判档**：部分支持
+- **判档理由**：排名本身是纯计算：给定四城得分，排序即可。卡点在**得分**——官方结果表 `industry_chain_model_result_detail` 当日 0 行，父指标 `M_CHAIN_SZ_ADVANTAGE_SCORE` 的四维里只有企业、专利两维有数，政策维 10/12 链无命中、人才维链级 0 行。名次可算且可复现，但它继承父指标的全部缺口，故判 **部分支持**。
+- **基期声明**：截面排名：父指标为当日截面评分（营收/研发按企业最新年取数，不做年度队列），本件不含年度分母；故 used/missing 为空，不是「缺年按 0 摊入」。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

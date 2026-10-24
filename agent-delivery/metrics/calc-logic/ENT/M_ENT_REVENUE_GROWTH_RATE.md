@@ -1,107 +1,62 @@
 # 营收增长率（M_ENT_REVENUE_GROWTH_RATE）
 
-> 口径真源：王惠底稿「营业收入增长率」→ 2026-08-28 `ENT-SYNTH-METRIC-COVER-STAT-L01`。  
-> **落表目标**（产出，禁止当源）：`enterprise_finance_history.revenue_growth_rate`（逐年）、`enterprise_base.revenue_growth_rate`（最新一年快照）。  
-> **输入**：只读 `enterprise_finance_history.revenue`。国内 ODS `operating_revenue` 非全空，整条能算。  
-> 维护：data-agent · 8 件套摘要见 `cfg_metric-ENT-seed.yaml`。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REVENUE_GROWTH_RATE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REVENUE_GROWTH_RATE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REVENUE_GROWTH_RATE_out.json`。
 
-## 元数据
+## 基础信息
 
-- **指标ID**：`M_ENT_REVENUE_GROWTH_RATE`
-- **指标名称**：营收增长率
-- **一级模块**：企业分析
-- **二级模块**：企业评估
-- **三级模块**：商业力评估
-- **更新频率**：年
-- **对齐状态**：逐年相邻年同比；KPI 取最新能算出的一年；无相邻年该年不算，整条能算
-- **是否在数据库**：ODS 有 `operating_revenue`；正式 DWD 财务年表有 `revenue` / `revenue_growth_rate`（后者为产出列，现网 mock）
-- **是否在需求文档**：是
-- **是否在原型页面**：是
-- **是否在原型代码**：是
-- **关联Q编号**：Q-E23
+| 项目 | 内容 |
+|---|---|
+| 指标ID | M_ENT_REVENUE_GROWTH_RATE |
+| 指标名称 | 营收增长率 |
+| 所属域 | ENT（企业分析） |
+| 一级模块 | 企业分析／企业评估／商业力评估 |
+| 更新频率 | 年 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 企业详情·营收增长率 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025] |
+| 缺失年份 | [2013] |
+| calc-logic 引用 | `metrics/calc-logic/ENT/M_ENT_REVENUE_GROWTH_RATE.md` |
 
 ## 口径定义
 
-相邻年营收同比：`(本年 revenue − 上年 revenue) / 上年 revenue * 100`。
+gkx 里能算出 **782 个**「企业-年」营收同比，覆盖 **398 家**（占底册 0.2105%），中位数 **9.0409%**；但 2,193 行非空营收里有 **1,411 行**成不了对（上年缺行 373 行、上年为空 1,038 行、上年为 0 行 0 行），且 **96 对**增幅超过 1,000%、**110 对**跌幅超过 90%，绝大多数是「元/万元」混填造成的量级跳变，不是真实增长。
 
-- 本年 = 该行 `data_year`；上年必须是 `data_year - 1`，且上年 `revenue` 非空、非 0。
-- **禁止**隔年硬凑（如 2016 vs 2018）。
-- 缺上年或除零：**该年无法计算**（该年不写增长率）。不是整条指标无法执行。
-- 不挂产业。禁止对增长率做 SUM 当筛选合计。
-- 国外：对等表 `enterprise_forg_finance_history` 正式库 0 行，暂不并。不造表。
-- 禁止用上市财务 `dwd_org_stock_finance_info` 替代年报。
-- **禁止读产出列**：`enterprise_finance_history.revenue_growth_rate`、`enterprise_base.revenue_growth_rate`。两表是本指标落表目标。
+## 计算逻辑说明
 
-## 落表
-
-| 目标 | 粒度 | 写什么 |
-|------|------|--------|
-| `enterprise_finance_history.revenue_growth_rate` | `org_id + data_year` | 该年相对上年的同比；算不出则 NULL |
-| `enterprise_base.revenue_growth_rate` | `org_id` 一条 | 该企最新一个能算出的年份的增长率（KPI 快照） |
-
-## 分场景 / 实现方案
-
-### 场景 A · 逐年落表（计算真源）
-
-对每个 `org_id + data_year`，join 同年企业的 `data_year-1` 行，用 `revenue` 现算后写回财务年表。
-
-### 场景 B · 画像 / 列表 KPI
-
-读该企财务年表中**最新能算出增长率的一年**（或写完后的主档快照）。无相邻年：**该企无法计算**。
-
-### 场景 C · 指定年
-
-入参 `:year`：只算 / 只展示该年相对 `:year-1`。
-
-### 场景 D · 营收趋势图
-
-趋势用 **营收序列**（`M_ENT_REVENUE_LATEST` 的逐年 `revenue`），不把增长率 SUM 成趋势。无连续年度营收则不画，不造数。
-
-### demo（`demo_gkxlumenx_dwd`）
-
-- `enterprise_finance_history` 现网 **没有** `revenue_growth_rate` 列，只有 `revenue`（449 行）。
-- 全表自连即可：`cur.data_year = prev.data_year + 1`。
-- 主档 demo 只有 `revenue_latest`，没有增长率列 → KPI 查询时现算，不改 GDF DDL（本波不建列）。
-
-### 生产（`gkxlumenx_dwd`）
-
-- 财务年表、主档 **已有** 增长率列，但现网值是 mock（与相邻年 `revenue` 对不上）。
-- 灌实数后按 `org_id` 取相邻两年再算，禁止无过滤全表自连。
-- 算完写入两列；查询仍以本次计算为准，不要信任历史预存值。
-
-对应 seed `formula`：逐年 `(rev_t - rev_{t-1}) / rev_{t-1} * 100`；KPI 取最新能算年；不加整条「当前无法执行」。
-
-**计算公式文件**：`M_ENT_REVENUE_GROWTH_RATE.md`
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REVENUE_GROWTH_RATE.md` §二（M_ENT_REVENUE_GROWTH_RATE.py 零改语义复算）。
 
 ## 源表字段
 
-```
-enterprise_finance_history <- ods: dwd_org_annual_financial_info
-```
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-- 输入：`revenue` ← `operating_revenue`；`data_year` ← `year`
-- 产出（不进 `source_tables`）：`revenue_growth_rate`（年表 + 主档快照）
+- `dwd_org_annual_report_asset`
+- `dwd_org_stock_finance_info`
 
-来源系统（`source_systems`）：国内机构要素库。
+## 待建表字段
 
-## 现网探针（live `gkx` + 项目 DWD，2026-08-28；不进 8 件套）
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 国内 ODS `operating_revenue`：20178 行，非空 300；相邻年成对 **11 对 / 2 企**（另 2 企隔年，不算）。
-- 正式 DWD 财务年表：709 行 / 120 企，`revenue` 与 `revenue_growth_rate` 全填（mock）；相邻年 589 对 / 114 企。
-- demo DWD 财务年表：449 行，**无**增长率列。
-- 国外 ODS 相邻年很多（2093 企）；正式国外 DWD 财务 **0 行**，暂不并。
-- ADS **无**企业营收增长率表/列。`enterprise_growth_trend` 是区域新增企业数，不是本指标。
+## 数据支持度与缺口
 
-## 待建 / 缺口
+- **判档**：部分支持
+- **判档理由**：gkx 里能算出 **782 个**「企业-年」营收同比，覆盖 **398 家**（占底册 0.2105%），中位数 **9.0409%**；但 2,193 行非空营收里有 **1,411 行**成不了对（上年缺行 373 行、上年为空 1,038 行、上年为 0 行 0 行），且 **96 对**增幅超过 1,000%、**110 对**跌幅超过 90%，绝大多数是「元/万元」混填造成的量级跳变，不是真实增长。
+- **基期声明**：增长率只用「相邻两年」：本年 2014—2025，对应上年 2013—2024。库内财务表更早年份没有成对营收，未按 0 摊入；各年成对数见 by_year，中位数逐年单列
 
-- 多数企业无相邻年营收：该年 / 该企无法计算，不是整条缺口。
-- 国外 DWD 未灌。
-- demo 主档/财务缺增长率列：现算，本波不改 DDL。
-- D3 维持 pending_ods；D4 维持 mock。本波不升。
+## 溯源与复现
 
-## 备注
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_REVENUE_GROWTH_RATE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REVENUE_GROWTH_RATE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_REVENUE_GROWTH_RATE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
-bid `§1.1.1.2.4.2.3.3`；STAT。禁止把 `gkx.dwd_*` 写入 `source_tables` 主体。
+## 更新记录
 
----
-*王惠 20260816 底稿正式化 2026-08-18；2026-08-28 COVER-STAT-L01 逐年落表 + KPI 最新年，产出列禁止当源*
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

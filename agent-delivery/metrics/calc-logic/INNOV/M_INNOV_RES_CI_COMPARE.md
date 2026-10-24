@@ -1,6 +1,7 @@
 # 多企业竞争情报比对（M_INNOV_RES_CI_COMPARE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_CI_COMPARE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_CI_COMPARE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_CI_COMPARE_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,55 @@
 |---|---|
 | 指标ID | M_INNOV_RES_CI_COMPARE |
 | 指标名称 | 多企业竞争情报比对 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技创新评估 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | — |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 竞争情报比对页——12×12 重叠矩阵、企业重叠等级、规模×重叠四象限战略图 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_RES_CI_COMPARE.md` |
 
 ## 口径定义
 
-比对多家企业的竞争情报等级，并给出竞争矩阵与战略定位图。
+矩阵、等级、四象限三件产物都已跑出：66 对重叠分 18.48—63.08，按 P30=39.66 / P70=48.43 切成「高 40 对 / 中 52 对 / 低 40 对」；12 家里 11 家落「中」、惠科落「低」。但重叠维实际只有 IPC 单维（学者维 0/66），论文规模有 3 家为 0，且派单措辞的「区域」口径未实现。故判**部分支持**：企业级竞争情报比对可用，区域竞争力对比需另立指标。
 
 ## 计算逻辑说明
 
-选定企业入集。三维：竞争情报等级 / 竞争矩阵 / 战略定位图。重叠度复用研究领域重叠度，不另起领域维。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 竞争情报等级 |  | 企业对重叠度换算后分高/中/低。 | overlap×100；≥P70 高；P30–P70 中；<P30 低 | 同 M_INNOV_RES_OVERLAP — IPC/关键词/学者 Jaccard |
-| 竞争矩阵 |  | 所选企业两两分值表。 | n×n 矩阵，对角=100 | 同上企业对结果 — 矩阵 |
-| 战略定位图 |  | 规模对平均重叠度的散点。 | 横轴=专利数+论文数；纵轴=平均 overlap | dwd_patent(pn, first_applicant_name, apdt_year) — 专利去重,申请人对齐,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_CI_COMPARE.md` §二（M_INNOV_RES_CI_COMPARE.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 企业入集,名称对齐；dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, further_classification_ipcr, apdt_year) — 专利去重,关键词,申请人对齐,主分类,附加分类,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文论文关键词；dwd_en_paper_classification(id, keywords) — 英文论文关键词；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构名
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_id`
+- `dwd_patent`
+- `dwd_scholar`
+- `dwd_zh_author`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-依照需求文档构建。02-科技信息展示系统|科技发展态势|科技发展规划.md|多企业竞争情报比对 · 序号 193(比对竞争情报等级，并提供竞争矩阵和战略定位图)
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：矩阵、等级、四象限三件产物都已跑出：66 对重叠分 18.48—63.08，按 P30=39.66 / P70=48.43 切成「高 40 对 / 中 52 对 / 低 40 对」；12 家里 11 家落「中」、惠科落「低」。但重叠维实际只有 IPC 单维（学者维 0/66），论文规模有 3 家为 0，且派单措辞的「区域」口径未实现。故判**部分支持**：企业级竞争情报比对可用，区域竞争力对比需另立指标。
+- **基期声明**：竞争矩阵为截面比对，无年度分母；专利为全历史并集，论文为库内 100,900 篇切片
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_CI_COMPARE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_CI_COMPARE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_CI_COMPARE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

@@ -1,862 +1,948 @@
-# cfg_metric 种子 —— 区域综合智能分析域（SYNTH）M_SYNTH_* 指标 8 件套
+# cfg_metric 种子 —— 综合智能分析域（SYNTH）M_SYNTH_* 指标
 # ============================================================================
-# 作用：注册 SYNTH 域（E8-综合智能分析）三叶全部 metric_id 的 8 件套种子，
-#       供 algorithm-agent 实现 formula（🔧）、api-agent 上线时读取。
-# 输入真源：
-#   agent-delivery/agent-handoffs/产品整体定义/E8-综合智能分析/
-#     SYNTH-VITALITY-区域创新活力分析/TRACE-SYNTH-VITALITY.yaml（5 metrics）
-#     SYNTH-ELEMENT-区域创新要素分析/TRACE-SYNTH-ELEMENT.yaml（10 metrics）
-#     SYNTH-COLLAB-区域创新协同分析/TRACE-SYNTH-COLLAB.yaml（6 metrics）
-#   agent-delivery/bid-reference/科技专题服务算法库.md §10.5-10.10
-# 维护：algorithm-agent（口径拍板：王惠/甲方；算法共签：唐绍祖）· 创建：2026-08-11
-# 任务：SYNTH-MOD-VITALITY-METRIC-OPEN-L01 / SYNTH-MOD-ELEMENT-METRIC-OPEN-L01 / SYNTH-MOD-COLLAB-METRIC-OPEN-L01
-# ----------------------------------------------------------------------------
-# 状态图例（mapping_status）：
-#   ✅ 源可直接聚合且口径清晰
-#   🔧 源有原料但 formula 待 algorithm-agent / 甲方确认
-#   ⚠️ 源可用但业务口径待甲方确认（definition pending_data_lead，引用 Q-SYNTH-* 开放项）
-#   ❌ 无来源（no_source，需采购第三方数据或待定义卡确认）
-# 8 件套（v1.5 共 9 项）：metric_id / metric_name_zh / definition / formula /
-#         algorithm_type / source_tables / source_systems / update_freq / version
-#         YAML 键 algorithm_type；未填视为 UNKNOWN，禁止据此标 D1=aligned
-# 推荐字段：is_mock / bid_ref / acceptance_unit_id / owner_agent / mapping_status
+# 20261023 全量覆盖重写（E-METRIC-ALGOLIB-LAUNCH-L01 阶段1）：46 条（20261021 批 9+3 字段）。
+# 数据支持度/口径/公式/源表以 20261021 改源工程批为准（gkx 实测，全部表名已为 gkx 真源）。
+# is_mock 诚实现状：服务未上线前保持 true，阶段2 随服务上线翻转。
+# 旧版拍板/会签记录保留在 definition_note；历史版本见 git。
 # ============================================================================
 
 version: 1
-updated: "2026-08-24"
+updated: "2026-10-23"
 domain: SYNTH
-seed_version: "0.1.0"
-batch: mock_20260811
+seed_version: "2.0.0"
+batch: algolib_launch_20261023
 total_metrics: 46
 defaults:
-  source_systems: ["Mock @ batch=mock_20260811"]
+  source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
   is_mock: true
-  owner_agent: algorithm-agent
-  version: "0.1.0"
+  owner_agent: data-agent
+  ingest_task: E-METRIC-ALGOLIB-LAUNCH-L01
 
 metrics:
-  # ════════════ SYNTH-VITALITY（区域创新活力分析，5 条，算法库 §10.5） ════════════
-  - metric_id: M_SYNTH_VIT_INDEX
-    metric_name_zh: 区域创新活力指数
-    definition: "pending_algorithm(Q-SYNTH-01)：基于科技、产业、人才、政策四维指标加权求和合成的区域创新活力综合指数；正式维度权重、阈值来源与归一化基准待算法定义卡确认。临时默认为四维等权 + 对比集合内最大值归一。"
-    formula: "pending_algorithm（四维加权求和；权重/归一化基准待 Q-SYNTH-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库（§10.1-10.4 输出）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-01
-    bid_ref: "§1.1.1.1.1.1.1.10.5"
-    acceptance_unit_id: E8-VITALITY
-    owner_agent: algorithm-agent
-    legacy_alias: M_SYNTH_VITALITY_INDEX
-
-  - metric_id: M_SYNTH_VIT_DIM_SCORE
-    metric_name_zh: 四维单维评分
-    definition: "draft(Q-SYNTH-V-01)：科技/产业/人才/政策四个一级维度的单维评分；评分方法为各维度内分项指标加权求和后归一化，权重合计规则与阈值来源待确认。临时展示默认权重表 + ⚠️ 待甲方确认。"
-    formula: "pending_algorithm（维度内加权求和 + 归一化；权重待 Q-SYNTH-V-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-V-01
-    bid_ref: "§1.1.1.1.1.1.1.10.5"
-    acceptance_unit_id: E8-VITALITY
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_VIT_INDICATOR
-    metric_name_zh: 活力分项指标值与得分
-    definition: "draft(Q-SYNTH-01)：四维下各分项指标的原始值与归一化得分；分项指标清单以算法库 §10.5 指标体系构建为准（专利成果质量、产业发展水平、人才结构优劣、政策支持力度等），正式指标池待算法定义卡确认。"
-    formula: "pending_algorithm（分项指标值采集 + 归一化评分）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 区域创新科技/产业/人才/政策专题库"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-01
-    bid_ref: "§1.1.1.1.1.1.1.10.5"
-    acceptance_unit_id: E8-VITALITY
-    owner_agent: algorithm-agent
-    legacy_alias: M_SYNTH_INDICATOR_SCORE
-
-  - metric_id: M_SYNTH_VIT_WEIGHT
-    metric_name_zh: 维度权重分布
-    definition: "四维权各 0.25（合计必须 1）乘 M_SYNTH_VIT_DIM_SCORE 的科技/产业/人才/政策分，刷区域活力分。算法 2026-09 默认，Q-SYNTH-V-01 仍 🟡。产品不展示权重表。缺任一维分该区无法计算。"
-    formula: "vit_score=0.25×dim_tech+0.25×dim_industry+0.25×dim_talent+0.25×dim_policy。dim_* <- metric: M_SYNTH_VIT_DIM_SCORE。权合计≠1 该次无法计算。缺维分该区无法计算。无阈值。禁止页面改权。禁止 ENT STAT 冒充维分。"
-    algorithm_type: STAT
-    source_tables: ["<- metric: M_SYNTH_VIT_DIM_SCORE"]
-    source_systems: []
-    update_freq: daily
-    version: "0.3.0"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-V-01
-    bid_ref: "§1.1.1.1.1.1.1.10.5"
-    acceptance_unit_id: E8-VITALITY
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_WEIGHT.md"
-
-  - metric_id: M_SYNTH_VIT_RANK
-    metric_name_zh: 对比范围活力排名
-    definition: "对比范围内按活力指数降序 RANK。默认范围=团队临时重点城市：北京/上海/广州/深圳/杭州/南京/武汉/重庆/宁波/成都/合肥（北上广深杭南武重宁+成都合肥；宁=宁波；可追加）。选范围是 API。无指数不进榜；同分并列。指数未出是上游，不算本条口径未定。"
-    formula: "RANK() OVER (ORDER BY vit_index DESC) 于当前对比范围。默认城市=110000/310000/440100/440300/330100/320100/420100/500000/330200/510100/340100。无指数不进榜；同分并列。禁止抄全库总榜。"
-    algorithm_type: STAT
-    source_tables: ["<- metric: M_SYNTH_VIT_INDEX"]
-    source_systems: []
-    update_freq: daily
-    version: "0.3.3"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-01
-    bid_ref: "§1.1.1.1.1.1.1.10.5"
-    acceptance_unit_id: E8-VITALITY
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_RANK.md"
-
-  # ════════════ SYNTH-ELEMENT（区域创新要素分析，10 条，算法库 §10.6-10.9） ════════════
-  - metric_id: M_SYNTH_ELEM_INDEX
-    metric_name_zh: 区域创新要素指数（综合）
-    definition: "missing(Q-SYNTH-02)：综合类型/层次/领域三维评价结果的区域创新要素综合指数；正式合成公式、三维权重与归一化基准待算法定义卡确认。临时默认为三维等权合成。"
-    formula: "pending_algorithm（三维加权合成；权重/公式待 Q-SYNTH-02 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 区域基础数据、科技创新数据、行业领域统计（§10.9）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-02
-    bid_ref: "§1.1.1.1.1.1.1.10.9"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_TYPE_INDEX
-    metric_name_zh: 区域创新要素类型指数
-    definition: "missing(Q-SYNTH-E-01)：基于七要素（人才/企业/政策/服务机构/科研机构/资金/空间）配置水平的类型综合评价指数；正式指标体系、阈值与权重待算法定义卡确认。算法库 §10.6。"
-    formula: "pending_algorithm（七要素加权 + 归一化；权重待 Q-SYNTH-E-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 创新人才/企业/政策/服务机构/科研机构数据（§10.6）；资金/空间输入缺口见 Q-SYNTH-E-04"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.6"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_TYPE_SCORE
-    metric_name_zh: 七要素类型维得分
-    definition: "draft(Q-SYNTH-E-01)：创新人才/企业/政策/服务机构/科研机构/资金/空间七类要素各自的类型维量化评分；评分基于规模、质量、活跃度等维度，正式指标池与权重待确认。"
-    formula: "pending_algorithm（各要素类型维加权评分；权重待 Q-SYNTH-E-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 七要素多源数据（§10.6-10.8）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.6"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_LEVEL_INDEX
-    metric_name_zh: 区域创新要素层次指数
-    definition: "missing(Q-SYNTH-E-01)：基于七要素结构（人才结构/企业结构/政策结构/服务机构结构/科研机构结构/资金结构/空间结构）的层次综合评价指数，衡量创新体系成熟度与均衡度。算法库 §10.7。"
-    formula: "pending_algorithm（结构维度加权 + 达标判定；权重/阈值待 Q-SYNTH-E-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 七要素结构数据（§10.7）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.7"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_LEVEL_SCORE
-    metric_name_zh: 七大结构层次评价
-    definition: "draft(Q-SYNTH-E-01)：七要素各自结构层次的达标评价结果（成熟度/均衡度/达标）；评价方法与阈值待算法定义卡确认。"
-    formula: "pending_algorithm（结构达标判定 + 层次评分）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 七要素结构数据（§10.7）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.7"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
-    metric_name_zh: 区域创新要素领域指数
-    definition: "missing(Q-SYNTH-E-01)：基于产业领域覆盖广度、技术领域应用深度、创新产出强度等维度的领域综合评价指数。算法库 §10.8。"
-    formula: "pending_algorithm（领域维度加权 + 归一化；权重待 Q-SYNTH-E-01 闭合）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 产业知识图谱、技术领域数据、区域创新要素数据（§10.8）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.8"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_INDICATOR
-    metric_name_zh: 要素分项指标值与得分
-    definition: "draft(Q-SYNTH-02)：类型/层次/领域三维下各分项要素指标的原始值与归一化得分；正式分项指标池以算法库 §10.6-10.9 为准，待算法定义卡确认完整清单。"
-    formula: "pending_algorithm（分项指标采集 + 归一化评分）"
-    algorithm_type: MODEL
-    source_tables: ["pending: 七要素多源数据（§10.6-10.9）"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-02
-    bid_ref: "§1.1.1.1.1.1.1.10.6"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_WEIGHT
-    metric_name_zh: 类型/层次/领域权重分布
-    definition: "三维权各 1/3（合计必须 1）乘 TYPE/LEVEL/DOMAIN 三条 INDEX，刷区域要素综合分。算法 2026-09 默认，Q-SYNTH-E-01 仍 🟡。产品不展示权重表。缺任一维指数该区无法计算。"
-    formula: "elem_score=(1/3)×type_index+(1/3)×level_index+(1/3)×domain_index。type_index<-metric: M_SYNTH_ELEM_TYPE_INDEX；level_index<-metric: M_SYNTH_ELEM_LEVEL_INDEX；domain_index<-metric: M_SYNTH_ELEM_DOMAIN_INDEX。权合计≠1 该次无法计算。缺维指数该区无法计算。禁止页面改权。禁止七要素 SCORE 加总冒充三维分。"
-    algorithm_type: STAT
-    source_tables:
-      - "<- metric: M_SYNTH_ELEM_TYPE_INDEX"
-      - "<- metric: M_SYNTH_ELEM_LEVEL_INDEX"
-      - "<- metric: M_SYNTH_ELEM_DOMAIN_INDEX"
-    source_systems: []
-    update_freq: daily
-    version: "0.3.0"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-E-01
-    bid_ref: "§1.1.1.1.1.1.1.10.9"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md"
-
-  - metric_id: M_SYNTH_ELEM_CONTRIB
-    metric_name_zh: 要素贡献度与影响路径
-    definition: "missing(Q-SYNTH-E-02)：各创新要素对特定产业发展及创新成果的贡献度量化与影响路径识别；算法细则（关联分析方法、贡献度计算模型）待算法定义卡确认。演示态仅展示要素规模占比推导，不作因果结论。"
-    formula: "pending_algorithm（贡献度量化 + 影响路径识别；方法待 Q-SYNTH-E-02 闭合）"
-    algorithm_type: MIXED
-    source_tables: ["pending: 产业知识图谱、要素与产出关联数据"]
-    source_systems: ["Mock @ batch=mock_20260811"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-E-02
-    bid_ref: "§1.1.1.2.4.2.8.2.3"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_ELEM_RANK
-    metric_name_zh: 对比范围要素综合排名
-    definition: "对比范围内按要素综合指数降序 RANK。默认范围与 VIT_RANK 同一份临时重点城市（北上广深杭南武重宁+成都合肥；宁=宁波；可追加）。选范围是 API。无指数不进榜；同分并列。禁止分维指数冒充。指数未出是上游。"
-    formula: "RANK() OVER (ORDER BY elem_index DESC) 于当前对比范围。默认城市同 VIT_RANK。无指数不进榜；同分并列。禁止抄全库总榜。"
-    algorithm_type: STAT
-    source_tables: ["<- metric: M_SYNTH_ELEM_INDEX"]
-    source_systems: []
-    update_freq: daily
-    version: "0.3.3"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-02
-    bid_ref: "§1.1.1.1.1.1.1.10.9"
-    acceptance_unit_id: E8-ELEMENT
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md"
-
-  # ════════════ SYNTH-COLLAB（区域创新协同分析，6 条，算法库 §10.10） ════════════
-  - metric_id: M_SYNTH_COLLAB_COMPLETENESS
-    metric_name_zh: 协同网络完整度
-    definition: "窗口内企∪科研机构∪人才（进入该链路）中，至少 1 条有效合作边的主体占比×100。分母含无边主体。有效边 <- metric: M_SYNTH_COLLAB_RELATION_INPUT。缺口：上游仅联合专利有 DWD，合作项目/人才流动无表；无主体名册。三种边不齐则不是三种齐全的完整度。算法 2026-09 默认，Q-SYNTH-C-01 仍 🟡。"
-    formula: "n/N×100。N=窗口内企∪院∪人去重（进入该链路，含无边）。n=N 中至少 1 条有效边的主体去重。有效边 <- metric: M_SYNTH_COLLAB_RELATION_INPUT。N=0 该次无法计算；n=0 且 N>0 则 0。禁止边数当分子。禁止密度/中心度冒充。缺口：上游 RELATION_INPUT 仅联合专利有 DWD，coop_project/talent_flow 无对等表；窗口主体名册无表；目标建议 ads.synth_collab_completeness，当前无此表。三种边不齐则不是三种齐全的完整度。"
-    algorithm_type: STAT
-    source_tables: ["<- metric: M_SYNTH_COLLAB_RELATION_INPUT"]
-    source_systems: []
-    update_freq: daily
-    version: "0.3.1"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-C-01
-    bid_ref: "§1.1.1.1.1.1.1.10.10"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_COMPLETENESS.md"
-
-  - metric_id: M_SYNTH_COLLAB_CENTRALITY
-    metric_name_zh: 协同网络中心度
-    definition: "draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的协同网络中，衡量企业、科研机构和人才节点连接其他创新主体并产生辐射影响的相对程度；正式采用度中心性、介数中心性或其他算法及区域聚合方法待确认。"
-    formula: "pending_algorithm（节点度中心性 degree/(N-1)；正式算法待 Q-SYNTH-C-01 闭合）"
-    algorithm_type: GRAPH
-    source_tables: ["pending_ods_cooperation_subject", "pending_ods_cooperation_relation"]
-    source_systems: ["产业全要素图谱", "科研成果库"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-C-01
-    bid_ref: "§1.1.1.1.1.1.1.10.10"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_COLLAB_DENSITY
-    metric_name_zh: 协同网络密度
-    definition: "draft(Q-SYNTH-C-01)：在所选目标区域与时间窗口形成的创新主体网络中，以实际有效合作连接相对于理论可连接关系的程度反映整体合作紧密度；正式图类型、方向性、重复边合并与边权处理规则待确认。"
-    formula: "pending_algorithm（无向简单图 2E/[N×(N-1)]；正式图模型待 Q-SYNTH-C-01 闭合）"
-    algorithm_type: GRAPH
-    source_tables: ["pending_ods_cooperation_subject", "pending_ods_cooperation_relation"]
-    source_systems: ["产业全要素图谱", "科研成果库"]
-    update_freq: pending
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: draft
-    pending_ref: Q-SYNTH-C-01
-    bid_ref: "§1.1.1.1.1.1.1.10.10"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_COLLAB_INDEX
-    metric_name_zh: 区域创新协同指数
-    definition: "missing(Q-SYNTH-C-02)：将网络完整度、中心度和密度三项指标标准化、综合加权并结合历史数据校准后形成的区域创新合作综合结果，用于横向区域对比和纵向趋势分析；正式标准化方法、权重、校准窗口与集群/孤立判据待确认。禁止以密度×强度冒充正式公式。"
-    formula: "pending_algorithm（三指标归一化后加权合成；权重/校准待 Q-SYNTH-C-02 闭合）"
-    algorithm_type: MODEL
-    source_tables: []
-    source_systems: []
-    update_freq: n/a
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-C-02
-    bid_ref: "§1.1.1.1.1.1.1.10.10"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-
-  - metric_id: M_SYNTH_COLLAB_RELATION_INPUT
-    metric_name_zh: 协同关系输入统计
-    definition: "窗口内按类型 COUNT 有效合作事件：联合专利（申请号、多申请人去重、≥2 主体）、合作项目（项目号去重、≥2 机构）、人才流动（人员ID+变更时间、同人同机构连续去重、跨机构 1 条起）。供 COMPLETENESS 当有效边。口径三种都要。缺口：合作项目、人才流动无对等项目 DWD，本波只能出联合专利一路。算法 2026-09 默认，Q-SYNTH-C-01 仍 🟡。"
-    formula: "COUNT(DISTINCT relation_event_id) GROUP BY relation_type, region, window。joint_patent：event=申请号，申请人去重后主体≥2，FROM enterprise_patent_detail。coop_project：event=项目号，机构≥2。talent_flow：event=person_id+变更时间，同人同机构连续并一条，必须跨机构。单主体/单机构/未跨机构不算。禁止把完整度当本条。缺口：coop_project / talent_flow 无对等项目 DWD，这两种当前算不出来；目标建议 ads.synth_collab_relation_input，当前无此表。joint_patent 有表，灌数空另标，不进无法执行。"
-    algorithm_type: STAT
-    source_tables:
-      - "enterprise_patent_detail <- ods: dwd_patent"
-      - "enterprise_patent_detail.assignee_name <- ods: dwd_patent_assignees"
-    source_systems: ["国内机构要素库", "国外机构要素库"]
-    update_freq: daily
-    version: "0.3.2"
-    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
-    is_mock: true
-    mapping_status: "🔧"
-    pending_ref: Q-SYNTH-C-01
-    bid_ref: "§1.1.1.1.1.1.1.10.10"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_RELATION_INPUT.md"
-
-  - metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
-    metric_name_zh: 协同—创新产出关联结果
-    definition: "missing(Q-SYNTH-C-03)：在明确的区域样本、时间窗口与产出指标口径下，衡量协同网络指标或协同指数与联合发明专利数等创新产出之间的统计关联程度；相关方法、滞后窗口、显著性和最小样本数均待确认。"
-    formula: "pending_algorithm（Pearson/Spearman 相关；方法/样本门槛待 Q-SYNTH-C-03 闭合）"
-    algorithm_type: MODEL
-    source_tables: []
-    source_systems: []
-    update_freq: n/a
-    version: "0.1.0"
-    is_mock: true
-    mapping_status: "🔧"
-    definition_status: missing
-    pending_ref: Q-SYNTH-C-03
-    bid_ref: "§1.1.1.2.4.2.8.3.3"
-    acceptance_unit_id: E8-COLLAB
-    owner_agent: algorithm-agent
-
-  # --- ALGO-LIB-T0X-REGISTER-L01 T0-X 分析清单身份（D1=draft, type=UNKNOWN） ---
   - metric_id: M_SYNTH_182_1
     metric_name_zh: "区域科技创新成果综合评价模型"
-    definition: >
-      区域科技创新成果综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-182，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标把「区域科技创新成果」拆成基础科学、应用科技、科研机构三维，维内两子项批内极值归一、维内等权、三维等权，得到 0—100 的综合指数。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_182_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_patent_cited", "dwd_rd", "dwd_zh_journal", "dwd_zh_paper", "dwd_zh_paper_cited"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_182_1.md"
+    data_support_level: "部分支持"
+    support_reason: "三维在深莞惠广四城全部可算且非退化（论文/被引、2024 授权与高价值代理、机构存量与转化率均有量）；但①评价集被迫收缩到深圳都市圈：专利申请人按底册归城时北京/上海不可归属（2024 年 40,888 件授权未归属），跨省横比在本数据面上不成立；②科研机构底册 2,074 行只覆盖深广莞惠，京沪零行；③高价值专利只能用申请人级 value P90 代理，无法对齐国知局四要件；④论文城市归属仅 47.4% 可判（机构串含城市名或白名单高校）。两条以上依赖维结构性不可得，判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-182"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_183_1
     metric_name_zh: "区域产业创新成果综合评价模型"
-    definition: >
-      区域产业创新成果综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-183，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "三维合成的算法只有三步：子项极值归一、维内等权、三维等权。三步都能落地，四城也都能出一行三列。卡住的是**两个子项的语义与覆盖**：第三产业占比重四城只有 1 城有同期间事实，产品名称覆盖只能触及 5.5046% 的企业，服务机构维用的是「服务广度×深度」而不是「经营绩效」。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_183_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_macro_index_data", "dwd_org_industry_product_tags", "dwd_org_org_product_info", "dwd_org_tech_tag", "dwd_patent"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_183_1.md"
+    data_support_level: "部分支持"
+    support_reason: "三维里两维（企业创新、服务机构创新）有真值链且四城齐全；产品服务创新维的『第三产业增加值占比重』四城只有 1 城有同期间事实，整列记 null，实际退化成一个子项（产品名称覆盖数）单撑；且产品标签只能覆盖底册 5.50% 的企业。按 §0.1 判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-183"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.001
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_184_1
     metric_name_zh: "区域产业创新人才综合评价模型"
-    definition: >
-      区域产业创新人才综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-184，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标把「区域产业创新人才」拆成数量、学历、年龄、成果四维，维内子项批内极值归一、 子项等权，四维等权合成 0—100。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_184_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_financing_info", "dwd_zh_journal", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_184_1.md"
+    data_support_level: "部分支持"
+    support_reason: "四维里两维出数：数量维（四市学者 1,174 人，深 247 / 广 918 / 莞 9 / 惠 0）与成果维（2024 授权 270,110 件、转移 172 件、论文+H 126,251、院士 6 人）都有真实非零读数且逐项可复现；但另外两维不可用：①数量维的企业研发人员分母整列为空（0/90,926 非空）；②学历维与年龄维只有深穗两城有样本（学位记录 116 条、履历记录 103 条），且两城差异用 Fisher 精确检验 p=0.5498 / 0.7816，统计上不可区分——能算出但不构成可发布读数，整维不入指数。四维只有两维可算，判部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-184"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_185_1
     metric_name_zh: "区域产业创新政策综合评价模型"
-    definition: >
-      区域产业创新政策综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-185，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标把「区域产业创新政策」拆成数量、类型、效果三维，维内子项批内极值归一、三维等权， 得到 0—100 的综合指数。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_185_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_policy_base"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_185_1.md"
+    data_support_level: "部分支持"
+    support_reason: "数量维在四市都有真实读数（深 879 / 广 325 / 莞 8 / 惠 0 条），类型维可用文件体裁覆盖度代理（深 11 / 广 10 / 莞 4 / 惠 0 类）；但效果维整维不可算：时间戳两列 20,000 行全是 '0000-00-00' 零日期，link 与 status 在四市是常数、零区分度；且王惠的四类政策主题在库内无字段（theme 19,998/20,000 为 0）。三维里一维整缺、一维只能代理，不满足『完全转换支持』的结构+数据双条件，判部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-185"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_186_1
     metric_name_zh: "区域创新活力综合分析模型"
-    definition: >
-      区域创新活力综合分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-186，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本件的算法只有一步：四维等权平均。四城四维都有值，所以这一步必然能落地、且逐城可复算。卡住的是**四维背后的证据密度**：人才维 2/4、政策维 2/3、产业维 4/5，且四维时间窗不齐。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_186_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["派生输入: code/_snapshots21/vit_family_20261023.json", "派生输入: code/M_SYNTH_VIT_DIM_SCORE_out.json", "派生输入: code/M_SYNTH_182_1_out.json", "派生输入: code/M_SYNTH_183_1_out.json", "派生输入: code/M_SYNTH_184_1_out.json", "派生输入: code/M_SYNTH_185_1_out.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_186_1.md"
+    data_support_level: "部分支持"
+    support_reason: "四维等权可算、四城都有四维，指数逐城可复算；但四维本身有两维只有一半子维在场（人才 2/4、政策 2/3），产业维有一个三级指标四城全缺，四城盘上的极值归一又让每维的最小值恒为 0。按 §0.1「始终有部分依赖维度无法得到足够数据」判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-186"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.0
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_187_1
     metric_name_zh: "区域创新要素类型综合评价模型"
-    definition: >
-      区域创新要素类型综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-187，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标把「区域创新要素」拆成人才、企业、政策、服务机构、科研机构、资金、空间七个结构， 结构内叶子批内极值归一等权，七结构等权合成 0—100。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_187_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_financing_info", "dwd_org_tech_tag", "dwd_patent", "dwd_policy_base"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_187_1.md"
+    data_support_level: "部分支持"
+    support_reason: "七结构中五结构（企业/政策/科研机构/资金/空间）有 gkx 真实非零读数并逐叶可复现；但人才结构维的『研发人员占比』分母整列为空（development_employee 0/90,926 非空）、高学历占比只有深穗两城有学历样本（116 条学位记录）；服务机构维的六类分类只存在于演示 ADS 的 svc_org_card，gkx 无此表，只能退化为行业口径；空间维仅有名称关键词代理、无面积与密度。存在至少四个维度被迫降级，不满足『完全转换支持』要求的『结构 + 数据量都够』，判部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-187"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_188_1
     metric_name_zh: "区域创新要素层次综合评价模型"
-    definition: >
-      区域创新要素层次综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-188，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标是 187 的二次合成：对每个结构先算成熟度（结构内叶子归一等权）与均衡度（熵 H/ln(n)×100）， 两者等权得结构分，七结构再等权，得到 0—100 的层次指数。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_188_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["纯派生件：输入=兄弟件产物（详见 calc-logic 与源件 §三）"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_188_1.md"
+    data_support_level: "部分支持"
+    support_reason: "层次指数全部叶子继承 187 的类型指数口径，缺口同源：人才结构维研发人员分母整列为空、高学历占比只有深穗两城有样本；服务机构维由演示 ADS 的六类分类退化为行业口径；空间维只有名称关键词代理；政策维库内止于 2022-06 且惠州零记录。七结构里六结构在四城均有读数、指数非退化，但至少四处叶子被迫降级，且惠州在人才/政策/空间三结构上是真实 0 端，熵均衡度因此被采集偏差放大，判部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-188"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 1.3
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_189_1
     metric_name_zh: "区域创新要素领域综合评价模型"
-    definition: >
-      区域创新要素领域综合评价模型：对应算法库 SRS ALGO-SYNTH-SYNTH-189，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标把「区域创新要素」拆成人才、研发投入、产业主体、技术领域、创新载体五维，维内两子项批内极值归一、维内等权、五维等权，得到 0—100 的要素指数。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_189_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_job", "dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_recruit_info", "dwd_org_stock_finance_info", "dwd_rd", "dwd_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_189_1.md"
+    data_support_level: "部分支持"
+    support_reason: "五维中四维（投入/主体/技术/载体）在四城均有真实非零读数，且互不重复取数；但人才维只有深圳（247 位）、广州（918 位）达到可评分门槛，东莞 9 位、惠州 0 位，属学者表覆盖不足而非真实为零，故这两城人才维记 null（不补 0），指数由其余四维等权；研发投入只能取上市主体（856 家，占底册 0.45%），不是全口径 R&D；惠州 2024 年研发费用 175.39 亿元、较 2022 年 48.91 亿元增 258%，与 2023 年166.37 亿元的跳升需按主体核对（惠州 24 家上市主体里 1 家即可主导），已在 §三 披露。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-189"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 2.4
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_190_1
     metric_name_zh: "区域创新要素综合分析模型"
-    definition: >
-      区域创新要素综合分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-190，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "无现成综合指数结果面且非直查 → 非完全直接支持；三入口可现转但全部继承上游缺口、综合指数为缺叶降维合成且当日无法补齐 → **部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_190_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["纯派生件：输入=兄弟件产物（详见 calc-logic 与源件 §三）"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_190_1.md"
+    data_support_level: "部分支持"
+    support_reason: "三维入口全部可现转（类型 87.2/26.4/19.6/44.0、层次、领域三子指数已跑通）；但三子指数各自继承上游缺口：187 人才/科研机构维京沪缺失、188 熵均衡被采集偏差放大、189 宏观事实表京沪无行——综合指数为『缺叶降维合成』，判部分支持"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析（区域创新要素分析）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-190"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_191_1
-    metric_name_zh: "区域创新协同分析模型"
-    definition: >
-      区域创新协同分析模型：对应算法库 SRS ALGO-SYNTH-SYNTH-191，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "区域创新协同分析模型（合作网络密度）"
+    definition: "本指标按王惠口径计算区域创新合作网络的密度：节点是深圳、广州、东莞、惠州四市内 2021—2024 年中文论文 ≥3 篇的机构，边是同一篇论文的共同署名。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_191_1.py 为准）。"
     algorithm_type: MIXED
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_scholar_paper_relation", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_191_1.md"
+    data_support_level: "部分支持"
+    support_reason: "王惠口径（边数 ÷ 完全图边数）可直接计算，节点与边都由真实论文署名构造，四市子图与城市对矩阵均有量；但只能覆盖学术协同：专利共同申请表只有 2 万件抽样、合作项目表金额与参与方字段全空，产学研协同的另外两条腿缺失；论文机构串仅 47.4% 能判城（其余机构名不含城市与校名），密度绝对值偏低。故判部分支持，不抬到完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-SYNTH-191"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_005
-    metric_name_zh: "自动模式识别"
-    definition: >
-      05 无模式识别专叶。禁止改挂 116(5)/PATH 中心度。无 also_in。见 GA-D05。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_CENTRALITY
+    metric_name_zh: "协同网络中心度（平均点度中心性）"
+    definition: "无现成中心度结果面 → 非完全直接支持；平均点度中心性四城可算但三边缺一、节点分母不可比、节点级度清单未落盘 → **部分支持**。"
+    formula: "C_avg = (1/n) * sum_i k_i = 2m/n；归一化 C'_avg = C_avg/(n-1) = 2m/[n(n-1)]"
+    algorithm_type: GRAPH
+    source_tables: ["dwd_org_base_info", "dwd_patent_applicants", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_CENTRALITY.md"
+    data_support_level: "部分支持"
+    support_reason: "联合专利边（dwd_patent_applicants 28,964 行）与人才流动边（dwd_scholar_work_experience 57,117 行）可现转，平均点度中心性四城可算；但①合作项目边结构性缺失（dwd_zh_project.funded_institution 58,453 行全空，0 边），三边并集缺一类；②节点分母失真（京沪企业主档仅 163/16 家，深广全量 95,600/49,605 家），中心度均值由分母口径主导；③节点级度清单未落盘，覆盖节点缓存值（深 128 > 2E=26）超出图论上界，枢纽节点无法复核。故按四档口径判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析 / 区域创新协同分析 / 协同度计算模型｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-SYNTH-C-01"
+    acceptance_unit_id: "E8-COLLAB"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_COMPLETENESS
+    metric_name_zh: "协同网络完整度"
+    definition: "无完整度结果面 → 非完全直接支持；覆盖率公式可执行、四城可出数，但「三类协同」只覆盖两类、主体名册缺失、覆盖口径不可复核 → **部分支持**。"
+    formula: "Completeness = n_covered / N × 100；N=企业∪科研机构∪学者所属机构（含无边主体）"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info", "dwd_patent_applicants", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_COMPLETENESS.md"
+    data_support_level: "部分支持"
+    support_reason: "完整度公式可执行、四城覆盖率可算；但①分子侧三类边仅两类可建（合作项目边 funded_institution 全空），完整度是『两类协同』而非『三类协同』的覆盖率；②分母含无边主体，京沪企业主档 163/16 家、深广 95,600/49,605 家，分母口径双向失真；③覆盖节点缓存值与 2E 图论上界冲突（3 城超界），且无 window 主体名册表（calc-logic 登记的 ads.synth_collab_subject 缺口），分子不可复核。按四档口径判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析 / 区域创新协同分析 / 协同度计算模型｜ **数据支持度**：**部分支持**"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-COLLAB"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_DENSITY
+    metric_name_zh: "协同网络密度"
+    definition: "无密度结果面 → 非完全直接支持；密度公式可执行、四城原始密度跨 5.69 个数量级，但三边缺一、分母不可比、覆盖口径不可复核 → **部分支持**。"
+    formula: "rho = 2m / [n(n-1)]；n>=2；m=联合专利边+合作项目边+人才流动边（无向简单图去重）"
+    algorithm_type: GRAPH
+    source_tables: ["dwd_org_base_info", "dwd_patent_applicants", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_DENSITY.md"
+    data_support_level: "部分支持"
+    support_reason: "密度公式可执行、四城原始密度可算（10^-9—10^-3 量级，跨 5.7 个数量级）；但①合作项目边 0 条，分子只含联合专利与人才流动两类边；②分母为全量主体集，京沪企业主档 163/16 家与深广 95,600/49,605 家不可比，密度差异主要由分母采集口径驱动；③覆盖节点缓存值与 2E 上界冲突，无法用覆盖子网复核。按四档口径判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析 / 区域创新协同分析 / 协同度计算模型｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-SYNTH-C-01"
+    acceptance_unit_id: "E8-COLLAB"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_INDEX
+    metric_name_zh: "区域创新协同指数"
+    definition: "无指数结果面 → 非完全直接支持；三维可算、指数可合成、排序与 191 一致，但三维共用失真分母、合作项目边缺失、历史校准未落地 → **部分支持**。"
+    formula: "Index = (1/3)*[minmax(Completeness) + minmax(Centrality_avg) + minmax(Density)]，0—100"
+    algorithm_type: MODEL
+    source_tables: ["dwd_patent_applicants", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: n/a
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "三维可算、指数可合成、排序与 191 完全一致；但①三类边缺合作项目边（funded_institution 全空），三维中的完整度与中心度均只反映两类协同；②三维共用同一套失真分母（京沪主档 163/16、深广 95,600/49,605），指数差异主要由分母口径而非真实协同水平驱动；③王惠口径等权、极值归一，未做权重敏感性以外的校准，且需求要求的『历史数据校准机制』未落地。按四档口径判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析 / 区域创新协同分析 / 协同指数｜ **数据支持度**：**部分支持**"
+    pending_ref: "Q-SYNTH-C-02"
+    acceptance_unit_id: "E8-COLLAB"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_OUTPUT_CORR
+    metric_name_zh: "协同—创新产出关联结果"
+    definition: "结构齐全、单窗 X 与 Y 均可取，但王惠口径要求「同一区域按年组样本、n≥3 且不做跨区域截面」——年度序列不存在，故本次交付 `insufficient`；又因表结构与数据量具备补齐条件、并非结构性不可得，判 **部分支持** 而非「完全不支持」。"
+    formula: "r_k = Pearson(X_{k,t}, Y_t)，n>=3、双侧方差>0；X∈{Index, Density, Centrality_avg}，Y=联合发明专利授权去重数"
+    algorithm_type: MODEL
+    source_tables: ["dwd_org_base_info", "dwd_patent", "dwd_patent_applicants"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: n/a
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_OUTPUT_CORR.md"
+    data_support_level: "部分支持"
+    support_reason: "协同侧 X 三件套可由 191 单窗事实算出，产出侧 Y（发明专利授权存量）按城可得；但①缺区域×年序列，无法按王惠口径组 n>=3 的年样本，交付状态 insufficient；②合作项目边 0 条使 X 的结构维不完整；③X 与 Y 均受分母/归属采集缺口影响，4 城截面 r 为负且不可解释。按四档口径判部分支持（有结构、有部分量，但关键年度序列与边维始终不足）。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "科技专题·综合智能分析 / 区域创新协同分析 / 协同效果评估｜ **数据支持度**：**部分支持**（本次交付状态：`insufficient`）"
+    pending_ref: "Q-SYNTH-C-03"
+    acceptance_unit_id: "E8-COLLAB"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_COLLAB_RELATION_INPUT
+    metric_name_zh: "协同关系输入统计"
+    definition: "本指标不做打分，只做「协同关系的输入盘点」：按 calc-logic 0.3.2 的三类关系（联合专利 / 合作项目 / 人才流动），把库内原始表折算成事件级计数，并给出区域切片。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_COLLAB_RELATION_INPUT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_scholar_paper_relation", "dwd_scholar_work_experience", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_COLLAB_RELATION_INPUT.md"
+    data_support_level: "部分支持"
+    support_reason: "三类关系中联合专利与人才流动两路可现转（全国事件级 6477 / 18553；四城中可归城事件 122（1.88%）/ 32（0.17%）），但合作项目一路结构性缺失——dwd_zh_project 58453 行中funded_institution 非空 0 行，participating_institution 每项目仅 1 家机构、无参与单位列表字段，无法按『跨 ≥2 机构』成事件；三类口径只能出两类（66.7%），且联合专利一侧用的是 20,000 件抽样表、不是 293.99 万件全量，区域维可归城率不足 2%。按四档定义判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-COLLAB"
+    last_repro_elapsed_sec: 0.5
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_005
+    metric_name_zh: "产业链图谱结构分析"
+    definition: "本件把产业链拆成两层：12 条链 → 1,273 个叶节点，以及 12 条链 → 41 个一级环节。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_21_GRAPH_ANALYSIS_005.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_industry_chain_info", "dwd_org_industry_tags"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_21_GRAPH_ANALYSIS_005.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把产业链拆成两层：12 条链 → 1,273 个叶节点，以及 12 条链 → 41 个一级环节。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-005"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_006
-    metric_name_zh: "预测分析"
-    definition: >
-      05 无展示侧预测专叶。禁止 mapped 182–191 / DS-09。禁止静默假网。见 GA-D06。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "预测分析（城市专利年度序列外推）"
+    definition: "本指标对深圳、广州、东莞、惠州四市 2021—2024 年专利申请件数做外推，预测 2025—2027 年。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_21_GRAPH_ANALYSIS_006.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["纯派生件：输入=兄弟件产物（详见 calc-logic 与源件 §三）"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_21_GRAPH_ANALYSIS_006.md"
+    data_support_level: "部分支持"
+    support_reason: "四市 2021–2024 专利件数是全量面板实测值（合计 2,086,838 件），序列干净、口径唯一，预测链条可完整复现；但只有 4 个年度观测，ARIMA(1,1,0) 无法识别，回测只有 8 个一步预测点（4 城 × 2 原点），MAPE 的置信度很低；2025 年在城市维没有键（面板 2025 总量 440,401，为公开滞后截断），2026 为残年，都无法作为样本外验证。因此只能给趋势示意，不能作为阈值判定依据。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-006"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_007
-    metric_name_zh: "分类与聚类"
-    definition: >
-      05 无分类聚类专叶。禁止 mapped 116(4)。见 GA-D07。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "分类与聚类（合著网络社区发现 + 企业资质向量聚类）"
+    definition: "本指标做两层无监督聚类。第一层在 2021—2024 四市机构合著网上跑 Louvain：1,094 个节点、1,174 条边，得到 479 个社区，模块度 Q=0.714468，最大社区 92 个节点（占 8.41%）；"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_21_GRAPH_ANALYSIS_007.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent_applicants", "dwd_scholar_paper_relation", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_21_GRAPH_ANALYSIS_007.md"
+    data_support_level: "部分支持"
+    support_reason: "两层聚类都有真实输入：合著网 1,094 节点 / 1,174 边可算社区与模块度（Q=0.714468），32,322 家企业的 55 个资质标签可算 KMeans 与轮廓系数（0.304095）；但 L1 的节点只覆盖「有中文论文且机构串可判城」的机构：4 年窗口 52,119 篇里只有 24,835 篇（47.65%）至少含一个可判城机构，署名对层面 37,597/103,263（36.41%）可判城；L2 的标签全部是资质认定类（高企/科技型/专精特新），不含技术领域，簇的经济含义只是「资质等级」而非「技术方向」；55 维二值特征稀疏度 88.61%，高企与国家级高企的 φ 相关 0.5586，轮廓系数 0.304095 属「弱结构」。两条都属「可算但解释力有限」，判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-007"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_21_GRAPH_ANALYSIS_008
-    metric_name_zh: "智能推荐"
-    definition: >
-      05 无展示侧推荐专叶。禁止硬挂招入 164。无 also_in 专题 7 条。见 GA-D08。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "智能推荐（机构合作者推荐）"
+    definition: "在真实机构合著图（训练图 7,742 节点 / 7,736 边，测试边取 2021 年后新增 5,801 条）上做链路预测，对每对机构输出「未来可能合作」的推荐分与 Top-K 伙伴列表；统计窗口=训练图构造时点截面；去重按机构对（无向去重）；离线评估口径：PPR AUC=0.7666、Adamic-Adar AUC=0.5517、Precision@10=0.0205/0.0258。特例：需求点名的专用合著特征缺失，评估结论限于合著拓扑特征，禁外推为全特征结论。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_21_GRAPH_ANALYSIS_008.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent_applicants", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_21_GRAPH_ANALYSIS_008.md"
+    data_support_level: "部分支持"
+    support_reason: "图谱协同推荐链路已跑通并可离线评估：训练图 7742 节点 / 7736 边，2021 年后新增测试边 5801 条；PPR AUC=0.7666、Adamic-Adar AUC=0.5517、AA Precision@10=0.0205、PPR Precision@10=0.0258。但需求点名的『用户查询行为/兴趣偏好』在 gkx 中没有任何日志表，『文献/研究项目/技术方案』三类对象也没有对应的推荐边，无法做个性化排序与在线 A/B，只能交付机构/专家的图谱关系推荐，故判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-21-GRAPH-ANALYSIS-008"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 144.6
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_001
     metric_name_zh: "多种路径搜索算法支持"
-    definition: >
-      专用最短路族，05 无专叶。禁止 mapped 116。501 ≠ 库已覆盖。见 DS23-D01。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "在真实机构合著图（20,436 节点 / 38,208 边，巨型分量 15,223 / 36,965）上实现并验证六种路径搜索算法（BFS/DFS/Dijkstra/A*/Bellman-Ford/双向 BFS），回答「从 A 机构到 B 机构的合作路径怎么走」；统计窗口为构图时点截面；去重按机构对；边权默认 1（可换依据关系类型加权）。特例：Bellman-Ford 抽样 20 对验证（非全量）；图不连通时返回可达分量内的最短路径。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_23_GRAPH_ALGO_001.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_001.md"
+    data_support_level: "完全转换支持"
+    support_reason: "无现成「图算法服务」结果面，但依赖侧结构与数据量都够：在 20436 节点 / 38208 边（巨型分量 15223 节点 / 36965 边）的真实机构合著图上，六种算法全部跑通——BFS/Dijkstra/A* 各 200/200 对、DFS 200/200 对、Bellman-Ford 20/20 对，BFS/Dijkstra/A* 跳数一致 200/200 对，可直接作为路径搜索服务底座。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-001"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 16.9
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_002
     metric_name_zh: "最优路径发现与展示"
-    definition: >
-      专用最短路且无叶。可视化并入本行。禁止 mapped 116。见 DS23-D02。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "本指标在同一张机构合著网上比较两种「最优路径」：跳数最少（边数最少）与代价最低（$\\sum 1/w$ 最小，$w$ 是共著篇数）。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_23_GRAPH_ALGO_002.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_patent", "dwd_patent_applicants", "dwd_zh_project"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_002.md"
+    data_support_level: "完全转换支持"
+    support_reason: "依赖侧结构与数据量足够：在 20436 节点 / 38208 边真实合著图上（巨型分量 15223 节点），加权最短路（代价=1/共著篇数）可现算，Dijkstra 与 A* 代价 200/200 对完全一致、路径 193/200 对逐节点相同，Bellman-Ford 15/15 对一致；且 146/200 对的『代价最低路径』与『跳数最短路径』不同，说明双口径有实质区分，不是同一结果的两种说法。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-002"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 12.1
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_006
     metric_name_zh: "度中心性计算与展示"
-    definition: >
-      05 无度中心性专叶。禁止 116(5)/M_SVC_GRAPH_CENTRALITY。禁止 also_in DS-02-PATH。见 DS23-D06 / DS23-B01。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "度中心性只问一件事：**这个节点直接连了多少个别的节点**。它不需要业务字段、不需要时间序列、不需要外部对照表，只需要一张边表；而这张边表在 gkx 里可以由 `dwd_zh_paper.author_info_list` 用一篇论文一条规则重建出来，量也够（36,965 条巨片边、平均度 4.8565）。所以判**完全转换支持**，同时把「度是共著意义上的度，不是企业实力」写成硬边界。"
+    formula: "C_D(v) = d_v / (n - 1)，d_v 为邻居数，n 为所选点集节点数"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_en_paper_citation", "dwd_en_paper_cited_by_info", "dwd_org_invest_info", "dwd_org_subsidiary_info", "dwd_scholar", "dwd_scholar_coauthor", "dwd_scholar_paper_relation", "dwd_zh_paper", "dwd_zh_paper_author", "dwd_zh_paper_citation", "dwd_zh_paper_reference"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_006.md"
+    data_support_level: "完全转换支持"
+    support_reason: "两库均无现成的度中心性结果面（gkx 侧 enterprise_centrality 表不存在，逐表核对见附录 B），但依赖侧的结构与数据量都够：dwd_zh_paper.author_info_list 可直接重建机构合著边，100,900 篇论文给出 20,436 节点 / 38,208 边，巨型分量 15,223 节点 / 36,965 边；度中心性在 P2 上精确算得（非抽样、非近似），最大值 广州中医药大学第一附属医院 的 12.745‰。现在即可算出，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页节点属性面板、机构连接度榜单、图谱节点大小映射"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-006"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_007
     metric_name_zh: "紧密中心性计算与展示"
-    definition: >
-      05 无专叶。禁止 mapped 116。禁止 also_in DS-02-PATH。见 DS23-D07 / DS23-B02。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "紧密中心性问的是「从这里到所有别处有多远」，它比度中心性多需要一个条件：**两端必须连通**。gkx 里没有现成结果面，但有能重建边的论文表，也有足够的论文量（100,900 篇）；在巨型分量内做 15,223 次全源 BFS 是分钟级的事。所以判**完全转换支持**，并把「只在连通分量内成立」写成硬边界。"
+    formula: "C_C(v) = (r_v-1)/(n-1) * (r_v-1)/sum d(v,u)，r_v 为分量内可达节点数（networkx wf_improved）"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_en_paper_cited_by_info", "dwd_org_invest_info", "dwd_org_subsidiary_info", "dwd_scholar_coauthor", "dwd_zh_paper", "dwd_zh_paper_citation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_007.md"
+    data_support_level: "完全转换支持"
+    support_reason: "两库均无紧密中心性结果面（gkx 侧 enterprise_centrality 不存在，见附录 B），但所需结构只有一张边表：dwd_zh_paper.author_info_list 重建的机构合著图。在巨型分量 15,223 节点 / 36,965 边上做 15,223 次全源 BFS，精确算得每个节点的 closeness（非抽样、非近似），最大值 华南理工大学 的 26.802%，反推分量内平均距离 3.731 跳。数据量足够、结构足够，现在就能算，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页节点属性面板、机构中心度榜单、图谱布局的中心性加权"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-007"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 96.1
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_008
     metric_name_zh: "中介中心性计算与展示"
-    definition: >
-      05 无专叶。禁止 also_in DS-02-PATH。见 DS23-D08 / DS23-B03。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "中介中心性问的是「有多少条最短路必须经过我」，它是五个指标里**计算成本最高**的一个：精确算法要对每个源点跑一次单源最短路并累加依赖，复杂度 $O(VE)$。gkx 里没有结果面，但边表可重建、节点规模在 1.5 万级、单机跑得动（566.4 秒），因此判**完全转换支持**；同时把「P0/P1 不算」写成硬边界，因为跨连通分量的最短路不存在。"
+    formula: "C_B(v) = 2/((n-1)(n-2)) * sum_{s!=v!=t} sigma_st(v)/sigma_st，Brandes 算法，无向、无权、精确"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar_coauthor", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_008.md"
+    data_support_level: "完全转换支持"
+    support_reason: "两库均无中介中心性结果面（gkx 侧 enterprise_centrality 不存在，见附录 B），但边表可由 dwd_zh_paper.author_info_list 重建。在 15,223 节点 / 36,965 边的巨型分量上跑完整 Brandes（15,223 个源、无抽样），算得最高 5.864% 的桥节点，零值节点占比 36.98%，并用 k=400 抽样值反证精确值的必要性。结构与数据量都够，现在即可算出，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页节点属性面板、桥梁机构榜、跨群体路径高亮"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-008"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_009
     metric_name_zh: "PageRank算法计算与展示"
-    definition: >
-      05 无 PageRank 专叶。不是 IDE。见 DS23-D09 / DS23-B04。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "PageRank 问的是「随机游走的人长期会待在哪」，它比前面三件更依赖**图的整体结构**：一个节点重要，是因为重要节点连着它。gkx 里没有结果面，但边表可重建；更关键的是，引用网（PageRank 的经典用武之地）在本库是断的——`dwd_zh_paper_citation` 的 `citation_id_list` 与本库论文 id 的闭合率实测 0.0%，另一张参考表 `dwd_zh_paper_reference` 也只有 0.0857%（165/192,600）——两张表同源不闭合，所以只能在共著图上跑。判**完全转换支持**，并把「这不是独立信息源」写成硬边界。"
+    formula: "PR(v) = (1-alpha)/n + alpha * sum_{u in N(v)} PR(u)/d_u，alpha=0.85"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_zh_paper", "dwd_zh_paper_citation", "dwd_zh_paper_reference"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_009.md"
+    data_support_level: "完全转换支持"
+    support_reason: "两库均无 PageRank 结果面，但边表可由 dwd_zh_paper.author_info_list 重建，算法本身在内存里 40 次迭代收敛（残差 1.37e-08）。在 15,223 节点 / 36,965 边上算得头部 17.4269 万分比（均匀值的 26.53 倍），并用 alpha 扫描、加权版、有向版三组对照证明头部不是参数假象。数据与算法都具备，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页节点属性面板、机构影响力榜、图谱节点热度映射"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-009"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_011
-    metric_name_zh: "多种社群发现算法支持"
-    definition: >
-      05 无社群专叶。116 无社群。501 ≠ 库已覆盖。见 DS23-D11。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "社群发现（图算法）"
+    definition: "图算法类的判档不看「结果表在不在」，看「**边在不在**」。本件的边只有一种可重建来源：同一篇论文的共同署名。这一种边是真实派生（不是自造），量也够（36,965 条巨片边）；供应、合作、技术流三类业务边在 gkx 均无表承接，本件不补也不拿专利共现顶替。所以判**完全转换支持**，同时把「社群只读作学术共著社群」写成硬边界。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_23_GRAPH_ALGO_011.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_org_invest_info", "dwd_org_subsidiary_info", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_011.md"
+    data_support_level: "完全转换支持"
+    support_reason: "三张图表在 gkx 均不存在，但边源可重建：dwd_zh_paper 的 author_info_list 提供同篇共著关系，100,900 篇论文建成 20,436 节点 / 38,208 边，巨连通片 15,223 节点 / 36,965 边；四种社群发现算法在巨片上全部跑通，模块度 0.5—0.7 区间，社群成员表可全量落盘。结构与数据量都够，现在就能算出该指标，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页「社群发现」按钮、社群着色、社群列表"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-011"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    last_repro_elapsed_sec: 0.0
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_012
     metric_name_zh: "社群结构自动识别"
-    definition: >
-      要社群划分结果且无专叶。禁止 also_in DS-02-PATH。见 DS23-D12。 统计窗口与对象范围待 T0-X 核对；公式与 algorithm_type 未签，本条仅为 OPEN draft 身份。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "社群识别不需要任何外挂业务字段，只需要边表：有边就能划分。gkx 里三张图表都不存在，但边可以从论文表重建，量也够；算法在 15,223 节点上是秒级的。所以判**完全转换支持**，同时把「社群只读作学术共著社群」「标号只在本快照内有效」写成硬边界。"
+    formula: "mod = 1/(2m) * sum_uv [A_uv - k_u*k_v/(2m)] * delta(c_u,c_v)，Louvain 贪心最大化 + 聚合迭代"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_scholar_coauthor", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_012.md"
+    data_support_level: "完全转换支持"
+    support_reason: "社群识别不需要任何外挂业务字段，只需要边表；边表由 dwd_zh_paper.author_info_list 重建。在 15,223 节点 / 36,965 边上一轮 Louvain 得 60 个社群、模块度 0.755103，零模型 z=158.926，且与已归档的 011（60 个社群 / 0.755103）复算一致，说明结果可重复、不是随机划分。算法、数据、复算三者齐备，故判完全转换支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "图谱页「社群发现」按钮、社群着色、社群列表与下钻"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-012"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_013
     metric_name_zh: "社群属性与特征分析"
-    definition: >
-      05 无社群特征专叶。核心节点对象不同，禁止 also_in DS-02-PATH。见 DS23-D13。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    definition: "「社群属性与特征分析」要在社群划分之上回答「每个社群是谁、做什么、和谁来往」。划分本身完全可算（共著图 + Louvain，模块度 0.755103）；但「做什么」依赖主题词表（只覆盖 0.7919% 论文）、「是谁」依赖机构底册（精确匹配 11.4038%），两样都薄。所以结果拆成两层：**拓扑属性（规模、密度、电导、跨社群权重）可直接交付**，**语义属性（主题、类型、城市）只能标为线索**。判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_23_GRAPH_ALGO_013.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_zh_paper", "dwd_zh_paper_classification"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_013.md"
+    data_support_level: "部分支持"
+    support_reason: "「社群属性与特征分析」要在社群划分之上回答「每个社群是谁、做什么、和谁来往」。划分本身完全可算（共著图 + Louvain，模块度 0.755103）；但「做什么」依赖主题词表（只覆盖 0.7919% 论文）、「是谁」依赖机构底册（精确匹配 11.4038%），两样都薄。所以结果拆成两层：**拓扑属性（规模、密度、电导、跨社群权重）可直接交付**，**语义属性（主题、类型、城市）只能标为线索**。判**部分支持**。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    ui_mount: "综合图谱 → 社群属性面板（社群画像卡 + 跨社群联系）"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-013"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
   - metric_id: M_SYNTH_DS_23_GRAPH_ALGO_014
-    metric_name_zh: "社群动态演化追踪"
-    definition: >
-      05 无动态社群专叶。禁止 mapped seq 132。禁止改挂 DS-27。见 DS23-D14。
-    formula: "pending_cosign: human:唐绍祖（未签）"
+    metric_name_zh: "发明人—学者桥图算法"
+    definition: "本件在 20,000 件专利样本上建发明人共现图：31,188 个姓名节点、77,296 条共同发明边，1,725 个孤立点、6,954 个连通片；"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_DS_23_GRAPH_ALGO_014.py 为准）。"
     algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    source_tables: ["dwd_id", "dwd_patent", "dwd_patent_inventors", "dwd_scholar", "dwd_scholar_paper_relation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_DS_23_GRAPH_ALGO_014.md"
+    data_support_level: "部分支持"
+    support_reason: "本件在 20,000 件专利样本上建发明人共现图：31,188 个姓名节点、77,296 条共同发明边，1,725 个孤立点、6,954 个连通片；"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "DS-23-GRAPH-ALGO-014"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
-  - metric_id: M_SYNTH_GRAPHAPI_116_1
-    metric_name_zh: "产业全要素图谱API服务开发"
-    definition: >
-      产业全要素图谱API服务开发：对应算法库 SRS ALGO-SYNTH-GRAPHAPI-116，统计窗口与对象范围以需规文本为准。
-    formula: "pending_cosign: human:唐绍祖（未签）"
-    algorithm_type: third_party
-    source_tables: [pending_ods]
-    source_systems: [pending_ods]
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_CONTRIB
+    metric_name_zh: "要素贡献度与影响路径"
+    definition: "正本要的是「四要素对两目标的贡献份额 + 影响路径」。份额能算，但**分子分母的边界在三个地方糊**：人才侧没有桥表（残差 0，只能用学者数做结构代理）、机构侧有两种分母（仅机构表 vs 含高校，差 29 倍）、产业侧四类主体互相重叠（高企也可能有研发投入）。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**；这不是算不出来，而是**算出来的数不能当归因读**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_CONTRIB.py 为准）。"
+    algorithm_type: MIXED
+    source_tables: ["dwd_ent_high_tech", "dwd_ent_patent", "dwd_paper", "dwd_talent_scholar"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
     update_freq: pending
-    version: "0.1.0"
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_CONTRIB.md"
+    data_support_level: "部分支持"
+    support_reason: "份额分解与 Top6 路径都能算，但两处口径退化：① 创新成果侧只能拆企业与科研机构，人才残余实测为 0（库内无作者级机构字段），按 calc-logic 转结构代理；② 产业侧四类主体规模互不互斥（高企同时可能有研发投入），份额是结构代理不是归因，论文侧无机构类型字段、无法进份额分解。再加「科研机构」两种口径差 29 倍，读者必须同时看到两组数，故判部分支持。"
     is_mock: true
-    mapping_status: "⏳"
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-02"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_DOMAIN_INDEX
+    metric_name_zh: "区域创新要素领域指数"
+    definition: "领域指数的**算法面**没有障碍：10 个叶子先做四城极值归一，再按维内等权平均出 3 个可用维，最后按「缺维不进分母」取三维均值，四城结果与面板 `domain.index` 逐城差 < 1e-6。卡住的是**输入面**：5 个维只有 3 个有承载，且其中两个维各只有 1 个加权叶子（相当于没有维内平均）。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_DOMAIN_INDEX.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_macro_index_data", "dwd_patent_transfer"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_DOMAIN_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "领域指数要求的五个维里只有 3 个能从 gkx 侧凑出可加权叶子（产业领域覆盖广度、技术领域应用深度、创新产出强度），人才结构合理性与经济贡献度两维在 2024 年四城上零承载：规上工业增加值与地区生产总值在 dwd_macro_index_data 里四城均无 2024 行，研发人员列整列为空、硕博学者四城仅 111 人。三条可用维的等权均值可复算且与面板逐城一致，但指数只覆盖 3/5 维、其中 2 个维只有 1 个加权叶子，且 D2_1 分母为存续口径——按「始终有部分依赖维度无法得到足够数据」判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-01"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_INDEX
+    metric_name_zh: "区域创新要素指数（综合）"
+    definition: "综合指数的**算法链**在本批四城上完全闭合：极值归一出 27 个叶子得分，三层聚合出三条维指数，1/3 加权出综合分，逐城复算与面板 `elem_index` 差 < 1e-6，`checks.elem_index_recomposes` 为 true。卡住的是**输入的完整性**：类型维 6/7（创新人才整维缺）、领域维 3/5（GDP 与规上工业营收无承载）、权重是自拟 1/3。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_INDEX.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["派生输入: code/_snapshots21/synth_elem_panel_20261023.json", "派生输入: code/_snapshots21/synth_elem_probe_20261023.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "三维指数的算术链在本批 4 城上完全闭合（elem_index = 三维均值，逐城复算一致），但两个输入维本身带缺：类型维 7 个维里创新人才维整维不可算（研发人员列 0 行灌数、硕博学者仅 111 人），领域维 5 个维只出 3 个（GDP 与规上工业营收无承载），且权重是自拟 1/3 而非甲方标定。合成分照跑，但只能读作「4 城内相对位置」，不能对外当绝对水平，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-02"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_INDICATOR
+    metric_name_zh: "要素分项指标值与得分"
+    definition: "叶子的**结构与算法**都不缺：极值归一、维内均值、三层聚合三步在本批 4 城上全部闭合（面板 `checks.z_range` 为 true、`type_index_is_dim_mean` 为 true）。卡住的是**三个叶子的数据面**：研发人员占比的分子列 `development_employee` 在 90,926 行年报里 0 行有值（列建好、未灌数），创新空间面积与创新空间密度两格在 gkx 全库列名字典里检索 `%space%area%`／`%park_area%`／`%regional_area%`／`%land_area%` 返回 0 行。这不是「覆盖低」，是「没有」。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_INDICATOR.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_heis", "dwd_macro_index_data", "dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_org_product_info", "dwd_patent", "dwd_scholar", "dwd_scholar_education_background", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDICATOR.md"
+    data_support_level: "部分支持"
+    support_reason: "17 个类型叶子中 7 个直读（ok）、5 个代理（proxy）、1 个退化（degenerate）、1 个样本不足（insufficient）、3 个无承载（missing），进加权 12 个；7 个类型维中 6 个可算（创新人才维全缺），5 个领域维中 3 个可算。缺的部分不是覆盖率低，是列建好未灌数（development_employee 0/90,926）或全库无此列（空间面积/区域面积），故只能判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-02"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_INDEX
+    metric_name_zh: "区域创新要素层次指数"
+    definition: "层次指数的算法链是「成熟度（维内等权）+ 均衡度（Shannon 熵比）→ 结构分 → 六结构均值」，四城复算与面板差 < 1e-6，且与类型指数存在恒等式（成熟度均值 = 类型指数）。卡住的是结构覆盖与均衡度的可算性：人才结构整结构空缺、两个结构 n=1 使均衡度恒 60。按 §0.1 判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_LEVEL_INDEX.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["派生输入: code/_snapshots21/synth_elem_panel_20261023.json", "派生输入: code/M_SYNTH_ELEM_RANK_out.json(序数归一)"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "七个结构里 6 个可算（企业、政策、服务机构、科研机构、资金、空间），人才结构整结构空缺（叶子同类型指数：研发人员列整列为空、硕博学者样本不足）；成熟度、熵均衡度、结构得分与六结构等权均值全部可复算，与面板逐城一致。但两个结构（服务机构、空间）只有 1 个叶子，均衡度按规则恒记 60，结构得分实际是「成熟度与常数 60 的平均」；加上人才结构空缺，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-01"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_LEVEL_SCORE
+    metric_name_zh: "七大结构层次评价"
+    definition: "结构评价的算法只有四步：成熟度（维内等权）、均衡度（熵比）、结构分（两者均值）、达标（成熟度 ≥ 本批均值）。四城 24 个格子逐格可复算，达标标记与阈值也逐格可复算。卡住的是覆盖面与标准性质：人才结构整结构空缺，两个结构均衡度为常数，达标阈值是相对值。按 §0.1 判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_LEVEL_SCORE.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["派生输入: code/_snapshots21/synth_elem_panel_20261023.json", "派生输入: code/_snapshots21/synth_elem_probe_20261023.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_LEVEL_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "七个结构里 6 个能给出成熟度、均衡度与达标（人才结构因研发人员整列空、硕博学者样本不足而整结构空缺）；成熟度与均衡度逐城可复算，达标按「成熟度 ≥ 本批均值」逐格可复算。但两个结构只有 1 个叶子（均衡度恒 60）、达标阈值是本批 4 城的相对均值而非绝对标准，且换一种阈值（中位数）就会让广州的资金结构从「未达标」变「达标」——判档依赖阈值定义，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-01"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_RANK
+    metric_name_zh: "对比范围要素综合排名"
+    definition: "排序算子是**一行 SQL 就能写清**的东西（`RANK() OVER (ORDER BY elem_index DESC)`），本件的全部风险不在算子，而在**排名范围**：正本写死 11 城，底册里这 11 城只有深圳 95,600 行、广州 49,605 行是有效样本，其余 9 城 1—163 行。用这样的样本做极值归一，等于让一行北京的数据决定全国的最大值。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_RANK.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_base_info"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_RANK.md"
+    data_support_level: "部分支持"
+    support_reason: "排序算子本身完整可执行（RANK，同分并列下一名跳号），4 城内名次在权重、留一维、序数归一三种扰动下都不变；但 calc-logic 写死的默认对比范围 11 城里，只有广深两城在底册有足量主体，其余 9 城合计仅 224 行（占底册 0.1184%），做不出可比的极值归一，故默认 11 城榜不可执行，只能出 4 城局部榜——据此判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_TYPE_INDEX
+    metric_name_zh: "区域创新要素类型指数"
+    definition: "类型指数的算法面没有障碍：12 个进加权叶子先做四城极值归一，再按维内等权平均出 6 个维分，最后按「缺维不进分母」取六维均值，四城结果与面板 `type.index` 逐城差 < 1e-6。卡住的是输入面：创新人才整维不可算，且资金、空间两维都是代理口径。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_TYPE_INDEX.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_org_annual_financial_info", "dwd_org_base_info", "dwd_org_financing"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "七个要素维里 6 个可算（企业、政策、服务机构、科研机构、资金、空间），创新人才整维不可算：研发人员列 90,926 行中 >0 行为 0，硕博学者按机构名落城后四城仅 111 人、东莞与惠州为 0。指数 = 6 个可用维等权均值，逐城复算与面板一致；但 17 个类型叶子里 3 个无承载、1 个样本不足、1 个退化（服务机构类型数四城恒 6），且资金维是上市口径、空间维只有名称弱代理，故判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-01"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_TYPE_SCORE
+    metric_name_zh: "七要素类型维得分"
+    definition: "维得分是类型指数的中间层，算法只有一步「维内等权平均」，四城 24 个格子都能从面板叶子 z 值直接复算（误差 < 1e-6）。卡住的是覆盖与稳定性：第七维整维空缺，三个维只剩一个叶子，企业维内部次序随叶子取舍翻转。按 §0.1 判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_TYPE_SCORE.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["派生输入: code/_snapshots21/synth_elem_panel_20261023.json", "派生输入: code/_snapshots21/synth_elem_probe_20261023.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "七个维里 6 个能出分（企业、政策、服务机构、科研机构、资金、空间），创新人才维整维空缺——研发人员列整列为空、硕博学者四城仅 111 人。6 个有值维的分与其叶子构成都能逐城复算（维得分 = 维内叶子 z 的等权均值，误差 < 1e-6），但每维的叶子覆盖参差（1/3、2/2、1/2、3/3），且空间维与资金维均为代理口径，故判部分支持，不称完全转换支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-E-01"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_ELEM_WEIGHT
+    metric_name_zh: "类型/层次/领域权重分布"
+    definition: "权重的**算术面**没有障碍：加权和、熵权、弹性、翻转阈值、单纯形扫描五步全部落地，四城 `elem_score` 与 `M_SYNTH_ELEM_INDEX` 逐城一致（差 < 1e-6）。卡住的是**配置面**：gkx 与 live 开发库都没有权重表，calc-logic 把权重写成「可采用等权重，也可根据评估重点自行制定」，等于甲方未定值；上游另标 `is_mock: true`、Q-SYNTH-E-01 仍 🟡。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_ELEM_WEIGHT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["派生输入: code/_snapshots21/synth_elem_panel_20261023.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md"
+    data_support_level: "部分支持"
+    support_reason: "权重的算术部分可算且闭合（三维各 1/3、合计 1，四城 elem_score 与 M_SYNTH_ELEM_INDEX 逐城一致），但权重本身不是甲方标定值：calc-logic 明写「可采用等权重，也可根据评估重点自行制定」，上游另标 is_mock: true、Q-SYNTH-E-01 仍 🟡，且这 1/3 落在的两个维（类型、领域）各自还有整维缺失，故判部分支持——公式能跑，权重没有权威出处。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-ELEMENT"
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_GRAPHAPI_116_1
+    metric_name_zh: "图谱 API 节点/边供给能力"
+    definition: "图谱 API 供给能力盘查件：按节点域与关系类统计可供给量（7 节点域合计 3,570,548 行：论文 100,900、专利 2,939,895、企业 189,116、申请人 169,226、发明人 69,647、学者 21,316、政策 20,000；9 类关系边）；统计窗口为 2026-10-21 gkx 快照截面；去重按各域实体唯一键；特例：契约面（参数/鉴权/限流）不在本指标统计范围，供给量≠服务可用量。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_GRAPHAPI_116_1.py 为准）。"
+    algorithm_type: third_party
+    source_tables: ["dwd_org_base_info", "dwd_org_industry_tags", "dwd_org_invest_info", "dwd_org_shareholder_info", "dwd_patent", "dwd_patent_assignees", "dwd_policy_base", "dwd_zh_paper"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_GRAPHAPI_116_1.md"
+    data_support_level: "部分支持"
+    support_reason: "本件把「图谱 API 能不能做」拆成供给面与契约面。供给面统计 7 个节点域、9 类关系：节点域合计 3,570,548 行，其中论文 100,900、专利 2,939,895、企业 189,116、申请人 169,226、发明人 69,647、学者 21,316、政策 20,000。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
     pending_ref: "GAP-ALGO-TYPE-UNSIGNED"
     acceptance_unit_id: "ALGO-SYNTH-GRAPHAPI-116"
-    owner_agent: data-agent
-    owner_human: human:淮政玮
-    register_task: ALGO-LIB-T0X-REGISTER-L01
-    open_task: "ALGO-LIB-T0X-REGISTER-L01"
+    owner_human: "human:淮政玮"
+    updated: "2026-10-23"
 
+  - metric_id: M_SYNTH_VIT_DIM_SCORE
+    metric_name_zh: "四维单维评分"
+    definition: "本件是四个子模型（182 科技、183 产业、184 人才、185 政策）的**分维出口**：不做归一、不做加权、不做二次加工，只把上游已发布的综合分按「城市 × 维度」摆成一张表。所以它自己不会「算不出来」，卡住的是**上游每一维的子维齐不齐**：人才维 4 个子维只剩 2 个，政策维 3 个只剩 2 个，产业维的三级指标缺第三产业占比重。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_VIT_DIM_SCORE.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_en_paper", "dwd_macro_index_data", "dwd_org_annual_financial_info", "dwd_org_industry_product_tags", "dwd_org_tech_tag", "dwd_patent", "dwd_policy_base", "dwd_research_institute_base_info", "dwd_scholar", "dwd_scholar_education_background", "dwd_zh_paper", "dwd_zh_paper_citation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_DIM_SCORE.md"
+    data_support_level: "部分支持"
+    support_reason: "四维分全部可算（四城 4/4 有值），但只有科技维是满维（3/3 子维）；产业维 5 个三级指标缺 1（第三产业占比重）、人才维 4 个子维只有 2 个有值、政策维 3 个子维只有 2 个有值。四维「有值」不等于四维「齐」，按 §0.1 判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-V-01"
+    acceptance_unit_id: "E8-VITALITY"
+    last_repro_elapsed_sec: 0.001
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_VIT_INDEX
+    metric_name_zh: "区域创新活力指数"
+    definition: "指数三步（极值归一 / 维内加权 / 四维加权）都能落地，四城四维也都有值，所以「能不能算」不是问题；卡住的是**权重从哪来**与**分项齐不齐**：gkx 没有权重表，主口径是按维完整度论证出来的自定义权重（`main_is_official=false`），12 个正本分项缺 3 个。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_VIT_INDEX.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["派生输入: code/_snapshots21/vit_family_20261023.json", "派生输入: code/M_SYNTH_VIT_DIM_SCORE_out.json", "派生输入: code/M_SYNTH_VIT_INDICATOR_out.json", "派生输入: code/M_SYNTH_186_1_out.json"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_INDEX.md"
+    data_support_level: "部分支持"
+    support_reason: "指数三步（归一 / 维内加权 / 四维加权）都能落地，四城四维都有值；但 12 个正本分项里 3 个四城全缺、人才与政策两维只有一半子维在场，权重没有官方表（自定义 + 熵权对照），且极值归一是四市盘内相对尺度。按 §0.1 判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-01"
+    acceptance_unit_id: "E8-VITALITY"
+    last_repro_elapsed_sec: 0.086
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_VIT_INDICATOR
+    metric_name_zh: "活力分项指标值与得分"
+    definition: "本件的任务不是算分，是**把 12 个分项摆在一张表上，让读者看见四维分是怎么来的**。12 个分项中 8 个能进维、1 个有值但饱和、3 个四城全缺（两个整列空、一个指标码不存在）。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_VIT_INDICATOR.py 为准）。"
+    algorithm_type: MODEL
+    source_tables: ["dwd_en_paper_reference", "dwd_macro_index_data", "dwd_org_annual_financial_info", "dwd_org_annual_org_financial_info", "dwd_org_org_product_info", "dwd_org_tech_tag", "dwd_patent", "dwd_patent_transfer", "dwd_policy_base", "dwd_scholar", "dwd_scholar_education_background", "dwd_zh_paper_citation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: pending
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_INDICATOR.md"
+    data_support_level: "部分支持"
+    support_reason: "12 个分项里 8 个有标准化得分并进维、1 个（高学历人才占比）有值但因饱和未进维、3 个（新产品销售收入占比 / 研发人员数量 / 政策实施效果指数）四城全缺；其中两个缺项是整列空（研发人员、政策日期），一个是指标码不存在（a77234）。按 §0.1 判部分支持。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_ref: "Q-SYNTH-01"
+    acceptance_unit_id: "E8-VITALITY"
+    last_repro_elapsed_sec: 0.001
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_VIT_RANK
+    metric_name_zh: "对比范围活力排名"
+    definition: "按四维（科技/产业/人才/政策）等权合成区域创新活力指数并降序排名，排名范围=请求声明的对比城市集合；统计窗口为四维指标最新可得年度截面；去重按城市唯一（一城一指数），同分并列；本批实测：声明范围内 11 城中仅 2 城达到四维齐全数据门槛，其余 9 城因维度缺失被排除（11 城名单见 calc-logic）。特例：无指数的城市不进榜、不摊 0 分；对比范围变化时排名实时重算。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_VIT_RANK.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_org_tech_tag", "dwd_patent", "dwd_policy_base", "dwd_scholar_education_background", "dwd_zh_paper_citation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_RANK.md"
+    data_support_level: "部分支持"
+    support_reason: "RANK 公式本身完整（指数降序 + 同分并列 + 无指数不进榜），四维也都能在四市上算出真值；但对比范围是 11 城：声明范围内只有 2 城达到数据充足度门槛（11 城被排除：北京市、上海市、杭州市、南京市、武汉市、重庆市、宁波市、成都市、合肥市、东莞市、惠州市），严格『四维齐全』口径下只剩 2 城（深圳市、广州市），排名退化为一次两两比较。根因是底册 99.82% 落在大湾区四市、高企与专利申请人名称两侧都无全国样本，扩量救不了，只能引入全国企业底册与全国专利申请人主数据后重做。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-VITALITY"
+    last_repro_elapsed_sec: 2.4
+    updated: "2026-10-23"
+
+  - metric_id: M_SYNTH_VIT_WEIGHT
+    metric_name_zh: "活力指数权重配置与权重弹性"
+    definition: "权重的**算法面**没有障碍：加权和、熵权、弹性、单纯形扫描四步都能落地，四维分也都有真值来源。卡住的是两件事：**官方权重读不到**（造数权重表在 gkx 不存在，权重只能自定义），**进盘的城市只有两个**（四维齐全的城市仅深圳、广州），任何权重下的「排名」都只是一次两两比较。按 §0.1「始终有部分依赖维度无法得到足够数据」判**部分支持**。"
+    formula: "见 calc-logic「计算逻辑说明」与 20261021 正本 §二（本件公式为过程式复算， 未浓缩为单行表达式；禁手抄，实现时以 code/M_SYNTH_VIT_WEIGHT.py 为准）。"
+    algorithm_type: STAT
+    source_tables: ["dwd_patent", "dwd_scholar", "dwd_zh_paper", "dwd_zh_paper_citation"]
+    source_systems: ["gkx @ 183.240.141.251:3318（只读）"]
+    update_freq: daily
+    version: 1
+    algo_server_location: "repos/demo-algo-science/innov/metrics/metrics.py（计算，SYNTH 复用创新模块） + repos/demo-algo-science/api/innov_metric_routes.py（服务接口）"
+    calc_logic_ref: "metrics/calc-logic/SYNTH/M_SYNTH_VIT_WEIGHT.md"
+    data_support_level: "部分支持"
+    support_reason: "权重公式（加权和 + 名次）完整可执行，四维分在 4 个城市上都是真值，熵权与弹性都能算；但三处结构性缺口把它压在『部分支持』：① 官方权重表 eval_weight 在 gkx 不存在，权重只能自定义，交付物里的 0.30/0.35/0.20/0.15 不是原系统标定值；② 四维齐全的城市只有 2 个（深圳市、广州市），东莞与惠州缺人才、政策两维，四维加权盘上永远只有两城，权重怎么调都只是一次两两比较；③ 熵权只能在这 2 城 × 4 维的矩阵上算，n=2 时熵权的区分度极不稳定，只能当参照不能当交付值。"
+    is_mock: true
+    ingest_batch: "20261021_gkx"
+    ui_mount: "区域活力榜的权重面板、「权重方案」下拉、名次稳定性提示"
+    pending_cosign: "已会签 human:唐绍祖 2026-10-16（formula 已审，同意滕强版口径；调查依据见 L01 handoff 会签记录）"
+    acceptance_unit_id: "E8-VITALITY"
+    last_repro_elapsed_sec: 0.0
+    updated: "2026-10-23"

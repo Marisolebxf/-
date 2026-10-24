@@ -1,6 +1,7 @@
 # 深圳人才维度（M_CHAIN_SZ_TALENT）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_TALENT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_TALENT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_TALENT_out.json`。
 
 ## 基础信息
 
@@ -8,44 +9,62 @@
 |---|---|
 | 指标ID | M_CHAIN_SZ_TALENT |
 | 指标名称 | 深圳人才维度 |
+| 所属域 | CHAIN（产业链分析） |
 | 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业情况分析对比 |
-| 三级模块 | 综合优势 |
-| 更新频率 | 周 |
-| 对齐状态判定 | 待闭合/待甲方确认 |
-| 是否在数据库 | 否/待确认 |
-| 关联Q编号 | Q058+QC08 |
-
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链分析 → 深圳产业情况分析对比 → 综合优势 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_TALENT.md` |
 
 ## 口径定义
 
-从人才数量与结构等维度评估深圳人才相对优势。
+`dwd_scholar` 有 **21,316 位学者**（机构名填充 20,829 = 97.72%），人才**数量**可按机构名归集（深圳 194–251 人，已算出）；但**两套学者 ID 交集仅 1,858（8.72%）**，`scholar_org_id` **整列为空**，机构只能按名称字符串匹配，学位记录可交叉命中深圳的只有 **29 人**，且学者表**没有任何产业/链归属字段**——数量勉强可算、结构分母过小、链切片无承载 → **部分支持**（BRIEF §3.4 / SKILL P4.3）。
 
 ## 计算逻辑说明
 
-人才数量、人才结构等维度加权评分。权重待甲方确认。
-
-| 二级指标 | 三级指标 | 指标说明 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- |
-| 人才 | 人才数量 | 深圳市人才总量 | dwd_scholar(scholar_id, scholar_org_name_zh); dwd_org_heis_info(city); dwd_research_institute_base_info(city) | 无 |
-| 人才 | 人才综合水平 | 硕博人员占比 | dwd_scholar_education_background(degree_zh, degree_en) | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_TALENT.md` §二（M_CHAIN_SZ_TALENT.py 零改语义复算）。
 
 ## 源表字段
 
-- dwd_industry_chain_info(industry_code, industry_name) — 目标产业链范围, 产业链名称
-- dwd_org_industry_tags(industry_code, credit_code, company_name) — 链上企业筛选, 信用代码关联, 企业名称匹配
-- dwd_org_heis_info(org_id, external_id, name_cn, province, city) — 高校标识, 信用代码关联, 学校名称, 省份, 城市
-- dwd_research_institute_base_info(org_id, external_id, name_cn, province, city) — 国内科研机构标识, 信用代码关联, 机构名称, 省份, 城市
-- dwd_scholar(scholar_id, scholar_org_id, scholar_org_name_zh) — 学者去重, 所属机构标识, 所属机构名称
-- dwd_scholar_education_background(scholar_id, degree_zh, degree_en) — 学者关联, 中文学位, 英文学位
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_heis_info`
+- `dwd_org_industry_tags`
+- `dwd_research_institute_base_info`
+- `dwd_scholar`
+- `dwd_scholar_coauthor`
+- `dwd_scholar_education_background`
+- `dwd_scholar_paper_relation`
+- `dwd_scholar_talent_flag`
+- `dwd_scholar_work_experience`
 
-- 无
+## 待建表字段
 
-## 参考文献
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-- 深圳人才维度｜深圳市统计局｜深圳市统计局. 深圳市2025年国民经济和社会发展统计公报[EB/OL]. [2026-08-19]. https://www.sz.gov.cn/cn/xxgk/zfxxgj/tjsj/tjgb/content/post_12805133.html
-- 深圳人才维度｜国务院｜国务院. 李强主持召开国务院常务会议 审议通过关于加快发展先进制造业集群的意见等[EB/OL]. (2023-05-05)[2026-08-19]. https://www.gov.cn/yaowen/2023-05/05/content_5754266.htm
+## 数据支持度与缺口
 
-对应Excel超链接：.\指标计算逻辑-V2\M_CHAIN_SZ_TALENT.md
+- **判档**：部分支持
+- **判档理由**：人才数量可按机构名归集（深圳 194–199 位学者，主档 21,316），但：① 人才属性宇宙与身份主档 ID 交集仅 1,858（8.72%）；② scholar_org_id 整列为空，机构只能按名称字符串匹配；③ 深圳学者中有教育记录的仅 29 人（14.6%），硕博占比的分母过小；④ 学者表无产业/链归属字段，链切片无承载 —— 故判部分支持。
+- **基期声明**：本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。
+- **复现实测耗时**：约 32.6 秒（源件落盘记录）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_TALENT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_TALENT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_TALENT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

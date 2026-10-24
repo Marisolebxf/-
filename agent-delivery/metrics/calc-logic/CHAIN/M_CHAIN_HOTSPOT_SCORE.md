@@ -1,76 +1,62 @@
-# 热点综合评分（M_CHAIN_HOTSPOT_SCORE）
+# 产业链热点综合评分（M_CHAIN_HOTSPOT_SCORE）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOTSPOT_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOTSPOT_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOTSPOT_SCORE_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
 |---|---|
 | 指标ID | M_CHAIN_HOTSPOT_SCORE |
-| 指标名称 | 热点综合评分 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
+| 指标名称 | 产业链热点综合评分 |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／产业热点领域识别 |
 | 更新频率 | 周 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 产业链页「热点评分」卡与链级热度排名 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2021, 2022, 2023, 2024, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_HOTSPOT_SCORE.md` |
 
 ## 口径定义
 
-指定产业链/环节在统计窗内的热度综合评分，从企业增速、投融资热度、专利密度、资讯热度四维加权评定，取值 0—100。分数越高表示该产业链/环节越热。评分维度与权重待甲方确认。
+按四维等权（企业增速／投融资／专利密度／资讯热度，各 0.25）计算，12 条链均值 **30.23**、标准差 **14.17**；具身智能 **69.94** 居首、人工智能 **39.20** 次之、智能网联汽车 **16.90** 垫底。首名在 1,771 组权重网格里占 **75.381%**，对权重不算敏感；但四维原始值全是代理、资讯数组近半截断，分数只能作链间相对热度，不是模型原分。
 
 ## 计算逻辑说明
 
-采用加权平均。四维：企业增速 / 投融资热度 / 专利密度 / 资讯热度。算法库「产业热点领域识别模型」（1.1.1.1.1.1.1.3.4）定义热点指标（行业增长率、市场份额、竞争格局等）并设定阈值，但未冻结权重；seed 公式为四维加权，默认等权（ΣW=1），甲方可改。
-
-### 第一步：入集
-
-按 `chain_id`（或 `node_id`）定对象，取各维原始值。
-
-### 第二步：四维标准化
-
-各维原始值 min-max 归一到 0—100：
-$$
-维度得分_{i} = \frac{x_i - \min(x)}{\max(x) - \min(x)} \times 100
-$$
-
-- **企业增速**：`chain_enterprise_stat.growth_rate`。
-- **投融资热度**：`chain_investment.investment_count`/`total_amount` 归一。
-- **专利密度**：环节专利数（`dwd_org_industry_chain_pat_dtl` 聚合）÷ 环节企业数。
-- **资讯热度**：`chain_news_stat.hot_count`/`news_count` 归一。
-
-### 第三步：综合评分
-
-$$
-热点综合评分 = \sum_{k=1}^{4} W_k \times 维度得分_k
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 热点综合评分 | 企业增速 | 企业增速得分 | 新增企业增速归一得分 | min-max(enterprise_growth_rate) | chain_enterprise_stat(chain_id, stat_year, enterprise_count, growth_rate) — 企业增速；chain_hotspot(chain_id, enterprise_growth_score) — 企业增速分 | 无 |
-|  | 投融资热度 | 投融资热度得分 | 融资事件/金额归一得分 | min-max(investment_total/count) | chain_investment(chain_id, stat_year, investment_count, total_amount) — 投融资；chain_hotspot(chain_id, investment_score) — 投融资分 | 无 |
-|  | 专利密度 | 专利密度得分 | 环节专利密度归一得分 | min-max(专利数/企业数) | dwd_org_industry_chain_pat_dtl(chain_code, node_id, pn) — 环节专利；chain_enterprise(chain_id, enterprise_id) — 环节企业 | 专利密度分字段 |
-|  | 资讯热度 | 资讯热度得分 | 热点资讯占比/浏览量归一得分 | min-max(hot_count/news_count) | chain_news_stat(chain_id, news_count, hot_count, total_views) — 资讯热度；chain_hotspot(chain_id, news_freq_score) — 资讯频率分 | 无 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOTSPOT_SCORE.md` §二（M_CHAIN_HOTSPOT_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
-- chain_hotspot(chain_id, chain_name, news_freq_score, investment_score, enterprise_growth_score, hotspot_score, is_hot, rank_overall) — 已有三维得分与综合分（gkxlumenx_ads / demo_gkxlumenx_ads）
-- chain_enterprise_stat(chain_id, chain_name, stat_year, enterprise_count, growth_rate) — 企业增速
-- chain_investment(chain_id, chain_name, stat_year, investment_count, total_amount) — 投融资热度
-- chain_news_stat(chain_id, chain_name, stat_month, news_count, hot_count, total_views) — 资讯热度
-- dwd_org_industry_chain_pat_dtl(chain_code, chain_name, node_id, pn, pbdt) — 专利密度
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_industry_chain_news_info`
+- `dwd_org_industry_chain_pat_dtl`
 
-- 专利密度得分字段（现 `chain_hotspot` 仅三维：资讯/投融资/企业增速，缺专利密度维）
-- 四维权重（待甲方确认）
-- 环节级热点综合分字段（现多为产业链粒度）
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 产业热点领域识别模型｜科技专题服务算法库 1.1.1.1.1.1.1.3.4（热点指标与阈值）。
+## 数据支持度与缺口
 
-[2] 产业热度综合评价｜工业和信息化部｜产业运行监测指标体系（企业增速/投融资/专利密度/资讯热度四维加权）。
+- **判档**：部分支持
+- **判档理由**：calc-logic 的四维结果表 chain_hotspot 在 gkx 侧 0 张（280 表里 hotspot 关键词零命中），live 侧只有 8 行未来产业种子样例、与 12 链仅 1 条重名，不能当结果面。企业增速、投融资、专利、资讯四个原始字段都没有真源，只能用可核代理重建：成立年分布、融资事件、申请人专利、资讯挂链次数。四维结构与 min-max 合成方式对得上，但每个代理与模型原分不是同一把尺（事件数不是热度、专利件数不是密度分、资讯条数不是关注度），且权重未冻结（本件等权为自定义），故判部分支持。
+- **基期声明**：增速维用 2021—2025 成立企业数（2026 残年不进增速分母）；资讯维用 2025—2026 两个完整/残年，2026 按资讯表实际覆盖计、不折算年化。2019 及更早的成立年只进「有成立年企业数」分母，不单独做基期。库内无更早的资讯年份（2024 及以前 0 行），故 missing 为空而非摊 0。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_HOTSPOT_SCORE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOTSPOT_SCORE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_HOTSPOT_SCORE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

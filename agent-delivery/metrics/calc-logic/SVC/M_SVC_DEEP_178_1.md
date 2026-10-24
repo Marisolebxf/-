@@ -1,55 +1,60 @@
 # 咨询服务机构技术力评价模型（M_SVC_DEEP_178_1）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-SVC-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_178_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_178_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_178_1_out.json`。
 
 ## 基础信息
 
 | 项目 | 内容 |
-| --- | --- |
+|---|---|
 | 指标ID | M_SVC_DEEP_178_1 |
 | 指标名称 | 咨询服务机构技术力评价模型 |
-| 一级模块 | 科技专题服务系统 |
-| 二级模块 | 产业服务链分析 |
-| 三级模块 | 服务机构技术力评估分析 |
-| 更新频率 | 按需 |
-| 对齐状态判定 | 已按算法库9.7展开；成功案例待建 |
-| 是否在数据库 | 否 |
-| 关联Q编号 |  |
+| 所属域 | SVC（产业服务链分析） |
+| 一级模块 | 产业服务链分析 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | — |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | [2026] |
+| calc-logic 引用 | `metrics/calc-logic/SVC/M_SVC_DEEP_178_1.md` |
 
 ## 口径定义
 
-选定咨询服务机构在统计年度的技术力指数，从人才密度、行业经验、成功案例数、行业声誉四个维度评定，取值 0—100。
+D2（行业经验）、D4（行业声誉）两维在 gkx 可实测；D1（人才密度）因年报表无研发人员列而结构性缺分子，D3（成功案例）无正式源，四维只剩两维进合成，故判**部分支持**，且正文明确本指数实际是「经验 + 声誉」二维，不可对外称四维合成。
 
 ## 计算逻辑说明
 
-第一步：入集demo_gkxlumenx_ads.svc_org_card(service_type_candidate=CONSULT) — 咨询服务机构认定。
-
-第二步：四维原始值。
-
-第三步：合成：各维截面 min-max 到 [0,1]，缺维不补 0、不进平均；等权后 ×100。
-
-| 一级指标                   | 二级指标   | 三级指标   | 指标说明                           | 计算公式                                | 源表字段                                                     | 待建字段                                |
-| -------------------------- | ---------- | ---------- | ---------------------------------- | --------------------------------------- | ------------------------------------------------------------ | --------------------------------------- |
-| 咨询服务机构技术力评价模型 | 人才密度   |            | 从技术类人才占比评估人才密度。     | development_employee / employees_number | dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 研发人员占比代理 | 无                                      |
-| 咨询服务机构技术力评价模型 | 行业经验   | 成立年限   | 从从业时间与行业覆盖评估行业经验。 | 统计年 − incorporation_year             | dwd_org_base_info(org_id, incorporation_year) — 成立年份     | 无                                      |
-| 咨询服务机构技术力评价模型 | 行业经验   | 覆盖产业数 | 从从业时间与行业覆盖评估行业经验。 | COUNT(DISTINCT industry_code)           | dwd_org_industry_tags(credit_code, industry_code) — 行业范围 | 无                                      |
-| 咨询服务机构技术力评价模型 | 成功案例数 |            | 从可验证成果项目数评估成功案例。   | 待建直读；现用资讯条数代理              | dwd_org_important_news_info(org_id, news_title, news_date) — 资讯代理 | svc_success_case_count-可验证成功案例数 |
-| 咨询服务机构技术力评价模型 | 行业声誉   |            | 从荣誉标签与资讯声量评估行业声誉。 | 荣誉标签加权 + 资讯条数等权             | dwd_org_tech_tag(org_id, org_tag) — 荣誉；dwd_org_important_news_info(org_id, news_title, news_date) — 声量 | 无                                      |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_178_1.md` §二（M_SVC_DEEP_178_1.py 零改语义复算）。
 
 ## 源表字段
 
-- demo_gkxlumenx_ads.svc_org_card(service_type_candidate=CONSULT) — 咨询服务机构认定
-- dwd_org_annual_financial_info(org_id, development_employee, employees_number, year) — 人才密度
-- dwd_org_industry_tags(credit_code, industry_code) — 行业覆盖
-- dwd_org_tech_tag(org_id, org_tag) — 荣誉声誉
-- dwd_org_important_news_info(org_id, news_title, news_date) — 声量/案例代理
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_org_annual_financial_info`
 
-- svc_success_case_count-可验证成功案例数
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1]咨询服务机构技术力评价模型｜深圳市市场监督管理局｜管理咨询机构等级评定规范：DB4403/T 559—2024｜2024-12-20｜[https://amr.sz.gov.cn](https://amr.sz.gov.cn/).
+## 数据支持度与缺口
 
-[2]咨询服务机构技术力评价模型｜山东科技咨询协会｜科技咨询机构及科技咨询师评价规范：T/SDASTC 016-2025｜2025年｜[http://www.sdastc.com](http://www.sdastc.com/).
+- **判档**：部分支持
+- **判档理由**：四维中 D2（年限全量 + 产业标签覆盖 762 家）、D4（标签 32077 家 + 资讯 24639 家 + 风险 22719 家）两维在 gkx 可实测复现，D3 仅有资讯弱代理；但 D1 人才密度维结构性缺分子——gkx 年报表无研发人员列（全表实测 0 行非空），从业人员 emp 虽有 86 家也构不成占比，而人才密度是本模型的第一维、官方标准里权重最高的一维，缺它不能算「完全转换支持」，故判部分支持。
+- **基期声明**：统计年取 2026（快照时点）；成立年限 = 2026 − inc_year，inc_year 覆盖 44,132/44,153。财务年表覆盖 2007—2025，本件只用其 emp 覆盖做可行性判定、不入合成，故不进基期。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_178_1.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_178_1.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_178_1_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

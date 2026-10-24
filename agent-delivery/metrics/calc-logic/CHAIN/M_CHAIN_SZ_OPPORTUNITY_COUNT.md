@@ -1,8 +1,7 @@
 # 深圳产业机遇数（M_CHAIN_SZ_OPPORTUNITY_COUNT）
 
-> 指标最终唯一解释口径（真源）。由 AI 补漏调研结果规范化迁移，对齐 metrics/registry/cfg_metric-CHAIN-seed.yaml。
->
-> **公式由 AI 创作，待算法 Lead 会签。**
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_OPPORTUNITY_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_OPPORTUNITY_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_OPPORTUNITY_COUNT_out.json`。
 
 ## 基础信息
 
@@ -10,52 +9,56 @@
 |---|---|
 | 指标ID | M_CHAIN_SZ_OPPORTUNITY_COUNT |
 | 指标名称 | 深圳产业机遇数 |
-| 一级模块 | 产业链分析 |
-| 二级模块 | 深圳产业发展分析 |
-| 三级模块 | - |
-| 更新频率 | 周 |
-| 对齐状态判定 | 部分对齐 |
-| 是否在数据库 | 部分 |
-| 关联Q编号 | - |
+| 所属域 | CHAIN（产业链分析） |
+| 一级模块 | 产业链分析／深圳产业发展分析／产业机遇 |
+| 更新频率 | 待确认（pending） |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 深圳产业链页「产业机遇」清单与链级计数 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: 未标注 |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/CHAIN/M_CHAIN_SZ_OPPORTUNITY_COUNT.md` |
 
 ## 口径定义
 
-深圳在指定产业链上可把握的机遇清单去重数，按产业发展方向机遇、政策优化机遇、创新方向机遇三类归类。对象=深圳产业机遇清单，不是普通建议条目。机遇识别口径与阈值待甲方确认。
+「链 × 深圳 vs 全国基准」的对照能在链树上重算，产业发展方向一类机遇可数出 254 条；但政策优化、创新方向两类需要政策建议与专利主题到环节的标注，gkx 无环节级标注，原结果表 `chain_sz_opportunity` 也不存在，故判**部分支持**。
 
 ## 计算逻辑说明
 
-算法库「深圳机遇分析模型」（1.1.1.1.1.1.1.3.12，约 564–575 行）输出「区域机遇推荐清单、产业发展建议报告、政策优化方案、创新方向分析图表」。据此将机遇按三类归类去重计数。
-
-### 计算步骤
-
-1. 按 `chain_id` 定链，取 `chain_sz_opportunity`（ads）记录。
-2. 从 `advantages`/`weaknesses`/`suggestions` 文本中结构化抽取机遇条目。
-3. 按三类（产业发展方向 / 政策优化 / 创新方向）去重计数汇总。
-
-$$
-深圳产业机遇数 = \sum_{类型} COUNT(DISTINCT 机遇条目 \mid 机遇类型)
-$$
-
-| 一级指标 | 二级指标 | 三级指标 | 指标说明 | 计算公式 | 源表字段 | 待建字段 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 深圳产业机遇数 | 产业发展方向 | 产业发展方向机遇数 | 产业发展方向类机遇去重数 | COUNT(DISTINCT 机遇 WHERE 类型=产业发展方向) | chain_sz_opportunity(chain_id, advantages, suggestions) — 机遇清单文本 | 机遇结构化条目字段 |
-|  | 政策优化 | 政策优化机遇数 | 政策优化类机遇去重数 | COUNT(DISTINCT 机遇 WHERE 类型=政策优化) | chain_sz_opportunity(chain_id, suggestions) — 政策建议文本 | 机遇结构化条目字段 |
-|  | 创新方向 | 创新方向机遇数 | 创新重点方向类机遇去重数 | COUNT(DISTINCT 机遇 WHERE 类型=创新方向) | chain_sz_opportunity(chain_id, suggestions) — 创新方向文本 | 机遇结构化条目字段 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_OPPORTUNITY_COUNT.md` §二（M_CHAIN_SZ_OPPORTUNITY_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
-- chain_sz_opportunity(chain_id, chain_name, cycle_stage, growth_rate, trend_score, policy_score, market_score, opportunity_index, advantages, weaknesses, suggestions, rank_overall) — 深圳机遇结果（gkxlumenx_ads / demo_gkxlumenx_ads）
-- chain_sz_advantage(chain_id, chain_name, advantage_index, advantages, weaknesses, suggestions) — 深圳优势（机遇输入）
-- chain_sz_problem(chain_id, chain_name, problems, causes, suggestions) — 深圳问题（机遇输入）
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_industry_chain_info`
+- `dwd_org_base_info`
+- `dwd_org_industry_tags`
+- `dwd_patent`
+- `dwd_policy_base`
 
-- 机遇清单结构化条目字段（现机遇以 `suggestions`/`advantages` 文本存，需结构化抽取）
-- 机遇类型三分类枚举（产业发展方向/政策优化/创新方向）
-- 机遇识别口径与阈值（待甲方确认）
+## 待建表字段
 
-## 参考资料
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-[1] 深圳机遇分析模型｜科技专题服务算法库 1.1.1.1.1.1.1.3.12（区域机遇推荐清单、产业发展建议、政策优化方案、创新方向）。
+## 数据支持度与缺口
 
-[2] 区域产业机遇识别｜深圳市人民政府｜深圳产业发展规划（产业发展方向/政策优化/创新方向三维机遇）。
+- **判档**：部分支持
+- **判档理由**：机遇的『链×深圳 vs 全国』对照可以在链树上重算：463 个关键叶里，52 个深圳为零、202 个深圳份额低于全国基准 7.952%，合计 254 个薄弱环节，可作为『产业发展方向机遇』的可算代理。但 calc-logic 的三类机遇（产业发展方向/政策优化/创新方向）里，后两类需要政策建议与专利主题到环节的配对，gkx 无环节级标注，只能记缺口；且原结果表 chain_sz_opportunity 在 gkx 零表、live 侧仅 8 行未来产业种子样例（与 12 链只重名 1 条），机遇的价值排序与可投性无法计算，故判部分支持。
+- **基期声明**：本件是截面指标：链树 + 挂链桥 + 叶级企业分布均为当日快照，口径内无年度序列，不涉及基期分母，故 used/missing 为空。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_OPPORTUNITY_COUNT.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_OPPORTUNITY_COUNT.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_OPPORTUNITY_COUNT_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

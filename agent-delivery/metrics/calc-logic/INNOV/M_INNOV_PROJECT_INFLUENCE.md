@@ -1,6 +1,7 @@
 # 项目（含课题）影响力（M_INNOV_PROJECT_INFLUENCE）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PROJECT_INFLUENCE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PROJECT_INFLUENCE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PROJECT_INFLUENCE_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,56 @@
 |---|---|
 | 指标ID | M_INNOV_PROJECT_INFLUENCE |
 | 指标名称 | 项目（含课题）影响力 |
-| 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技全域态势 |
+| 所属域 | INNOV（创新监测） |
+| 一级模块 | DS-01 科技全域态势 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | Q110 / Q-MO-DS01-03 |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 科技信息展示系统 → 科技发展态势 → 科技全域态势 → 科创要素（项目详情页属性） |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: true |
+| 基期（base_years_used） | [1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021] |
+| 缺失年份 | [2022, 2023, 2024, 2025, 2026] |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_PROJECT_INFLUENCE.md` |
 
 ## 口径定义
 
-单个科技项目/课题的影响程度。从资助金额、参与机构数、结题完备度综合，取值 0—100。
+王惠口径的三维里，**金额维 100% 有值**（58,453 行全非空）、**结题完备维只有代理指标**（`final_report_abstract` 填充 81.09%，`completion_status` 整列为空）、**参与机构维实际不可算**（`participating_institution` 是单值依托单位，1,592 个取值里 58,423 行只有一个名字，只有 29 行含分隔符；`funded_institution` 整列为空）。三个维度里两个降级、一个退化，故判**部分支持**。
 
 ## 计算逻辑说明
 
-采用加权平均。三维：资助金额 / 参与机构数 / 结题完备。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| 资助金额 |  | 项目获资助经费。 | 项目受资助金额（空则该维缺测） | dwd_zh_project(id, funded_amount) — 国内资助金额；dwd_en_project(id, funded_amount) — 国外资助金额 |
-| 参与机构数 |  | 参与研究的机构规模。 | 参与机构去重数（没有则受资助机构计 1） | dwd_zh_project(id, participating_institution, funded_institution) — 国内参与机构,受资助机构；dwd_en_project(id, participating_institution, funded_institution) — 国外参与机构,受资助机构 |
-| 结题完备 |  | 是否已有结题摘要。 | 有结题摘要记 1 / 无记 0 | dwd_zh_project(id, final_report_abstract) — 国内结题摘要；dwd_en_project(id, final_report_abstract) — 国外结题摘要 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PROJECT_INFLUENCE.md` §二（M_INNOV_PROJECT_INFLUENCE.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_zh_project(id, title, funded_amount, participating_institution, funded_institution, final_report_abstract, approval_year) — 国内项目入集,资助金额,参与机构,受资助机构,结题摘要,立项年；dwd_en_project(id, title, funded_amount, participating_institution, funded_institution, final_report_abstract, approval_year) — 国外项目入集,资助金额,参与机构,受资助机构,结题摘要,立项年
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_en_project`
+- `dwd_patent`
+- `dwd_zh_project`
+- `dwd_zh_project_output`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技全域态势.md|序号 11「支持要素影响力分析，通过算法模型评估各要素的重要性和影响力」。默认含课题（Q-MO-DS01-03）。05 无项目评价专叶，库缺口保持 missing。seq 145 仅把项目库当企业技术力输入。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：王惠口径的三维里，**金额维 100% 有值**（58,453 行全非空）、**结题完备维只有代理指标**（`final_report_abstract` 填充 81.09%，`completion_status` 整列为空）、**参与机构维实际不可算**（`participating_institution` 是单值依托单位，1,592 个取值里 58,423 行只有一个名字，只有 29 行含分隔符；`funded_institution` 整列为空）。三个维度里两个降级、一个退化，故判**部分支持**。
+- **基期声明**：dwd_zh_project 的 approval_year 覆盖 1986—2023，但 2022 仅 58 条、2023 仅 6 条，2024—2026 无记录；任何「前 N 年均值 / CAGR」只能用 1986—2021 这段真实年份做分母，2022 起三年不得按 0 摊入。
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PROJECT_INFLUENCE.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PROJECT_INFLUENCE.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PROJECT_INFLUENCE_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+

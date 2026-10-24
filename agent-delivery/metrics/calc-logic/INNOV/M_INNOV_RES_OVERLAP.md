@@ -1,6 +1,7 @@
 # 研究领域重叠度（M_INNOV_RES_OVERLAP）
 
-> 指标最终唯一解释口径（真源）。由王惠调研结果规范化迁移，对齐 metrics/registry/cfg_metric-INNOV-seed.yaml。
+> 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_OVERLAP.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_OVERLAP.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_OVERLAP_out.json`。
 
 ## 基础信息
 
@@ -8,36 +9,56 @@
 |---|---|
 | 指标ID | M_INNOV_RES_OVERLAP |
 | 指标名称 | 研究领域重叠度 |
+| 所属域 | INNOV（创新监测） |
 | 一级模块 | 科技信息展示系统 |
-| 二级模块 | 科技发展态势 |
-| 三级模块 | 科技发展规划 |
 | 更新频率 | 待确认（pending） |
-| 对齐状态判定 | 待口径确认 |
-| 是否在数据库 | 否 |
-| 关联Q编号 | GAP-ALGO-TYPE-UNSIGNED |
+| 数据支持度（四档） | **部分支持** |
+| UI 挂载 | 竞争情报比对页「研究领域重叠度矩阵」——企业两两重叠热力图与企业平均重叠排名 |
+| 口径调研人 | 20261021 批指标文档写手（仿王惠方法论）；wanghui 标记: false |
+| 基期（base_years_used） | []（截面件） |
+| calc-logic 引用 | `metrics/calc-logic/INNOV/M_INNOV_RES_OVERLAP.md` |
 
 ## 口径定义
 
-企业对研究领域重叠度，取值 0—1。集合从专利 IPC、专利/论文关键词、所属学者现表抽取，不另建关键词集合。
+按「集合交并比」算企业两两研究领域重叠：IPC4 维 **66/66 对**都有双端数据、分布 18.48—63.08；学者维只有华为 1 家有集合（6 人），其余 11 家为空，**0/66 对**可算；关键词维因专利 `keywords` 需全表聚合、论文分类表无机构字段而不可用。故合成实际退化为 IPC 单维，判**部分支持**：矩阵可用、可解释，但要写明「这是技术领域重叠，不是研究领域全口径重叠」。
 
 ## 计算逻辑说明
 
-选定企业入集。采用加权平均，三维：IPC重叠 / 关键词重叠 / 学者重叠（均为 Jaccard）。
-
-| 指标二级 | 指标三级 | 口径定义 | 计算逻辑 | 源表字段 |
-|---|---|---|---|---|
-| IPC重叠 |  | 两家企业专利 IPC4 集合的 Jaccard。 | \|A∩B\| / \|A∪B\| | dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, further_classification_ipcr, apdt_year) — 专利去重,关键词,申请人对齐,主分类,附加分类,申请年；dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 企业入集,名称对齐,空间过滤 |
-| 关键词重叠 |  | 两家企业专利与论文关键词集合的 Jaccard。 | \|A∩B\| / \|A∪B\| | dwd_patent(pn, keywords, first_applicant_name, apdt_year) — 专利关键词,申请人对齐；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位 |
-| 学者重叠 |  | 两家企业所属学者集合的 Jaccard。 | \|A∩B\| / \|A∪B\| | dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构名 |
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_OVERLAP.md` §二（M_INNOV_RES_OVERLAP.py 零改语义复算）。
 
 ## 源表字段
 
-dwd_org_base_info(org_id, name_cn, city, province, reg_status) — 企业入集,名称对齐,空间过滤；dwd_patent(pn, keywords, first_applicant_name, main_classification_ipcr, further_classification_ipcr, apdt_year) — 专利去重,关键词,申请人对齐,主分类,附加分类,申请年；dwd_zh_paper(id, cover_year_start) — 中文论文去重,发表年；dwd_en_paper(id, cover_year_start) — 英文论文去重,发表年；dwd_zh_paper_classification(id, keywords) — 中文关键词；dwd_en_paper_classification(id, keywords) — 英文关键词；dwd_zh_author(paper_id, institution) — 中文作者单位；dwd_en_author(paper_id, institution) — 英文作者单位；dwd_scholar(scholar_id, scholar_org_name_zh, scholar_org_name_en) — 学者所属机构名
+gkx（183.240.141.251:3318，只读）源件点名表：
 
-## 待建字段
+- `dwd_id`
+- `dwd_patent`
+- `dwd_scholar`
+- `dwd_zh_author`
+- `dwd_zh_paper_classification`
 
-无
+## 待建表字段
 
-## 备注
+20261021 实测后无新待建物理表挂账；缺口以「数据/字段缺失」形式登记（见下节与源件 §四）。
 
-02-科技信息展示系统|科技发展态势|科技发展规划.md|序号 191「基于企业－专家－学术文献－研究关键词等知识图谱数据，分析两家企业在研究领域上的重叠度……提供重叠度计算结果和可视化展示」。对象≠ 05 seq 191 区域创新协同，≠ 116 两实体通用语义相似度。参考权威机构方案。
+## 数据支持度与缺口
+
+- **判档**：部分支持
+- **判档理由**：按「集合交并比」算企业两两研究领域重叠：IPC4 维 **66/66 对**都有双端数据、分布 18.48—63.08；学者维只有华为 1 家有集合（6 人），其余 11 家为空，**0/66 对**可算；关键词维因专利 `keywords` 需全表聚合、论文分类表无机构字段而不可用。故合成实际退化为 IPC 单维，判**部分支持**：矩阵可用、可解释，但要写明「这是技术领域重叠，不是研究领域全口径重叠」。
+- **基期声明**：重叠度为截面集合运算，不涉及年度分母；IPC 集合取全历史（2021—2026 库内区间）
+
+## 溯源与复现
+
+| 项 | 值 |
+|---|---|
+| 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
+| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_RES_OVERLAP.md` |
+| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_OVERLAP.py` |
+| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_RES_OVERLAP_out.json` |
+| 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+## 更新记录
+
+- 2026-08~2026-10: 历史版（王惠调研迁移 / 模拟王惠调研产出），本版覆盖前内容见 git 历史
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+- 2026-10-23: 覆盖更新（20261021 gkx 改源版），由 `gen_phase1_calc_logic.py` 从源件结构化搬运生成（禁止手抄数字）。
+
