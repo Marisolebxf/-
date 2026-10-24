@@ -56,6 +56,16 @@
 2. gkx 三方库 `dwd_policy_base` 的区县级数据基本为空（'NULL' 字面量 18,835/20,000），深圳区县发布以 demo `region` 切片为准。
 3. 「相关产业」过滤维度（招标句「相关产业的政策数量」）：当前按全量政策计；`policy_industry_rel` 关联政策仅 141 条，做产业过滤会让数字缩到 1% 以下，建议二期把「产业范围」也登记为配置项再切换。
 
+## 五、指标信息 MD（调研层交付，2026-10-24 补齐）
+
+按 metric-info-md-authoring skill 交付合集件（十条一份，含逐条四档与分步构建）：
+
+- MD：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/ALGO-LIB-POL-PORTAL-GAP.md`（400 行，主判档=部分支持：七条完全转换 + 三条部分）
+- 复现脚本：`.../20261021_.../code/ALGO-LIB-POL-PORTAL-GAP.py`（`_gkxdb` 唯一入口，gkx 只读）
+- 产物：`.../code/ALGO-LIB-POL-PORTAL-GAP_out.json`（正文 47 数字 0 未命中）
+- 闸门：gate PASS、verdict 一致、base_years OK、derived 达标、reproducible A0/C0/F0、nodemo 0
+- gkx 关键读数：连续性 66.41%（342/515 月）、31 省、54 城 10,296 行、深圳 879 条（2000-12—2022-06）、区县缺失 94.175%、**政策↔节点关联边 gkx 无表**（负证据，demo 321 行为加工面）
+
 ## cost
 
 | 字段 | 值 |
