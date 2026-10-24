@@ -29,6 +29,8 @@ engine: mysql
 | ENT DWD | `enterprise_industry_chain` | 企业侧挂链：`org_id` + `chain_code`/`chain_name` + `node_id`/`node_name` |
 | CHAIN DWD | `industry_chain_entity_rel` | 链侧挂实体：`chain_id`/`node_id`/`entity_type=enterprise`/`entity_id=org_id`/`relation_type=belongs_to` |
 
+2026-10-24 demo 实查：两表对得上多少企业、能不能按产业节点检索，见 [产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md)。政策、服务机构同口径见 [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md)、[产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md)。
+
 ## 1. 过程步骤
 
 ```text

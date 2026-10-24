@@ -39,6 +39,14 @@ amendment: "步1/4：§1–§9 现网 as-built；§10–§16 与 POLICY 同构�
 
 旁路：`CHAIN_SEED_LEGACY_MOCKGEN=1` 走 `LEGACY_CHAIN_STEPS`（含 `chainan.graph.build.run` / `run_sz` 写旧 SQLite 全景表）。**不算主路径验收**，步2 仍须从该旁路 grep 掉图谱写入。
 
+2026-10-24 demo 实查（按产业、产业节点能命中的条数，上图前的关联事实）：
+
+| 要素 | 实查 |
+|---|---|
+| 政策 | [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md) |
+| 企业 | [产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md) |
+| 服务机构 | [产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md) |
+
 ## 3. Space 与 VID 约束（代码强制）
 
 `chainan/graph/nebula_schema.py` 把一张 G 写死为常量；`chain_space()` / `assert_demo_nebula_space()` 校验：

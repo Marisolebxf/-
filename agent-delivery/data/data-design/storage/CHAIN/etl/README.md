@@ -13,6 +13,9 @@
 | DWD → ES | [`pipeline-dwd-to-es.md`](./pipeline-dwd-to-es.md) | draft · S2 指针 |
 | **企业上链 ENT hang→INB** | [`pipeline-ent-hang.md`](./pipeline-ent-hang.md) | as-built · `ENT-CHAIN-HANG-MOCK-L01` |
 | → Nebula | [`pipeline-to-nebula.md`](./pipeline-to-nebula.md) | draft · S2 指针 |
+| 产业关联实查 · 政策 | [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md) | 2026-10-24 demo |
+| 产业关联实查 · 企业 | [产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md) | 2026-10-24 demo |
+| 产业关联实查 · 服务机构 | [产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md) | 2026-10-24 demo · 链码关联为 0 |
 | → MinIO | [`pipeline-to-minio.md`](./pipeline-to-minio.md) | draft · 前缀 `chain/{task_id}/` |
 
 DDL 快照：[`demo_gkxlumenx_ods_chain_tables.sql`](./demo_gkxlumenx_ods_chain_tables.sql)（产业链四表 ODS）。  

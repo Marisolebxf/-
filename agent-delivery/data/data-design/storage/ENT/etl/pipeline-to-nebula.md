@@ -55,6 +55,8 @@ amendment: "2026-09-01 徐滕强步1六条审核 + 调用链收口为本叶 DEMO
 
 上链 MySQL（**不是**本叶灌数建图）：CHAIN [`../../CHAIN/etl/pipeline-ent-hang.md`](../../CHAIN/etl/pipeline-ent-hang.md) → `enterprise_industry_chain` + `industry_chain_entity_rel`；脚本 `scripts/run_ent_chain_hang.py`。本叶不把 hang 塞回灌数。
 
+2026-10-24 demo 实查：按产业、产业节点能命中多少企业，见 [产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md)。政策、服务机构同口径见 [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md)、[产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md)。
+
 ## 3. Space 与 VID 约束
 
 ### 3.1 as-built（现网强制，不得假装已并）

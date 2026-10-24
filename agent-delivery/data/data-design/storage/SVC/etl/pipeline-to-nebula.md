@@ -40,6 +40,8 @@ amendment: "步1/4 新建：§1–§9 现网 as-built；§10–§16 与 POLICY �
 
 圈定规则 `svc_rule_demo_kw_v1.1`（规则 A）。Q-SVC-010 一律 `pending_client_confirm=1`。主体权威在 ENT / ODS，SVC **只 hang `org_id`**。
 
+2026-10-24 demo 实查：按产业、产业节点能命中多少服务机构，见 [产业检索服务机构条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/svc-产业服务分析/产业检索服务机构条数-20261024.md)。政策、企业同口径见 [产业检索政策条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/policy-政策分析/产业检索政策条数-20261024.md)、[产业检索企业条数](../../../../../qa/test-cases/SDWJSF-KJZTFWSFK/enterprise-企业分析/产业检索企业条数-20261024.md)。
+
 ## 3. Space 与 VID 约束（代码强制）
 
 `entan/svcgraph.py` 把一张 G 写死为常量并在 `assert_svc_space()` 校验：
