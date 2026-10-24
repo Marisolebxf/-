@@ -65,11 +65,11 @@
 |---|---|
 | 单测绿 | 本地：cms `33/33`、topic-svc `85/85`（含新增 9 例）；CI：流水线 [2847](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/2847) **backend:build success**（2026-10-24，clean verify 真实执行两模块单测） |
 | Reactor 实编两模块 | `clean verify -pl gkxlumen-cms,gkxlumen-topic-svc/gkxlumen-topic-svc-biz -am` 本地 BUILD SUCCESS；CI 同参数 |
-| 无 token 401 fail-closed | 双轨配置未动（ignore-urls 不含 /cms-ops/**）；联调 curl §5.0 待 dev 环境复测 |
+| 无 token 401 fail-closed | 双轨配置未动（ignore-urls 不含 /cms-ops/**）；联调 curl §5.0 待 deploy:cms 后复测 |
 | /api/open/** 回归 | 未触碰机器轨代码；同流水线 deploy:cms 后按 §5.0 复测 Api-Key 轨 |
 | 审计一行 | `audit()` 与业务写同事务（复用未改）；单测 `svcPublishUsesSameStateMachineAndAudits` 断言 PUBLISH + entity_type=SVC_BUSINESS_DOMAIN |
-| DDL 幂等 | `CREATE TABLE IF NOT EXISTS`；待执行（§7 待办 1） |
-| Part 2 curl 两态 | §5.3/§5.4 用例；待 deploy:topic-svc 后执行回填 |
+| DDL 幂等 | `CREATE TABLE IF NOT EXISTS`；**未执行**（本机/跳板凭证均被 MySQL 来源 IP 白名单拒：10.253.202.239；需监管人在有权限环境跑 `db/9x_gkxlumenx_cms_ops_svc_content.sql`） |
+| Part 2 合并两态（dev 实测 2026-10-24） | 网关 `http://10.50.69.111:30895`（deploy:topic-svc 已成功）：**态A** 带 org 上下文（表未建）→ `cms:{present:false, data_source:"cms:unavailable"}`，指标照常（`sz_total:14033`，HTTP 200，失败隔离 ✅）；**态B** 页级请求 → `cms:{}` 空块不出，9 区数据照常 ✅；**态C 有正文** 待 DDL+deploy:cms 后按 §5.3 补测 |
 
 ## 5. 接口设计文档（供前端叶 / 展示联调）
 
@@ -146,11 +146,11 @@ curl -X POST 'https://<gw>/svc/topic/v1/service-portal/shenzhen' \
 
 ## 7. 待办（监管人徐滕强按序）
 
-1. **执行 DDL**：`db/9x_gkxlumenx_cms_ops_svc_content.sql`（gkxlumenx_cms 库；幂等可重跑）
-2. CI 流水线 [2847](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/2847) 绿后按需 `deploy:cms` + `deploy:topic-svc`
-3. 按 §5 curl 复测：401 fail-closed / Api-Key 回归 / 状态机 / 审计落库 / Part 2 两态
+1. **执行 DDL**：`db/9x_gkxlumenx_cms_ops_svc_content.sql`（gkxlumenx_cms 库；幂等可重跑）。⚠️ agent 通道全被拒：本机/跳板凭证均被 MySQL 来源 IP 白名单拦（10.253.202.239 access denied），需在有权限的环境（K8s 集群内 / 运维机）执行
+2. CI 流水线 [2847](https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-svc-platform/-/pipelines/2847)：**`deploy:cms` 是 manual 档待点击**（agent API 触发 403 无权限；`deploy:topic-svc` 已自动成功，Part 2 已上 dev）
+3. curl 复测：DDL+deploy 后按 §5 清单——401 fail-closed / Api-Key 回归 / 状态机 / 审计落库 / §5.3 态C（有正文）
 4. 走查核心文件（2 个）：`OpsContentType`（新枚举+族泛化）、`ServiceFacadeServiceImpl.portalShenzhen+cmsIntroBlock`
-5. registry 推进 `SYSINT-03-03A-JAVA-L01` → integration（由执行 agent 完成后等签收）
+5. 走查通过后签收：registry `SYSINT-03-03A-JAVA-L01` `integration → done`（任务当前 integration 态，evidence/cost 已回填）
 
 ## 8. 成本回填（budget-estimate.md 口径）
 
