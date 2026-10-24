@@ -1,6 +1,6 @@
 # Handoff · SYSINT-03-02A-JAVA-L01 · 产业全景运营正文 · Java 运营写接口（5 个 pano_*）
 
-> **状态**：代码冻结本地（lumen-svc-platform 主目录，**严禁自动 commit/push，停本地等 human:徐滕强 走查**）
+> **状态**：代码冻结本地（lumen-svc-platform 主目录，**严禁自动 commit/push，停本地等 human:徐滕强 走查**）；已完成双审查员 code review 并修复全部 findings（Critical 1/Important 1/Minor 4 + 合规文本项）
 > **日期**：2026-10-24 · **执行**：`agent:api-agent` · **监管**：`human:徐滕强`
 > **契约真源**：`agent-delivery/agent-handoffs/平台基建-PLATFORM/产物/PORTAL-CMS-专题全景.md`（human:淮政玮 2026-10-24 已确认，字段冻结禁改）
 > **复刻样板**：SYSINT-03-01A-JAVA-L01（企业发展 12 类；模式文档 `/tmp/handoff-sysint-03-01a-enterprise-cms-pattern.md` §2 十步）
@@ -32,8 +32,10 @@
 | 3 | `publishedBlocks` 的 locale 过滤是 `=` 精确匹配而非语言族回退（zh→zh-CN） | 契约 §3.1 只说「locale 否，默认 zh-CN」，未定义回退规则；DDL 默认 zh-CN，运营不传 locale 时自然命中；ponytail：够用，加回退规则等甲方提出 | `AND locale=?`（仅显式传参才过滤） |
 | 4 | published 详情端点按 pano 5 表逐一探测（最多 5 次点查） | content_id 是 cms 库自增主键，无跨表目录表；5 次索引点查在内容块量级（<<企业级）可忽略；ponytail：不为此建 content 目录表，量级上来再合并 | `publishedBlock()` 顺序探测 |
 | 5 | Api-Key 机器轨扩展到 `/api/published/*`（原只挂 `/api/open/*`） | 契约 §3.1 调用方是「智树 Java」集群内服务间调用，浏览器不直连（§0.3）；不挂 Api-Key 则落到资源服务器链需 OAuth2，服务间无用户态；沿用同一 fail-closed Key（未配置=拒绝全部） | `CmsApiKeyFilterConfig.addUrlPatterns("/api/open/*","/api/published/*")` + `application.yml` ignore-urls 增 `/api/published/**` |
-| 6 | events 子级多余键静默忽略（不报 40001） | 同 ent 族结构字段（modules/stages/members 等）「存 JSON 不深校验内部键」惯例；pano_dev_history 因契约显式给了子字段表才校验契约列的 3 必填 | `validateAndSortPanoEvents()` 只校验契约列 |
+| 6 | events 子级只拷贝 5 个契约键落库（多余键剔除），不报 40001 | 同 ent 族结构字段「不深校验内部键」惯例的收敛版：pano_dev_history 因契约显式给了子字段表，写侧剔除多余键防未预期字段经 published 端点渗到门户（code review 2026-10-24 Minor） | `validateAndSortPanoEvents()` 只落 event_date/title/body_html/source_name/source_url |
 | 7 | 派单 §3.6 写「枚举总数=17」，实测断言为 18 | 派单撰写时未计入 SYSINT-03-03A 的 svc_business_domain（前叶已合入，改前基线=13）；12 ent+1 svc+5 pano=18 | `OpsContentMetaTest.eighteenContentTypesOneTableEach` |
+| 8 | pano 族 content_id 用共享序列 `cms_pano_content_seq` 取号（显式 insert id），非各表自增 | code review 2026-10-24 Critical：契约 §3.1 详情端点只有 content_id 无 content_type 语境，5 表各自 AUTO_INCREMENT 必然跨表撞号（每表首行都是 1），首个命中表遮蔽其余表同号行 → 详情解析错块；共享序列保证 5 表 id 全局唯一 | `OpsContentService.create()` pano 分支原子 `UPDATE ... LAST_INSERT_ID(next_id+1)` 取号；DDL 增序列表+seed 行；seed 缺失快速失败提示执行 DDL；测试 3 例覆盖 |
+| 9 | pano 运营路由加族守卫（`ofPano`）：ent/svc content_type 在 pano 路由 → 40001 | code review 2026-10-24 Important：动态解析放行全部 18 类会破坏「一族一路由」隔离（svc 样板用硬编码 TYPE 常量天然免疫，pano 改动态后需显式守卫） | `OpsContentType.ofPano()` + `TopicPanoramaOpsController.panoOf()`；测试 `panoRouteGuardRejectsEntAndSvcTypes` |
 
 ## 3. 产物清单（lumen-svc-platform 主目录，未 commit）
 
@@ -47,10 +49,13 @@
 | `gkxlumen-cms/src/main/resources/application.yml` | M | ignore-urls 增 `/api/published/**` |
 | `gkxlumen-cms/src/test/java/com/topcomm/gkxlumen/cms/ops/OpsContentMetaTest.java` | M | 13→18 断言、pano 契约断言（4 例新增） |
 | `gkxlumen-cms/src/test/java/com/topcomm/gkxlumen/cms/ops/OpsContentServiceTest.java` | M | pano 行为测试（12 例新增） |
-| `db/9x_gkxlumenx_cms_ops_pano_content.sql` | 新增 | 5 张表 DDL（幂等） |
+| `db/9x_gkxlumenx_cms_ops_pano_content.sql` | 新增 | 5 张内容表 + cms_pano_content_seq 序列表（幂等） |
 
-**测试**：`mvn -pl gkxlumen-cms -am clean test` → **49/49 全绿**（Meta 16 + Service 33；pano 相关 16 例）。JDK 21。
+**测试**：`mvn -pl gkxlumen-cms -am clean test` → **51/51 全绿**（Meta 17 + Service 34；pano 相关 19 例，含 code review 修复轮 +2 例）。JDK 21。
 **CI**：`.gitlab-ci.yml` backend:build 的 `-pl` 已含 `gkxlumen-cms`（未动 pom/CI）。
+**Code review**（2026-10-24 双审查员，修复全落地）：Java 审查 Critical×1（content_id 跨表撞号→共享序列）/ Important×1（pano 路由族守卫）/ Minor×4（events 白名单拷贝、list 双参标注、死代码删除、news 联调说明）全部修复；交付合规审查 Important×1（note 偏离数笔误）+ Minor×3（evidence 跨仓悬空已知、cost_warn 格式、note 背景）本 handoff 与 registry 已对齐。
+
+**联调注意**：published 端点 `page_key=news` 返回 40001（pano 族枚举仅 panorama|overview）——契约 §1.2 news 页本就无 CMS 块，门户聚合侧 news 空数组是门户侧行为（§3.2），不要对 §3.1 传 news。
 
 ## 4. 接口设计文档（给前端叶 SYSINT-03-02A-L01 与智树门户联调）
 
@@ -176,10 +181,10 @@ curl "$CMS/api/published/topic-panorama/blocks?industry_id=INB1701&content_type=
 
 | 字段 | 值 |
 |---|---|
-| actual_tokens | ≈ 189,000（含输入缓存） |
+| actual_tokens | ≈ 251,000（含输入缓存与 code review 修复轮） |
 | model_used | glm-5.3（Cursor agent） |
-| actual_cost | ≈ $4.1 |
-| cost_warn | false（< $10 阈值） |
+| actual_cost | ≈ $5.4 |
+| cost_warn | green（< $10 阈值） |
 
 `ponytail: full`
 
@@ -195,7 +200,7 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 mvn -pl gkxlumen-cms -am clean test   # 期望 49/49 绿
 ```
 
-DDL 执行（部署时）：`db/9x_gkxlumenx_cms_ops_pano_content.sql`（幂等可重跑；自检 `SHOW TABLES LIKE 'cms_pano_%';` 期望 5 张）。
+DDL 执行（部署时）：`db/9x_gkxlumenx_cms_ops_pano_content.sql`（幂等可重跑；自检 `SHOW TABLES LIKE 'cms_pano_%';` 期望 6 张=5 内容表+1 序列表，`SELECT * FROM cms_pano_content_seq;` 期望 1 行 stub=0）。**序列表必须先建**——缺 seed 行时 pano 新建会快速失败并提示执行本 DDL。
 
 ## 9. 待办交接
 
