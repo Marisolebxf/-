@@ -5,7 +5,7 @@
 > **体验 Owner**：高颖  
 > **范围真源**：`bid-reference/科技信息展示系统和科技专题服务系统.md` → `§1.1.1.2.4.2.6`  
 > **对应**：`USM-E7-政策分析.md` · `TRACE-E7-政策分析.yaml`  
-> **版本**：v1.4.5 · 2026-08-07（产业 Tab 发起政策三项；**移除对比篮政策 Tab**）  
+> **版本**：v1.4.6 · 2026-10-24（深圳政策现状分析改为三张固定指标卡，见 FUNC-DESIGN §3.6 v0.5）
 > **本轮决策（Q068 · P7）**：产业锚点 = 15 个产业集群，与企业/产业链/展示/服务链同一份。旧 `ind-*` 只读兼容。**技术领域不换**。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。  
 > **查询粒度**：`cluster_id` + 可选 `industry_id`（INB*）。无映射 `grain=empty`。
 
@@ -103,7 +103,7 @@
 | 政策 / 技术领域 Tab | **均不挂载** |
 | 容量（发起·篮） | 单次篮分发 **1** 个产业；页内技术领域可多选 |
 | 分发 / 页选 URL | `object_type=industry|tech_field&object_ids[]&object_names[]&analysis_type&source=compare-basket|page` |
-| 页内配置（不进篮） | 对象类型与技术领域多选、对标区域、时序粒度；深圳三维为合并「指标体系构建」（行内一级权重 + 二级指标卡片，维内等权） |
+| 页内配置（不进篮） | 对象类型与技术领域多选、对标区域、时序粒度；深圳三维为三张固定指标卡（支持力度因子只读，产业锚点只进适配性，落地实效不可算，无一级权重编辑） |
 | 分发任务 | ① 时序 → `/policy/overview` ② 区域对比 → `/policy/analysis` ③ 深圳三维 → `/policy/recommendation` |
 | 分发后 | 目标页显示「来自对比篮 · 产业」；调整对象 → `compare_object_type=industry` |
 | 空态引导 | 读**产业**篮 count：`0` → 去产业查询；`≥1` → 去查询或打开产业篮发起 |
@@ -170,7 +170,7 @@
 | 系统对比篮·产业 Tab | 暂存产业；「政策分析」三项分发；**无政策 Tab** | `app-shell#system-compare-basket?active_type=industry` | `US-E7-POL-05`；DEC-E7-POLICY-LAUNCH-FROM-INDUSTRY-BASKET |
 | 政策时序分析 | 配置→任务→结果→报告；回答演进与窗口期 | `/policy/overview`（+过程/结果态） | §1.1.1.2.4.2.6.1 / P-70 / US-E7-POL-02 |
 | 区域政策对比 | 同上壳层；回答区域差异与竞争优势 | `/policy/analysis` | §1.1.1.2.4.2.6.2 / P-72 / US-E7-POL-03 |
-| 深圳政策现状分析 | 同上壳层；回答三维优劣势与优化方向 | `/policy/recommendation` | §1.1.1.2.4.2.6.3 / P-73 / US-E7-POL-04 |
+| 深圳政策现状分析 | 同上壳层；回答深圳政策供给规模与层级，以及按锚点的产业适配；落地实效与综合分在数据 / QPOL-02 齐之前不出 | `/policy/recommendation` | §1.1.1.2.4.2.6.3 / P-73 / US-E7-POL-04 / FUNC-DESIGN §3.6 v0.5 |
 | 系统任务浮层 | 跨模块恢复 analysis/report 任务 | `app-shell#system-task-layer` | US-E7-POL-06；共享能力 ② |
 | 报告 HTML 预览 / PDF | 统一模板生成；先 HTML 后 PDF | 共享阅读器 + report 任务 | US-E7-POL-07；`ENT-EXPORT`；共享能力 ③ |
 | 维护管理 | 复用 ENT-OPS 三组菜单 | `/policy/maintenance` | US-E7-POL-09 |

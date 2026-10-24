@@ -1,6 +1,6 @@
 # UX-SPEC-E7｜政策分析
 
-> 版本：v1.2 · 2026-08-07（产业 Tab 发起；移除对比篮政策 Tab）  
+> 版本：v1.3 · 2026-10-24（F-POL-03 改为固定指标卡，对齐 FUNC-DESIGN §3.6 v0.5）
 > **本轮决策（Q068 · P7）**：产业下拉 = 15 个产业集群。技术领域不换。任务 `CHAIN-INDUSTRY-CLUSTER-SUPP-L01`。  
 > **查询粒度**：集群可停；无映射禁出数。旧 `ind-*` URL 只读回填，对不上不猜。
 
@@ -167,7 +167,7 @@
 | --- | --- | --- | --- | --- |
 | F-POL-01 | `/policy/overview` | `policy_timeseries_analysis` | 锚点 industry(1) XOR tech_field(多选≥1，不进篮)；关联语料概要；粒度 year/quarter/month | 时序/强度/关键节点明细 |
 | F-POL-02 | `/policy/analysis` | `policy_region_compare` | 区域多选；矩阵\|雷达\|热力 | 差异结论与条款明细 |
-| F-POL-03 | `/policy/recommendation` | `policy_sz_3d_assessment` | 合并「指标体系构建」：行内一级权重=100% + 二级卡片每维≥1（维内等权） | 快照/仪表盘/短板（仅入模）/策略卡 |
+| F-POL-03 | `/policy/recommendation` | `policy_sz_3d_assessment` | 三张固定指标卡。支持力度只读条数+层级，档位不可算；锚点只改变适配性；落地实效整卡不可算；无一级权重编辑 | 深圳城市截面供给指数（标明非资金强度）；适配性有字段才画；不出综合分 |
 
 共性：ContextBar + Config/Processing/Result；「调整对象」只开系统篮；无页内导出。
 
