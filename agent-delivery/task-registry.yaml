@@ -40032,7 +40032,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-24 久新联调首轮反馈 6 类问题，逐条真库复现定位：②为设计符合（status 治理只读，报错文案误导）③④⑤为字段口径（关联字段要 id 不是名称——服务端做名称兼容解析最省联调成本）⑥实测父挂载正常待久新给复现 ⑦为 OpenAPI 误导（规格书 4.2 定稿无层级，文档有 parent 字段）。方案：服务端兼容+文案细化+契约对齐，一并修复
+      2026-10-24 部署后久新第二轮反馈排查完毕（新增8条），结论：1) 基础数据5条全部为字段口径问题+服务端已兼容（前轮修复已部署 38a6484b）；2) 专家知识 5 域 list 不渲染 section 字段=设计如此（list 顶层只有 id/sectionId/sectionName/title/entity/expert/view/updatedAt，section 明细在 detail 的 content——前端编辑弹窗走 detail 正常；前端把 list 行当卡片详情渲染导致『个别字段不显示』）；view 字段语义=该 section 的『一句话视图』非全量；3) kg/policy/service entities 执行主体/适用对象/服务能力/客户评价不在 entities 接口里——它们是 attrs 体系（/kg/{type}/attrs/list 按 entityId 查，/attrs/update 按 attr id 写），entities 接口只平铺 stage 生命周期+extra 白名单键（policy=scope/effect, service=scale/customers）。前端应调 attrs/list 渲染属性面板。新开 bugfix 候选项：attrs/update 需先查 attr id 才能写（久新按 name 传报 id 必填）——建议服务端兼容 name+entityId 定位。此前端引导：①专家知识列表卡片渲染应基于 detail ②图谱实体属性面板调 attrs/list
     depends_on: []
     definition_of_done:
       - "① product/create：orgId 校验报错文案带「请先调 enterprise/list 获取 id」指引"
@@ -40045,12 +40045,12 @@ tasks:
       - "全部改动 mvn 编译绿 + 真库冒烟验证（每类至少一个成功案例）"
       - "OpenAPI/久新 MD 同步（⑦契约删字段；①-⑤ 补字段说明）"
       - "handoff 写入平台基建-PLATFORM/CMS-JX-JXFE-FIX-L01.md"
-    update_time: "2026-10-24T12:02:50+08:00"
+    update_time: "2026-10-24T18:06:08+08:00"
   - id: SYSINT-03-02A-JAVA-L01
     cost_warn: "green"
-    actual_cost: 4.1
+    actual_cost: 5.4
     model_used: "glm-5.3"
-    actual_tokens: 189000
+    actual_tokens: 251000
     evidence: "agent-handoffs/系统集成-SYSINT/SYSINT-03-02A-JAVA-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-24T08:12:59.521Z"
@@ -40069,11 +40069,11 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     note: |
-      2026-10-24 api-agent 完工：gkxlumen-cms 新增 pano 族 5 类运营写接口（六动词，/cms-ops/v1/topic-panorama/content/**，OAuth2 页面轨）+ 契约 §3.1 两个 published 只读端点（/api/published/topic-panorama/**，Api-Key fail-closed）；DDL 5 张 cms_pano_* 幂等；events 深校验（必填+HTML 白名单+event_date 升序归一）；49/49 单测绿（含 pano 16 例）。完整复刻 SYSINT-03-01A 企业发展模式（Family 绑定族泛化：ent 双码/svc org_id/pano industry_id）。Java 代码停本地等 human:徐滕强 走查（严禁自动 push）；偏离 6 条全记录 handoff §2。等走查确认后推 integration。
+      2026-10-24 api-agent 完工+code review 修复轮：gkxlumen-cms 新增 pano 族 5 类运营写接口（六动词，/cms-ops/v1/topic-panorama/content/**，OAuth2 页面轨，ofPano 族守卫拒 ent/svc）+ 契约 §3.1 两个 published 只读端点（/api/published/topic-panorama/**，Api-Key fail-closed）；content_id 共享序列 cms_pano_content_seq 取号（修 Critical：5 表自增跨表撞号致详情解析错块）；events 深校验（必填+HTML 白名单+event_date 升序+契约键白名单拷贝）；51/51 单测绿。双审查员 review 全 findings 已修，偏离 9 条全记录 handoff §2。环境事实：task-registry MCP 以脚本自身位置解析路径（全局注册指主仓），故 registry 写入落主仓本地 commit（f97692a4），与 workspace worktree 无关。Java 代码停本地等 human:徐滕强 走查（严禁自动 push）。等走查确认后推 integration。
     collaborators:
       - "frontend-agent"
     definition_of_done:
       - "gkxlumen-cms 新增 5 个 pano_* content_type 的 list/create/update/publish，正文落 gkxlumenx_cms，真源零写，操作写 cms_op_audit"
       - "OpenAPI + 请求/响应示例入 handoff，供 SYSINT-03-02A-L01 前端叶联调"
       - "契约 PORTAL-CMS-专题全景.md 转正后字段不回改；转正前以草案字段为准开发，待确认项标记在 handoff"
-    update_time: "2026-10-24T17:17:10+08:00"
+    update_time: "2026-10-24T18:06:55+08:00"
