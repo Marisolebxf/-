@@ -1,7 +1,11 @@
 # 政策数量与类型覆盖分布（M_INNOV_PG_COUNT_DIST）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_COUNT_DIST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_COUNT_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_COUNT_DIST.md`；复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py` → `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py`、产物 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md` §二（M_INNOV_PG_COUNT_DIST.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_PG_COUNT_DIST.md` §二（M_INNOV_PG_COUNT_DIST.py 零改语义复算）。
 
 ## 源表字段
 
@@ -48,16 +52,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_COUNT_DIST.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_COUNT_DIST.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_COUNT_DIST_out.json` |
+| 正本 MD | `M_INNOV_PG_COUNT_DIST.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_PG_COUNT_DIST.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_COUNT_DIST.py`、产物 `metrics/repro/out/M_INNOV_PG_COUNT_DIST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（结构分布型计数）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 153）
 > **UI 挂载**：政策与条件保障力 → 政策扶持力度分析 → 政策数量 / 类型 / 覆盖面分布
@@ -155,7 +159,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` | 政策扶持力度分析 · 序号 153 | 「收集并统计特定领域的政策数量、政策类型、政策覆盖面等数据，评估政策扶持的广度和深度。」 |
 | 2 | 同上 | 需规功能描述（续） | 「用户可按政策类型（如财税政策、人才政策、金融政策）、时间范围、地域等维度查看政策分布情况。」 |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.7.4 政策与条件保障力指标展示 | 「通过收集和分析发展战略的引导力、政策扶持力度以及经费与项目支持力度等关键指标，构建政策与条件保障力评估体系。」 |
-| 4 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_INTENSITY.md` | 口径定义（V1.5-20260901） | 「从政策数量、政策类型、政策覆盖面综合，取值 0—100。」 |
+| 4 | `王惠口径正本（GitLab 外本地归档）` | 口径定义（V1.5-20260901） | 「从政策数量、政策类型、政策覆盖面综合，取值 0—100。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_INNOV_PG_COUNT_DIST` | 「case=A；tables=[`dwd_policy_base`]；blocking=[]。」 |
 | 6 | 数据资产清单 | `_work_gkx21/SHARED_ASSETS.md` | 「政策全表 20,000 条（city/rank 已归一）→ `policy_base_20261021.json`。」 |
 
@@ -245,7 +249,7 @@ $$H=-\sum_{k}p_k\ln p_k,\qquad HHI=\sum_{k}p_k^{2},\qquad p_k=\frac{n_k}{N}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_COUNT_DIST.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_PG_COUNT_DIST.py` |
 | 结果产物 | 同目录 `code/M_INNOV_PG_COUNT_DIST_out.json` |
 | 主算数据 | `code/_snapshots21/pg_policy_rows_20261021.json`（20,000 行，由 `gkx.dwd_policy_base` 导出） |
 | 城市口径对照 | `code/_snapshots21/base_20261021.json`（189,116 行） |
@@ -253,7 +257,7 @@ $$H=-\sum_{k}p_k\ln p_k,\qquad HHI=\sum_{k}p_k^{2},\qquad p_k=\frac{n_k}{N}$$
 | SQL 条数 / 耗时 | 快照导出 1 条 SQL；本脚本 **0 条 SQL**，运行 0.24 秒 |
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_PG_COUNT_DIST.py
 ```
 
@@ -432,7 +436,7 @@ python3 code/M_INNOV_PG_COUNT_DIST.py
 4. Rothwell, R., & Zegveld, W. (1985). *Reindustrialization and Technology*. Longman.
 5. 彭纪生, 仲为国, 孙文祥. (2008). 政策协同演变与经济绩效：基于创新政策的实证研究. 管理世界, (9), 25–36.
 6. Shannon, C. E. (1948). A Mathematical Theory of Communication. *Bell System Technical Journal*, 27(3), 379–423. https://doi.org/10.1002/j.1538-7305.1948.tb01338.x
-7. 项目内口径文件（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_INTENSITY.md`（V1.5-20260901）。
+7. 项目内口径文件（非外部文献）：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
 8. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 153。
 
 ---

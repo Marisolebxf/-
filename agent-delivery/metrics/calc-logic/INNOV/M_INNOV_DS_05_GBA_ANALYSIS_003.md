@@ -1,7 +1,11 @@
 # 优势因素分析（M_INNOV_DS_05_GBA_ANALYSIS_003）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_003.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_003.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_003.md` §二（M_INNOV_DS_05_GBA_ANALYSIS_003.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_05_GBA_ANALYSIS_003.md` §二（M_INNOV_DS_05_GBA_ANALYSIS_003.py 零改语义复算）。
 
 ## 源表字段
 
@@ -64,16 +68,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_003.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_003.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` |
+| 正本 MD | `M_INNOV_DS_05_GBA_ANALYSIS_003.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 S）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
@@ -189,11 +193,11 @@ SWOT 图表的左上象限不能是一句套话。招标需求要求用户「可
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现粤港澳大湾区创新能力方面的优势、短板、机会与威胁挑战。」 |
+| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现粤港澳大湾区创新能力方面的优势、短板、机会与威胁挑战。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.3.3（第 677–679 行） | 「识别并分析粤港澳大湾区创新能力的优势因素，如丰富的创新资源、完善的创新机构、高效的创新机制、良好的创新环境等，用户可以查看各优势因素的具体表现和影响程度。」 |
-| 3 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_SWOT_STRENGTH.md`，§口径定义 / §计算逻辑说明 | 「从四子指数的 12 个分项中识别相对领先的优势因素，给出清单、表现与影响程度。本指标不是 0—100 评分。」 |
+| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§口径定义 / §计算逻辑说明 | 「从四子指数的 12 个分项中识别相对领先的优势因素，给出清单、表现与影响程度。本指标不是 0—100 评分。」 |
 | 4 | 上游指标族 | 同上文件 §第一步 | 「按同一年窗跑四个子指标，得到每城 12 个分项原始值。每个分项在 11 城内降序排名 `rank`（1 最好；缺测不参评）。」 |
-| 5 | 需求映射 | `local-workspace/docs/tasks/investiage/20261019_指标整体开发进度调研/_work_20261019/mid2req.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 映射到「产业全要素图谱API服务开发」页（DS-05-GBA-ANALYSIS，seq 116）——该映射为页级兜底，语义弱于上表第 1、2 行的原句，故本报告以原句为准 |
+| 5 | 需求映射 | `(GitLab 外本地历史批次工作稿)`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 映射到「产业全要素图谱API服务开发」页（DS-05-GBA-ANALYSIS，seq 116）——该映射为页级兜底，语义弱于上表第 1、2 行的原句，故本报告以原句为准 |
 | 6 | 王惠聚合登记 | 同目录 `wanghui_agg.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_003`） | 「def: 同M_INNOV_GBA_SWOT_STRENGTH-湾区创新能力优势因素；src: gkx.dwd_org_base_info…dwd_patent_applicants(pn, name) — 联合申请人」 |
 
 ### 1.6 推测原意与推测定义（若需要）
@@ -273,8 +277,8 @@ $$
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_003.py`
-**运行命令**：`cd code && python3 M_INNOV_DS_05_GBA_ANALYSIS_003.py`
+**代码入库路径**：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_003.py`
+**运行命令**：`python3 M_INNOV_DS_05_GBA_ANALYSIS_003.py`
 **输出**：`code/M_INNOV_DS_05_GBA_ANALYSIS_003_out.json`（复用父指标同日实测产物，未重跑重查询；含一次 gkx 轻量连通性核验，本次返回 `dwd_patent = 2,939,895`）
 
 | 城市 | 机构数 | 专利数 | 研发经费（元） | 高企数 | 政策数 | 高企密度 | 原阈值命中 | 比例阈值命中 | 严格阈值命中 |

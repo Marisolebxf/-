@@ -1,7 +1,11 @@
 # 创新价值（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` → `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md` §二（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md` §二（M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py 零改语义复算）。
 
 ## 源表字段
 
@@ -57,16 +61,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json` |
+| 正本 MD | `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：DS（专题服务指标面，DS_04 创新成果价值族）｜ **域**：创新成果（INNOV）｜ **UI 挂载**：创新成果综合展示 → 创新价值排序 / 创新价值分类展示 ｜ **数据支持度**：**部分支持**
 > **公式定义人（王惠口径，wanghui: true）**：王惠 V1.5（calc-logic `M_INNOV_ACHIEVE_VALUE`「成果扩散潜力代理」）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：开发库结构有 / 数据「部分」（论文与项目两型关键子维无区分度）
@@ -290,7 +294,7 @@ $$V_x=100\times\frac{1}{|\mathcal{K}_x|}\sum_{k\in\mathcal{K}_x}n_{xk}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py` |
 | 结果产物 | 同目录 `M_INNOV_DS_04_ACHIEVE_OVERVIEW_001_out.json` |
 | 样本策略 | 三型各 5,000 行（窗口 2019–2024），与旧版同序同量，便于逐项对比 |
 | 校验源 | 三方库 `gkx`（`183.240.141.251:3318`，只读）：专利/被引/转化/论文/期刊/项目六表 |
@@ -298,7 +302,7 @@ $$V_x=100\times\frac{1}{|\mathcal{K}_x|}\sum_{k\in\mathcal{K}_x}n_{xk}$$
 | 运行时长 | 34.2 s（含 6 表探针与三型评分） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
+python3 metrics/repro/M_INNOV_DS_04_ACHIEVE_OVERVIEW_001.py
 ```
 
 脚本输出字段含：`probes_today`（四张表空值/区分度）、`compute.by_type`（三型分布与分档）、`compute.degenerate_types`、`compute.patent_sz_slice`、`support_judgment`。以下展示为 **2026-10-21** 一次完整跑数结果（与 out.json 一致）。
@@ -459,7 +463,7 @@ python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度�
 
 6. Cherchye, L., Moesen, W., Rogge, N., & Van Puyenbroeck, T. (2007). An introduction to ‘benefit of the doubt’ composite indicators. *Social Indicators Research*, 82(1), 111–145. https://doi.org/10.1007/s11205-006-9029-7
 
-7. 项目内真源（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_ACHIEVE_VALUE.md` — 王惠 V1.5 闭合口径（本文件复用其公式）。
+7. 项目内真源（非外部文献）：`王惠口径正本（GitLab 外本地归档）` — 王惠 V1.5 闭合口径（本文件复用其公式）。
 
 文献—方法—库表完整论证见 **附录 C**；实测产物见 **附录 D**。
 

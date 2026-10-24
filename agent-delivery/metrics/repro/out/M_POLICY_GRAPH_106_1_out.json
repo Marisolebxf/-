@@ -1,0 +1,1081 @@
+{
+ "metric_id": "M_POLICY_GRAPH_106_1",
+ "metric_name_zh": "政策实体识别构建",
+ "support_judgment": "完全转换支持",
+ "verdict_kind": "conversion_support",
+ "judgment_reason": "两库均无政策实体结果表（gkx 280 表中无 policy_entity 一类表；live 同名表为造数面），但源侧 `dwd_policy_base` 的标题与正文 20,000 条（正文 18,763 条、45,737,165 字）结构完整、量足够，规则+词典识别现在即可产出六类实体及属性，属「结构+数据量均足够、现可转换生成」。精度只能用抽检验证，不用精度不足降档。",
+ "publishable": true,
+ "registered_metric_value": null,
+ "population": {
+  "policy_rows": 20000,
+  "rows_with_content": 18763,
+  "rows_title_only": 1237,
+  "content_chars": 45737165
+ },
+ "entity_types": [
+  {
+   "entity_type": "机关",
+   "docs_with_entity": 8174,
+   "denominator": 20000,
+   "coverage_pct": 40.87,
+   "distinct_values": 1720,
+   "source": "标题前缀正则 + 机关后缀白名单（自建）"
+  },
+  {
+   "entity_type": "行政区划",
+   "docs_with_entity": 12218,
+   "denominator": 20000,
+   "coverage_pct": 61.09,
+   "distinct_values": 81,
+   "source": "省份/城市词典（policy_dims 取值表）+ 正文匹配"
+  },
+  {
+   "entity_type": "日期",
+   "docs_with_entity": 14239,
+   "denominator": 20000,
+   "coverage_pct": 71.195,
+   "distinct_values": 6236,
+   "source": "正文日期正则（YYYY年M月D日）"
+  },
+  {
+   "entity_type": "文种",
+   "docs_with_entity": 20000,
+   "denominator": 20000,
+   "coverage_pct": 100.0,
+   "distinct_values": 24,
+   "source": "type 列 + 标题文种词"
+  },
+  {
+   "entity_type": "支持对象",
+   "docs_with_entity": 14345,
+   "denominator": 20000,
+   "coverage_pct": 71.725,
+   "distinct_values": 12,
+   "source": "12 类称谓词词典（文本代理）"
+  },
+  {
+   "entity_type": "产业环节",
+   "docs_with_entity": 3991,
+   "denominator": 20000,
+   "coverage_pct": 19.955,
+   "distinct_values": 417,
+   "source": "12 链 + 链树节点名（≥3 字）词典"
+  }
+ ],
+ "derived_counts": {
+  "issuer_missing_docs": 11826,
+  "object_marks_total": 40296,
+  "content_nonempty_field_rows": 19203,
+  "type_nonempty_rows": 18138,
+  "city_nonnull_rows": 10294,
+  "city_null_rows": 9706,
+  "province_null_rows": 2524,
+  "province_nonnull_rows": 17476,
+  "province_null_national_rows": 2174,
+  "level0_rows": 357,
+  "policy_base_columns": 33,
+  "innodb_table_rows_estimate": 18808,
+  "province_disagree_rows": 182,
+  "city_disagree_rows": 161,
+  "note": "正文派生计数：分母口径说明用，不改变 entity_types 的覆盖率口径（分母 20,000）"
+ },
+ "totals": {
+  "entity_mentions": 72967,
+  "docs_with_any_entity": 20000,
+  "docs_with_any_entity_pct": 100.0,
+  "docs_with_zero_entity": 0,
+  "avg_entities_per_doc": 3.6484,
+  "entity_count_dist": {
+   "0": 0,
+   "1": 958,
+   "2": 2882,
+   "3": 4847,
+   "4": 6159,
+   "5": 3856,
+   "6": 1298
+  }
+ },
+ "quality_probe": {
+  "issuer_vs_ministry": {
+   "both": 8167,
+   "issuer_only": 7,
+   "ministry_only": 11822,
+   "neither": 4,
+   "consistent": 4894,
+   "abbrev_col": 309
+  },
+  "issuer_consistent_pct": 59.9241,
+  "region_province_agree_pct": 98.4073,
+  "region_city_agree_pct": 98.0735,
+  "region_check": {
+   "province_both": 11427,
+   "province_agree": 11245,
+   "city_both": 8357,
+   "city_agree": 8196
+  },
+  "note": "机关与 minister 列的相容率只作参照：ministry 存简称（工信部），标题里是全称（工业和信息化部办公厅），简称与全称的字符串不相交会造成低估；真正的精度以 manual_sample 的抽检为准"
+ },
+ "live_mock_rows": {
+  "policy_entity": 7517,
+  "policy_graph_edge": 3726,
+  "policy_graph_node": 806,
+  "registry_flag": "Mock @ batch=mock_20260623 / is_mock: true",
+  "note": "live 同名结果面行数；该批表为造数面，不参与本件任何数值"
+ },
+ "object_docs": {
+  "企业": 11408,
+  "中小企业": 2252,
+  "高新技术企业": 1269,
+  "科技型企业": 618,
+  "人才": 3316,
+  "团队": 1299,
+  "高校": 3170,
+  "科研院所": 1756,
+  "园区": 4104,
+  "平台": 4980,
+  "个人": 4115,
+  "服务机构": 2009
+ },
+ "kind_docs": {
+  "通知": 11417,
+  "办法": 1798,
+  "意见": 1929,
+  "方案": 1353,
+  "规划": 703,
+  "条例": 140,
+  "规定": 345,
+  "公告": 1443,
+  "细则": 235,
+  "指南": 329
+ },
+ "industry_lexicon": {
+  "chains": 1128,
+  "short_nodes_2char": 22,
+  "short_nodes_sample": [
+   "丝杠",
+   "农业",
+   "制造",
+   "化工",
+   "医药",
+   "夹爪",
+   "封测",
+   "封装",
+   "射频",
+   "引物",
+   "机翼",
+   "模组",
+   "测试",
+   "疫苗",
+   "胰酶",
+   "苷类",
+   "药酒",
+   "软件",
+   "轴承",
+   "酶类"
+  ],
+  "note": "2 字节点名（机器人/传感器/集成电路等）与日常词冲突，本件不纳入产业环节词典，以免把「机器人」当产业实体——该批词命中率另见 M_POLICY_INDUSTRY_COVERAGE 的锚定口径"
+ },
+ "manual_sample": {
+  "n": 40,
+  "rule": "固定取前 40 条（按 id 升序），逐条人工核对 issuer 是否为真实发文机关",
+  "rows": [
+   {
+    "id": "18318860",
+    "title": "工业和信息化部办公厅关于印发重点跟踪培育纺织服装品牌企业名单（2020版）的通知",
+    "issuer": "工业和信息化部办公厅",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "福建省"
+    ],
+    "city_hit": [
+     "福州市"
+    ],
+    "doc_type": "公示公告",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318861",
+    "title": "六部门关于印发《蚕桑丝绸产业高质量发展行动计划(2021-2025年)》的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-规划纲要",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "中小企业",
+     "人才",
+     "科研院所",
+     "园区",
+     "平台"
+    ],
+    "chains": [
+     "智能机器人",
+     "人工智能",
+     "数据平台",
+     "生产制造",
+     "机器人"
+    ]
+   },
+   {
+    "id": "18318862",
+    "title": "工业和信息化部办公厅关于公布2019年企业上云典型案例遴选结果的通知",
+    "issuer": "工业和信息化部办公厅",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "平台"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318863",
+    "title": "载客车辆（M1 类）落实《汽车有害物质和可回收利用率管理要求》的符合性情况清单（第十一批）",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [],
+    "chains": []
+   },
+   {
+    "id": "18318864",
+    "title": "《道路机动车辆生产企业及产品》（第334批）、《新能源汽车推广应用推荐车型目录》（2020年第8批）、《享受车船税减免优",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318865",
+    "title": "三部门关于开展第四批智慧健康养老应用试点示范的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "北京市"
+    ],
+    "city_hit": [
+     "北京市"
+    ],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "园区",
+     "平台"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318866",
+    "title": "道路机动车辆生产企业及产品（第332批）",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318867",
+    "title": "中华人民共和国工业和信息化部公告2020年第20号",
+    "issuer": "中华人民共和国工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318869",
+    "title": "“能效之星”产品目录（2019）公告",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [
+     "公告"
+    ],
+    "objects": [],
+    "chains": []
+   },
+   {
+    "id": "18318870",
+    "title": "工业和信息化部关于公布2019年国家技术创新示范企业名单的通知",
+    "issuer": "工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318872",
+    "title": "四部委关于印发《京津冀工业节水行动计划》的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "北京市",
+     "天津市",
+     "河北省"
+    ],
+    "city_hit": [
+     "北京市",
+     "天津市"
+    ],
+    "doc_type": "政策文件-规划纲要",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [],
+    "chains": []
+   },
+   {
+    "id": "18318873",
+    "title": "工业和信息化部关于2019年信息通信行业行风建设暨纠风工作的指导意见",
+    "issuer": "工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-指导意见",
+    "kinds": [
+     "意见"
+    ],
+    "objects": [
+     "企业",
+     "中小企业",
+     "个人"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318874",
+    "title": "工业和信息化部办公厅关于公布全国工业领域电力需求侧管理第二批参考产品（技术）目录的通知",
+    "issuer": "工业和信息化部办公厅",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "广西壮族自治区",
+     "上海市",
+     "广东省"
+    ],
+    "city_hit": [
+     "上海市",
+     "深圳市",
+     "天津市"
+    ],
+    "doc_type": "公示公告",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "高校",
+     "园区",
+     "平台"
+    ],
+    "chains": [
+     "控制系统",
+     "数据平台",
+     "传感器"
+    ]
+   },
+   {
+    "id": "18318875",
+    "title": "《免征车辆购置税的新能源汽车车型目录》（第十八批）",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318878",
+    "title": "道路机动车辆生产企业及产品（第304批）",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318880",
+    "title": "两部门关于印发《国家车联网产业标准体系建设指南（智能网联汽车）》的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-政策指南",
+    "kinds": [
+     "通知",
+     "指南"
+    ],
+    "objects": [],
+    "chains": [
+     "智能网联汽车"
+    ]
+   },
+   {
+    "id": "18318881",
+    "title": "工业和信息化部关于印发《无线电频率使用率要求及核查管理暂行规定》的通知",
+    "issuer": "工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "规范性文件-规范条例",
+    "kinds": [
+     "通知",
+     "规定"
+    ],
+    "objects": [],
+    "chains": []
+   },
+   {
+    "id": "18318882",
+    "title": "三部门关于组织开展2017年度高耗能行业能效“领跑者”遴选工作的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "申报通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318884",
+    "title": "关于召开进一步做好新能源汽车推广应用安全监管工作宣贯会的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "北京市"
+    ],
+    "city_hit": [
+     "北京市"
+    ],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "高校",
+     "平台"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318889",
+    "title": "工业和信息化部关于公布2016年换发电子认证服务许可证企业名单（第四批）的通告",
+    "issuer": "工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "河南省"
+    ],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": [
+     "电子认证服务"
+    ]
+   },
+   {
+    "id": "18318892",
+    "title": "中华人民共和国工业和信息化部公告（2016年 第11号）",
+    "issuer": "中华人民共和国工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318893",
+    "title": "工业和信息化部办公厅关于开展2012年首批工业产品质量控制和技术评价实验室复核工作的通知",
+    "issuer": "工业和信息化部办公厅",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "北京市"
+    ],
+    "city_hit": [
+     "北京市"
+    ],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318894",
+    "title": "《废塑料综合利用行业规范条件》及《废塑料综合利用行业规范条件公告管理暂行办法》发布",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-管理办法/实施方案",
+    "kinds": [
+     "办法",
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318895",
+    "title": "关于开展工业固体废物综合利用基地建设试点验收工作的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "广西壮族自治区",
+     "内蒙古自治区",
+     "北京市"
+    ],
+    "city_hit": [
+     "北京市",
+     "贵阳市"
+    ],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "人才",
+     "园区"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318897",
+    "title": "关于召开2015年中荷航空科技论坛的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业",
+     "高校"
+    ],
+    "chains": [
+     "无人机"
+    ]
+   },
+   {
+    "id": "18318899",
+    "title": "关于协助做好《中国应急服务企业指南》有关工作的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-政策指南",
+    "kinds": [
+     "通知",
+     "指南"
+    ],
+    "objects": [
+     "企业",
+     "中小企业",
+     "人才",
+     "科研院所",
+     "平台",
+     "个人"
+    ],
+    "chains": [
+     "信息安全服务",
+     "决策系统",
+     "北斗导航",
+     "设计服务",
+     "数据库"
+    ]
+   },
+   {
+    "id": "18318900",
+    "title": "关于颁发开采黄金矿产批准书企业名单（2015年第二批）的公告",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318901",
+    "title": "2015年4月下半月工业和信息化部核发进网许可证（含试用批文）的电信设备目录",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [],
+    "chains": []
+   },
+   {
+    "id": "18318902",
+    "title": "颁发开采黄金矿产批准书企业名单（2015年第一批）",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318907",
+    "title": "关于进一步加强焦化生产企业公告管理工作的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知",
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318908",
+    "title": "2013年全国淘汰落后产能目标任务完成情况",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [
+     "陕西省",
+     "甘肃省",
+     "湖南省"
+    ],
+    "city_hit": [],
+    "doc_type": "NULL",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318909",
+    "title": "国家发展改革委 工业和信息化部关于电解铝企业用电实行阶梯电价政策的通知",
+    "issuer": "国家发展改革委 工业和信息化部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": [
+     "数据库",
+     "整流器"
+    ]
+   },
+   {
+    "id": "18318910",
+    "title": "关于禁化武组织招募企业协助处理叙利亚前体化学品的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": [
+     "原材料"
+    ]
+   },
+   {
+    "id": "18318918",
+    "title": "关于做好下放食盐准运许可审批权限工作的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "个人"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318919",
+    "title": "关于核查整顿稀土违法违规行为的通知",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "其他通知",
+    "kinds": [
+     "通知"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": [
+     "生产设备"
+    ]
+   },
+   {
+    "id": "18318920",
+    "title": "车辆生产企业及产品（第240批）公告",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "公示公告",
+    "kinds": [
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318922",
+    "title": "工业和信息化部 财政部 发展改革委 商务部关于印发《节能产品惠民工程推广信息监管实施方案》的通知",
+    "issuer": "工业和信息化部 财政部 发展改革委 商务部",
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-管理办法/实施方案",
+    "kinds": [
+     "通知",
+     "方案"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318923",
+    "title": "磷铵行业准入公告管理暂行办法",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "政策文件-管理办法/实施方案",
+    "kinds": [
+     "办法",
+     "公告"
+    ],
+    "objects": [
+     "企业"
+    ],
+    "chains": [
+     "原材料"
+    ]
+   },
+   {
+    "id": "18318928",
+    "title": "2011年第十一届信息产业重大技术发明评选结果",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "NULL",
+    "kinds": [],
+    "objects": [
+     "企业",
+     "高校"
+    ],
+    "chains": []
+   },
+   {
+    "id": "18318929",
+    "title": "略阳县干河坝金矿有限责任公司等9家企业取得《开采黄金矿产批准书》",
+    "issuer": null,
+    "ministry": "工信部",
+    "province_col": "NULL",
+    "province_hit": [],
+    "city_hit": [],
+    "doc_type": "NULL",
+    "kinds": [],
+    "objects": [
+     "企业"
+    ],
+    "chains": []
+   }
+  ],
+  "issuer_extracted_in_40": 12,
+  "random20": [
+   {
+    "id": "18352111",
+    "issuer": "内蒙古自治区人民政府办公厅",
+    "ministry": "内蒙古自治区人民政府",
+    "title": "内蒙古自治区人民政府办公厅关于进一步做好压力管道车载气瓶质量安全工作的通知"
+   },
+   {
+    "id": "18325482",
+    "issuer": "河北省人民政府办公厅",
+    "ministry": "河北省人民政府",
+    "title": "河北省人民政府办公厅关于印发2018年立法工作计划的通知"
+   },
+   {
+    "id": "18354999",
+    "issuer": "佛山市科学技术局",
+    "ministry": "佛山市科学技术局",
+    "title": "佛山市科学技术局关于邀请参加佛山市重点领域科技攻关财务服务机构遴选的通知"
+   },
+   {
+    "id": "18378738",
+    "issuer": "有效浙江省人民政府办公厅",
+    "ministry": "浙江省人民政府",
+    "title": "有效浙江省人民政府办公厅关于加快推进技能人才队伍建设的意见"
+   },
+   {
+    "id": "18320927",
+    "issuer": "山东省人民政府办公厅",
+    "ministry": "山东省人民政府",
+    "title": "山东省人民政府办公厅关于促进全省房地产市场健康发展的实施意见"
+   },
+   {
+    "id": "18321933",
+    "issuer": "京通市监发〔2021〕15号 北京市通州区市场监督管理局",
+    "ministry": "北京市通州区人民政府",
+    "title": "京通市监发〔2021〕15号 北京市通州区市场监督管理局关于印发《关于服务北京城市副中心高质量发展实"
+   },
+   {
+    "id": "18398297",
+    "issuer": "省人民政府办公厅",
+    "ministry": "贵州省人民政府",
+    "title": "省人民政府办公厅关于印发第一次全省污染源普查方案的通知(黔府办发〔2007〕82号)"
+   },
+   {
+    "id": "18361393",
+    "issuer": "甘肃省人民政府",
+    "ministry": "甘肃省人民政府",
+    "title": "甘肃省人民政府关于加强教师队伍建设的意见"
+   },
+   {
+    "id": "18322807",
+    "issuer": "呼和浩特市人民政府",
+    "ministry": "呼和浩特市人民政府",
+    "title": "呼和浩特市人民政府关于印发服务企业发展十条规定的通知"
+   },
+   {
+    "id": "18353894",
+    "issuer": "河南省工业和信息化厅",
+    "ministry": "河南省工业和信息化厅",
+    "title": "河南省工业和信息化厅关于开展兰考承接产业转移对接活动的紧急通知"
+   },
+   {
+    "id": "18363387",
+    "issuer": "市规划和自然资源局大鹏管理局",
+    "ministry": "深圳市大鹏新区政府在线",
+    "title": "市规划和自然资源局大鹏管理局关于220kV扬帆输变电工程拟永久使用林地的公示-大鹏新区政府在线"
+   },
+   {
+    "id": "18321276",
+    "issuer": "广西壮族自治区人民政府",
+    "ministry": "广西壮族自治区人民政府",
+    "title": "广西壮族自治区人民政府关于下达广西壮族自治区2014年国民经济和社会发展计划的通知（桂政发〔2014"
+   },
+   {
+    "id": "18407111",
+    "issuer": "常州市财政局常州市经济和信息化委员会",
+    "ministry": "常州市财政局",
+    "title": "常州市财政局常州市经济和信息化委员会关于印发《常州市新"
+   },
+   {
+    "id": "18360054",
+    "issuer": "人力资源社会保障部办公厅",
+    "ministry": "人社部",
+    "title": "人力资源社会保障部办公厅关于印发专业技术人才知识更新工程2016年高级研修项目计划的通知"
+   },
+   {
+    "id": "18328273",
+    "issuer": "南宁市人民政府办公厅",
+    "ministry": "南宁市人民政府",
+    "title": "南宁市人民政府办公厅关于印发南宁市城乡风貌改造二期工程工作实施方案的通知"
+   },
+   {
+    "id": "18320558",
+    "issuer": "​中共浙江省委",
+    "ministry": "NULL",
+    "title": "​中共浙江省委关于制定浙江省国民经济和社会发展第十四个五年规划和二〇三五年远景目标的建议"
+   },
+   {
+    "id": "18322539",
+    "issuer": "合肥市人民政府办公室",
+    "ministry": "合肥市人民政府",
+    "title": "合肥市人民政府办公室关于印发《2021年市政府为民办实事事项工作方案》的通知"
+   },
+   {
+    "id": "18356929",
+    "issuer": "河北省人民政府办公厅",
+    "ministry": "河北省人民政府",
+    "title": "河北省人民政府办公厅关于进一步加强气象探测工作的通知"
+   },
+   {
+    "id": "18356177",
+    "issuer": "自治区人民政府",
+    "ministry": "宁夏回族自治区人民政府",
+    "title": "自治区人民政府关于印发宁夏回族自治区安全生产“十三五”规划的通知"
+   },
+   {
+    "id": "18321809",
+    "issuer": "广州市商务局",
+    "ministry": "广州市人民政府",
+    "title": "广州市商务局关于印发广州市跨境电子商务产业园区认定办法（试行）的通知"
+   }
+  ],
+  "spot_check": {
+   "extracted_rows_checked": 32,
+   "correct": 32,
+   "errors": 0,
+   "precision_pct": 100.0,
+   "judged_by": "人工逐条比对标题与正文（首 40 条里 12 条抽到机关，另 20 条为固定种子随机抽样）",
+   "note": "两组都没有把「六部门/三部门/两部门」这类集合称谓当机关（黑名单里已排除），也没有把《…》开头的目录类标题误抽成机关；最长的复合机关名（如「浙江省人力资源和社会保障厅浙江省财政厅…」）保留了完整字符串，下游切分需再按厅局后缀做二次分词"
+  }
+ },
+ "write_path": {
+  "target_table": null,
+  "note": "两库均无政策实体表，实体只落本产物 JSON；上线需建 `policy_entity` 表（字段：policy_id/entity_type/entity_value/confidence/source_span）"
+ },
+ "sources": [
+  "code/_snapshots21/policy_base_20261021.json（20,000 行）",
+  "code/_snapshots21/policy_content_20261021.json（18,763 条正文）",
+  "code/_snapshots21/policy_type_20261022.json（逐条 type）",
+  "code/_snapshots21/policy_dims_20261023.json（省/市取值表）",
+  "code/_snapshots21/chain_tree_20261021.json（1,273 节点）",
+  "gkx @ 183.240.141.251:3318（只读用户 gkx_reader_zp）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面构建：把 20,000 条政策一次性建成实体表，不按年出值，故无基期年；发布年（1981—2024）只作属性，不进入任何分母。"
+}

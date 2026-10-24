@@ -1,7 +1,11 @@
 # 政策导向（M_INNOV_PG_GUIDE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_GUIDE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_GUIDE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_GUIDE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_GUIDE.md`；复现脚本 `metrics/repro/M_INNOV_PG_GUIDE.py` → `metrics/repro/out/M_INNOV_PG_GUIDE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_GUIDE.py`、产物 `metrics/repro/out/M_INNOV_PG_GUIDE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 三性等权；本库仅前瞻性可算（title 单字段 + 两级清洗），系统性/针对性不可算，故不输出综合分
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_GUIDE.md` §二（M_INNOV_PG_GUIDE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_PG_GUIDE.md` §二（M_INNOV_PG_GUIDE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -52,16 +56,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_GUIDE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_GUIDE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_GUIDE_out.json` |
+| 正本 MD | `M_INNOV_PG_GUIDE.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_PG_GUIDE.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_PG_GUIDE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_GUIDE.py`、产物 `metrics/repro/out/M_INNOV_PG_GUIDE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（评分/占比型）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 152）
 > **UI 挂载**：政策与条件保障力 → 发展战略引导力 → 政策导向分析（前瞻性 / 系统性 / 针对性三视图）
@@ -157,7 +161,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
 | 1 | `gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` | 发展战略引导力 · 序号 152 | 「分析政策的前瞻性、系统性、针对性，评估政策对产业发展的引导作用。」 |
-| 2 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_GUIDE.md` | 口径定义 | 「从政策的前瞻性、系统性、针对性三个维度综合评估。」 |
+| 2 | `王惠口径正本（GitLab 外本地归档）` | 口径定义 | 「从政策的前瞻性、系统性、针对性三个维度综合评估。」 |
 | 3 | 同上 | 计算逻辑说明 | 「三性等权；每维取命中政策件数占全部政策件数的比例。」 |
 | 4 | 同上 | 维度表 | 「系统性：`quote_policy` 非空且不为空数组；针对性：`policy_support.support_way` 有值。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_INNOV_PG_GUIDE` | 「case=A；tables=[`dwd_policy_base`]。」 |
@@ -270,14 +274,14 @@ $K_{plan}$ 为规划类关键词集合，$N$ 为入集政策件数。三性等�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_GUIDE.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_PG_GUIDE.py` |
 | 结果产物 | 同目录 `code/M_INNOV_PG_GUIDE_out.json` |
 | 主算数据 | `code/_snapshots21/pg_policy_rows_20261021.json`（20,000 行） |
 | 主算库 | `gkx`（`183.240.141.251:3318`，只读） |
 | SQL 条数 / 耗时 | 快照导出 1 条 SQL；本脚本 **0 条 SQL**，运行 0.21 秒 |
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_PG_GUIDE.py
 ```
 
@@ -388,7 +392,7 @@ python3 code/M_INNOV_PG_GUIDE.py
 
 ### 5.1 王惠原方法还原
 
-出处：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_GUIDE.md`（V1.5-20260901）。
+出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
 
 原文要点：三性等权；前瞻性看标题规划词；系统性看 `quote_policy` 非空且不为空数组；针对性看 `policy_support.support_way` 有值；每维 = 命中件数 / 全部件数。
 
@@ -425,7 +429,7 @@ python3 code/M_INNOV_PG_GUIDE.py
 4. 彭纪生, 仲为国, 孙文祥. (2008). 政策协同演变与经济绩效：基于创新政策的实证研究. 管理世界, (9), 25–36.
 5. Rothwell, R., & Zegveld, W. (1985). *Reindustrialization and Technology*. Longman.
 6. OECD. (2015). *Frascati Manual 2015*. OECD Publishing. https://doi.org/10.1787/9789264239012-en
-7. 项目内口径文件（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_GUIDE.md`（V1.5-20260901）。
+7. 项目内口径文件（非外部文献）：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
 8. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 152。
 
 ---

@@ -1,7 +1,11 @@
 # 创新价值排名（M_INNOV_DS_06_CARRIER_003）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_06_CARRIER_003.md`；复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py` → `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py`、产物 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md` §二（M_INNOV_DS_06_CARRIER_003.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_06_CARRIER_003.md` §二（M_INNOV_DS_06_CARRIER_003.py 零改语义复算）。
 
 ## 源表字段
 
@@ -58,16 +62,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_06_CARRIER_003.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003_out.json` |
+| 正本 MD | `M_INNOV_DS_06_CARRIER_003.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_06_CARRIER_003.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_06_CARRIER_003.py`、产物 `metrics/repro/out/M_INNOV_DS_06_CARRIER_003_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 指标（DS-06 深圳创新载体综合展示 · 创新价值排名）｜ **域**：科技创新 / 深圳创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测·创新载体综合展示（载体详情 / 创新价值排名展示）｜ **数据支持度**：**部分支持**
 > **公式定义人**：仿王惠 ai-1020（沿用王惠 V1.5-20260830 三维骨架，对「全零维」的填充规则做缺测修正）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
@@ -194,10 +198,10 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.6.1.3（第 751–753 行） | 「展示各载体的创新价值排名，用户可查看不同载体的创新能力和表现，识别高价值创新载体。」 |
+| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.6.1.3（第 751–753 行） | 「展示各载体的创新价值排名，用户可查看不同载体的创新能力和表现，识别高价值创新载体。」 |
 | 2 | 同上 | §1.1.1.1.4.1.6.1.2（第 747–749 行） | 「用户点击地图上的载体标记点，可查看该载体的基本介绍、创新成果展示以及在载体内的创新价值排名等详细信息。」 |
 | 3 | 同上 | §1.1.1.1.4.1.6.1（第 737–741 行） | 「深圳市创新载体综合展示的具体功能包括多层级地理展示、载体详情查看、创新价值排名展示、载体订阅功能、载体筛选与搜索、载体对比分析。」 |
-| 4 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_CARRIER_VALUE_RANK_SZ.md`，§计算逻辑说明 | 「同一维在本批深圳载体内极值归一。」 |
+| 4 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§计算逻辑说明 | 「同一维在本批深圳载体内极值归一。」 |
 | 5 | 同上 | 同上 §第三步 | 「缺测维不补 0，剩余维权重重归一。按 `value_score` 降序，`rank` 从 1 编（同分并列，下一排名跳过）。无三维有效值的载体不入榜。」 |
 | 6 | 同上 | 同上 §第三步·归一公式 | 「norm(x)=(x−min(x))/(max(x)−min(x))（全相同取 0.5）」 |
 | 7 | 王惠聚合登记 | `_work_20261019/wanghui_agg.json`（键 `M_INNOV_DS_06_CARRIER_003`） | 「def: 同M_INNOV_CARRIER_VALUE_RANK_SZ-深圳创新载体创新价值排名」 |
@@ -264,8 +268,8 @@ GIS 展示解决「在哪里」，排名解决「谁更值得关注」。载体�
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_INNOV_DS_06_CARRIER_003.py`
-**运行命令**：`cd code && python3 M_INNOV_DS_06_CARRIER_003.py`
+**代码入库路径**：`metrics/repro/M_INNOV_DS_06_CARRIER_003.py`
+**运行命令**：`python3 M_INNOV_DS_06_CARRIER_003.py`
 **输出**：`code/M_INNOV_DS_06_CARRIER_003_out.json`（复用父指标同日实测产物 `M_INNOV_CARRIER_VALUE_RANK_SZ_out.json`，未重跑重查询；含一次 gkx 轻量核验，返回 `zh_journal = 2,796`、`en_journal = 605`、`patent_cited = 20,515`）
 
 | 排名 | 载体 | 技术原始值（元） | 应用原始值 | 潜力原始值 | 分数 | 可用维数 |

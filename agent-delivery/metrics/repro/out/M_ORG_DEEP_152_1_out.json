@@ -1,0 +1,504 @@
+{
+ "metric": "M_ORG_DEEP_152_1",
+ "metric_name": "深圳科研机构痛难点识别模型",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_with_gaps",
+ "generated_at": "2026-10-23T05:02:00+08:00",
+ "sources": {
+  "db": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_research_institute_base_info",
+   "gkx.dwd_patent_transfer",
+   "gkx.dwd_zh_project",
+   "gkx.dwd_zh_paper",
+   "gkx.dwd_scholar",
+   "gkx.dwd_policy_base"
+  ],
+  "snapshots": [
+   "code/_snapshots21/org_family_panel_20261021.json",
+   "code/_probe_blocked_f2_20261023.json"
+  ],
+  "demo_used": false
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "模型为快照截面打分（2026-10-21 面板），无年度基期；六维中论文维受 §3.74 采集批次峰影响，只能作存量强度，不进入时间趋势。",
+ "point_sets": {
+  "P0": {
+   "definition": "深圳科研机构全集（含六维全零）",
+   "n": 1014
+  },
+  "P1": {
+   "definition": "P0 中至少一维非零的可识别集",
+   "n": 128
+  },
+  "P2": {
+   "definition": "P1 中至少 3 维非零的主口径打分集",
+   "n": 25
+  },
+  "normalization": "分维痛难度 = 100×(1−百分位秩)，秩在 P2 该维正值分布上取；合成分按可用维权重重归一，归一化分母 = Σ可用维权重",
+  "isolated_handling": "六维全零的 886 家记「不可识别」，不参与打分、不补 0、不并入低痛点；仅 1—2 维有值的 103 家记「可识别但不打分」"
+ },
+ "model": {
+  "weights": {
+   "project": 0.25,
+   "transfer": 0.2,
+   "paper": 0.2,
+   "patent": 0.15,
+   "talent": 0.1,
+   "policy": 0.1
+  },
+  "weights_are_authored": true,
+  "main_is_official": false,
+  "weight_note": "权重按数据完整度与业务可解释性自拟：项目/转化权重最高（有明确主体与笔数），政策/人才最低（政策为文本提及、人才桥接率低）。甲方若有官方权重表，主口径须整体重算。",
+  "dims_direction": "六维均为「越多越好」，痛难度为反向百分位",
+  "min_dims": 3,
+  "grade_rule": "高 = 分数 ≥ P90；中 = 分数 ≥ P75；低 = 其余；均在 P2 内分级。仅 1—2 维有值者不参与分级。"
+ },
+ "coverage": {
+  "institutes_all": 2074,
+  "P0_n": 1014,
+  "P1_n": 128,
+  "P2_n": 25,
+  "unidentifiable_n": 886,
+  "identifiable_not_scored_n": 103,
+  "scored_n": 25,
+  "confidence_dist": {
+   "A": 3,
+   "B": 22,
+   "C": 103,
+   "D": 886
+  },
+  "dim_count_dist": {
+   "1": 54,
+   "2": 49,
+   "3": 17,
+   "4": 5,
+   "5": 3
+  },
+  "dim_with_value": {
+   "project": 20,
+   "transfer": 5,
+   "paper": 80,
+   "patent": 87,
+   "talent": 17,
+   "policy": 29
+  },
+  "dim_positive_in_P2": {
+   "project": 12,
+   "transfer": 3,
+   "paper": 24,
+   "patent": 23,
+   "talent": 12,
+   "policy": 12
+  }
+ },
+ "score_dist": {
+  "n": 25,
+  "min": 7.2917,
+  "p25": 30.4592,
+  "median": 45.3301,
+  "mean": 42.8603,
+  "p75": 55.8726,
+  "p90": 63.6353,
+  "max": 71.9697
+ },
+ "grades": {
+  "high": 2,
+  "mid": 4,
+  "low": 19
+ },
+ "stability": {
+  "spearman_equal_weight": 0.9785,
+  "spearman_alt_weight": 0.9808,
+  "drop_one_dim": [
+   {
+    "dropped_dim": "project",
+    "spearman_vs_main": 0.8246,
+    "top20_overlap_with_main": 19,
+    "scored_after_drop": 25
+   },
+   {
+    "dropped_dim": "transfer",
+    "spearman_vs_main": 0.9838,
+    "top20_overlap_with_main": 19,
+    "scored_after_drop": 25
+   },
+   {
+    "dropped_dim": "paper",
+    "spearman_vs_main": 0.8454,
+    "top20_overlap_with_main": 19,
+    "scored_after_drop": 25
+   },
+   {
+    "dropped_dim": "patent",
+    "spearman_vs_main": 0.8986,
+    "top20_overlap_with_main": 18,
+    "scored_after_drop": 25
+   },
+   {
+    "dropped_dim": "talent",
+    "spearman_vs_main": 0.9908,
+    "top20_overlap_with_main": 19,
+    "scored_after_drop": 25
+   },
+   {
+    "dropped_dim": "policy",
+    "spearman_vs_main": 0.9815,
+    "top20_overlap_with_main": 19,
+    "scored_after_drop": 25
+   }
+  ],
+  "note": "主口径与两套替代权重的秩相关为 0.9785 / 0.9808，说明分数对权重不敏感；逐维剔除里降幅最大的是项目维（0.8246）与论文维（0.8454），但 top20 名单仍保留 18—19 家，说明分级名单稳、单家名次不稳。"
+ },
+ "top15": [
+  {
+   "name": "深圳市龙岗区耳鼻咽喉医院（深圳市耳鼻咽喉研究所、深圳市龙岗区口腔医学研究所）",
+   "org_id": "146c0a5bbb47acef304b8f837b927090",
+   "score": 71.9697,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 2,
+    "transfer": 0,
+    "paper": 1,
+    "patent": 0,
+    "talent": 0,
+    "policy": 1
+   }
+  },
+  {
+   "name": "中国农业科学院农业基因组研究所",
+   "org_id": "9c62c4e1fc9eee676dc2356d8eef7cb1",
+   "score": 64.4022,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 5,
+    "transfer": 0,
+    "paper": 1,
+    "patent": 4,
+    "talent": 0,
+    "policy": 0
+   }
+  },
+  {
+   "name": "中国医学科学院肿瘤医院深圳医院",
+   "org_id": "6622aadd50da04670d296f64e61142a9",
+   "score": 63.124,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 3,
+    "patent": 5,
+    "talent": 0,
+    "policy": 1
+   }
+  },
+  {
+   "name": "深圳市妇幼保健院（深圳市婴幼儿照护服务指导中心、深圳市妇幼医学研究所）",
+   "org_id": "62f8b1c2ed8cd44551db4d926999b37b",
+   "score": 60.999,
+   "confidence": "B",
+   "dims_available": 4,
+   "raw": {
+    "project": 1,
+    "transfer": 0,
+    "paper": 10,
+    "patent": 9,
+    "talent": 1,
+    "policy": 0
+   }
+  },
+  {
+   "name": "中国农业科学院深圳农业基因组研究所（岭南现代农业科学与技术广东省实验室深圳分中心）",
+   "org_id": "0df78658cef10563f83a3f4e888f64d4",
+   "score": 56.6828,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 2,
+    "patent": 16,
+    "talent": 1,
+    "policy": 0
+   }
+  },
+  {
+   "name": "香港科技大学深圳研究院",
+   "org_id": "46a0afcda9fa0d6ec862f755f160184e",
+   "score": 56.5821,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 6,
+    "transfer": 0,
+    "paper": 1,
+    "patent": 9,
+    "talent": 0,
+    "policy": 0
+   }
+  },
+  {
+   "name": "香港大学深圳研究院",
+   "org_id": "2e378e94ccb1cf6d366d724acc9fb188",
+   "score": 55.1631,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 13,
+    "transfer": 0,
+    "paper": 2,
+    "patent": 1,
+    "talent": 0,
+    "policy": 0
+   }
+  },
+  {
+   "name": "广东海洋大学深圳研究院",
+   "org_id": "450fa96e6a72946dfa0e03e8a942dcb4",
+   "score": 55.0725,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 4,
+    "patent": 9,
+    "talent": 0,
+    "policy": 1
+   }
+  },
+  {
+   "name": "深圳市疾病预防控制中心（深圳市卫生监督局、深圳市卫生检验中心、深圳市预防医学研究所）",
+   "org_id": "4c256ed5d7c3c32f91b55a73a2c148bf",
+   "score": 48.596,
+   "confidence": "A",
+   "dims_available": 5,
+   "raw": {
+    "project": 3,
+    "transfer": 0,
+    "paper": 24,
+    "patent": 3,
+    "talent": 1,
+    "policy": 45
+   }
+  },
+  {
+   "name": "深圳湾实验室",
+   "org_id": "63d30f6207348eddba48cc63e5bf096c",
+   "score": 48.5249,
+   "confidence": "B",
+   "dims_available": 4,
+   "raw": {
+    "project": 5,
+    "transfer": 0,
+    "paper": 1,
+    "patent": 29,
+    "talent": 8,
+    "policy": 0
+   }
+  },
+  {
+   "name": "深圳清华大学研究院",
+   "org_id": "deb25041741aebe670e4e77a9cb3391d",
+   "score": 46.7089,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 2,
+    "transfer": 0,
+    "paper": 8,
+    "patent": 156,
+    "talent": 0,
+    "policy": 0
+   }
+  },
+  {
+   "name": "武汉理工大学深圳研究院",
+   "org_id": "18ec319e2950d253a6055eac7ffadb83",
+   "score": 46.3768,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 4,
+    "patent": 22,
+    "talent": 0,
+    "policy": 1
+   }
+  },
+  {
+   "name": "深圳市检验检疫科学研究院",
+   "org_id": "d34d0e286b8c217abd26752250235e65",
+   "score": 45.3301,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 2,
+    "patent": 41,
+    "talent": 0,
+    "policy": 2
+   }
+  },
+  {
+   "name": "中国医学科学院阜外医院深圳医院（深圳市孙逸仙心血管医院）",
+   "org_id": "bd694154cbdedfff70a116d9b6439dfd",
+   "score": 43.75,
+   "confidence": "B",
+   "dims_available": 3,
+   "raw": {
+    "project": 0,
+    "transfer": 0,
+    "paper": 5,
+    "patent": 0,
+    "talent": 1,
+    "policy": 2
+   }
+  },
+  {
+   "name": "深圳华大生命科学研究院",
+   "org_id": "c1b56f5598e72b58a8fb958e2057d55e",
+   "score": 40.5998,
+   "confidence": "A",
+   "dims_available": 5,
+   "raw": {
+    "project": 5,
+    "transfer": 1,
+    "paper": 2,
+    "patent": 199,
+    "talent": 2,
+    "policy": 0
+   }
+  }
+ ],
+ "derived": {
+  "P1_over_P0_pct": {
+   "value": 12.6233,
+   "numerator": 128,
+   "denominator": 1014,
+   "denominator_note": "分子=可识别机构数 point_sets.P1.n，分母=深圳机构全集 point_sets.P0.n"
+  },
+  "P2_over_P0_pct": {
+   "value": 2.4655,
+   "numerator": 25,
+   "denominator": 1014,
+   "denominator_note": "分子=主口径打分集机构数 point_sets.P2.n，分母=深圳机构全集 point_sets.P0.n"
+  },
+  "P2_over_P1_pct": {
+   "value": 19.5312,
+   "numerator": 25,
+   "denominator": 128,
+   "denominator_note": "分子=主口径打分集机构数 point_sets.P2.n，分母=可识别机构数 point_sets.P1.n"
+  },
+  "unidentifiable_pct": {
+   "value": 87.3767,
+   "numerator": 886,
+   "denominator": 1014,
+   "denominator_note": "分子=六维全零机构数 coverage.unidentifiable_n，分母=深圳机构全集 P0.n"
+  },
+  "not_scored_share_of_P1_pct": {
+   "value": 80.4688,
+   "numerator": 103,
+   "denominator": 128,
+   "denominator_note": "分子=仅 1—2 维有值、不参与打分的机构数 coverage.identifiable_not_scored_n，分母=可识别机构数 P1.n"
+  },
+  "high_grade_share_pct": {
+   "value": 8.0,
+   "numerator": 2,
+   "denominator": 25,
+   "denominator_note": "分子=高痛点机构数 grades.high，分母=实际打分机构数 coverage.scored_n"
+  },
+  "mid_grade_share_pct": {
+   "value": 16.0,
+   "numerator": 4,
+   "denominator": 25,
+   "denominator_note": "分子=中痛点机构数 grades.mid，分母=实际打分机构数 coverage.scored_n"
+  },
+  "low_grade_share_pct": {
+   "value": 76.0,
+   "numerator": 19,
+   "denominator": 25,
+   "denominator_note": "分子=低痛点机构数 grades.low，分母=实际打分机构数 coverage.scored_n"
+  },
+  "transfer_dim_share_pct": {
+   "value": 3.9062,
+   "numerator": 5,
+   "denominator": 128,
+   "denominator_note": "分子=转让维有值机构数 coverage.dim_with_value.transfer，分母=可识别机构数 P1.n"
+  },
+  "patent_dim_share_of_P2_pct": {
+   "value": 92.0,
+   "numerator": 23,
+   "denominator": 25,
+   "denominator_note": "分子=打分集内专利维为正值的机构数 coverage.dim_positive_in_P2.patent，分母=主口径打分集 P2.n"
+  },
+  "max_drop_spearman_gap": {
+   "value": 0.1754,
+   "numerator": null,
+   "denominator": null,
+   "denominator_note": "本项为 1−ρ：ρ 取 stability.drop_one_dim 各行的 spearman_vs_main，分子分母是两个排名向量而非计数字段"
+  }
+ },
+ "absence_probe": {
+  "file": "code/_probe_blocked_f2_20261023.json",
+  "blocked": [
+   {
+    "table": "enterprise_cooperation",
+    "gkx_exists": false,
+    "gkx_hits": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   },
+   {
+    "table": "enterprise_supply_chain",
+    "gkx_exists": false,
+    "gkx_hits": 0,
+    "live_demo_row_class": "全量装载",
+    "verdict": "demo_* 库（铁律禁引，不进正文数值）；量级 34 万行，不是「样例」，是演示库全量装载——别写成「只有几百行样例」"
+   }
+  ]
+ },
+ "rejected_dimensions": [
+  {
+   "dimension": "学研协同维（机构—企业合作强度）",
+   "reason": "gkx 无 enterprise_cooperation 与 enterprise_supply_chain（information_schema 命中 0 行）；演示库同名表为全量装载，铁律禁引，不构成支持",
+   "alternative": "以专利转让（transfer）与项目（project）间接代理协同能力",
+   "difference": "代理只能看到已发生的转让/立项，看不到在谈、失败或非专利形式的合作；「协同弱」与「无合作记录」不可区分"
+  },
+  {
+   "dimension": "经费强度维",
+   "reason": "机构人员数缺失（employees_number 整列为空，§3.71 同族缺口）；project_fund 单位未标注",
+   "alternative": "六维中不含经费强度，只保留项目笔数",
+   "difference": "无法区分「项目多而小」与「项目少而大」，模型对经费规模不敏感"
+  },
+  {
+   "dimension": "时间演化（痛点在改善还是恶化）",
+   "reason": "项目只有起始年、无结题年；论文年列受采集批次峰污染（2024 占 32.09%，§3.74）",
+   "alternative": "快照截面分级",
+   "difference": "模型只出「当前是不是痛点」，不出「趋势」，不能做政策效果评估"
+  }
+ ],
+ "conflict_note": {
+  "other_metric": "M_ORG_DEEP_154_1",
+  "relation": "154_1 是「外部机构引入推荐」（候选池=非深圳 1,060 家，能力分越高越好）；本件是「本市机构痛点识别」（母体=深圳 1,014 家，痛难度越高越痛）。两者共用同一份机构面板，但母体、方向、权重与输出都不同，不构成重复计算。",
+  "shared_risk": "两件都依赖同一份申请人名称桥接（patent_matched_orgs=219），桥接缺口会同时影响两件的专利维；引用时不得把两件的专利数相加。"
+ },
+ "gaps": [
+  "886 家（87.38%）六维全零，模型对其完全不可识别；这是数据缺口，不能读成「无痛点」",
+  "仅 25 家（占可识别集 19.53%）达到三维门槛，主口径是小样本，分级不宜对外排名",
+  "转让维全池只有 5 家有值，任一含转让的权重都会让 5 家决定排名",
+  "政策维是文本提及次数，被提及多不等于受支持多，方向存在歧义",
+  "人才维来自姓名桥接（scholars_matched=147 / 21,316 行），覆盖率极低",
+  "权重为自拟且未获甲方签字；剔除项目维或论文维时秩相关降到 0.82—0.85，名次稳定性弱于分级稳定性"
+ ]
+}

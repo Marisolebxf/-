@@ -1,7 +1,11 @@
 # 培育综合评分（M_SVC_REC_CULTIVATE_SCORE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_REC_CULTIVATE_SCORE.md`；复现脚本 `metrics/repro/M_SVC_REC_CULTIVATE_SCORE.py` → `metrics/repro/out/M_SVC_REC_CULTIVATE_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_REC_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_SVC_REC_CULTIVATE_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md` §二（M_SVC_REC_CULTIVATE_SCORE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_REC_CULTIVATE_SCORE.md` §二（M_SVC_REC_CULTIVATE_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,16 +55,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_CULTIVATE_SCORE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_CULTIVATE_SCORE_out.json` |
+| 正本 MD | `M_SVC_REC_CULTIVATE_SCORE.md` |
+| 复现脚本 | `metrics/repro/M_SVC_REC_CULTIVATE_SCORE.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_REC_CULTIVATE_SCORE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_REC_CULTIVATE_SCORE.py`、产物 `metrics/repro/out/M_SVC_REC_CULTIVATE_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：指数/评分（服务机构库·本土培育四维合成）｜ **域**：SVC 服务机构（产业服务链分析·服务机构培育推荐）｜ **UI 挂载**：科技专题服务系统·产业服务链分析·本土服务机构培育列表评分列
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：王惠 V1 四维正本 + 本件降级实现（`calc_logic` 为 null，见 §一 1.3）
@@ -121,7 +125,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 1.3 需求文档是否给出定义方法
 
-**需求文档只给指标名称与四维名，没有给权重、归一化与缺失规则；`REM_QUEUE_20261023.json` 中本件的 `calc_logic` 为 null，即无同 ID 正本。** 按 v6 §八，本件不得造路径、不得声称有会签口径，必须自建可复算公式并逐项声明。王惠 20260904 的正本（`local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SVC_REC_CULTIVATE_SCORE.md`）给了四维名与「每维 0—100、维度间等权」的骨架，但没有落到字段级：研发人员占比的分母是期末人数还是年均人数、市场缺口的分母是全市同类还是目标市场同类、服务成效按次还是按企业去重，三处都没有定。
+**需求文档只给指标名称与四维名，没有给权重、归一化与缺失规则；`REM_QUEUE_20261023.json` 中本件的 `calc_logic` 为 null，即无同 ID 正本。** 按 v6 §八，本件不得造路径、不得声称有会签口径，必须自建可复算公式并逐项声明。王惠 20260904 的正本（`王惠口径正本（GitLab 外本地归档）`）给了四维名与「每维 0—100、维度间等权」的骨架，但没有落到字段级：研发人员占比的分母是期末人数还是年均人数、市场缺口的分母是全市同类还是目标市场同类、服务成效按次还是按企业去重，三处都没有定。
 
 本件的处置是：骨架照王惠（四维、0—100、等权），字段级全部落到 gkx 实际列，并把每一处降级写在 §四 缺口表里；权重不发明的部分保留等权，发明不了的部分（技术创新能力）直接标注恒缺，不补 0、不填均值。这一处置的代价是分数不可与王惠原意直接对齐，收益是任何人拿快照都能复算出同一个数。
 
@@ -213,7 +217,7 @@ $|A_i| < 2$ 不入榜。这里的「可算」指该维至少有一个子指标�
 
 ### 2.8 复现结果摘要
 
-产物 `code/M_SVC_REC_CULTIVATE_SCORE_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`population`、`dimensions`、`value`、`worked_example`、`robustness`、`gaps`、`cross_refs`。脚本 `code/M_SVC_REC_CULTIVATE_SCORE.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`cd code && python3 M_SVC_REC_CULTIVATE_SCORE.py`。下表逐键回查产物，正文所有数字都能在对应键上找到。
+产物 `code/M_SVC_REC_CULTIVATE_SCORE_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`population`、`dimensions`、`value`、`worked_example`、`robustness`、`gaps`、`cross_refs`。脚本 `code/M_SVC_REC_CULTIVATE_SCORE.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`python3 M_SVC_REC_CULTIVATE_SCORE.py`。下表逐键回查产物，正文所有数字都能在对应键上找到。
 
 | 产物键 | 取值 |
 |---|---|
@@ -502,7 +506,7 @@ for org in sz:
 
 ## 附录 E　复算步骤
 
-1. `cd code && python3 M_SVC_REC_CULTIVATE_SCORE.py`；
+1. `python3 M_SVC_REC_CULTIVATE_SCORE.py`；
 2. 脚本只读 `_snapshots21/svc21_rec_20261023.json`，不连库；
 3. 产物 `M_SVC_REC_CULTIVATE_SCORE_out.json` 的 `value.score_dist` 应与本文 §2.8 一致；
 4. 抽一家手算：燃气集团 $(100.0+54.247+99.9981)/3=84.7484$；

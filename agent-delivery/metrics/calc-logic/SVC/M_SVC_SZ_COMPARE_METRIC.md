@@ -1,7 +1,11 @@
 # 城市对比指标值（M_SVC_SZ_COMPARE_METRIC）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_COMPARE_METRIC.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_COMPARE_METRIC.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_COMPARE_METRIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_COMPARE_METRIC.md`；复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` → `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py`、产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_COMPARE_METRIC.md` §二（M_SVC_SZ_COMPARE_METRIC.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_SZ_COMPARE_METRIC.md` §二（M_SVC_SZ_COMPARE_METRIC.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,16 +55,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_COMPARE_METRIC.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_COMPARE_METRIC.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_COMPARE_METRIC_out.json` |
+| 正本 MD | `M_SVC_SZ_COMPARE_METRIC.md` |
+| 复现脚本 | `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_SZ_COMPARE_METRIC.py`、产物 `metrics/repro/out/M_SVC_SZ_COMPARE_METRIC_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：面板（服务机构库·深圳现状对比·城市 × 小项多格）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页对比柱（§1.1.1.2.4.2.7）
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0（部分闭合；只允许「深圳 × orgCount」一格可 live）
@@ -191,7 +195,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.7 复现结果摘要
 
-产物 `code/M_SVC_SZ_COMPARE_METRIC_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`value`、`grid`、`live_cell_detail`、`supplementary_sz`、`counter_evidence`、`gaps`、`cross_refs`。脚本 `code/M_SVC_SZ_COMPARE_METRIC.py` 自包含，只读族级快照，不连库，运行约 1 秒。复现命令：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py`。
+产物 `code/M_SVC_SZ_COMPARE_METRIC_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`value`、`grid`、`live_cell_detail`、`supplementary_sz`、`counter_evidence`、`gaps`、`cross_refs`。脚本 `code/M_SVC_SZ_COMPARE_METRIC.py` 自包含，只读族级快照，不连库，运行约 1 秒。复现命令：`python3 M_SVC_SZ_COMPARE_METRIC.py`。
 
 | 产物键 | 取值 |
 |---|---|
@@ -480,7 +484,7 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 ## 附录 F　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svcsz21_facts_20261023.json`。
-2. 运行：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py`。
+2. 运行：`python3 M_SVC_SZ_COMPARE_METRIC.py`。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_SZ_COMPARE_METRIC_out.json'));print(d['value']['live_cells'],d['value']['sz_org_count'])"`。
 4. 抽查：四市 orgCount 相加应等于 44,132，加未回联 21 等于 44,153。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_SZ_COMPARE_METRIC --check`。
@@ -508,7 +512,7 @@ calc-logic 给本件的更新频率是「日（仅可 live 格随圈定；其余
 4. `support_judgment` 与文档头部档位一致（部分支持）
 5. `base_years_used/_missing/_note` 三字段齐备
 6. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-7. 脚本自包含：`cd code && python3 M_SVC_SZ_COMPARE_METRIC.py` 可直接跑通
+7. 脚本自包含：`python3 M_SVC_SZ_COMPARE_METRIC.py` 可直接跑通
 8. 外市不灌数、京沪不画 0，缺口声明进前端
 9. 重跑后 `rebuild_metric.py M_SVC_SZ_COMPARE_METRIC --check` 内容一致
 10. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移

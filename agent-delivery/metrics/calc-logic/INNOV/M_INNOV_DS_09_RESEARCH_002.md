@@ -1,7 +1,11 @@
 # 研究领域等级划分（M_INNOV_DS_09_RESEARCH_002）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_002.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_RESEARCH_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_002.py` → `metrics/repro/out/M_INNOV_DS_09_RESEARCH_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_002.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_002.md` §二（M_INNOV_DS_09_RESEARCH_002.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_09_RESEARCH_002.md` §二（M_INNOV_DS_09_RESEARCH_002.py 零改语义复算）。
 
 ## 源表字段
 
@@ -58,16 +62,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_002.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002_out.json` |
+| 正本 MD | `M_INNOV_DS_09_RESEARCH_002.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_09_RESEARCH_002.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_09_RESEARCH_002_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_002.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_002_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：DS（专题服务指标面，DS_09 研究领域分析族）｜ **域**：科学技术全景 / 科技发展态势 → 科技发展规划（INNOV）｜ **UI 挂载**：科学技术全景 → 研究领域分析 → 研究领域等级划分 ｜ **数据支持度**：**部分支持**
 > **口径归属**：**王惠系**（calc-logic/INNOV/M_INNOV_RES_GRADE.md 与 M_INNOV_DS_09_RESEARCH_002.md 双条目同口径，后者「同 M_INNOV_RES_GRADE」）｜ **公式定义人**：**王惠**
@@ -301,7 +305,7 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_DS_09_RESEARCH_002.py` |
 | 结果产物 | 同目录 `M_INNOV_DS_09_RESEARCH_002_out.json` |
 | 特征缓存 | `_snapshots21/research_feature_cache_20261021.json`（供 RESEARCH_003 / RESEARCH_004 复用，避免重复扫描 294 万件专利） |
 | 主算库 | 三方库 `gkx`（`183.240.141.251:3318`）；20261021 起旧开发库已停用、不引 |
@@ -309,7 +313,7 @@ $$
 | 换源核对 | IPC 维逐位不变（集合均值 142.45）；阈值 0.2248/0.1425→0.2260/0.1432、max 0.4598→0.4618 的微差来自关键词抽样顺序确定化，分档 532/708/530 **不变** |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_002.py
+python3 metrics/repro/M_INNOV_DS_09_RESEARCH_002.py
 ```
 
 脚本输出字段含：`probes`（七张源表当日行数）、`feature_coverage`（三维覆盖率与集合规模）、`thresholds`（全样本/正子集两套阈值）、`grades`（高/中/低计数）、`pairs`（Top25 企业与零重叠样例）、`support_judgment`（四档机判）。以下为 **2026-10-21** 一次完整跑数结果（与 out.json 一致）。

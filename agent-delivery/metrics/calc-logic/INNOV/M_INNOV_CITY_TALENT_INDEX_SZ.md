@@ -1,7 +1,11 @@
 # 深圳重点人才指数（M_INNOV_CITY_TALENT_INDEX_SZ）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_TALENT_INDEX_SZ.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_TALENT_INDEX_SZ.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_CITY_TALENT_INDEX_SZ.md`；复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py` → `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_TALENT_INDEX_SZ.md` §二（M_INNOV_CITY_TALENT_INDEX_SZ.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_CITY_TALENT_INDEX_SZ.md` §二（M_INNOV_CITY_TALENT_INDEX_SZ.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,22 +55,22 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_CITY_TALENT_INDEX_SZ.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_TALENT_INDEX_SZ.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json` |
+| 正本 MD | `M_INNOV_CITY_TALENT_INDEX_SZ.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_CITY_TALENT_INDEX_SZ.py`、产物 `metrics/repro/out/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INDEX（单城人才池指数）｜ **域**：科技信息展示系统／科技人才智慧服务／深圳重点人才｜ **UI 挂载**：深圳人才指数卡、人才池画像
 > **数据支持度**：**部分支持**
 > **口径来源**：注册表 `formula` = `pending_cosign: human:唐绍祖（未签）`；`calc-logic/INNOV` 下**无同 ID 正本**，本件口径为自拟
 > **王惠正本**：无同 ID 正本（`20260904_创新技术/指标计算逻辑/` 下未收录本条）
-> **复现**：`cd code && python3 _probe_talent_w15n1.py && python3 M_INNOV_CITY_TALENT_INDEX_SZ.py` → `code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`
+> **复现**：`python3 _probe_talent_w15n1.py && python3 M_INNOV_CITY_TALENT_INDEX_SZ.py` → `code/M_INNOV_CITY_TALENT_INDEX_SZ_out.json`
 > **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），脚本零 DB、只读落盘快照
 > **基期声明**：`base_years_used` = [2021, 2022, 2023]；`base_years_missing` = [2017, 2018, 2019, 2020]（专利表这四年零行）；活跃率叶的"近三年"锁 2021—2023，2024 回填孤峰与 2025—2026 残年不入窗。
 > **权重声明**：`main_is_official` = **false**。五叶百分位秩等权，不用规模叶，故不是总量排名。

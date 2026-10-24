@@ -1,7 +1,11 @@
 # 科研机构基础指标模型构建（M_ORG_BASE_99_1）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_BASE_99_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_BASE_99_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_BASE_99_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_BASE_99_1.md`；复现脚本 `metrics/repro/M_ORG_BASE_99_1.py` → `metrics/repro/out/M_ORG_BASE_99_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_BASE_99_1.py`、产物 `metrics/repro/out/M_ORG_BASE_99_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@ ORG 家族的 8 个模型（本件与后续 153–157、154、155 等）都以�
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_BASE_99_1.md` §二（M_ORG_BASE_99_1.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ORG_BASE_99_1.md` §二（M_ORG_BASE_99_1.py 零改语义复算）。
 
 ## 源表字段
 
@@ -56,16 +60,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_BASE_99_1.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_BASE_99_1.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_BASE_99_1_out.json` |
+| 正本 MD | `M_ORG_BASE_99_1.md` |
+| 复现脚本 | `metrics/repro/M_ORG_BASE_99_1.py` |
+| 复现产物 | `metrics/repro/out/M_ORG_BASE_99_1_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_BASE_99_1.py`、产物 `metrics/repro/out/M_ORG_BASE_99_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > 域：科研机构（ORG）｜类型：底册 + 四维基础模型｜形态：多表（机构清单 / 领域布局 / 重点机构 / 实力榜 / 成长榜 / 新增动态）
 > **数据支持度**：部分支持
@@ -144,10 +148,10 @@ D1 是本件最大的口径妥协：产业链标签库与本底册几乎不可�
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6 | 科研机构八类模型的功能定义 | `local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 811–813 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6 | 科研机构八类模型的功能定义 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 811–813 行 |
 | 2 | 同上 §1.1.1.1.1.1.1.6.1 | 重点技术领域布局模型原文 | 同文件第 815 行起 |
-| 3 | 《科技专题算法库需求》序号 99 | 指标名「科研机构基础指标模型构建」出处 | `local-workspace/docs/office/科技专题算法库需求.xlsx`（第 99 行） |
-| 4 | 旧版交付 `20261019_.../M_ORG_BASE_99_1.md` | 前一轮口径，本件在其上改判 | `local-workspace/docs/tasks/investiage/20261019_指标整体开发进度调研/` |
+| 3 | 《科技专题算法库需求》序号 99 | 指标名「科研机构基础指标模型构建」出处 | `需求文档原件（GitLab 外本地归档）.xlsx`（第 99 行） |
+| 4 | 旧版交付 `20261019_.../M_ORG_BASE_99_1.md` | 前一轮口径，本件在其上改判 | `(GitLab 外本地历史批次工作稿)` |
 | 5 | UNESCO Institute for Statistics, R&D statistics | 国际机构底册口径参照 | https://uis.unesco.org/en/topic/research-and-development |
 | 6 | OECD Frascati Manual 2015 | 研发投入口径参照（本件未采用） | https://www.oecd.org/sti/inno/frascati-manual.htm |
 | 7 | 国家统计局《中国科技统计年鉴》 | 机构分类与科技活动统计口径 | https://www.stats.gov.cn/sj/ndsj/ |
@@ -215,7 +219,7 @@ D4 直接数 `inc_year`。2001–2026 共 26 个年份有值，2016 年峰值 32
 
 ### 2.7 复现代码与结果展示
 
-执行 `cd code && python3 M_ORG_BASE_99_1.py`，读面板快照、不连数据库，约 0.4 秒完成，输出 `code/M_ORG_BASE_99_1_out.json`。关键字段如下（数值取自本次实跑）：
+执行 `python3 M_ORG_BASE_99_1.py`，读面板快照、不连数据库，约 0.4 秒完成，输出 `code/M_ORG_BASE_99_1_out.json`。关键字段如下（数值取自本次实跑）：
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -435,7 +439,7 @@ D3 资讯维属于表义错配而非数据缺失：1,668,414 行确实是资讯�
 ## 附录 A　复现
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 _build_org_family_panel.py          # 建面板（约 90 秒，需 gkx 只读账号）
 python3 M_ORG_BASE_99_1.py                  # 读面板出结果（约 0.4 秒，零 SQL）
 python3 -c "import json;d=json.load(open('M_ORG_BASE_99_1_out.json'));print(d['dimensions'])"
@@ -455,9 +459,9 @@ python3 -c "import json;d=json.load(open('M_ORG_BASE_99_1_out.json'));print(d['d
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6 科研机构深度分析模型构建，`local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 811–813 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6 科研机构深度分析模型构建，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 811–813 行。
 2. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.1 科研机构重点技术领域布局模型，同上文件第 815 行起。
-3. 《科技专题算法库需求》序号 99「科研机构基础指标模型构建」，`local-workspace/docs/office/科技专题算法库需求.xlsx`。
+3. 《科技专题算法库需求》序号 99「科研机构基础指标模型构建」，`需求文档原件（GitLab 外本地归档）.xlsx`。
 4. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.1–§3.17（含 §3.10 四列整列为空的记录）。
 5. UNESCO Institute for Statistics, *Research and Development Statistics*, https://uis.unesco.org/en/topic/research-and-development
 6. OECD, *Frascati Manual 2015: Guidelines for Collecting and Reporting Data on Research and Experimental Development*, https://www.oecd.org/sti/inno/frascati-manual.htm

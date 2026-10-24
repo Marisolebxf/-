@@ -1,7 +1,11 @@
 # 区域服务机构数（M_SVC_PT_REGION_ORG）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_PT_REGION_ORG.md`；复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py` → `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py`、产物 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md` §二（M_SVC_PT_REGION_ORG.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_PT_REGION_ORG.md` §二（M_SVC_PT_REGION_ORG.py 零改语义复算）。
 
 ## 源表字段
 
@@ -49,16 +53,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_PT_REGION_ORG.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_PT_REGION_ORG_out.json` |
+| 正本 MD | `M_SVC_PT_REGION_ORG.md` |
+| 复现脚本 | `metrics/repro/M_SVC_PT_REGION_ORG.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_PT_REGION_ORG.py`、产物 `metrics/repro/out/M_SVC_PT_REGION_ORG_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：态值（区域维分布）｜ **域**：SVC 服务机构（全球供给面·区域分面）｜ **UI 挂载**：科技专题服务系统·专题服务门户 SVCCHAIN-PORTAL（TOPIC-PT-004）；展示侧呼应科技信息展示系统·产业服务链分析→服务机构库 §1.1.1.2.4.2.7.2（区域筛选位）
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic v0.2.0 钉版（省/市两级区域轴，国家轴单列）
@@ -244,7 +248,7 @@ SVCCHAIN-PORTAL 服务机构页的「区域筛选 + 区域分布」位；同时�
 ### 2.8 复现代码与结果
 
 ```bash
-cd code && python3 M_SVC_PT_REGION_ORG.py
+python3 M_SVC_PT_REGION_ORG.py
 ```
 
 结果覆盖写 `code/M_SVC_PT_REGION_ORG_out.json`，下表逐键摘录（数字与产物一一对应，可直接复核）。
@@ -491,7 +495,7 @@ A 行政区划：给三级骨架；B 集聚度：给解读工具；C 两套名�
 
 ## 附录 E 复算步骤
 
-1. `cd code && python3 M_SVC_PT_REGION_ORG.py`；
+1. `python3 M_SVC_PT_REGION_ORG.py`；
 2. 核对 `province_total` 与 `city_total` 均为 44,153；
 3. 核对深圳 25,597 与 `M_SVC_PT_SZ_TOTAL_out.json` 的 `value_shenzhen` 一致；
 4. `rebuild_metric.py M_SVC_PT_REGION_ORG --check`；

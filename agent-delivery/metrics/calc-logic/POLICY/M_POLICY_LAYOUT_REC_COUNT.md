@@ -1,7 +1,11 @@
 # 政策布局建议条数（王惠对冲计数 v2 复现）（M_POLICY_LAYOUT_REC_COUNT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_LAYOUT_REC_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_LAYOUT_REC_COUNT.md`；复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py` → `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`、产物 `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_LAYOUT_REC_COUNT.md` §二（M_POLICY_LAYOUT_REC_COUNT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_LAYOUT_REC_COUNT.md` §二（M_POLICY_LAYOUT_REC_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -48,16 +52,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_LAYOUT_REC_COUNT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT_out.json` |
+| 正本 MD | `M_POLICY_LAYOUT_REC_COUNT.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`、产物 `metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：衍生指标（政策布局推荐模型·布局建议条数；DS-11-POLICY-EVAL / DS-12-POLICY-SIM / E7-POLICY 页件）｜ **域**：政策（POLICY）｜ **UI 挂载**：DS-11-POLICY-EVAL（政策分析评价报告页）、DS-12-POLICY-SIM（政策模拟）、E7-POLICY（政策要素看板）｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（171 对冲计数口径，本 MD 采用）｜ wanghui：false（衍生计数件，wanghui_agg 未单列——上游 171 已含 §五，本件沿用其结论不开独立 §五）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 方向键真实 2 行、机遇上游 0 过线（与 171 同源断供）
@@ -248,14 +252,14 @@ $$N_{\text{rec}} = |\{t:\ Opp_t=1 \wedge Short_t=1\}| = |\varnothing \cap \{5\}|
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT.py`（v2 重写，2026-10-21 跑通） |
+| 计算脚本 | `metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py`（v2 重写，2026-10-21 跑通） |
 | 结果产物 | 同目录 `M_POLICY_LAYOUT_REC_COUNT_out.json` |
 | 主算库 | `gkx.dwd_policy_base`（方向键+短板字段） |
 | 上游依赖 | `M_POLICY_DEEP_170_1_out.json`（机遇侧）；171 链路共享代码段 |
 | 既有版本 | 20261020 版（笛卡尔近似，「2 条」）已被 v2 替换，占位数保留对照 |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT.py
+python3 metrics/repro/M_POLICY_LAYOUT_REC_COUNT.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -367,7 +371,7 @@ python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度�
 3. Heilmann, S. (2008a). From Local Experiments to National Policy: The Origins of China's Distinctive Policy Process. *The China Journal*, (59), 1–30. https://doi.org/10.1086/tcj.59.20066378
 4. Heilmann, S. (2008b). Policy Experimentation in China's Economic Rise. *Studies in Comparative International Development*, 43(1), 1–26. https://doi.org/10.1007/s12116-007-9014-4
 5. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_DEEP_171_1.md` —— 王惠对冲口径原稿（本件继承）。
-6. 项目内旁证（非外部文献）：`local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_LAYOUT_REC_COUNT_out.json`；`code/M_POLICY_DEEP_170_1_out.json`；`code/M_POLICY_DEEP_171_1_out.json` —— v2 复现与上游实测。
+6. 项目内旁证（非外部文献）：`metrics/repro/out/M_POLICY_LAYOUT_REC_COUNT_out.json`；`code/M_POLICY_DEEP_170_1_out.json`；`code/M_POLICY_DEEP_171_1_out.json` —— v2 复现与上游实测。
 7. 国务院. 重大行政决策程序暂行条例（国令第713号）[Z]. 2019-04-20.（第三十六条决策后评估：实施后明显未达预期或公众意见较多时应组织评估——支撑「布局建议须有后评估闭环」的语义论证与本期序列设计）. https://www.gov.cn/zhengce/zhengceku/2019-05/08/content_5389670.htm
 8. Saisana, M., Saltelli, A., & Tarantola, S. (2005). Uncertainty and sensitivity analysis techniques as tools for the quality assessment of composite indicators. *Journal of the Royal Statistical Society: Series A*, 168(2), 307–323.（阈值与权重必须做敏感性分析；支撑 §4.1 的阈值弹性测算与「计数消费同一判定」的同源要求）. https://doi.org/10.1111/j.1467-985X.2005.00350.x
 

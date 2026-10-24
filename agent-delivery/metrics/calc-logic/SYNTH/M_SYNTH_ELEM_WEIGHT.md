@@ -1,7 +1,11 @@
 # 类型/层次/领域权重分布（M_SYNTH_ELEM_WEIGHT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_WEIGHT.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` → `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md` §二（M_SYNTH_ELEM_WEIGHT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SYNTH_ELEM_WEIGHT.md` §二（M_SYNTH_ELEM_WEIGHT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -45,16 +49,16 @@
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_WEIGHT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_WEIGHT_out.json` |
+| 正本 MD | `M_SYNTH_ELEM_WEIGHT.md` |
+| 复现脚本 | `metrics/repro/M_SYNTH_ELEM_WEIGHT.py` |
+| 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_WEIGHT.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_WEIGHT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（权重配置 + 敏感性）｜ **域**：综合智能分析／区域创新要素分析／要素评价模型构建
 > **数据支持度**：**部分支持**｜ **依赖性质**：**B 类（三条维指数由 gkx 现算）+ 配置缺口（官方权重在库内不存在、无判断矩阵）**
@@ -153,7 +157,7 @@
 |---|---|
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_WEIGHT.md` | 本件正本 106 行，含「权 1/3×3」与 `is_mock: true` |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDEX.md` | 合成公式与「各占约 33.3%」的原句 |
-| `local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SYNTH_ELEM_INDEX.md` | 王惠稿，权重句与 calc-logic 同源 |
+| `王惠口径正本（GitLab 外本地归档）` | 王惠稿，权重句与 calc-logic 同源 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 三条维指数（`index.type_index` / `level_index` / `domain_index`） |
 | `code/M_SYNTH_ELEM_INDEX_out.json` | 兄弟件，综合分复算对象 |
 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.59 | 权重类指标必填三件套的规矩 |
@@ -238,7 +242,7 @@ $$
 ### 2.9 复现结果展示
 
 ```bash
-$ cd code && python3 M_SYNTH_ELEM_WEIGHT.py
+$ python3 M_SYNTH_ELEM_WEIGHT.py
 [WEIGHT] -> code/M_SYNTH_ELEM_WEIGHT_out.json
   main weights {'type': 0.3333333333, 'level': 0.3333333333, 'domain': 0.3333333333} sum 1.0
   elem_score {'深圳市': 77.6829, '广州市': 45.8001, '东莞市': 31.3832, '惠州市': 15.4755}
@@ -517,7 +521,7 @@ S1 抬高类型维、压低领域维，与 S0 次序一致但分值整体上移�
 | 熵权 | 0.494062／0.364148／0.14179 |
 | 网格步长 | 0.01（5,151 组） |
 | 解析阈值 | 领域权重 0.61734 |
-| 运行方式 | `cd code && python3 M_SYNTH_ELEM_WEIGHT.py` |
+| 运行方式 | `python3 M_SYNTH_ELEM_WEIGHT.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 判档 | 部分支持 |
 

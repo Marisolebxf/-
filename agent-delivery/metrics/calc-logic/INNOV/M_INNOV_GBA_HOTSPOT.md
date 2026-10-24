@@ -1,7 +1,11 @@
 # 湾区创新热点区域（M_INNOV_GBA_HOTSPOT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_HOTSPOT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_HOTSPOT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_HOTSPOT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_HOTSPOT.md`；复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py` → `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py`、产物 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 density = 成果件数 / 存续机构数；is_hotspot = density ≥ P70 且 orgs ≥ 3
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_HOTSPOT.md` §二（M_INNOV_GBA_HOTSPOT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_GBA_HOTSPOT.md` §二（M_INNOV_GBA_HOTSPOT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -57,16 +61,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_HOTSPOT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_HOTSPOT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_HOTSPOT_out.json` |
+| 正本 MD | `M_INNOV_GBA_HOTSPOT.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_GBA_HOTSPOT.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_HOTSPOT.py`、产物 `metrics/repro/out/M_INNOV_GBA_HOTSPOT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：RANK/LIST（区县密度排序 + 热点标签）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力 → 创新热点区域
 > **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true
@@ -154,9 +158,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
+| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.2.1 可视化展示 | 「以地图、热力图等形式展示大湾区创新能力的空间分布。」 |
-| 3 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_HOTSPOT.md` §计算逻辑 | 「以区县为单元，计算单位机构的创新成果产出密度，取 P70 分位为热点阈值，密度不低于阈值的区县标记为创新热点区域。」 |
+| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）` §计算逻辑 | 「以区县为单元，计算单位机构的创新成果产出密度，取 P70 分位为热点阈值，密度不低于阈值的区县标记为创新热点区域。」 |
 | 4 | 同上 | §成果定义 | 「成果件数 = 专利去重件数 + 中文论文去重篇数 + 科技项目去重项数。」 |
 | 5 | 同上 | §门槛 | 「机构数 < 3 的区县样本量不足，不参与分位计算。」 |
 | 6 | 上游 | `M_INNOV_GBA_ORG_INDEX.md` §2.2 | 底册机构 189,116 行，区县字段 `area` 的分布事实 |
@@ -276,7 +280,7 @@ $$density_i=\frac{\sum_{p\in i} patent_p}{\sum_{o\in i} org_o}$$
 **代码与运行**：
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_GBA_HOTSPOT.py
 # 输出 code/M_INNOV_GBA_HOTSPOT_out.json；实测耗时 0.4 秒（读本地快照，零 SQL）
 ```
@@ -362,7 +366,7 @@ python3 code/M_INNOV_GBA_HOTSPOT.py
 
 ### 5.1 王惠原方法还原
 
-出处：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_HOTSPOT.md`（V1.5-20260830）。
+出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260830）。
 
 - **单元**：区县（`city + area`）。
 - **成果**：专利去重件数 + 中文论文去重篇数 + 科技项目去重项数。
@@ -409,7 +413,7 @@ python3 code/M_INNOV_GBA_HOTSPOT.py
 5. Anselin, L. (1995). Local Indicators of Spatial Association—LISA. *Geographical Analysis*, 27(2), 93–115. https://doi.org/10.1111/j.1538-4632.1995.tb00338.x
 6. 国家市场监督管理总局、国家标准化管理委员会. (2021). 《科技评估通则》（GB/T 40147-2021）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=69812EA65DC30B02C6CCCEFC1DC629CE
 7. 科技部. (2021). 《国家高新技术产业开发区综合评价指标体系》. https://www.most.gov.cn/xxgk/xinxifenlei/fdzdgknr/fgzc/gfxwj/gfxwj2021/202104/t20210429_174232.html
-8. 项目内旁证（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_HOTSPOT.md`。
+8. 项目内旁证（非外部文献）：`王惠口径正本（GitLab 外本地归档）`。
 
 完整论证见**附录 C**；实测产物见**附录 D**。
 

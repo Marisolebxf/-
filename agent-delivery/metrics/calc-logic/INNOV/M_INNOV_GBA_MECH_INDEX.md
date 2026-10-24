@@ -1,7 +1,11 @@
 # 创新机制指数（湾区）（M_INNOV_GBA_MECH_INDEX）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_MECH_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_MECH_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_MECH_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_MECH_INDEX.md`；复现脚本 `metrics/repro/M_INNOV_GBA_MECH_INDEX.py` → `metrics/repro/out/M_INNOV_GBA_MECH_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_MECH_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_MECH_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 mech_index = (norm(joint) + norm(coop) + norm(transfer_rate)) / 3 × 100；缺测维不补 0，剩余权重归一
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_MECH_INDEX.md` §二（M_INNOV_GBA_MECH_INDEX.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_GBA_MECH_INDEX.md` §二（M_INNOV_GBA_MECH_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
@@ -56,16 +60,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_MECH_INDEX.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_MECH_INDEX.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_MECH_INDEX_out.json` |
+| 正本 MD | `M_INNOV_GBA_MECH_INDEX.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_GBA_MECH_INDEX.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_GBA_MECH_INDEX_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_MECH_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_MECH_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INDEX（0–100 合成评分，湾区创新机制）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力 → 创新机制指数
 > **数据支持度**：**完全不支持** ｜ **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true
@@ -153,9 +157,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
+| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.1.4.1.5.2 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.2.3 | 「将创新能力指标分解为多个子指标（如创新资源指数、创新机构指数、创新机制指数、创新环境指数等），用户可查看各子指标的数值和贡献度。」 |
-| 3 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_MECH_INDEX.md` §计算逻辑 | 「从联合专利、合作项目、成果转化三个维度衡量湾区各城的创新协同与转化能力，归一后等权合成 0—100。」 |
+| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）` §计算逻辑 | 「从联合专利、合作项目、成果转化三个维度衡量湾区各城的创新协同与转化能力，归一后等权合成 0—100。」 |
 | 4 | 同上 | §子项定义 | 「联合专利：同一专利有 ≥2 个申请人且至少一个在湾区；合作项目：项目承担单位 ≥2 且至少一个为企业；成果转化：专利权转移登记件数。」 |
 | 5 | 探测证据 | `code/_snapshots21/gba_probe_20261021.json` | `applicants` 28,964 行 / 20,000 pn；`transfer` 22,809 行 / 20,000 pn；`project.funded_institution` 58,453 行全空 |
 | 6 | 探测证据 | `code/_snapshots21/gba_probe2_20261021.json` | 申请人名精确命中 1.51%；转移权利人精确命中 2.07%；项目参与机构去重 1,592 |
@@ -270,7 +274,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 5.1 王惠原方法还原
 
-出处：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_MECH_INDEX.md`（V1.5-20260830）。
+出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260830）。
 
 - **联合专利**：同一 pn 的申请人 ≥2，且至少一个申请人在湾区；按城计件。
 - **合作项目**：项目承担单位 ≥2，且至少一个为企业；按城计项。
@@ -337,7 +341,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 5. 中共中央、国务院. (2019). 《粤港澳大湾区发展规划纲要》. https://www.gov.cn/zhengce/2019-02/18/content_5366593.htm
 6. 国家知识产权局. (2023). 《专利转让登记办法》. https://www.cnipa.gov.cn/
 7. 国家市场监督管理总局、国家标准化管理委员会. (2021). 《科技评估通则》（GB/T 40147-2021）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=69812EA65DC30B02C6CCCEFC1DC629CE
-8. 项目内旁证（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_MECH_INDEX.md`。
+8. 项目内旁证（非外部文献）：`王惠口径正本（GitLab 外本地归档）`。
 
 完整论证见**附录 C**；实测产物见**附录 D**。
 
@@ -503,7 +507,7 @@ M1 是最标准、最易复现的协同测度：只要有全量共同申请人�
 ### D.1 复现步骤（照抄可跑）
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/_probe_gba_20261021.py    # 生成 _snapshots21/gba_probe_20261021.json（申请人/项目/转移/论文/院所/海外）
 python3 code/_probe_gba2_20261021.py   # 生成 _snapshots21/gba_probe2_20261021.json（对齐率/海外国别/项目参与样本）
 python3 code/M_INNOV_GBA_MECH_INDEX.py # 生成 code/M_INNOV_GBA_MECH_INDEX_out.json

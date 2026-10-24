@@ -1,7 +1,11 @@
 # 商业力得分（M_ENT_BUSINESS_POWER_SCORE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_BUSINESS_POWER_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_BUSINESS_POWER_SCORE.md`；复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` → `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`、产物 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@ live ADS `biz_power` 120 行为样例级（org 与主档 JOIN=0）→ 非完全�
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_BUSINESS_POWER_SCORE.md` §二（M_ENT_BUSINESS_POWER_SCORE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_BUSINESS_POWER_SCORE.md` §二（M_ENT_BUSINESS_POWER_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -56,16 +60,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_BUSINESS_POWER_SCORE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE_out.json` |
+| 正本 MD | `M_ENT_BUSINESS_POWER_SCORE.md` |
+| 复现脚本 | `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py`、产物 `metrics/repro/out/M_ENT_BUSINESS_POWER_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（六维加权评价模型）｜ **域**：企业分析·企业深度分析（ENT，E-23 商业力评估）｜ **UI 挂载**：科技专题·企业分析「企业商业力评估对比分析」页面（评分/排名/雷达对比）｜ **数据支持度**：**部分支持**｜ wanghui：true（王惠定义过，§五必含对照）
 > **公式定义人（20261020）**：王惠（calc-logic 六维口径沿用；六维中三维数据断链致不可全量出分，见 §五对照与 §三）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分（3/6 维有可用结构）/ 部分（市场维填充率 2.3%、产品/链维无表）
@@ -256,13 +260,13 @@ $$BP(e)=\sum_{D}w_D\cdot S_D(e),\qquad \sum_D w_D=1;\ \ \text{缺省 } w_D=\tfra
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE.py` |
+| 计算脚本 | `metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py` |
 | 结果产物 | 同目录 `M_ENT_BUSINESS_POWER_SCORE_out.json` |
 | 主算库 | 三方库 `gkx`（`gkx.<表名>` 全限定；行数只读 `_work_gkx21/GKX_INVENTORY.json`） |
 | 对照探测 | live ADS `biz_power` 120 行（样例级，仅记录不作证据） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_BUSINESS_POWER_SCORE.py
+python3 metrics/repro/M_ENT_BUSINESS_POWER_SCORE.py
 ```
 
 #### 2.7.2 复现结果（摘要表）

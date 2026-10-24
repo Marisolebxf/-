@@ -1,0 +1,273 @@
+{
+ "metric": "M_TALENT_DS_16_TALENT_RECRUIT_013",
+ "title": "高精度成本模型构建",
+ "support_judgment": "完全不支持",
+ "support_reason": "成本模型的因变量不存在：37 个 cost/income 列全部是企业分部财务或期刊排版费，0 列薪酬/安家费/猎头费；798 万条招聘记录无薪资字段；学者主档无薪酬职级。只能做「企业人均研发费用」这类宏观代理，无法落到个人引进成本，故完全不支持。",
+ "dimensions": [
+  {
+   "dim": "薪酬包（年薪/签字费/绩效）",
+   "verdict": "无",
+   "evidence": "salary|wage|compensation|payroll|remuneration 命中 0 列（37 列 cost 全部为企业财务口径）",
+   "needed": "接入招聘平台薪资字段、个税/社保缴纳基数或企业薪酬调研"
+  },
+  {
+   "dim": "安家费 / 搬迁 / 住房补贴",
+   "verdict": "无",
+   "evidence": "无 relocation/housing/settlement/allowance 类字段；政策表只有补贴政策文本，无个人领取记录",
+   "needed": "接入人才补贴申领明细（对象级）"
+  },
+  {
+   "dim": "猎头 / 招聘过程成本",
+   "verdict": "无",
+   "evidence": "`dwd_org_recruit_info` 7,981,643 行，字段仅 job_title/job_description/work_place/release_date/hiring_number",
+   "needed": "接入招聘费用台账（渠道费、猎头费率、面试成本）"
+  },
+  {
+   "dim": "机会成本（放弃原职位收入）",
+   "verdict": "无",
+   "evidence": "无个人历史薪酬、无个人—项目—经费关联",
+   "needed": "需要个人历年收入或原单位薪酬等级"
+  },
+  {
+   "dim": "宏观代理：企业人均研发费用",
+   "verdict": "弱",
+   "evidence": "stock_finance 40,239 行研发费用非空 19,695；annual_financial 员工数非空 3,184",
+   "needed": "只能算企业层面的人均研发投入，不能代表引进个人的成本"
+  }
+ ],
+ "evidence": {
+  "salary_cost_columns": 37,
+  "salary_cost_tables": 7,
+  "hr_like_columns": 0,
+  "salary_cost_items": [
+   {
+    "table": "dwd_en_journal",
+    "column": "layout_cost",
+    "type": "varchar(15)"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_area_bak_20260911",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_industry_bak_20260911",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_cost",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_cost_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_cost_prop",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_income",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_income_gr",
+    "type": "double"
+   },
+   {
+    "table": "dwd_main_business_composition_prod_bak_20260911",
+    "column": "core_biz_income_prop",
+    "type": "double"
+   }
+  ],
+  "recruit_rows": 7981643,
+  "recruit_columns": [
+   "org_id",
+   "name_cn",
+   "job_title",
+   "job_description",
+   "work_place",
+   "release_date",
+   "hiring_number",
+   "data_source"
+  ],
+  "annual_financial": {
+   "rows": 90926,
+   "employees_nonnull": 3184,
+   "revenue_nonnull": 2193,
+   "arch_rd_nonnull": 0,
+   "dev_employee_nonnull": 0
+  },
+  "stock_finance": {
+   "rows": 40239,
+   "orgs": 972,
+   "period_min": "198912",
+   "period_max": "202603",
+   "rd_nonnull": 19695,
+   "employees_nonnull": 0
+  },
+  "scholar_columns": [
+   "paper_nums",
+   "citation_nums",
+   "h_index",
+   "reference_nums"
+  ]
+ },
+ "no_score_declaration": "本件不输出人均引进成本、不输出成本分档。因变量（薪酬/总成本）为 0 字段；用「企业人均研发费用」冒充个人引进成本会把 8 位数企业研发预算摊到个人头上，量级错 2—3 个数量级。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "无基期：成本因变量不存在，财务表虽有 period（198912—202603），但那是企业报表期，不是人才引进成本的时间序列。",
+ "probes": {
+  "sql_count": 0,
+  "probe_sql_total": 8,
+  "probe_snapshot": "_snapshots21/zero_source_probe_20261022.json",
+  "source": "gkx @ 183.240.141.251:3318"
+ },
+ "reused_from": "code/_snapshots21/zero_source_probe_20261022.json + code/_snapshots21/talent22_probe_20261022.json"
+}

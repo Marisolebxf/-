@@ -1,7 +1,11 @@
 # 创新影响预测（M_INNOV_IMPACT_FORECAST）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_IMPACT_FORECAST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_IMPACT_FORECAST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_IMPACT_FORECAST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_IMPACT_FORECAST.md`；复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py` → `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -27,7 +31,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_IMPACT_FORECAST.md` §二（M_INNOV_IMPACT_FORECAST.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_IMPACT_FORECAST.md` §二（M_INNOV_IMPACT_FORECAST.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,22 +58,22 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_IMPACT_FORECAST.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_IMPACT_FORECAST.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_IMPACT_FORECAST_out.json` |
+| 正本 MD | `M_INNOV_IMPACT_FORECAST.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_IMPACT_FORECAST.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_IMPACT_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_IMPACT_FORECAST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：FORECAST（机构产出件数 Holt 外推 + 80% 区间 + 贡献度）｜ **域**：科技信息展示系统／科技发展态势／全球创新监测｜ **UI 挂载**：实体影响预测卡、贡献度排行
 > **数据支持度**：**部分支持**
 > **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md`（Holt 满 8 期、年预 2 期、点预测 + 约 80% 区间 + 贡献度）
-> **王惠正本**：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_IMPACT_FORECAST.md`（V1.5-20260829）
-> **复现**：`cd code && python3 M_INNOV_IMPACT_FORECAST.py` → `code/M_INNOV_IMPACT_FORECAST_out.json`
+> **王惠正本**：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260829）
+> **复现**：`python3 M_INNOV_IMPACT_FORECAST.py` → `code/M_INNOV_IMPACT_FORECAST_out.json`
 > **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`），本脚本零 DB、只读落盘快照
 > **基期声明**：`base_years_used` = 2015—2023（9 点拟合）；`base_years_missing` = [2024]（论文语料回填孤峰，不作基线、不作校验）；2025 只作外样本校验；专利侧 2021—2024 仅 4 点，不足以拟合。
 
@@ -170,7 +174,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 编号 | 来源 | 用途 |
 |---|---|---|
 | R1 | `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md` | 口径与字段定义（唯一真源） |
-| R2 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_IMPACT_FORECAST.md` | 四步法、区间公式、`skip_reason` 规则 |
+| R2 | `王惠口径正本（GitLab 外本地归档）` | 四步法、区间公式、`skip_reason` 规则 |
 | R3 | `_work_gkx21/DISPATCH_BRIEF_v5.md` / `v6.md` / `v7.md` | 骨架、红线、G8 数据源口径 |
 | R4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.67 / §3.68 / §3.70b | 专利按公开件计、慢查询纪律、判脏看量级 |
 | R5 | `_work_gkx21/SHARED_ASSETS.md` | 快照资产清单（本件复用两份） |
@@ -342,7 +346,7 @@ G06K 与 F21S 的断崖需要谨慎读。−87.65% 不是「这个技术没人�
 ### 2.8 步骤 7｜复现代码与结果产物
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_INNOV_IMPACT_FORECAST.py
 # [IMPACT_FORECAST] -> .../M_INNOV_IMPACT_FORECAST_out.json
 #   pool 311 fitted 311 valid 309 zero 2
@@ -531,7 +535,7 @@ python3 M_INNOV_IMPACT_FORECAST.py
 ## 参考文献
 
 1. `gkx-orchestration/agent-delivery/metrics/calc-logic/INNOV/M_INNOV_IMPACT_FORECAST.md`（口径真源）
-2. `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_IMPACT_FORECAST.md`（V1.5-20260829）
+2. `王惠口径正本（GitLab 外本地归档）`（V1.5-20260829）
 3. `_work_gkx21/DISPATCH_BRIEF_v5.md`、`v6.md`、`v7.md`
 4. `_work_gkx21/DATA_FACTS_gkx21.md` §3.67、§3.68、§3.70b
 5. `_work_gkx21/SHARED_ASSETS.md`

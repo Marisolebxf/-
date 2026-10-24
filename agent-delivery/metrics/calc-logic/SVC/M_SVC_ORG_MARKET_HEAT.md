@@ -1,7 +1,11 @@
 # 市场热度评级（M_SVC_ORG_MARKET_HEAT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_MARKET_HEAT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_MARKET_HEAT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_MARKET_HEAT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_MARKET_HEAT.md`；复现脚本 `metrics/repro/M_SVC_ORG_MARKET_HEAT.py` → `metrics/repro/out/M_SVC_ORG_MARKET_HEAT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_MARKET_HEAT.py`、产物 `metrics/repro/out/M_SVC_ORG_MARKET_HEAT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_MARKET_HEAT.md` §二（M_SVC_ORG_MARKET_HEAT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_ORG_MARKET_HEAT.md` §二（M_SVC_ORG_MARKET_HEAT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -48,16 +52,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_MARKET_HEAT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_MARKET_HEAT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_MARKET_HEAT_out.json` |
+| 正本 MD | `M_SVC_ORG_MARKET_HEAT.md` |
+| 复现脚本 | `metrics/repro/M_SVC_ORG_MARKET_HEAT.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_ORG_MARKET_HEAT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_ORG_MARKET_HEAT.py`、产物 `metrics/repro/out/M_SVC_ORG_MARKET_HEAT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：评级（服务机构库·新增序列的斜率×波动率分级）｜ **域**：SVC 服务机构（新增服务机构动态的派生评级）｜ **UI 挂载**：产业服务链分析·新增动态·热度标签 / 算法库·服务机构基础指标模型（序号 101）
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：王惠方法（相对斜率 + 变异系数四象限），本件按 v6 要求保留其阈值并换源
@@ -179,7 +183,7 @@ CV = 961.78 / 2,087.7 = 0.4607，即 46.07%。评级规则：相对斜率 ≥ +5
 
 产物 `code/M_SVC_ORG_MARKET_HEAT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`wanghui=true`、`window_main`、`window_alt_truncated`、`grade`、`grade_rule`、`thresholds`、`population`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB，运行约 0.7 秒。
 
-复现：`cd code && python3 M_SVC_ORG_MARKET_HEAT.py`，打印 `heat slope=-305.34 rel=-0.1463 cv=0.4607 grade=下行期`。
+复现：`python3 M_SVC_ORG_MARKET_HEAT.py`，打印 `heat slope=-305.34 rel=-0.1463 cv=0.4607 grade=下行期`。
 
 ### 2.7 复现结果摘要
 
@@ -463,7 +467,7 @@ P0：UI 标签旁写「截至 2022」；P1：补 2023—2025 登记后重跑，�
 ## 附录 E　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svc21_facts_20261022.json`。
-2. 运行：`cd code && python3 M_SVC_ORG_MARKET_HEAT.py`。
+2. 运行：`python3 M_SVC_ORG_MARKET_HEAT.py`。
 3. 校验：`window_main.mean` × 10 = 20,877。
 4. 校验：`slope_rel` = `slope` / `mean`。
 5. 校验：`cv` = `std` / `mean`。

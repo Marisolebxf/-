@@ -1,0 +1,1636 @@
+{
+ "metric_name": "科学网络中心性",
+ "source": "gkx @ 183.240.141.251:3318（只读账号 gkx_reader_zp）：dwd_zh_paper.author_info_list -> code/_snapshots21/a25_paper_panel.json（100,900 篇中文论文，2026-10-22 落盘）-> 本脚本零 SQL 建图；DB 侧仅核对表存在性与行数",
+ "graph_definition": {
+  "node": "中文论文 author_info_list 的原始机构串（不做上下级归并）",
+  "edge": "同一篇论文共同署名（无向），边权 = 共同署名篇数",
+  "min_papers": 2,
+  "module": "code/_collab_graph21.py（build + giant，本族 001/002/011 同源）",
+  "determinism": "PYTHONHASHSEED=0 自重启守卫 + canonical 排序重建"
+ },
+ "params": {
+  "seed": 20261021,
+  "pagerank_alpha": 0.85,
+  "pagerank_tol": 1e-12,
+  "betweenness_normalized": true,
+  "louvain_weight": "weight",
+  "louvain_resolution": 1.0
+ },
+ "point_sets": [
+  {
+   "id": "P0",
+   "name": "全图（含孤立点）",
+   "note": "全底册节点，孤立点度为 0，中心性无定义或恒 0",
+   "n_nodes": 20436,
+   "n_edges": 38208,
+   "coverage_nodes": 1.0,
+   "coverage_edges": 1.0,
+   "n_components": 4186,
+   "largest_component": 15223,
+   "isolates": 3540,
+   "avg_degree": 3.7393,
+   "density": 0.0001829843,
+   "max_degree": 194,
+   "median_degree": 2.0,
+   "component_sizes_top5": [
+    15223,
+    14,
+    13,
+    10,
+    9
+   ]
+  },
+  {
+   "id": "P1",
+   "name": "有边子图（度>=1）",
+   "note": "剔除孤立点后的诱导子图，仍含 4,186 个连通分量",
+   "n_nodes": 16896,
+   "n_edges": 38208,
+   "coverage_nodes": 0.826776,
+   "coverage_edges": 1.0,
+   "n_components": 646,
+   "largest_component": 15223,
+   "isolates": 0,
+   "avg_degree": 4.5227,
+   "density": 0.0002676962,
+   "max_degree": 194,
+   "median_degree": 3.0,
+   "component_sizes_top5": [
+    15223,
+    14,
+    13,
+    10,
+    9
+   ]
+  },
+  {
+   "id": "P2",
+   "name": "巨型连通分量",
+   "note": "主口径：全部中心性与社群划分都在此点集上算",
+   "n_nodes": 15223,
+   "n_edges": 36965,
+   "coverage_nodes": 0.744911,
+   "coverage_edges": 0.967468,
+   "n_components": 1,
+   "largest_component": 15223,
+   "isolates": 0,
+   "avg_degree": 4.8565,
+   "density": 0.0003190426,
+   "max_degree": 194,
+   "median_degree": 3,
+   "component_sizes_top5": [
+    15223
+   ]
+  },
+  {
+   "id": "P3",
+   "name": "P2 内度>=5 诱导子图",
+   "note": "子图敏感性检验：度数门槛截断后排名如何变",
+   "n_nodes": 4469,
+   "n_edges": 17160,
+   "coverage_nodes": 0.218683,
+   "coverage_edges": 0.449121,
+   "n_components": 41,
+   "largest_component": 4424,
+   "isolates": 35,
+   "avg_degree": 7.6796,
+   "density": 0.0017187937,
+   "max_degree": 158,
+   "median_degree": 5,
+   "component_sizes_top5": [
+    4424,
+    2,
+    2,
+    2,
+    2
+   ]
+  },
+  {
+   "id": "P4",
+   "name": "P2 内度>=10 诱导子图",
+   "note": "子图敏感性检验：只留高连接节点",
+   "n_nodes": 1573,
+   "n_edges": 6963,
+   "coverage_nodes": 0.076972,
+   "coverage_edges": 0.182239,
+   "n_components": 13,
+   "largest_component": 1561,
+   "isolates": 12,
+   "avg_degree": 8.8531,
+   "density": 0.0056317728,
+   "max_degree": 95,
+   "median_degree": 7,
+   "component_sizes_top5": [
+    1561,
+    1,
+    1,
+    1,
+    1
+   ]
+  }
+ ],
+ "normalization": {
+  "denominator": "n-1",
+  "n_by_point_set": {
+   "P0": 20436,
+   "P1": 16896,
+   "P2": 15223,
+   "P3": 4469,
+   "P4": 1573
+  },
+  "p0_n_minus_1": 20435,
+  "note": "度中心性 = 度 / (点集节点数−1)；接近/中介/PageRank 只在 P2 上算，P0/P1 的读数只用于标口径差，不与 P2 混引。"
+ },
+ "coverage": {
+  "papers_total": 100900,
+  "papers_with_inst": 100865,
+  "papers_with_city": 47802,
+  "inst_universe": 84320,
+  "nodes_after_min_papers": 20436,
+  "inst_not_in_graph": 63884,
+  "min_papers": 2,
+  "note": "机构全宇宙 84,320 个原始串，≥2 篇门槛后 20,436 个；未归并上下级，同名不同院系会拆成多节点。"
+ },
+ "type_mix_p2": {
+  "高校": 10235,
+  "其他": 925,
+  "企业": 2408,
+  "院所": 1655
+ },
+ "centrality": {
+  "degree": {
+   "definition": "COUNT(DISTINCT 合作邻居)",
+   "field": "degree",
+   "top20": [
+    {
+     "rank": 1,
+     "name": "广州中医药大学第一附属医院",
+     "type": "高校",
+     "degree": 194,
+     "papers": 751,
+     "value": 0.0127447116,
+     "community": 1
+    },
+    {
+     "rank": 2,
+     "name": "华南理工大学",
+     "type": "高校",
+     "degree": 156,
+     "papers": 334,
+     "value": 0.0102483248,
+     "community": 3
+    },
+    {
+     "rank": 3,
+     "name": "广州地铁设计研究院股份有限公司",
+     "type": "院所",
+     "degree": 131,
+     "papers": 298,
+     "value": 0.0086059651,
+     "community": 0
+    },
+    {
+     "rank": 4,
+     "name": "中国能源建设集团广东省电力设计研究院有限公司",
+     "type": "院所",
+     "degree": 130,
+     "papers": 365,
+     "value": 0.0085402707,
+     "community": 2
+    },
+    {
+     "rank": 5,
+     "name": "南方电网科学研究院有限责任公司",
+     "type": "院所",
+     "degree": 125,
+     "papers": 211,
+     "value": 0.0082117987,
+     "community": 2
+    },
+    {
+     "rank": 6,
+     "name": "中南大学土木工程学院",
+     "type": "高校",
+     "degree": 121,
+     "papers": 171,
+     "value": 0.0079490212,
+     "community": 0
+    },
+    {
+     "rank": 7,
+     "name": "广东电网有限责任公司电力科学研究院",
+     "type": "院所",
+     "degree": 115,
+     "papers": 196,
+     "value": 0.0075548548,
+     "community": 2
+    },
+    {
+     "rank": 8,
+     "name": "广州中医药大学",
+     "type": "高校",
+     "degree": 112,
+     "papers": 290,
+     "value": 0.0073577716,
+     "community": 1
+    },
+    {
+     "rank": 9,
+     "name": "华南理工大学电力学院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 210,
+     "value": 0.0067665221,
+     "community": 2
+    },
+    {
+     "rank": 10,
+     "name": "南方医科大学南方医院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 241,
+     "value": 0.0067665221,
+     "community": 1
+    },
+    {
+     "rank": 11,
+     "name": "深圳供电局有限公司",
+     "type": "企业",
+     "degree": 101,
+     "papers": 342,
+     "value": 0.0066351334,
+     "community": 2
+    },
+    {
+     "rank": 12,
+     "name": "广州地铁集团有限公司",
+     "type": "企业",
+     "degree": 90,
+     "papers": 214,
+     "value": 0.0059124951,
+     "community": 0
+    },
+    {
+     "rank": 13,
+     "name": "广东工业大学",
+     "type": "高校",
+     "degree": 89,
+     "papers": 269,
+     "value": 0.0058468007,
+     "community": 3
+    },
+    {
+     "rank": 14,
+     "name": "广东药科大学",
+     "type": "高校",
+     "degree": 88,
+     "papers": 153,
+     "value": 0.0057811063,
+     "community": 1
+    },
+    {
+     "rank": 15,
+     "name": "中国科学院地理科学与资源研究所",
+     "type": "高校",
+     "degree": 87,
+     "papers": 83,
+     "value": 0.0057154119,
+     "community": 6
+    },
+    {
+     "rank": 16,
+     "name": "中国电力科学研究院有限公司",
+     "type": "院所",
+     "degree": 86,
+     "papers": 76,
+     "value": 0.0056497175,
+     "community": 2
+    },
+    {
+     "rank": 17,
+     "name": "华南理工大学土木与交通学院",
+     "type": "高校",
+     "degree": 86,
+     "papers": 125,
+     "value": 0.0056497175,
+     "community": 0
+    },
+    {
+     "rank": 18,
+     "name": "清华大学深圳国际研究生院",
+     "type": "高校",
+     "degree": 83,
+     "papers": 133,
+     "value": 0.0054526343,
+     "community": 2
+    },
+    {
+     "rank": 19,
+     "name": "不详",
+     "type": "其他",
+     "degree": 82,
+     "papers": 75,
+     "value": 0.00538694,
+     "community": 1
+    },
+    {
+     "rank": 20,
+     "name": "中山大学附属第一医院",
+     "type": "高校",
+     "degree": 82,
+     "papers": 241,
+     "value": 0.00538694,
+     "community": 1
+    }
+   ],
+   "type_mix_top20": {
+    "高校": 12,
+    "院所": 5,
+    "企业": 2,
+    "其他": 1
+   }
+  },
+  "closeness": {
+   "definition": "Wasserman-Faust 归一化接近中心性（P2 全量 BFS）",
+   "field": "c_close",
+   "top20": [
+    {
+     "rank": 1,
+     "name": "华南理工大学",
+     "type": "高校",
+     "degree": 156,
+     "papers": 334,
+     "value": 0.2680165508,
+     "community": 3
+    },
+    {
+     "rank": 2,
+     "name": "广州地铁设计研究院股份有限公司",
+     "type": "院所",
+     "degree": 131,
+     "papers": 298,
+     "value": 0.2653256872,
+     "community": 0
+    },
+    {
+     "rank": 3,
+     "name": "广东电网有限责任公司电力科学研究院",
+     "type": "院所",
+     "degree": 115,
+     "papers": 196,
+     "value": 0.2633108459,
+     "community": 2
+    },
+    {
+     "rank": 4,
+     "name": "中国能源建设集团广东省电力设计研究院有限公司",
+     "type": "院所",
+     "degree": 130,
+     "papers": 365,
+     "value": 0.2617307725,
+     "community": 2
+    },
+    {
+     "rank": 5,
+     "name": "不详",
+     "type": "其他",
+     "degree": 82,
+     "papers": 75,
+     "value": 0.2594467454,
+     "community": 1
+    },
+    {
+     "rank": 6,
+     "name": "广东工业大学",
+     "type": "高校",
+     "degree": 89,
+     "papers": 269,
+     "value": 0.258798327,
+     "community": 3
+    },
+    {
+     "rank": 7,
+     "name": "中山大学",
+     "type": "高校",
+     "degree": 78,
+     "papers": 158,
+     "value": 0.2570849519,
+     "community": 3
+    },
+    {
+     "rank": 8,
+     "name": "广州地铁集团有限公司",
+     "type": "企业",
+     "degree": 90,
+     "papers": 214,
+     "value": 0.2557115979,
+     "community": 0
+    },
+    {
+     "rank": 9,
+     "name": "华南理工大学电力学院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 210,
+     "value": 0.2544633902,
+     "community": 2
+    },
+    {
+     "rank": 10,
+     "name": "南方电网科学研究院有限责任公司",
+     "type": "院所",
+     "degree": 125,
+     "papers": 211,
+     "value": 0.2536957717,
+     "community": 2
+    },
+    {
+     "rank": 11,
+     "name": "清华大学",
+     "type": "高校",
+     "degree": 66,
+     "papers": 42,
+     "value": 0.2528193459,
+     "community": 7
+    },
+    {
+     "rank": 12,
+     "name": "清华大学深圳国际研究生院",
+     "type": "高校",
+     "degree": 83,
+     "papers": 133,
+     "value": 0.2527563762,
+     "community": 2
+    },
+    {
+     "rank": 13,
+     "name": "广州大学",
+     "type": "高校",
+     "degree": 62,
+     "papers": 152,
+     "value": 0.2525969931,
+     "community": 3
+    },
+    {
+     "rank": 14,
+     "name": "华南农业大学",
+     "type": "高校",
+     "degree": 78,
+     "papers": 238,
+     "value": 0.2517697651,
+     "community": 3
+    },
+    {
+     "rank": 15,
+     "name": "暨南大学",
+     "type": "高校",
+     "degree": 63,
+     "papers": 155,
+     "value": 0.251757273,
+     "community": 1
+    },
+    {
+     "rank": 16,
+     "name": "广东电网有限责任公司广州供电局",
+     "type": "企业",
+     "degree": 75,
+     "papers": 188,
+     "value": 0.2509934539,
+     "community": 2
+    },
+    {
+     "rank": 17,
+     "name": "深圳供电局有限公司",
+     "type": "企业",
+     "degree": 101,
+     "papers": 342,
+     "value": 0.2491815086,
+     "community": 2
+    },
+    {
+     "rank": 18,
+     "name": "中国水利水电科学研究院",
+     "type": "院所",
+     "degree": 80,
+     "papers": 47,
+     "value": 0.2489166517,
+     "community": 7
+    },
+    {
+     "rank": 19,
+     "name": "同济大学",
+     "type": "高校",
+     "degree": 42,
+     "papers": 25,
+     "value": 0.2485427382,
+     "community": 4
+    },
+    {
+     "rank": 20,
+     "name": "北京交通大学",
+     "type": "高校",
+     "degree": 31,
+     "papers": 26,
+     "value": 0.2484778244,
+     "community": 0
+    }
+   ],
+   "type_mix_top20": {
+    "高校": 11,
+    "院所": 5,
+    "其他": 1,
+    "企业": 3
+   }
+  },
+  "betweenness": {
+   "definition": "Brandes 中介中心性（k=100 采样，normalized=True）",
+   "field": "c_betw",
+   "top20": [
+    {
+     "rank": 1,
+     "name": "华南理工大学",
+     "type": "高校",
+     "degree": 156,
+     "papers": 334,
+     "value": 0.0586388707,
+     "community": 3
+    },
+    {
+     "rank": 2,
+     "name": "不详",
+     "type": "其他",
+     "degree": 82,
+     "papers": 75,
+     "value": 0.0541842033,
+     "community": 1
+    },
+    {
+     "rank": 3,
+     "name": "广州地铁设计研究院股份有限公司",
+     "type": "院所",
+     "degree": 131,
+     "papers": 298,
+     "value": 0.0450358671,
+     "community": 0
+    },
+    {
+     "rank": 4,
+     "name": "中国能源建设集团广东省电力设计研究院有限公司",
+     "type": "院所",
+     "degree": 130,
+     "papers": 365,
+     "value": 0.0381466254,
+     "community": 2
+    },
+    {
+     "rank": 5,
+     "name": "广东电网有限责任公司电力科学研究院",
+     "type": "院所",
+     "degree": 115,
+     "papers": 196,
+     "value": 0.0311749309,
+     "community": 2
+    },
+    {
+     "rank": 6,
+     "name": "中国科学院地理科学与资源研究所",
+     "type": "高校",
+     "degree": 87,
+     "papers": 83,
+     "value": 0.030307775,
+     "community": 6
+    },
+    {
+     "rank": 7,
+     "name": "广州中医药大学第一附属医院",
+     "type": "高校",
+     "degree": 194,
+     "papers": 751,
+     "value": 0.0293837293,
+     "community": 1
+    },
+    {
+     "rank": 8,
+     "name": "中山大学",
+     "type": "高校",
+     "degree": 78,
+     "papers": 158,
+     "value": 0.026778204,
+     "community": 3
+    },
+    {
+     "rank": 9,
+     "name": "华南农业大学",
+     "type": "高校",
+     "degree": 78,
+     "papers": 238,
+     "value": 0.0262895873,
+     "community": 3
+    },
+    {
+     "rank": 10,
+     "name": "广东工业大学",
+     "type": "高校",
+     "degree": 89,
+     "papers": 269,
+     "value": 0.025286029,
+     "community": 3
+    },
+    {
+     "rank": 11,
+     "name": "中国水利水电科学研究院",
+     "type": "院所",
+     "degree": 80,
+     "papers": 47,
+     "value": 0.0212335383,
+     "community": 7
+    },
+    {
+     "rank": 12,
+     "name": "暨南大学",
+     "type": "高校",
+     "degree": 63,
+     "papers": 155,
+     "value": 0.0210631757,
+     "community": 1
+    },
+    {
+     "rank": 13,
+     "name": "广州中医药大学",
+     "type": "高校",
+     "degree": 112,
+     "papers": 290,
+     "value": 0.0208231798,
+     "community": 1
+    },
+    {
+     "rank": 14,
+     "name": "清华大学深圳国际研究生院",
+     "type": "高校",
+     "degree": 83,
+     "papers": 133,
+     "value": 0.0198538403,
+     "community": 2
+    },
+    {
+     "rank": 15,
+     "name": "中广核研究院有限公司",
+     "type": "院所",
+     "degree": 72,
+     "papers": 155,
+     "value": 0.019607453,
+     "community": 9
+    },
+    {
+     "rank": 16,
+     "name": "广州大学",
+     "type": "高校",
+     "degree": 62,
+     "papers": 152,
+     "value": 0.019469638,
+     "community": 3
+    },
+    {
+     "rank": 17,
+     "name": "广州地铁集团有限公司",
+     "type": "企业",
+     "degree": 90,
+     "papers": 214,
+     "value": 0.0194246131,
+     "community": 0
+    },
+    {
+     "rank": 18,
+     "name": "华南理工大学电力学院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 210,
+     "value": 0.0176754,
+     "community": 2
+    },
+    {
+     "rank": 19,
+     "name": "广东药科大学",
+     "type": "高校",
+     "degree": 88,
+     "papers": 153,
+     "value": 0.0176252956,
+     "community": 1
+    },
+    {
+     "rank": 20,
+     "name": "南方电网科学研究院有限责任公司",
+     "type": "院所",
+     "degree": 125,
+     "papers": 211,
+     "value": 0.0171839107,
+     "community": 2
+    }
+   ],
+   "type_mix_top20": {
+    "高校": 12,
+    "其他": 1,
+    "院所": 6,
+    "企业": 1
+   }
+  },
+  "pagerank": {
+   "definition": "PageRank(alpha=0.85, tol=1e-12)",
+   "field": "c_pr",
+   "top20": [
+    {
+     "rank": 1,
+     "name": "广州中医药大学第一附属医院",
+     "type": "高校",
+     "degree": 194,
+     "papers": 751,
+     "value": 0.0017426883,
+     "community": 1
+    },
+    {
+     "rank": 2,
+     "name": "华南理工大学",
+     "type": "高校",
+     "degree": 156,
+     "papers": 334,
+     "value": 0.0016021792,
+     "community": 3
+    },
+    {
+     "rank": 3,
+     "name": "广州地铁设计研究院股份有限公司",
+     "type": "院所",
+     "degree": 131,
+     "papers": 298,
+     "value": 0.0012879068,
+     "community": 0
+    },
+    {
+     "rank": 4,
+     "name": "中国能源建设集团广东省电力设计研究院有限公司",
+     "type": "院所",
+     "degree": 130,
+     "papers": 365,
+     "value": 0.0012403097,
+     "community": 2
+    },
+    {
+     "rank": 5,
+     "name": "中南大学土木工程学院",
+     "type": "高校",
+     "degree": 121,
+     "papers": 171,
+     "value": 0.0011981391,
+     "community": 0
+    },
+    {
+     "rank": 6,
+     "name": "南方电网科学研究院有限责任公司",
+     "type": "院所",
+     "degree": 125,
+     "papers": 211,
+     "value": 0.0011852007,
+     "community": 2
+    },
+    {
+     "rank": 7,
+     "name": "广东电网有限责任公司电力科学研究院",
+     "type": "院所",
+     "degree": 115,
+     "papers": 196,
+     "value": 0.0010876975,
+     "community": 2
+    },
+    {
+     "rank": 8,
+     "name": "南方医科大学南方医院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 241,
+     "value": 0.0010384924,
+     "community": 1
+    },
+    {
+     "rank": 9,
+     "name": "深圳供电局有限公司",
+     "type": "企业",
+     "degree": 101,
+     "papers": 342,
+     "value": 0.0010284579,
+     "community": 2
+    },
+    {
+     "rank": 10,
+     "name": "广州中医药大学",
+     "type": "高校",
+     "degree": 112,
+     "papers": 290,
+     "value": 0.0010187986,
+     "community": 1
+    },
+    {
+     "rank": 11,
+     "name": "华南理工大学电力学院",
+     "type": "高校",
+     "degree": 103,
+     "papers": 210,
+     "value": 0.0009860008,
+     "community": 2
+    },
+    {
+     "rank": 12,
+     "name": "华南理工大学土木与交通学院",
+     "type": "高校",
+     "degree": 86,
+     "papers": 125,
+     "value": 0.0009591609,
+     "community": 0
+    },
+    {
+     "rank": 13,
+     "name": "广州地铁集团有限公司",
+     "type": "企业",
+     "degree": 90,
+     "papers": 214,
+     "value": 0.0009383596,
+     "community": 0
+    },
+    {
+     "rank": 14,
+     "name": "广东工业大学",
+     "type": "高校",
+     "degree": 89,
+     "papers": 269,
+     "value": 0.0009301605,
+     "community": 3
+    },
+    {
+     "rank": 15,
+     "name": "广东药科大学",
+     "type": "高校",
+     "degree": 88,
+     "papers": 153,
+     "value": 0.0009091021,
+     "community": 1
+    },
+    {
+     "rank": 16,
+     "name": "中国科学院地理科学与资源研究所",
+     "type": "高校",
+     "degree": 87,
+     "papers": 83,
+     "value": 0.0009043691,
+     "community": 6
+    },
+    {
+     "rank": 17,
+     "name": "清华大学深圳国际研究生院",
+     "type": "高校",
+     "degree": 83,
+     "papers": 133,
+     "value": 0.0008503407,
+     "community": 2
+    },
+    {
+     "rank": 18,
+     "name": "中山大学附属第一医院",
+     "type": "高校",
+     "degree": 82,
+     "papers": 241,
+     "value": 0.0008451746,
+     "community": 1
+    },
+    {
+     "rank": 19,
+     "name": "华南农业大学",
+     "type": "高校",
+     "degree": 78,
+     "papers": 238,
+     "value": 0.0008439195,
+     "community": 3
+    },
+    {
+     "rank": 20,
+     "name": "不详",
+     "type": "其他",
+     "degree": 82,
+     "papers": 75,
+     "value": 0.0008398102,
+     "community": 1
+    }
+   ],
+   "type_mix_top20": {
+    "高校": 13,
+    "院所": 4,
+    "企业": 2,
+    "其他": 1
+   }
+  }
+ },
+ "centrality_stats": {
+  "P0_degree": {
+   "n": 20436,
+   "min": 0.0,
+   "p10": 0.0,
+   "p25": 4.89356e-05,
+   "median": 9.78713e-05,
+   "mean": 0.0001829843,
+   "p75": 0.0001957426,
+   "p90": 0.0003914852,
+   "p99": 0.0014191338,
+   "max": 0.009493516,
+   "sum": 3.7394666014,
+   "n_zero": 3540
+  },
+  "P1_degree": {
+   "n": 16896,
+   "min": 5.91891e-05,
+   "p10": 5.91891e-05,
+   "p25": 0.0001183782,
+   "median": 0.0001775673,
+   "mean": 0.0002676962,
+   "p75": 0.0002959455,
+   "p90": 0.000532702,
+   "p99": 0.0019532406,
+   "max": 0.0114826872,
+   "sum": 4.5229949689,
+   "n_zero": 0
+  },
+  "P2_degree": {
+   "n": 15223,
+   "min": 6.56944e-05,
+   "p10": 6.56944e-05,
+   "p25": 0.0001313888,
+   "median": 0.0001970832,
+   "mean": 0.0003190426,
+   "p75": 0.0003284719,
+   "p90": 0.0006569439,
+   "p99": 0.0022848509,
+   "max": 0.0127447116,
+   "sum": 4.8567862305,
+   "n_zero": 0
+  },
+  "P3_degree": {
+   "n": 4469,
+   "min": 0.0,
+   "p10": 0.0006266786,
+   "p25": 0.0008952551,
+   "median": 0.0011190689,
+   "mean": 0.0017187937,
+   "p75": 0.0020143241,
+   "p90": 0.003133393,
+   "p99": 0.0094717995,
+   "max": 0.0353625783,
+   "sum": 7.6812891674,
+   "n_zero": 35
+  },
+  "P4_degree": {
+   "n": 1573,
+   "min": 0.0,
+   "p10": 0.0019083969,
+   "p25": 0.0031806616,
+   "median": 0.0044529262,
+   "mean": 0.0056317728,
+   "p75": 0.0063613232,
+   "p90": 0.0108142494,
+   "p99": 0.026259542,
+   "max": 0.06043257,
+   "sum": 8.858778626,
+   "n_zero": 12
+  },
+  "P0_closeness": {
+   "n": 20436,
+   "min": 0.0,
+   "p10": 0.0,
+   "p25": 0.0001747702,
+   "median": 0.1239265364,
+   "mean": 0.0975923177,
+   "p75": 0.1395515721,
+   "p90": 0.1509260048,
+   "p99": 0.1686293017,
+   "max": 0.1996451155,
+   "sum": 1994.3966039153,
+   "n_zero": 3540
+  },
+  "P1_closeness": {
+   "n": 16896,
+   "min": 5.91891e-05,
+   "p10": 0.0771833232,
+   "p25": 0.1369723638,
+   "median": 0.1569695623,
+   "mean": 0.1427723379,
+   "p75": 0.1722147509,
+   "p90": 0.1850095591,
+   "p99": 0.2061952718,
+   "max": 0.2414766461,
+   "sum": 2412.2814205983,
+   "n_zero": 0
+  },
+  "P2_closeness": {
+   "n": 15223,
+   "min": 0.0713391916,
+   "p10": 0.1426991158,
+   "p25": 0.1601852097,
+   "median": 0.1774746415,
+   "mean": 0.1758668933,
+   "p75": 0.1931934282,
+   "p90": 0.2065248951,
+   "p99": 0.2294616592,
+   "max": 0.2680165508,
+   "sum": 2677.2217173558,
+   "n_zero": 0
+  },
+  "P3_closeness": {
+   "n": 4469,
+   "min": 0.0,
+   "p10": 0.1874482291,
+   "p25": 0.2050701711,
+   "median": 0.2217949052,
+   "mean": 0.2193470047,
+   "p75": 0.2380888104,
+   "p90": 0.2527274904,
+   "p99": 0.284210319,
+   "max": 0.3207188121,
+   "sum": 980.2617638418,
+   "n_zero": 35
+  },
+  "P4_closeness": {
+   "n": 1573,
+   "min": 0.0,
+   "p10": 0.2180656527,
+   "p25": 0.2366027209,
+   "median": 0.2538687444,
+   "mean": 0.2531506671,
+   "p75": 0.2743870264,
+   "p90": 0.2904814122,
+   "p99": 0.3256328625,
+   "max": 0.3536070359,
+   "sum": 398.2059994117,
+   "n_zero": 12
+  },
+  "P2_betweenness": {
+   "n": 15223,
+   "min": 0.0,
+   "p10": 0.0,
+   "p25": 0.0,
+   "median": 1.99088e-05,
+   "mean": 0.0003166224,
+   "p75": 0.000187988,
+   "p90": 0.0006651276,
+   "p99": 0.0043654341,
+   "max": 0.0586388707,
+   "sum": 4.8199427657,
+   "n_zero": 5629
+  },
+  "P3_betweenness": {
+   "n": 4469,
+   "min": 0.0,
+   "p10": 2.0005e-06,
+   "p25": 4.22774e-05,
+   "median": 0.0001858125,
+   "mean": 0.0007751758,
+   "p75": 0.0006196592,
+   "p90": 0.0017677762,
+   "p99": 0.0090005369,
+   "max": 0.0595949118,
+   "sum": 3.4642608413,
+   "n_zero": 407
+  },
+  "P4_betweenness": {
+   "n": 1573,
+   "min": 0.0,
+   "p10": 7.03685e-05,
+   "p25": 0.0002349305,
+   "median": 0.0007155126,
+   "mean": 0.0018463765,
+   "p75": 0.0018413321,
+   "p90": 0.0040146011,
+   "p99": 0.0216296235,
+   "max": 0.0582059532,
+   "sum": 2.904350157,
+   "n_zero": 65
+  },
+  "P2_pagerank": {
+   "n": 15223,
+   "min": 1.74773e-05,
+   "p10": 2.22756e-05,
+   "p25": 3.14727e-05,
+   "median": 4.6447e-05,
+   "mean": 6.56901e-05,
+   "p75": 7.02326e-05,
+   "p90": 0.0001196579,
+   "p99": 0.0003724719,
+   "max": 0.0017426883,
+   "sum": 1.0,
+   "n_zero": 0
+  },
+  "P2_pagerank_weighted": {
+   "n": 15223,
+   "min": 1.31239e-05,
+   "p10": 2.27343e-05,
+   "p25": 3.05934e-05,
+   "median": 4.5324e-05,
+   "mean": 6.56901e-05,
+   "p75": 6.84644e-05,
+   "p90": 0.0001186748,
+   "p99": 0.0003927983,
+   "max": 0.0036015952,
+   "sum": 1.0,
+   "n_zero": 0
+  },
+  "P2_pagerank_directed": {
+   "n": 15223,
+   "min": 1.4669e-05,
+   "p10": 2.38657e-05,
+   "p25": 3.1011e-05,
+   "median": 4.3978e-05,
+   "mean": 6.56901e-05,
+   "p75": 6.85208e-05,
+   "p90": 0.0001184944,
+   "p99": 0.0003911514,
+   "max": 0.0033740936,
+   "sum": 1.0,
+   "n_zero": 0
+  },
+  "P1_pagerank": {
+   "n": 16896,
+   "min": 1.57468e-05,
+   "p10": 2.06689e-05,
+   "p25": 2.96161e-05,
+   "median": 4.44194e-05,
+   "mean": 5.91856e-05,
+   "p75": 6.12328e-05,
+   "p90": 0.0001026704,
+   "p99": 0.0003182593,
+   "max": 0.001570142,
+   "sum": 1.0,
+   "n_zero": 0
+  }
+ },
+ "distribution": {
+  "degree_full": {
+   "n": 20436,
+   "min": 0.0,
+   "p10": 0.0,
+   "p25": 1.0,
+   "median": 2.0,
+   "mean": 3.7392836171,
+   "p75": 4.0,
+   "p90": 8.0,
+   "p99": 29.0,
+   "max": 194.0,
+   "sum": 76416.0,
+   "n_zero": 3540
+  },
+  "degree_giant": {
+   "n": 15223,
+   "min": 1.0,
+   "p10": 1.0,
+   "p25": 2.0,
+   "median": 3.0,
+   "mean": 4.8564671878,
+   "p75": 5.0,
+   "p90": 10.0,
+   "p99": 34.78,
+   "max": 194.0,
+   "sum": 73930.0,
+   "n_zero": 0
+  },
+  "buckets_giant": {
+   "1": 3064,
+   "2": 3464,
+   "3-5": 5271,
+   "11-20": 922,
+   "6-10": 2069,
+   "21-50": 370,
+   "51+": 63
+  },
+  "gini_giant": 0.51,
+  "hhi_giant": 2.151
+ },
+ "concentration": {
+  "top10_degree_sum": 1290,
+  "degree_sum": 73930,
+  "top1pct_n": 152,
+  "top10pct_n": 1522,
+  "top1pct_pagerank_sum": 0.0881778602,
+  "top10pct_pagerank_sum": 0.3422023946,
+  "pagerank_sum": 1.000000002
+ },
+ "communities": {
+  "n": 60,
+  "modularity": 0.755103,
+  "sizes_top15": [
+   1637,
+   1102,
+   901,
+   858,
+   799,
+   718,
+   606,
+   580,
+   524,
+   523,
+   507,
+   456,
+   452,
+   395,
+   348
+  ],
+  "median_size": 130.5,
+  "n_size_ge10": 52,
+  "largest_share_pct": 10.7535
+ },
+ "rank_corr": {
+  "degree~closeness": 0.607677,
+  "degree~betweenness": 0.813618,
+  "degree~pagerank": 0.937701,
+  "degree~pagerank_weighted": 0.872318,
+  "degree~pagerank_directed": 0.755856,
+  "closeness~betweenness": 0.496407,
+  "closeness~pagerank": 0.386608,
+  "closeness~pagerank_weighted": 0.333637,
+  "closeness~pagerank_directed": 0.28046,
+  "betweenness~pagerank": 0.850506,
+  "betweenness~pagerank_weighted": 0.761626,
+  "betweenness~pagerank_directed": 0.750967,
+  "pagerank~pagerank_weighted": 0.945057,
+  "pagerank~pagerank_directed": 0.845039,
+  "pagerank_weighted~pagerank_directed": 0.910084,
+  "degree~papers": 0.605824
+ },
+ "top100_overlap": {
+  "degree~closeness": {
+   "top100_intersection": 60,
+   "jaccard": 0.4286
+  },
+  "degree~betweenness": {
+   "top100_intersection": 73,
+   "jaccard": 0.5748
+  },
+  "degree~pagerank": {
+   "top100_intersection": 92,
+   "jaccard": 0.8519
+  },
+  "degree~pagerank_weighted": {
+   "top100_intersection": 88,
+   "jaccard": 0.7857
+  },
+  "degree~pagerank_directed": {
+   "top100_intersection": 83,
+   "jaccard": 0.7094
+  },
+  "closeness~betweenness": {
+   "top100_intersection": 62,
+   "jaccard": 0.4493
+  },
+  "closeness~pagerank": {
+   "top100_intersection": 56,
+   "jaccard": 0.3889
+  },
+  "closeness~pagerank_weighted": {
+   "top100_intersection": 56,
+   "jaccard": 0.3889
+  },
+  "closeness~pagerank_directed": {
+   "top100_intersection": 54,
+   "jaccard": 0.3699
+  },
+  "betweenness~pagerank": {
+   "top100_intersection": 78,
+   "jaccard": 0.6393
+  },
+  "betweenness~pagerank_weighted": {
+   "top100_intersection": 73,
+   "jaccard": 0.5748
+  },
+  "betweenness~pagerank_directed": {
+   "top100_intersection": 69,
+   "jaccard": 0.5267
+  },
+  "pagerank~pagerank_weighted": {
+   "top100_intersection": 92,
+   "jaccard": 0.8519
+  },
+  "pagerank~pagerank_directed": {
+   "top100_intersection": 87,
+   "jaccard": 0.7699
+  },
+  "pagerank_weighted~pagerank_directed": {
+   "top100_intersection": 90,
+   "jaccard": 0.8182
+  }
+ },
+ "null_model": {
+  "reps": 20,
+  "observed_modularity": 0.755103,
+  "null_modularity_min": 0.123632,
+  "null_modularity_max": 0.134331,
+  "best_modularity_min": 0.472334,
+  "best_modularity_max": 0.47884,
+  "best_modularity_mean": 0.475227,
+  "observed_partition_on_null_mean": 0.128953,
+  "z_score": 158.926,
+  "note": "度序列保持的双边交换零模型；观测划分在零模型上的模块度只有 0.12—0.13，说明 0.755 的模块度主要来自度序列本身，不能当「真实社群边界」的证据。"
+ },
+ "cross_metric": {
+  "inventor_nodes_014": 31188,
+  "note": "M_SYNTH_DS_23_GRAPH_ALGO_014 的发明人节点数，用于说明两件节点对象不同源；该数来自 014 产物，不在本件图中。"
+ },
+ "citation_closure": {
+  "status": "ok",
+  "reference_rows": 20045,
+  "reference_num_sum": 196619,
+  "papers_in_panel": 100900,
+  "reference_tokens": 196619,
+  "reference_unique_ids": 192600,
+  "reference_ids_in_panel": 165,
+  "closure_rate": 0.000857,
+  "note": "引用 id 是外部源编号，与本库 dwd_zh_paper.id 不同源；闭合率不足 0.1%，无法在同一 id 空间内建引用网"
+ },
+ "rejected_dimensions": [
+  {
+   "dimension": "企业合作关系边",
+   "reason": "gkx 无 enterprise_cooperation（information_schema 实查 0 行）",
+   "replacement": "论文共著机构图（dwd_zh_paper 作者机构名归一）作为代理；明示共著≠企业合作",
+   "negative_evidence": "code/_probe_blocked_f1_20261023.json → enterprise_cooperation"
+  },
+  {
+   "dimension": "引文网络",
+   "reason": "引用 id 与本库论文 id 不同源，闭合率 0.0857%（165 / 192,600）",
+   "replacement": "不建引文图；只用论文—机构二部图投影算中心性，引文维度拒拟",
+   "negative_evidence": "graph_algo_23_20261023.json → citation_closure"
+  },
+  {
+   "dimension": "官方中心性标尺校验",
+   "reason": "gkx 无 enterprise_centrality / node_influence，无法与官方分值对照",
+   "replacement": "自算 Degree/Closeness/Betweenness/PageRank，明示无官方标尺，不做对标结论",
+   "negative_evidence": "code/_probe_blocked_f1_20261023.json"
+  }
+ ],
+ "verdict_kind": "negative_evidence",
+ "absence_probe": [
+  {
+   "table": "enterprise_cooperation",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='enterprise_cooperation'",
+   "gkx_hits": 0,
+   "live_ads_rows": null,
+   "live_dwd_rows": 0,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "F1 无「企业—企业合作」边；各件按 per_metric_proxy 退回自身可用边，不得把论文共著或投资/股东边读成企业合作",
+   "proxy": "见 per_metric_proxy：115 用投资/股东边，SCI/005/014 用论文共著，FACTOR_RELATION 用城市年共现"
+  },
+  {
+   "table": "enterprise_supply_chain",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='enterprise_supply_chain'",
+   "gkx_hits": 0,
+   "live_ads_rows": null,
+   "live_dwd_rows": 0,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "F1 无供应链上下游边；115 明示只做资本图、不做供应链位置；其余件不用供应链口径",
+   "proxy": "不代理：以「供应链位置不可得」写进 rejected_dimensions；资本图/共著图均不冒充供应链"
+  },
+  {
+   "table": "node_influence",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='node_influence'",
+   "gkx_hits": 0,
+   "live_ads_rows": 544,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "官方影响力分值不可得，不能与自算中心性做一致性校验",
+   "proxy": "Degree/Betweenness/Closeness/PageRank 四件自算，明示无官方标尺"
+  },
+  {
+   "table": "enterprise_centrality",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='enterprise_centrality'",
+   "gkx_hits": 0,
+   "live_ads_rows": 114,
+   "live_dwd_rows": null,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "无官方中心性结果可复用/对照",
+   "proxy": "自算四类中心性；量纲与官方表不可比"
+  },
+  {
+   "table": "graph_edge",
+   "gkx_query": "SELECT table_schema, table_name, table_rows FROM information_schema.TABLES WHERE table_schema='gkx' AND table_name='graph_edge'",
+   "gkx_hits": 0,
+   "live_ads_rows": 589,
+   "live_dwd_rows": 0,
+   "verdict": "gkx 无表：阻塞",
+   "impact": "多类型边（合作/供应/技术/人才流动）无法入图",
+   "proxy": "只用共著边；其余三类在 gkx 无表承接，本族不自造"
+  }
+ ],
+ "derived": {
+  "p2_node_share_pct": {
+   "value": 74.4911,
+   "numerator": 15223,
+   "denominator": 20436,
+   "denominator_note": "P2 节点数 / P0 节点数（15,223 / 20,436）"
+  },
+  "p2_edge_share_pct": {
+   "value": 96.7468,
+   "numerator": 36965,
+   "denominator": 38208,
+   "denominator_note": "P2 边数 / P0 边数（36,965 / 38,208）"
+  },
+  "isolate_share_pct": {
+   "value": 17.3224,
+   "numerator": 3540,
+   "denominator": 20436,
+   "denominator_note": "P0 孤立点数 / P0 节点数（3,540 / 20,436）"
+  },
+  "outside_giant_share_pct": {
+   "value": 25.5089,
+   "numerator": 5213,
+   "denominator": 20436,
+   "denominator_note": "P0 中不在 P2 的节点数 / P0 节点数（5,213 / 20,436）"
+  },
+  "p1_retention_pct": {
+   "value": 82.6776,
+   "numerator": 16896,
+   "denominator": 20436,
+   "denominator_note": "P1 节点数 / P0 节点数（16,896 / 20,436）"
+  },
+  "papers_with_inst_pct": {
+   "value": 99.9653,
+   "numerator": 100865,
+   "denominator": 100900,
+   "denominator_note": "有机构串的论文数 / 论文总数（100,865 / 100,900）"
+  },
+  "papers_with_city_pct": {
+   "value": 47.3756,
+   "numerator": 47802,
+   "denominator": 100900,
+   "denominator_note": "可归珠三角城市的论文数 / 论文总数（47,802 / 100,900）"
+  },
+  "inst_retention_pct": {
+   "value": 24.2362,
+   "numerator": 20436,
+   "denominator": 84320,
+   "denominator_note": "入图机构数 / 机构全宇宙（20,436 / 84,320，门槛≥2 篇）"
+  },
+  "degree_norm_max": {
+   "value": 0.0127447116,
+   "numerator": 194,
+   "denominator": 15222,
+   "denominator_note": "P2 最大度 / (P2 节点数−1)（194 / 15,222）"
+  },
+  "degree_norm_median": {
+   "value": 0.0001970832,
+   "numerator": 3,
+   "denominator": 15222,
+   "denominator_note": "P2 度中位数 / (P2 节点数−1)（3 / 15,222）"
+  },
+  "top10_degree_share_pct": {
+   "value": 1.7449,
+   "numerator": 1290,
+   "denominator": 73930,
+   "denominator_note": "P2 度前 10 名度数和 / P2 度总和（1,290 / 73,930）"
+  },
+  "top1pct_pagerank_share_pct": {
+   "value": 8.8178,
+   "numerator": 0.0881778602,
+   "denominator": 1.000000002,
+   "denominator_note": "P2 PageRank 前 1% 节点（152 个）的 PR 之和 / P2 PR 总和（0.0881778602 / 1.000000002）"
+  },
+  "top10pct_pagerank_share_pct": {
+   "value": 34.2202,
+   "numerator": 0.3422023946,
+   "denominator": 1.000000002,
+   "denominator_note": "P2 PageRank 前 10% 节点（1,522 个）的 PR 之和 / P2 PR 总和（0.3422023946 / 1.000000002）"
+  },
+  "degree_gini": {
+   "value": 0.51,
+   "numerator": "degree_gini",
+   "denominator": "P2 度序列",
+   "denominator_note": "P2 度分布的 Gini 系数（0—1，越大越不均）"
+  },
+  "degree_hhi": {
+   "value": 2.151,
+   "numerator": "degree_hhi",
+   "denominator": "P2 度份额",
+   "denominator_note": "P2 度份额的 HHI（0—10,000）"
+  },
+  "closeness_degree_spearman": {
+   "value": 0.607677,
+   "numerator": "rank_corr.degree~closeness",
+   "denominator": "P2 全节点",
+   "denominator_note": "P2 上度与接近中心性的 Spearman 秩相关"
+  },
+  "betweenness_degree_spearman": {
+   "value": 0.813618,
+   "numerator": "rank_corr.degree~betweenness",
+   "denominator": "P2 全节点",
+   "denominator_note": "P2 上中介中心性与度的 Spearman 秩相关"
+  },
+  "pagerank_degree_spearman": {
+   "value": 0.937701,
+   "numerator": "rank_corr.degree~pagerank",
+   "denominator": "P2 全节点",
+   "denominator_note": "P2 上 PageRank 与度的 Spearman 秩相关"
+  },
+  "betweenness_zero_share_pct": {
+   "value": 36.9769,
+   "numerator": 5629,
+   "denominator": 15223,
+   "denominator_note": "P2 上中介中心性为 0 的节点数 / P2 节点数（5,629 / 15,223）"
+  },
+  "top20_degree_close_jaccard": {
+   "value": 0.3793,
+   "numerator": 11,
+   "denominator": 29,
+   "denominator_note": "度前 20 与接近前 20 的 Jaccard（交集/并集）"
+  },
+  "top100_degree_close_jaccard": {
+   "value": 0.4286,
+   "numerator": 60,
+   "denominator": 140,
+   "denominator_note": "度前 100 与接近前 100 的 Jaccard（交集/并集）"
+  },
+  "top100_degree_betw_jaccard": {
+   "value": 0.5748,
+   "numerator": 73,
+   "denominator": 127,
+   "denominator_note": "度前 100 与中介前 100 的 Jaccard（交集/并集）"
+  },
+  "top100_close_betw_jaccard": {
+   "value": 0.4493,
+   "numerator": 62,
+   "denominator": 138,
+   "denominator_note": "接近前 100 与中介前 100 的 Jaccard（交集/并集）"
+  },
+  "louvain_community_n": {
+   "value": 60,
+   "numerator": "n_communities",
+   "denominator": "P2 节点",
+   "denominator_note": "Louvain 社群数（resolution=1.0, seed=20261021, weight）"
+  },
+  "louvain_modularity": {
+   "value": 0.755103,
+   "numerator": "modularity",
+   "denominator": "P2 边权",
+   "denominator_note": "Louvain 模块度（同一参数下的确定值）"
+  },
+  "largest_community_share_pct": {
+   "value": 10.7535,
+   "numerator": 1637,
+   "denominator": 15223,
+   "denominator_note": "最大社群节点数 / P2 节点数（1,637 / 15,223）"
+  },
+  "degree_papers_pearson": {
+   "value": 0.814667,
+   "numerator": "pearson_degree_papers",
+   "denominator": "P2 全节点",
+   "denominator_note": "P2 上度与机构论文数的 Pearson 相关"
+  },
+  "top20_degree_type_enterprise_pct": {
+   "value": 10.0,
+   "numerator": 2,
+   "denominator": 20,
+   "denominator_note": "度前 20 中企业数 / 20"
+  },
+  "top20_degree_type_univ_pct": {
+   "value": 60.0,
+   "numerator": 12,
+   "denominator": 20,
+   "denominator_note": "度前 20 中高校数 / 20"
+  },
+  "top1_over_top2_papers_ratio": {
+   "value": 2.2485,
+   "numerator": 751,
+   "denominator": 334,
+   "denominator_note": "度榜第 1 名论文数 / 第 2 名论文数（751 / 334）"
+  },
+  "top1_over_top2_degree_ratio": {
+   "value": 1.2436,
+   "numerator": 194,
+   "denominator": 156,
+   "denominator_note": "度榜第 1 名度 / 第 2 名度（194 / 156）"
+  },
+  "p2_enterprise_node_share_pct": {
+   "value": 15.8182,
+   "numerator": 2408,
+   "denominator": 15223,
+   "denominator_note": "P2 企业节点数 / P2 节点数（2,408 / 15,223）"
+  },
+  "citation_edges_vs_collab_edges_pct": {
+   "value": 0.4318,
+   "numerator": 165,
+   "denominator": 38208,
+   "denominator_note": "可闭合引用 id 数 / P0 共著边数（165 / 38,208）"
+  }
+ },
+ "sources": [
+  "code/_snapshots21/graph_algo_23_20261023.json",
+  "code/_snapshots21/a25_paper_panel.json",
+  "code/_collab_graph21.py",
+  "code/_probe_blocked_f1_20261023.json"
+ ],
+ "metric_id": "M_INNOV_SCI_CENTRALITY",
+ "generated_at": "2026-10-23 23:58:11",
+ "support_judgment": "部分支持",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "全量截面图（论文年份 1980—2026），不做年度切片；2025/2026 是滞后/残年，只影响边权，不改变 2024 年前已形成的机构节点集合。"
+}

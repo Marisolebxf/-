@@ -1,0 +1,607 @@
+{
+ "metric_id": "M_ENT_REVENUE_LATEST",
+ "metric_name": "营收（最新年度营业收入）",
+ "support_judgment": "部分支持",
+ "judgment_basis": {
+  "formula": "revenue = operating_revenue @ MAX(year) per org",
+  "source_table": "gkx.dwd_org_annual_financial_info（calc-logic 声明的唯一输入）",
+  "why_partial": "结构与规则完整、可按企取最新年；但 8,127 家有财务行的机构里只有 1,302 家（占底册 0.6885%）在最新年有营收值，其余 6,825 家最新年该列为空——覆盖不足是数据缺口，不是口径缺口",
+  "why_not_direct": "两库均无 enterprise_finance_history / enterprise_base.revenue_latest 结果面，须按企取最新年现算",
+  "why_not_unsupported": "依赖表、年份列、机构号键齐全，1,302 家已能算出完整一条（含最新年标记）"
+ },
+ "sources": [
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp（只读）",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "note": "26 列宽表，uk_org_id_year 有索引；本次窄投影 4 列 + 底册 LEFT JOIN 取名/城市"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_report_asset",
+   "rows": 527034,
+   "note": "补充参考：xsze 为「数值+万元」文本，正则取数并换算元"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_stock_finance_info",
+   "rows": 40239,
+   "note": "补充参考：上市口径，calc-logic 未声明可替代年报"
+  },
+  {
+   "snapshot": "code/_snapshots21/ent_fin_family_20261023.json",
+   "builder": "code/_build_ent_fin_family.py"
+  }
+ ],
+ "base_years_used": [
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [],
+ "base_years_note": "按企取「最新年」，各企锚年不同（见 latest_year_dist）；库内财务年表年份区间 2013—2025 全部在扫描范围内，无排除年。某企最新年营收为空时该企不计入，不向前补年、不写 0",
+ "headline": {
+  "annual_fin_rows": 90926,
+  "annual_fin_orgs": 8127,
+  "revenue_nonnull_rows": 2193,
+  "revenue_null_rows": 88733,
+  "orgs_with_latest_revenue": 1302,
+  "coverage_pct_of_base": 0.6885,
+  "base_orgs": 189116,
+  "latest_rev_median_yuan": 16553.27,
+  "latest_rev_mean_yuan": 138963840.3824,
+  "latest_rev_p10_yuan": 418.16,
+  "latest_rev_p90_yuan": 80058401.21,
+  "latest_rev_p99_yuan": 2874930739.07,
+  "latest_rev_max_yuan": 29800924733.43,
+  "latest_rev_min_yuan": -292.67,
+  "latest_rev_neg_orgs": 1,
+  "latest_rev_zero_orgs": 0,
+  "latest_year_dist": {
+   "2013": 25,
+   "2014": 476,
+   "2015": 305,
+   "2016": 172,
+   "2017": 89,
+   "2018": 47,
+   "2019": 30,
+   "2020": 29,
+   "2021": 22,
+   "2022": 18,
+   "2023": 27,
+   "2024": 28,
+   "2025": 34
+  },
+  "unit_bands": {
+   "lt_1e3": 207,
+   "1e3_1e4": 346,
+   "1e4_1e6": 424,
+   "1e6_1e8": 206,
+   "ge_1e8": 118
+  },
+  "unit_band_note": "金额列是 double，库内不声明单位；以下 5 段按数值量级切，用来暴露「元/万元」混填：<1e3 元段 207 家、1e3—1e4 元段 346 家，两者合计 553 家不可能是一年的营业收入（最低 1 元级）",
+  "asset_text_orgs": 7738,
+  "asset_text_latest_positive_orgs": 6596,
+  "asset_text_median_yuan": 21082463.52,
+  "asset_text_rows": 527034,
+  "asset_text_placeholder_rows": 514140,
+  "asset_text_placeholder_pct": 97.5535,
+  "stock_orgs_with_revenue": 971,
+  "stock_rows": 40239,
+  "stock_period_max": "202603",
+  "two_source_upper_bound_orgs": 9040,
+  "two_source_upper_bound_pct": 4.7801,
+  "two_source_note": "fin 与 asset 是两张不同年报表，机构号未求交，故只给「两表直接相加」的上界，不宣称并集",
+  "unit_audit": {
+   "pairs_compared": 2032,
+   "ratio_buckets": {
+    "1x": 484,
+    "10000x": 1435,
+    "0.0001x": 0,
+    "other": 113,
+    "fin_missing_x10000": 703,
+    "asset_label_wrong": 8,
+    "undeterminable": 724
+   },
+   "mislabel_share_pct": 70.62,
+   "verdict": "两表存同一个字面值、单位假设互斥（70.6% 相差整 10,000 倍）；其中 703 对是 annual_fin 漏乘、8 对是 asset 的万元标签错、724 对无外部锚不可判",
+   "action": "营收类不得从两张表求和/求均值；单家营收须先双表比对（字面值相同=单位未定），只有能用公开财报锚定的行才可排名；可用面仅 annual_fin 里 ≥1 亿元的 118 家",
+   "example": {
+    "kind": "fin_missing_x10000",
+    "org_id": "003e87f4a7a1c59bf24f3d76508dd61f",
+    "year": 2015,
+    "asset_text_yuan": 62650700.0,
+    "annual_fin_yuan": 6265.07,
+    "ratio": 10000.0,
+    "reading": "annual_fin 少乘 10,000；字面值实为万元"
+   },
+   "authoritative_orgs_pos": 1301,
+   "authoritative_median_yuan": 16554.99,
+   "authoritative_buckets": {
+    "<=100元(明显错值)": 66,
+    "100-1万元": 488,
+    "1万-100万元": 424,
+    "100万-1亿元": 206,
+    "1亿-100亿元": 115,
+    ">100亿元": 3
+   },
+   "anchor_ok": {
+    "保利房地产（集团）股份有限公司 2014": "1,090.56 亿元，与公开财报同量级",
+    "深圳市燃气集团股份有限公司 2023": "309.29 亿元，与公开财报同量级",
+    "广东海大集团股份有限公司 2016": "271.85 亿元，与公开财报同量级",
+    "note": "仅这 3 家做过外部锚定；其余行的单位未经外部核验"
+   }
+  }
+ },
+ "derived": {
+  "orgs_without_latest_revenue": {
+   "value": 6825,
+   "numerator": 6825,
+   "denominator": null,
+   "denominator_note": "计数，无分母：有财务行的机构 8,127 家（annual_fin.orgs）− 最新年营收非空的 1,302 家（orgs_any_revenue）＝ 6,825 家，最新年该列为空，不向前补年、不写 0"
+  },
+  "fin_org_coverage_pct": {
+   "value": 16.0207,
+   "numerator": 1302,
+   "denominator": 8127,
+   "denominator_note": "分子=最新年营收非空的机构数 annual_fin.orgs_any_revenue（1,302 家）；分母=有财务行的机构数 annual_fin.orgs（8,127 家）。注意与 headline.coverage_pct_of_base（分母 189,116 底册）不是同一个分母"
+  },
+  "rev_rows_share_pct": {
+   "value": 2.4119,
+   "numerator": 2193,
+   "denominator": 90926,
+   "denominator_note": "分子=营收列非空的财务行数 fill.operating_revenue.nonnull（2,193 行）；分母=财务年报表总行数 annual_fin.rows（90,926 行）"
+  },
+  "bands_below_10k": {
+   "value": 553,
+   "numerator": 553,
+   "denominator": null,
+   "denominator_note": "计数，无分母：最新营收落在 <1e3 元段 207 家 + 1e3—1e4 元段 346 家 ＝ 553 家，两段合计即「一年营收不足 1 万元」的不合理量级企业数"
+  },
+  "buckets_under_100_yuan": {
+   "value": 66,
+   "numerator": 66,
+   "denominator": null,
+   "denominator_note": "计数，无分母：外部锚定校验（unit_audit.annual_fin_authoritative.buckets）里最新营收 ≤100 元、判为明显错值的机构数"
+  },
+  "usable_ge_1e8": {
+   "value": 118,
+   "numerator": 118,
+   "denominator": null,
+   "denominator_note": "计数，无分母：最新营收 ≥1e8 元（1 亿元）的机构数（annual_fin.unit_bands.ge_1e8）"
+  },
+  "asset_parsed_share_pct": {
+   "value": 99.9604,
+   "numerator": 12616,
+   "denominator": 12621,
+   "denominator_note": "分子=能按「数值+万元」正则解析出行数 asset_text.parsed_rows（12,616 行）；分母=营收文本列非空的候选行数 asset_text.xsze_wan_rows（12,621 行）；其余 514,140 行是「企业选择不公示」占位串，未进分母"
+  },
+  "asset_latest_positive_share_pct": {
+   "value": 85.2417,
+   "numerator": 6596,
+   "denominator": 7738,
+   "denominator_note": "分子=资产表每企最新年营收可解析且为正的机构数 asset_text.latest_stats_yuan.n（6,596 家）；分母=资产表有可解析营收的机构数 asset_text.orgs_parsed（7,738 家）。仅补充参考，不并主口径"
+  },
+  "unit_10k_pairs": {
+   "value": 1435,
+   "numerator": 1435,
+   "denominator": null,
+   "denominator_note": "计数，无分母：两表同一企业-年营收相差整 10,000 倍的对数（unit_audit.ratio_buckets['10000x']，1,435 对）"
+  },
+  "unit_same_pairs": {
+   "value": 484,
+   "numerator": 484,
+   "denominator": null,
+   "denominator_note": "计数，无分母：两表同一企业-年营收字面一致（1x）的对数（unit_audit.ratio_buckets['1x']，484 对）"
+  },
+  "unit_fin_missing_x10000": {
+   "value": 703,
+   "numerator": 703,
+   "denominator": null,
+   "denominator_note": "计数，无分母：经外部锚判定为 annual_fin 漏乘 10,000 的对数（unit_audit.ratio_buckets['fin_missing_x10000']，703 对）"
+  },
+  "unit_asset_label_wrong": {
+   "value": 8,
+   "numerator": 8,
+   "denominator": null,
+   "denominator_note": "计数，无分母：判为资产表「万元」标签写错的对数（unit_audit.ratio_buckets['asset_label_wrong']，8 对）"
+  },
+  "unit_undeterminable": {
+   "value": 724,
+   "numerator": 724,
+   "denominator": null,
+   "denominator_note": "计数，无分母：无外部锚、无法判定哪张表单位错的对数（unit_audit.ratio_buckets['undeterminable']，724 对）"
+  },
+  "unit_other": {
+   "value": 113,
+   "numerator": 113,
+   "denominator": null,
+   "denominator_note": "计数，无分母：比值落在 1x / 10,000x / 0.0001x 之外的对数（unit_audit.ratio_buckets['other']，113 对）"
+  },
+  "mean_over_median": {
+   "value": 8394.948,
+   "numerator": 138963840.3824,
+   "denominator": 16553.27,
+   "denominator_note": "分子=最新营收均值 latest_stats.mean（138,963,840.3824 元）；分母=最新营收中位数 latest_stats.median（16,553.27 元）。倍率即右偏程度"
+  },
+  "p90_over_median": {
+   "value": 4836.41,
+   "numerator": 80058401.21,
+   "denominator": 16553.27,
+   "denominator_note": "分子=最新营收 P90 latest_stats.p90（80,058,401.21 元）；分母=最新营收中位数 latest_stats.median（16,553.27 元）"
+  },
+  "anchor_2014_2016_share_pct": {
+   "value": 73.1951,
+   "numerator": 953,
+   "denominator": 1302,
+   "denominator_note": "分子=最新财务年落在 2014 的 476 家 + 2015 的 305 家 + 2016 的 172 家 ＝ 953 家（annual_fin.latest_year_dist）；分母=最新年营收非空的机构数 orgs_any_revenue（1,302 家）"
+  }
+ },
+ "latest_year_dist": {
+  "2013": 25,
+  "2014": 476,
+  "2015": 305,
+  "2016": 172,
+  "2017": 89,
+  "2018": 47,
+  "2019": 30,
+  "2020": 29,
+  "2021": 22,
+  "2022": 18,
+  "2023": 27,
+  "2024": 28,
+  "2025": 34
+ },
+ "year_dist": [
+  [
+   2007,
+   1,
+   1,
+   0,
+   0,
+   0
+  ],
+  [
+   2008,
+   1,
+   1,
+   0,
+   0,
+   0
+  ],
+  [
+   2009,
+   2,
+   2,
+   0,
+   0,
+   0
+  ],
+  [
+   2010,
+   2,
+   2,
+   0,
+   0,
+   0
+  ],
+  [
+   2011,
+   2,
+   2,
+   0,
+   0,
+   0
+  ],
+  [
+   2012,
+   2,
+   2,
+   0,
+   0,
+   0
+  ],
+  [
+   2013,
+   3524,
+   3524,
+   92,
+   119,
+   151
+  ],
+  [
+   2014,
+   5876,
+   5876,
+   752,
+   833,
+   967
+  ],
+  [
+   2015,
+   6500,
+   6500,
+   471,
+   508,
+   498
+  ],
+  [
+   2016,
+   6926,
+   6926,
+   285,
+   297,
+   180
+  ],
+  [
+   2017,
+   7313,
+   7313,
+   162,
+   169,
+   144
+  ],
+  [
+   2018,
+   7547,
+   7547,
+   93,
+   100,
+   146
+  ],
+  [
+   2019,
+   7698,
+   7698,
+   65,
+   65,
+   130
+  ],
+  [
+   2020,
+   7618,
+   7618,
+   59,
+   58,
+   154
+  ],
+  [
+   2021,
+   7892,
+   7892,
+   49,
+   47,
+   167
+  ],
+  [
+   2022,
+   7892,
+   7892,
+   39,
+   40,
+   151
+  ],
+  [
+   2023,
+   7423,
+   7423,
+   45,
+   42,
+   152
+  ],
+  [
+   2024,
+   7799,
+   7799,
+   47,
+   41,
+   183
+  ],
+  [
+   2025,
+   6908,
+   6908,
+   34,
+   30,
+   161
+  ]
+ ],
+ "fill": {
+  "total_assets": {
+   "nonnull": 2629,
+   "nonzero": 2629
+  },
+  "total_liabilities": {
+   "nonnull": 2423,
+   "nonzero": 2423
+  },
+  "operating_revenue": {
+   "nonnull": 2193,
+   "nonzero": 2193
+  },
+  "main_business_revenue": {
+   "nonnull": 2040,
+   "nonzero": 2040
+  },
+  "total_profit": {
+   "nonnull": 2354,
+   "nonzero": 2354
+  },
+  "pure_profit": {
+   "nonnull": 2349,
+   "nonzero": 2349
+  },
+  "total_tax_paid": {
+   "nonnull": 2187,
+   "nonzero": 2187
+  },
+  "owners_equity": {
+   "nonnull": 2454,
+   "nonzero": 2454
+  },
+  "employees_number": {
+   "nonnull": 3184,
+   "nonzero": 3170
+  },
+  "fixed_assets": {
+   "nonnull": 0,
+   "nonzero": 0
+  },
+  "arch_development_am": {
+   "nonnull": 0,
+   "nonzero": 0
+  },
+  "development_employee": {
+   "nonnull": 0,
+   "nonzero": 0
+  }
+ },
+ "top10": [
+  {
+   "org_id": "88a3a75b745d31d3a4bffe7e79b36d7b",
+   "name": "深圳市燃气集团股份有限公司",
+   "city": "深圳市",
+   "year": 2025,
+   "rev_yuan": 29800924733.43
+  },
+  {
+   "org_id": "048912a424475319111ac51f5392178a",
+   "name": "唯品会（中国）有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "rev_yuan": 11102179440.92
+  },
+  {
+   "org_id": "21df9325f2db138f1c29647efa25b6f3",
+   "name": "广船国际有限公司",
+   "city": "广州市",
+   "year": 2016,
+   "rev_yuan": 10557850154.65
+  },
+  {
+   "org_id": "76484a564eecca71478a5cf9320f8b0c",
+   "name": "东莞银行股份有限公司",
+   "city": "东莞市",
+   "year": 2014,
+   "rev_yuan": 9516983688.92
+  },
+  {
+   "org_id": "3a77117f8ef18613020fc643d90aac3b",
+   "name": "深圳市兆驰股份有限公司",
+   "city": "深圳市",
+   "year": 2025,
+   "rev_yuan": 8986377113.62
+  },
+  {
+   "org_id": "563638277b09a4214b264fd5fa857fce",
+   "name": "中船海洋与防务装备股份有限公司",
+   "city": "广州市",
+   "year": 2014,
+   "rev_yuan": 6882684077.92
+  },
+  {
+   "org_id": "f20eb8658b976ee1322224a5d6d47665",
+   "name": "广东省建筑工程集团股份有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "rev_yuan": 6685781977.05
+  },
+  {
+   "org_id": "1e697ebdda587417b10d3e719804163a",
+   "name": "广州白云国际机场股份有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "rev_yuan": 5619735354.23
+  },
+  {
+   "org_id": "5464a9dec47970a19f6badce67b6932d",
+   "name": "东莞市金叶珠宝集团有限公司",
+   "city": "东莞市",
+   "year": 2014,
+   "rev_yuan": 4393944959.33
+  },
+  {
+   "org_id": "06d7dd91a3876e1c8ad3774d4f1a284c",
+   "name": "广州市广百股份有限公司",
+   "city": "广州市",
+   "year": 2015,
+   "rev_yuan": 4259509996.35
+  }
+ ],
+ "asset_text": {
+  "rows_all": 527034,
+  "orgs_all": 49997,
+  "xsze_wan_rows": 12621,
+  "parsed_rows": 12616,
+  "orgs_parsed": 7738,
+  "placeholder_rows": 514140,
+  "blank_rows": 144,
+  "latest_stats_yuan": {
+   "n": 6596,
+   "sum": 178774442392054.75,
+   "mean": 27103463067.3218,
+   "median": 21082463.52,
+   "p10": 455251.55,
+   "p25": 3608900.0,
+   "p75": 106180000.0,
+   "p90": 629660725.0,
+   "p99": 236237566900.0,
+   "min": 100.0,
+   "max": 43939449593300.0,
+   "neg": 0,
+   "zero": 0
+  },
+  "latest_year_dist": {
+   "2013": 129,
+   "2014": 2938,
+   "2015": 1582,
+   "2016": 903,
+   "2017": 468,
+   "2018": 252,
+   "2019": 194,
+   "2020": 199,
+   "2021": 316,
+   "2022": 204,
+   "2023": 195,
+   "2024": 156,
+   "2025": 202
+  },
+  "unit_note": "xsze 原文形如 5199.350128万元，本快照按 1 万元 = 10,000 元换算后入 rev_yuan；占位串「企业选择不公示」与非「数字+万元」文本一律 None，不按 0 计入"
+ },
+ "stock": {
+  "rows": 40239,
+  "orgs": 972,
+  "rev_pos_rows": 39395,
+  "rev_pos_orgs": 971,
+  "period_min": "198912",
+  "period_max": "202603",
+  "y2025_dec": {
+   "rows": 743,
+   "rd_pos_rows": 645,
+   "rd_sum_yuan": 153500926172.53,
+   "rd_mean_yuan": 237985932.05,
+   "rd_median_yuan": 67217167.37,
+   "rev_pos_rows": 735
+  }
+ },
+ "caveats": [
+  "营收列是 double，库内不声明单位；量级分布跨 8 个数量级，原样输出、不做单位归一",
+  "最新年 ≠ 同一年：1,302 家的锚年分布在 2013/2014/2015/2016/2017/2018/2019/2020/2021/2022/2023/2024/2025 之间，跨企横比必须先对齐年份",
+  "年报资产表的 xsze 有 514,140 行是「企业选择不公示」占位串，按空处理（不按 0），故该表只能当补充参考",
+  "境外财务表 51 行、12 家，calc-logic 明示不并，本件未并"
+ ]
+}

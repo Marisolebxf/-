@@ -1,7 +1,11 @@
 # 期刊影响力（M_INNOV_JOURNAL_INFLUENCE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_JOURNAL_INFLUENCE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_JOURNAL_INFLUENCE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_JOURNAL_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_JOURNAL_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py` → `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_JOURNAL_INFLUENCE.md` §二（M_INNOV_JOURNAL_INFLUENCE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_JOURNAL_INFLUENCE.md` §二（M_INNOV_JOURNAL_INFLUENCE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -50,16 +54,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_JOURNAL_INFLUENCE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_JOURNAL_INFLUENCE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_JOURNAL_INFLUENCE_out.json` |
+| 正本 MD | `M_INNOV_JOURNAL_INFLUENCE.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_JOURNAL_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_JOURNAL_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：科技全域态势·科创要素（期刊实体评价）；需求原文另在「人才学术力评估分析·多指标评价体系」中把「期刊影响力」列为学术力维度之一｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素
 > **数据支持度**：**部分支持**
@@ -169,7 +173,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 1.5 引用来源（可核验）
 
-**文档 1**：`local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`
+**文档 1**：`原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`
 **章节 1**：`1.1.1.2.4.2.5.6.1 多指标评价体系`（上级 `1.1.1.2.4.2.5.6 人才学术力评估分析`）
 
 **原句 1（「期刊影响力」在需求中唯一的直接出现）**：
@@ -190,7 +194,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 > 支持按类别浏览各类科创要素（论文、期刊、专利、专家学者、会议、组织机构、课题、项目、成果等）；提供要素详情查看功能，点击特定要素可查看其完整基础信息，包括名称、属性、描述、关联关系等。
 
-**文档 2（王惠口径）**：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_JOURNAL_INFLUENCE.md`（V1.3-20260829）
+**文档 2（王惠口径）**：`王惠口径正本（GitLab 外本地归档）`（V1.3-20260829）
 
 > 期刊在学术传播中的影响程度。统计对象为期刊实体，从影响指数、发文量、被引用量综合，取值 0—100。
 

@@ -1,0 +1,531 @@
+{
+ "metric_id": "M_SVC_DEEP_181_1",
+ "metric_name": "服务机构培育推荐模型",
+ "generated_at": "2026-10-24T21:16:10+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "四维在深圳池 25597 家上均可实测：竞争力（专利 13378 家）、产业相关度（20+8 标签 10778 家）、政策匹配（政策标题关键词）、发展潜力（营收 CAGR 161 家 / 净利 CAGR 127 家）；两处结构性缺口——年报研发两列空挂使竞争力只能产出侧代理；财务覆盖仅 673/25597 家（2.63%），发展潜力维只在有两年正值序列的子群体成立。判部分支持。",
+ "main_gap": "财务覆盖薄（营收 673 家 / 深圳池 25597 家），发展潜力维只在小子群成立；研发投入与研发人员字段空挂；政策维缺 svc_org_policy_hit 命中表",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info + dwd_org_base_info(city)",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_industry_product_tags（20+8）",
+   "rows": 17917,
+   "snapshot": "code/_snapshots21/svc21_pt_axis_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_patent（首申请人聚合）",
+   "rows": 2939895,
+   "snapshot": "code/_snapshots21/star_applicant_agg_gkx.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_policy_base",
+   "rows": 20000,
+   "snapshot": "code/_snapshots21/policy_base_20261021.json"
+  }
+ ],
+ "base_years_used": [
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [
+  2026
+ ],
+ "base_years_note": "财务年表覆盖 2007—2025 共 19 年（used 记整段，missing 记 2026：库里无 2026 财务行）；增长率用机构自身最近两个正值年做 CAGR，不把缺年按 0 摊入，也不跨机构拉平。",
+ "population": {
+  "sz_n": 25597,
+  "pool_total": 44153
+ },
+ "dimension_cover": {
+  "D1_competitiveness": {
+   "available": true,
+   "proxy": "patents + invention_share",
+   "orgs": 13378
+  },
+  "D2_industry_fit": {
+   "available": true,
+   "orgs": 10778,
+   "target_lexicon": [
+    "软件与信息服务",
+    "智能终端",
+    "人工智能",
+    "具身智能",
+    "机器人",
+    "集成电路",
+    "数字创意",
+    "传感器",
+    "合成生物",
+    "智能网联汽车",
+    "生物医药",
+    "低空经济"
+   ]
+  },
+  "D3_policy_match": {
+   "available": true,
+   "orgs": 10778
+  },
+  "D4_potential": {
+   "available": true,
+   "rev_cagr_orgs": 161,
+   "np_cagr_orgs": 127,
+   "rev_orgs_any": 673,
+   "note": "两年正值序列才计 CAGR；负利润年不计净利增速"
+  }
+ },
+ "policy_supply": {
+  "by_industry_all": {
+   "智能网联汽车": 94,
+   "生物医药": 190,
+   "软件与信息服务": 142,
+   "集成电路": 49,
+   "数字创意": 18,
+   "传感器": 3,
+   "人工智能": 27,
+   "机器人": 19,
+   "智能终端": 8,
+   "合成生物": 2
+  },
+  "by_industry_sz": {
+   "软件与信息服务": 10,
+   "人工智能": 3,
+   "智能网联汽车": 2,
+   "机器人": 6,
+   "集成电路": 3,
+   "生物医药": 4
+  }
+ },
+ "composite": {
+  "dims": [
+   "competitiveness",
+   "industry_fit",
+   "policy_match",
+   "potential"
+  ],
+  "weights": "等权 1/4",
+  "scored_orgs": 10811,
+  "unscored_orgs": 14786,
+  "rule": "维数 <2 不入排序；缺维不补 0"
+ },
+ "score_dist": {
+  "n": 10811,
+  "mean": 26.81,
+  "median": 27.58,
+  "p90": 40.28,
+  "p99": 49.87,
+  "max": 70.8,
+  "min": 0.0,
+  "bands": {
+   "优先培育": 1,
+   "重点培育": 10,
+   "观察": 1102,
+   "暂缓": 9698
+  }
+ },
+ "top15": [
+  {
+   "rank": 1,
+   "org_id": "c4c79d0bee493c3a8754d6e806035010",
+   "name": "深圳市双禹王声屏障工程技术有限公司",
+   "score": 70.8,
+   "band": "优先培育",
+   "type": "INNOV",
+   "patents": 59,
+   "tags": null,
+   "rev_cagr": 1.9372,
+   "np_cagr": 3.0,
+   "advice": "小升规（规模小但增速高，给升规纳统与场景资源）",
+   "dim_scores": {
+    "competitiveness": 0.5506,
+    "potential": 0.8655
+   }
+  },
+  {
+   "rank": 2,
+   "org_id": "9ca8447b1c55f90d8a507f048530ba05",
+   "name": "华为技术有限公司",
+   "score": 66.2,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 81376,
+   "tags": [
+    "传感器",
+    "具身智能",
+    "数字创意",
+    "智能终端",
+    "智能网联汽车",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "稳存量（技术力强、成长性一般，给市场拓展对接）",
+   "dim_scores": {
+    "competitiveness": 1.0,
+    "industry_fit": 0.75,
+    "policy_match": 0.2361
+   }
+  },
+  {
+   "rank": 3,
+   "org_id": "8093cc4553ae9af05c257898782f4c26",
+   "name": "深圳市磊鑫环境建设股份有限公司",
+   "score": 62.39,
+   "band": "重点培育",
+   "type": "CONSULT",
+   "patents": 25,
+   "tags": null,
+   "rev_cagr": 0.2078,
+   "np_cagr": 3.0,
+   "advice": "优上市（竞争力与成长性双高，对接上市培育服务）",
+   "dim_scores": {
+    "competitiveness": 0.6012,
+    "potential": 0.6466
+   }
+  },
+  {
+   "rank": 4,
+   "org_id": "2cc167046e1332977650a5c63c058b63",
+   "name": "深圳市尚酷体育发展有限公司",
+   "score": 61.33,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 1,
+   "tags": null,
+   "rev_cagr": 1.5217,
+   "np_cagr": null,
+   "advice": "优上市（竞争力与成长性双高，对接上市培育服务）",
+   "dim_scores": {
+    "competitiveness": 0.6009,
+    "potential": 0.6258
+   }
+  },
+  {
+   "rank": 5,
+   "org_id": "3cb6e655b87325d211077ea7ddf547f9",
+   "name": "中盟科技有限公司",
+   "score": 60.06,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": null,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "合成生物",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "industry_fit": 1.0,
+    "policy_match": 0.2012
+   }
+  },
+  {
+   "rank": 6,
+   "org_id": "64bb428717b69133a60f13f2e899de98",
+   "name": "深圳市爱车屋汽车用品股份有限公司",
+   "score": 58.57,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 48,
+   "tags": null,
+   "rev_cagr": -0.3975,
+   "np_cagr": 3.0,
+   "advice": "稳存量（技术力强、成长性一般，给市场拓展对接）",
+   "dim_scores": {
+    "competitiveness": 0.6014,
+    "potential": 0.5699
+   }
+  },
+  {
+   "rank": 7,
+   "org_id": "7584bbe5788af280878189cf341687a5",
+   "name": "深圳市小溪流科技有限公司",
+   "score": 57.88,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 16,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "数字创意",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "competitiveness": 0.526,
+    "industry_fit": 1.0,
+    "policy_match": 0.2105
+   }
+  },
+  {
+   "rank": 8,
+   "org_id": "93f0f6d7c2d066edfcb46b9079eb6350",
+   "name": "深圳麦格米特电气股份有限公司",
+   "score": 57.27,
+   "band": "重点培育",
+   "type": "CONSULT",
+   "patents": 662,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "数字创意",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "competitiveness": 0.5075,
+    "industry_fit": 1.0,
+    "policy_match": 0.2105
+   }
+  },
+  {
+   "rank": 9,
+   "org_id": "9f25967007aeaedc62975b8d4fc7a023",
+   "name": "深圳市禾芯科技有限公司",
+   "score": 56.7,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 8,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "稳存量（技术力强、成长性一般，给市场拓展对接）",
+   "dim_scores": {
+    "competitiveness": 0.601,
+    "industry_fit": 0.875,
+    "policy_match": 0.225
+   }
+  },
+  {
+   "rank": 10,
+   "org_id": "241523e06b15f421a9072d807207bb02",
+   "name": "深圳市富思源智慧消防股份有限公司",
+   "score": 56.01,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 5,
+   "tags": null,
+   "rev_cagr": 3.0,
+   "np_cagr": null,
+   "advice": "规做精（成长快但技术力弱，给技术升级与研发补贴）",
+   "dim_scores": {
+    "competitiveness": 0.1202,
+    "potential": 1.0
+   }
+  },
+  {
+   "rank": 11,
+   "org_id": "3643693b410857658420005b6392905e",
+   "name": "大族激光科技产业集团股份有限公司",
+   "score": 55.25,
+   "band": "重点培育",
+   "type": "INNOV",
+   "patents": 2301,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "competitiveness": 0.5574,
+    "industry_fit": 0.875,
+    "policy_match": 0.225
+   }
+  },
+  {
+   "rank": 12,
+   "org_id": "119836be9ee03bd2b1fb20a5cd50dde0",
+   "name": "盛视科技股份有限公司",
+   "score": 54.61,
+   "band": "观察",
+   "type": "INNOV",
+   "patents": 1414,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "具身智能",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "competitiveness": 0.5384,
+    "industry_fit": 0.875,
+    "policy_match": 0.225
+   }
+  },
+  {
+   "rank": 13,
+   "org_id": "fd460adc8d446933f591e0e0d55cdb97",
+   "name": "深圳玩智商科技有限公司",
+   "score": 53.96,
+   "band": "观察",
+   "type": "INNOV",
+   "patents": 71,
+   "tags": [
+    "人工智能",
+    "传感器",
+    "低空经济",
+    "具身智能",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "competitiveness": 0.5509,
+    "industry_fit": 0.875,
+    "policy_match": 0.1928
+   }
+  },
+  {
+   "rank": 14,
+   "org_id": "057fad337c5446ded15a35ab9439db5f",
+   "name": "深圳智盛信息技术股份有限公司",
+   "score": 53.6,
+   "band": "观察",
+   "type": "INNOV",
+   "patents": null,
+   "tags": [
+    "人工智能",
+    "具身智能",
+    "智能终端",
+    "软件与信息服务"
+   ],
+   "rev_cagr": 3.0,
+   "np_cagr": 3.0,
+   "advice": "常规跟踪（分维证据不足，仅建档监测）",
+   "dim_scores": {
+    "industry_fit": 0.375,
+    "policy_match": 0.2329,
+    "potential": 1.0
+   }
+  },
+  {
+   "rank": 15,
+   "org_id": "3758e414a49660a2d653435937ebd9eb",
+   "name": "深圳声联网科技有限公司",
+   "score": 53.53,
+   "band": "观察",
+   "type": "INNOV",
+   "patents": 4,
+   "tags": [
+    "人工智能",
+    "具身智能",
+    "智能终端",
+    "智能网联汽车",
+    "机器人",
+    "软件与信息服务",
+    "集成电路"
+   ],
+   "rev_cagr": null,
+   "np_cagr": null,
+   "advice": "稳存量（技术力强、成长性一般，给市场拓展对接）",
+   "dim_scores": {
+    "competitiveness": 0.6009,
+    "industry_fit": 0.75,
+    "policy_match": 0.2549
+   }
+  }
+ ],
+ "growth_facts": {
+  "rev_cagr_median": 0.1157,
+  "np_cagr_median": 0.2841,
+  "rev_cagr_positive_pct": 66.46,
+  "np_cagr_positive_pct": 62.99
+ },
+ "advice_mix": {
+  "小升规": 1,
+  "稳存量": 4,
+  "优上市": 2,
+  "常规跟踪": 7,
+  "规做精": 1
+ },
+ "caliber_note": "梯度建议只按分维相对位给出，不含政策资格硬门槛（如规上/高企认定）；正式化须叠加认定状态过滤，本件不做资格判断",
+ "compute": {
+  "elapsed_sec": 0.685,
+  "sql_count": 0
+ }
+}

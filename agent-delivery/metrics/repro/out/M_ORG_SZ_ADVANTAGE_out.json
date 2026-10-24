@@ -1,0 +1,540 @@
+{
+ "metric_id": "M_ORG_SZ_ADVANTAGE",
+ "metric_name": "深圳科研机构优势",
+ "domain": "ORG / 深圳科研机构优势分析（算法库 151 / 展示系统 §1.1.1.2.4.2.4.9）",
+ "formula_owner": "AI-20261022（推测定义，wanghui=false）",
+ "support_judgment": "部分支持",
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "专利为 2021—2026 存量（2017—2020 库内零行，不按 0 摊入；2026 残年）；论文 1980—2026、项目 1986—2022 为累计口径，城市间同口径可比。本件不做增速，故不需要同比基期；缺失年不进任何分母。",
+ "inputs": {
+  "roster": "gkx.dwd_research_institute_base_info 2,074 家（100% 广东省）",
+  "panel": "_snapshots21/org_family_panel_20261021.json",
+  "city_patent": "_snapshots_gkx21/city_patent_year_gkx.json（申请人→底册城市）",
+  "paper_city": "_snapshots21/papers_city_year_gkx21.json（11 城白名单）"
+ },
+ "scope": {
+  "declared_by_requirement": "深圳 vs 全国",
+  "actual": "深圳 vs 广州/东莞/惠州（都市圈四市）",
+  "why": "省外机构 0 家；专利城市映射与论文城市白名单都只覆盖都市圈（见 national_check）"
+ },
+ "national_check": {
+  "roster_province": {
+   "广东省": 2074
+  },
+  "roster_cities": {
+   "深圳市": 1014,
+   "广州市": 822,
+   "东莞市": 127,
+   "惠州市": 111
+  },
+  "patent_city_totals": {
+   "深圳市": 1336877,
+   "广州市": 675339,
+   "东莞市": 432677,
+   "惠州市": 110778,
+   "北京市": 638,
+   "上海市": 4,
+   "杭州市": 117,
+   "成都市": 15
+  },
+  "patent_city_note": "city_totals 由「申请人名→企业底册城市」离线 join 得到，底册 99.82% 是深圳都市圈，所以北京/上海读数是个位数到几百，**不能读成专利量**，只能读成映射覆盖。",
+  "paper_city_whitelist_n": 11,
+  "paper_city_whitelist": [
+   "东莞市",
+   "中山市",
+   "佛山市",
+   "广州市",
+   "惠州市",
+   "江门市",
+   "深圳市",
+   "澳门特别行政区",
+   "珠海市",
+   "肇庆市",
+   "香港特别行政区"
+  ],
+  "paper_city_note": "作者单位串只解析出 11 个都市圈城市，北京/上海不在白名单；全国论文维同样不可得。",
+  "university_note": "底册只收登记为科研机构的主体，不收高校本部：深圳大学、南方科技大学本体不在底册（仅有深圳大学龙岗创新研究院等分支），这会压低深圳的论文/项目/学者三项，是结构性口径而不是深圳真实产出。"
+ },
+ "dims": {
+  "total_index": {
+   "dims": [
+    "orgs",
+    "patents",
+    "papers",
+    "projects",
+    "scholars"
+   ],
+   "weights": {
+    "orgs": 0.2,
+    "patents": 0.2,
+    "papers": 0.2,
+    "projects": 0.2,
+    "scholars": 0.2
+   },
+   "normalization": "四城截面 min-max → 等权平均 ×100"
+  },
+  "intensity_index": {
+   "dims": [
+    "patents_per_org",
+    "papers_per_org",
+    "projects_per_org",
+    "scholars_per_org"
+   ],
+   "weights": {
+    "patents_per_org": 0.25,
+    "papers_per_org": 0.25,
+    "projects_per_org": 0.25,
+    "scholars_per_org": 0.25
+   },
+   "normalization": "先除机构数（人均当量），再四城 min-max 等权"
+  },
+  "auxiliary_not_in_index": [
+   "grant_rate",
+   "fund_per_org_wan",
+   "policy_per_org"
+  ],
+  "why_two_indices": "总量指数受机构数量驱动；强度指数剥离规模。两者结论相反时，说明优势来自「多」而不是「强」，必须分开呈现。"
+ },
+ "raw": {
+  "深圳市": {
+   "orgs": 1014,
+   "patents": 3425,
+   "patent_grant": 1929,
+   "papers": 558,
+   "projects": 212,
+   "scholars": 66,
+   "fund_wan": 10748.6,
+   "policy_mentions": 93,
+   "tech_tags": 0,
+   "with_patents": 87,
+   "with_papers": 80,
+   "with_projects": 20,
+   "with_scholars": 12,
+   "org_type": {
+    "民办非企业单位": 789,
+    "事业单位": 214,
+    "基金会": 5,
+    "": 2,
+    "司法鉴定机构": 1,
+    "社会团体": 1,
+    "编办管理其他机构": 1,
+    "机关": 1
+   }
+  },
+  "广州市": {
+   "orgs": 822,
+   "patents": 2686,
+   "patent_grant": 1594,
+   "papers": 2513,
+   "projects": 367,
+   "scholars": 78,
+   "fund_wan": 17105.6,
+   "policy_mentions": 119,
+   "tech_tags": 1,
+   "with_patents": 112,
+   "with_papers": 134,
+   "with_projects": 32,
+   "with_scholars": 16,
+   "org_type": {
+    "民办非企业单位": 528,
+    "事业单位": 286,
+    "司法鉴定机构": 4,
+    "社会团体": 3,
+    "": 1
+   }
+  },
+  "东莞市": {
+   "orgs": 127,
+   "patents": 306,
+   "patent_grant": 205,
+   "papers": 35,
+   "projects": 2,
+   "scholars": 3,
+   "fund_wan": 54.0,
+   "policy_mentions": 3,
+   "tech_tags": 0,
+   "with_patents": 14,
+   "with_papers": 15,
+   "with_projects": 1,
+   "with_scholars": 1,
+   "org_type": {
+    "民办非企业单位": 94,
+    "事业单位": 33
+   }
+  },
+  "惠州市": {
+   "orgs": 111,
+   "patents": 137,
+   "patent_grant": 75,
+   "papers": 11,
+   "projects": 0,
+   "scholars": 0,
+   "fund_wan": 0.0,
+   "policy_mentions": 19,
+   "tech_tags": 0,
+   "with_patents": 6,
+   "with_papers": 7,
+   "with_projects": 0,
+   "with_scholars": 0,
+   "org_type": {
+    "民办非企业单位": 69,
+    "事业单位": 42
+   }
+  }
+ },
+ "per_org": {
+  "深圳市": {
+   "patents_per_org": 3.378,
+   "papers_per_org": 0.55,
+   "projects_per_org": 0.209,
+   "scholars_per_org": 0.0651
+  },
+  "广州市": {
+   "patents_per_org": 3.268,
+   "papers_per_org": 3.057,
+   "projects_per_org": 0.446,
+   "scholars_per_org": 0.0949
+  },
+  "东莞市": {
+   "patents_per_org": 2.409,
+   "papers_per_org": 0.276,
+   "projects_per_org": 0.016,
+   "scholars_per_org": 0.0236
+  },
+  "惠州市": {
+   "patents_per_org": 1.234,
+   "papers_per_org": 0.099,
+   "projects_per_org": 0.0,
+   "scholars_per_org": 0.0
+  }
+ },
+ "index_total": {
+  "深圳市": {
+   "orgs": 100.0,
+   "patents": 100.0,
+   "papers": 21.9,
+   "projects": 57.8,
+   "scholars": 84.6,
+   "index": 72.86
+  },
+  "广州市": {
+   "orgs": 78.7,
+   "patents": 77.5,
+   "papers": 100.0,
+   "projects": 100.0,
+   "scholars": 100.0,
+   "index": 91.24
+  },
+  "东莞市": {
+   "orgs": 1.8,
+   "patents": 5.1,
+   "papers": 1.0,
+   "projects": 0.5,
+   "scholars": 3.8,
+   "index": 2.44
+  },
+  "惠州市": {
+   "orgs": 0.0,
+   "patents": 0.0,
+   "papers": 0.0,
+   "projects": 0.0,
+   "scholars": 0.0,
+   "index": 0.0
+  }
+ },
+ "index_intensity": {
+  "深圳市": {
+   "patents_per_org": 100.0,
+   "papers_per_org": 15.2,
+   "projects_per_org": 46.9,
+   "scholars_per_org": 68.6,
+   "index": 57.67
+  },
+  "广州市": {
+   "patents_per_org": 94.9,
+   "papers_per_org": 100.0,
+   "projects_per_org": 100.0,
+   "scholars_per_org": 100.0,
+   "index": 98.72
+  },
+  "东莞市": {
+   "patents_per_org": 54.8,
+   "papers_per_org": 6.0,
+   "projects_per_org": 3.6,
+   "scholars_per_org": 24.9,
+   "index": 22.32
+  },
+  "惠州市": {
+   "patents_per_org": 0.0,
+   "papers_per_org": 0.0,
+   "projects_per_org": 0.0,
+   "scholars_per_org": 0.0,
+   "index": 0.0
+  }
+ },
+ "ranks": {
+  "深圳市": {
+   "orgs": 1,
+   "patents": 1,
+   "papers": 2,
+   "projects": 2,
+   "scholars": 2,
+   "index": 2,
+   "index_int": 2
+  },
+  "广州市": {
+   "orgs": 2,
+   "patents": 2,
+   "papers": 1,
+   "projects": 1,
+   "scholars": 1,
+   "index": 1,
+   "index_int": 1
+  },
+  "东莞市": {
+   "orgs": 3,
+   "patents": 3,
+   "papers": 3,
+   "projects": 3,
+   "scholars": 3,
+   "index": 3,
+   "index_int": 3
+  },
+  "惠州市": {
+   "orgs": 4,
+   "patents": 4,
+   "papers": 4,
+   "projects": 4,
+   "scholars": 4,
+   "index": 4,
+   "index_int": 4
+  }
+ },
+ "aux": {
+  "深圳市": {
+   "grant_rate": 0.5632,
+   "fund_per_org_wan": 10.6,
+   "policy_per_org": 0.0917
+  },
+  "广州市": {
+   "grant_rate": 0.5934,
+   "fund_per_org_wan": 20.81,
+   "policy_per_org": 0.1448
+  },
+  "东莞市": {
+   "grant_rate": 0.6699,
+   "fund_per_org_wan": 0.43,
+   "policy_per_org": 0.0236
+  },
+  "惠州市": {
+   "grant_rate": 0.5474,
+   "fund_per_org_wan": 0.0,
+   "policy_per_org": 0.1712
+  }
+ },
+ "sz_strength_weakness": {
+  "strength": [
+   "orgs",
+   "patents"
+  ],
+  "weakness": [],
+  "middle": [
+   "papers",
+   "projects",
+   "scholars"
+  ],
+  "note": "排名只在四市内；「弱」不等于低于全国均值，因为全国样本不存在。"
+ },
+ "sensitivity": [
+  {
+   "weights": "等权 5 维",
+   "order": [
+    "广州",
+    "深圳",
+    "东莞",
+    "惠州"
+   ],
+   "scores": {
+    "深圳": 72.86,
+    "广州": 91.24,
+    "东莞": 2.44,
+    "惠州": 0.0
+   },
+   "sz_rank": 2
+  },
+  {
+   "weights": "规模优先（机构数 0.40）",
+   "order": [
+    "广州",
+    "深圳",
+    "东莞",
+    "惠州"
+   ],
+   "scores": {
+    "深圳": 80.41,
+    "广州": 86.98,
+    "东莞": 2.34,
+    "惠州": 0.0
+   },
+   "sz_rank": 2
+  },
+  {
+   "weights": "产出优先（专利+论文 0.70）",
+   "order": [
+    "广州",
+    "深圳",
+    "东莞",
+    "惠州"
+   ],
+   "scores": {
+    "深圳": 66.91,
+    "广州": 90.0,
+    "东莞": 2.74,
+    "惠州": 0.0
+   },
+   "sz_rank": 2
+  },
+  {
+   "weights": "人才优先（学者 0.40）",
+   "order": [
+    "广州",
+    "深圳",
+    "东莞",
+    "惠州"
+   ],
+   "scores": {
+    "深圳": 71.89,
+    "广州": 94.5,
+    "东莞": 2.74,
+    "惠州": 0.0
+   },
+   "sz_rank": 2
+  }
+ ],
+ "concentration": {
+  "深圳市": {
+   "patents": {
+    "top5": 1991,
+    "total": 3425,
+    "share": 0.5813,
+    "top1_name": "中国科学院深圳先进技术研究院",
+    "top1_val": 943
+   },
+   "papers": {
+    "top5": 286,
+    "total": 558,
+    "share": 0.5125,
+    "top1_name": "哈尔滨工业大学（深圳）（哈尔滨工业大学深圳科技创新研究院）",
+    "top1_val": 95
+   }
+  },
+  "广州市": {
+   "patents": {
+    "top5": 894,
+    "total": 2686,
+    "share": 0.3328,
+    "top1_name": "中国科学院南海海洋研究所",
+    "top1_val": 234
+   },
+   "papers": {
+    "top5": 1543,
+    "total": 2513,
+    "share": 0.614,
+    "top1_name": "广州中医药大学（广州中医药研究院）",
+    "top1_val": 1265
+   }
+  },
+  "东莞市": {
+   "patents": {
+    "top5": 259,
+    "total": 306,
+    "share": 0.8464,
+    "top1_name": "松山湖材料实验室",
+    "top1_val": 98
+   },
+   "papers": {
+    "top5": 21,
+    "total": 35,
+    "share": 0.6,
+    "top1_name": "松山湖材料实验室",
+    "top1_val": 8
+   }
+  },
+  "惠州市": {
+   "patents": {
+    "top5": 136,
+    "total": 137,
+    "share": 0.9927,
+    "top1_name": "先进能源科学与技术广东省实验室",
+    "top1_val": 65
+   },
+   "papers": {
+    "top5": 9,
+    "total": 11,
+    "share": 0.8182,
+    "top1_name": "先进能源科学与技术广东省实验室",
+    "top1_val": 3
+   }
+  }
+ },
+ "sens_exclude_single_entity": {
+  "excluded_entity": "广州中医药大学（广州中医药研究院）",
+  "excluded_papers": 1265,
+  "why": "该主体是广州中医药大学校本部以「研究院」名义登记入册，1,265 篇占广州论文总量 50.3%；深圳的同类主体（深圳大学、南方科技大学）未入册。剔除后重算，用于判断广州论文领先有多少来自登记口径。",
+  "papers_after": {
+   "深圳": 558,
+   "广州": 1248,
+   "东莞": 35,
+   "惠州": 11
+  },
+  "index_after": {
+   "深圳": 77.32,
+   "广州": 91.24,
+   "东莞": 2.62,
+   "惠州": 0.0
+  }
+ },
+ "org_type_share": {
+  "深圳": {
+   "民办非企业单位": 0.7781,
+   "事业单位": 0.211,
+   "other": 0.0108
+  },
+  "广州": {
+   "民办非企业单位": 0.6423,
+   "事业单位": 0.3479,
+   "other": 0.0097
+  },
+  "东莞": {
+   "民办非企业单位": 0.7402,
+   "事业单位": 0.2598,
+   "other": 0.0
+  },
+  "惠州": {
+   "民办非企业单位": 0.6216,
+   "事业单位": 0.3784,
+   "other": 0.0
+  }
+ },
+ "limits": [
+  "全国对标不可做：底册 100% 广东省，省外机构 0 家；专利城市映射只覆盖都市圈；论文城市白名单 11 城不含北京/上海。",
+  "「科研经费投入」维全缺：年报财务表对底册 2,074 家命中 0 行，只能用项目资助额代替，且项目经费是全周期累计、含 1986 年以来项目。",
+  "高校本部不在底册（深圳大学、南方科技大学），深圳的论文/项目/学者被系统性低估；广州因中大、华工等高校的下属研究院在册，读数相对占优。",
+  "学者库只命中 29 家 / 145 人，学者维几乎不具区分度，却仍占总量指数 1/5 权重。",
+  "论文 2024 年是采集口径尖峰，累计口径受影响但方向不变。",
+  "四城 min-max 使最小城市恒为 0、最大恒为 100，城市间差距被压缩成相对值，不能读成绝对差距倍数。"
+ ]
+}

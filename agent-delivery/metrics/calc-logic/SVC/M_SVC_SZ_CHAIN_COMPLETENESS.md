@@ -1,7 +1,11 @@
 # 服务链完整度（M_SVC_SZ_CHAIN_COMPLETENESS）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_SZ_CHAIN_COMPLETENESS.md`；复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` → `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md` §二（M_SVC_SZ_CHAIN_COMPLETENESS.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_SZ_CHAIN_COMPLETENESS.md` §二（M_SVC_SZ_CHAIN_COMPLETENESS.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,16 +51,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_SZ_CHAIN_COMPLETENESS.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` |
+| 正本 MD | `M_SVC_SZ_CHAIN_COMPLETENESS.md` |
+| 复现脚本 | `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_SZ_CHAIN_COMPLETENESS.py`、产物 `metrics/repro/out/M_SVC_SZ_CHAIN_COMPLETENESS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：覆盖度/完整度（服务机构库·深圳服务链环节覆盖）｜ **域**：SVC 服务机构（产业服务链分析·服务链分析·深圳对比）｜ **UI 挂载**：科技信息展示系统·产业服务链分析·深圳对比页（当前诚实排除，不画完整度柱）
 > **数据支持度**：**完全不支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0 明写「公式未签（Q-SVCCHAIN-04 / 唐绍祖）」「本件不做真数」
@@ -440,7 +444,7 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 ## 附录 E　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svcsz21_facts_20261023.json`。
-2. 运行探针：`cd code && python3 M_SVC_SZ_CHAIN_COMPLETENESS.py`。
+2. 运行探针：`python3 M_SVC_SZ_CHAIN_COMPLETENESS.py`。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_SZ_CHAIN_COMPLETENESS_out.json'));print(d['support_judgment'],d['value']['completeness'])"`。
 4. 抽查：12 个产业的覆盖站数应全部为 5。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_SZ_CHAIN_COMPLETENESS --check`。
@@ -469,7 +473,7 @@ calc-logic 同时列出三条禁令：禁止本批写 ADS 本 ID；禁止用六�
 5. `support_judgment` 与文档头部档位一致（完全不支持）
 6. `base_years_used/_missing/_note` 三字段齐备
 7. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-8. 脚本自包含：`cd code && python3 M_SVC_SZ_CHAIN_COMPLETENESS.py` 可直接跑通
+8. 脚本自包含：`python3 M_SVC_SZ_CHAIN_COMPLETENESS.py` 可直接跑通
 9. 解挂三条件写进 §4.6，便于交接
 10. 重跑后 `rebuild_metric.py M_SVC_SZ_CHAIN_COMPLETENESS --check` 内容一致
 11. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移

@@ -1,7 +1,11 @@
 # 创新能力指数（M_INNOV_DS_04_CARRIER_RANK_001）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_CARRIER_RANK_001.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_04_CARRIER_RANK_001.md`；复现脚本 `metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py` → `metrics/repro/out/M_INNOV_DS_04_CARRIER_RANK_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_CARRIER_RANK_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_CARRIER_RANK_001.md` §二（M_INNOV_DS_04_CARRIER_RANK_001.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_04_CARRIER_RANK_001.md` §二（M_INNOV_DS_04_CARRIER_RANK_001.py 零改语义复算）。
 
 ## 源表字段
 
@@ -55,16 +59,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_04_CARRIER_RANK_001.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001_out.json` |
+| 正本 MD | `M_INNOV_DS_04_CARRIER_RANK_001.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_04_CARRIER_RANK_001_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py`、产物 `metrics/repro/out/M_INNOV_DS_04_CARRIER_RANK_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：DS（专题服务指标面，DS_04 创新载体排名族）｜ **域**：创新载体（INNOV）｜ **UI 挂载**：创新载体排行榜 → 创新能力指数计算 ｜ **数据支持度**：**部分支持**
 > **公式定义人（王惠口径，wanghui: true）**：王惠 V1.5（calc-logic `M_INNOV_CARRIER_INDEX_GLOBAL`）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据「部分」（资源维 100% 空）
@@ -287,14 +291,14 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py` |
 | 结果产物 | 同目录 `M_INNOV_DS_04_CARRIER_RANK_001_out.json` |
 | 上游依赖 | **无**（本版不再复用上游 out.json，改为单脚本自洽复现，见 §2.0） |
 | 主算库 | 三方 `gkx`（`183.240.141.251:3318`）九张表：机构三源 + 资质 + 年报 + 股票财务 + 专利 + 论文 + 作者 |
 | 重算策略 | `dwd_patent` 按主键 `dwd_id` 分块扫描（2,000,000 个 id 一块，块内聚合、块间合并），结果落 `_snapshots21/` 供复算；载体池与名称→城市映射同样落缓存 |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_04_CARRIER_RANK_001.py
+python3 metrics/repro/M_INNOV_DS_04_CARRIER_RANK_001.py
 ```
 
 脚本输出字段含：`probes_today`（当日空值率校验）、`compute`（指数分布、维覆盖、头部样例）、`support_judgment`（四档机判）、`support_consistent_with_upstream`（与上游结论一致性）。以下展示为 **2026-10-21** 一次完整跑数结果（与 out.json 一致）。

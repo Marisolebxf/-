@@ -1,7 +1,11 @@
 # 深圳科技领域明细指标（M_INNOV_DOMAIN_KPI_SZ）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DOMAIN_KPI_SZ.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DOMAIN_KPI_SZ.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DOMAIN_KPI_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DOMAIN_KPI_SZ.md`；复现脚本 `metrics/repro/M_INNOV_DOMAIN_KPI_SZ.py` → `metrics/repro/out/M_INNOV_DOMAIN_KPI_SZ_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DOMAIN_KPI_SZ.py`、产物 `metrics/repro/out/M_INNOV_DOMAIN_KPI_SZ_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DOMAIN_KPI_SZ.md` §二（M_INNOV_DOMAIN_KPI_SZ.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DOMAIN_KPI_SZ.md` §二（M_INNOV_DOMAIN_KPI_SZ.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DOMAIN_KPI_SZ.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DOMAIN_KPI_SZ.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DOMAIN_KPI_SZ_out.json` |
+| 正本 MD | `M_INNOV_DOMAIN_KPI_SZ.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DOMAIN_KPI_SZ.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DOMAIN_KPI_SZ_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DOMAIN_KPI_SZ.py`、产物 `metrics/repro/out/M_INNOV_DOMAIN_KPI_SZ_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 域（非王惠口径，本批 agent 重建）｜ **wanghui**: false（王惠未定义本指标，故无 §五）｜ **UI 挂载**：科技信息展示系统·科技发展态势·深圳创新监测→深圳市各科技领域分布展示→详细数据指标展示｜ **数据支持度**：**部分支持**
 > **公式定义人**：本批 agent（按国家统计分类与专利分类口径重建）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 数据部分足（企业×专利两 KPI 可按 IPC4 领域出数；研发投入与人才数量已入库但**无领域键**，只能给深圳总量）
@@ -255,7 +259,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DOMAIN_KPI_SZ.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_DOMAIN_KPI_SZ.py` |
 | 结果产物 | 同目录 `M_INNOV_DOMAIN_KPI_SZ_out.json` |
 | 主算库 | 三方库 `gkx`（`183.240.141.251:3318`，只读；禁引演示库） |
 | 取数方式 | `dwd_patent` 按主键 `dwd_id` 服务端流式读取（`SSCursor`，50,000 行/批），城市归属与 IPC4 聚合在 Python 侧完成 |
@@ -263,7 +267,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 统计窗 | 专利申请年 2019—2024 |
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_INNOV_DOMAIN_KPI_SZ.py
 # 首次全表流式扫描约 25—35 分钟；每批落 _snapshots21/domain_kpi_sz_patent_state.pkl，
 # 断线后重跑会从 last_id 续扫，不重头开始。

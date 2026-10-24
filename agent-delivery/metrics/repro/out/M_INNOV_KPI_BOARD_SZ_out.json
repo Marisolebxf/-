@@ -1,0 +1,253 @@
+{
+ "metric_id": "M_INNOV_KPI_BOARD_SZ",
+ "metric_name": "深圳科技发展指标看板",
+ "formula_owner": "本批 agent 重建（看板类聚合，需求未给公式）",
+ "run_at": "2026-10-22 10:17:17",
+ "nature": "看板 = 11 个科技维度的属地读面，不是单一公式；与全国版 M_INNOV_KPI_BOARD 的分母、口径、用途均不同",
+ "vs_national_board": {
+  "national": "全库总量 + 全球监测六大子功能分格（20 格）",
+  "shenzhen": "深圳属地子集 + 11 个科技维度（11 格）",
+  "shared_tables": [
+   "dwd_patent",
+   "dwd_zh_paper",
+   "dwd_policy_base",
+   "dwd_org_base_info",
+   "dwd_zh_journal"
+  ],
+  "do_not_mix": "全国版专利 2,939,895 件不能直接当深圳分母；深圳版专利 914,253 件是 2021–2024 面板中 first_applicant_name 含「深圳」的子集，两版数字不可比。"
+ },
+ "board": [
+  {
+   "id": "SZ01",
+   "dim": "专利",
+   "name": "深圳专利（第一申请人名称含深圳）",
+   "value": 914253,
+   "unit": "件",
+   "total": 2939895,
+   "share": 0.311,
+   "source": "patent_panel_innov_20261021.app_year",
+   "status": "可算",
+   "note": "2021–2024 面板全量 2,424,684 行；深圳 914,253 件（31.0%），年度 23.7/22.6/23.1/22.0 万件。2025–2026 只有全库年度合计，无申请人分年明细，故本格窗口截至 2024。"
+  },
+  {
+   "id": "SZ02",
+   "dim": "论文",
+   "name": "深圳论文（作者机构含深圳）",
+   "value": 10271,
+   "unit": "篇",
+   "total": 100900,
+   "share": 0.1018,
+   "source": "gkx.dwd_zh_paper.author_info_list",
+   "status": "可算",
+   "note": "2015–2026 年度 219→3,989→357 篇；2024 年 3,989 篇为批量补录尖峰，是 2023 年 735 篇的 5.43 倍，趋势图须标注断点。"
+  },
+  {
+   "id": "SZ03",
+   "dim": "期刊",
+   "name": "期刊数（无城市归属）",
+   "value": 2796,
+   "unit": "种",
+   "total": 2796,
+   "share": null,
+   "source": "gkx.dwd_zh_journal",
+   "status": "部分",
+   "note": "2,796 种期刊表内无 city/province 字段，无法出「深圳期刊数」；且 paper_nums 为外部口径（单刊最高 650,715 篇），与本地论文表不符，只能给全国期刊总量，不能进深圳看板分子。"
+  },
+  {
+   "id": "SZ04",
+   "dim": "学者",
+   "name": "深圳学者（所属机构含深圳）",
+   "value": 194,
+   "unit": "人",
+   "total": 21316,
+   "share": 0.0091,
+   "source": "gkx.dwd_scholar.scholar_org_name_zh",
+   "status": "部分",
+   "note": "2.13 万学者主档中仅 194 人机构名含深圳（0.91%）；学者主档与人才属性表ID 交集仅 8.72%，不能把属性表 20,030 人当分母。"
+  },
+  {
+   "id": "SZ05",
+   "dim": "会议",
+   "name": "学术会议数",
+   "value": null,
+   "unit": "场",
+   "total": null,
+   "share": null,
+   "source": "无承载表",
+   "status": "不可算",
+   "note": "gkx 元数据检索 conference/meeting 命中 0 张表，无会议表，也无会议-城市字段，需求侧的「会议」维度整体缺承载。"
+  },
+  {
+   "id": "SZ06",
+   "dim": "机构",
+   "name": "深圳创新机构",
+   "value": 95600,
+   "unit": "家",
+   "total": 189116,
+   "share": 0.5055,
+   "source": "gkx.dwd_org_base_info.city + dwd_research_institute_base_info.city",
+   "status": "可算",
+   "note": "企业底册 95,600 家；科研机构 1,014 家（底册仅 2,074 家且 100% 在广东，深圳占 48.89%）。"
+  },
+  {
+   "id": "SZ07",
+   "dim": "项目",
+   "name": "深圳承担项目数",
+   "value": null,
+   "unit": "项",
+   "total": 58453,
+   "share": null,
+   "source": "gkx.dwd_zh_project",
+   "status": "不可算",
+   "note": "58,453 条项目 funded_institution 与 funded_province 均 100% 为空（58453/58453），无法归属到深圳；项目级别字段恒为「国家级」，也不能用级别替代属地。"
+  },
+  {
+   "id": "SZ08",
+   "dim": "主题",
+   "name": "深圳技术主题数",
+   "value": null,
+   "unit": "个",
+   "total": 1052,
+   "share": null,
+   "source": "gkx.dwd_industry_analysis_topics",
+   "status": "不可算",
+   "note": "表内 1052 行但 topic_name 只有 3 个不同值，是字典残片而非主题识别结果；无城市字段，无法出深圳主题。"
+  },
+  {
+   "id": "SZ09",
+   "dim": "基金",
+   "name": "深圳产业基金数",
+   "value": 576,
+   "unit": "支",
+   "total": 10891,
+   "share": 0.0529,
+   "source": "gkx.dwd_industrial_fund_basic_info.reg_region",
+   "status": "可算",
+   "note": "reg_region 为中国-广东省-深圳市-XX区；未披露区县 209 支，南山 181、福田 96。"
+  },
+  {
+   "id": "SZ10",
+   "dim": "政策",
+   "name": "深圳政策数",
+   "value": 879,
+   "unit": "条",
+   "total": 20000,
+   "share": 0.044,
+   "source": "gkx.dwd_policy_base.city",
+   "status": "可算",
+   "note": "20,000 行采集上限；theme/keywords/quote_policy 三列 99.99% 为字面 'NULL'，政策主题分析不可用，只能出条数与类型。"
+  },
+  {
+   "id": "SZ11",
+   "dim": "基础设施/载体",
+   "name": "深圳创新载体数",
+   "value": null,
+   "unit": "家",
+   "total": null,
+   "share": null,
+   "source": "无可靠承载表",
+   "status": "不可算",
+   "note": "gkx 无载体表；live 侧 enterprise_innovation_carrier 47,620 行全部create_time=2026-10-19 单批、名称仅 28,826 种，属模板数据，按数据质量规则排除，不给分子。"
+  }
+ ],
+ "summary": {
+  "n_cells": 11,
+  "status_count": {
+   "可算": 5,
+   "部分": 2,
+   "不可算": 4
+  },
+  "computable": [
+   "SZ01",
+   "SZ02",
+   "SZ06",
+   "SZ09",
+   "SZ10"
+  ],
+  "partial": [
+   "SZ03",
+   "SZ04"
+  ],
+  "not_computable": [
+   "SZ05",
+   "SZ07",
+   "SZ08",
+   "SZ11"
+  ],
+  "computable_share": 0.4545
+ },
+ "time_series": {
+  "patent_sz_year": {
+   "2021": 237036,
+   "2022": 225763,
+   "2023": 231362,
+   "2024": 220092
+  },
+  "paper_sz_year": {
+   "2015": 219,
+   "2016": 336,
+   "2017": 473,
+   "2018": 468,
+   "2019": 482,
+   "2020": 547,
+   "2021": 670,
+   "2022": 604,
+   "2023": 735,
+   "2024": 3989,
+   "2025": 962,
+   "2026": 357
+  },
+  "policy_sz_year": {
+   "2015": 11,
+   "2016": 20,
+   "2017": 27,
+   "2018": 67,
+   "2019": 139,
+   "2020": 201,
+   "2021": 277,
+   "2022": 36
+  }
+ },
+ "probes": {
+  "patent_rows": 2939895,
+  "patent_value_notnull": null,
+  "paper_rows": 100900,
+  "scholar_rows": 21316,
+  "journal_rows": 2796,
+  "org_rows": 189116,
+  "inst_rows": 2074,
+  "fund_rows": 10891,
+  "policy_rows": 20000,
+  "project_rows": 58453,
+  "topic_rows": 1052,
+  "carrier_rows": null
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "criteria": {
+   "structure": "11 维中 5 维有真实属地字段（专利/论文/机构/基金/政策），2 维只有全国面（期刊/学者），4 维无可靠承载（会议/项目/主题/载体）",
+   "volume": "深圳专利 914,253 件、论文 10,271 篇、政策 879 条、基金 576 支、企业 95,600 家",
+   "reproducible": true,
+   "discriminative": "专利年度 22-24 万件、论文 2024 年 3,989 篇尖峰，均有真实波动",
+   "but": "会议维度无表；项目/主题无城市归属；期刊与学者属地覆盖 <1%；载体无可靠承载，看板 11 格中 4 格不可算。"
+  },
+  "reason": "可算格均落在真实源表且有属地字段；不可算格是「字段/承载缺失」而非「算法难」，故整体判部分支持，不能宣称深圳看板已可整体交付。"
+ },
+ "elapsed_sec": 217.5,
+ "base_years_used": [
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "由产物中实际出现的年度键反推：used=[2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]；未见其他年度，缺失年未按 0 摊入。此项为机械反推，需人工确认取数窗口。"
+}

@@ -1,0 +1,199 @@
+{
+ "metric_id": "M_ENT_REGION_COVERAGE",
+ "metric_name": "区域覆盖数",
+ "support_judgment": "完全直接支持",
+ "verdict_kind": "positive",
+ "judgment_reason": "calc-logic 的源表字段就是 gkx.dwd_org_base_info(org_id, province, city)，去重计数即定义本身，无需换算、无需补维：实测 189,116 行底册可得 29 个省级、65 个市级、146 个县级覆盖格，province/city 非空率 99.9995%。",
+ "generated_at": "2026-10-22 17:07:38",
+ "elapsed_sec": 134.72,
+ "sources": {
+  "primary": "gkx @ 183.240.141.251:3318 (readonly gkx_reader_zp)",
+  "tables": [
+   "gkx.dwd_org_base_info"
+  ],
+  "sql": [
+   "SELECT COUNT(*) AS n FROM gkx.dwd_org_base_info WHERE is_deleted=0",
+   "SELECT province, city, area, COUNT(*) AS n FROM gkx.dwd_org_base_info WHERE is_deleted=0 GROUP BY province, city, area"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_REGION_COVERAGE.md"
+ },
+ "compute": {
+  "base_rows": 189116,
+  "group_cells": 152,
+  "cells_total_orgs": 189116,
+  "distinct": {
+   "province": 29,
+   "city": 65,
+   "county_cells": 146,
+   "county_names": 142
+  },
+  "fill": {
+   "province_non_empty": 189115,
+   "city_non_empty": 189115,
+   "area_non_empty": 155444,
+   "province_rate_pct": 99.9995,
+   "city_rate_pct": 99.9995,
+   "area_rate_pct": 82.1951
+  },
+  "coverage": {
+   "national_province_units": 31,
+   "province_rate_pct": 93.5484,
+   "effective_threshold_orgs": 10,
+   "effective_provinces": 7,
+   "effective_rate_pct": 22.5806,
+   "note": "分母 31 为大陆省级行政区数（外部常量，非库内值）；市级与县级不做全国比率，因为库内无区划总量表"
+  },
+  "concentration": {
+   "guangdong_orgs": 188776,
+   "guangdong_share_pct": 99.8202,
+   "out_of_guangdong_orgs": 340,
+   "guangdong_cities": [
+    {
+     "city": "深圳市",
+     "orgs": 95600
+    },
+    {
+     "city": "广州市",
+     "orgs": 49605
+    },
+    {
+     "city": "东莞市",
+     "orgs": 33590
+    },
+    {
+     "city": "惠州市",
+     "orgs": 9979
+    },
+    {
+     "city": "中山市",
+     "orgs": 1
+    },
+    {
+     "city": "佛山市",
+     "orgs": 1
+    }
+   ]
+  },
+  "top_provinces": [
+   {
+    "province": "广东省",
+    "orgs": 188776,
+    "share_pct": 99.8202
+   },
+   {
+    "province": "北京市",
+    "orgs": 163,
+    "share_pct": 0.0862
+   },
+   {
+    "province": "浙江省",
+    "orgs": 19,
+    "share_pct": 0.01
+   },
+   {
+    "province": "上海市",
+    "orgs": 16,
+    "share_pct": 0.0085
+   },
+   {
+    "province": "四川省",
+    "orgs": 16,
+    "share_pct": 0.0085
+   },
+   {
+    "province": "天津市",
+    "orgs": 13,
+    "share_pct": 0.0069
+   },
+   {
+    "province": "陕西省",
+    "orgs": 12,
+    "share_pct": 0.0063
+   },
+   {
+    "province": "云南省",
+    "orgs": 8,
+    "share_pct": 0.0042
+   },
+   {
+    "province": "山东省",
+    "orgs": 8,
+    "share_pct": 0.0042
+   },
+   {
+    "province": "江苏省",
+    "orgs": 8,
+    "share_pct": 0.0042
+   }
+  ],
+  "top_cities": [
+   {
+    "province": "广东省",
+    "city": "深圳市",
+    "orgs": 95600
+   },
+   {
+    "province": "广东省",
+    "city": "广州市",
+    "orgs": 49605
+   },
+   {
+    "province": "广东省",
+    "city": "东莞市",
+    "orgs": 33590
+   },
+   {
+    "province": "广东省",
+    "city": "惠州市",
+    "orgs": 9979
+   },
+   {
+    "province": "北京市",
+    "city": "北京市",
+    "orgs": 163
+   },
+   {
+    "province": "上海市",
+    "city": "上海市",
+    "orgs": 16
+   },
+   {
+    "province": "天津市",
+    "city": "天津市",
+    "orgs": 13
+   },
+   {
+    "province": "四川省",
+    "city": "成都市",
+    "orgs": 13
+   },
+   {
+    "province": "浙江省",
+    "city": "杭州市",
+    "orgs": 13
+   },
+   {
+    "province": "陕西省",
+    "city": "西安市",
+    "orgs": 9
+   }
+  ],
+  "mean_orgs_per_province": 6521.21,
+  "mean_orgs_per_city": 2909.46,
+  "mean_orgs_per_county": 1064.68,
+  "median_orgs_per_province": 6
+ },
+ "probes": {
+  "elapsed_sec": 134.72,
+  "retry_policy": "5 次指数退避",
+  "max_execution_time_ms": 900000
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：口径是「当前底册覆盖多少个行政区域」，不含年度序列，故无基期年份。若要做跨年覆盖变化，需按底册快照日期留档（民政部每年调整区划代码，跨期比须先对齐版本）。",
+ "notes": [
+  "只做去重计数，不加权、不按人口/面积标准化。",
+  "县级用 province+city+area 三元组去重，避免同名区县跨市合并。",
+  "底册高度偏粤：广东 188,776 家占 99.82%，省外仅 339 家，覆盖率不能读成市场覆盖率。"
+ ]
+}

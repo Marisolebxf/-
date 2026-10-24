@@ -1,7 +1,11 @@
 # 区域产业生态（M_CHAIN_REG_ECOSYSTEM）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_ECOSYSTEM.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_ECOSYSTEM.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_ECOSYSTEM_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_REG_ECOSYSTEM.md`；复现脚本 `metrics/repro/M_CHAIN_REG_ECOSYSTEM.py` → `metrics/repro/out/M_CHAIN_REG_ECOSYSTEM_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_REG_ECOSYSTEM.py`、产物 `metrics/repro/out/M_CHAIN_REG_ECOSYSTEM_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@ L1 覆盖率可由链树 + 2,283,762 行标签现算，48 个链×市单元均�
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_ECOSYSTEM.md` §二（M_CHAIN_REG_ECOSYSTEM.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_CHAIN_REG_ECOSYSTEM.md` §二（M_CHAIN_REG_ECOSYSTEM.py 零改语义复算）。
 
 ## 源表字段
 
@@ -49,16 +53,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_REG_ECOSYSTEM.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_ECOSYSTEM.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_REG_ECOSYSTEM_out.json` |
+| 正本 MD | `M_CHAIN_REG_ECOSYSTEM.md` |
+| 复现脚本 | `metrics/repro/M_CHAIN_REG_ECOSYSTEM.py` |
+| 复现产物 | `metrics/repro/out/M_CHAIN_REG_ECOSYSTEM_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_REG_ECOSYSTEM.py`、产物 `metrics/repro/out/M_CHAIN_REG_ECOSYSTEM_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（比例型，0—100%）｜ **域**：产业链分析／区域产业指数评价／配套生态｜ **UI 挂载**：科技信息展示系统 / 产业链分析 / 区域产业指数评价 / 配套生态（支撑力叶子）
 > **数据支持度**：**部分支持**｜ **公式定义人**：王惠（v0.2.0 方案 A，human 2026-10-14 拍板）｜ **复现脚本**：`code/M_CHAIN_REG_ECOSYSTEM.py`｜ **产物**：`code/M_CHAIN_REG_ECOSYSTEM_out.json`
@@ -265,7 +269,7 @@ L1 是编码层级，链映射仍是 7 位前缀，两者不冲突：L1 码的�
 脚本 `code/M_CHAIN_REG_ECOSYSTEM.py` 只读 `code/_snapshots21/` 下已落盘快照，**零 SQL、零本地 helper**，在任何装有 Python 3.9+ 的机器上可直接重跑：
 
 ```bash
-cd code && python3 M_CHAIN_REG_ECOSYSTEM.py
+python3 M_CHAIN_REG_ECOSYSTEM.py
 # 期望末行：[ok] M_CHAIN_REG_ECOSYSTEM {...} chains 12 sec <1
 ```
 

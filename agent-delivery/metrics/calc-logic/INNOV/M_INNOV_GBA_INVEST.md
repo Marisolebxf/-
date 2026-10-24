@@ -1,7 +1,11 @@
 # 湾区创新投入（M_INNOV_GBA_INVEST）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_INVEST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_INVEST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_INVEST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_INVEST.md`；复现脚本 `metrics/repro/M_INNOV_GBA_INVEST.py` → `metrics/repro/out/M_INNOV_GBA_INVEST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_INVEST.py`、产物 `metrics/repro/out/M_INNOV_GBA_INVEST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_INVEST.md` §二（M_INNOV_GBA_INVEST.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_GBA_INVEST.md` §二（M_INNOV_GBA_INVEST.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_INVEST.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_INVEST.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_INVEST_out.json` |
+| 正本 MD | `M_INNOV_GBA_INVEST.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_GBA_INVEST.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_GBA_INVEST_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_INVEST.py`、产物 `metrics/repro/out/M_INNOV_GBA_INVEST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（规模型投入）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新指标数据 → 创新投入
 > **数据支持度**：**部分支持** ｜ **公式定义人**：AI-20261016（非王惠）｜ wanghui: false
@@ -156,11 +160,11 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.5.4 粤港澳大湾区创新指标数据 | 「依托GIS地理信息技术呈现区域的主要创新指标，包括创新产值、创新比例、创新投入、创新技术合同交易额、专利及论文数量、专利授权量等指标体系。」 |
+| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.1.4.1.5.4 粤港澳大湾区创新指标数据 | 「依托GIS地理信息技术呈现区域的主要创新指标，包括创新产值、创新比例、创新投入、创新技术合同交易额、专利及论文数量、专利授权量等指标体系。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.4.2 指标体系管理 | 「提供完整的创新指标体系，包括创新产值、创新比例、创新投入…用户可通过勾选选择需要展示的指标。」 |
 | 3 | 同上 | §1.1.1.1.4.1.5.4.4 数据来源说明 | 「为用户提供全面、透明、可追溯的创新数据指标查询和分析服务。」（本报告据此把来源与口径写进 `out.json`） |
 | 4 | 项目内旁证 | `_work_full/B5_INNOV.json`（键 `M_INNOV_GBA_INVEST`） | 「name=创新投入；formula_source_1019=AI-20261016；wanghui=false。」 |
-| 5 | 王惠口径库 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/` | 该目录 104 份口径文件中**没有**「创新投入」单值指标；最接近的是 `M_INNOV_GBA_RES_INDEX` 的「研发投入」子项（仅上市公司口径） |
+| 5 | 王惠口径库 | `王惠口径正本（GitLab 外本地归档）` | 该目录 104 份口径文件中**没有**「创新投入」单值指标；最接近的是 `M_INNOV_GBA_RES_INDEX` 的「研发投入」子项（仅上市公司口径） |
 | 6 | 上游指标 | `M_INNOV_GBA_RES_INDEX.md` §第二步 子项 3 | 「该城机构上市 `research_development_amount` 合计（`occur_period` 落年窗）；全空则改用年报 `development_employee` 合计」 |
 
 ### 1.6 推测原意与推测定义（仿王惠口径写法）
@@ -261,7 +265,7 @@ $$
 **代码与运行**：
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_GBA_INVEST.py
 # 输出 code/M_INNOV_GBA_INVEST_out.json；实测耗时 0.7 秒（全部读本地快照，零 SQL）
 ```

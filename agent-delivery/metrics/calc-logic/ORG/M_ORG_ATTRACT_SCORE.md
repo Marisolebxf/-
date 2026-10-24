@@ -1,7 +1,11 @@
 # 科研机构招引推荐指数（M_ORG_ATTRACT_SCORE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_ATTRACT_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_ATTRACT_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_ATTRACT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_ATTRACT_SCORE.md`；复现脚本 `metrics/repro/M_ORG_ATTRACT_SCORE.py` → `metrics/repro/out/M_ORG_ATTRACT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_ORG_ATTRACT_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -29,7 +33,7 @@
 score = (0.35A + 0.35S + 0.30T + 0.15R 在缺失维重归一) × 证据覆盖折减(0.80+0.05×维数)；≥2 维出分
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_ATTRACT_SCORE.md` §二（M_ORG_ATTRACT_SCORE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ORG_ATTRACT_SCORE.md` §二（M_ORG_ATTRACT_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -56,16 +60,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_ATTRACT_SCORE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_ATTRACT_SCORE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_ATTRACT_SCORE_out.json` |
+| 正本 MD | `M_ORG_ATTRACT_SCORE.md` |
+| 复现脚本 | `metrics/repro/M_ORG_ATTRACT_SCORE.py` |
+| 复现产物 | `metrics/repro/out/M_ORG_ATTRACT_SCORE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_ORG_ATTRACT_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > 域：科研机构（ORG）｜类型：指数 + 分档｜形态：机构卡片（0–100）+ A/B/C 档名单
 > **数据支持度**：部分支持
@@ -145,8 +149,8 @@ A 档榜首为中国科学院深圳先进技术研究院 95.64（四维齐全：
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.6 科研机构引入推荐模型 | 三维定义原文 | `local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 871–880 行 |
-| 2 | 《科技专题算法库需求》序号 154 | 指标名与归属 | `local-workspace/docs/office/科技专题算法库需求.xlsx` |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.6 科研机构引入推荐模型 | 三维定义原文 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 871–880 行 |
+| 2 | 《科技专题算法库需求》序号 154 | 指标名与归属 | `需求文档原件（GitLab 外本地归档）.xlsx` |
 | 3 | 已入库 `M_ORG_DEEP_154_1` | 同需求项的另一种实现 | 本轮 `_staging21/` 同批交付 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.10 | 被引/下载整列为空的记录 | 本轮事实底稿 |
 | 5 | OECD/JRC, *Handbook on Constructing Composite Indicators* | 归一、加权、缺维披露规范 | https://www.oecd.org/sdd/42495745.pdf |
@@ -208,7 +212,7 @@ A 学术影响力 = `0.75×pct(论文 2016–2023) + 0.25×pct(学者 h 均值)`
 
 ### 2.7 复现代码与结果展示
 
-执行 `cd code && python3 M_ORG_ATTRACT_SCORE.py`，零 SQL，约 0.15 秒，输出 `code/M_ORG_ATTRACT_SCORE_out.json`。
+执行 `python3 M_ORG_ATTRACT_SCORE.py`，零 SQL，约 0.15 秒，输出 `code/M_ORG_ATTRACT_SCORE_out.json`。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -436,7 +440,7 @@ A 学术影响力 = `0.75×pct(论文 2016–2023) + 0.25×pct(学者 h 均值)`
 ## 附录 A　复现
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_ORG_ATTRACT_SCORE.py
 python3 -c "import json;d=json.load(open('M_ORG_ATTRACT_SCORE_out.json'));print(d['tiers'],d['tier_rule'])"
 ```
@@ -456,8 +460,8 @@ python3 -c "import json;d=json.load(open('M_ORG_ATTRACT_SCORE_out.json'));print(
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.6 科研机构引入推荐模型，`local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 871–880 行。
-2. 《科技专题算法库需求》序号 154「科研机构引入推荐模型」，`local-workspace/docs/office/科技专题算法库需求.xlsx`。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.6 科研机构引入推荐模型，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 871–880 行。
+2. 《科技专题算法库需求》序号 154「科研机构引入推荐模型」，`需求文档原件（GitLab 外本地归档）.xlsx`。
 3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.10。
 4. 同批交付 `_staging21/M_ORG_DEEP_154_1.md`（候选清单版口径）。
 5. OECD & JRC, *Handbook on Constructing Composite Indicators: Methodology and User Guide*, https://www.oecd.org/sdd/42495745.pdf

@@ -1,7 +1,11 @@
 # 区域产业指数模型（M_CHAIN_DEEP_126_1）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_126_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_126_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_126_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_DEEP_126_1.md`；复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py` → `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_126_1.md` §二（M_CHAIN_DEEP_126_1.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_CHAIN_DEEP_126_1.md` §二（M_CHAIN_DEEP_126_1.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,16 +55,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_DEEP_126_1.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_126_1.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_DEEP_126_1_out.json` |
+| 正本 MD | `M_CHAIN_DEEP_126_1.md` |
+| 复现脚本 | `metrics/repro/M_CHAIN_DEEP_126_1.py` |
+| 复现产物 | `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_DEEP_126_1.py`、产物 `metrics/repro/out/M_CHAIN_DEEP_126_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（四城 × 12 链三维指数 + 名次与分差）｜ **域**：产业链分析／区域产业比较／产业生态评估｜ **UI 挂载**：区域产业报告「四城对比」、链详情页「深圳位置」卡片
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业数、高企数、专利、融资、服务机构五源全量可算）+ B 类（营收、论文入链、科研机构入链、政策入链四项无链标签）**
@@ -181,7 +185,7 @@ $$G_{c,k}=0.50\cdot\frac{N_{c,k}}{\max_k N_{c,k}}+0.50\cdot\frac{S_{c,k}}{\max_k
 | 3 | `gkx.dwd_patent` | 同上 | 链 × 城市专利并集 |
 | 4 | `gkx.dwd_org_financing_info` | 同上 | 融资事件（按企业名挂链 + 底册取城市） |
 | 5 | `gkx.dwd_org_service_info` | 同上 | 服务机构格计数 |
-| 6 | 旧稿 `local-workspace/docs/metrics/王惠阶段性成果/20260904_ai补漏/指标计算逻辑/M_CHAIN_DEEP_126_1.md` | 仓内 | 旧口径对照 |
+| 6 | 旧稿 `王惠口径正本（GitLab 外本地归档）` | 仓内 | 旧口径对照 |
 | 7 | EU Cluster Scoreboard | https://clustercollaboration.eu/ | 集群评价 |
 | 8 | Cornell/INSEAD/WIPO GII | https://www.wipo.int/global_innovation_index/ | 创新生态 |
 
@@ -338,7 +342,7 @@ $$I_{深圳}=0.40\times100+0.30\times100+0.30\times100=100.00$$
 ### 2.8 复现代码与结果
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_CHAIN_DEEP_126_1.py
 # 只读快照，输出 code/M_CHAIN_DEEP_126_1_out.json
 ```
@@ -487,7 +491,7 @@ python3 code/M_CHAIN_DEEP_126_1.py
 2. Cornell University, INSEAD, & WIPO. *Global Innovation Index*. https://www.wipo.int/global_innovation_index/
 3. IMD World Competitiveness Center. *IMD World Competitiveness Yearbook*. https://www.imd.org/centers/wcc/
 4. Porter, M. E. (1998). Clusters and the new economics of competition. *Harvard Business Review*, 76(6), 77–90.
-5. 项目内旧稿：`local-workspace/docs/metrics/王惠阶段性成果/20260904_ai补漏/指标计算逻辑/M_CHAIN_DEEP_126_1.md`
+5. 项目内旧稿：`王惠口径正本（GitLab 外本地归档）`
 
 ---
 

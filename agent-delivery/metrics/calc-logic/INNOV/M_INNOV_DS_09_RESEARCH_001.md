@@ -1,7 +1,11 @@
 # 研究领域重叠度（M_INNOV_DS_09_RESEARCH_001）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_001.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_001.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_09_RESEARCH_001.md`；复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_001.py` → `metrics/repro/out/M_INNOV_DS_09_RESEARCH_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_001.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@ IPC 重叠与关键词重叠两维在 40 家深圳专利头部机构的 780 对�
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_001.md` §二（M_INNOV_DS_09_RESEARCH_001.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_09_RESEARCH_001.md` §二（M_INNOV_DS_09_RESEARCH_001.py 零改语义复算）。
 
 ## 源表字段
 
@@ -53,16 +57,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_09_RESEARCH_001.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_001.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_001_out.json` |
+| 正本 MD | `M_INNOV_DS_09_RESEARCH_001.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_09_RESEARCH_001.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_09_RESEARCH_001_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_09_RESEARCH_001.py`、产物 `metrics/repro/out/M_INNOV_DS_09_RESEARCH_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 域·科技发展规划·研究领域分析（王惠口径＝三维 Jaccard）｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技发展规划·研究领域分析（SRS 序号 191）
 > **数据支持度**：**部分支持**
@@ -328,7 +332,7 @@ $$O_{ij}=\frac{1}{|D_{ij}|}\sum_{d\in D_{ij}}J^{d}_{ij}$$
 | 换源核对 | IPC 维与学者维**逐位不变**（IPC 均值 0.2287、中位 0.2231、最大 0.6780；学者 300 对均值 0.0001、最大 0.0048）；关键词维因抽样顺序确定化略降（均值 0.1847→0.1777），详见 §2.8.3 第 7 条 |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_09_RESEARCH_001.py
+python3 metrics/repro/M_INNOV_DS_09_RESEARCH_001.py
 ```
 
 #### 2.8.2 复现结果（摘要表）

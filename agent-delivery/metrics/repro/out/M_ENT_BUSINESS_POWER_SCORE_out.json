@@ -1,0 +1,63 @@
+{
+  "metric_id": "M_ENT_BUSINESS_POWER_SCORE",
+  "metric_name": "商业力得分",
+  "script": "M_ENT_BUSINESS_POWER_SCORE.py",
+  "data_source": "gkx",
+  "probe": {
+    "chain_dtl_gkx": "NO_TABLE",
+    "chain_info_gkx": 1273,
+    "fin_rows": 90926,
+    "fin_rev_profit_filled": 2095,
+    "tech_tag_filled": 202424,
+    "news_rows": 1668414,
+    "main_prod_filled": 45011,
+    "patent_rows": 2939895,
+    "base_industry_l1": 186809
+  },
+  "dimension_detail": {
+    "市场": {
+      "营业收入": "fin 填充 2095/90,926（营收+净利非空）——低覆盖但非零",
+      "市场占有率": "行业归属可用（base L1 填充 186809），行业总营收需聚合",
+      "盈利能力": "同营业收入口径",
+      "verdict": "部分（覆盖率 2.3%）"
+    },
+    "产品": {
+      "产品线覆盖广度": "dwd_org_industry_chain_dtl 两侧均无表（gkx=NO_TABLE）；main_prod 辅助 45011",
+      "新产品收入占比": "现库无新产品销售收入字段（王惠标注待建）",
+      "产品质量水平": "现库无质量字段（待建）",
+      "verdict": "缺（关键表无+2 待建字段）"
+    },
+    "品牌": {
+      "品牌声量": "资讯表 1,668,414 行可用（内容量口径可算）",
+      "行业声誉": "tech_tag 填充 202,424（王惠标注「是否含品牌荣誉待定」）",
+      "verdict": "部分（声量可算；荣誉 tag 语义待核）"
+    },
+    "技术合作": {
+      "产学研合作专利": "patent 2,939,895 行，applicants 联合申请可解析",
+      "外部专家人月": "现库无字段（待建）",
+      "verdict": "部分"
+    },
+    "产业链覆盖率": {
+      "环节覆盖率": "chain_dtl 无表 + chain_info gkx 1,273 行（链定义在）",
+      "verdict": "缺（企业×节点关联无表）"
+    },
+    "关键环节参与度": {
+      "关键环节覆盖": "同上，且 node_stage/chain_score 字段依赖 chain_dtl",
+      "verdict": "缺"
+    }
+  },
+  "support_judgment": {
+    "data_support_level": "部分支持",
+    "reason": "六维中：市场维财务填充率低（2095/90,926，2.3%）；产品/产业链覆盖/关键环节三维依赖的 dwd_org_industry_chain_dtl 在 gkx（及 live）均不存在（gkx industry_chain_info=1,273 仅链定义，无企业×节点关联）；品牌维资讯 1,668,414 行可算声量、tech_tag 202,424 待核荣誉语义；技术合作维专利 2,939,895 行可解析联合申请、外部专家人月无字段。4 个待建字段 + 1 张关键表缺失 → 始终有依赖维不闭合 → 部分支持。",
+    "criteria": {
+      "chain_dtl_exists_gkx": false,
+      "pending_fields_wanghui": [
+        "新产品销售收入",
+        "产品质量",
+        "外部专家人月数",
+        "行业荣誉tag语义"
+      ],
+      "weights_closed": false
+    }
+  }
+}

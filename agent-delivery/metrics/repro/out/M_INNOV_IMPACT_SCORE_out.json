@@ -1,0 +1,1070 @@
+{
+ "metric_id": "M_INNOV_IMPACT_SCORE",
+ "metric_name": "创新影响分数",
+ "generated_at": "2026-10-23T23:55:34+08:00",
+ "support_judgment": "部分支持",
+ "verdict_reason": "机构侧二维（产出规模/网络影响）全部可算，能给出可复算的 0—100 分与排名；领域侧只有产出规模可算，网络影响（专利被引合计）因被引表与专利主表仅 2.335% 可回连、且回连不带 IPC 字段而置 null，不重归一化。阻塞表 graph_node / impact_prediction 在 gkx 查无。",
+ "source": {
+  "library": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "touched": false,
+  "note": "本件零 SQL：读 _probe_impact_w15n1.py 落盘的快照（该探针只读本地快照，亦零 SQL）"
+ },
+ "sources": [
+  "code/_snapshots21/impact_w15n1_20261023.json",
+  "code/_snapshots21/a25_paper_panel.json",
+  "code/_snapshots21/star_applicant_agg_gkx.json",
+  "code/_snapshots21/patent_panel_innov_20261021.json",
+  "code/_snapshots21/ent_ds07_cited_20261023.json",
+  "code/_snapshots21/w15n1_table_probe_20261023.json"
+ ],
+ "base_years_used": [
+  2021,
+  2022,
+  2023
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "专利 apdt_year 在 2017—2020 零行（DATA_FACTS §3.13），故 missing 记这四年；2024 论文是回填孤峰（32,379 篇 = 32.09%，§3.74），不按 0 摊入、也不计入 used；2025—2026 专利只有 440,401 / 74,810 件，明显是尚未公开完全的残年，同样不进窗口。本件为截面计件，窗口只用于解释「件数覆盖哪个年代」，不参与归一。",
+ "scope": "机构（第一申请人 ∩ 共著图节点）；领域（IPC 小类）",
+ "scope_note": "机构盘 = 共著图节点（全语料≥2 篇）∩ 专利第一申请人，共 4,039 家；四个叶子的 min-max 分母都是这 4,039 家，跨盘比较会失真。图节点按原始机构串计，同校不同院系是不同节点（如「清华大学」与「清华大学深圳国际研究生院」分列），未做归并。",
+ "evaluation_set": [
+  "广州中医药大学第一附属医院",
+  "华南理工大学",
+  "广东工业大学",
+  "中国能源建设集团广东省电力设计研究院有限公司",
+  "广州地铁设计研究院股份有限公司",
+  "华为技术有限公司",
+  "南方医科大学南方医院",
+  "广州地铁集团有限公司",
+  "南方电网科学研究院有限责任公司",
+  "中山大学附属第一医院",
+  "华南农业大学",
+  "中山大学",
+  "深圳供电局有限公司",
+  "深圳市中医院",
+  "广东药科大学",
+  "中山大学孙逸仙纪念医院",
+  "中国科学院地理科学与资源研究所",
+  "清华大学深圳国际研究生院",
+  "暨南大学",
+  "深圳大学",
+  "中水珠江规划勘测设计有限公司",
+  "广东电网有限责任公司电网规划研究中心",
+  "广州市市政工程设计研究总院有限公司",
+  "广东省地震局",
+  "中国中医科学院望京医院"
+ ],
+ "universe": {
+  "graph_nodes": 20436,
+  "patent_applicants": 169226,
+  "intersection": 4039,
+  "join_rule": "机构串与第一申请人名称**严格等值**；无别名表、不合并院系与公司简称",
+  "scored_n": 4039
+ },
+ "weights": {
+  "main": {
+   "I1_patent_scale": 0.25,
+   "I2_paper_scale": 0.25,
+   "I3_coauthor_degree": 0.25,
+   "I4_grant_rate": 0.25
+  },
+  "main_is_official": false,
+  "weights_are_authored": true,
+  "rationale": "正本只说「加权平均」，未给权重；本件四叶等权，并把熵权作客观对照",
+  "entropy": {
+   "I1_patent_scale": 0.5079,
+   "I2_paper_scale": 0.2915,
+   "I3_coauthor_degree": 0.1703,
+   "I4_grant_rate": 0.0304
+  },
+  "entropy_detail": {
+   "I1_patent_scale": {
+    "entropy": 0.690673,
+    "divergence": 0.309327
+   },
+   "I2_paper_scale": {
+    "entropy": 0.82249,
+    "divergence": 0.17751
+   },
+   "I3_coauthor_degree": {
+    "entropy": 0.8963,
+    "divergence": 0.1037
+   },
+   "I4_grant_rate": {
+    "entropy": 0.981503,
+    "divergence": 0.018497
+   }
+  },
+  "equal": {
+   "I1_patent_scale": 0.25,
+   "I2_paper_scale": 0.25,
+   "I3_coauthor_degree": 0.25,
+   "I4_grant_rate": 0.25
+  }
+ },
+ "leaves": {
+  "I1_patent_scale": {
+   "label": "产出规模｜专利件数",
+   "raw_min": 1,
+   "raw_max": 81376,
+   "raw_median": 19,
+   "norm_note": "min-max 到 0—100；归一盘=共著图节点∩第一申请人的 4039 家"
+  },
+  "I2_paper_scale": {
+   "label": "产出规模｜中文论文篇数",
+   "raw_min": 2,
+   "raw_max": 751,
+   "raw_median": 4,
+   "norm_note": "min-max 到 0—100；归一盘=共著图节点∩第一申请人的 4039 家"
+  },
+  "I3_coauthor_degree": {
+   "label": "网络影响｜共著图邻居数",
+   "raw_min": 0,
+   "raw_max": 194,
+   "raw_median": 3,
+   "norm_note": "min-max 到 0—100；归一盘=共著图节点∩第一申请人的 4039 家"
+  },
+  "I4_grant_rate": {
+   "label": "产出质量｜专利授权率",
+   "raw_min": 0.0,
+   "raw_max": 100.0,
+   "raw_median": 66.6667,
+   "norm_note": "min-max 到 0—100；归一盘=共著图节点∩第一申请人的 4039 家"
+  }
+ },
+ "top_institutions": [
+  {
+   "rank": 1,
+   "inst": "广州中医药大学第一附属医院",
+   "score": 68.7622,
+   "score_entropy": 48.7658,
+   "patents": 535,
+   "grants": 398,
+   "grant_rate_pct": 74.3925,
+   "papers": 751,
+   "coauthor_degree": 194,
+   "leaf": {
+    "I1_patent_scale": 0.6562,
+    "I2_paper_scale": 100.0,
+    "I3_coauthor_degree": 100.0,
+    "I4_grant_rate": 74.3925
+   },
+   "rank_patent_only": 245,
+   "rank_network_only": 1,
+   "rank_scale_only": 2
+  },
+  {
+   "rank": 2,
+   "inst": "华南理工大学",
+   "score": 56.0532,
+   "score_entropy": 46.0937,
+   "patents": 28053,
+   "grants": 18235,
+   "grant_rate_pct": 65.002,
+   "papers": 334,
+   "coauthor_degree": 156,
+   "leaf": {
+    "I1_patent_scale": 34.4725,
+    "I2_paper_scale": 44.3258,
+    "I3_coauthor_degree": 80.4124,
+    "I4_grant_rate": 65.002
+   },
+   "rank_patent_only": 4,
+   "rank_network_only": 2,
+   "rank_scale_only": 3
+  },
+  {
+   "rank": 3,
+   "inst": "广东工业大学",
+   "score": 43.4158,
+   "score_entropy": 33.5135,
+   "patents": 21326,
+   "grants": 14061,
+   "grant_rate_pct": 65.9336,
+   "papers": 269,
+   "coauthor_degree": 89,
+   "leaf": {
+    "I1_patent_scale": 26.2058,
+    "I2_paper_scale": 35.6475,
+    "I3_coauthor_degree": 45.8763,
+    "I4_grant_rate": 65.9336
+   },
+   "rank_patent_only": 6,
+   "rank_network_only": 10,
+   "rank_scale_only": 4
+  },
+  {
+   "rank": 4,
+   "inst": "中国能源建设集团广东省电力设计研究院有限公司",
+   "score": 43.04,
+   "score_entropy": 27.96,
+   "patents": 1199,
+   "grants": 662,
+   "grant_rate_pct": 55.2127,
+   "papers": 365,
+   "coauthor_degree": 130,
+   "leaf": {
+    "I1_patent_scale": 1.4722,
+    "I2_paper_scale": 48.4646,
+    "I3_coauthor_degree": 67.0103,
+    "I4_grant_rate": 55.2127
+   },
+   "rank_patent_only": 137,
+   "rank_network_only": 4,
+   "rank_scale_only": 6
+  },
+  {
+   "rank": 5,
+   "inst": "广州地铁设计研究院股份有限公司",
+   "score": 41.6388,
+   "score_entropy": 25.4747,
+   "patents": 1111,
+   "grants": 646,
+   "grant_rate_pct": 58.1458,
+   "papers": 298,
+   "coauthor_degree": 131,
+   "leaf": {
+    "I1_patent_scale": 1.3641,
+    "I2_paper_scale": 39.5194,
+    "I3_coauthor_degree": 67.5258,
+    "I4_grant_rate": 58.1458
+   },
+   "rank_patent_only": 143,
+   "rank_network_only": 3,
+   "rank_scale_only": 9
+  },
+  {
+   "rank": 6,
+   "inst": "华为技术有限公司",
+   "score": 39.4732,
+   "score_entropy": 59.6287,
+   "patents": 81376,
+   "grants": 13360,
+   "grant_rate_pct": 16.4176,
+   "papers": 81,
+   "coauthor_degree": 60,
+   "leaf": {
+    "I1_patent_scale": 100.0,
+    "I2_paper_scale": 10.5474,
+    "I3_coauthor_degree": 30.9278,
+    "I4_grant_rate": 16.4176
+   },
+   "rank_patent_only": 1,
+   "rank_network_only": 31,
+   "rank_scale_only": 1
+  },
+  {
+   "rank": 7,
+   "inst": "南方医科大学南方医院",
+   "score": 38.5625,
+   "score_entropy": 21.7809,
+   "patents": 2280,
+   "grants": 1515,
+   "grant_rate_pct": 66.4474,
+   "papers": 241,
+   "coauthor_degree": 103,
+   "leaf": {
+    "I1_patent_scale": 2.8006,
+    "I2_paper_scale": 31.9092,
+    "I3_coauthor_degree": 53.0928,
+    "I4_grant_rate": 66.4474
+   },
+   "rank_patent_only": 72,
+   "rank_network_only": 7,
+   "rank_scale_only": 15
+  },
+  {
+   "rank": 8,
+   "inst": "广州地铁集团有限公司",
+   "score": 37.8535,
+   "score_entropy": 18.9053,
+   "patents": 728,
+   "grants": 552,
+   "grant_rate_pct": 75.8242,
+   "papers": 214,
+   "coauthor_degree": 90,
+   "leaf": {
+    "I1_patent_scale": 0.8934,
+    "I2_paper_scale": 28.3044,
+    "I3_coauthor_degree": 46.3918,
+    "I4_grant_rate": 75.8242
+   },
+   "rank_patent_only": 186,
+   "rank_network_only": 9,
+   "rank_scale_only": 24
+  },
+  {
+   "rank": 9,
+   "inst": "南方电网科学研究院有限责任公司",
+   "score": 37.0251,
+   "score_entropy": 24.1441,
+   "patents": 5704,
+   "grants": 2781,
+   "grant_rate_pct": 48.7553,
+   "papers": 211,
+   "coauthor_degree": 125,
+   "leaf": {
+    "I1_patent_scale": 7.0083,
+    "I2_paper_scale": 27.9039,
+    "I3_coauthor_degree": 64.433,
+    "I4_grant_rate": 48.7553
+   },
+   "rank_patent_only": 25,
+   "rank_network_only": 5,
+   "rank_scale_only": 14
+  },
+  {
+   "rank": 10,
+   "inst": "中山大学附属第一医院",
+   "score": 36.9667,
+   "score_entropy": 19.8074,
+   "patents": 1828,
+   "grants": 1306,
+   "grant_rate_pct": 71.4442,
+   "papers": 241,
+   "coauthor_degree": 82,
+   "leaf": {
+    "I1_patent_scale": 2.2452,
+    "I2_paper_scale": 31.9092,
+    "I3_coauthor_degree": 42.268,
+    "I4_grant_rate": 71.4442
+   },
+   "rank_patent_only": 93,
+   "rank_network_only": 15,
+   "rank_scale_only": 16
+  },
+  {
+   "rank": 11,
+   "inst": "华南农业大学",
+   "score": 36.5689,
+   "score_entropy": 24.4127,
+   "patents": 10428,
+   "grants": 6439,
+   "grant_rate_pct": 61.7472,
+   "papers": 238,
+   "coauthor_degree": 78,
+   "leaf": {
+    "I1_patent_scale": 12.8135,
+    "I2_paper_scale": 31.5087,
+    "I3_coauthor_degree": 40.2062,
+    "I4_grant_rate": 61.7472
+   },
+   "rank_patent_only": 11,
+   "rank_network_only": 18,
+   "rank_scale_only": 7
+  },
+  {
+   "rank": 12,
+   "inst": "中山大学",
+   "score": 36.3994,
+   "score_entropy": 25.7388,
+   "patents": 17475,
+   "grants": 11025,
+   "grant_rate_pct": 63.0901,
+   "papers": 158,
+   "coauthor_degree": 78,
+   "leaf": {
+    "I1_patent_scale": 21.4734,
+    "I2_paper_scale": 20.8278,
+    "I3_coauthor_degree": 40.2062,
+    "I4_grant_rate": 63.0901
+   },
+   "rank_patent_only": 8,
+   "rank_network_only": 17,
+   "rank_scale_only": 8
+  },
+  {
+   "rank": 13,
+   "inst": "深圳供电局有限公司",
+   "score": 35.1645,
+   "score_entropy": 27.2838,
+   "patents": 6607,
+   "grants": 2318,
+   "grant_rate_pct": 35.084,
+   "papers": 342,
+   "coauthor_degree": 101,
+   "leaf": {
+    "I1_patent_scale": 8.118,
+    "I2_paper_scale": 45.3939,
+    "I3_coauthor_degree": 52.0619,
+    "I4_grant_rate": 35.084
+   },
+   "rank_patent_only": 18,
+   "rank_network_only": 8,
+   "rank_scale_only": 5
+  },
+  {
+   "rank": 14,
+   "inst": "深圳市中医院",
+   "score": 34.9884,
+   "score_entropy": 18.5896,
+   "patents": 662,
+   "grants": 447,
+   "grant_rate_pct": 67.5227,
+   "papers": 245,
+   "coauthor_degree": 76,
+   "leaf": {
+    "I1_patent_scale": 0.8123,
+    "I2_paper_scale": 32.4433,
+    "I3_coauthor_degree": 39.1753,
+    "I4_grant_rate": 67.5227
+   },
+   "rank_patent_only": 208,
+   "rank_network_only": 19,
+   "rank_scale_only": 17
+  },
+  {
+   "rank": 15,
+   "inst": "广东药科大学",
+   "score": 34.0366,
+   "score_entropy": 16.563,
+   "patents": 1396,
+   "grants": 962,
+   "grant_rate_pct": 68.9112,
+   "papers": 153,
+   "coauthor_degree": 88,
+   "leaf": {
+    "I1_patent_scale": 1.7143,
+    "I2_paper_scale": 20.1602,
+    "I3_coauthor_degree": 45.3608,
+    "I4_grant_rate": 68.9112
+   },
+   "rank_patent_only": 119,
+   "rank_network_only": 11,
+   "rank_scale_only": 34
+  },
+  {
+   "rank": 16,
+   "inst": "中山大学孙逸仙纪念医院",
+   "score": 33.6628,
+   "score_entropy": 17.1832,
+   "patents": 1895,
+   "grants": 1325,
+   "grant_rate_pct": 69.9208,
+   "papers": 203,
+   "coauthor_degree": 69,
+   "leaf": {
+    "I1_patent_scale": 2.3275,
+    "I2_paper_scale": 26.8358,
+    "I3_coauthor_degree": 35.567,
+    "I4_grant_rate": 69.9208
+   },
+   "rank_patent_only": 88,
+   "rank_network_only": 24,
+   "rank_scale_only": 25
+  },
+  {
+   "rank": 17,
+   "inst": "中国科学院地理科学与资源研究所",
+   "score": 32.4641,
+   "score_entropy": 13.3598,
+   "patents": 544,
+   "grants": 400,
+   "grant_rate_pct": 73.5294,
+   "papers": 83,
+   "coauthor_degree": 87,
+   "leaf": {
+    "I1_patent_scale": 0.6673,
+    "I2_paper_scale": 10.8144,
+    "I3_coauthor_degree": 44.8454,
+    "I4_grant_rate": 73.5294
+   },
+   "rank_patent_only": 244,
+   "rank_network_only": 12,
+   "rank_scale_only": 91
+  },
+  {
+   "rank": 18,
+   "inst": "清华大学深圳国际研究生院",
+   "score": 32.4162,
+   "score_entropy": 16.7755,
+   "patents": 3896,
+   "grants": 2517,
+   "grant_rate_pct": 64.6047,
+   "papers": 133,
+   "coauthor_degree": 83,
+   "leaf": {
+    "I1_patent_scale": 4.7865,
+    "I2_paper_scale": 17.49,
+    "I3_coauthor_degree": 42.7835,
+    "I4_grant_rate": 64.6047
+   },
+   "rank_patent_only": 41,
+   "rank_network_only": 14,
+   "rank_scale_only": 32
+  },
+  {
+   "rank": 19,
+   "inst": "暨南大学",
+   "score": 32.1896,
+   "score_entropy": 17.3601,
+   "patents": 6090,
+   "grants": 4164,
+   "grant_rate_pct": 68.3744,
+   "papers": 155,
+   "coauthor_degree": 63,
+   "leaf": {
+    "I1_patent_scale": 7.4826,
+    "I2_paper_scale": 20.4272,
+    "I3_coauthor_degree": 32.4742,
+    "I4_grant_rate": 68.3744
+   },
+   "rank_patent_only": 23,
+   "rank_network_only": 28,
+   "rank_scale_only": 26
+  },
+  {
+   "rank": 20,
+   "inst": "深圳大学",
+   "score": 32.0678,
+   "score_entropy": 19.743,
+   "patents": 13068,
+   "grants": 8913,
+   "grant_rate_pct": 68.2048,
+   "papers": 127,
+   "coauthor_degree": 53,
+   "leaf": {
+    "I1_patent_scale": 16.0578,
+    "I2_paper_scale": 16.6889,
+    "I3_coauthor_degree": 27.3196,
+    "I4_grant_rate": 68.2048
+   },
+   "rank_patent_only": 10,
+   "rank_network_only": 36,
+   "rank_scale_only": 20
+  },
+  {
+   "rank": 21,
+   "inst": "中水珠江规划勘测设计有限公司",
+   "score": 31.7589,
+   "score_entropy": 12.9708,
+   "patents": 297,
+   "grants": 239,
+   "grant_rate_pct": 80.4714,
+   "papers": 155,
+   "coauthor_degree": 50,
+   "leaf": {
+    "I1_patent_scale": 0.3637,
+    "I2_paper_scale": 20.4272,
+    "I3_coauthor_degree": 25.7732,
+    "I4_grant_rate": 80.4714
+   },
+   "rank_patent_only": 386,
+   "rank_network_only": 41,
+   "rank_scale_only": 38
+  },
+  {
+   "rank": 22,
+   "inst": "广东电网有限责任公司电网规划研究中心",
+   "score": 30.9885,
+   "score_entropy": 7.9575,
+   "patents": 2,
+   "grants": 2,
+   "grant_rate_pct": 100.0,
+   "papers": 54,
+   "coauthor_degree": 33,
+   "leaf": {
+    "I1_patent_scale": 0.0012,
+    "I2_paper_scale": 6.9426,
+    "I3_coauthor_degree": 17.0103,
+    "I4_grant_rate": 100.0
+   },
+   "rank_patent_only": 3462,
+   "rank_network_only": 84,
+   "rank_scale_only": 168
+  },
+  {
+   "rank": 23,
+   "inst": "广州市市政工程设计研究总院有限公司",
+   "score": 30.7944,
+   "score_entropy": 13.0727,
+   "patents": 527,
+   "grants": 393,
+   "grant_rate_pct": 74.5731,
+   "papers": 145,
+   "coauthor_degree": 56,
+   "leaf": {
+    "I1_patent_scale": 0.6464,
+    "I2_paper_scale": 19.0921,
+    "I3_coauthor_degree": 28.866,
+    "I4_grant_rate": 74.5731
+   },
+   "rank_patent_only": 249,
+   "rank_network_only": 34,
+   "rank_scale_only": 41
+  },
+  {
+   "rank": 24,
+   "inst": "广东省地震局",
+   "score": 30.394,
+   "score_entropy": 7.7662,
+   "patents": 10,
+   "grants": 10,
+   "grant_rate_pct": 100.0,
+   "papers": 67,
+   "coauthor_degree": 25,
+   "leaf": {
+    "I1_patent_scale": 0.0111,
+    "I2_paper_scale": 8.6782,
+    "I3_coauthor_degree": 12.8866,
+    "I4_grant_rate": 100.0
+   },
+   "rank_patent_only": 2512,
+   "rank_network_only": 126,
+   "rank_scale_only": 136
+  },
+  {
+   "rank": 25,
+   "inst": "中国中医科学院望京医院",
+   "score": 30.3593,
+   "score_entropy": 7.2867,
+   "patents": 3,
+   "grants": 3,
+   "grant_rate_pct": 100.0,
+   "papers": 39,
+   "coauthor_degree": 32,
+   "leaf": {
+    "I1_patent_scale": 0.0025,
+    "I2_paper_scale": 4.9399,
+    "I3_coauthor_degree": 16.4948,
+    "I4_grant_rate": 100.0
+   },
+   "rank_patent_only": 3301,
+   "rank_network_only": 88,
+   "rank_scale_only": 258
+  }
+ ],
+ "rank_consistency": {
+  "spearman_equal_vs_entropy": 0.8249,
+  "spearman_equal_vs_patent_only": 0.1012,
+  "spearman_equal_vs_network_only": 0.0912,
+  "n": 4039,
+  "note": "榜内 Spearman；越接近 1 说明综合分几乎被该单维决定"
+ },
+ "weight_sensitivity": {
+  "design": "网络维权重 w ∈ [0,1]，其余三维均分 (1−w)/3",
+  "leader_changes": [
+   {
+    "w_network": 0.0,
+    "leader": "广州中医药大学第一附属医院",
+    "runner_up": "华南理工大学",
+    "gap": 10.4161
+   }
+  ],
+  "rank_track": {
+   "w=0.00": {
+    "广州中医药大学第一附属医院": 1,
+    "华南理工大学": 2,
+    "广东工业大学": 3,
+    "中国能源建设集团广东省电力设计研究院有限公司": 12,
+    "广州地铁设计研究院股份有限公司": 614,
+    "华为技术有限公司": 4,
+    "南方医科大学南方医院": 62,
+    "广州地铁集团有限公司": 14,
+    "比亚迪股份有限公司": 658
+   },
+   "w=0.25": {
+    "广州中医药大学第一附属医院": 1,
+    "华南理工大学": 2,
+    "广东工业大学": 3,
+    "中国能源建设集团广东省电力设计研究院有限公司": 4,
+    "广州地铁设计研究院股份有限公司": 5,
+    "华为技术有限公司": 6,
+    "南方医科大学南方医院": 7,
+    "广州地铁集团有限公司": 8,
+    "比亚迪股份有限公司": 690
+   },
+   "w=0.50": {
+    "广州中医药大学第一附属医院": 1,
+    "华南理工大学": 2,
+    "广东工业大学": 6,
+    "中国能源建设集团广东省电力设计研究院有限公司": 3,
+    "广州地铁设计研究院股份有限公司": 4,
+    "华为技术有限公司": 15,
+    "南方医科大学南方医院": 7,
+    "广州地铁集团有限公司": 9,
+    "比亚迪股份有限公司": 480
+   },
+   "w=0.75": {
+    "广州中医药大学第一附属医院": 1,
+    "华南理工大学": 2,
+    "广东工业大学": 9,
+    "中国能源建设集团广东省电力设计研究院有限公司": 3,
+    "广州地铁设计研究院股份有限公司": 4,
+    "华为技术有限公司": 25,
+    "南方医科大学南方医院": 7,
+    "广州地铁集团有限公司": 10,
+    "比亚迪股份有限公司": 575
+   },
+   "w=1.00": {
+    "广州中医药大学第一附属医院": 1,
+    "华南理工大学": 2,
+    "广东工业大学": 10,
+    "中国能源建设集团广东省电力设计研究院有限公司": 4,
+    "广州地铁设计研究院股份有限公司": 3,
+    "华为技术有限公司": 31,
+    "南方医科大学南方医院": 7,
+    "广州地铁集团有限公司": 9,
+    "比亚迪股份有限公司": 1121
+   }
+  },
+  "sweep": [
+   {
+    "w_network": 0.0,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 58.3496,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广东工业大学"
+    ]
+   },
+   {
+    "w_network": 0.1,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 62.5146,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广东工业大学"
+    ]
+   },
+   {
+    "w_network": 0.2,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 66.6797,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广东工业大学"
+    ]
+   },
+   {
+    "w_network": 0.3,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 70.8447,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "中国能源建设集团广东省电力设计研究院有限公司"
+    ]
+   },
+   {
+    "w_network": 0.4,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 75.0097,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "中国能源建设集团广东省电力设计研究院有限公司"
+    ]
+   },
+   {
+    "w_network": 0.5,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 79.1748,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "中国能源建设集团广东省电力设计研究院有限公司"
+    ]
+   },
+   {
+    "w_network": 0.6,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 83.3398,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "中国能源建设集团广东省电力设计研究院有限公司"
+    ]
+   },
+   {
+    "w_network": 0.7,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 87.5049,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "中国能源建设集团广东省电力设计研究院有限公司"
+    ]
+   },
+   {
+    "w_network": 0.8,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 91.6699,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广州地铁设计研究院股份有限公司"
+    ]
+   },
+   {
+    "w_network": 0.9,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 95.835,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广州地铁设计研究院股份有限公司"
+    ]
+   },
+   {
+    "w_network": 1.0,
+    "leader": "广州中医药大学第一附属医院",
+    "leader_score": 100.0,
+    "top3": [
+     "广州中医药大学第一附属医院",
+     "华南理工大学",
+     "广州地铁设计研究院股份有限公司"
+    ]
+   }
+  ],
+  "note": "榜首对网络维权重不敏感（w 从 0 到 1 都是同一家），但 3—10 名在 w=0.25 与 w=1 之间几乎全部换位；所以「谁是第一」在这套数据上是稳的，「前十是谁」不稳"
+ },
+ "domain_ipc": {
+  "dim_status": {
+   "产出规模": "可算",
+   "网络影响": "不可算（置 null）"
+  },
+  "renormalize": false,
+  "renormalize_note": "领域侧只有一维有值，若把网络维从分母剔除就等于宣称「被引为 0」，故按缺维处置：该维置 null、总分不重归一化，只报单维产出分",
+  "ipc_max": {
+   "ipc4": "G06F",
+   "patents": 190077
+  },
+  "top": [
+   {
+    "ipc4": "G06F",
+    "patents": 190077,
+    "scale_score": 100.0,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "G01N",
+    "patents": 66256,
+    "scale_score": 91.3297,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H04L",
+    "patents": 61631,
+    "scale_score": 90.7344,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H04W",
+    "patents": 61413,
+    "scale_score": 90.7052,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H01M",
+    "patents": 58194,
+    "scale_score": 90.2623,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "G06Q",
+    "patents": 54365,
+    "scale_score": 89.7024,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "G06T",
+    "patents": 46123,
+    "scale_score": 88.3498,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H05K",
+    "patents": 44265,
+    "scale_score": 88.0116,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "G06V",
+    "patents": 42280,
+    "scale_score": 87.6341,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H02J",
+    "patents": 40686,
+    "scale_score": 87.318,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "G01R",
+    "patents": 39098,
+    "scale_score": 86.9904,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H04N",
+    "patents": 38553,
+    "scale_score": 86.875,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H01R",
+    "patents": 37694,
+    "scale_score": 86.6896,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "B29C",
+    "patents": 37013,
+    "scale_score": 86.5396,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "B65G",
+    "patents": 32363,
+    "scale_score": 85.4351,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "A61B",
+    "patents": 28921,
+    "scale_score": 84.5101,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "B23K",
+    "patents": 28106,
+    "scale_score": 84.2749,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H04R",
+    "patents": 26871,
+    "scale_score": 83.9052,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "A61K",
+    "patents": 26585,
+    "scale_score": 83.8172,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   },
+   {
+    "ipc4": "H01L",
+    "patents": 23935,
+    "scale_score": 82.9534,
+    "network_score": null,
+    "network_note": "领域被引合计不可算：被引表与专利主表仅 2.335% 可回连，且回连不带 IPC"
+   }
+  ],
+  "n_classes": 634,
+  "sum_patents": 2420915
+ },
+ "derived": {
+  "top1_patent_share_pct": {
+   "value": 8.6573,
+   "numerator": 81376,
+   "denominator": 939970,
+   "denominator_note": "华为技术有限公司 专利件数 / 榜内 4039 家专利合计 939,970 件"
+  },
+  "top10_patent_share_pct": {
+   "value": 29.7196,
+   "numerator": 279355,
+   "denominator": 939970,
+   "denominator_note": "榜内专利前 10 家合计 / 榜内 4039 家专利合计 939,970 件"
+  },
+  "huawei_grant_rate_pct": {
+   "value": 16.4176,
+   "numerator": 13360,
+   "denominator": 81376,
+   "denominator_note": "华为授权 13,360 件 / 申请 81,376 件；分子分母同主体同口径，不做行业调整"
+  },
+  "scut_grant_rate_pct": {
+   "value": 65.002,
+   "numerator": 18235,
+   "denominator": 28053,
+   "denominator_note": "华南理工授权 18,235 件 / 申请 28,053 件"
+  },
+  "huawei_over_scut_patents": {
+   "value": 2.9008,
+   "numerator": 81376,
+   "denominator": 28053,
+   "denominator_note": "华为 81,376 件 / 华南理工 28,053 件（同为第一申请人等值计件）"
+  },
+  "scut_over_huawei_degree": {
+   "value": 2.6,
+   "numerator": 156,
+   "denominator": 60,
+   "denominator_note": "华南理工共著邻居 156 / 华为 60（同一张共著图）"
+  },
+  "paper_per_patent_scut": {
+   "value": 0.011906,
+   "numerator": 334,
+   "denominator": 28053,
+   "denominator_note": "华南理工论文 334 篇 / 专利 28,053 件；论文只计中文语料，英文论文不在库"
+  },
+  "city_cited_coverage_pct": {
+   "value": 2.335,
+   "numerator": 467,
+   "denominator": 20000,
+   "denominator_note": "被引表 20,000 件里能在 dwd_patent 回连 467 件；这是领域网络维置 null 的依据"
+  },
+  "graph_patent_intersection_pct": {
+   "value": 19.7641,
+   "numerator": 4039,
+   "denominator": 20436,
+   "denominator_note": "共著图 20,436 个机构串中，同时是第一申请人的 4,039 个；机构串不归并院系，同校不同院系算不同节点"
+  }
+ },
+ "coverage": {
+  "paper_with_citation_pct": 0.775,
+  "patent_cited_match_pct": 2.335,
+  "inst_intersection_pct_of_graph": 19.7641,
+  "inst_intersection_pct_of_applicants": 2.3867
+ },
+ "absence_probe": {
+  "graph_node": {
+   "query": "information_schema.tables WHERE table_schema='gkx' AND table_name='graph_node'",
+   "param": "graph_node",
+   "hit_tables": [],
+   "hit_rows": 0,
+   "count": null,
+   "conclusion": "gkx 查无此表；live 四 schema 亦无同名非 demo 表"
+  },
+  "impact_prediction": {
+   "query": "information_schema.tables WHERE table_schema='gkx' AND table_name='impact_prediction'",
+   "param": "impact_prediction",
+   "hit_tables": [],
+   "hit_rows": 0,
+   "count": null,
+   "conclusion": "gkx 查无此表；live 四 schema 亦无同名非 demo 表"
+  },
+  "note": "检索于 2026-10-23 由 code/_probe_w15n1_tables.py 与 code/_probe_keyd_w15n1.py 两次实测，命中行数 0 即「不存在」，不是「有表但 0 行」"
+ },
+ "reproduce": "cd code && python3 _probe_impact_w15n1.py && python3 M_INNOV_IMPACT_SCORE.py"
+}

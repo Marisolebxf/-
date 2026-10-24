@@ -1,7 +1,11 @@
 # 重点企业总数（M_ENT_KEY_TOTAL）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEY_TOTAL.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEY_TOTAL.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEY_TOTAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_KEY_TOTAL.md`；复现脚本 `metrics/repro/M_ENT_KEY_TOTAL.py` → `metrics/repro/out/M_ENT_KEY_TOTAL_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_KEY_TOTAL.py`、产物 `metrics/repro/out/M_ENT_KEY_TOTAL_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEY_TOTAL.md` §二（M_ENT_KEY_TOTAL.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_KEY_TOTAL.md` §二（M_ENT_KEY_TOTAL.py 零改语义复算）。
 
 ## 源表字段
 
@@ -49,16 +53,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_KEY_TOTAL.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEY_TOTAL.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_KEY_TOTAL_out.json` |
+| 正本 MD | `M_ENT_KEY_TOTAL.md` |
+| 复现脚本 | `metrics/repro/M_ENT_KEY_TOTAL.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_KEY_TOTAL_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_KEY_TOTAL.py`、产物 `metrics/repro/out/M_ENT_KEY_TOTAL_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（基础统计·名单核计数）｜ **域**：企业分析·企业总览（企业基础指标模型）｜ **UI 挂载**：科技信息展示系统·企业整体概况「重点企业」读数（算法库 bid §1.1.1.2.4.2.3）；KEYPANO 8 件套的名单母体｜ **数据支持度**：**完全转换支持**
 > **公式定义人（20261020-ENT-j）**：徐滕强（ENT 域 calc-logic，2026-08-31 COVER-STAT-L01 专利阈值原式，本 MD 采用为基线；阈值 N=50 为团队临时值 Q038🟡）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 三方库数据量足（可现转）
@@ -245,13 +249,13 @@ N=50 切片的实测读数（2026-10-20 out.json，本批复核底座一致）�
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_ENT_KEY_TOTAL.py` |
+| 计算脚本 | `metrics/repro/M_ENT_KEY_TOTAL.py` |
 | 结果产物 | 同目录 `M_ENT_KEY_TOTAL_out.json`（2026-10-20 首跑；本批 2026-10-21 复核底座一致，按复用规则沿用） |
 | 主算库 | 真源 gkx `dwd_patent`（dwd_id 6 桶分桶，约 50 分钟） |
 | 复核探针 | `code/_snapshots/ent_j_probe_20261021.json`（行数/去重键/受让人填充三指标一致） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_ENT_KEY_TOTAL.py
+python3 metrics/repro/M_ENT_KEY_TOTAL.py
 ```
 
 #### 2.7.2 复现结果（摘要表）

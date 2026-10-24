@@ -1,7 +1,11 @@
 # 事件关注度（M_INNOV_EVENT_ATTENTION）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_ATTENTION.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_ATTENTION.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_ATTENTION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EVENT_ATTENTION.md`；复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py` → `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py`、产物 `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_ATTENTION.md` §二（M_INNOV_EVENT_ATTENTION.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_EVENT_ATTENTION.md` §二（M_INNOV_EVENT_ATTENTION.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EVENT_ATTENTION.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_ATTENTION.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EVENT_ATTENTION_out.json` |
+| 正本 MD | `M_INNOV_EVENT_ATTENTION.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_EVENT_ATTENTION.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_EVENT_ATTENTION.py`、产物 `metrics/repro/out/M_INNOV_EVENT_ATTENTION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：CLASS（负证据件，不发布读数）｜ **域**：创新分析（INNOV）· 事件｜ **UI 挂载**：无（不挂载；仅作缺口说明与替代口径登记）
 > **数据支持度**：**完全不支持**｜ **依赖性质**：事件面不存在（`innovation_event` / `dwd_innovation_event` 逐字 0 张，`dwd_event` 仅 20 行单一展会系列）；正本公式依赖的 `dwd_policy_base.theme` / `quote_policy` 各 19,998/20,000 行为字符串 'NULL'

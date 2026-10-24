@@ -1,0 +1,413 @@
+{
+ "metric_id": "M_ENT_TYPE_RATIO",
+ "metric_name": "企业分类型占比",
+ "support_judgment": "部分支持",
+ "judgment_reason": "分子分母都来自 gkx，同源可算；但分母存在两套互不兼容口径：未选产业 189,116、选产业真链属 28,031（宽口径表内成员 35,046）。报表若不在页脚声明分母口径，同一『占比』会相差数倍；另外资含港澳台、小微含『未知』下限问题使占比只能作结构性参考。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面占比，无年度序列；不设基期（分子分母同年同库）",
+ "sources": [
+  "code/_snapshots21/ent_count21_facts_20261023.json",
+  "code/_snapshots21/chain_linked_type_20261023.json",
+  "gkx.dwd_org_base_info",
+  "gkx.dwd_org_tech_tag"
+ ],
+ "rule": {
+  "formula": "ratio_type = COUNT(DISTINCT org_id WHERE type) / COUNT(DISTINCT org_id)",
+  "denom_no_industry": 189116,
+  "denom_with_industry": 28031,
+  "wide_denom_with_industry": 35046,
+  "rule_note": "分子分母必须来自同一 org_id 集合；禁止用全库分子除以筛选后分母",
+  "rounding": "四舍五入到 2 位小数；各行独立四舍五入，合计不必为 100%"
+ },
+ "rows": [
+  {
+   "key": "high_tech",
+   "name": "高新技术企业",
+   "base_count": 27936,
+   "base_denom": 189116,
+   "base_ratio": 0.147719,
+   "base_pct": 14.77,
+   "chain_count": 12776,
+   "chain_denom": 28031,
+   "chain_ratio": 0.455781,
+   "chain_pct": 45.58,
+   "delta_pct_pp": 30.81,
+   "shenzhen_pct": 16.4,
+   "chain_shenzhen_pct": 46.25
+  },
+  {
+   "key": "little_giant",
+   "name": "专精特新中小企业",
+   "base_count": 14830,
+   "base_denom": 189116,
+   "base_ratio": 0.078417,
+   "base_pct": 7.84,
+   "chain_count": 8410,
+   "chain_denom": 28031,
+   "chain_ratio": 0.300025,
+   "chain_pct": 30.0,
+   "delta_pct_pp": 22.16,
+   "shenzhen_pct": 9.21,
+   "chain_shenzhen_pct": 31.02
+  },
+  {
+   "key": "little_giant_pro",
+   "name": "专精特新小巨人",
+   "base_count": 2006,
+   "base_denom": 189116,
+   "base_ratio": 0.010607,
+   "base_pct": 1.06,
+   "chain_count": 1399,
+   "chain_denom": 28031,
+   "chain_ratio": 0.049909,
+   "chain_pct": 4.99,
+   "delta_pct_pp": 3.93,
+   "shenzhen_pct": 1.33,
+   "chain_shenzhen_pct": 5.4
+  },
+  {
+   "key": "foreign",
+   "name": "外资企业",
+   "base_count": 10417,
+   "base_denom": 189116,
+   "base_ratio": 0.055083,
+   "base_pct": 5.51,
+   "chain_count": 2214,
+   "chain_denom": 28031,
+   "chain_ratio": 0.078984,
+   "chain_pct": 7.9,
+   "delta_pct_pp": 2.39,
+   "shenzhen_pct": 4.76,
+   "chain_shenzhen_pct": 6.93
+  },
+  {
+   "key": "sme",
+   "name": "小微企业",
+   "base_count": 125477,
+   "base_denom": 189116,
+   "base_ratio": 0.663492,
+   "base_pct": 66.35,
+   "chain_count": 19785,
+   "chain_denom": 28031,
+   "chain_ratio": 0.705826,
+   "chain_pct": 70.58,
+   "delta_pct_pp": 4.23,
+   "shenzhen_pct": 88.26,
+   "chain_shenzhen_pct": 80.02
+  },
+  {
+   "key": "listed",
+   "name": "上市/挂牌企业",
+   "base_count": 1971,
+   "base_denom": 189116,
+   "base_ratio": 0.010422,
+   "base_pct": 1.04,
+   "chain_count": 1178,
+   "chain_denom": 28031,
+   "chain_ratio": 0.042025,
+   "chain_pct": 4.2,
+   "delta_pct_pp": 3.16,
+   "shenzhen_pct": 1.17,
+   "chain_shenzhen_pct": 4.1
+  }
+ ],
+ "sum_check": {
+  "base_numerator_sum": 182637,
+  "base_ratio_sum_pct": 96.57,
+  "chain_numerator_sum": 45762,
+  "chain_ratio_sum_pct": 163.25,
+  "note": "六类互有重叠（一家可同时是高企+专精特新+小微），占比和>100% 属正常，不是错误"
+ },
+ "overlap": {
+  "pairs": {
+   "high_tech∩little_giant": 14634,
+   "high_tech∩little_giant_pro": 2003,
+   "high_tech∩foreign": 2791,
+   "high_tech∩sme": 19267,
+   "high_tech∩listed": 1624,
+   "little_giant∩little_giant_pro": 1933,
+   "little_giant∩foreign": 1533,
+   "little_giant∩sme": 9630,
+   "little_giant∩listed": 1041,
+   "little_giant_pro∩foreign": 250,
+   "little_giant_pro∩sme": 740,
+   "little_giant_pro∩listed": 384,
+   "foreign∩sme": 7927,
+   "foreign∩listed": 165,
+   "sme∩listed": 731
+  },
+  "high_tech_little_giant_lgp": 1930,
+  "none_of_six": 53257
+ },
+ "listed_stock_count": 975,
+ "listed_stock_pct": 0.52,
+ "wide_minus_strict": 7015,
+ "wide_minus_strict_pct": 25.03,
+ "chain_shenzhen": 16875,
+ "shenzhen_chain_rows": [
+  {
+   "key": "high_tech",
+   "count": 7805,
+   "denom": 16875,
+   "pct": 46.25
+  },
+  {
+   "key": "little_giant",
+   "count": 5235,
+   "denom": 16875,
+   "pct": 31.02
+  },
+  {
+   "key": "little_giant_pro",
+   "count": 911,
+   "denom": 16875,
+   "pct": 5.4
+  },
+  {
+   "key": "foreign",
+   "count": 1170,
+   "denom": 16875,
+   "pct": 6.93
+  },
+  {
+   "key": "sme",
+   "count": 13504,
+   "denom": 16875,
+   "pct": 80.02
+  },
+  {
+   "key": "listed",
+   "count": 692,
+   "denom": 16875,
+   "pct": 4.1
+  }
+ ],
+ "ht_reduction_pct": 54.27,
+ "denom_reduction_pct": 85.18,
+ "shenzhen_rows": [
+  {
+   "key": "high_tech",
+   "name": "高新技术企业",
+   "count": 15683,
+   "denom": 95600,
+   "pct": 16.4
+  },
+  {
+   "key": "little_giant",
+   "name": "专精特新中小企业",
+   "count": 8802,
+   "denom": 95600,
+   "pct": 9.21
+  },
+  {
+   "key": "little_giant_pro",
+   "name": "专精特新小巨人",
+   "count": 1271,
+   "denom": 95600,
+   "pct": 1.33
+  },
+  {
+   "key": "foreign",
+   "name": "外资企业",
+   "count": 4554,
+   "denom": 95600,
+   "pct": 4.76
+  },
+  {
+   "key": "sme",
+   "name": "小微企业",
+   "count": 84375,
+   "denom": 95600,
+   "pct": 88.26
+  },
+  {
+   "key": "listed",
+   "name": "上市/挂牌企业",
+   "count": 1117,
+   "denom": 95600,
+   "pct": 1.17
+  }
+ ],
+ "chain_rows": [
+  {
+   "chain": "INB1306",
+   "chain_name": "软件与信息服务",
+   "orgs": 9335,
+   "share_of_linked_pct": 33.3,
+   "types": {
+    "high_tech": 3662,
+    "little_giant": 1962,
+    "little_giant_pro": 223,
+    "foreign": 548,
+    "sme": 6506,
+    "listed": 210
+   }
+  },
+  {
+   "chain": "INB1333",
+   "chain_name": "智能终端",
+   "orgs": 4871,
+   "share_of_linked_pct": 17.38,
+   "types": {
+    "high_tech": 2120,
+    "little_giant": 1372,
+    "little_giant_pro": 216,
+    "foreign": 407,
+    "sme": 3576,
+    "listed": 154
+   }
+  },
+  {
+   "chain": "INB1309",
+   "chain_name": "人工智能",
+   "orgs": 4860,
+   "share_of_linked_pct": 17.34,
+   "types": {
+    "high_tech": 2884,
+    "little_giant": 2106,
+    "little_giant_pro": 402,
+    "foreign": 478,
+    "sme": 3300,
+    "listed": 443
+   }
+  },
+  {
+   "chain": "INB1502",
+   "chain_name": "数字创意",
+   "orgs": 2168,
+   "share_of_linked_pct": 7.73,
+   "types": {
+    "high_tech": 654,
+    "little_giant": 344,
+    "little_giant_pro": 31,
+    "foreign": 146,
+    "sme": 1423,
+    "listed": 34
+   }
+  },
+  {
+   "chain": "INB1303",
+   "chain_name": "集成电路",
+   "orgs": 1273,
+   "share_of_linked_pct": 4.54,
+   "types": {
+    "high_tech": 747,
+    "little_giant": 611,
+    "little_giant_pro": 153,
+    "foreign": 130,
+    "sme": 922,
+    "listed": 88
+   }
+  },
+  {
+   "chain": "INB1354",
+   "chain_name": "具身智能",
+   "orgs": 1239,
+   "share_of_linked_pct": 4.42,
+   "types": {
+    "high_tech": 576,
+    "little_giant": 429,
+    "little_giant_pro": 91,
+    "foreign": 76,
+    "sme": 966,
+    "listed": 50
+   }
+  },
+  {
+   "chain": "INB1323",
+   "chain_name": "传感器",
+   "orgs": 1227,
+   "share_of_linked_pct": 4.38,
+   "types": {
+    "high_tech": 587,
+    "little_giant": 432,
+    "little_giant_pro": 94,
+    "foreign": 131,
+    "sme": 919,
+    "listed": 45
+   }
+  },
+  {
+   "chain": "INB1204",
+   "chain_name": "机器人",
+   "orgs": 981,
+   "share_of_linked_pct": 3.5,
+   "types": {
+    "high_tech": 525,
+    "little_giant": 388,
+    "little_giant_pro": 70,
+    "foreign": 100,
+    "sme": 732,
+    "listed": 33
+   }
+  },
+  {
+   "chain": "INB2505",
+   "chain_name": "合成生物",
+   "orgs": 877,
+   "share_of_linked_pct": 3.13,
+   "types": {
+    "high_tech": 482,
+    "little_giant": 386,
+    "little_giant_pro": 62,
+    "foreign": 81,
+    "sme": 630,
+    "listed": 49
+   }
+  },
+  {
+   "chain": "INB1209",
+   "chain_name": "智能网联汽车",
+   "orgs": 554,
+   "share_of_linked_pct": 1.98,
+   "types": {
+    "high_tech": 240,
+    "little_giant": 184,
+    "little_giant_pro": 32,
+    "foreign": 42,
+    "sme": 421,
+    "listed": 25
+   }
+  },
+  {
+   "chain": "INB2503",
+   "chain_name": "生物医药",
+   "orgs": 549,
+   "share_of_linked_pct": 1.96,
+   "types": {
+    "high_tech": 238,
+    "little_giant": 156,
+    "little_giant_pro": 10,
+    "foreign": 64,
+    "sme": 341,
+    "listed": 31
+   }
+  },
+  {
+   "chain": "INB1236",
+   "chain_name": "低空经济",
+   "orgs": 97,
+   "share_of_linked_pct": 0.35,
+   "types": {
+    "high_tech": 61,
+    "little_giant": 40,
+    "little_giant_pro": 15,
+    "foreign": 11,
+    "sme": 49,
+    "listed": 16
+   }
+  }
+ ],
+ "checks": {
+  "base_denom_eq_base_rows": true,
+  "chain_denom_eq_sum_per_chain": true,
+  "no_multi_chain_double_count": true
+ },
+ "gaps": [
+  "两套分母（189,116 / 28,031）需在报表页脚显式声明，否则占比不可比",
+  "外资含港澳台（10,417），剔除后 3,307，占比从 5.51% 降到 1.75%",
+  "小微分母含 46,897 家 org_size=未知，125,477/189,116=66.35% 是下限",
+  "高企/专精特新为历史获得累计口径，无有效期，占比高估当前有效存量"
+ ]
+}

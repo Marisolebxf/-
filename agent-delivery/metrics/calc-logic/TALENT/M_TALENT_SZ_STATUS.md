@@ -1,7 +1,11 @@
 # M_TALENT_SZ_STATUS（M_TALENT_SZ_STATUS）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TALENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TALENT_SZ_STATUS.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TALENT_SZ_STATUS.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TALENT_SZ_STATUS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TALENT_SZ_STATUS.md`；复现脚本 `metrics/repro/M_TALENT_SZ_STATUS.py` → `metrics/repro/out/M_TALENT_SZ_STATUS_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TALENT_SZ_STATUS.py`、产物 `metrics/repro/out/M_TALENT_SZ_STATUS_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TALENT_SZ_STATUS.md` §二（M_TALENT_SZ_STATUS.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_TALENT_SZ_STATUS.md` §二（M_TALENT_SZ_STATUS.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,16 +51,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TALENT_SZ_STATUS.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TALENT_SZ_STATUS.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TALENT_SZ_STATUS_out.json` |
+| 正本 MD | `M_TALENT_SZ_STATUS.md` |
+| 复现脚本 | `metrics/repro/M_TALENT_SZ_STATUS.py` |
+| 复现产物 | `metrics/repro/out/M_TALENT_SZ_STATUS_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TALENT_SZ_STATUS.py`、产物 `metrics/repro/out/M_TALENT_SZ_STATUS_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 **数据支持度**：完全转换支持
 
@@ -184,7 +188,7 @@ $$
 | 结果产物 | `code/M_TALENT_SZ_STATUS_out.json` |
 | 公共层 | `code/_talent10_common.py` |
 
-复现命令：`cd code && python3 M_TALENT_SZ_STATUS.py`，仅标准库。
+复现命令：`python3 M_TALENT_SZ_STATUS.py`，仅标准库。
 
 ---
 
@@ -234,10 +238,10 @@ lift 只反映"相对集中"，不反映"绝对规模"：脑科学 lift 最高�
 
 ### 2.7 复现代码结果展示与输出契约
 
-复现命令为 `cd code && python3 M_TALENT_SZ_STATUS.py`。脚本只读快照，运行约 1 秒，覆盖写 `code/M_TALENT_SZ_STATUS_out.json`。
+复现命令为 `python3 M_TALENT_SZ_STATUS.py`。脚本只读快照，运行约 1 秒，覆盖写 `code/M_TALENT_SZ_STATUS_out.json`。
 
 ```bash
-$ cd code && python3 M_TALENT_SZ_STATUS.py
+$ python3 M_TALENT_SZ_STATUS.py
 wrote M_TALENT_SZ_STATUS_out.json
 sz 236 {'n': 236, 'mean': 30.22, 'median': 23.0, 'p25': 14.75, 'p75': 34.0, 'p90': 59.0, 'max': 219} 8239.01 14.83 wide 213
 other 17146 {'n': 17146, 'mean': 21.16, 'median': 18.0, 'p25': 11.0, 'p75': 26.0, 'p90': 39.0, 'max': 286} 2969.18 5.27
@@ -480,7 +484,7 @@ lift 最高的是脑科学（2.4035）与智能机器人（2.0393），但绝对
 | 判档一致 | MD 头部 = out.json `support_judgment` | 完全转换支持 |
 | 行数 | 450—700 | 见 gate 输出 |
 | 数字可追溯 | 每个数字能在 out.json 找到 | 是 |
-| 脚本可跑 | `cd code && python3 M_TALENT_SZ_STATUS.py` | 是，约 1 秒 |
+| 脚本可跑 | `python3 M_TALENT_SZ_STATUS.py` | 是，约 1 秒 |
 | 无 demo 引用 | lint 0 处 | 是 |
 | 基期三字段 | used / missing / note 齐备 | 是（截面，used=[]） |
 
@@ -495,7 +499,7 @@ lift 最高的是脑科学（2.4035）与智能机器人（2.0393），但绝对
 ### A.1 运行
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_TALENT_SZ_STATUS.py
 ```
 

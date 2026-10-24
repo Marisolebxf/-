@@ -1,7 +1,11 @@
 # 全球服务机构分布（按国家计数）（M_SVC_ORG_CNT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_CNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_CNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_CNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_ORG_CNT.md`；复现脚本 `metrics/repro/M_SVC_ORG_CNT.py` → `metrics/repro/out/M_SVC_ORG_CNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_ORG_CNT.py`、产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_CNT.md` §二（M_SVC_ORG_CNT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_ORG_CNT.md` §二（M_SVC_ORG_CNT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -49,16 +53,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_ORG_CNT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_CNT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_ORG_CNT_out.json` |
+| 正本 MD | `M_SVC_ORG_CNT.md` |
+| 复现脚本 | `metrics/repro/M_SVC_ORG_CNT.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_ORG_CNT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_ORG_CNT.py`、产物 `metrics/repro/out/M_SVC_ORG_CNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：KPI（服务机构库·国家/省份分布计数）｜ **域**：SVC 服务机构（全球服务机构分布）｜ **UI 挂载**：科技专题服务系统·产业服务链分析·全球服务机构分布（§1.1.1.2.4.2.2）/ 算法库·服务机构基础指标模型（序号 101）
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：侯佳伟 calc-logic 迁移口径（COUNTRY/PROVINCE 分组 COUNT），本件只换源
@@ -177,7 +181,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 产物 `code/M_SVC_ORG_CNT_out.json` 含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`population`、`country_dist`、`province_dist`、`city_dist`、`country_covered`、`overseas_source_probe`、`pool_reconciliation`、`difference_vs_old_draft`、`gaps`。脚本自包含、零 DB、只读快照，运行约 0.7 秒。
 
-复现：`cd code && python3 M_SVC_ORG_CNT.py`，打印 `pool=44153 countries=1 prov=[('广东省', 44132), ('（未回联底册）', 21)]`，覆盖写产物。
+复现：`python3 M_SVC_ORG_CNT.py`，打印 `pool=44153 countries=1 prov=[('广东省', 44132), ('（未回联底册）', 21)]`，覆盖写产物。
 
 ### 2.7 复现结果摘要
 
@@ -453,7 +457,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 附录 E　复算步骤
 
 1. 确认快照存在：`ls code/_snapshots21/svc21_facts_20261022.json code/_snapshots21/base_20261021.json`。
-2. 运行：`cd code && python3 M_SVC_ORG_CNT.py`。
+2. 运行：`python3 M_SVC_ORG_CNT.py`。
 3. 校验：`province_dist` 求和 = `city_dist` 求和 = 44,153。
 4. 校验：`country_covered` 应为 1，不是 2（「未判定」不算国家）。
 5. 重跑：`python3 _work_gkx21/rebuild_metric.py M_SVC_ORG_CNT --check`。
@@ -503,7 +507,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 4. `support_judgment` 与头部档位一致
 5. `base_years_used/_missing/_note` 齐备
 6. `sources` 只有 gkx 库名、主机与快照路径
-7. 脚本 `cd code && python3 M_SVC_ORG_CNT.py` 可直接跑通
+7. 脚本 `python3 M_SVC_ORG_CNT.py` 可直接跑通
 8. 不 import 目录外 helper、不连演示库
 9. `rebuild_metric.py M_SVC_ORG_CNT --check` 一致
 10. `audit_md_vs_out.py` A 段无漂移

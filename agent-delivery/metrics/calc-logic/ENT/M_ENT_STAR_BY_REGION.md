@@ -1,7 +1,11 @@
 # 明星企业区域分布（M_ENT_STAR_BY_REGION）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STAR_BY_REGION.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_STAR_BY_REGION.md`；复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py` → `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py`、产物 `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -26,7 +30,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STAR_BY_REGION.md` §二（M_ENT_STAR_BY_REGION.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_STAR_BY_REGION.md` §二（M_ENT_STAR_BY_REGION.py 零改语义复算）。
 
 ## 源表字段
 
@@ -52,16 +56,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_STAR_BY_REGION.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION_out.json` |
+| 正本 MD | `M_ENT_STAR_BY_REGION.md` |
+| 复现脚本 | `metrics/repro/M_ENT_STAR_BY_REGION.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_STAR_BY_REGION.py`、产物 `metrics/repro/out/M_ENT_STAR_BY_REGION_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT｜**域**：ENT（企业主体）｜**UI 挂载**：智慧服务门户·企业发展·企业分布情况（地图/图表）／明星企业介绍
 > **数据支持度**：**部分支持**
@@ -316,14 +320,14 @@ $$\text{lift}_c = \frac{s_c^{\text{star}}}{s_c^{\text{base}}}$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION.py` |
+| 计算脚本 | `metrics/repro/M_ENT_STAR_BY_REGION.py` |
 | 结果产物 | 同目录 `M_ENT_STAR_BY_REGION_out.json` |
 | 名单缓存 | 同目录 `_snapshots21/star_roster_gkx_20261021.json`（4,561 家入册；计量口径见 `_star_roster_gkx.py`） |
 | 主档快照 | 同目录 `_snapshots21/star_base_rows_gkx.json`（`gkx.dwd_org_base_info` 189,116 行的区划/行业字段） |
 | 主算库 | `gkx`（10.50.11.76:3306） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_STAR_BY_REGION.py
+python3 metrics/repro/M_ENT_STAR_BY_REGION.py
 ```
 
 脚本输出 `probes`（名单与区划覆盖、集中度披露）、`compute`（省/市/区分布、集中度、lift）、`samples`（深圳 Top10 与其他城市 Top5）、`support_judgment`。

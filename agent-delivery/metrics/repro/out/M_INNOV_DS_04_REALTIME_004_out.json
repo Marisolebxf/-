@@ -1,0 +1,1476 @@
+{
+ "metric_id": "M_INNOV_DS_04_REALTIME_004",
+ "name": "创新影响分数",
+ "vendor_metric": "M_INNOV_IMPACT_SCORE",
+ "formula_owner": "王惠",
+ "view": "node",
+ "generated_at": "2026-10-23 22:10:17",
+ "runtime_sec": 2.0,
+ "data_source": "gkx.dwd_patent 全量派生（IPC 小类×年 2,420,915 件、申请人×件数/授权数 2,939,895 件、申请人×年 275,135 组）、gkx.dwd_org_base_info 底册 189,116 行、gkx.dwd_zh_author 62,002 行",
+ "db": "gkx @ 183.240.141.251:3318（只读，本脚本零 SQL）",
+ "definition": "对实体节点赋创新影响分：产出规模（机构=专利+论文，领域=专利）与网络影响（机构=合作邻居数，领域=专利被引）二维加权 ×100，按 entity_type 分组排名。本件网络影响缺测，实际交付单维产出规模分。",
+ "statistical_year": 2024,
+ "windows": {
+  "recent": [
+   2022,
+   2023,
+   2024
+  ],
+  "base_formula": [
+   2017,
+   2018,
+   2019,
+   2020,
+   2021
+  ],
+  "base_used": [
+   2021
+  ]
+ },
+ "params": {
+  "entity_types": [
+   "domain",
+   "org"
+  ],
+  "dims": [
+   "output_scale",
+   "network_impact"
+  ],
+  "dims_available": [
+   "output_scale"
+  ],
+  "dims_missing": [
+   "network_impact"
+  ],
+  "norm": "log10 压缩后极值归一 ×100（线性 min-max 会把中位数压到 0）；附 rank_pct 百分位秩对照列",
+  "weights": "单维重归一：产出规模占 1.0"
+ },
+ "base_years_used": [
+  2021
+ ],
+ "base_years_missing": [
+  2017,
+  2018,
+  2019,
+  2020
+ ],
+ "base_years_note": "基窗公式要求 2017—2021，但 gkx.dwd_patent.apdt_year 只有 2021—2026，2017—2020 零行；因此基窗实际只用 2021 一年，均值只除 1，缺失的 4 年不进分母。专利年份序列只遍历库内真实存在的 2021—2026，不做 .get(y, 0) 式补零。",
+ "family": {
+  "group": "M_INNOV_DS_04（科技发展态势·全球创新监测）",
+  "this": "REALTIME_004 = **节点级**产出规模与影响分（实体是机构/IPC 领域）",
+  "sibling": {
+   "M_INNOV_DS_04_MONITOR_001": "实体是**词条**，算突现；本件实体是**节点**，算规模",
+   "M_INNOV_DS_04_MONITOR_002": "词条的详情价值分，与节点得分不可混用",
+   "M_INNOV_DS_04_REALTIME_005": "在本件节点年序列上做 Holt 外推（本库样本期不足）"
+  },
+  "key_diff": "词条 vs 节点：MONITOR 的主键是 point_key（IPC 小类/关键词），REALTIME 的主键是实体节点（机构名/IPC 小类）"
+ },
+ "probes": {
+  "domain": {
+   "n_ipc4": 634,
+   "sum_output": 2420915,
+   "years": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+   ]
+  },
+  "org": {
+   "n_applicants": 169226,
+   "sum_output": 2939895,
+   "n_in_base": 157354,
+   "base_match_rate": 0.9298,
+   "base_rows": 189116,
+   "base_names": 189068,
+   "base_dup": 47
+  },
+  "paper_side": {
+   "n_org_names": 23554,
+   "papers_covered": 20048,
+   "papers_total": 100900,
+   "share": 0.1987,
+   "note": "论文侧只覆盖分类子集，故机构论文件数是下界，不参与打分、只作展示列"
+  },
+  "patent_applicants_table": {
+   "rows": [
+    "28964",
+    "20000"
+   ]
+  },
+  "zh_author": {
+   "rows": [
+    "62002",
+    "20048",
+    "60970"
+   ]
+  },
+  "zh_author_inst_uniq": {
+   "rows": [
+    "23326"
+   ]
+  },
+  "zh_project": {
+   "rows": [
+    "58453",
+    "0",
+    "58452"
+   ]
+  },
+  "patent_cited": {
+   "rows": [
+    "20515",
+    "55",
+    "3657"
+   ],
+   "joinable_pn": 467
+  },
+  "cited_joinability_note": "被引表 20,515 行只有 467 个 pn 能连回 dwd_patent（2.28%），领域级「专利被引合计」不成立"
+ },
+ "compute": {
+  "n_nodes_domain": 634,
+  "n_nodes_org": 169226,
+  "domain_output_dist": {
+   "n": 634,
+   "min": 1.0,
+   "max": 190077.0,
+   "mean": 3818.4779,
+   "median": 693.5,
+   "p10": 25.3,
+   "p30": 223.8,
+   "p90": 9292.3,
+   "n_distinct": 540
+  },
+  "org_output_dist": {
+   "n": 169226,
+   "min": 1.0,
+   "max": 81376.0,
+   "mean": 17.3726,
+   "median": 5.0,
+   "p10": 1.0,
+   "p30": 2.0,
+   "p90": 25.0,
+   "n_distinct": 834
+  },
+  "domain_score_dist": {
+   "n": 634,
+   "min": 0.0,
+   "max": 100.0,
+   "mean": 52.3333,
+   "median": 53.82,
+   "p10": 26.576,
+   "p30": 44.513,
+   "p90": 75.171,
+   "n_distinct": 532
+  },
+  "org_score_dist": {
+   "n": 169226,
+   "min": 0.0,
+   "max": 100.0,
+   "mean": 14.0983,
+   "median": 14.23,
+   "p10": 0.0,
+   "p30": 6.13,
+   "p90": 28.47,
+   "n_distinct": 830
+  },
+  "top_domain": [
+   {
+    "entity_type": "domain",
+    "node": "G06F",
+    "output_total": 190077,
+    "output_2021_2024": 148698,
+    "n_orgs_2024": 5987,
+    "year_counts": {
+     "2021": 37926,
+     "2022": 35253,
+     "2023": 36575,
+     "2024": 38944,
+     "2025": 32756,
+     "2026": 8623
+    },
+    "output_score": 100.0,
+    "impact_score": 100.0,
+    "rank_pct": 100.0,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "G01N",
+    "output_total": 66256,
+    "output_2021_2024": 54527,
+    "n_orgs_2024": 4242,
+    "year_counts": {
+     "2021": 13603,
+     "2022": 14251,
+     "2023": 13580,
+     "2024": 13093,
+     "2025": 9495,
+     "2026": 2234
+    },
+    "output_score": 91.33,
+    "impact_score": 91.33,
+    "rank_pct": 99.842,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H04L",
+    "output_total": 61631,
+    "output_2021_2024": 50186,
+    "n_orgs_2024": 1961,
+    "year_counts": {
+     "2021": 11995,
+     "2022": 13667,
+     "2023": 12552,
+     "2024": 11972,
+     "2025": 9402,
+     "2026": 2043
+    },
+    "output_score": 90.73,
+    "impact_score": 90.73,
+    "rank_pct": 99.684,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H04W",
+    "output_total": 61413,
+    "output_2021_2024": 51847,
+    "n_orgs_2024": 974,
+    "year_counts": {
+     "2021": 13806,
+     "2022": 12042,
+     "2023": 12581,
+     "2024": 13418,
+     "2025": 8589,
+     "2026": 977
+    },
+    "output_score": 90.71,
+    "impact_score": 90.71,
+    "rank_pct": 99.526,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H01M",
+    "output_total": 58194,
+    "output_2021_2024": 47168,
+    "n_orgs_2024": 1905,
+    "year_counts": {
+     "2021": 8574,
+     "2022": 10252,
+     "2023": 13369,
+     "2024": 14973,
+     "2025": 9400,
+     "2026": 1626
+    },
+    "output_score": 90.26,
+    "impact_score": 90.26,
+    "rank_pct": 99.368,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "G06Q",
+    "output_total": 54365,
+    "output_2021_2024": 40506,
+    "n_orgs_2024": 3078,
+    "year_counts": {
+     "2021": 8773,
+     "2022": 9568,
+     "2023": 10366,
+     "2024": 11799,
+     "2025": 11069,
+     "2026": 2790
+    },
+    "output_score": 89.7,
+    "impact_score": 89.7,
+    "rank_pct": 99.21,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "G06T",
+    "output_total": 46123,
+    "output_2021_2024": 35522,
+    "n_orgs_2024": 1873,
+    "year_counts": {
+     "2021": 9292,
+     "2022": 8996,
+     "2023": 8558,
+     "2024": 8676,
+     "2025": 8138,
+     "2026": 2463
+    },
+    "output_score": 88.35,
+    "impact_score": 88.35,
+    "rank_pct": 99.052,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H05K",
+    "output_total": 44265,
+    "output_2021_2024": 38595,
+    "n_orgs_2024": 3609,
+    "year_counts": {
+     "2021": 10078,
+     "2022": 9697,
+     "2023": 9911,
+     "2024": 8909,
+     "2025": 5056,
+     "2026": 614
+    },
+    "output_score": 88.01,
+    "impact_score": 88.01,
+    "rank_pct": 98.894,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "G06V",
+    "output_total": 42280,
+    "output_2021_2024": 32042,
+    "n_orgs_2024": 1866,
+    "year_counts": {
+     "2021": 4858,
+     "2022": 8827,
+     "2023": 9250,
+     "2024": 9107,
+     "2025": 8022,
+     "2026": 2216
+    },
+    "output_score": 87.63,
+    "impact_score": 87.63,
+    "rank_pct": 98.736,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H02J",
+    "output_total": 40686,
+    "output_2021_2024": 31713,
+    "n_orgs_2024": 2194,
+    "year_counts": {
+     "2021": 7159,
+     "2022": 7121,
+     "2023": 8115,
+     "2024": 9318,
+     "2025": 7358,
+     "2026": 1615
+    },
+    "output_score": 87.32,
+    "impact_score": 87.32,
+    "rank_pct": 98.578,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "G01R",
+    "output_total": 39098,
+    "output_2021_2024": 31514,
+    "n_orgs_2024": 2735,
+    "year_counts": {
+     "2021": 7808,
+     "2022": 7194,
+     "2023": 7846,
+     "2024": 8666,
+     "2025": 6236,
+     "2026": 1348
+    },
+    "output_score": 86.99,
+    "impact_score": 86.99,
+    "rank_pct": 98.42,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H04N",
+    "output_total": 38553,
+    "output_2021_2024": 33449,
+    "n_orgs_2024": 1860,
+    "year_counts": {
+     "2021": 10441,
+     "2022": 8319,
+     "2023": 7460,
+     "2024": 7229,
+     "2025": 4247,
+     "2026": 857
+    },
+    "output_score": 86.87,
+    "impact_score": 86.87,
+    "rank_pct": 98.262,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H01R",
+    "output_total": 37694,
+    "output_2021_2024": 32790,
+    "n_orgs_2024": 2966,
+    "year_counts": {
+     "2021": 8030,
+     "2022": 7883,
+     "2023": 8488,
+     "2024": 8389,
+     "2025": 4493,
+     "2026": 411
+    },
+    "output_score": 86.69,
+    "impact_score": 86.69,
+    "rank_pct": 98.104,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "B29C",
+    "output_total": 37013,
+    "output_2021_2024": 31786,
+    "n_orgs_2024": 3095,
+    "year_counts": {
+     "2021": 8301,
+     "2022": 8223,
+     "2023": 7893,
+     "2024": 7369,
+     "2025": 4537,
+     "2026": 690
+    },
+    "output_score": 86.54,
+    "impact_score": 86.54,
+    "rank_pct": 97.946,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "B65G",
+    "output_total": 32363,
+    "output_2021_2024": 27991,
+    "n_orgs_2024": 3133,
+    "year_counts": {
+     "2021": 6907,
+     "2022": 7528,
+     "2023": 6844,
+     "2024": 6712,
+     "2025": 3889,
+     "2026": 483
+    },
+    "output_score": 85.43,
+    "impact_score": 85.43,
+    "rank_pct": 97.788,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "A61B",
+    "output_total": 28921,
+    "output_2021_2024": 24338,
+    "n_orgs_2024": 1300,
+    "year_counts": {
+     "2021": 6196,
+     "2022": 6150,
+     "2023": 6267,
+     "2024": 5725,
+     "2025": 3684,
+     "2026": 899
+    },
+    "output_score": 84.51,
+    "impact_score": 84.51,
+    "rank_pct": 97.63,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "B23K",
+    "output_total": 28106,
+    "output_2021_2024": 23192,
+    "n_orgs_2024": 2406,
+    "year_counts": {
+     "2021": 5416,
+     "2022": 5633,
+     "2023": 6130,
+     "2024": 6013,
+     "2025": 4159,
+     "2026": 755
+    },
+    "output_score": 84.27,
+    "impact_score": 84.27,
+    "rank_pct": 97.472,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H04R",
+    "output_total": 26871,
+    "output_2021_2024": 23699,
+    "n_orgs_2024": 1459,
+    "year_counts": {
+     "2021": 6124,
+     "2022": 6209,
+     "2023": 6028,
+     "2024": 5338,
+     "2025": 2860,
+     "2026": 312
+    },
+    "output_score": 83.9,
+    "impact_score": 83.9,
+    "rank_pct": 97.314,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "A61K",
+    "output_total": 26585,
+    "output_2021_2024": 19747,
+    "n_orgs_2024": 1331,
+    "year_counts": {
+     "2021": 4514,
+     "2022": 4938,
+     "2023": 5006,
+     "2024": 5289,
+     "2025": 5219,
+     "2026": 1619
+    },
+    "output_score": 83.82,
+    "impact_score": 83.82,
+    "rank_pct": 97.156,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "domain",
+    "node": "H01L",
+    "output_total": 23935,
+    "output_2021_2024": 22931,
+    "n_orgs_2024": 968,
+    "year_counts": {
+     "2021": 6789,
+     "2022": 6382,
+     "2023": 5663,
+     "2024": 4097,
+     "2025": 1004,
+     "2026": 0
+    },
+    "output_score": 82.95,
+    "impact_score": 82.95,
+    "rank_pct": 96.998,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   }
+  ],
+  "top_org": [
+   {
+    "entity_type": "org",
+    "node": "华为技术有限公司",
+    "output_total": 81376,
+    "output_patent": 81376,
+    "granted": 13360,
+    "grant_rate": 0.1642,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 100.0,
+    "impact_score": 100.0,
+    "rank_pct": 100.0,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "比亚迪股份有限公司",
+    "output_total": 29024,
+    "output_patent": 29024,
+    "granted": 17072,
+    "grant_rate": 0.5882,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 90.88,
+    "impact_score": 90.88,
+    "rank_pct": 99.999,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "维沃移动通信有限公司",
+    "output_total": 28712,
+    "output_patent": 28712,
+    "granted": 11145,
+    "grant_rate": 0.3882,
+    "papers_lower_bound": 0,
+    "city": "东莞市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 90.79,
+    "impact_score": 90.79,
+    "rank_pct": 99.999,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "华南理工大学",
+    "output_total": 28053,
+    "output_patent": 28053,
+    "granted": 18235,
+    "grant_rate": 0.65,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 90.58,
+    "impact_score": 90.58,
+    "rank_pct": 99.998,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "OPPO广东移动通信有限公司",
+    "output_total": 25765,
+    "output_patent": 25765,
+    "granted": 8547,
+    "grant_rate": 0.3317,
+    "papers_lower_bound": 0,
+    "city": "东莞市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 89.83,
+    "impact_score": 89.83,
+    "rank_pct": 99.998,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东工业大学",
+    "output_total": 21326,
+    "output_patent": 21326,
+    "granted": 14061,
+    "grant_rate": 0.6593,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 88.16,
+    "impact_score": 88.16,
+    "rank_pct": 99.997,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东电网有限责任公司",
+    "output_total": 18922,
+    "output_patent": 18922,
+    "granted": 8566,
+    "grant_rate": 0.4527,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "in_base": 1,
+    "output_score": 87.1,
+    "impact_score": 87.1,
+    "rank_pct": 99.996,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "中山大学",
+    "output_total": 17475,
+    "output_patent": 17475,
+    "granted": 11025,
+    "grant_rate": 0.6309,
+    "papers_lower_bound": 4,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 86.39,
+    "impact_score": 86.39,
+    "rank_pct": 99.996,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "中兴通讯股份有限公司",
+    "output_total": 15634,
+    "output_patent": 15634,
+    "granted": 1634,
+    "grant_rate": 0.1045,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 85.41,
+    "impact_score": 85.41,
+    "rank_pct": 99.995,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "深圳大学",
+    "output_total": 13068,
+    "output_patent": 13068,
+    "granted": 8913,
+    "grant_rate": 0.682,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 83.82,
+    "impact_score": 83.82,
+    "rank_pct": 99.995,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "华南农业大学",
+    "output_total": 10428,
+    "output_patent": 10428,
+    "granted": 6439,
+    "grant_rate": 0.6175,
+    "papers_lower_bound": 1,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 81.83,
+    "impact_score": 81.83,
+    "rank_pct": 99.994,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广州汽车集团股份有限公司",
+    "output_total": 9836,
+    "output_patent": 9836,
+    "granted": 5955,
+    "grant_rate": 0.6054,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "租赁和商务服务业",
+    "in_base": 1,
+    "output_score": 81.31,
+    "impact_score": 81.31,
+    "rank_pct": 99.993,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "荣耀终端股份有限公司",
+    "output_total": 9093,
+    "output_patent": 9093,
+    "granted": 2335,
+    "grant_rate": 0.2568,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 80.62,
+    "impact_score": 80.62,
+    "rank_pct": 99.993,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广州大学",
+    "output_total": 7861,
+    "output_patent": 7861,
+    "granted": 4635,
+    "grant_rate": 0.5896,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 79.33,
+    "impact_score": 79.33,
+    "rank_pct": 99.992,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "惠科股份有限公司",
+    "output_total": 6797,
+    "output_patent": 6797,
+    "granted": 5202,
+    "grant_rate": 0.7653,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 78.04,
+    "impact_score": 78.04,
+    "rank_pct": 99.991,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东电网有限责任公司广州供电局",
+    "output_total": 6786,
+    "output_patent": 6786,
+    "granted": 2505,
+    "grant_rate": 0.3691,
+    "papers_lower_bound": 1,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "in_base": 1,
+    "output_score": 78.03,
+    "impact_score": 78.03,
+    "rank_pct": 99.991,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "南方科技大学",
+    "output_total": 6690,
+    "output_patent": 6690,
+    "granted": 3951,
+    "grant_rate": 0.5906,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 77.9,
+    "impact_score": 77.9,
+    "rank_pct": 99.989,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "深圳供电局有限公司",
+    "output_total": 6607,
+    "output_patent": 6607,
+    "granted": 2318,
+    "grant_rate": 0.3508,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 77.79,
+    "impact_score": 77.79,
+    "rank_pct": 99.989,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广州视源电子科技股份有限公司",
+    "output_total": 6543,
+    "output_patent": 6543,
+    "granted": 3903,
+    "grant_rate": 0.5965,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "科学研究和技术服务业",
+    "in_base": 1,
+    "output_score": 77.71,
+    "impact_score": 77.71,
+    "rank_pct": 99.988,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "暨南大学",
+    "output_total": 6090,
+    "output_patent": 6090,
+    "granted": 4164,
+    "grant_rate": 0.6837,
+    "papers_lower_bound": 2,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 77.07,
+    "impact_score": 77.07,
+    "rank_pct": 99.986,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   }
+  ],
+  "top_org_raw": [
+   {
+    "entity_type": "org",
+    "node": "华为技术有限公司",
+    "output_total": 81376,
+    "output_patent": 81376,
+    "granted": 13360,
+    "grant_rate": 0.1642,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 100.0,
+    "impact_score": 100.0,
+    "rank_pct": 100.0,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "比亚迪股份有限公司",
+    "output_total": 29024,
+    "output_patent": 29024,
+    "granted": 17072,
+    "grant_rate": 0.5882,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 90.88,
+    "impact_score": 90.88,
+    "rank_pct": 99.999,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "维沃移动通信有限公司",
+    "output_total": 28712,
+    "output_patent": 28712,
+    "granted": 11145,
+    "grant_rate": 0.3882,
+    "papers_lower_bound": 0,
+    "city": "东莞市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 90.79,
+    "impact_score": 90.79,
+    "rank_pct": 99.999,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "华南理工大学",
+    "output_total": 28053,
+    "output_patent": 28053,
+    "granted": 18235,
+    "grant_rate": 0.65,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 90.58,
+    "impact_score": 90.58,
+    "rank_pct": 99.998,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "OPPO广东移动通信有限公司",
+    "output_total": 25765,
+    "output_patent": 25765,
+    "granted": 8547,
+    "grant_rate": 0.3317,
+    "papers_lower_bound": 0,
+    "city": "东莞市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 89.83,
+    "impact_score": 89.83,
+    "rank_pct": 99.998,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东工业大学",
+    "output_total": 21326,
+    "output_patent": 21326,
+    "granted": 14061,
+    "grant_rate": 0.6593,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 88.16,
+    "impact_score": 88.16,
+    "rank_pct": 99.997,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东电网有限责任公司",
+    "output_total": 18922,
+    "output_patent": 18922,
+    "granted": 8566,
+    "grant_rate": 0.4527,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "in_base": 1,
+    "output_score": 87.1,
+    "impact_score": 87.1,
+    "rank_pct": 99.996,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "中山大学",
+    "output_total": 17475,
+    "output_patent": 17475,
+    "granted": 11025,
+    "grant_rate": 0.6309,
+    "papers_lower_bound": 4,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 86.39,
+    "impact_score": 86.39,
+    "rank_pct": 99.996,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "中兴通讯股份有限公司",
+    "output_total": 15634,
+    "output_patent": 15634,
+    "granted": 1634,
+    "grant_rate": 0.1045,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 85.41,
+    "impact_score": 85.41,
+    "rank_pct": 99.995,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "深圳大学",
+    "output_total": 13068,
+    "output_patent": 13068,
+    "granted": 8913,
+    "grant_rate": 0.682,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 83.82,
+    "impact_score": 83.82,
+    "rank_pct": 99.995,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "华南农业大学",
+    "output_total": 10428,
+    "output_patent": 10428,
+    "granted": 6439,
+    "grant_rate": 0.6175,
+    "papers_lower_bound": 1,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 81.83,
+    "impact_score": 81.83,
+    "rank_pct": 99.994,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广州汽车集团股份有限公司",
+    "output_total": 9836,
+    "output_patent": 9836,
+    "granted": 5955,
+    "grant_rate": 0.6054,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "租赁和商务服务业",
+    "in_base": 1,
+    "output_score": 81.31,
+    "impact_score": 81.31,
+    "rank_pct": 99.993,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "荣耀终端股份有限公司",
+    "output_total": 9093,
+    "output_patent": 9093,
+    "granted": 2335,
+    "grant_rate": 0.2568,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 80.62,
+    "impact_score": 80.62,
+    "rank_pct": 99.993,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "上海交通大学",
+    "output_total": 8532,
+    "output_patent": 8532,
+    "granted": 4986,
+    "grant_rate": 0.5844,
+    "papers_lower_bound": 5,
+    "city": null,
+    "province": null,
+    "industry_l1": null,
+    "in_base": 0,
+    "output_score": 80.05,
+    "impact_score": 80.05,
+    "rank_pct": 99.992,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广州大学",
+    "output_total": 7861,
+    "output_patent": 7861,
+    "granted": 4635,
+    "grant_rate": 0.5896,
+    "papers_lower_bound": 0,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 79.33,
+    "impact_score": 79.33,
+    "rank_pct": 99.992,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "惠科股份有限公司",
+    "output_total": 6797,
+    "output_patent": 6797,
+    "granted": 5202,
+    "grant_rate": 0.7653,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "制造业",
+    "in_base": 1,
+    "output_score": 78.04,
+    "impact_score": 78.04,
+    "rank_pct": 99.991,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "广东电网有限责任公司广州供电局",
+    "output_total": 6786,
+    "output_patent": 6786,
+    "granted": 2505,
+    "grant_rate": 0.3691,
+    "papers_lower_bound": 1,
+    "city": "广州市",
+    "province": "广东省",
+    "industry_l1": "电力、热力、燃气及水生产和供应业",
+    "in_base": 1,
+    "output_score": 78.03,
+    "impact_score": 78.03,
+    "rank_pct": 99.991,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "清华大学",
+    "output_total": 6734,
+    "output_patent": 6734,
+    "granted": 4144,
+    "grant_rate": 0.6154,
+    "papers_lower_bound": 7,
+    "city": null,
+    "province": null,
+    "industry_l1": null,
+    "in_base": 0,
+    "output_score": 77.96,
+    "impact_score": 77.96,
+    "rank_pct": 99.99,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "南方科技大学",
+    "output_total": 6690,
+    "output_patent": 6690,
+    "granted": 3951,
+    "grant_rate": 0.5906,
+    "papers_lower_bound": 0,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "",
+    "in_base": 1,
+    "output_score": 77.9,
+    "impact_score": 77.9,
+    "rank_pct": 99.989,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   },
+   {
+    "entity_type": "org",
+    "node": "深圳供电局有限公司",
+    "output_total": 6607,
+    "output_patent": 6607,
+    "granted": 2318,
+    "grant_rate": 0.3508,
+    "papers_lower_bound": 1,
+    "city": "深圳市",
+    "province": "广东省",
+    "industry_l1": "批发和零售业",
+    "in_base": 1,
+    "output_score": 77.79,
+    "impact_score": 77.79,
+    "rank_pct": 99.989,
+    "n_dims_scored": 1,
+    "missing_dims": [
+     "network"
+    ]
+   }
+  ]
+ },
+ "quarantine_delta": {
+  "why": "隔离前旧稿读 20261020 共享 bundle，且机构维直接判「不可产出」；本件用 gkx 全量申请人聚合把机构产出规模补了出来",
+  "old_vs_new": [
+   {
+    "item": "领域节点数",
+    "old": "Top20（bundle 切片）",
+    "new": 634,
+    "cause": "旧稿只绑定 bundle 的 impact_score 段 Top20；本件对 634 个小类全量打分"
+   },
+   {
+    "item": "领域最高分",
+    "old": 75.0,
+    "new": 100.0,
+    "cause": "旧稿 75.0 来自 H02J7/00 的 4 次被引经极值归一放大；本件不用被引、改百分位秩"
+   },
+   {
+    "item": "领域被引最大",
+    "old": 8,
+    "new": null,
+    "cause": "被引表 pn 与专利主表连通率仅 2.28%，词条/领域级被引不成立，本件标缺测"
+   },
+   {
+    "item": "机构维",
+    "old": "未产出（判不可算）",
+    "new": 169226,
+    "cause": "旧稿依据 dwd_patent_applicants 覆盖 0.68% 判死；但产出规模可用全量申请人聚合，只有网络影响才依赖合作边"
+   },
+   {
+    "item": "机构最高分",
+    "old": null,
+    "new": 100.0,
+    "cause": "同上；本件 org_in_base 前 20 名见 compute.top_org"
+   }
+  ]
+ },
+ "support_judgment": "部分支持",
+ "support_basis": "产出规模维在两类节点上都已全量闭合（领域 634 个 IPC 小类 / 2,420,915 件；机构 169,226 个申请人 / 2,939,895 件，合计与表行数逐位相等）；但网络影响维两侧都拿不到数据——共申请人表 28,964 行仅覆盖 20,000 件专利（0.68%）、项目表 funded_institution 0 条非空、专利被引表 pn 连通率 2.28%；论文侧只有 19.87% 的论文能归属到机构。二维公式只能执行一维，故判部分支持。",
+ "reasons": [
+  "用 log10 压缩后极值归一、而非线性 min-max：机构件数最大 81,376、中位数 1—2 件，线性归一会把 99% 的机构压到 0.0x；取对数后归一，头部与中段都有分辨率。代价是分数不代表线性倍数差。同表附 rank_pct 百分位秩供严格保序复核（其顶部两位小数会并成 100.00）；",
+  "网络影响（机构合作邻居数）不可算：`dwd_patent_applicants` 实测 28,964 行 / 20,000 件专利，覆盖率 0.68%，用它建的合作图只能代表 0.68% 的样本；`dwd_zh_project` 的 funded_institution 实测 0 条非空、participating_institution 58,452 条非空但属项目参与方、不是专利合作边；",
+  "网络影响（领域被引合计）不可算：`dwd_patent_cited` 20,515 行中只有 467 个 pn 能在 `dwd_patent` 命中（2.28%），且这 467 件摊到 634 个小类后每类不足 1 件；",
+  "机构论文数是下界：`dwd_zh_author` 62,002 行只挂在 20,048 篇分类论文上（占 100,900 篇的 19.87%），论文强的机构会被系统性低估，故只作展示列、不进打分；",
+  "机构名与底册按 `name_cn` 对齐，底册 189,116 行只有 189,068 个可用名称（47 行重名），重名机构的城市字段可能张冠李戴，已在 probes.org 披露。"
+ ],
+ "notes": [
+  "本脚本零 SQL、无 reused_from；节点得分全部由本目录缓体现算。",
+  "impact_score 在本件等于 output_score：网络影响缺测不补 0、也不参与权重（王惠「剩余维重归一」）。",
+  "对外展示时不要把本件叫「创新影响分数」而不加限定——它只含产出规模一维。",
+  "领域节点的「机构数」列来自全量缓存，仅作参考列，未进打分。"
+ ]
+}

@@ -1,0 +1,162 @@
+{
+ "metric_id": "M_SYNTH_COLLAB_CENTRALITY",
+ "方法": "平均点度中心性",
+ "边基础": "179 边",
+ "support_judgment": "部分支持",
+ "probe_date": "2026-10-20",
+ "metric_name_zh": "协同网络中心度（平均点度中心性）",
+ "grain": "区域（城市）× 统计窗口",
+ "formula": "C_avg = (1/n) * sum_i k_i = 2m/n；归一化 C'_avg = C_avg/(n-1) = 2m/[n(n-1)]",
+ "compute": {
+  "cities": {
+   "深圳": {
+    "nodes_n": 96754,
+    "edges_m": 13,
+    "deg_avg_raw": 0.0002687227,
+    "deg_centrality_norm": 2.7774099009344442e-09,
+    "density_raw": 2.7774099009344442e-09,
+    "identity_gap_norm_minus_density": 0.0,
+    "covered_nodes_cached": 128,
+    "covered_subgraph_avg_deg": 0.203125,
+    "dim_score_0_100": 0.0
+   },
+   "北京": {
+    "nodes_n": 642,
+    "edges_m": 75,
+    "deg_avg_raw": 0.2336448598,
+    "deg_centrality_norm": 0.00036450056133086446,
+    "density_raw": 0.00036450056133086446,
+    "identity_gap_norm_minus_density": 0.0,
+    "covered_nodes_cached": 236,
+    "covered_subgraph_avg_deg": 0.635593,
+    "dim_score_0_100": 56.3432
+   },
+   "上海": {
+    "nodes_n": 304,
+    "edges_m": 63,
+    "deg_avg_raw": 0.4144736842,
+    "deg_centrality_norm": 0.0013678999478895259,
+    "density_raw": 0.0013678999478895259,
+    "identity_gap_norm_minus_density": 0.0,
+    "covered_nodes_cached": 214,
+    "covered_subgraph_avg_deg": 0.588785,
+    "dim_score_0_100": 100.0
+   },
+   "广州": {
+    "nodes_n": 50449,
+    "edges_m": 28,
+    "deg_avg_raw": 0.0011100319,
+    "deg_centrality_norm": 2.200348702460971e-08,
+    "density_raw": 2.2003487024609713e-08,
+    "identity_gap_norm_minus_density": 3.308722450212111e-24,
+    "covered_nodes_cached": 46,
+    "covered_subgraph_avg_deg": 1.217391,
+    "dim_score_0_100": 0.2031
+   }
+  },
+  "distribution": {
+   "n": 4,
+   "min": 0.0002687227401451103,
+   "max": 0.4144736842105263,
+   "mean": 0.16237432466929327,
+   "median": 0.11737744586325081,
+   "cv": 1.0707746438728774
+  },
+  "rank_by_centrality": [
+   "上海",
+   "北京",
+   "广州",
+   "深圳"
+  ],
+  "top": "上海",
+  "bottom": "深圳"
+ },
+ "identity_check": {
+  "statement": "无向简单图上，归一化平均点度中心性恒等于图密度",
+  "max_abs_gap": 3.308722450212111e-24,
+  "implication": "均值口径的中心度与密度秩相关=1，不能独立识别枢纽节点；枢纽识别需节点级度清单"
+ },
+ "reuse_evidence": {
+  "m191_raw_measures": {
+   "深圳市": {
+    "deg_avg_raw": 0.0002687227401451103,
+    "density_raw": 2.7774099009344442e-09,
+    "completeness_raw": 0.0013229427207143891
+   },
+   "北京市": {
+    "deg_avg_raw": 0.2336448598130841,
+    "density_raw": 0.00036450056133086446,
+    "completeness_raw": 0.367601246105919
+   },
+   "上海市": {
+    "deg_avg_raw": 0.4144736842105263,
+    "density_raw": 0.0013678999478895259,
+    "completeness_raw": 0.7039473684210527
+   },
+   "广州市": {
+    "deg_avg_raw": 0.0011100319134175107,
+    "density_raw": 2.2003487024609713e-08,
+    "completeness_raw": 0.0009118119288786695
+   }
+  },
+  "m191_dim_scores_centrality": {
+   "深圳市": 0.0,
+   "北京市": 56.34,
+   "上海市": 100.0,
+   "广州市": 0.2
+  },
+  "relation_input_edges": {
+   "联合专利": {
+    "北京市": 33,
+    "广州市": 26,
+    "上海市": 41,
+    "深圳市": 7
+   },
+   "合作项目": {},
+   "人才流动": {
+    "深圳市": 6,
+    "上海市": 22,
+    "北京市": 42,
+    "广州市": 2
+   }
+  },
+  "relation_input_total": 179
+ },
+ "baseline": {
+  "metric": "M_ORG_COLLAB_CHAIN（ORG 域，论文合著+专利共申双源）",
+  "merged_edges": 154886,
+  "total_edge_weight": 223418,
+  "inst_inst_edges": 93135,
+  "inst_nodes_V": 58289,
+  "inst_edges_E": 93135,
+  "inst_density": 5.5e-05,
+  "weighted_degree_sum": 208490,
+  "note": "边域与 SYNTH 协同网不同（论文合著边在本族不入网），仅作量级与密度基线对比"
+ },
+ "support_reason": "联合专利边（dwd_patent_applicants 28,964 行）与人才流动边（dwd_scholar_work_experience 57,117 行）可现转，平均点度中心性四城可算；但①合作项目边结构性缺失（dwd_zh_project.funded_institution 58,453 行全空，0 边），三边并集缺一类；②节点分母失真（京沪企业主档仅 163/16 家，深广全量 95,600/49,605 家），中心度均值由分母口径主导；③节点级度清单未落盘，覆盖节点缓存值（深 128 > 2E=26）超出图论上界，枢纽节点无法复核。故按四档口径判部分支持。",
+ "provenance": {
+  "probe_date": "2026-10-21",
+  "db_probe": "skipped（按任务纪律：已有 out.json 先读复用，禁重跑探针）",
+  "inputs": [
+   "code/M_SYNTH_191_1_out.json（2026-10-21 王惠口径实测）",
+   "code/_synthb_cache.json（demo ods 行数与城市主档）",
+   "code/M_SYNTH_COLLAB_RELATION_INPUT_out.json（三类边分城统计）",
+   "code/M_ORG_COLLAB_CHAIN_out.json（ORG 域基线）"
+  ],
+  "source_tables": {
+   "dwd_patent_applicants": 28964,
+   "dwd_patent": 2939895,
+   "dwd_scholar_work_experience": 57117,
+   "dwd_zh_project": 58453,
+   "dwd_org_base_info": 189116,
+   "dwd_research_institute_base_info": 2074,
+   "dwd_scholar": 21316
+  },
+  "known_gap": "dwd_zh_project.funded_institution 非空 0 行 → 合作项目边 0",
+  "m191_support": "部分支持"
+ },
+ "note": "维度分值为四城 min-max 归一（与 191 dim_scores 同法）；中心度均值口径沿用王惠 INDEX 子项定义。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。"
+}

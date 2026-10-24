@@ -1,7 +1,11 @@
 # 智能摘要与结论推送（M_POLICY_DS_11_POLICY_EVAL_012）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_11_POLICY_EVAL_012.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_11_POLICY_EVAL_012.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_11_POLICY_EVAL_012_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_11_POLICY_EVAL_012.md`；复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_012.py` → `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_012_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_012.py`、产物 `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_012_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 D1=(主料率+上下文率)/2；D2=min(1, 平均句数/3)；D3 缺维不进平均；可算维等权 ×100
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_11_POLICY_EVAL_012.md` §二（M_POLICY_DS_11_POLICY_EVAL_012.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_DS_11_POLICY_EVAL_012.md` §二（M_POLICY_DS_11_POLICY_EVAL_012.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_11_POLICY_EVAL_012.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_11_POLICY_EVAL_012.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_11_POLICY_EVAL_012_out.json` |
+| 正本 MD | `M_POLICY_DS_11_POLICY_EVAL_012.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_012.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_012_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DS_11_POLICY_EVAL_012.py`、产物 `metrics/repro/out/M_POLICY_DS_11_POLICY_EVAL_012_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：功能指标（科技政策跟踪·政策分析评价·结果解读报告）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·政策分析评价·结果解读报告多维展示（DS-11-POLICY-EVAL）
 > **数据支持度**：**部分支持**
@@ -238,7 +242,7 @@ $$R=\frac{100}{|K|}\sum_{d\in K}D_d,\qquad K=\{d\mid D_d\ \text{可算}\}$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `cd code && python3 M_POLICY_DS_11_POLICY_EVAL_012.py`，零 SQL、1.66 秒，读取政策快照、正文快照与补充探针，覆盖写出 `code/M_POLICY_DS_11_POLICY_EVAL_012_out.json`。脚本不连数据库、不 import 任何本地 helper。
+执行 `python3 M_POLICY_DS_11_POLICY_EVAL_012.py`，零 SQL、1.66 秒，读取政策快照、正文快照与补充探针，覆盖写出 `code/M_POLICY_DS_11_POLICY_EVAL_012_out.json`。脚本不连数据库、不 import 任何本地 helper。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -457,7 +461,7 @@ D2 的 92.61 由平均句数 2.78 除以 3 得到。这个 3 是本轮设的封�
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_POLICY_DS_11_POLICY_EVAL_012.py
 python3 -c "import json;d=json.load(open('code/M_POLICY_DS_11_POLICY_EVAL_012_out.json'));print(d['dims_available'],d['summary_readiness_score'])"
 ```

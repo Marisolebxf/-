@@ -1,7 +1,11 @@
 # 企业影响力（M_INNOV_ENTERPRISE_INFLUENCE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_ENTERPRISE_INFLUENCE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_ENTERPRISE_INFLUENCE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_ENTERPRISE_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_ENTERPRISE_INFLUENCE.md`；复现脚本 `metrics/repro/M_INNOV_ENTERPRISE_INFLUENCE.py` → `metrics/repro/out/M_INNOV_ENTERPRISE_INFLUENCE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_ENTERPRISE_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_ENTERPRISE_INFLUENCE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_ENTERPRISE_INFLUENCE.md` §二（M_INNOV_ENTERPRISE_INFLUENCE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_ENTERPRISE_INFLUENCE.md` §二（M_INNOV_ENTERPRISE_INFLUENCE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -53,16 +57,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_ENTERPRISE_INFLUENCE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_ENTERPRISE_INFLUENCE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_ENTERPRISE_INFLUENCE_out.json` |
+| 正本 MD | `M_INNOV_ENTERPRISE_INFLUENCE.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_ENTERPRISE_INFLUENCE.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_ENTERPRISE_INFLUENCE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_ENTERPRISE_INFLUENCE.py`、产物 `metrics/repro/out/M_INNOV_ENTERPRISE_INFLUENCE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV｜ **域**：科技全域态势·科创要素｜ **UI 挂载**：科创要素图谱企业节点、企业画像「影响力」卡片、企业对比｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（20260904 口径 V1.3-20260829）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：有 / 部分（转化与带动两维覆盖不足）
@@ -153,8 +157,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 编号 | 来源 | 位置 | 用途 |
 |---|---|---|---|
-| S1 | `local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` | 第 980–987 行（人才产业力模型） | 企业影响力作为维度的原文 |
-| S2 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_ENTERPRISE_INFLUENCE.md` | 「口径定义」「计算逻辑说明」 | 三维定义与合成规则 |
+| S1 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` | 第 980–987 行（人才产业力模型） | 企业影响力作为维度的原文 |
+| S2 | `王惠口径正本（GitLab 外本地归档）` | 「口径定义」「计算逻辑说明」 | 三维定义与合成规则 |
 | S3 | `_work_full/DATA_FACTS_gkx.md` | §2 表清单、§7 白名单 | 表规模与可用性 |
 | S4 | `_work_full/MOCK_TABLE_REGISTRY.md` | §9 禁引表 | 排除造数 |
 | S5 | `_work_full/B5_INNOV.json` | `M_INNOV_ENTERPRISE_INFLUENCE` 条目 | 元信息：`wanghui=true` |
@@ -366,7 +370,7 @@ Top 10 企业：
 5. Fortunato S, Bergstrom C T, Börner K, et al. Science of science. *Science*, 2018, 359(6379): eaao0185. https://doi.org/10.1126/science.aao0185
 6. 国务院. 知识产权强国建设纲要（2021—2035 年）. 2021-09-22. https://www.gov.cn/gongbao/content/2021/content_5643253.htm
 7. 国家知识产权局. 2025 年知识产权统计年报.（口径参照：专利转让/许可计量）
-8. 王惠. 企业影响力口径 V1.3-20260829. 内部文档，`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_ENTERPRISE_INFLUENCE.md`.
+8. 王惠. 企业影响力口径 V1.3-20260829. 内部文档，`王惠口径正本（GitLab 外本地归档）`.
 
 ---
 

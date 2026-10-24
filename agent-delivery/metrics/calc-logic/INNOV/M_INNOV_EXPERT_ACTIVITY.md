@@ -1,7 +1,11 @@
 # 专家科研活跃度（M_INNOV_EXPERT_ACTIVITY）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EXPERT_ACTIVITY.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EXPERT_ACTIVITY.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EXPERT_ACTIVITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_EXPERT_ACTIVITY.md`；复现脚本 `metrics/repro/M_INNOV_EXPERT_ACTIVITY.py` → `metrics/repro/out/M_INNOV_EXPERT_ACTIVITY_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_EXPERT_ACTIVITY.py`、产物 `metrics/repro/out/M_INNOV_EXPERT_ACTIVITY_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EXPERT_ACTIVITY.md` §二（M_INNOV_EXPERT_ACTIVITY.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_EXPERT_ACTIVITY.md` §二（M_INNOV_EXPERT_ACTIVITY.py 零改语义复算）。
 
 ## 源表字段
 
@@ -52,16 +56,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_EXPERT_ACTIVITY.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EXPERT_ACTIVITY.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_EXPERT_ACTIVITY_out.json` |
+| 正本 MD | `M_INNOV_EXPERT_ACTIVITY.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_EXPERT_ACTIVITY.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_EXPERT_ACTIVITY_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_EXPERT_ACTIVITY.py`、产物 `metrics/repro/out/M_INNOV_EXPERT_ACTIVITY_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV｜ **域**：科技指数可视化·专家画像｜ **UI 挂载**：专家活跃度可视化（热力图/时间轴）、专家画像、专家 H 指数排行旁位｜ **数据支持度**：**部分支持**
 > **公式定义人**：AI-20261016（王惠未定义本指标；本报告按需求原句重建）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：有 / 部分（学者主档与关系表 ID 域断裂）
@@ -152,7 +156,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 编号 | 来源 | 位置 | 用途 |
 |---|---|---|---|
-| S1 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md` | 第 1037–1039 行（专家活跃度可视化） | 三子项原文 |
+| S1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | 第 1037–1039 行（专家活跃度可视化） | 三子项原文 |
 | S2 | 同上 | 第 2389–2391 行（个人科研活跃度与合作网络分析） | 网络扩展能力要求 |
 | S3 | `_work_full/DATA_FACTS_gkx.md` | §十（合著网 822,018 边 / 620,839 节点）、§十一（ID 断裂 8.72%） | 网络与 ID 事实 |
 | S4 | `_work_full/B5_INNOV.json` | `M_INNOV_EXPERT_ACTIVITY` 条目 | 元信息：`wanghui=false`、`formula_source_1019=AI-20261016` |

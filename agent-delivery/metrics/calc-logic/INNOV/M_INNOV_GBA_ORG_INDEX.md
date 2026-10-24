@@ -1,7 +1,11 @@
 # 创新机构指数（湾区）（M_INNOV_GBA_ORG_INDEX）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ORG_INDEX.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ORG_INDEX.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ORG_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_GBA_ORG_INDEX.md`；复现脚本 `metrics/repro/M_INNOV_GBA_ORG_INDEX.py` → `metrics/repro/out/M_INNOV_GBA_ORG_INDEX_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_GBA_ORG_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_ORG_INDEX_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 org_index = (norm(载体数量) + norm(载体产出) + norm(科技型机构)) / 3 × 100
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ORG_INDEX.md` §二（M_INNOV_GBA_ORG_INDEX.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_GBA_ORG_INDEX.md` §二（M_INNOV_GBA_ORG_INDEX.py 零改语义复算）。
 
 ## 源表字段
 
@@ -61,16 +65,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_GBA_ORG_INDEX.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ORG_INDEX.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_GBA_ORG_INDEX_out.json` |
+| 正本 MD | `M_INNOV_GBA_ORG_INDEX.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_GBA_ORG_INDEX.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_GBA_ORG_INDEX_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_GBA_ORG_INDEX.py`、产物 `metrics/repro/out/M_INNOV_GBA_ORG_INDEX_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INDEX（0–100 合成评分，湾区创新机构）｜ **域**：INNOV（湾区创新监测）｜ **UI 挂载**：科技信息展示系统 → 科技发展态势 → 湾区创新监测 → 粤港澳大湾区创新能力 → 创新机构指数
 > **数据支持度**：**部分支持** ｜ **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true
@@ -158,9 +162,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
-| 1 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.4.1.5.2 粤港澳大湾区创新能力 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析，实时计算出粤港澳大湾区创新能力指标。」 |
+| 1 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md` | §1.1.1.1.4.1.5.2 粤港澳大湾区创新能力 | 「对大湾区所具备的创新资源、创新机构、创新机制、创新环境等构成城市创新力的因素进行综合分析，实时计算出粤港澳大湾区创新能力指标。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.2.3 指标构成分析 | 「将创新能力指标分解为多个子指标（如创新资源指数、创新机构指数、创新机制指数、创新环境指数等），用户可查看各子指标的数值和贡献度。」 |
-| 3 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_ORG_INDEX.md` §计算逻辑说明 | 「湾区各城创新载体的数量与产出。统计对象为粤港澳大湾区 11 城，从载体数量、载体产出、科技型机构综合评分，取值 0—100。」 |
+| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）` §计算逻辑说明 | 「湾区各城创新载体的数量与产出。统计对象为粤港澳大湾区 11 城，从载体数量、载体产出、科技型机构综合评分，取值 0—100。」 |
 | 4 | 同上 | §第二步 三个子项 | 「1 载体数量：该城入集机构 COUNT(DISTINCT org_id)；2 载体产出：统计年专利去重件数 + 中英文论文去重件数；3 科技型机构：org_tag 含「高新技术」的机构去重数 + 科研院所去重数。」 |
 | 5 | 同上 | §第三步 合成 | 「创新机构指数 = (norm(载体数量)+norm(载体产出)+norm(科技型机构))/3 × 100；缺测维不补 0，剩余维权重重归一。」 |
 | 6 | 上游指标族 | `M_INNOV_GBA_SWOT_STRENGTH.md` §分项来源 | 优势识别的 12 分项中，载体数量、载体产出、科技型机构三项来自本指标 |
@@ -265,7 +269,7 @@ $$
 **代码与运行**：
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_GBA_ORG_INDEX.py
 # 输出 code/M_INNOV_GBA_ORG_INDEX_out.json；实测耗时 0.4 秒（读本地快照，零 SQL）
 ```
@@ -362,7 +366,7 @@ python3 code/M_INNOV_GBA_ORG_INDEX.py
 
 ### 5.1 王惠原方法还原
 
-出处：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_ORG_INDEX.md`（V1.5-20260830）。
+出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260830）。
 
 - **入集**：湾区 11 城；企业库 + 科研院所 + 港澳海外库，按 `org_id` 去重；`city`/`province` 去「市」「特别行政区」后命中即入集。
 - **载体数量**：该城入集机构 `COUNT(DISTINCT org_id)`。
@@ -412,7 +416,7 @@ python3 code/M_INNOV_GBA_ORG_INDEX.py
 5. 国家市场监督管理总局、国家标准化管理委员会. (2021). 《科技评估通则》（GB/T 40147-2021）. https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=69812EA65DC30B02C6CCCEFC1DC629CE
 6. OECD/JRC. (2008). *Handbook on Constructing Composite Indicators: Methodology and User Guide*. OECD Publishing. https://doi.org/10.1787/9789264043466-en （出版社对脚本访问返回 403，人工浏览器可开）
 7. European Commission. (2024). *European Innovation Scoreboard 2024 — Methodology Report*. https://research-and-innovation.ec.europa.eu/document/download/074d5495-433a-440f-bcf9-dc620fce7af1_en?filename=ec_rtd_eis-2024-methodology-report.pdf
-8. 项目内旁证（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_ORG_INDEX.md`。
+8. 项目内旁证（非外部文献）：`王惠口径正本（GitLab 外本地归档）`。
 
 文献—方法—库表完整论证见**附录 C**；实测产物见**附录 D**。
 

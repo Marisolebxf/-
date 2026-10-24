@@ -1,0 +1,183 @@
+{
+ "metric_id": "M_CHAIN_PRODUCT_COUNT",
+ "metric_name": "产业链关联产品数",
+ "support_judgment": "部分支持",
+ "judgment_reason": "产品标签表 80,258 行真实可取，拆项后 9/12 条链有产品；但 INB1209/INB1236/INB2503 在产品表 industry_link_name 中零行（SQL 实测），且产品条目无行业标准编码、同物异名严重、不做归并则不可跨链比较——覆盖与口径两侧都有缺口。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "口径明确「无时间窗」，产品标签表也没有年份字段，故不设统计期、不做年度序列。",
+ "sources": [
+  "gkx @ 183.240.141.251:3318 / gkx_reader_zp: gkx.dwd_org_industry_product_tags（80,258 行全表）",
+  "code/_snapshots21/chain21_products_20261022.json（全表落地：链码 / 品类 / 链名 / 产品清单 / 企业名）",
+  "code/_snapshots21/chain21_layer_20261022.json（12 链名口径，与 M_CHAIN_ENTERPRISE_COUNT 同池）"
+ ],
+ "official_sql": {
+  "as_written": "SELECT COUNT(DISTINCT product_name) FROM dwd_org_industry_product_tags WHERE industry_code = :chain_code",
+  "result_on_gkx": 0,
+  "why_zero": "industry_code 存链名数组（如 [\"智能终端\"]），链码在 industry_link_name；等值匹配链码必然 0 行",
+  "raw_string_distinct": 65457,
+  "trap": "直接对 product_name 做 DISTINCT 得到 65,457（gkx 全表 80,258 行），那是「企业级产品清单字符串」个数，不是产品种数；旧稿在演示库切片上测得 21,654，不可套用到 gkx"
+ },
+ "rule": {
+  "unit": "个（产品条目；同一企业在不同链下重复计入）",
+  "split": "ast.literal_eval 取 JSON 列表后逐项 strip；解析失败按 , ， ; ； 切分；不合并同义词、不做大小写归一",
+  "chain_attr": "链码取 industry_link_name 中 INB token 前 7 位，多链企业按链各计一次",
+  "dedupe": "链内按产品条目字符串去重；不做 NLP 归并（如「伺服电机」与「伺服电机系统」算两个）",
+  "pool": "与 M_CHAIN_ENTERPRISE_COUNT 同 12 链口径"
+ },
+ "chains": [
+  {
+   "chain_code": "INB1306",
+   "chain_name": "软件与信息服务",
+   "n_products": 139118,
+   "n_product_categories": 1160,
+   "n_orgs": 40156,
+   "products_per_org": 3.46
+  },
+  {
+   "chain_code": "INB1333",
+   "chain_name": "智能终端",
+   "n_products": 80515,
+   "n_product_categories": 1135,
+   "n_orgs": 21571,
+   "products_per_org": 3.73
+  },
+  {
+   "chain_code": "INB1309",
+   "chain_name": "人工智能",
+   "n_products": 76796,
+   "n_product_categories": 1166,
+   "n_orgs": 13704,
+   "products_per_org": 5.6
+  },
+  {
+   "chain_code": "INB1354",
+   "chain_name": "具身智能",
+   "n_products": 43453,
+   "n_product_categories": 1072,
+   "n_orgs": 7968,
+   "products_per_org": 5.45
+  },
+  {
+   "chain_code": "INB1323",
+   "chain_name": "传感器",
+   "n_products": 34389,
+   "n_product_categories": 1050,
+   "n_orgs": 5874,
+   "products_per_org": 5.85
+  },
+  {
+   "chain_code": "INB1204",
+   "chain_name": "机器人",
+   "n_products": 34130,
+   "n_product_categories": 966,
+   "n_orgs": 6502,
+   "products_per_org": 5.25
+  },
+  {
+   "chain_code": "INB2505",
+   "chain_name": "合成生物",
+   "n_products": 27604,
+   "n_product_categories": 416,
+   "n_orgs": 13820,
+   "products_per_org": 2.0
+  },
+  {
+   "chain_code": "INB1303",
+   "chain_name": "集成电路",
+   "n_products": 27044,
+   "n_product_categories": 974,
+   "n_orgs": 5505,
+   "products_per_org": 4.91
+  },
+  {
+   "chain_code": "INB1502",
+   "chain_name": "数字创意",
+   "n_products": 17099,
+   "n_product_categories": 727,
+   "n_orgs": 3328,
+   "products_per_org": 5.14
+  },
+  {
+   "chain_code": "INB1209",
+   "chain_name": "智能网联汽车",
+   "n_products": 0,
+   "n_product_categories": 0,
+   "n_orgs": 0,
+   "products_per_org": null
+  },
+  {
+   "chain_code": "INB1236",
+   "chain_name": "低空经济",
+   "n_products": 0,
+   "n_product_categories": 0,
+   "n_orgs": 0,
+   "products_per_org": null
+  },
+  {
+   "chain_code": "INB2503",
+   "chain_name": "生物医药",
+   "n_products": 0,
+   "n_product_categories": 0,
+   "n_orgs": 0,
+   "products_per_org": null
+  }
+ ],
+ "stats": {
+  "n_chains": 12,
+  "covered_chains": 9,
+  "zero_chains": 3,
+  "min": 0,
+  "max": 139118,
+  "median": 34130,
+  "sum_products": 480148,
+  "sum_orgs": 118428,
+  "top1_share_pct": 28.974,
+  "products_per_org_all": 4.05
+ },
+ "table_scale": {
+  "rows": 80258,
+  "rows_with_empty_product_list": 1611,
+  "product_items_total": 724960,
+  "distinct_product_items_all_chains": 221945,
+  "distinct_orgs_all_chains": 78838,
+  "zero_chain_rows": {
+   "INB1209": 0,
+   "INB1236": 0,
+   "INB2503": 0
+  },
+  "zero_chain_check": "SQL 实测 industry_link_name LIKE 命中行数：INB1209=0 / INB1236=0 / INB2503=0，属源表覆盖缺口而非解析失败",
+  "non_top12_chains": [
+   {
+    "code": "INB0014",
+    "n_products": 13445
+   }
+  ]
+ },
+ "difference_vs_old_draft": {
+  "old_source": "演示库产品标签表（表名前缀 demo，主机 111.198.38.90），25,258 行",
+  "old_corrected": {
+   "rows": 25258,
+   "distinct_products": 72616,
+   "distinct_orgs": 25219,
+   "INB1306_products": 44929,
+   "INB1306_orgs": 12883
+  },
+  "now": {
+   "rows": 80258,
+   "distinct_products": 221945,
+   "INB1306_products": 139118,
+   "INB1306_orgs": 40156
+  },
+  "reason": "gkx 产品标签表比演示库多 55,000 行（3.18 倍），同一拆分规则下产品条目随之放大；旧稿的 72,616 只覆盖演示库切片",
+  "bias": "本件值系统性高于旧稿，倍率约 3.0—3.1 倍；差异来自源表覆盖，不是规则差异"
+ },
+ "gaps": [
+  "产品条目无行业标准编码，靠企业自主填报，同物异名严重；不做归并意味着「产品数」偏大且不可跨链比较",
+  "一条企业一行、整串清单：清单长度受填报习惯影响，头部企业会把产品数抬高",
+  "品类标签（industry_link_code）与产品清单不同源，二者不可互相校验",
+  "80,258 行中 1,611 行产品清单为空，仍计入 n_orgs 但不贡献产品"
+ ],
+ "generated_at": "2026-10-23T21:54:06",
+ "elapsed_sec": 2.59
+}

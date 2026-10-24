@@ -1,7 +1,11 @@
 # 政策效果（M_INNOV_PG_EFFECT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_EFFECT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_EFFECT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_EFFECT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_PG_EFFECT.md`；复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py` → `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_PG_EFFECT.py`、产物 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 growth = (mean(T-2..T) − mean(T-7..T-3)) / max(base,1)；专利维不可算，论文/项目维按窗口敏感性披露
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_EFFECT.md` §二（M_INNOV_PG_EFFECT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_PG_EFFECT.md` §二（M_INNOV_PG_EFFECT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_PG_EFFECT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_EFFECT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_EFFECT_out.json` |
+| 正本 MD | `M_INNOV_PG_EFFECT.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_PG_EFFECT.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_PG_EFFECT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_PG_EFFECT.py`、产物 `metrics/repro/out/M_INNOV_PG_EFFECT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（增幅/相关性型）｜ **域**：科技信息展示系统 · 科技发展态势 · 科技创新评估 · 政策与条件保障力指标展示（需求清单序号 156）
 > **UI 挂载**：政策与条件保障力 → 政策效果评估 → 政策实施前后产出变化（专利 / 论文 / 项目）
@@ -161,7 +165,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | # | 路径 | 章节/标题 | 原句（≤2 句） |
 |---|---|---|---|
 | 1 | `gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` | 政策效果评估 · 序号 156 | 「评估政策实施后对科技创新的促进作用，包括专利产出、论文发表、项目立项等变化情况。」 |
-| 2 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_EFFECT.md` | 口径定义 | 「从专利、论文、项目三个维度评估政策实施后的产出变化。」 |
+| 2 | `王惠口径正本（GitLab 外本地归档）` | 口径定义 | 「从专利、论文、项目三个维度评估政策实施后的产出变化。」 |
 | 3 | 同上 | 计算逻辑说明 | 「以政策实施年为 T，比较 T-2..T 与 T-7..T-3 的均值增幅。」 |
 | 4 | 同上 | 维度表 | 「专利取申请年，论文取发表年，项目取立项年。」 |
 | 5 | 项目内旁证 | `_work_gkx21/CLASSIFY.json` 键 `M_INNOV_PG_EFFECT` | 「case=A；tables=[`dwd_patent`,`dwd_zh_paper`,`dwd_zh_project`]。」 |
@@ -266,14 +270,14 @@ T=2020 时增幅 +78.58%（基线 2013—2017 均值 3,467.60），T=2023 时 +8
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_PG_EFFECT.py` |
+| 计算脚本 | `metrics/repro/M_INNOV_PG_EFFECT.py` |
 | 结果产物 | 同目录 `code/M_INNOV_PG_EFFECT_out.json` |
 | 主算数据 | `code/_snapshots21/` 下的论文/项目/专利年度面板与 `pg_policy_rows_20261021.json` |
 | 主算库 | `gkx`（`183.240.141.251:3318`，只读） |
 | SQL 条数 / 耗时 | 面板快照导出若干条；本脚本 **0 条 SQL**，运行 0.16 秒 |
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_INNOV_PG_EFFECT.py
 ```
 
@@ -406,7 +410,7 @@ Spearman：政策密度 vs 专利密度 **+1.00**；政策密度 vs 专利增幅
 
 ### 5.1 王惠原方法还原
 
-出处：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_EFFECT.md`（V1.5-20260901）。
+出处：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
 
 原文要点：三维（专利/论文/项目）；以政策实施年为 T；比较 T-2..T 与 T-7..T-3 均值；增幅 = (近期 − 基线) / 基线；三维分别计算。
 
@@ -443,7 +447,7 @@ Spearman：政策密度 vs 专利密度 **+1.00**；政策密度 vs 专利增幅
 4. Abadie, A., Diamond, A., & Hainmueller, J. (2010). Synthetic Control Methods for Comparative Case Studies. *Journal of the American Statistical Association*, 105(490), 493–505.
 5. Card, D., & Krueger, A. B. (1994). Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania. *American Economic Review*, 84(4), 772–793.
 6. OECD. (2015). *Frascati Manual 2015*. OECD Publishing. https://doi.org/10.1787/9789264239012-en
-7. 项目内口径文件（非外部文献）：`local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_PG_EFFECT.md`（V1.5-20260901）。
+7. 项目内口径文件（非外部文献）：`王惠口径正本（GitLab 外本地归档）`（V1.5-20260901）。
 8. 项目内需求原文（非外部文献）：`gkx-orchestration/agent-delivery/bid-reference/srs/02-科技信息展示系统/科技发展态势/科技创新评估.md` 序号 156。
 
 ---

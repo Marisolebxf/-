@@ -1,7 +1,11 @@
 # 深圳优势排名（M_CHAIN_SZ_ADVANTAGE_RANK）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SZ_ADVANTAGE_RANK.md`；复现脚本 `metrics/repro/M_CHAIN_SZ_ADVANTAGE_RANK.py` → `metrics/repro/out/M_CHAIN_SZ_ADVANTAGE_RANK_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SZ_ADVANTAGE_RANK.py`、产物 `metrics/repro/out/M_CHAIN_SZ_ADVANTAGE_RANK_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -30,7 +34,7 @@
 rank_c = rank of 深圳市 in {V_c(city) : city ∈ C}，V_c 取父指标「可得维口径」得分（企业维 + 专利维等权），C = 深/穗/莞/惠
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md` §二（M_CHAIN_SZ_ADVANTAGE_RANK.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_CHAIN_SZ_ADVANTAGE_RANK.md` §二（M_CHAIN_SZ_ADVANTAGE_RANK.py 零改语义复算）。
 
 ## 源表字段
 
@@ -53,16 +57,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_ADVANTAGE_RANK.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_ADVANTAGE_RANK_out.json` |
+| 正本 MD | `M_CHAIN_SZ_ADVANTAGE_RANK.md` |
+| 复现脚本 | `metrics/repro/M_CHAIN_SZ_ADVANTAGE_RANK.py` |
+| 复现产物 | `metrics/repro/out/M_CHAIN_SZ_ADVANTAGE_RANK_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_SZ_ADVANTAGE_RANK.py`、产物 `metrics/repro/out/M_CHAIN_SZ_ADVANTAGE_RANK_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：RANK（同母体四城对比）｜ **域**：产业链分析／区域竞争力／深圳位势｜ **UI 挂载**：区域对比页「深圳名次」徽标、链详情页「在本链四城中排第几」
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（父指标分数可直读）+ B 类（官方结果表 0 行、政策/人才两维缺失、全国对标不可实现）**
@@ -281,7 +285,7 @@ $$\mathrm{LQ}=\frac{\text{深圳占该链企业比}}{\text{深圳占全库企业
 ### 2.7 复现代码与结果
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_CHAIN_SZ_ADVANTAGE_RANK.py
 # 输出 M_CHAIN_SZ_ADVANTAGE_RANK_out.json（直读父产物，零 DB）
 ```

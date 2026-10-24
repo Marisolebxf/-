@@ -1,7 +1,11 @@
 # 科创要素分布比例（M_INNOV_FACTOR_DIST）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_DIST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_DIST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_DIST.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_DIST.py` → `metrics/repro/out/M_INNOV_FACTOR_DIST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_DIST.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_DIST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_DIST.md` §二（M_INNOV_FACTOR_DIST.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_FACTOR_DIST.md` §二（M_INNOV_FACTOR_DIST.py 零改语义复算）。
 
 ## 源表字段
 
@@ -60,16 +64,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_DIST.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_DIST.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_DIST_out.json` |
+| 正本 MD | `M_INNOV_FACTOR_DIST.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_FACTOR_DIST.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_DIST_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_DIST.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_DIST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 域 · 科技全域态势（需求只给功能口径，无公式；本报告按类型/年度/地域/学科/技术五维给占比）｜ **wanghui**: false ｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·科创要素统计分析功能（序号 11）｜ **数据支持度**：**部分支持**
 > **公式定义人**：AI-20261016（需求原文只要求「分布分析」，未给维度与分母口径；本报告按可得的五个维度分别构造占比）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分
@@ -171,9 +175,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.1.3 | 「支持各类科技创新要素的全面展示与分析，包括论文、期刊、专利、专家学者、会议、组织机构、课题、项目、成果等多类型科创管理对象。」 |
+| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.1.3 | 「支持各类科技创新要素的全面展示与分析，包括论文、期刊、专利、专家学者、会议、组织机构、课题、项目、成果等多类型科创管理对象。」 |
 | 2 | 同上 | §1.1.1.1.4.1.1.3.3 | 「提供科创要素的统计图表和数据分析功能，包括数量统计、分布分析、趋势分析、关联分析等；支持按不同维度（如时间、地域、类型等）进行要素统计和比较。」 |
-| 3 | 王惠阶段性成果 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/`（本指标无对应条目） | 未给出本指标口径；本报告为工程侧构造 |
+| 3 | 王惠阶段性成果 | `王惠口径正本（GitLab 外本地归档）`（本指标无对应条目） | 未给出本指标口径；本报告为工程侧构造 |
 | 4 | 数据事实库 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.6、§3.8、§3.10、§3.13 | 专利全表 JOIN 被杀、city 已规范到市级、四列整列为空、专利面板为唯一取数入口 |
 | 5 | 专利面板 | `code/_snapshots21/patent_panel_innov_20261021.json` | `rows=2,939,895`、`chunks=10`、`source=gkx.dwd_patent` |
 
@@ -244,8 +248,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_DIST.py`
-**运行命令**：`cd code && python3 M_INNOV_FACTOR_DIST.py`
+**代码入库路径**：`metrics/repro/M_INNOV_FACTOR_DIST.py`
+**运行命令**：`python3 M_INNOV_FACTOR_DIST.py`
 **输出**：`code/M_INNOV_FACTOR_DIST_out.json`（实测耗时 < 1 秒；先由 `code/_innov21_facts.py` 构建共享事实缓存，约 104 秒，其中论文署名机构解析 42.9 秒）
 
 | 类型 | 行数 | 占比 |
@@ -373,7 +377,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ## 附录 A　原始需求原文摘录（仅含本指标相关段落）
 
-以下摘自 `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`。
+以下摘自 `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`。
 
 ### A.1 科创要素总述（§1.1.1.1.4.1.1.3）
 

@@ -1,7 +1,11 @@
 # 度中心性计算与展示（M_SYNTH_DS_23_GRAPH_ALGO_006）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_DS_23_GRAPH_ALGO_006.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_DS_23_GRAPH_ALGO_006.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_DS_23_GRAPH_ALGO_006.md`；复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` → `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 C_D(v) = d_v / (n - 1)，d_v 为邻居数，n 为所选点集节点数
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_DS_23_GRAPH_ALGO_006.md` §二（M_SYNTH_DS_23_GRAPH_ALGO_006.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SYNTH_DS_23_GRAPH_ALGO_006.md` §二（M_SYNTH_DS_23_GRAPH_ALGO_006.py 零改语义复算）。
 
 ## 源表字段
 
@@ -61,16 +65,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_DS_23_GRAPH_ALGO_006.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_DS_23_GRAPH_ALGO_006.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` |
+| 正本 MD | `M_SYNTH_DS_23_GRAPH_ALGO_006.md` |
+| 复现脚本 | `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py` |
+| 复现产物 | `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_DS_23_GRAPH_ALGO_006.py`、产物 `metrics/repro/out/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：ALGO（图算法，输出节点级结构位置与榜单）｜ **域**：综合（SYNTH）／知识图谱算法｜ **UI 挂载**：图谱页节点属性面板、机构连接度榜单、图谱节点大小映射
 > **数据支持度**：**完全转换支持**｜ **依赖性质**：**A 类（论文共著边由 `dwd_zh_paper` 全量重建）+ 结构性无源（供应/合作/技术流三类业务边在库内均无表）**
@@ -315,7 +319,7 @@ k-core 与本件的关系要说清：k-core 是**子图筛选口径**，不是�
 ### 2.7 复现代码结果展示
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd agent-delivery/metrics/repro
 python3 code/_build_graph_algo_23.py          # 建族级快照（约 20 分钟，含精确 Brandes）
 python3 code/M_SYNTH_DS_23_GRAPH_ALGO_006.py  # 读快照出本件产物
 # → code/M_SYNTH_DS_23_GRAPH_ALGO_006_out.json

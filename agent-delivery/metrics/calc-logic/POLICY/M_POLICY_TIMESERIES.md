@@ -1,7 +1,11 @@
 # 政策时序指标（M_POLICY_TIMESERIES）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TIMESERIES.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TIMESERIES.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TIMESERIES_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_TIMESERIES.md`；复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py` → `metrics/repro/out/M_POLICY_TIMESERIES_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_TIMESERIES.py`、产物 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TIMESERIES.md` §二（M_POLICY_TIMESERIES.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_TIMESERIES.md` §二（M_POLICY_TIMESERIES.py 零改语义复算）。
 
 ## 源表字段
 
@@ -48,16 +52,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_TIMESERIES.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TIMESERIES.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_TIMESERIES_out.json` |
+| 正本 MD | `M_POLICY_TIMESERIES.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_TIMESERIES.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_TIMESERIES_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_TIMESERIES.py`、产物 `metrics/repro/out/M_POLICY_TIMESERIES_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：SERIES（年度/月度时序）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技专题服务系统「政策时序分析」趋势图、政策追踪页的年度柱状与同比标注
 > **数据支持度**：**部分支持**｜ **公式定义人**：注册表 `formula` = 「发布量=`COUNT(DISTINCT policy_id) GROUP BY 期`；增长率/连续性 `pending_algorithm`」；本件按该条款实现同比与连续性，增长口径为本件定义
@@ -175,7 +179,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 1 | `gkx.dwd_policy_base` | gkx @ 183.240.141.251:3318，只读 | 政策底表，20,000 行 |
 | 2 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` | `metric_id: M_POLICY_TIMESERIES` | 注册表定义与公式状态（`pending_algorithm`） |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | §1.1.1.1.1.1.1.1.3（3）政策时序指标 | 需求原文 |
-| 4 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/_work_gkx21/DATA_FACTS_gkx21.md` | §3.16、§3.49、§3.56 | 基期不许摊 0、信号终止记未测、`table_rows` 不可用 |
+| 4 | `批次《20261021 改源工程》数据事实登记件 DATA_FACTS_gkx21.md（GitLab 外本地工作稿）` | §3.16、§3.49、§3.56 | 基期不许摊 0、信号终止记未测、`table_rows` 不可用 |
 | 5 | `第三方库指标计算过程/M_CHAIN_POLICY_MATCH_SCORE.md` | §2.3 剔除词表 | 12 词表与 620 条剔除口径的来源 |
 
 同 ID 的 calc-logic 正本在 `calc-logic/POLICY/` 下不存在（该目录现有 19 份，均为 DEEP/评分件），注册表也未给 `calc_logic_ref`。本件口径以注册表 `formula` 与需求原文为准，不虚构正本路径。
@@ -263,7 +267,7 @@ $$\mathrm{CAGR}=\left(\frac{2120}{1261}\right)^{1/6}-1=9.0444\%$$
 ### 2.7 复现代码与产物
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 _build_policy_dims_20261023.py      # 分类轴底数（约 45 秒，连 gkx）
 python3 _build_policy_struct_20261023.py    # 时间轴底数（约 55 秒，连 gkx）
 python3 M_POLICY_TIMESERIES.py              # 只读快照，不连库
@@ -371,7 +375,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_POLICY_TIMESERIES.py
 python3 -c "import json;d=json.load(open('M_POLICY_TIMESERIES_out.json'));print(d['support_judgment'], d['headline']['peak_year'], d['growth']['cagr']['cagr_pct'])"
 ```

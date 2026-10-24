@@ -1,7 +1,11 @@
 # 深圳产业问题数（M_CHAIN_SZ_PROBLEM_COUNT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-CHAIN-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_PROBLEM_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_PROBLEM_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_PROBLEM_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_CHAIN_SZ_PROBLEM_COUNT.md`；复现脚本 `metrics/repro/M_CHAIN_SZ_PROBLEM_COUNT.py` → `metrics/repro/out/M_CHAIN_SZ_PROBLEM_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_CHAIN_SZ_PROBLEM_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_SZ_PROBLEM_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_PROBLEM_COUNT.md` §二（M_CHAIN_SZ_PROBLEM_COUNT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_CHAIN_SZ_PROBLEM_COUNT.md` §二（M_CHAIN_SZ_PROBLEM_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -49,22 +53,22 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_CHAIN_SZ_PROBLEM_COUNT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_PROBLEM_COUNT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_CHAIN_SZ_PROBLEM_COUNT_out.json` |
+| 正本 MD | `M_CHAIN_SZ_PROBLEM_COUNT.md` |
+| 复现脚本 | `metrics/repro/M_CHAIN_SZ_PROBLEM_COUNT.py` |
+| 复现产物 | `metrics/repro/out/M_CHAIN_SZ_PROBLEM_COUNT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_CHAIN_SZ_PROBLEM_COUNT.py`、产物 `metrics/repro/out/M_CHAIN_SZ_PROBLEM_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（链级计数·结构短板）｜ **域**：产业链分析／深圳产业发展分析／产业问题诊断｜ **UI 挂载**：深圳产业链页「产业问题」卡片与链级问题清单
 > **数据支持度**：**部分支持**
 > **口径来源**：`gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_SZ_PROBLEM_COUNT.md`（v0.2.0，2026-10-14，human:徐滕强拍板「读表口径 + 440300 等值切片」）
 > **王惠正本**：无同 ID 正本（`_work_gkx21/REM_QUEUE_20261023.json` 的 `wanghui` 为 null）；本件口径来自 calc-logic 正本 + 需求原文，五维诊断模型语义按「不可得」处理
-> **复现**：`cd code && python3 M_CHAIN_SZ_PROBLEM_COUNT.py` → `code/M_CHAIN_SZ_PROBLEM_COUNT_out.json`
+> **复现**：`python3 M_CHAIN_SZ_PROBLEM_COUNT.py` → `code/M_CHAIN_SZ_PROBLEM_COUNT_out.json`
 > **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）；本脚本零 DB，只读 `code/_snapshots21/` 落盘快照
 > **基期声明**：截面指标。`base_years_used=[]`、`base_years_missing=[]`；无年度序列，理由写在 `base_years_note`
 
@@ -342,7 +346,7 @@ D4、D5、D6 三项的缺失，正是本件不能升到「完全转换支持」�
 
 | 命令 | 期望 | 备注 |
 |---|---|---|
-| `cd code && python3 M_CHAIN_SZ_PROBLEM_COUNT.py` | `problem=231 (blank 98 single 133) key=116 high=124` | 秒级，零 DB |
+| `python3 M_CHAIN_SZ_PROBLEM_COUNT.py` | `problem=231 (blank 98 single 133) key=116 high=124` | 秒级，零 DB |
 | `python3 _work_gkx21/rebuild_metric.py M_CHAIN_SZ_PROBLEM_COUNT --check` | 语义一致 | 重跑对账 |
 | `python3 _work_gkx21/audit_md_vs_out.py --only M_CHAIN_SZ_PROBLEM_COUNT` | 无实质漂移 | 正文数字逐项对产物 |
 

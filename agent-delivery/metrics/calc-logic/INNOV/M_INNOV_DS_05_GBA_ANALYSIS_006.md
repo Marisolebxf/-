@@ -1,7 +1,11 @@
 # 威胁因素分析（M_INNOV_DS_05_GBA_ANALYSIS_006）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_006.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_006.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_05_GBA_ANALYSIS_006.md`；复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_006.py` → `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_006.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_006.md` §二（M_INNOV_DS_05_GBA_ANALYSIS_006.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_05_GBA_ANALYSIS_006.md` §二（M_INNOV_DS_05_GBA_ANALYSIS_006.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,16 +55,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_05_GBA_ANALYSIS_006.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_006.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json` |
+| 正本 MD | `M_INNOV_DS_05_GBA_ANALYSIS_006.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_006.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_006.py`、产物 `metrics/repro/out/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 指标（DS-05 湾区创新能力分析 · SWOT 之 T）｜ **域**：科技创新 / 湾区创新监测｜ **UI 挂载**：科技信息展示系统·科技发展态势·湾区创新监测·创新能力分析（SWOT）｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（V1.5-20260830，口径原样沿用）｜ wanghui: true ｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：是 / 部分
@@ -167,9 +171,9 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.5.3.6（第 689–691 行） | 「识别并分析粤港澳大湾区创新能力发展的威胁因素，如竞争加剧、技术壁垒、政策变化、环境风险等，用户可查看各威胁因素的具体内容和应对策略。」 |
+| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.5.3.6（第 689–691 行） | 「识别并分析粤港澳大湾区创新能力发展的威胁因素，如竞争加剧、技术壁垒、政策变化、环境风险等，用户可查看各威胁因素的具体内容和应对策略。」 |
 | 2 | 同上 | §1.1.1.1.4.1.5.3（第 663–667 行） | 「通过统计大湾区的创新资源、创新机构、创新机制、创新环境等创新能力促成因素进行分析，以SWOT图表方式呈现……」 |
-| 3 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_GBA_SWOT_THREAT.md`，§第一步·政策退坡 | 「近窗 `status` 含「失效」或 `expire_date` 落入近窗的政策件数 / max(近窗仍有效政策件数, 1)。≥ 0.3 记入威胁。」 |
+| 3 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）`，§第一步·政策退坡 | 「近窗 `status` 含「失效」或 `expire_date` 落入近窗的政策件数 / max(近窗仍有效政策件数, 1)。≥ 0.3 记入威胁。」 |
 | 4 | 同上 | 同上 §第一步·竞争挤压 | 「该城近窗专利占 11 城近窗专利合计的份额 − 基线份额。下降 ≥ 0.02（2 个百分点）记入威胁。」 |
 | 5 | 同上 | 同上 §第一步·结构风险 | 「该城近窗专利按 IPC 前 4 位的赫芬达尔指数 HHI=Σs_i²（s_i 为 IPC4 件数占比）。≥ 0.25 记入威胁（过度集中）。」 |
 | 6 | 王惠聚合登记 | `_work_20261019/wanghui_agg.json`（键 `M_INNOV_DS_05_GBA_ANALYSIS_006`） | 「def: 同M_INNOV_GBA_SWOT_THREAT-湾区创新能力威胁因素」 |
@@ -248,8 +252,8 @@ $$
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_INNOV_DS_05_GBA_ANALYSIS_006.py`
-**运行命令**：`cd code && python3 M_INNOV_DS_05_GBA_ANALYSIS_006.py`
+**代码入库路径**：`metrics/repro/M_INNOV_DS_05_GBA_ANALYSIS_006.py`
+**运行命令**：`python3 M_INNOV_DS_05_GBA_ANALYSIS_006.py`
 **输出**：`code/M_INNOV_DS_05_GBA_ANALYSIS_006_out.json`（复用父指标 bundle；含一次 gkx 轻量核验，本次按 `status` 分组返回 `有效 = 20,000`）
 
 | 城市 | 有效政策 | 失效政策 | 退坡比值 | 退坡判定 | 近窗份额 | 基线份额 | 份额差 | 挤压判定 | HHI | 等效类数 | 结构判定 | 命中数 |

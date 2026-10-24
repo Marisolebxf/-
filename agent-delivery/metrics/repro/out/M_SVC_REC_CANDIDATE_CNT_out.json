@@ -1,0 +1,154 @@
+{
+ "metric_id": "M_SVC_REC_CANDIDATE_CNT",
+ "metric_name": "候选机构数",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件不是年度指标，无基期：注册表 2026-10-13 已判 retired，指标身份被撤销。正文给的是表结构/列名证据与筛选条件阶梯，不是某年的统计值，故 used / missing 均为空表。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "mode": "read-only",
+   "tables": [
+    "information_schema.tables",
+    "information_schema.columns"
+   ],
+   "snapshot": "code/_snapshots21/gkx_columns_20261023.json",
+   "note": "全库表/列字典由 information_schema 落盘，280 表 6,312 列"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "mode": "read-only",
+   "tables": [
+    "dwd_org_org_product_info",
+    "dwd_org_base_info",
+    "dwd_org_annual_financial_info",
+    "dwd_patent"
+   ],
+   "snapshot": "code/_snapshots21/svc21_rec_20261023.json"
+  }
+ ],
+ "registry": {
+  "lifecycle": "retired（2026-10-13 human:徐滕强）",
+  "formula": "无。不计算。",
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_REC_CANDIDATE_CNT.md",
+  "page_semantics": "招引/培育页「共 N 家候选」= 当前筛选条件下 results.length，随筛选实时变"
+ },
+ "probe": {
+  "gkx_tables": 280,
+  "gkx_columns": 6312,
+  "svc_like_tables": [],
+  "svc_like_tables_n": 0,
+  "candidate_like_tables": [
+   "dwd_bid_win_candidate_out",
+   "dwd_bid_win_candidate_out_bak_20260911"
+  ],
+  "candidate_like_note": "两张均为 dwd_bid_win_candidate_out（中标候选人），与服务机构候选无关",
+  "svc_type_columns": [],
+  "svc_type_columns_n": 0,
+  "column_index_names": 1285,
+  "svc_metric_tables": 0,
+  "settlement": "结构面与结果面均不存在；不存在可被 COUNT 的候选集合表"
+ },
+ "filter_ladder": [
+  {
+   "condition": "外部三市·全部",
+   "n": 18535
+  },
+  {
+   "condition": "外部三市·命中产业标签",
+   "n": 7139
+  },
+  {
+   "condition": "外部三市·有专利记录",
+   "n": 9995
+  },
+  {
+   "condition": "外部三市·有营收年报",
+   "n": 531
+  },
+  {
+   "condition": "外部三市·命中产业标签且有专利",
+   "n": 4583
+  },
+  {
+   "condition": "深圳·全部",
+   "n": 25597
+  },
+  {
+   "condition": "深圳·INNOV 主型",
+   "n": 19879
+  },
+  {
+   "condition": "深圳·人工智能标签",
+   "n": 2071
+  },
+  {
+   "condition": "深圳·大型",
+   "n": 1045
+  }
+ ],
+ "filter_ladder_n": 9,
+ "n_min": 531,
+ "n_max": 25597,
+ "n_span": 25066,
+ "reading": "同一句「候选机构」在 9 种筛选条件下得到 9 个 N，最小 531（外部三市有营收年报）、最大 25,597（深圳全部），跨度 25,066。任何单一 N 都只是某个筛选组合的结果集长度，不是可预聚合、可跨期比较的指标。",
+ "population_context": {
+  "total": 44153,
+  "sz": 25597,
+  "external": 18535,
+  "unassigned_city": 21,
+  "city_rows": [
+   [
+    "深圳市",
+    25597
+   ],
+   [
+    "广州市",
+    12641
+   ],
+   [
+    "东莞市",
+    4300
+   ],
+   [
+    "惠州市",
+    1594
+   ],
+   [
+    "",
+    21
+   ]
+  ]
+ },
+ "gaps": [
+  {
+   "gap": "候选集合定义",
+   "detail": "产业方向 × 机构类型 × 服务环节 × 规模 的组合未收敛",
+   "impact": "N 随组合变化，无唯一值"
+  },
+  {
+   "gap": "候选池成员表",
+   "detail": "gkx 280 表无 svc_org_circle / svc_org_card / svc_metric_fact",
+   "impact": "无法把「候选」物化成可复算集合"
+  }
+ ],
+ "conclusion": {
+  "publishable": false,
+  "reason": "指标身份已于 2026-10-13 撤销；页面可继续显示「共 N 家」，但不得挂 MetricSpecCard、不得灌 svc_metric_*",
+  "replacement": "如甲方确需「候选规模」，应另立查询态口径卡（参照 M_SVC_TYPE_DIST_QUERY 的六要素写法），不要复活本 ID"
+ },
+ "cross_refs": {
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_REC_CANDIDATE_CNT.md",
+  "wanghui": null,
+  "sibling": [
+   "M_SVC_TYPE_DIST_QUERY",
+   "M_SVC_REC_ATTRACT_SCORE"
+  ]
+ }
+}

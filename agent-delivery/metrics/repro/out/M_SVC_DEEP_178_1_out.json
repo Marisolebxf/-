@@ -1,0 +1,514 @@
+{
+ "metric_id": "M_SVC_DEEP_178_1",
+ "metric_name": "咨询服务机构技术力评价模型",
+ "generated_at": "2026-10-24T21:16:07+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "四维中 D2（年限全量 + 产业标签覆盖 762 家）、D4（标签 32077 家 + 资讯 24639 家 + 风险 22719 家）两维在 gkx 可实测复现，D3 仅有资讯弱代理；但 D1 人才密度维结构性缺分子——gkx 年报表无研发人员列（全表实测 0 行非空），从业人员 emp 虽有 86 家也构不成占比，而人才密度是本模型的第一维、官方标准里权重最高的一维，缺它不能算「完全转换支持」，故判部分支持。",
+ "main_gap": "D1 人才密度缺研发人员分子（无字段）；D3 成功案例无正式源（仅资讯代理）",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info(main_activities) + dwd_org_base_info",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_industry_product_tags（20+8 产业标签）",
+   "rows": 17917,
+   "snapshot": "code/_snapshots21/svc21_pt_axis_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_tech_tag / dwd_org_news / dwd_org_risk_info",
+   "rows": {
+    "tags_orgs": 32077,
+    "news_orgs": 24639,
+    "risk_orgs": 22719
+   },
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  }
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "统计年取 2026（快照时点）；成立年限 = 2026 − inc_year，inc_year 覆盖 44,132/44,153。财务年表覆盖 2007—2025，本件只用其 emp 覆盖做可行性判定、不入合成，故不进基期。",
+ "population": {
+  "type": "CONSULT",
+  "n": 3132,
+  "pool_total": 44153
+ },
+ "dimension_cover": {
+  "D1_talent_density": {
+   "available": false,
+   "orgs": 0,
+   "note": "gkx 年报无研发人员列（rd_emp 字段不存在），研发人员占比无法构成；仅有从业人员 emp 覆盖 86/3132 家，单有分母无分子，不强行代理"
+  },
+  "D2_experience": {
+   "available": true,
+   "orgs_years": 3131,
+   "orgs_breadth": 762,
+   "note": "年限侧随主档全量可取；覆盖领域侧用深圳 20+8 产业标签（gkx 产业标签表），非国民经济行业代码，语义为「技术领域覆盖」"
+  },
+  "D3_cases": {
+   "available": false,
+   "orgs": 1660,
+   "note": "无 svc_success_case_count；资讯条数只作观察变量，不进正式合成"
+  },
+  "D4_reputation": {
+   "available": true,
+   "orgs": 3033,
+   "note": "技术标签数 + 资讯声量（截顶 50）+ 风险事件负向扣减，三项同池 min-max 前合成"
+  }
+ },
+ "composite": {
+  "dims": [
+   "exp_years",
+   "ind_breadth",
+   "reputation"
+  ],
+  "weights": "等权 1/3",
+  "scored_orgs": 3052,
+  "unscored_orgs": 80,
+  "rule": "维数 <2 的机构不入排序（缺维不补 0，也不进平均）"
+ },
+ "score_dist": {
+  "n": 3052,
+  "mean": 56.07,
+  "median": 57.64,
+  "p90": 67.51,
+  "p99": 76.73,
+  "max": 96.36,
+  "min": 0.72,
+  "bands": {
+   "领先": 188,
+   "稳健": 1696,
+   "关注": 909,
+   "薄弱": 259
+  }
+ },
+ "top10": [
+  {
+   "rank": 1,
+   "org_id": "af2266a0db905ab6c1417d0330258dfe",
+   "name": "广州市花都第一建筑工程有限公司",
+   "city": "广州市",
+   "score": 96.36,
+   "band": "领先",
+   "exp_years": 72,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 4,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 1.0,
+    "reputation": 0.9272
+   }
+  },
+  {
+   "rank": 2,
+   "org_id": "614b83f345f9e2dfdeb66331beac4f40",
+   "name": "广州金银首饰有限公司",
+   "city": "广州市",
+   "score": 89.69,
+   "band": "领先",
+   "exp_years": 59,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 1,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.8116,
+    "reputation": 0.9822
+   }
+  },
+  {
+   "rank": 3,
+   "org_id": "97a9c67f0beb35872693af985decb10a",
+   "name": "广州发展汽车城有限公司",
+   "city": "广州市",
+   "score": 88.41,
+   "band": "领先",
+   "exp_years": 59,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 4,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.8116,
+    "reputation": 0.9566
+   }
+  },
+  {
+   "rank": 4,
+   "org_id": "6a9699b5aed40a3fff2d4e1e4340123a",
+   "name": "广东省农业生产资料总公司",
+   "city": "广州市",
+   "score": 86.18,
+   "band": "领先",
+   "exp_years": 54,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 6,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.7391,
+    "reputation": 0.9845
+   }
+  },
+  {
+   "rank": 5,
+   "org_id": "8cf867fc53804223fbd8a7a7f4740e34",
+   "name": "广州柴油机厂股份有限公司",
+   "city": "广州市",
+   "score": 82.0,
+   "band": "领先",
+   "exp_years": 48,
+   "ind_breadth": null,
+   "tags": 10,
+   "news": 14,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.6522,
+    "reputation": 0.9878
+   }
+  },
+  {
+   "rank": 6,
+   "org_id": "aa1a4dc133884dbf5b56507324f0cf34",
+   "name": "广州天鹿锅炉有限公司",
+   "city": "广州市",
+   "score": 80.29,
+   "band": "领先",
+   "exp_years": 46,
+   "ind_breadth": null,
+   "tags": 4,
+   "news": 0,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.6232,
+    "reputation": 0.9827
+   }
+  },
+  {
+   "rank": 7,
+   "org_id": "0da9d7cd17f85e28b7ed42a2bb28c907",
+   "name": "广州文冲船厂有限责任公司",
+   "city": "广州市",
+   "score": 79.93,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 12,
+   "news": 23,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.99
+   }
+  },
+  {
+   "rank": 8,
+   "org_id": "82b360bf48ae6a2b45543e1baee16f79",
+   "name": "深圳市粤鹏建设有限公司",
+   "city": "深圳市",
+   "score": 79.64,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 3,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.9842
+   }
+  },
+  {
+   "rank": 9,
+   "org_id": "bfd588ecef182f56e8558dd9a2e89366",
+   "name": "深圳市兴龙机械模具有限公司",
+   "city": "深圳市",
+   "score": 79.55,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 1,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.9822
+   }
+  },
+  {
+   "rank": 10,
+   "org_id": "52efd84477044f5467016b2077fb5ea6",
+   "name": "深圳市交通运输有限公司",
+   "city": "深圳市",
+   "score": 78.93,
+   "band": "领先",
+   "exp_years": 44,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 4,
+   "dims_used": [
+    "exp_years",
+    "reputation"
+   ],
+   "dim_scores": {
+    "exp_years": 0.5942,
+    "reputation": 0.9843
+   }
+  }
+ ],
+ "pool_purity": {
+  "noise_rule": "名称含 建筑/工程/建设/置业/房地产/装饰/珠宝/首饰/汽车城/贸易 视为疑似误分",
+  "noise_orgs": 480,
+  "noise_pct": 15.33,
+  "clean_orgs": 2652,
+  "noise_score_mean": 60.38,
+  "clean_score_mean": 55.3,
+  "consult_name_orgs": 63,
+  "consult_name_pct": 2.01,
+  "consult_name_top5": [
+   {
+    "name": "广州船舶及海洋工程设计研究院",
+    "score": 76.29,
+    "exp_years": 40,
+    "ind_breadth": null
+   },
+   {
+    "name": "深圳大学建筑设计研究院有限公司",
+    "score": 76.13,
+    "exp_years": 40,
+    "ind_breadth": null
+   },
+   {
+    "name": "深圳星蓝德工程顾问有限公司",
+    "score": 74.01,
+    "exp_years": 37,
+    "ind_breadth": null
+   },
+   {
+    "name": "深圳市东部工程咨询有限公司",
+    "score": 72.91,
+    "exp_years": 36,
+    "ind_breadth": null
+   },
+   {
+    "name": "深圳市卓识教育管理顾问有限公司",
+    "score": 70.21,
+    "exp_years": 32,
+    "ind_breadth": null
+   }
+  ],
+  "note": "CONSULT 是 ptype2 兜底类（INNOV>IP>FINANCE>HR>MKT>CONSULT 取首个命中），工程/造价咨询类建筑企业会落入本池；全池分照算以保口径，另给剔除后的严格子池榜单"
+ },
+ "strict_top10": [
+  {
+   "rank": 1,
+   "org_id": "6a9699b5aed40a3fff2d4e1e4340123a",
+   "name": "广东省农业生产资料总公司",
+   "city": "广州市",
+   "score": 86.18,
+   "band": "领先",
+   "exp_years": 54,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 6,
+   "dim_scores": {
+    "exp_years": 0.7391,
+    "reputation": 0.9845
+   }
+  },
+  {
+   "rank": 2,
+   "org_id": "8cf867fc53804223fbd8a7a7f4740e34",
+   "name": "广州柴油机厂股份有限公司",
+   "city": "广州市",
+   "score": 82.0,
+   "band": "领先",
+   "exp_years": 48,
+   "ind_breadth": null,
+   "tags": 10,
+   "news": 14,
+   "dim_scores": {
+    "exp_years": 0.6522,
+    "reputation": 0.9878
+   }
+  },
+  {
+   "rank": 3,
+   "org_id": "aa1a4dc133884dbf5b56507324f0cf34",
+   "name": "广州天鹿锅炉有限公司",
+   "city": "广州市",
+   "score": 80.29,
+   "band": "领先",
+   "exp_years": 46,
+   "ind_breadth": null,
+   "tags": 4,
+   "news": 0,
+   "dim_scores": {
+    "exp_years": 0.6232,
+    "reputation": 0.9827
+   }
+  },
+  {
+   "rank": 4,
+   "org_id": "0da9d7cd17f85e28b7ed42a2bb28c907",
+   "name": "广州文冲船厂有限责任公司",
+   "city": "广州市",
+   "score": 79.93,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 12,
+   "news": 23,
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.99
+   }
+  },
+  {
+   "rank": 5,
+   "org_id": "bfd588ecef182f56e8558dd9a2e89366",
+   "name": "深圳市兴龙机械模具有限公司",
+   "city": "深圳市",
+   "score": 79.55,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 1,
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.9822
+   }
+  },
+  {
+   "rank": 6,
+   "org_id": "52efd84477044f5467016b2077fb5ea6",
+   "name": "深圳市交通运输有限公司",
+   "city": "深圳市",
+   "score": 78.93,
+   "band": "领先",
+   "exp_years": 44,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 4,
+   "dim_scores": {
+    "exp_years": 0.5942,
+    "reputation": 0.9843
+   }
+  },
+  {
+   "rank": 7,
+   "org_id": "01b6acb111cbbeef2011165ec47d7460",
+   "name": "广东省盐业集团深圳有限公司",
+   "city": "深圳市",
+   "score": 78.92,
+   "band": "领先",
+   "exp_years": 44,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 3,
+   "dim_scores": {
+    "exp_years": 0.5942,
+    "reputation": 0.9842
+   }
+  },
+  {
+   "rank": 8,
+   "org_id": "4a21d80955ced18fd303a6fffccf9965",
+   "name": "广东省粮油储运有限公司",
+   "city": "广州市",
+   "score": 78.87,
+   "band": "领先",
+   "exp_years": 44,
+   "ind_breadth": null,
+   "tags": 2,
+   "news": 0,
+   "dim_scores": {
+    "exp_years": 0.5942,
+    "reputation": 0.9833
+   }
+  },
+  {
+   "rank": 9,
+   "org_id": "0e64bbd24f40246c07bf11d0f6c0965c",
+   "name": "深圳市联城地产发展有限公司",
+   "city": "深圳市",
+   "score": 78.82,
+   "band": "领先",
+   "exp_years": 44,
+   "ind_breadth": null,
+   "tags": 0,
+   "news": 0,
+   "dim_scores": {
+    "exp_years": 0.5942,
+    "reputation": 0.9821
+   }
+  },
+  {
+   "rank": 10,
+   "org_id": "7147e0fc57f445e51b81ecca25adf2b3",
+   "name": "广州市自来水有限公司",
+   "city": "广州市",
+   "score": 78.59,
+   "band": "领先",
+   "exp_years": 45,
+   "ind_breadth": null,
+   "tags": 5,
+   "news": 85,
+   "dim_scores": {
+    "exp_years": 0.6087,
+    "reputation": 0.9631
+   }
+  }
+ ],
+ "caliber_note": "D4 的风险扣减（×3）与资讯截顶（50 条）是演示参数，正式化须由甲方确认；D3 未进合成，故本指数实际是「经验 + 声誉」二维，不可对外称四维合成",
+ "compute": {
+  "elapsed_sec": 0.467,
+  "sql_count": 0
+ }
+}

@@ -1,0 +1,429 @@
+{
+ "metric_id": "M_ENT_DEV_HISTORY",
+ "metric_name": "企业发展历程",
+ "support_judgment": "部分支持",
+ "judgment_basis": {
+  "formula": "UNION(finance_year, patent_apply_year, news_date) ORDER BY event_time DESC",
+  "source_tables": [
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_patent（经 patent_panel_innov_20261021 的 app_year 面板）",
+   "gkx.dwd_org_important_news_info"
+  ],
+  "why_partial": "三流原料齐全且都能落成「org_id + event_time + event_type」，但①目标表 enterprise_dev_history 两库均无（结果无处落）；②财务事件只有 1,302 家（0.6885%）、资讯只有 28,118 家（14.8699%），专利流只覆盖 2021—2024 四个申请年——时间线的「早段」与「后段」都缺",
+  "why_not_direct": "无 enterprise_dev_history / enterprise_timeline* 结果面，gkx 280 表精确同名检索为 0",
+  "why_not_unsupported": "三流各自的行级字段（年 / 申请年 / 日期）齐备，事件类型可枚举，能构成一行一事的结构"
+ },
+ "sources": [
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp（只读）",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_important_news_info",
+   "rows": 1668414
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_patent",
+   "rows": 2939895,
+   "note": "本件不重扫，读已完成的 app_year 面板（275,135 个「申请年|第一申请人」对）"
+  },
+  {
+   "db": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_report_asset",
+   "rows": 527034,
+   "note": "财务事件的补充流（文本万元），calc-logic 未声明，只作覆盖上限参考"
+  },
+  {
+   "snapshot": "code/_snapshots21/ent_fin_family_20261023.json",
+   "builder": "code/_build_ent_fin_family.py"
+  },
+  {
+   "snapshot": "code/_snapshots21/patent_panel_innov_20261021.json",
+   "note": "app_year 面板来源；件数口径=按公开件计，未做同族合并"
+  }
+ ],
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024
+ ],
+ "base_years_missing": [
+  2018,
+  2019,
+  2020,
+  2025,
+  2026
+ ],
+ "base_years_note": "专利事件只能用申请年 2021—2024（面板 app_year 仅这四年有「申请人-年」对；2025/2026 虽有件数但未按申请人分年，2018—2020 库内零行）。资讯事件 2018-01 至 2026-05 全窗可用；财务事件按各企实际年份。三段窗口不齐是「时间线首尾薄」的直接原因，未按 0 补齐",
+ "headline": {
+  "target_table": "enterprise_dev_history",
+  "target_table_in_gkx": false,
+  "target_absent": [
+   "ads_ent_rd_latest",
+   "enterprise_dev_history",
+   "enterprise_finance_history",
+   "enterprise_forg_finance_history",
+   "enterprise_industry_chain",
+   "enterprise_news",
+   "enterprise_news_month_stat",
+   "enterprise_patent_history",
+   "svc_org_card"
+  ],
+  "stream_finance_rows": 90926,
+  "stream_finance_orgs": 1416,
+  "stream_finance_orgs_multi_year": 518,
+  "stream_finance_years": [
+   2013,
+   2014,
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024,
+   2025
+  ],
+  "stream_patent_pairs": 275135,
+  "stream_patent_applicants": 146915,
+  "stream_patent_applicants_matched": 137441,
+  "stream_patent_orgs": 137448,
+  "stream_patent_pairs_matched": 259338,
+  "stream_patent_patents_matched": 2127892,
+  "stream_patent_years": [
+   "2021",
+   "2022",
+   "2023",
+   "2024"
+  ],
+  "stream_news_rows": 1668414,
+  "stream_news_orgs": 28123,
+  "stream_news_span": [
+   "2018-01-22",
+   "2026-05-08"
+  ],
+  "stream_asset_rows": 12616,
+  "stream_asset_orgs": 7738,
+  "coverage": {
+   "base_orgs": 189116,
+   "orgs_with_any_event": 153551,
+   "orgs_with_any_event_pct": 81.1941,
+   "at_least_two_streams": 17617,
+   "at_least_two_pct": 9.3154,
+   "at_least_three_streams": 2882,
+   "all_four_streams": 675,
+   "only_one_stream": {
+    "financial": 103,
+    "asset_text": 1626,
+    "news": 12259,
+    "patent": 121946
+   },
+   "pairwise": {
+    "financial_asset_text": 1262,
+    "financial_news": 1093,
+    "financial_patent": 787,
+    "asset_text_news": 4376,
+    "asset_text_patent": 4006,
+    "news_patent": 13882
+   }
+  },
+  "event_counts": {
+   "finance_rows_usable": 4542,
+   "finance_rows_revenue": 2193,
+   "finance_rows_profit": 2349,
+   "news_rows_in_base": 1668408,
+   "patent_pairs_matched": 259338
+  },
+  "year_windows": {
+   "finance": [
+    2013,
+    2025
+   ],
+   "patent_apply_year": [
+    "2021",
+    "2024"
+   ],
+   "news_date": [
+    "2018-01-22",
+    "2026-05-08"
+   ]
+  },
+  "note": "四条流的机构集合互不求并：财务 1416 家、资产表 7738 家、资讯 28123 家、专利（按第一申请人名称命中底册）137448 家；有任意一类事件的机构 153551 家（占底册 81.1941%），两类及以上 17617 家"
+ },
+ "derived": {
+  "only_one_total": {
+   "value": 135934,
+   "numerator": 135934,
+   "denominator": null,
+   "denominator_note": "计数，无分母：只出现在 1 条事件流里的机构数（only_one 四流相加：财务 103+资产 1,626+资讯 12,259+专利 121,946＝135,934 家）"
+  },
+  "union_check": {
+   "value": 153551,
+   "numerator": 153551,
+   "denominator": null,
+   "denominator_note": "计数，无分母：有任意一类事件的机构数 = 只在 1 流的 135,934 家 + 两类及以上 17,617 家（＝headline.coverage.orgs_with_any_event，用于与底册覆盖率互校）"
+  },
+  "finance_orgs_pct": {
+   "value": 0.7487,
+   "numerator": 1416,
+   "denominator": 189116,
+   "denominator_note": "分子=有财务年报事件的机构数 cross_stream.stream_sizes.financial（1,416 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "asset_orgs_pct": {
+   "value": 4.0917,
+   "numerator": 7738,
+   "denominator": 189116,
+   "denominator_note": "分子=年报资产表有可解析营收的机构数 cross_stream.stream_sizes.asset_text（7,738 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "news_orgs_pct": {
+   "value": 14.8708,
+   "numerator": 28123,
+   "denominator": 189116,
+   "denominator_note": "分子=有重点资讯事件的机构数 cross_stream.stream_sizes.news（28,123 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "patent_orgs_pct": {
+   "value": 72.6792,
+   "numerator": 137448,
+   "denominator": 189116,
+   "denominator_note": "分子=按第一申请人名称命中底册的专利流机构数 cross_stream.stream_sizes.patent（137,448 家）；分母=四市底册法人总数 base.orgs（189,116 家）"
+  },
+  "patent_orgs_minus_applicants": {
+   "value": 7,
+   "numerator": 7,
+   "denominator": null,
+   "denominator_note": "计数，无分母：专利流机构数 137,448（stream_sizes.patent）− 命中底册的第一申请人名称数137,441（patent_year.applicants_matched_base）＝ 7；差额来自 47 组同名的两家企业被同时计入"
+  },
+  "news_share_of_rows_pct": {
+   "value": 94.8318,
+   "numerator": 1668414,
+   "denominator": 1759340,
+   "denominator_note": "分子=重点资讯行数 news.rows（1,668,414 行）；分母=资讯+财务两流行数合计（1,668,414 + 90,926 ＝ 1,759,340 行）；专利流按「申请人-年」对计、量纲不同，故不进此分母"
+  },
+  "finance_share_of_rows_pct": {
+   "value": 5.1682,
+   "numerator": 90926,
+   "denominator": 1759340,
+   "denominator_note": "分子=财务年报行数 fin.rows（90,926 行）；分母=资讯+财务两流行数合计（1,759,340 行）。与 news_share_of_rows_pct 同分母互补"
+  },
+  "applicant_match_pct": {
+   "value": 93.5514,
+   "numerator": 137441,
+   "denominator": 146915,
+   "denominator_note": "分子=第一申请人名称能在底册 189,116 个 name 中精确命中的个数（patent_year.applicants_matched_base，137,441 个）；分母=专利面板里去重后的第一申请人名称总数 applicants_total（146,915 个）"
+  },
+  "news_per_org": {
+   "value": 59.3256,
+   "numerator": 1668414,
+   "denominator": 28123,
+   "denominator_note": "分子=重点资讯行数 news.rows（1,668,414 行）；分母=有资讯的去重机构数 news.distinct_orgs（28,123 家）"
+  },
+  "patent_pairs_per_org": {
+   "value": 1.8868,
+   "numerator": 259338,
+   "denominator": 137448,
+   "denominator_note": "分子=命中底册的「申请年|第一申请人」对数 patent_year.applicant_year_pairs_matched（259,338 对）；分母=专利流机构数 cross_stream.stream_sizes.patent（137,448 家）"
+  },
+  "finance_rows_per_org": {
+   "value": 64.2133,
+   "numerator": 90926,
+   "denominator": 1416,
+   "denominator_note": "分子=财务年报行数 fin.rows（90,926 行）；分母=有财务事件的机构数 cross_stream.stream_sizes.financial（1,416 家）"
+  },
+  "news_rows_in_base_pct": {
+   "value": 99.9996,
+   "numerator": 1668408,
+   "denominator": 1668414,
+   "denominator_note": "分子=org_id 能对上底册的资讯行数 news.rows_in_base（1,668,408 行）；分母=重点资讯全表行数 news.rows（1,668,414 行）"
+  },
+  "news_max_org_share_pct": {
+   "value": 8.2846,
+   "numerator": 138222,
+   "denominator": 1668414,
+   "denominator_note": "分子=单家机构最多资讯条数 news.per_org_rows.max（138,222 条）；分母=重点资讯全表行数 news.rows（1,668,414 行）"
+  },
+  "news_top10_rows": {
+   "value": 330331,
+   "numerator": 330331,
+   "denominator": null,
+   "denominator_note": "计数，无分母：资讯条数前 10 家机构行数合计（news.top10_orgs[].news_rows 求和，330,331 行）"
+  },
+  "news_top10_share_pct": {
+   "value": 19.7991,
+   "numerator": 330331,
+   "denominator": 1668414,
+   "denominator_note": "分子=资讯条数前 10 家机构行数合计（330,331 行）；分母=重点资讯全表行数 news.rows（1,668,414 行）"
+  }
+ },
+ "cross_stream": {
+  "stream_sizes": {
+   "financial": 1416,
+   "asset_text": 7738,
+   "news": 28123,
+   "patent": 137448
+  },
+  "base_orgs": 189116,
+  "pairwise": {
+   "financial_asset_text": 1262,
+   "financial_news": 1093,
+   "financial_patent": 787,
+   "asset_text_news": 4376,
+   "asset_text_patent": 4006,
+   "news_patent": 13882
+  },
+  "all_four": 675,
+  "at_least_two": 17617,
+  "at_least_three": 2882,
+  "only_one": {
+   "financial": 103,
+   "asset_text": 1626,
+   "news": 12259,
+   "patent": 121946
+  },
+  "financial_multi_year": 518,
+  "note": "集合只用于「有几个事件源」的计数，不代表事件数；专利按第一申请人名称等值命中底册，同名（47 组×2 家）会把两家都算进来，属上界"
+ },
+ "patent_detail": {
+  "source_file": "code/_snapshots21/patent_panel_innov_20261021.json",
+  "app_year_pairs": 275135,
+  "applicants_total": 146915,
+  "year_totals": {
+   "2021": 604512,
+   "2022": 601893,
+   "2023": 611811,
+   "2024": 606468
+  },
+  "patents_total": 2424684,
+  "applicants_matched_base": 137441,
+  "applicant_year_pairs_matched": 259338,
+  "patents_matched": 2127892,
+  "patent_match_pct": 87.7596,
+  "note": "app_year 的键是「申请年|第一申请人名称」，与 M_ENT_PATENT_TOTAL 同一套名称映射；本快照只做名称是否在底册 189,116 个 name 中出现的精确等值判定"
+ },
+ "news_detail": {
+  "rows": 1668414,
+  "orgs": 28123,
+  "orgs_in_base": 28118,
+  "rows_in_base": 1668408,
+  "yearly": {
+   "2018": 15767,
+   "2019": 41104,
+   "2020": 3203,
+   "2021": 158521,
+   "2022": 256110,
+   "2023": 308765,
+   "2024": 366413,
+   "2025": 421067,
+   "2026": 97464
+  },
+  "date_min": "2018-01-22",
+  "date_max": "2026-05-08",
+  "per_org_rows": {
+   "max": 138222,
+   "median": 2,
+   "p90": 27.0,
+   "ge_100": 1290,
+   "eq_1": 10776
+  },
+  "top10_orgs": [
+   {
+    "org_id": "464c4994ec889e51f8541478cf167ff3",
+    "name": "比亚迪股份有限公司",
+    "news_rows": 138222
+   },
+   {
+    "org_id": "9ca8447b1c55f90d8a507f048530ba05",
+    "name": "华为技术有限公司",
+    "news_rows": 101455
+   },
+   {
+    "org_id": "5c7cbb81838eef1276acf463b83e75f8",
+    "name": "中兴通讯股份有限公司",
+    "news_rows": 14857
+   },
+   {
+    "org_id": "77e211bf6bd84e486ca21ffc06204f60",
+    "name": "广州汽车集团股份有限公司",
+    "news_rows": 14219
+   },
+   {
+    "org_id": "134c7b55f5fdbd8d74a3727ee3ecf8d8",
+    "name": "万科企业股份有限公司",
+    "news_rows": 12857
+   },
+   {
+    "org_id": "3b213f28a80fcaf6086f858e5bf32990",
+    "name": "招商银行股份有限公司",
+    "news_rows": 10734
+   },
+   {
+    "org_id": "df08c7aa1d49766c7f3272091dc5b0ae",
+    "name": "中信证券股份有限公司",
+    "news_rows": 10299
+   },
+   {
+    "org_id": "695c48f4758f361ee0d9287dfe62ad95",
+    "name": "OPPO广东移动通信有限公司",
+    "news_rows": 9441
+   },
+   {
+    "org_id": "ef3b82155dc4a1fb642f4a617df15182",
+    "name": "鹏华基金管理有限公司",
+    "news_rows": 9148
+   },
+   {
+    "org_id": "6a200acdbdc189aeac7902dd28ed61c8",
+    "name": "南方基金管理股份有限公司",
+    "news_rows": 9099
+   }
+  ],
+  "dup_sample": {
+   "window": "dwd_id 升序前 30,000 行",
+   "rows": 30000,
+   "distinct_triples": 29996,
+   "dup_rows": 4,
+   "dup_pct": 0.0133,
+   "max_repeat": 2
+  }
+ },
+ "finance_detail": {
+  "rows": 90926,
+  "orgs": 8127,
+  "orgs_series": 1416,
+  "orgs_series_multi_year": 518,
+  "revenue_nonnull_rows": 2193,
+  "profit_nonnull_rows": 2349,
+  "latest_year_dist": {
+   "2013": 25,
+   "2014": 476,
+   "2015": 305,
+   "2016": 172,
+   "2017": 89,
+   "2018": 47,
+   "2019": 30,
+   "2020": 29,
+   "2021": 22,
+   "2022": 18,
+   "2023": 27,
+   "2024": 28,
+   "2025": 34
+  }
+ },
+ "caveats": [
+  "财务事件「一行一事」= 一条年度记录；同一年多张报表时不去重（本库一企一年一行，实测无重）",
+  "专利事件按申请年归桶，不是授权年；库里没有授权日可用，不能切「授权发生年」",
+  "资讯事件占绝对多数：1,668,414 行 vs 财务 90,926 行，若直接 UNION，时间线会被资讯淹没（资讯前 10 家占 12.1%），页面必须分事件类型过滤",
+  "目标表不存在 → 当前只能出「加工后暂存」，不能在页面假装已从 enterprise_dev_history 读取"
+ ]
+}

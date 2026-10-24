@@ -1,7 +1,11 @@
 # 科研机构发展历程模型（M_ORG_DEEP_150_1）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ORG-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_DEEP_150_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_DEEP_150_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_DEEP_150_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ORG_DEEP_150_1.md`；复现脚本 `metrics/repro/M_ORG_DEEP_150_1.py` → `metrics/repro/out/M_ORG_DEEP_150_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ORG_DEEP_150_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_150_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_DEEP_150_1.md` §二（M_ORG_DEEP_150_1.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ORG_DEEP_150_1.md` §二（M_ORG_DEEP_150_1.py 零改语义复算）。
 
 ## 源表字段
 
@@ -57,16 +61,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ORG_DEEP_150_1.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_DEEP_150_1.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ORG_DEEP_150_1_out.json` |
+| 正本 MD | `M_ORG_DEEP_150_1.md` |
+| 复现脚本 | `metrics/repro/M_ORG_DEEP_150_1.py` |
+| 复现产物 | `metrics/repro/out/M_ORG_DEEP_150_1_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ORG_DEEP_150_1.py`、产物 `metrics/repro/out/M_ORG_DEEP_150_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > 域：科研机构（ORG）｜类型：时间线指标｜形态：机构大事记 + 年度事件密度 + 阶段划分
 > **数据支持度**：部分支持
@@ -150,7 +154,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | # | 来源 | 用途 | 位置/链接 |
 |---|---|---|---|
-| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.2 科研机构发展历程模型 | 四项产出、输入清单 | `local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 825–835 行 |
+| 1 | 《科技专题服务算法库》§1.1.1.1.1.1.1.6.2 科研机构发展历程模型 | 四项产出、输入清单 | `原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 825–835 行 |
 | 2 | 同文档 §1.1.1.1.1.1.1.5.2 企业发展历程模型 | 事件指标 + 阈值的同族范式 | 同上第 728–736 行 |
 | 3 | 同文档 §1.1.1.1.1.1.1.4.3 技术发展历程模型 | 同上 | 同上第 611–621 行 |
 | 4 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.13 | 专利只有 2021—2026，无年度交叉表 | 本轮事实底稿 |
@@ -231,7 +235,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.7 复现代码与结果展示
 
-执行 `cd code && python3 M_ORG_DEEP_150_1.py`，零 SQL，约 0.17 秒，输出 `code/M_ORG_DEEP_150_1_out.json`。脚本只依赖标准库与同目录的 `_org_deep21_common.py`。
+执行 `python3 M_ORG_DEEP_150_1.py`，零 SQL，约 0.17 秒，输出 `code/M_ORG_DEEP_150_1_out.json`。脚本只依赖标准库与同目录的 `_org_deep21_common.py`。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -458,7 +462,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 附录 A　复现
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_ORG_DEEP_150_1.py
 python3 -c "import json;d=json.load(open('M_ORG_DEEP_150_1_out.json'));print(d['coverage'],d['incorporation_check']['contradictions'])"
 ```
@@ -475,7 +479,7 @@ python3 -c "import json;d=json.load(open('M_ORG_DEEP_150_1_out.json'));print(d['
 
 ## 参考文献
 
-1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.2 科研机构发展历程模型，`local-workspace/docs/metrics/原始产品需求文档/科技专题服务算法库.md` 第 825–835 行。
+1. 《科技专题服务算法库》§1.1.1.1.1.1.1.6.2 科研机构发展历程模型，`原始产品需求文档《科技专题服务算法库》（GitLab 外本地归档）.md` 第 825–835 行。
 2. 同文档 §1.1.1.1.1.1.1.5.2 企业发展历程模型（事件指标 + 阈值范式），第 728–736 行。
 3. 本轮事实底稿 `_work_gkx21/DATA_FACTS_gkx21.md` §3.13（专利年份 2021—2026）、§3.16（缺失年不摊 0）、§3.18（重跑后对账）。
 4. 科技部火炬中心，科技统计年报，https://www.most.gov.cn/

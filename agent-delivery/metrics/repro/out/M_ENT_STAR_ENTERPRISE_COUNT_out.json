@@ -1,0 +1,402 @@
+{
+ "metric_id": "M_ENT_STAR_ENTERPRISE_COUNT",
+ "generated_at": "2026-10-23 02:23:32",
+ "support_judgment": "部分支持",
+ "judgment_reason": "名单真源在门户 CMS（star_roster_item / ads.ent_star_roster_count），gkx 280 张表与 live 开发库均无该结果面；本件交付的是以专利授权数≥50 构造的代理名单计数，语义与 CMS 已发布名单不等价（calc-logic 明禁以此当明星）。计数本身可复算，但名单维度始终无源，故判部分支持。",
+ "verdict_kind": "proxy_constructed",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面件：名单无年度字段，口径是「当前名单里有谁算谁」，不含年度序列；因此不设基期。代理名单依赖的专利快照覆盖 apdt_year 2021—2026，但本指标不用年份切分，2017—2020 零行不影响本读数。",
+ "sources": [
+  {
+   "file": "code/_snapshots21/star_roster_gkx_20261021.json",
+   "source": "gkx.dwd_patent(first_applicant_name 聚合) × gkx.dwd_org_base_info(name_cn 匹配)",
+   "generated_at": "2026-10-22 08:03:14",
+   "role": "代理名单 4,561 家（授权≥50）"
+  },
+  {
+   "file": "code/_snapshots21/star_base_rows_gkx.json",
+   "source": "gkx.dwd_org_base_info 全量 189,116 行（含 org_type/industry）",
+   "role": "阈值敏感性与非企业主体剔除"
+  },
+  {
+   "file": "code/_snapshots21/star_applicant_agg_gkx.json",
+   "source": "gkx.dwd_patent 按 dwd_id 区间分块 GROUP BY first_applicant_name",
+   "role": "申请人 → [件数, 授权数]"
+  },
+  {
+   "file": "code/_snapshots21/tech_tags_20261021.json",
+   "source": "gkx.dwd_org_tech_tag 32,322 家机构标签",
+   "role": "「荣誉标签能否顶替名单」的否定性证据"
+  },
+  {
+   "file": "_work_gkx21/GKX_INVENTORY.json",
+   "source": "gkx 280 表逐表 COUNT(*)（2026-10-22）",
+   "role": "名单表是否存在"
+  }
+ ],
+ "compute": {
+  "proxy_threshold_grant": 50,
+  "roster_count": 4561,
+  "n_candidates_ge50": 4724,
+  "n_excluded_non_enterprise": 163,
+  "excluded_share_pct": 3.4505,
+  "share_of_base_pct": 2.4117,
+  "share_of_applicants_pct": 2.6952,
+  "n_applicant_names": 169226,
+  "patent_rows": 2939895,
+  "base_rows": 189116,
+  "n_cities": 4,
+  "base_province_top": [
+   {
+    "province": "广东省",
+    "count": 188776,
+    "pct": 99.8202
+   },
+   {
+    "province": "北京市",
+    "count": 163,
+    "pct": 0.0862
+   },
+   {
+    "province": "浙江省",
+    "count": 19,
+    "pct": 0.01
+   },
+   {
+    "province": "上海市",
+    "count": 16,
+    "pct": 0.0085
+   },
+   {
+    "province": "四川省",
+    "count": 16,
+    "pct": 0.0085
+   }
+  ],
+  "city_dist": {
+   "深圳市": {
+    "count": 2590,
+    "pct": 56.7858
+   },
+   "广州市": {
+    "count": 1020,
+    "pct": 22.3635
+   },
+   "东莞市": {
+    "count": 775,
+    "pct": 16.9919
+   },
+   "惠州市": {
+    "count": 176,
+    "pct": 3.8588
+   }
+  },
+  "province_dist": {
+   "广东省": {
+    "count": 4561,
+    "pct": 100.0
+   }
+  },
+  "industry_l1_dist": {
+   "制造业": {
+    "count": 1995,
+    "pct": 43.7404
+   },
+   "批发和零售业": {
+    "count": 912,
+    "pct": 19.9956
+   },
+   "科学研究和技术服务业": {
+    "count": 787,
+    "pct": 17.255
+   },
+   "信息传输、软件和信息技术服务业": {
+    "count": 446,
+    "pct": 9.7786
+   },
+   "建筑业": {
+    "count": 154,
+    "pct": 3.3765
+   },
+   "租赁和商务服务业": {
+    "count": 108,
+    "pct": 2.3679
+   },
+   "交通运输、仓储和邮政业": {
+    "count": 27,
+    "pct": 0.592
+   },
+   "电力、热力、燃气及水生产和供应业": {
+    "count": 26,
+    "pct": 0.5701
+   },
+   "居民服务、修理和其他服务业": {
+    "count": 24,
+    "pct": 0.5262
+   },
+   "房地产业": {
+    "count": 20,
+    "pct": 0.4385
+   },
+   "文化、体育和娱乐业": {
+    "count": 20,
+    "pct": 0.4385
+   },
+   "水利、环境和公共设施管理业": {
+    "count": 17,
+    "pct": 0.3727
+   },
+   "金融业": {
+    "count": 16,
+    "pct": 0.3508
+   },
+   "卫生和社会工作": {
+    "count": 3,
+    "pct": 0.0658
+   },
+   "教育": {
+    "count": 2,
+    "pct": 0.0439
+   },
+   "采矿业": {
+    "count": 2,
+    "pct": 0.0439
+   },
+   "住宿和餐饮业": {
+    "count": 2,
+    "pct": 0.0439
+   }
+  },
+  "industry_l2_top10": [
+   {
+    "name": "计算机、通信和其他电子设备制造业",
+    "count": 744,
+    "pct": 16.3122
+   },
+   {
+    "name": "批发业",
+    "count": 646,
+    "pct": 14.1636
+   },
+   {
+    "name": "软件和信息技术服务业",
+    "count": 403,
+    "pct": 8.8358
+   },
+   {
+    "name": "科技推广和应用服务业",
+    "count": 328,
+    "pct": 7.1914
+   },
+   {
+    "name": "零售业",
+    "count": 266,
+    "pct": 5.8321
+   },
+   {
+    "name": "研究和试验发展",
+    "count": 252,
+    "pct": 5.5251
+   },
+   {
+    "name": "电气机械和器材制造业",
+    "count": 247,
+    "pct": 5.4155
+   },
+   {
+    "name": "专业技术服务业",
+    "count": 200,
+    "pct": 4.385
+   },
+   {
+    "name": "专用设备制造业",
+    "count": 189,
+    "pct": 4.1438
+   },
+   {
+    "name": "其他制造业",
+    "count": 118,
+    "pct": 2.5872
+   }
+  ],
+  "n_industry_l2": 74,
+  "grant_stats": {
+   "n": 4561,
+   "sum": 699284,
+   "mean": 153.3181,
+   "median": 80,
+   "p75": 127,
+   "p90": 242,
+   "p95": 387,
+   "p99": 1287,
+   "min": 50,
+   "max": 17072
+  },
+  "pub_stats": {
+   "n": 4561,
+   "sum": 1069438,
+   "mean": 234.4745,
+   "median": 97,
+   "p75": 164,
+   "p90": 325,
+   "p95": 545,
+   "p99": 1998,
+   "min": 50,
+   "max": 81376
+  },
+  "grant_rate_pct": 65.388,
+  "grant_rate_library_pct": 72.806,
+  "library_grant_rows": 2140420,
+  "library_share_pub_pct": 36.3767,
+  "library_share_grant_pct": 32.6704,
+  "matched_names": 157363,
+  "unmatched_names": 11863,
+  "name_match_pct": 92.9898,
+  "top4_industry_sum_pct": 90.7696,
+  "mfg_wholesale_pct": 63.736,
+  "tail4_count": 9,
+  "tail4_pct": 0.1975,
+  "threshold_curve": [
+   {
+    "threshold": 20,
+    "count": 17904,
+    "pct_of_base": 9.4672,
+    "ratio_to_50": 3.9255
+   },
+   {
+    "threshold": 30,
+    "count": 9813,
+    "pct_of_base": 5.1889,
+    "ratio_to_50": 2.1515
+   },
+   {
+    "threshold": 50,
+    "count": 4561,
+    "pct_of_base": 2.4117,
+    "ratio_to_50": 1.0
+   },
+   {
+    "threshold": 80,
+    "count": 2290,
+    "pct_of_base": 1.2109,
+    "ratio_to_50": 0.5021
+   },
+   {
+    "threshold": 100,
+    "count": 1630,
+    "pct_of_base": 0.8619,
+    "ratio_to_50": 0.3574
+   },
+   {
+    "threshold": 200,
+    "count": 591,
+    "pct_of_base": 0.3125,
+    "ratio_to_50": 0.1296
+   },
+   {
+    "threshold": 500,
+    "count": 166,
+    "pct_of_base": 0.0878,
+    "ratio_to_50": 0.0364
+   }
+  ],
+  "area_missing_count": 775,
+  "area_missing_pct": 16.9919,
+  "reconcile": {
+   "roster_org_ids": 4561,
+   "recomputed_org_ids": 4561,
+   "only_in_roster": 0,
+   "only_in_recompute": 0
+  },
+  "cms_probe": {
+   "cms_tables_declared": [
+    "star_roster_item",
+    "ent_star_roster_count",
+    "enterprise_star"
+   ],
+   "cms_tables_present_in_gkx": [],
+   "gkx_table_name_hits": {
+    "star": [],
+    "roster": [],
+    "cms": [],
+    "key_enterprise": [],
+    "enterprise_tag": [],
+    "honor": []
+   },
+   "star_tag_orgs": 0,
+   "unicorn_tag_orgs": 167,
+   "hidden_champion_tag_orgs": 72,
+   "tech_tag_orgs": 32322,
+   "live_devdb_note": "本机开发库 gkxlumenx_dwd/ods/ads 逐表实测非空 0 张（空壳）"
+  },
+  "top10_by_grant": [
+   {
+    "name": "比亚迪股份有限公司",
+    "city": "深圳市",
+    "grant_cnt": 17072,
+    "pub_cnt": 29024
+   },
+   {
+    "name": "华为技术有限公司",
+    "city": "深圳市",
+    "grant_cnt": 13360,
+    "pub_cnt": 81376
+   },
+   {
+    "name": "维沃移动通信有限公司",
+    "city": "东莞市",
+    "grant_cnt": 11145,
+    "pub_cnt": 28712
+   },
+   {
+    "name": "广东电网有限责任公司",
+    "city": "广州市",
+    "grant_cnt": 8566,
+    "pub_cnt": 18922
+   },
+   {
+    "name": "OPPO广东移动通信有限公司",
+    "city": "东莞市",
+    "grant_cnt": 8547,
+    "pub_cnt": 25765
+   },
+   {
+    "name": "广州汽车集团股份有限公司",
+    "city": "广州市",
+    "grant_cnt": 5955,
+    "pub_cnt": 9836
+   },
+   {
+    "name": "惠科股份有限公司",
+    "city": "深圳市",
+    "grant_cnt": 5202,
+    "pub_cnt": 6797
+   },
+   {
+    "name": "广州视源电子科技股份有限公司",
+    "city": "广州市",
+    "grant_cnt": 3903,
+    "pub_cnt": 6543
+   },
+   {
+    "name": "深圳市合元科技有限公司",
+    "city": "深圳市",
+    "grant_cnt": 3459,
+    "pub_cnt": 4571
+   },
+   {
+    "name": "惠州亿纬锂能股份有限公司",
+    "city": "惠州市",
+    "grant_cnt": 2891,
+    "pub_cnt": 4933
+   }
+  ]
+ },
+ "notes": [
+  "代理名单 ≠ CMS 名单：本条 4,561 是「授权≥50」的构造值，不是门户已发布名单。",
+  "阈值换成 30 立刻变成 9,813 家、换成 100 变成 1,630 家，说明「共 N 家」完全由阈值决定。",
+  "名单里 4,561 家 100% 在广东，省外 0 家——底册本身 99.82% 偏粤，不能外推全国。",
+  "calc-logic 明禁 enterprise_tag.tag_code='star_enterprise' 与荣誉名含「明星」；库内 tech_tag 的「明星」命中为 0，其它荣誉标签（独角兽/隐形冠军）也不得顶替。"
+ ]
+}

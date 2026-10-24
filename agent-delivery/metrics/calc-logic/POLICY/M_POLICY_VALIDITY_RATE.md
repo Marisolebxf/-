@@ -1,7 +1,11 @@
 # 政策有效率（M_POLICY_VALIDITY_RATE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_VALIDITY_RATE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_VALIDITY_RATE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_VALIDITY_RATE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_VALIDITY_RATE.md`；复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py` → `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py`、产物 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_VALIDITY_RATE.md` §二（M_POLICY_VALIDITY_RATE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_VALIDITY_RATE.md` §二（M_POLICY_VALIDITY_RATE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,16 +51,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_VALIDITY_RATE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_VALIDITY_RATE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_VALIDITY_RATE_out.json` |
+| 正本 MD | `M_POLICY_VALIDITY_RATE.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_VALIDITY_RATE.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_VALIDITY_RATE.py`、产物 `metrics/repro/out/M_POLICY_VALIDITY_RATE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：RATIO（截面比率）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策分析页「现行有效政策占比」指标卡、政策库筛选器的「有效/失效」分档
 > **数据支持度**：**完全不支持**｜ **公式定义人**：注册表 `formula` = 「`COUNT(status=1 AND (expire_date IS NULL OR expire_date>=today)) / COUNT(*) × 100`」
@@ -168,7 +172,7 @@ $$\text{validity\_rate}=\frac{\mathrm{COUNT}\left(\text{status}=1\ \wedge\ \left
 | 1 | `gkx.dwd_policy_base` | gkx @ 183.240.141.251:3318，只读 | 政策底表，20,000 行 |
 | 2 | `gkx-orchestration/agent-delivery/metrics/registry/cfg_metric-POLICY-seed.yaml` | `metric_id: M_POLICY_VALIDITY_RATE` | 注册表公式与字段口径 |
 | 3 | `gkx-orchestration/agent-delivery/bid-reference/科技信息展示系统和科技专题服务系统.md` | 政策基础指标模型 | 需求原文（政策级别/类型/时序/分布五类） |
-| 4 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/_work_gkx21/DATA_FACTS_gkx21.md` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
+| 4 | `批次《20261021 改源工程》数据事实登记件 DATA_FACTS_gkx21.md（GitLab 外本地工作稿）` | §3.49、§3.54、§3.56 | 断档记未测、分母同母体、行数用 `COUNT(*)` |
 | 5 | `第三方库指标计算过程/M_POLICY_TOTAL_COUNT.md` | §2 全表口径 | 20,000 与主键去重的对账基准 |
 
 `calc-logic/POLICY/` 目录下没有本 ID 的正本（该目录现有 19 份，与本批相关的只有 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INDUSTRY_FIT.md` 与 `gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_INTENSITY_INDEX.md`），注册表也未给 `calc_logic_ref`。本件口径以注册表 `formula` 为准，不虚构正本路径。
@@ -332,7 +336,7 @@ live 侧的 `dwd.policy_base_info` 在 20261019 的实测里是 0 行，`ads.pol
 ### 5.1 复现命令
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 _build_policy_struct_20261023.py     # 三列填充底数（连 gkx）
 python3 M_POLICY_VALIDITY_RATE.py            # 只读快照
 python3 -c "import json;d=json.load(open('M_POLICY_VALIDITY_RATE_out.json'));print(d['support_judgment'], d['headline']['constructive_validity_rate_pct'])"

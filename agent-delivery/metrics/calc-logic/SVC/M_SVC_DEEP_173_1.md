@@ -1,7 +1,11 @@
 # 服务关系链模型（M_SVC_DEEP_173_1）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_173_1.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_173_1.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_173_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_DEEP_173_1.md`；复现脚本 `metrics/repro/M_SVC_DEEP_173_1.py` → `metrics/repro/out/M_SVC_DEEP_173_1_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_DEEP_173_1.py`、产物 `metrics/repro/out/M_SVC_DEEP_173_1_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_173_1.md` §二（M_SVC_DEEP_173_1.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_DEEP_173_1.md` §二（M_SVC_DEEP_173_1.py 零改语义复算）。
 
 ## 源表字段
 
@@ -55,16 +59,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_DEEP_173_1.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_173_1.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_DEEP_173_1_out.json` |
+| 正本 MD | `M_SVC_DEEP_173_1.md` |
+| 复现脚本 | `metrics/repro/M_SVC_DEEP_173_1.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_DEEP_173_1_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_DEEP_173_1.py`、产物 `metrics/repro/out/M_SVC_DEEP_173_1_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（图模型：强度/层次/密度三维）｜ **域**：SVC 服务机构｜ **UI 挂载**：科技专题服务系统·产业服务链分析·服务机构关系图谱（SRS seq 123 的机构关系下钻）
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：王惠 20260829 三维七项口径 + 社会网络分析测度族
@@ -195,7 +199,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 ### 2.6 复现代码与结果展示
 
-`cd code && python3 M_SVC_DEEP_173_1.py`，纯读快照构图（无 networkx 依赖，纯 Python 邻接表），覆盖写 `_out.json`。
+`python3 M_SVC_DEEP_173_1.py`，纯读快照构图（无 networkx 依赖，纯 Python 邻接表），覆盖写 `_out.json`。
 
 脚本不引入第三方图库，是为了避免「环境里没装 networkx 就跑不了」这类复现障碍；21,879 条边的 BFS 与聚类系数计算在纯 Python 下 1 秒内完成。
 
@@ -418,7 +422,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 可行性不是「表在不在」，而是「今天能不能跑出一条可复核的数」。本件把可行性拆成四步：①池怎么定（可复算的机构域）；②每维从哪张表取（字段级）；③缺维怎么处理（不补 0、不进平均、写进缺口）；④结果怎么验（分布、极值、抽样回查）。四步都落进脚本，任一步换口径都会改变 `_out.json`，便于复核。
 
-工程约束：脚本自包含、只读 `code/_snapshots21/` 快照，单次运行不连库、不发 SQL，因此在任意机器上 `cd code && python3 <ID>.py` 都能复现同一份产物（浮点排序固定，无随机种子）。
+工程约束：脚本自包含、只读 `code/_snapshots21/` 快照，单次运行不连库、不发 SQL，因此在任意机器上 `python3 <ID>.py` 都能复现同一份产物（浮点排序固定，无随机种子）。
 
 本件对第三方库的依赖为零：邻接表、BFS、聚类系数全部手写，避免环境差异导致的复现失败。这也是「脚本自包含」在图层面的具体做法。
 
@@ -466,7 +470,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 ## 附录 E 复算步骤
 
 1. 确认快照存在：`ls code/_snapshots21/svc21_facts_20261022.json`（缺失则先跑 `code/_build_svc21_facts.py`）。
-2. 运行脚本：`cd code && python3 M_SVC_DEEP_173_1.py`，控制台会打印关键计数与产物路径。
+2. 运行脚本：`python3 M_SVC_DEEP_173_1.py`，控制台会打印关键计数与产物路径。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_DEEP_173_1_out.json'));print(d['support_judgment'])"`。
 4. 抽查一个数：任取产物里的计数，按 §2 的公式手算一遍，应与产物一致（浮点按 2 位小数）。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_DEEP_173_1 --check`，sha 应一致（时间戳字段除外）。
@@ -529,7 +533,7 @@ gkx 没有行业均值口径（无行业代码主表与行业统计口径对齐�
 4. `support_judgment` 与文档头部档位一致（四档字符串完全一致）
 5. `base_years_used/_missing/_note` 三字段齐备，缺失年不摊 0
 6. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-7. 脚本自包含：`cd code && python3 <ID>.py` 可直接跑通
+7. 脚本自包含：`python3 <ID>.py` 可直接跑通
 8. 脚本不 import 本目录不存在的 helper，不连演示库
 9. 重跑后 `rebuild_metric.py <ID> --check` 的 sha 一致
 10. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移

@@ -1,7 +1,11 @@
 # 企业分类型数量（M_ENT_TYPE_COUNT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_TYPE_COUNT.md`；复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py` → `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_TYPE_COUNT.py`、产物 `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -26,7 +30,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md` §二（M_ENT_TYPE_COUNT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_TYPE_COUNT.md` §二（M_ENT_TYPE_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,21 +55,21 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_TYPE_COUNT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_TYPE_COUNT_out.json` |
+| 正本 MD | `M_ENT_TYPE_COUNT.md` |
+| 复现脚本 | `metrics/repro/M_ENT_TYPE_COUNT.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_TYPE_COUNT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_TYPE_COUNT.py`、产物 `metrics/repro/out/M_ENT_TYPE_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：COUNT × 6（六类资质/属性分别去重计数）｜ **域**：企业分析／重点企业类型分析／类型与区域分析｜ **UI 挂载**：企业分析·类型与区域分析「各类型企业数」六卡｜ **数据支持度**：**部分支持**
-> **口径来源**：王惠（`local-workspace/docs/metrics/王惠阶段性成果/20260817/指标计算逻辑-V3-2/M_ENT_TYPE_COUNT.md`）→ 2026-08-30 calc-logic 六类一律改挂 `enterprise_tag.tag_code`（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`）
+> **口径来源**：王惠（`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`）→ 2026-08-30 calc-logic 六类一律改挂 `enterprise_tag.tag_code`（`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`）
 > **实测日期**：2026-10-23｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`cd code && python3 M_ENT_TYPE_COUNT.py` → `code/M_ENT_TYPE_COUNT_out.json`
+> **复现**：`python3 M_ENT_TYPE_COUNT.py` → `code/M_ENT_TYPE_COUNT_out.json`
 > **wanghui**：true（§五 必含王惠口径对照）
 
 ---
@@ -171,7 +175,7 @@ A 族是资质类的权威来源，问题是有效期：高企三年、专精特
 2. 工业和信息化部：《优质中小企业梯度培育管理暂行办法》。https://www.miit.gov.cn/
 3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
 4. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`
-5. 王惠 20260817：`local-workspace/docs/metrics/王惠阶段性成果/20260817/指标计算逻辑-V3-2/M_ENT_TYPE_COUNT.md`
+5. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`
 6. 同族已交付件：`M_ENT_HIGH_TECH_COUNT.md`、`M_ENT_INNOVATIVE_COUNT.md`、`M_ENT_TYPE_RATIO.md`
 
 ### 1.6 推测原意与依赖维度
@@ -284,7 +288,7 @@ calc-logic 的正本很明确：六类一律走 `enterprise_tag.tag_code`，并�
 复现命令：
 
 ```bash
-cd code && python3 M_ENT_TYPE_COUNT.py
+python3 M_ENT_TYPE_COUNT.py
 ```
 
 脚本输出：
@@ -468,7 +472,7 @@ calc-logic 2026-08-30 版把六类统一到 `enterprise_tag.tag_code`，并明�
 3. 国家统计局：《统计上大中小微型企业划分办法（2017）》。https://www.stats.gov.cn/xw/tjxw/tzgg/202302/t20230202_1893916.html
 4. 中国证券监督管理委员会：上市公司名录。http://www.csrc.gov.cn/
 5. 项目内 calc-logic：`gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_TYPE_COUNT.md`
-6. 王惠 20260817：`local-workspace/docs/metrics/王惠阶段性成果/20260817/指标计算逻辑-V3-2/M_ENT_TYPE_COUNT.md`
+6. 王惠 20260817：`(王惠口径正本，GitLab 外本地归档)M_ENT_TYPE_COUNT.md`
 
 ---
 

@@ -1,7 +1,11 @@
 # 技术基础指标模型——领先专利主体机构（王惠口径：技术创新力综合评估）（M_TECH_DS_07_TECH_INNOV_004）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-TECH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_004.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_TECH_DS_07_TECH_INNOV_004.md`；复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py` → `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_004_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py`、产物 `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_004_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_004.md` §二（M_TECH_DS_07_TECH_INNOV_004.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_TECH_DS_07_TECH_INNOV_004.md` §二（M_TECH_DS_07_TECH_INNOV_004.py 零改语义复算）。
 
 ## 源表字段
 
@@ -54,16 +58,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_TECH_DS_07_TECH_INNOV_004.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004_out.json` |
+| 正本 MD | `M_TECH_DS_07_TECH_INNOV_004.md` |
+| 复现脚本 | `metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py` |
+| 复现产物 | `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_004_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py`、产物 `metrics/repro/out/M_TECH_DS_07_TECH_INNOV_004_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：技术基础指标模型（l6，DS-07 基础指标族·主体机构件）｜ **域**：技术（TECH）｜ **UI 挂载**：DS-07 技术基础指标（专题库技术发展分析） ｜ **数据支持度**：**部分支持**
 > **公式定义人（20261020-TECH-d）**：王惠（wanghui_agg 收录：def=同 M_INNOV_TINN_COMPOSITE-技术创新力综合评估；creator=王惠）｜ **wanghui：true（§五 必含，见文末 §五）** ｜ 直接（结构/数据）：否 / 否（无「领先机构」结果面）｜ 依赖（结构/数据）：部分（规模/宽度/转让全量可算，家族/被引/法律抽样级，权利要求/许可/诉讼/质押/开放许可缺）
@@ -269,13 +273,13 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004.py` |
+| 计算脚本 | `metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py` |
 | 结果产物 | 同目录 `M_TECH_DS_07_TECH_INNOV_004_out.json` |
 | 数据来源 | gkx 真源 `dwd_patent` PK 等距 10 段分片（每段 LIMIT 2 万，共 20 万件）+ 快照复用（family/cited/legal/transfer） |
 | 大表纪律 | 不整表扫描；`SELECT MIN/MAX(dwd_id)` 定分片边界后逐段 `dwd_id >= a AND dwd_id < b LIMIT 20000`，每段独立异常处理 |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_TECH_DS_07_TECH_INNOV_004.py
+python3 metrics/repro/M_TECH_DS_07_TECH_INNOV_004.py
 # 需要重新取数时追加 --live（gkx 可达时走库，不可达自动回落本地快照）
 ```
 

@@ -1,7 +1,11 @@
 # 监测趋势预测（M_INNOV_FACTOR_FORECAST）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_FORECAST.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_FORECAST.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_FORECAST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_FACTOR_FORECAST.md`；复现脚本 `metrics/repro/M_INNOV_FACTOR_FORECAST.py` → `metrics/repro/out/M_INNOV_FACTOR_FORECAST_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_FACTOR_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_FORECAST_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_FORECAST.md` §二（M_INNOV_FACTOR_FORECAST.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_FACTOR_FORECAST.md` §二（M_INNOV_FACTOR_FORECAST.py 零改语义复算）。
 
 ## 源表字段
 
@@ -51,16 +55,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_FACTOR_FORECAST.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_FORECAST.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_FORECAST_out.json` |
+| 正本 MD | `M_INNOV_FACTOR_FORECAST.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_FACTOR_FORECAST.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_FACTOR_FORECAST_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_FACTOR_FORECAST.py`、产物 `metrics/repro/out/M_INNOV_FACTOR_FORECAST_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 域 · 科创要素趋势（王惠 calc-logic 口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势·科创要素·趋势跟踪｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（V1.5-20260830，Holt 线性趋势，满 8 期，年预 2 期，80% 区间）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：是 / 部分
@@ -160,8 +164,8 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 
 | 序号 | 来源 | 路径 / 章节 | 原句 |
 |---|---|---|---|
-| 1 | 原始产品需求文档 | `local-workspace/docs/metrics/原始产品需求文档/科技信息展示系统和科技专题服务系统.md`，§1.1.1.1.4.1.1.3 | 「提供基础信息查看及监测数据趋势变化跟踪。」 |
-| 2 | 王惠口径原文 | `local-workspace/docs/metrics/王惠阶段性成果/20260904_创新技术/指标计算逻辑/M_INNOV_FACTOR_FORECAST.md` | 「对会议/项目/专利/期刊逐年件数序列外推。满 8 期默认 Holt 线性趋势（年预 2 期）；件数不为负。输出点预测与约 80% 区间。」 |
+| 1 | 原始产品需求文档 | `原始产品需求文档《科技信息展示系统和科技专题服务系统》（GitLab 外本地归档）.md`，§1.1.1.1.4.1.1.3 | 「提供基础信息查看及监测数据趋势变化跟踪。」 |
+| 2 | 王惠口径原文 | `王惠口径正本（GitLab 外本地归档）` | 「对会议/项目/专利/期刊逐年件数序列外推。满 8 期默认 Holt 线性趋势（年预 2 期）；件数不为负。输出点预测与约 80% 区间。」 |
 | 3 | 数据事实库 | `_work_gkx21/DATA_FACTS_gkx21.md` §3.13 | 「`dwd_patent` 只能 2021–2026 年，2017–2020 一行都没有」 |
 | 4 | 专利面板 | `code/_snapshots21/patent_panel_innov_20261021.json` | `year_all`：2021 604,512 … 2026 74,810 |
 | 5 | 论文/项目实测 | `gkx.dwd_zh_paper` / `gkx.dwd_zh_project` | 100,900 / 58,453 行 |
@@ -217,8 +221,8 @@ Holt 用固定参数 $\alpha=0.5$、$\beta=0.3$，与王惠原文一致。水平
 
 ### 2.7 复现代码结果展示
 
-**代码入库路径**：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_FACTOR_FORECAST.py`
-**运行命令**：`cd code && python3 M_INNOV_FACTOR_FORECAST.py`
+**代码入库路径**：`metrics/repro/M_INNOV_FACTOR_FORECAST.py`
+**运行命令**：`python3 M_INNOV_FACTOR_FORECAST.py`
 **输出**：`code/M_INNOV_FACTOR_FORECAST_out.json`（实测耗时 < 1 秒；读共享事实缓存，零专利 SQL）
 
 | 要素 | 训练窗口 | 期数 | σ | 样本内 MAPE | 预测 1 | 80% 区间 | 预测 2 | 80% 区间 |

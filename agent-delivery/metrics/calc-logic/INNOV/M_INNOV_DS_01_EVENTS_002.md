@@ -1,7 +1,11 @@
 # 事件影响力（M_INNOV_DS_01_EVENTS_002）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-INNOV-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_01_EVENTS_002.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_01_EVENTS_002.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_01_EVENTS_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_INNOV_DS_01_EVENTS_002.md`；复现脚本 `metrics/repro/M_INNOV_DS_01_EVENTS_002.py` → `metrics/repro/out/M_INNOV_DS_01_EVENTS_002_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_INNOV_DS_01_EVENTS_002.py`、产物 `metrics/repro/out/M_INNOV_DS_01_EVENTS_002_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_01_EVENTS_002.md` §二（M_INNOV_DS_01_EVENTS_002.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_INNOV_DS_01_EVENTS_002.md` §二（M_INNOV_DS_01_EVENTS_002.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,16 +51,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_INNOV_DS_01_EVENTS_002.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_01_EVENTS_002.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_01_EVENTS_002_out.json` |
+| 正本 MD | `M_INNOV_DS_01_EVENTS_002.md` |
+| 复现脚本 | `metrics/repro/M_INNOV_DS_01_EVENTS_002.py` |
+| 复现产物 | `metrics/repro/out/M_INNOV_DS_01_EVENTS_002_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_INNOV_DS_01_EVENTS_002.py`、产物 `metrics/repro/out/M_INNOV_DS_01_EVENTS_002_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：INNOV 域·科创事件簇（王惠 V1.3-20260829 口径，与 `M_INNOV_EVENT_INFLUENCE` 同口径）｜ **wanghui**: true ｜ **UI 挂载**：科技信息展示系统·科技发展态势·科技全域态势→科创事件→重要性分级功能｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（V1.3-20260829；政策级别+区域覆盖+主题广度 三子项极值归一等权×100）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：三方库结构有 / 数据部分足（级别维全量可解析，主题维仅 2 条非空）
@@ -264,14 +268,14 @@ $$Influence_e=\frac{norm(S^{lvl}_e)+norm(G_e)+norm(T_e)}{3}\times 100$$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 本指标脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_INNOV_DS_01_EVENTS_002.py`（gkx 直算，20261021 改源版） |
+| 本指标脚本 | `metrics/repro/M_INNOV_DS_01_EVENTS_002.py`（gkx 直算，20261021 改源版） |
 | 同簇共用算路 | 同目录 `code/_innov_events_21.py`（政策入集、占位符清洗、层级解析、评分与去重审计） |
 | 本指标产物 | `code/M_INNOV_DS_01_EVENTS_002_out.json` |
 | 同簇共用缓存 | `code/_snapshots21/policy_base_20261021.json`（20,000 行政策，与 EVENTS_001 共用） |
 | 主算库 | `gkx.dwd_policy_base`（三方库 `183.240.141.251:3318`，只读） |
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_INNOV_DS_01_EVENTS_002.py
 # 政策缓存与 EVENTS_001 共用；重复运行只重算评分，不再连库拉数。
 ```

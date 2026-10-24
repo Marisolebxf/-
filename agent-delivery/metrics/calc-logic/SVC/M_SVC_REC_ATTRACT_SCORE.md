@@ -1,7 +1,11 @@
 # 招引综合评分（M_SVC_REC_ATTRACT_SCORE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SVC-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SVC_REC_ATTRACT_SCORE.md`；复现脚本 `metrics/repro/M_SVC_REC_ATTRACT_SCORE.py` → `metrics/repro/out/M_SVC_REC_ATTRACT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SVC_REC_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_SVC_REC_ATTRACT_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -25,7 +29,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md` §二（M_SVC_REC_ATTRACT_SCORE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SVC_REC_ATTRACT_SCORE.md` §二（M_SVC_REC_ATTRACT_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -56,16 +60,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SVC_REC_ATTRACT_SCORE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SVC_REC_ATTRACT_SCORE_out.json` |
+| 正本 MD | `M_SVC_REC_ATTRACT_SCORE.md` |
+| 复现脚本 | `metrics/repro/M_SVC_REC_ATTRACT_SCORE.py` |
+| 复现产物 | `metrics/repro/out/M_SVC_REC_ATTRACT_SCORE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SVC_REC_ATTRACT_SCORE.py`、产物 `metrics/repro/out/M_SVC_REC_ATTRACT_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：指数/评分（服务机构库·外部招引四维合成）｜ **域**：SVC 服务机构（产业服务链分析·引入服务机构推荐分析）｜ **UI 挂载**：科技专题服务系统·产业服务链分析·招引机构推荐列表评分列
 > **数据支持度**：**部分支持**（四档口径见 §〇）｜ **公式来源**：calc-logic 0.2.0（王惠四维 + 唐绍祖 2026-10-22 会签的试点口径）+ 本件降级实现
@@ -220,7 +224,7 @@ $$
 
 ### 2.8 复现结果摘要
 
-产物 `code/M_SVC_REC_ATTRACT_SCORE_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`population`、`dimensions`、`value`、`robustness`、`gaps`、`cross_refs`。脚本 `code/M_SVC_REC_ATTRACT_SCORE.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`cd code && python3 M_SVC_REC_ATTRACT_SCORE.py`。
+产物 `code/M_SVC_REC_ATTRACT_SCORE_out.json` 覆盖写，顶层含 `support_judgment`、`base_years_used/_missing/_note`、`sources`、`params`、`population`、`dimensions`、`value`、`robustness`、`gaps`、`cross_refs`。脚本 `code/M_SVC_REC_ATTRACT_SCORE.py` 自包含，只读 `code/_snapshots21/svc21_rec_20261023.json` 与 `svc21_facts_20261022.json`，不连库。复现命令：`python3 M_SVC_REC_ATTRACT_SCORE.py`。
 
 | 产物键 | 取值 |
 |---|---|
@@ -387,7 +391,7 @@ $$
 
 ### 5.1 王惠 V1 的口径
 
-王惠 V1-20260826（`local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SVC_REC_ATTRACT_SCORE.md`）定义四维：产业匹配度（产业契合度 + 产业链协同度）、技术领先性（研发投入强度 + 有效发明专利占比）、发展潜力（营收增长率 + 净利润增长率）、对外合作意愿（合作项目数 + 覆盖范围）。每维先极值归一化到 0—100，维度内与维度间默认等权；对象是「深圳拟发展产业方向上的外部服务机构」。
+王惠 V1-20260826（`王惠口径正本（GitLab 外本地归档）`）定义四维：产业匹配度（产业契合度 + 产业链协同度）、技术领先性（研发投入强度 + 有效发明专利占比）、发展潜力（营收增长率 + 净利润增长率）、对外合作意愿（合作项目数 + 覆盖范围）。每维先极值归一化到 0—100，维度内与维度间默认等权；对象是「深圳拟发展产业方向上的外部服务机构」。
 
 ### 5.2 本件的落地差异
 
@@ -513,7 +517,7 @@ $$
 ## 附录 E　复算步骤
 
 1. 确认快照：`ls code/_snapshots21/svc21_rec_20261023.json`。
-2. 运行：`cd code && python3 M_SVC_REC_ATTRACT_SCORE.py`。
+2. 运行：`python3 M_SVC_REC_ATTRACT_SCORE.py`。
 3. 核对产物：`python3 -c "import json;d=json.load(open('M_SVC_REC_ATTRACT_SCORE_out.json'));print(d['value']['scored_orgs'],d['value']['score_dist']['median'])"`。
 4. 抽查：`dimensions.产业匹配度.coverage.industry_fit` 应为 7,139。
 5. 重跑一致性：`python3 _work_gkx21/rebuild_metric.py M_SVC_REC_ATTRACT_SCORE --check`。
@@ -541,7 +545,7 @@ $$
 4. `support_judgment` 与文档头部档位一致（部分支持）
 5. `base_years_used/_missing/_note` 三字段齐备
 6. `sources` 只写 gkx 库名 + 主机 + 快照路径，无演示库痕迹
-7. 脚本自包含：`cd code && python3 M_SVC_REC_ATTRACT_SCORE.py` 可直接跑通
+7. 脚本自包含：`python3 M_SVC_REC_ATTRACT_SCORE.py` 可直接跑通
 8. 王惠 V1 与 calc-logic 的差异逐条披露，未单方面裁决
 9. 重跑后 `rebuild_metric.py M_SVC_REC_ATTRACT_SCORE --check` 内容一致
 10. 文档 mtime 晚于产物，`audit_md_vs_out.py` A 段无漂移

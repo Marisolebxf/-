@@ -1,7 +1,11 @@
 # 研发投入占比（M_ENT_RD_INVESTMENT_RATIO）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_RD_INVESTMENT_RATIO.md`；复现脚本 `metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py` → `metrics/repro/out/M_ENT_RD_INVESTMENT_RATIO_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py`、产物 `metrics/repro/out/M_ENT_RD_INVESTMENT_RATIO_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 rd_ratio = rd_investment / revenue × 100；每企最近完整自然年；分母 0/空或分子空 → 该企不可算
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md` §二（M_ENT_RD_INVESTMENT_RATIO.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_RD_INVESTMENT_RATIO.md` §二（M_ENT_RD_INVESTMENT_RATIO.py 零改语义复算）。
 
 ## 源表字段
 
@@ -55,16 +59,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RD_INVESTMENT_RATIO.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO_out.json` |
+| 正本 MD | `M_ENT_RD_INVESTMENT_RATIO.md` |
+| 复现脚本 | `metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_RD_INVESTMENT_RATIO_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py`、产物 `metrics/repro/out/M_ENT_RD_INVESTMENT_RATIO_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（财务比率型 / 创新投入强度）｜ **域**：企业分析（ENT）｜ **UI 挂载**：科技专题·企业评估·技术力评估「技术投入」维；企业画像与门户「技术优势可视化」看板｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（20260816 底稿「R&D / 营业收入」→ 2026-08-31 方案 1 定稿「formula 与有没有数分开」）｜ 直接（结构/数据）：是 / 否 ｜ 依赖（结构/数据）：表结构齐 / **研发投入值侧填充 0**
@@ -256,13 +260,13 @@ $$
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 审计脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py` |
+| 审计脚本 | `metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py` |
 | 结果产物 | 同目录 `code/M_ENT_RD_INVESTMENT_RATIO_out.json` |
 | 主算库 | 三方 `gkx`（`183.240.141.251:3318 / gkx`） |
 | 对照探测 | 开发库 `gkxlumenx_dwd.enterprise_finance_history`（当日外网不可达，引同日快照） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_ENT_RD_INVESTMENT_RATIO.py
+python3 metrics/repro/M_ENT_RD_INVESTMENT_RATIO.py
 ```
 
 输出字段（与 `code/M_ENT_RD_INVESTMENT_RATIO_out.json` 逐键对应）：`probe_financial`（年报财务行数、分子/分母/研发人员三列填充）、`probe_annual_report_asset`（工商年报资产口径填充）、`banned_counterfactual`（禁用替代面：行数、研发额>0 企业数、覆盖率与计算依据）、`foreign_finance_probe`（国外 51 行、研发额非零 0 行）、`dwd_rd_probe`（命名陷阱证据：0 行 + 17 列临床试验结构）、`compute`、`base_orgs`、`support_judgment`。

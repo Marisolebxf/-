@@ -1,7 +1,11 @@
 # 政策效果评分（王惠三维口径 v2 复现）（M_POLICY_EFFECT_SCORE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_EFFECT_SCORE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_EFFECT_SCORE.md`；复现脚本 `metrics/repro/M_POLICY_EFFECT_SCORE.py` → `metrics/repro/out/M_POLICY_EFFECT_SCORE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_EFFECT_SCORE.py`、产物 `metrics/repro/out/M_POLICY_EFFECT_SCORE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_EFFECT_SCORE.md` §二（M_POLICY_EFFECT_SCORE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_EFFECT_SCORE.md` §二（M_POLICY_EFFECT_SCORE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,16 +51,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_EFFECT_SCORE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE_out.json` |
+| 正本 MD | `M_POLICY_EFFECT_SCORE.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_EFFECT_SCORE.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_EFFECT_SCORE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_EFFECT_SCORE.py`、产物 `metrics/repro/out/M_POLICY_EFFECT_SCORE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：功能指标（科技政策跟踪·政策分析评价·政策效果评估）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·政策分析评价·政策效果评分 ｜ **数据支持度**：**部分支持**
 > **公式定义人**：王惠（绿色导向占比子项）／仿王惠（三维合成）｜ wanghui：true（§五必含对照）｜ 直接（结构/数据）：否 / 否 ｜ 依赖（结构/数据）：部分 / 部分（环境维可算；执行残维恒值；社会经济维无表）
@@ -268,13 +272,13 @@ out.json 的 `correction` 块已登记「双恒值检验」结果：`exec_dim_co
 
 | 项 | 路径 / 说明 |
 |---|---|
-| 计算脚本 | `local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE.py` |
+| 计算脚本 | `metrics/repro/M_POLICY_EFFECT_SCORE.py` |
 | 结果产物 | 同目录 `M_POLICY_EFFECT_SCORE_out.json`（2026-10-21 实跑，含 `correction`） |
 | 主算库 | 三方 `gkx.dwd_policy_base`（id 分页 1,000/批，`read_timeout=600`） |
 | 探索补测 | `M_POLICY_DEEP_166_169_PROBE_out.json`（字段真实值交叉核对） |
 
 ```bash
-python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE.py
+python3 metrics/repro/M_POLICY_EFFECT_SCORE.py
 ```
 
 #### 2.7.2 复现结果（摘要表）
@@ -445,7 +449,7 @@ python3 local-workspace/docs/tasks/investiage/20261020_指标整体开发进度�
 4. 国家发展改革委等七部门. (2019). 《绿色产业指导目录（2019年版）》（发改环资〔2019〕293号）. https://xjdrc.xinjiang.gov.cn/xjfgw/c108390/201902/29816165dfb44c70bcf1e51f9a36cd9e.shtml
 5. 生态环境部. (2016). 《建设项目环境影响评价技术导则 总纲》标准信息页. https://www.mee.gov.cn/ywgz/fgbz/bz/bzwb/other/pjjsdz/201612/t20161214_369043.shtml
 6. 项目内旁证（非外部文献）：`gkx-orchestration/agent-delivery/metrics/calc-logic/POLICY/M_POLICY_EFFECT_SCORE.md` —— 王惠三维口径、环保闭集与归一规则原稿。
-7. 项目内旁证（非外部文献）：`local-workspace/docs/tasks/investiage/20261020_指标整体开发进度调研/code/M_POLICY_EFFECT_SCORE_out.json` —— 本轮复现实测与 `correction` 诊断块。
+7. 项目内旁证（非外部文献）：`metrics/repro/out/M_POLICY_EFFECT_SCORE_out.json` —— 本轮复现实测与 `correction` 诊断块。
 
 文献—方法—库表完整论证见 **附录 C**；实测产物摘要见 **附录 D**。
 

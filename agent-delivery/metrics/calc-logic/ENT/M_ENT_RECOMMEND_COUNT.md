@@ -1,7 +1,11 @@
 # 推荐企业数（M_ENT_RECOMMEND_COUNT）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-ENT-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RECOMMEND_COUNT.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RECOMMEND_COUNT.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RECOMMEND_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_ENT_RECOMMEND_COUNT.md`；复现脚本 `metrics/repro/M_ENT_RECOMMEND_COUNT.py` → `metrics/repro/out/M_ENT_RECOMMEND_COUNT_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_ENT_RECOMMEND_COUNT.py`、产物 `metrics/repro/out/M_ENT_RECOMMEND_COUNT_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 count(DISTINCT org_id) WHERE index >= 70；招引/培育分开，不 UNION；无分不进分子
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RECOMMEND_COUNT.md` §二（M_ENT_RECOMMEND_COUNT.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_ENT_RECOMMEND_COUNT.md` §二（M_ENT_RECOMMEND_COUNT.py 零改语义复算）。
 
 ## 源表字段
 
@@ -53,20 +57,20 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_ENT_RECOMMEND_COUNT.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RECOMMEND_COUNT.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_ENT_RECOMMEND_COUNT_out.json` |
+| 正本 MD | `M_ENT_RECOMMEND_COUNT.md` |
+| 复现脚本 | `metrics/repro/M_ENT_RECOMMEND_COUNT.py` |
+| 复现产物 | `metrics/repro/out/M_ENT_RECOMMEND_COUNT_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_ENT_RECOMMEND_COUNT.py`、产物 `metrics/repro/out/M_ENT_RECOMMEND_COUNT_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：STAT（阈值过滤 + 去重计数）｜ **域**：企业分析·引育推荐（ENT）｜ **UI 挂载**：招引/培育名单规模、首页推荐卡片｜ **数据支持度**：**部分支持**
 > **口径来源**：calc-logic COVER-STATE-L01（阈值 70）｜ **实测日期**：2026-10-22｜ **数据源**：gkx @ 183.240.141.251:3318（只读 `gkx_reader_zp`）
-> **复现**：`cd code && python3 M_ENT_RECOMMEND_COUNT.py` → `code/M_ENT_RECOMMEND_COUNT_out.json`
+> **复现**：`python3 M_ENT_RECOMMEND_COUNT.py` → `code/M_ENT_RECOMMEND_COUNT_out.json`
 
 ---
 
@@ -241,7 +245,7 @@ null 与 0 的区别必须写清：0 是「有分但都不过线」，可以随�
 本件没有做「最优阈值」拟合，因为那需要业务标注（哪些企业真的值得推荐）。没有标注集，任何阈值都是任意的。
 
 ```bash
-cd /Users/samuel_tang/my_project/gkx-lumen/local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code
+cd agent-delivery/metrics/repro
 python3 M_ENT_RECOMMEND_COUNT.py
 python3 -c "import json;d=json.load(open('M_ENT_RECOMMEND_COUNT_out.json'));print(d['support_judgment']['data_support_level'])"
 ```
@@ -401,7 +405,7 @@ python3 -c "import json;d=json.load(open('M_ENT_RECOMMEND_COUNT_out.json'));prin
 | `base_years_note` | 见产物 |
 | `sources` | 见产物 |
 
-重跑命令：`cd code && python3 M_ENT_RECOMMEND_COUNT.py`；自查：`python3 _work_gkx21/rebuild_metric.py M_ENT_RECOMMEND_COUNT --check`。
+重跑命令：`python3 M_ENT_RECOMMEND_COUNT.py`；自查：`python3 _work_gkx21/rebuild_metric.py M_ENT_RECOMMEND_COUNT --check`。
 
 产物 `attraction.count_strict_raw=0`、`count_rescaled_max100=2`、`cultivation.count=null`；`scale_finding` 记录标度诊断；`probes` 记录重算耗时与节点数。
 

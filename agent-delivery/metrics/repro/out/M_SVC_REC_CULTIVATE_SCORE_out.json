@@ -1,0 +1,703 @@
+{
+ "metric_id": "M_SVC_REC_CULTIVATE_SCORE",
+ "metric_name": "培育综合评分",
+ "support_judgment": "部分支持",
+ "verdict_kind": "partial_constructible",
+ "base_years_used": [
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "base_years_missing": [
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012
+ ],
+ "base_years_note": "非固定年窗：现有规模取每家机构最近一个有值的年报年（从业人员/资产总额），窗口随机构而异；财务表在池内非空值只落 2013—2025，2007—2012 池内 0 行非空，列入 missing，不按 0 摊入。服务成效的新闻条数无年份窗口（全历史累计）；市场缺口取最近一个有值年的营业收入，同门类分母只汇总同一年的有值机构。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "mode": "read-only",
+   "tables": [
+    "dwd_org_org_product_info",
+    "dwd_org_base_info",
+    "dwd_org_annual_financial_info",
+    "dwd_org_important_news_info"
+   ],
+   "snapshot": "code/_snapshots21/svc21_rec_20261023.json",
+   "upstream": [
+    "code/_snapshots21/svc21_facts_20261022.json",
+    "code/_snapshots21/svc21_pt_axis_20261022.json",
+    "code/_snapshots21/svcsz21_facts_20261023.json",
+    "code/_snapshots21/star_applicant_agg_gkx.json",
+    "code/_snapshots21/chain_firm_index_20261023.json",
+    "code/_snapshots21/gkx_columns_20261023.json"
+   ]
+  }
+ ],
+ "params": {
+  "population": "city='深圳市' 的服务机构",
+  "population_n": 25597,
+  "dim_weights": {
+   "现有规模": 0.25,
+   "技术创新能力": 0.25,
+   "服务成效": 0.25,
+   "市场缺口": 0.25
+  },
+  "within_weights": {
+   "现有规模": [
+    0.5,
+    0.5
+   ],
+   "服务成效": [
+    0.5,
+    0.5
+   ]
+  },
+  "normalization": "极值归一化 0—100；计数型（人数/资产/新闻/营收）先 log(1+x) 再归一化；比率型直接归一化",
+  "missing_rule": "缺维 = 可用维得分等权均值；可用维 < 2 不入榜",
+  "market_share_rule": "同门类 = dwd_org_base_info.industry 一级门类；营收 ≤ 0 视为缺失",
+  "non_authoritative": "本件口径，非甲方口径",
+  "finance_rows_total": 90926,
+  "finance_orgs_pool": 6759,
+  "finance_orgs_sz": 3946
+ },
+ "derived": {
+  "sz_share_of_pool_pct": {
+   "value": 57.9734,
+   "numerator": 25597,
+   "denominator": 44153,
+   "denominator_note": "分子=深圳服务机构数 rec.pool.sz（25,597 家）；分母=服务机构池总数 rec.pool.total（44,153 家，含 21 家城市未标注）"
+  },
+  "employees_pct": {
+   "value": 3.1566,
+   "numerator": 808,
+   "denominator": 25597,
+   "denominator_note": "分子=年报里从业人员数（employees_number）至少一年有值且非 0 的深圳机构数（cultivate.dim_coverage.employees，808 家）；分母=深圳服务机构池 25,597 家（cultivate.target_population）"
+  },
+  "assets_pct": {
+   "value": 2.8011,
+   "numerator": 717,
+   "denominator": 25597,
+   "denominator_note": "分子=年报里资产总额（total_assets）至少一年有值且非 0 的深圳机构数（cultivate.dim_coverage.assets，717 家）；分母=深圳服务机构池 25,597 家"
+  },
+  "news_pct": {
+   "value": 53.6469,
+   "numerator": 13732,
+   "denominator": 25597,
+   "denominator_note": "分子=有重点新闻条数的深圳机构数（cultivate.dim_coverage.news，13,732 家）；分母=深圳服务机构池 25,597 家。服务成效维以新闻条数代理"
+  },
+  "revenue_pct": {
+   "value": 2.6292,
+   "numerator": 673,
+   "denominator": 25597,
+   "denominator_note": "分子=年报里营业收入（operating_revenue）至少一年有值且非 0 的深圳机构数（cultivate.dim_coverage.revenue，673 家，尚有 1 家为非正值已单列 revenue_nonpositive）；分母=深圳服务机构池 25,597 家"
+  },
+  "share_pct_of_pop": {
+   "value": 2.6253,
+   "numerator": 672,
+   "denominator": 25597,
+   "denominator_note": "分子=能算出「同门类营收份额」的深圳机构数（cultivate.dim_coverage.share，672 家）；分母=深圳服务机构池 25,597 家。比 revenue 少 1 家是营收非正值无法进份额"
+  },
+  "scored_share_pct": {
+   "value": 3.8325,
+   "numerator": 981,
+   "denominator": 25597,
+   "denominator_note": "分子=可用维 ≥2、进入综合分排名的深圳机构数 cultivate.score.scored_orgs（981 家）；分母=深圳服务机构池 25,597 家"
+  },
+  "scale_union": {
+   "value": 1030,
+   "numerator": 1030,
+   "denominator": null,
+   "denominator_note": "计数，无分母：员工数或资产总额至少一项有值的深圳机构数（由 org_vec 首维逐机构复算：808 员工 + 717 资产 − 495 两项都有的重叠 ＝ 1,030 家）"
+  },
+  "scale_union_pct": {
+   "value": 4.0239,
+   "numerator": 1030,
+   "denominator": 25597,
+   "denominator_note": "分子=现有规模维有值的深圳机构数（员工数或资产总额至少一项有值，1,030 家）；分母=深圳服务机构池 25,597 家"
+  },
+  "two_dim_orgs": {
+   "value": 425,
+   "numerator": 425,
+   "denominator": null,
+   "denominator_note": "计数，无分母：可用维恰为 2 的机构数（cultivate.score.dims_count_dist 中 '2' 档，425 家）"
+  },
+  "three_dim_orgs": {
+   "value": 556,
+   "numerator": 556,
+   "denominator": null,
+   "denominator_note": "计数，无分母：可用维恰为 3 的机构数（cultivate.score.dims_count_dist 中 '3' 档，556 家）。四维齐全 0 家，因技术创新能力两列全表为空"
+  }
+ },
+ "population": {
+  "total": 44153,
+  "sz": 25597,
+  "sz_share_of_pool_pct": 57.9734,
+  "unassigned_city": 21,
+  "sz_ind_rows": [
+   [
+    "制造业",
+    6680
+   ],
+   [
+    "批发和零售业",
+    5779
+   ],
+   [
+    "信息传输、软件和信息技术服务业",
+    4468
+   ],
+   [
+    "科学研究和技术服务业",
+    2579
+   ],
+   [
+    "租赁和商务服务业",
+    2308
+   ],
+   [
+    "房地产业",
+    865
+   ],
+   [
+    "建筑业",
+    731
+   ],
+   [
+    "居民服务、修理和其他服务业",
+    483
+   ],
+   [
+    "金融业",
+    450
+   ],
+   [
+    "交通运输、仓储和邮政业",
+    420
+   ],
+   [
+    "文化、体育和娱乐业",
+    254
+   ],
+   [
+    "住宿和餐饮业",
+    141
+   ],
+   [
+    "水利、环境和公共设施管理业",
+    137
+   ],
+   [
+    "教育",
+    88
+   ],
+   [
+    "电力、热力、燃气及水生产和供应业",
+    85
+   ],
+   [
+    "农、林、牧、渔业",
+    63
+   ],
+   [
+    "卫生和社会工作",
+    54
+   ],
+   [
+    "未标注",
+    7
+   ],
+   [
+    "采矿业",
+    3
+   ],
+   [
+    "公共管理、社会保障和社会组织",
+    2
+   ]
+  ],
+  "sz_size_rows": [
+   [
+    "大型",
+    1045
+   ],
+   [
+    "中型",
+    5382
+   ],
+   [
+    "小型",
+    14598
+   ],
+   [
+    "微型",
+    4541
+   ],
+   [
+    "未知",
+    31
+   ]
+  ]
+ },
+ "dimensions": {
+  "现有规模": {
+   "weight": 0.25,
+   "within_weights": [
+    0.5,
+    0.5
+   ],
+   "status": "可算（低覆盖）",
+   "indicators": [
+    "从业人员数 employees_number",
+    "资产总额 total_assets"
+   ],
+   "coverage": {
+    "employees": 808,
+    "assets": 717
+   },
+   "raw_dist": {
+    "employees": {
+     "n": 808,
+     "min": 1.0,
+     "p25": 41.0,
+     "median": 104.5,
+     "p75": 266.5,
+     "p90": 803.9,
+     "max": 98060.0,
+     "mean": 712.247525,
+     "zeros": 0
+    },
+    "assets": {
+     "n": 717,
+     "min": 0.01,
+     "p25": 2112.6,
+     "median": 9075.86,
+     "p75": 83622.5,
+     "p90": 1073410.296,
+     "max": 48218435801.19,
+     "mean": 142639740.145969,
+     "zeros": 0
+    }
+   },
+   "score_dist": {
+    "n": 1030,
+    "min": 0.0,
+    "p25": 30.573825,
+    "median": 37.195371,
+    "p75": 45.156444,
+    "p90": 55.346133,
+    "max": 100.0,
+    "mean": 38.453789,
+    "zeros": 5
+   }
+  },
+  "技术创新能力": {
+   "weight": 0.25,
+   "within_weights": [
+    0.5,
+    0.5
+   ],
+   "status": "恒缺",
+   "indicators": [
+    "研发人员占比 development_employee / employees_number",
+    "研发投入强度 arch_development_am / operating_revenue"
+   ],
+   "coverage": {
+    "rd_people": 0,
+    "rd_ratio": 0
+   },
+   "raw_dist": {
+    "rd_people": {
+     "n": 0
+    },
+    "rd_ratio": {
+     "n": 0
+    }
+   },
+   "score_dist": {
+    "n": 0
+   },
+   "why": "dwd_org_annual_financial_info 全表 90,926 行中两列 0 行非空——列建好未灌数，不是覆盖率低"
+  },
+  "服务成效": {
+   "weight": 0.25,
+   "within_weights": [
+    0.5,
+    0.5
+   ],
+   "status": "仅代理",
+   "indicators": [
+    "服务企业数 svc_served_ent_count（待建）",
+    "服务项目数 svc_project_count（待建）"
+   ],
+   "proxy": "dwd_org_important_news_info 重要新闻条数（两条待建字段均无承载表）",
+   "coverage": {
+    "news": 13732
+   },
+   "raw_dist": {
+    "news": {
+     "n": 13732,
+     "min": 1.0,
+     "p25": 1.0,
+     "median": 3.0,
+     "p75": 9.0,
+     "p90": 34.0,
+     "max": 138222.0,
+     "mean": 84.999709,
+     "zeros": 0
+    }
+   },
+   "score_dist": {
+    "n": 13732,
+    "min": 0.0,
+    "p25": 0.0,
+    "median": 6.220206,
+    "p75": 14.442871,
+    "p90": 25.684991,
+    "max": 100.0,
+    "mean": 9.906963,
+    "zeros": 4807
+   }
+  },
+  "市场缺口": {
+   "weight": 0.25,
+   "within_weights": null,
+   "status": "代理可算",
+   "indicators": [
+    "市场占有率 = 机构营业收入 ÷ 池内同门类营收合计"
+   ],
+   "coverage": {
+    "revenue": 673,
+    "share": 672
+   },
+   "raw_dist": {
+    "revenue": {
+     "n": 673,
+     "min": -292.67,
+     "p25": 1603.9,
+     "median": 8076.0,
+     "p75": 31385.0,
+     "p90": 299303.304,
+     "max": 29800924733.43,
+     "mean": 70986542.401486,
+     "zeros": 0
+    },
+    "market_share_pct": {
+     "n": 672,
+     "min": 0.0,
+     "p25": 6.9e-05,
+     "median": 0.000426,
+     "p75": 0.005379,
+     "p90": 0.104751,
+     "max": 100.0,
+     "mean": 2.380952,
+     "zeros": 0
+    }
+   },
+   "score_dist": {
+    "n": 672,
+    "min": 0.0,
+    "p25": 6.9e-05,
+    "median": 0.000426,
+    "p75": 0.005379,
+    "p90": 0.104751,
+    "max": 100.0,
+    "mean": 2.380952,
+    "zeros": 1
+   },
+   "why": "目标市场同类机构清单（旧稿 svc_org_card.industry）无 gkx 承载，降级为池内同门类（base_info.industry）"
+  }
+ },
+ "value": {
+  "scored_orgs": 981,
+  "scored_share_pct": 3.8325,
+  "dims_count_dist": [
+   [
+    "0",
+    11700
+   ],
+   [
+    "1",
+    12916
+   ],
+   [
+    "2",
+    425
+   ],
+   [
+    "3",
+    556
+   ],
+   [
+    "4",
+    0
+   ]
+  ],
+  "score_dist": {
+   "n": 981,
+   "min": 0.592283,
+   "p25": 15.421866,
+   "median": 20.944563,
+   "p75": 32.24352,
+   "p90": 43.237818,
+   "max": 84.748386,
+   "mean": 24.828597,
+   "zeros": 0
+  },
+  "score_deciles": [
+   [
+    "p10",
+    11.8297
+   ],
+   [
+    "p20",
+    14.4376
+   ],
+   [
+    "p30",
+    16.5457
+   ],
+   [
+    "p40",
+    18.7821
+   ],
+   [
+    "p50",
+    20.9446
+   ],
+   [
+    "p60",
+    23.9964
+   ],
+   [
+    "p70",
+    29.0656
+   ],
+   [
+    "p80",
+    34.6027
+   ],
+   [
+    "p90",
+    43.2378
+   ]
+  ],
+  "top10": [
+   {
+    "org_id": "88a3a75b745d31d3a4bffe7e79b36d7b",
+    "name": "深圳市燃气集团股份有限公司",
+    "score": 84.7484,
+    "dims": {
+     "现有规模": 100.0,
+     "技术创新能力": null,
+     "服务成效": 54.247,
+     "市场缺口": 99.9981
+    },
+    "dims_available": 3,
+    "mean_of_available": 84.7484
+   },
+   {
+    "org_id": "35d9df5e49e9c48210752973bca33d04",
+    "name": "美尚生态景观股份有限公司",
+    "score": 82.7416,
+    "dims": {
+     "现有规模": 91.2807,
+     "技术创新能力": null,
+     "服务成效": 57.0544,
+     "市场缺口": 99.8898
+    },
+    "dims_available": 3,
+    "mean_of_available": 82.7416
+   },
+   {
+    "org_id": "ee8f3e203f712ad8031c87acfeace8ae",
+    "name": "深圳市龙日园艺景观有限公司",
+    "score": 76.0178,
+    "dims": {
+     "现有规模": 56.4759,
+     "技术创新能力": null,
+     "服务成效": null,
+     "市场缺口": 95.5597
+    },
+    "dims_available": 2,
+    "mean_of_available": 76.0178
+   },
+   {
+    "org_id": "1e067de68be2314c340562ce8686e925",
+    "name": "康佳集团股份有限公司",
+    "score": 75.3446,
+    "dims": {
+     "现有规模": 84.6951,
+     "技术创新能力": null,
+     "服务成效": 65.9941,
+     "市场缺口": null
+    },
+    "dims_available": 2,
+    "mean_of_available": 75.3446
+   },
+   {
+    "org_id": "3b213f28a80fcaf6086f858e5bf32990",
+    "name": "招商银行股份有限公司",
+    "score": 73.6967,
+    "dims": {
+     "现有规模": 84.0339,
+     "技术创新能力": null,
+     "服务成效": 77.0686,
+     "市场缺口": 59.9877
+    },
+    "dims_available": 3,
+    "mean_of_available": 73.6967
+   },
+   {
+    "org_id": "0c445783632da40e9d88f45e4445aa50",
+    "name": "深圳市特发服务股份有限公司",
+    "score": 69.7494,
+    "dims": {
+     "现有规模": 55.5835,
+     "技术创新能力": null,
+     "服务成效": 53.665,
+     "市场缺口": 99.9996
+    },
+    "dims_available": 3,
+    "mean_of_available": 69.7494
+   },
+   {
+    "org_id": "e8dfc802079749135aaa94ad92f5bd8e",
+    "name": "太平财产保险有限公司",
+    "score": 69.7376,
+    "dims": {
+     "现有规模": 88.6877,
+     "技术创新能力": null,
+     "服务成效": 50.7874,
+     "市场缺口": null
+    },
+    "dims_available": 2,
+    "mean_of_available": 69.7375
+   },
+   {
+    "org_id": "3a77117f8ef18613020fc643d90aac3b",
+    "name": "深圳市兆驰股份有限公司",
+    "score": 69.4916,
+    "dims": {
+     "现有规模": 76.6154,
+     "技术创新能力": null,
+     "服务成效": 59.6903,
+     "市场缺口": 72.169
+    },
+    "dims_available": 3,
+    "mean_of_available": 69.4916
+   },
+   {
+    "org_id": "46ed04c3d54f0ddc1cc03d5c884ee4e3",
+    "name": "鹏鼎控股（深圳）股份有限公司",
+    "score": 68.1578,
+    "dims": {
+     "现有规模": 73.694,
+     "技术创新能力": null,
+     "服务成效": 62.6215,
+     "市场缺口": null
+    },
+    "dims_available": 2,
+    "mean_of_available": 68.1577
+   },
+   {
+    "org_id": "e5d9456ab73593517a3056fc1fbb0de9",
+    "name": "深圳天德钰科技股份有限公司",
+    "score": 67.7118,
+    "dims": {
+     "现有规模": 87.3232,
+     "技术创新能力": null,
+     "服务成效": 52.5683,
+     "市场缺口": 63.2439
+    },
+    "dims_available": 3,
+    "mean_of_available": 67.7118
+   }
+  ]
+ },
+ "worked_example": {
+  "org_id": "88a3a75b745d31d3a4bffe7e79b36d7b",
+  "name": "深圳市燃气集团股份有限公司",
+  "dims": {
+   "现有规模": 100.0,
+   "技术创新能力": null,
+   "服务成效": 54.247,
+   "市场缺口": 99.9981
+  },
+  "dims_available": 3,
+  "mean_of_available": 84.7484,
+  "score": 84.7484,
+  "note": "三维可用（技术创新能力恒缺）：(100.0 + 54.247 + 99.9981) / 3 = 84.7484"
+ },
+ "robustness": {
+  "entropy_weights": {
+   "dims": [
+    "现有规模",
+    "服务成效",
+    "市场缺口"
+   ],
+   "weights": [
+    0.005539,
+    0.824893,
+    0.169568
+   ]
+  },
+  "rank_corr": {
+   "vs_news_cnt": 0.752743,
+   "vs_market_share": -0.024959,
+   "vs_scale_score": 0.75593
+  },
+  "reading": "综合分与服务成效（新闻条数）秩相关 0.7527、与现有规模 0.7559、与市场缺口 -0.0250；市场缺口经极值归一化后 672 家里 p90 仅 0.1048 分，实际不参与排序。综合分在可算机构上近似「规模 + 新闻量」的等权合成。"
+ },
+ "gaps": [
+  {
+   "gap": "研发人员数",
+   "detail": "development_employee 全表 0 行非空",
+   "impact": "技术创新能力维恒缺"
+  },
+  {
+   "gap": "研发投入",
+   "detail": "arch_development_am 全表 0 行非空",
+   "impact": "同上"
+  },
+  {
+   "gap": "服务企业数/服务项目数",
+   "detail": "svc_served_ent_count / svc_project_count 待建，无承载表",
+   "impact": "服务成效只能用新闻条数代理，口径不对齐"
+  },
+  {
+   "gap": "同行业营收总额",
+   "detail": "目标市场同类机构清单缺失，降级为池内同门类",
+   "impact": "份额分母偏小；单机构门类必得 100 分（2 个门类）"
+  },
+  {
+   "gap": "财务覆盖",
+   "detail": "深圳 25,597 家中仅 673 家有正营收、808 家有从业人数、717 家有资产",
+   "impact": "四维齐全 0 家，合成只能是三维"
+  }
+ ],
+ "cross_refs": {
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_REC_CULTIVATE_SCORE.md",
+  "wanghui": "local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SVC_REC_CULTIVATE_SCORE.md",
+  "sibling": [
+   "M_SVC_REC_ATTRACT_SCORE",
+   "M_SVC_REC_CANDIDATE_CNT"
+  ]
+ }
+}

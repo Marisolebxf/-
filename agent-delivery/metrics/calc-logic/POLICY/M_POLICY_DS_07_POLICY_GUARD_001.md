@@ -1,7 +1,11 @@
 # 发展战略引导力评估（M_POLICY_DS_07_POLICY_GUARD_001）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_07_POLICY_GUARD_001.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_07_POLICY_GUARD_001.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_DS_07_POLICY_GUARD_001.md`；复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py` → `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py`、产物 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -28,7 +32,7 @@
 三维比率等权 ×100；缺维不进平均（D3 不参与分母）
 ```
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_07_POLICY_GUARD_001.md` §二（M_POLICY_DS_07_POLICY_GUARD_001.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_DS_07_POLICY_GUARD_001.md` §二（M_POLICY_DS_07_POLICY_GUARD_001.py 零改语义复算）。
 
 ## 源表字段
 
@@ -52,16 +56,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_DS_07_POLICY_GUARD_001.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_07_POLICY_GUARD_001.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_DS_07_POLICY_GUARD_001_out.json` |
+| 正本 MD | `M_POLICY_DS_07_POLICY_GUARD_001.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_DS_07_POLICY_GUARD_001.py`、产物 `metrics/repro/out/M_POLICY_DS_07_POLICY_GUARD_001_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：三级指标（科技创新评估·政策与条件保障力）｜ **域**：政策（POLICY）｜ **UI 挂载**：科技信息展示系统·科技创新评估·政策与条件保障力指标展示（原型页不挂本 metricId）
 > **数据支持度**：**部分支持**
@@ -235,7 +239,7 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 
 ### 2.7 复现代码与结果展示
 
-执行 `cd code && python3 M_POLICY_DS_07_POLICY_GUARD_001.py`，零 SQL、0.51 秒，读取政策快照、正文快照与补充探针，覆盖写出 `code/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。脚本不连数据库、不 import 任何本地 helper。
+执行 `python3 M_POLICY_DS_07_POLICY_GUARD_001.py`，零 SQL、0.51 秒，读取政策快照、正文快照与补充探针，覆盖写出 `code/M_POLICY_DS_07_POLICY_GUARD_001_out.json`。脚本不连数据库、不 import 任何本地 helper。
 
 | 输出字段 | 实测值 | 含义 |
 |---|---|---|
@@ -454,7 +458,7 @@ $$G=\frac{0.05425+0.0001}{2}\times 100=2.7175\approx 2.72$$
 ### A.2 复现入口（命令与快照指纹）
 
 ```bash
-cd local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研
+cd 《20261021 指标整体开发进度调研》批次（GitLab 外本地目录）
 python3 code/M_POLICY_DS_07_POLICY_GUARD_001.py
 python3 -c "import json;d=json.load(open('code/M_POLICY_DS_07_POLICY_GUARD_001_out.json'));print(d['dims_available'],d['guidance_score'])"
 ```

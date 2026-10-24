@@ -1,7 +1,11 @@
 # 要素分项指标值与得分（M_SYNTH_ELEM_INDICATOR）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-SYNTH-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_INDICATOR.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_INDICATOR.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_INDICATOR_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；`local-workspace/` 路径仅为本地备份指针，GitLab 不可见）
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_SYNTH_ELEM_INDICATOR.md`；复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` → `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_INDICATOR.md` §二（M_SYNTH_ELEM_INDICATOR.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_SYNTH_ELEM_INDICATOR.md` §二（M_SYNTH_ELEM_INDICATOR.py 零改语义复算）。
 
 ## 源表字段
 
@@ -55,16 +59,16 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_SYNTH_ELEM_INDICATOR.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_INDICATOR.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_SYNTH_ELEM_INDICATOR_out.json` |
+| 正本 MD | `M_SYNTH_ELEM_INDICATOR.md` |
+| 复现脚本 | `metrics/repro/M_SYNTH_ELEM_INDICATOR.py` |
+| 复现产物 | `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
 
 ---
 
 # 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
 
-> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…`、`_snapshots21/…` 等相对路径指 local-workspace 本地调研批次的 `code/` 目录（GitLab 不可见），不影响本节结论与数值的完整性。
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_SYNTH_ELEM_INDICATOR.py`、产物 `metrics/repro/out/M_SYNTH_ELEM_INDICATOR_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
 
 > **类型**：MODEL（L0 叶子台账）｜ **域**：综合智能分析／区域创新要素分析／创新要素数据汇聚
 > **数据支持度**：**部分支持**｜ **依赖性质**：**A 类（企业底册、专利授权、政策存量、服务机构池四个真源）+ 结构缺口（研发人员列零灌数、空间面积两列全库无）**
@@ -161,7 +165,7 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_INDICATOR.md` | 本件正本，正文 39 行，叶子口径全部外链 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_TYPE_INDEX.md` | 17 个类型叶子的定义与源表字段 |
 | `gkx-orchestration/agent-delivery/metrics/calc-logic/SYNTH/M_SYNTH_ELEM_DOMAIN_INDEX.md` | 10 个领域叶子与宏观表取数口径 |
-| `local-workspace/docs/metrics/王惠阶段性成果/20260904_综合智能/指标计算逻辑/M_SYNTH_ELEM_INDICATOR.md` | 王惠原稿（44 行），附 4 条参考资料 |
+| `王惠口径正本（GitLab 外本地归档）` | 王惠原稿（44 行），附 4 条参考资料 |
 | `code/_snapshots21/synth_elem_panel_20261023.json` | 本件全部数字的来源（17+10 个叶子的 raw 与 z） |
 | `code/_snapshots21/synth_elem_probe_20261023.json` | 族级探针：科研机构 2,074 家、融资 25,654 行、年报 90,926 行、上市研发 19,585 行、政策 20,000 条 |
 
@@ -236,7 +240,7 @@ $$
 ### 2.7 复现结果展示
 
 ```bash
-$ cd code && python3 M_SYNTH_ELEM_INDICATOR.py
+$ python3 M_SYNTH_ELEM_INDICATOR.py
 [INDICATOR] -> code/M_SYNTH_ELEM_INDICATOR_out.json
   type leaves 17 = ok 7 / proxy 5 / degenerate 1 / insufficient 1 / missing 3
   weighted type leaves 12 | domain 4
@@ -555,7 +559,7 @@ D2_1 的分母是存续企业数，四城的存续／底册比值差异极大：
 | 面板 | `code/_snapshots21/synth_elem_panel_20261023.json` |
 | 面板生成脚本 | `code/_build_synth_elem_panel.py` |
 | 族级探针 | `code/_probe_synth_elem_20261023.py` |
-| 运行方式 | `cd code && python3 M_SYNTH_ELEM_INDICATOR.py` |
+| 运行方式 | `python3 M_SYNTH_ELEM_INDICATOR.py` |
 | 库与主机 | gkx @ 183.240.141.251:3318（只读） |
 | 统计年 | 2024 |
 | 入集区域 | 深圳、广州、东莞、惠州 |
