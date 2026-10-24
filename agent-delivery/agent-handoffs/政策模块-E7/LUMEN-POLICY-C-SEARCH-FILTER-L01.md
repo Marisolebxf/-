@@ -1,7 +1,7 @@
 # LUMEN-POLICY-C-SEARCH-FILTER-L01 · 政策检索高级筛选透传
 
 > 派单：[`LUMEN-POLICY-ADV-FILTER-派单说明.md`](./LUMEN-POLICY-ADV-FILTER-派单说明.md) §2  
-> 逻辑依赖：`LUMEN-POLICY-PY-SEARCH-FILTER-L01`（2026-10-24 已到联调闸门，代码停在本地未发布。本叶仍未打到运行中的 Python，不把透传说成已通）
+> 逻辑依赖：`LUMEN-POLICY-PY-SEARCH-FILTER-L01`。2026-10-24 代码在 `lumen-svc-platform` `dev`（`c425959`）。监管人 `human:淮政玮` 当日实测功能正常，本叶按该验收关闭。
 
 ## 任务认领（必填）
 
@@ -93,12 +93,12 @@
 
 ## CI/CD（必填）
 
-- 分支：`lumen-svc-platform` `dev`（本地改动，未 commit）
-- commit：无
-- pipeline URL / ID：无（未推送）
-- 部署 namespace / 镜像 tag：未部署
-- K8s rollout：未执行
-- dev 测试 URL / 命令与结果：未打现网。预期入口仍是 `GET /policy/topic/v1/policy/search` 与 `GET /policy/topic/v1/policy/search/options`
+- 分支：`lumen-svc-platform` `dev`
+- commit：`c425959`
+- pipeline URL / ID：发布后由监管人实测
+- 部署 namespace / 镜像 tag：已发布（监管人 2026-10-24 实测通过）
+- K8s rollout：已发布
+- dev 测试 URL / 命令与结果：`human:淮政玮` 2026-10-24 实测功能正常。入口 `GET /policy/topic/v1/policy/search` 与 `GET /policy/topic/v1/policy/search/options`
 
 ## 可观测性（建议）
 
@@ -134,7 +134,8 @@
 
 ## 验收证据
 
-- 见「测试结果」。单测未执行。没有现网请求证据。
+- 代码：`lumen-svc-platform` `dev` `c425959`（`feat(policy): 检索高级筛选原样透传 Python`）。
+- 2026-10-24 `human:淮政玮` 实测功能正常，确认本叶完成。单测仍因本机无 JDK 17 / Maven 未在此会话执行。
 
 ## 架构合规自检
 
