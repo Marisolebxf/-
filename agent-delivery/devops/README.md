@@ -9,4 +9,4 @@
 | [发布注意事项.md](./发布注意事项.md) | 发布前要核对的事。模型配置怎么进集群写在这里 |
 | [集群Secret.md](./集群Secret.md) | Secret 名叫什么、有哪些键、谁引用。不写口令 |
 
-密钥、kubeconfig、Harbor 口令只放 GitLab Masked 变量或集群 Secret，不进 git，不进本文。
+密钥、kubeconfig、Harbor 口令只放 GitLab Masked 变量或集群 Secret，不进 git，不进本文。Agent 改 CI 变量用 MCP `gitlab-ci-var`，见 [gitlab-ci-var-mcp-usage-guide.md](../gitlab-ci-var-mcp-usage-guide.md)。
