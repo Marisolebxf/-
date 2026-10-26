@@ -40485,13 +40485,18 @@ tasks:
       - "handoff 附 information_schema 核对（库、表、缺表）。缺表未交代不得宣称完成。不代替 SYSINT-06-03-L01 的执行结果回传"
     update_time: "2026-10-26T15:19:01+08:00"
   - id: ENT-Q068-CATALOG-SWEEP-L01
+    cost_warn: "green"
+    actual_cost: 3.5
+    model_used: "glm-5.3"
+    actual_tokens: 690000
+    evidence: "agent-handoffs/企业战略分析-ENT/ENT-Q068-CATALOG-SWEEP-L01.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T07:17:12.923Z"
     last_seen_at: "2026-10-26T07:17:12.923Z"
     lock_until: "2026-10-27T07:17:12.923Z"
     claimed_by: "agent:frontend-agent"
     title: "Q068 产业目录对齐 — 清除全站老 20+8 产业字典（重点企业分析/深圳现状/引育推荐）"
-    status: "claimed"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P1"
@@ -40501,8 +40506,7 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 300000
-    note: |
-      2026-10-26 拆单决议（用户确认）：主单 frontend-agent（lumen-ui-topic 5 处 + Python 链对齐以接口契约同步交付，Python 改动仅 chain_codes 语义映射，在 lumen-topic-py 独立 commit 标 [agent:frontend-agent]，同仓不同文件零冲突）；协同拆叶 ENT-Q068-CATALOG-SWEEP-A02（lumen-algo-py 老码归一）由 python-agent 在另一会话并行执行，两叶互不依赖可并行，收口时主单 handoff 汇总双叶证据。同仓同会话切换 agent 角色违反手册 §九（一个 /goal 一个身份），不采用。
+    note: "handoff+evidence 齐（含7张走查截图与扫描清单），两叶 commit 均已推 dev（监管人会话放行），in_progress→integration 进入 AV-0/AV-1 自动验收"
     collaborators:
       - "python-agent"
       - "api-agent"
@@ -40522,20 +40526,20 @@ tasks:
       - "lumen-algo-py：science._FUTURE_CHAIN_CODE_TO_NAMES 老码映射（IC001/AI001/NEW_ENERGY/LOW_ALTITUDE/QUANTUM/OCEAN/ROBOT）扩至兼容 INB 新码（向后兼容旧任务快照重放）"
       - "UI 保留 Q068 🟡 角标（待甲方确认），全部改动停在本地工作区等人工验收（2026-10-20 闸门）"
       - "type-check 三绿 + 手工走查三页下拉均为 15 集群树 + handoff 含全局扫描清单（使用点×处理方式×页面）"
-    update_time: "2026-10-26T15:17:13+08:00"
+    update_time: "2026-10-26T18:16:23+08:00"
   - id: ENT-Q068-CATALOG-SWEEP-A02
-    cost_warn: "false"
-    actual_cost: 1.9
-    model_used: "glm-4.7"
-    actual_tokens: 190000
-    evidence: "[object Object]"
+    cost_warn: "green"
+    actual_cost: 1.2
+    model_used: "glm-5.3"
+    actual_tokens: 250000
+    evidence: "agent-handoffs/企业战略分析-ENT/ENT-Q068-CATALOG-SWEEP-A02.md"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T07:17:13.158Z"
     last_seen_at: "2026-10-26T07:17:13.158Z"
     lock_until: "2026-10-27T07:17:13.158Z"
     claimed_by: "agent:python-agent"
     title: "Q068 目录对齐拆叶 — lumen-algo-py 老码归一（招引/培育推荐 industryDomains/industryCategories）"
-    status: "claimed"
+    status: "integration"
     agent: "python-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P1"
@@ -40545,8 +40549,7 @@ tasks:
     effort_points: "2"
     difficulty: "S"
     estimated_tokens: 80000
-    note: |
-      python-agent 完工（2026-10-26）：_FUTURE_CHAIN_CODE_TO_NAMES → 模块级 _INDUSTRY_CODE_TO_NAMES 全量 INB 码表（DIM 50 行快照 42 唯一码，L1 附 L0 父名，未登记码诚实 fallback）；老码键+别名零残留；自检新增 4 项（未来空间命中/fallback/老码失效/42 码不变量）；改动停本地工作区未 commit（验收闸门）；数据缺口：L0 INB1805 未登记 DIM，走 fallback。待 coordinator 走查后推状态。
+    note: "handoff+evidence 齐且 CI pipeline 3002 绿（deploy rollout 成功），in_progress→integration"
     touched_files:
       - "lumen-algo-py: lumen_common/algorithms/science/__init__.py"
       - "lumen-algo-py: tests/test_resolve_filter_candidates_fallback.py"
@@ -40554,7 +40557,7 @@ tasks:
       - "lumen-algo-py：science/__init__.py 的 _FUTURE_CHAIN_CODE_TO_NAMES 扩至兼容 Q068 INB 新码（INB170101 集成电路/INB170201 生物医药/INB170102 人工智能/INB170301 新能源/INB170801 低空经济/INB180203 量子信息/INB171001 海洋经济/INB170503 智能机器人），保留 IC001/AI001 等老码映射以兼容旧任务快照重放"
       - "新增/更新最小自检（老码+新码双命中断言，参照 tests/test_resolve_filter_candidates_fallback.py 形式）"
       - "改动停在本地工作区等人工验收，handoff 含 ponytail/cost 行，回填主单 ENT-Q068-CATALOG-SWEEP-L01 evidence"
-    update_time: "2026-10-26T16:50:07+08:00"
+    update_time: "2026-10-26T18:16:23+08:00"
     update_time: "2026-10-26T14:55:54+08:00"
   - id: QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01
     evidence: "agent-handoffs/QA/QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01.md"
