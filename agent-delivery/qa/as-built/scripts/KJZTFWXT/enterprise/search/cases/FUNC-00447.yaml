@@ -1,71 +1,44 @@
 id: FUNC-00447
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00447
 priority: P0
-title: 高级筛选「企业所属地区」第一列省级个数
-story: US-E1-SCH-04
-entry_id: ent-search
 tier: B
-preconditions:
-  - 已进入高级筛选字段库
-locators:
-  adv_tab: tab 高级筛选
-  field_region: 字段「企业所属地区」
-  region_trigger: 「请选择所属地区」
+title: 主流程-地区字段全国级联
+entry_id: ent-search
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /enterprise/enterprise-search
   - action: click
     target: tab 高级筛选
   - action: wait
-    for: 高级筛选字段库渲染
     timeout_ms: 800
+  - action: click
+    target: 企业所属地区
+  - action: wait
+    timeout_ms: 500
 expect:
-  - note: 下拉第一列共 32 项（全量见附录C）
+  - note: 1、下拉第一列共 32 项（全量见附录C）
     assert: |-
-      await expect(page.getByText('高级筛选 · 字段库').first()).toBeVisible({ timeout: 8000 });
-      const regionField = page.locator('main').getByText('企业所属地区', { exact: true });
-      if ((await regionField.count()) === 0) {
-        throw new Error('字段库未见「企业所属地区」，无法点击「请选择所属地区」（30888 现场为「注册区县推荐」等，用例步骤不可达）');
-      }
-      await regionField.first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const trigger = page.getByText('请选择所属地区');
-      if ((await trigger.count()) === 0) {
-        throw new Error('点击「企业所属地区」后未见「请选择所属地区」');
-      }
-      await trigger.first().click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      const col = page.locator('.arco-cascader-list-column').first();
-      await expect(col).toBeVisible({ timeout: 8000 });
-      const items = col.locator('.arco-cascader-list-item');
-      const count = await items.count();
-      if (count !== 32) {
-        const sample = await items.allTextContents();
-        throw new Error(`第一列项数为 ${count}，预期 32；样本=${sample.slice(0, 8).join('|')}`);
-      }
-  - note: 省级名称为 31 个
+      const main = page.locator('main').first();
+      await main.locator('.arco-cascader-view').last().click({ timeout: 10000 });
+      await page.waitForTimeout(600);
+      const panel = page.locator('main .arco-cascader-panel').last();
+      await expect(panel).toBeVisible({ timeout: 10000 });
+      const col = panel.locator('.arco-cascader-panel-column').first();
+      const labels = col.locator('.arco-cascader-option-label');
+      await expect(labels).toHaveCount(32, { timeout: 8000 });
+  - note: 2、省级名称为 31 个
     assert: |-
-      const provinces = ['北京市','天津市','河北省','山西省','内蒙古自治区','辽宁省','吉林省','黑龙江省','上海市','江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','广西壮族自治区','海南省','重庆市','四川省','贵州省','云南省','西藏自治区','陕西省','甘肃省','青海省','宁夏回族自治区','新疆维吾尔自治区'];
-      const col = page.locator('.arco-cascader-list-column').first();
-      if (!(await col.isVisible().catch(() => false))) {
-        throw new Error('地区级联第一列未展开，请先完成步骤打开「请选择所属地区」');
-      }
-      const texts = (await col.locator('.arco-cascader-list-item').allTextContents()).map((t) => t.trim()).filter(Boolean);
-      const hit = provinces.filter((p) => texts.some((t) => t === p || t.includes(p)));
-      if (hit.length !== 31) {
-        const miss = provinces.filter((p) => !texts.some((t) => t === p || t.includes(p)));
-        throw new Error(`省级命中 ${hit.length}/31，缺失=${miss.join('、')}`);
-      }
-  - note: 同列另有「中国」
+      const panel = page.locator('main .arco-cascader-panel').last();
+      const col = panel.locator('.arco-cascader-panel-column').first();
+      const labels = col.locator('.arco-cascader-option-label');
+      const texts = await labels.allTextContents();
+      const provCount = texts.map((t) => t.trim()).filter((t) => t && t !== '中国').length;
+      if (provCount !== 31) throw new Error(`省级名称 ${provCount} 个，预期 31 个`);
+  - note: 3、同列另有「中国」
     assert: |-
-      const col = page.locator('.arco-cascader-list-column').first();
-      if (!(await col.isVisible().catch(() => false))) {
-        throw new Error('地区级联第一列未展开，请先完成步骤打开「请选择所属地区」');
-      }
-      const texts = (await col.locator('.arco-cascader-list-item').allTextContents()).map((t) => t.trim());
-      const hasChina = texts.some((t) => t === '中国');
-      if (!hasChina) {
-        throw new Error('第一列未见「中国」，实际首项=' + (texts[0] || '(空)'));
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D2·30888 /enterprise/enterprise-search 高级筛选字段库已无「企业所属地区」/「请选择所属地区」（仅有「注册区县推荐」+「请填写注册区县」），与用例 00447 步骤不可达，省级 32 项机检无法在本环境落地；路由 D1 同 FUNC-00445。
+      const panel = page.locator('main .arco-cascader-panel').last();
+      const col = panel.locator('.arco-cascader-panel-column').first();
+      await expect(col.getByText('中国', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

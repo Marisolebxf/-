@@ -1,69 +1,34 @@
 id: FUNC-01730
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01730
 priority: P1
-title: 新增企业弹层行内「详情」打开企业画像快览
-story: US-KEYENT-01
-entry_id: ent-key-domain
 tier: B
-preconditions:
-  - env-gate overall=pass
-  - 「新增企业」弹层已打开（assert 自含：空篮选择器→新增，对齐 01723）
-locators:
-  picker_open: button「选择分析企业」
-  add_modal: data-testid=compare-basket-add-modal
-  row_detail: button「详情」
-  profile_drawer: .arco-drawer:visible 标题含「企业画像快览」
+title: 新增企业行「详情」关闭弹层并打开企业画像快览
+entry_id: ent-key-domain
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
-  - action: wait
-    timeout_ms: 800
+    target: /enterprise/key-enterprise-analysis?workspace=domain&view=domain
   - action: evaluate
-    note: 选择器→新增→点首行「详情」；关弹层与快览在 expect 判定
-expect:
-  - note: 1、「新增企业」关闭；2、打开该企业的「企业画像快览」
+    note: 01690 打开选择分析企业；01723 点「新增」；01730 点首行「详情」
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
-      const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
-      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
-      const closeBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) { await close.first().click(); await page.waitForTimeout(350); }
-        }
-      };
-      const gotoRoute = async () => {
-        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(800);
-        await closeBasket();
-      };
-      const clickPageOpenPicker = async () => {
-        const main = page.locator('main');
-        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
-        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
+      const main = page.locator('main');
+      const openPicker = async () => {
         const emptyCta = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+        const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
         const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
-        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
-          await pickBtn.first().click({ timeout: 8000 });
-        } else if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
-          await adjustBtn.first().click({ timeout: 8000 });
-        } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
-          await openBtn.first().click({ timeout: 8000 });
-        } else if (await emptyCta.count()) {
-          await emptyCta.first().click({ timeout: 8000 });
+        if (await emptyCta.isVisible().catch(() => false)) {
+          await emptyCta.click({ timeout: 8000 });
+        } else if (await adjustBtn.isVisible().catch(() => false)) {
+          await adjustBtn.click({ timeout: 8000 });
+        } else if (await openBtn.isVisible().catch(() => false)) {
+          await openBtn.click({ timeout: 8000 });
         } else {
-          throw new Error('未找到选择分析企业/打开对比篮入口');
+          throw new Error('未找到打开选择分析企业入口');
         }
-        await page.waitForTimeout(800);
+        await page.waitForTimeout(600);
       };
-      const shortName = (name) => {
-        const s = String(name || '').trim();
-        if (s.length <= 4) return s;
-        return s.slice(0, Math.min(8, s.length));
-      };
-      await gotoRoute();
-      await clickPageOpenPicker();
+      await openPicker();
       const panel = page.locator('.system-compare-panel:visible').last();
       await expect(panel.getByText('从对比篮勾选本页分析对象', { exact: false }).first()).toBeVisible({ timeout: 12000 });
       const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
@@ -71,40 +36,41 @@ expect:
         ? workspace.getByRole('button', { name: '新增', exact: true })
         : panel.getByRole('button', { name: '新增', exact: true });
       await expect(addBtn.first()).toBeVisible({ timeout: 8000 });
-      const recommendWait = page.waitForResponse((r) => /recommend/i.test(r.url()) && r.request().method() === 'POST', { timeout: 25000 }).catch(() => null);
+      const recommendWait = page
+        .waitForResponse((r) => /recommend/i.test(r.url()) && r.request().method() === 'POST', { timeout: 25000 })
+        .catch(() => null);
       await addBtn.first().click({ timeout: 8000 });
       await recommendWait;
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(400);
       const modalRoot = page.locator('[data-testid="compare-basket-add-modal"]');
       await expect(modalRoot).toBeVisible({ timeout: 15000 });
       await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
-      const detailBtns = modalRoot.getByRole('button', { name: '详情', exact: true });
-      await expect(detailBtns.first()).toBeVisible({ timeout: 20000 });
-      const firstDetail = detailBtns.first();
-      const row = firstDetail.locator('xpath=ancestor::tr[1]');
-      const entName = ((await row.locator('td').first().innerText()) || '').trim();
-      if (!entName) throw new Error('无法读取详情行企业名称');
-      await firstDetail.click({ timeout: 8000 });
-      await page.waitForTimeout(900);
+      const detailBtn = modalRoot.getByRole('button', { name: '详情', exact: true }).first();
+      await expect(detailBtn).toBeVisible({ timeout: 20000 });
+      await detailBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+expect:
+  - note: 1、「新增企业」关闭
+    assert: |-
+      const modalRoot = page.locator('[data-testid="compare-basket-add-modal"]');
       await expect(modalRoot).toBeHidden({ timeout: 10000 });
-      const quickDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业画像快览' }).last();
-      const onDetailDeepLink = /\/development\/enterprise\//.test(page.url()) || /\/enterprise-center\/enterprise\//.test(page.url());
-      const wrongDetailDrawer = page.locator('.arco-drawer:visible').filter({ hasText: '企业详情' }).last();
-      const hasQuick = await quickDrawer.count() && await quickDrawer.isVisible().catch(() => false);
-      if (!hasQuick) {
-        const hasWrongDetail = await wrongDetailDrawer.count() && await wrongDetailDrawer.isVisible().catch(() => false);
-        if (onDetailDeepLink || hasWrongDetail) {
-          throw new Error(
-            'D3·用例要求「新增企业」详情打开「企业画像快览」；现场为详情深链/「企业详情」抽屉。url=' + page.url(),
-          );
-        }
-        throw new Error('点击「详情」后未出现「企业画像快览」抽屉；url=' + page.url());
+  - note: 2、打开该企业的「企业画像快览」
+    assert: |-
+      const url = page.url();
+      if (/\/development\/enterprise\//.test(url)) {
+        throw new Error('D3·详情跳转到 development 深链，未出现「企业画像快览」。url=' + url);
       }
-      await expect(quickDrawer.locator('.arco-drawer-header, .arco-drawer-title').first()).toContainText('企业画像快览');
-      const drawerText = (await quickDrawer.innerText().catch(() => '')) || '';
-      const needle = shortName(entName);
-      if (needle && !drawerText.includes(needle)) {
-        throw new Error('画像快览未含所选企业「' + entName + '」（片段「' + needle + '」）');
+      const quickDrawer = page
+        .locator('.arco-drawer-wrapper:visible, .arco-drawer:visible')
+        .filter({ hasText: '企业画像快览' })
+        .last();
+      const titleHit = page.getByText('企业画像快览', { exact: true });
+      const hasDrawer =
+        ((await quickDrawer.count()) && (await quickDrawer.first().isVisible().catch(() => false))) ||
+        ((await titleHit.count()) && (await titleHit.first().isVisible().catch(() => false)));
+      if (!hasDrawer) {
+        throw new Error('点击「详情」后未出现「企业画像快览」；url=' + url);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 用例 01730；打开路径与 01723 一致（对比篮空态→选择器→新增+recommend）。点首行「详情」后断言弹层隐藏且「企业画像快览」含该企业名。demo 跳详情深链时 D3 红挂；lumen viewProfile 为目标态。登录与关内部评审由 runner 会话前置。B 档。
+      await expect(page.getByText('企业画像快览', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText('基础摘要', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id

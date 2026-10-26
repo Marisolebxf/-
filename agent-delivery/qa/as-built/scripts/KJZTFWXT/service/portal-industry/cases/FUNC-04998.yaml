@@ -1,32 +1,39 @@
 id: FUNC-04998
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04998
-priority: P0
+priority: P1
 tier: B
-title: 产业链初始禁用
-story: US-SVC-PT-02
+title: 主流程-产业链初始禁用
 entry_id: svc-portal-industry
-preconditions:
-  - 已打开服务机构产业分布
-  - 产业为全部产业
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/industry-distribution?industry=CL-SEI-02
+    target: /service-portal/industry-distribution
+  - action: evaluate
+    note: 产业为全部产业（同册05003清除）
+    target: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      await filter.waitFor({ state: 'visible', timeout: 15000 });
+      const cascader = filter.locator('.arco-cascader').first();
+      const clearIcon = cascader.locator('.arco-icon-hover, .arco-cascader-clear-icon, .arco-icon-close').first();
+      if (await clearIcon.isVisible().catch(() => false)) {
+        await clearIcon.click({ timeout: 5000 });
+        await page.waitForTimeout(600);
+      }
   - action: evaluate
     note: 点击产业链下拉
     target: |-
       const main = page.locator('main');
       const filter = main.locator('.svc-portal-filter').first();
-      const chainView = filter.locator('.arco-select-view').filter({
-        has: page.locator('input[placeholder*="产业链"]'),
-      }).first();
-      if (await chainView.count()) {
-        await chainView.click({ timeout: 3000 }).catch(() => {});
+      const chainSelect = filter.locator('.arco-select').filter({ hasText: '全部产业链' }).first();
+      if (await chainSelect.count()) {
+        await chainSelect.locator('.arco-select-view').click({ timeout: 5000 });
         return;
       }
-      const chainByPh = main.locator('input[placeholder*="产业链"]').first();
-      if (await chainByPh.count()) {
-        await chainByPh.click({ timeout: 3000 }).catch(() => {});
+      const chainView = filter.locator('.arco-select-view').filter({ hasText: '全部产业链' }).first();
+      if (await chainView.count()) {
+        await chainView.click({ timeout: 5000 });
       }
 expect:
   - note: 1、产业链下拉保持禁用
@@ -36,37 +43,21 @@ expect:
       const filter = main.locator('.svc-portal-filter').first();
       await expect(filter).toBeVisible({ timeout: 8000 });
       await expect(filter.getByText('产业集群 / 产业')).toBeVisible();
-      const chainInput = filter.locator('input[placeholder*="产业链"]');
-      await expect(chainInput).toHaveCount(1, { timeout: 8000 });
-      const chainView = filter.locator('.arco-select-view').filter({ has: chainInput }).first();
-      await expect(chainView).toBeVisible();
-      const disabled = await chainView.evaluate((el) => {
-        const root = el.closest('.arco-select');
-        return Boolean(
-          el.className.includes('disabled') ||
-            root?.className.includes('disabled') ||
-            el.getAttribute('aria-disabled') === 'true',
-        );
-      });
-      if (!disabled) throw new Error('未选细分产业时产业链下拉应处于禁用态');
+      await expect(main.getByText(/全部产业/).first()).toBeVisible({ timeout: 8000 });
+      const chainSelect = filter.locator('.arco-select').filter({ hasText: '全部产业链' }).first();
+      await expect(chainSelect).toHaveCount(1, { timeout: 8000 });
+      await expect(chainSelect).toHaveClass(/arco-select-disabled/);
   - note: 2、不出现产业链选项
     assert: |-
       const main = page.locator('main');
       const filter = main.locator('.svc-portal-filter').first();
-      const chainView = filter.locator('.arco-select-view').filter({
-        has: page.locator('input[placeholder*="产业链"]'),
-      }).first();
-      if (await chainView.count()) {
-        try { await chainView.click({ timeout: 1500 }); } catch {}
+      const chainSelect = filter.locator('.arco-select').filter({ hasText: '全部产业链' }).first();
+      if (await chainSelect.count()) {
+        try {
+          await chainSelect.locator('.arco-select-view').click({ timeout: 1500 });
+        } catch {}
       }
       await page.waitForTimeout(400);
       const chainOpts = page.locator('.arco-trigger-popup:visible .arco-select-option');
-      const n = await chainOpts.count();
-      if (n > 0) {
-        const preview = [];
-        for (let i = 0; i < Math.min(n, 5); i++) {
-          preview.push(((await chainOpts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
-        }
-        throw new Error('产业链禁用态点击后仍出现选项 count=' + n + ' labels=' + JSON.stringify(preview));
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
+      await expect(chainOpts).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

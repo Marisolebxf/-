@@ -1,6 +1,6 @@
 id: FUNC-05094
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05094
-priority: P0
+priority: P1
 tier: B
 title: 主流程-产业集群下拉
 entry_id: svc-portal-region
@@ -9,14 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
+  - action: click
+    note: 展开「产业集群 / 产业」下拉
+    assert: |-
+      await page.locator('.arco-cascader-view').first().click({ timeout: 15000 });
+      await page.locator('.arco-cascader-popup:visible').waitFor({ timeout: 8000 });
 expect:
   - note: 选项共 15 个产业集群，名称见附录 A
     assert: |-
-      const clusterRow = page
-        .locator('div')
-        .filter({ has: page.getByText('产业集群 / 产业', { exact: true }) })
-        .first();
-      await clusterRow.locator('.arco-select-view').click();
-      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      await expect(options).toHaveCount(15);
+      const col = page.locator('.arco-cascader-popup:visible').locator('.arco-cascader-column').first();
+      await expect(col.locator('.arco-cascader-option')).toHaveCount(15);
+      const names = [
+        '新一代信息技术', '生物', '新能源', '新材料', '高端装备', '智能网联新能源汽车',
+        '绿色环保', '低空经济与空天', '传统与创意', '海洋', '未来制造', '未来信息',
+        '未来能源', '未来空间', '未来健康',
+      ];
+      for (const n of names) {
+        await expect(col.getByText(n, { exact: true })).toBeVisible();
+      }
 on_fail: 截图 + 抄 X-Trace-Id

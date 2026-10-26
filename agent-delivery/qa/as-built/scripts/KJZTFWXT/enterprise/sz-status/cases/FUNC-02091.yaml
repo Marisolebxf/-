@@ -1,24 +1,20 @@
 id: FUNC-02091
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02091
-priority: P0
-title: 产业链环节分布图展示四个环节名
-story: US-SZSTATUS-01
+priority: P1
+tier: B
+title: 主流程-环节分布
 entry_id: ent-sz-status
-tier: A
-preconditions:
-  - 已点选「人工智能」
-  - 定位结果已出现
-locators:
-  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
-  segment_chart_block: '[data-testid="szstatus-chain-position"] 含「产业链环节分布」'
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /enterprise/shenzhen-enterprise-status-analysis
   - action: evaluate
-    note: 选链至定位结果后阅读「产业链环节分布」图（判定在 expect）
+    note: 展开产业链下拉；点选「人工智能」；等待定位结果（判定在 expect）
 expect:
   - note: 区块标题为「产业链环节分布」
     assert: |-
+      const stageNames = ['行业应用', '算力芯片', '数据标注', '算法框架'];
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
@@ -27,7 +23,7 @@ expect:
         }
       };
       const selectAiChain = async () => {
-        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位/ }).first();
         if (await posTab.count()) {
           const sel = (await posTab.getAttribute('aria-selected')) || '';
           const cls = (await posTab.getAttribute('class')) || '';
@@ -50,15 +46,7 @@ expect:
             }
             return [...new Set(out)];
           });
-        const prefer = ['人工智能', '新一代信息技术'];
-        let needPick = true;
-        for (const name of prefer) {
-          if (await page.locator('main .arco-select-view').filter({ hasText: name }).first().count()) {
-            needPick = false;
-            break;
-          }
-        }
-        if (needPick) {
+        if (!(await page.locator('main .arco-select-view').filter({ hasText: '人工智能' }).first().count())) {
           await chain.click({ timeout: 8000 });
           await page.waitForTimeout(500);
           let options = await collectOptions();
@@ -67,31 +55,20 @@ expect:
             await page.waitForTimeout(700);
             options = await collectOptions();
           }
-          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
-          const pick = prefer.find((n) => options.includes(n)) || options[0];
-          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
-          const opt = popup.getByText(pick, { exact: true }).first();
-          if (await opt.count()) await opt.click({ timeout: 8000 });
-          else {
-            await page.evaluate((name) => {
-              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
-                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
-                if (t === name) { el.click(); return; }
-              }
-            }, pick);
+          if (!options.includes('人工智能')) {
+            throw new Error('D3·下拉无「人工智能」；现场 ' + options.length + ' 项：' + (options.join('、') || '(空)'));
           }
+          const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
+          await popup.locator('.arco-select-option, li[role=option]').filter({ hasText: /^人工智能$/ }).first().click({ timeout: 8000 });
           await page.waitForTimeout(800);
         }
         let ok = false;
         for (let i = 0; i < 50; i++) {
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
           if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { ok = true; break; }
-          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
-            await page.waitForTimeout(150);
-            continue;
-          }
           await page.waitForTimeout(120);
         }
-        if (!ok) throw new Error('选链后定位结果未出现（未见「覆盖产业链环节」）');
+        if (!ok) throw new Error('选链后定位结果未出现');
       };
       await page.evaluate(() => {
         window.__GKX_QA_SZ_STAGE_DIST__ = null;
@@ -105,8 +82,9 @@ expect:
             try {
               const j = await res.clone().json();
               const payload = j?.data ?? j;
-              const names = (payload?.stage_distribution ?? [])
-                .map((x) => String(x?.node_name ?? '').trim())
+              const list = payload?.stage_distribution ?? payload?.stage_stats ?? [];
+              const names = list
+                .map((x) => String(x?.stage_name ?? x?.node_stage_name ?? x?.name ?? '').trim())
                 .filter(Boolean);
               if (names.length) window.__GKX_QA_SZ_STAGE_DIST__ = names;
             } catch (e) {}
@@ -115,68 +93,52 @@ expect:
         };
       });
       await dismissBasket();
+      await page.waitForLoadState('domcontentloaded');
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('修订 ENV-ENTRY-UNREACHABLE');
+      }
       await page.reload({ waitUntil: 'domcontentloaded' });
       await dismissBasket();
       await selectAiChain();
-      const card = page
-        .locator('[data-testid="szstatus-chain-position"] div.border')
-        .filter({ has: page.getByText('产业链环节分布', { exact: true }) })
-        .first();
-      await expect(card).toBeVisible({ timeout: 12000 });
-      await expect(card.locator('canvas').first()).toBeVisible({ timeout: 10000 });
-  - note: 图中有行业应用、算力芯片、数据标注、算法框架（不写柱高）
+      await expect(page.getByText('产业链环节分布', { exact: true }).first()).toBeVisible({ timeout: 12000 });
+  - note: 图中有行业应用、算力芯片、数据标注、算法框架
     assert: |-
-      const segNames = ['行业应用', '算力芯片', '数据标注', '算法框架'];
-      const readVueStageCats = () =>
-        page.evaluate(() => {
-          const catsFromOpt = (opt) => ((opt?.xAxis || [])[0]?.data || []).map(String).filter(Boolean);
-          let comp = document.querySelector('[data-testid="szstatus-chain-position"]')?.__vueParentComponent;
-          for (let i = 0; i < 35 && comp; i++) {
-            const st = comp.setupState || {};
-            const opt = st.stageOption?.value ?? st.stageOption;
-            const cats = catsFromOpt(opt);
-            if (cats.length) return cats;
-            comp = comp.parent;
-          }
-          return [];
-        });
-      let seen = await page.evaluate(() => window.__GKX_QA_SZ_STAGE_DIST__ || []);
-      const vueCats = await readVueStageCats();
-      seen = [...new Set([...seen, ...vueCats])];
+      const stageNames = ['行业应用', '算力芯片', '数据标注', '算法框架'];
       const card = page
         .locator('[data-testid="szstatus-chain-position"] div.border')
         .filter({ has: page.getByText('产业链环节分布', { exact: true }) })
         .first();
-      if (!segNames.every((n) => seen.includes(n))) {
+      await expect(card).toBeVisible({ timeout: 10000 });
+      let seen = await page.evaluate(() => window.__GKX_QA_SZ_STAGE_DIST__ || []);
+      if (!stageNames.every((n) => seen.includes(n))) {
         const canvasOk = await card.locator('canvas').first().isVisible().catch(() => false);
         const loaded = await page.getByText('覆盖产业链环节', { exact: true }).isVisible().catch(() => false);
-        if (canvasOk && loaded) seen = [...new Set([...seen, ...segNames])];
-      }
-      const box = await card.locator('canvas').first().boundingBox();
-      const tipHit = [];
-      if (box && box.width >= 8) {
-        for (let i = 0; i < 4; i++) {
-          const x = box.x + (box.width * (i + 0.5)) / 4;
-          const y = box.y + Math.min(box.height * 0.62, box.height - 4);
-          await page.mouse.move(x, y);
-          await page.waitForTimeout(400);
-          const batch = await page.evaluate((expected) => {
+        const bodyText = await page.locator('main').innerText();
+        const domHit = stageNames.filter((n) => bodyText.includes(n));
+        if (domHit.length >= 4) {
+          seen = domHit;
+        } else if (canvasOk && loaded && seen.length >= 4) {
+          seen = seen;
+        } else if (canvasOk && loaded) {
+          const box = await card.locator('canvas').first().boundingBox();
+          if (box) {
+            for (const fx of [0.2, 0.4, 0.6, 0.8]) {
+              await page.mouse.move(box.x + box.width * fx, box.y + box.height * 0.7);
+              await page.waitForTimeout(350);
+            }
+          }
+          const tipHit = await page.evaluate((names) => {
             const t = document.body.innerText || '';
-            return expected.filter((n) => t.includes(n));
-          }, segNames);
-          batch.forEach((n) => { if (!tipHit.includes(n)) tipHit.push(n); });
+            return names.filter((n) => t.includes(n));
+          }, stageNames);
+          if (tipHit.length >= 2) seen = [...new Set([...seen, ...tipHit])];
         }
       }
-      seen = [...new Set([...seen, ...tipHit])];
-      const missing = segNames.filter((n) => !seen.includes(n));
+      const missing = stageNames.filter((n) => !seen.includes(n));
       if (missing.length) {
         throw new Error(
-          '环节分布未见四环节名：缺 ' + missing.join('、') +
-          '；chain-stage-stats=' + JSON.stringify(await page.evaluate(() => window.__GKX_QA_SZ_STAGE_DIST__ || [])).slice(0, 180) +
-          '；tooltip=' + tipHit.join('、'),
+          '环节分布 stage_distribution 未含四环节：缺 ' + missing.join('、') +
+          '；实际：' + (seen.join('、') || '（未捕获）'),
         );
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  用例附录 B 四环节名；30888 无 window.echarts，类目优先 hook fetch chain-stage-stats.stage_distribution、vue stageOption.xAxis 与 canvas tooltip（对齐 FUNC-02092）。D4：ES 空时 stage_distribution=[] 且 canvas 无轴标签会红；定位结果已出且 canvas 可见时按 API/mock 契约四环节代理（不写柱高）。
-  goto=testdata.route=catalog_path /enterprise/shenzhen-enterprise-status-analysis（禁止 enterprise-center 404 深链）。须关对比篮（ENV-SZSTATUS-BASKET-OVERLAY-001）。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

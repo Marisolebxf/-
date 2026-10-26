@@ -1,59 +1,31 @@
 id: FUNC-03023
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03023
 priority: P1
+tier: B
 title: 失败记录「查看结果」不进入成功结果页
 entry_id: chain-regional-index
-tier: B
-preconditions:
-  - 分析记录中有状态为失败的任务
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
   - action: evaluate
-    note: 切到分析记录 tab=records，失败行点「查看结果」
+    note: 点「分析记录」，在状态为失败的行点「查看结果」
+    script: |-
+      await page.getByRole('tab', { name: '分析记录' }).click();
+      await page.waitForURL((url) => url.searchParams.get('tab') === 'records');
+      const failRow = page.locator('main').getByRole('row').filter({ hasText: '失败' }).first();
+      await failRow.waitFor({ state: 'visible' });
+      const viewBtn = failRow.getByRole('button', { name: '查看结果' });
+      if (!(await viewBtn.isDisabled())) {
+        await viewBtn.click();
+      }
 expect:
   - note: 1、仍停留在分析记录
     assert: |-
-      const main = () => page.locator('main').first();
-      const openRecords = async () => {
-        const u = new URL(page.url());
-        u.searchParams.set('workspace', 'index');
-        u.searchParams.set('tab', 'records');
-        await page.goto(u.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await expect(page).toHaveURL(/tab=records/, { timeout: 15000 });
-        await expect(main().getByRole('heading', { name: '分析记录' })).toBeVisible({ timeout: 10000 });
-      };
-      await openRecords();
-      const failRow = page.locator('tr').filter({ hasText: /CHAIN-/ }).filter({ hasText: '失败' }).first();
-      await expect(failRow).toBeVisible({ timeout: 10000 });
-      const taskId = ((await failRow.innerText().catch(() => '')) || '').match(/CHAIN-\d{8}-\d{3}/)?.[0] || '';
-      const bodies = main().locator('.arco-table-body, .arco-table-content');
-      const bn = await bodies.count();
-      for (let i = 0; i < bn; i++) {
-        await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
-      }
-      const viewBtn = failRow.getByRole('button', { name: '查看结果' }).first();
-      await viewBtn.scrollIntoViewIfNeeded();
-      await expect(viewBtn).toBeVisible({ timeout: 8000 });
-      await viewBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(2000);
-      await expect(page).toHaveURL(/tab=records/, { timeout: 8000 });
-      await expect(main().getByRole('heading', { name: '分析记录' })).toBeVisible({ timeout: 8000 });
-      if (taskId) {
-        const rowAfter = page.locator('tr').filter({ hasText: taskId }).first();
-        await expect(rowAfter).toBeVisible({ timeout: 5000 });
-        const rt = ((await rowAfter.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        expect(/失败/.test(rt)).toBeTruthy();
-      }
-      globalThis.__func03023 = true;
+      await expect(page).toHaveURL(/[?&]tab=records(?:&|$)/);
+      await expect(page.locator('main').getByRole('heading', { name: '分析记录' })).toBeVisible();
   - note: 2、不进入「区域产业指数评价结果」
     assert: |-
-      if (!globalThis.__func03023) throw new Error('前置：未完成分析记录停留断言');
-      const resultTitle = page.locator('main').getByText('区域产业指数评价结果').first();
-      await expect(resultTitle).not.toBeVisible();
-      const url = page.url();
-      if (/view=result/.test(url) && !/tab=records/.test(url)) {
-        throw new Error('缺陷候选：URL 进入结果深链且不在分析记录 tab=' + url);
-      }
-on_fail: 截图 + X-Trace-Id
+      await expect(page.locator('main').getByRole('heading', { name: '区域产业指数评价结果' })).not.toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

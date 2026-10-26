@@ -12,19 +12,19 @@ steps:
 expect:
   - note: 1、表头为任务、类型、状态、创建时间、操作
     assert: |-
-      await page.getByRole('tab', { name: '分析记录' }).click();
-      const table = page.locator('.arco-table');
-      await expect(table.getByText('任务', { exact: true }).first()).toBeVisible();
-      await expect(table.getByText('类型', { exact: true }).first()).toBeVisible();
-      await expect(table.getByText('状态', { exact: true }).first()).toBeVisible();
-      await expect(table.getByText('创建时间', { exact: true }).first()).toBeVisible();
-      await expect(table.getByText('操作', { exact: true }).first()).toBeVisible();
+      await page.locator('main .enterprise-center-primary-tabs').getByText('分析记录').click();
+      const thead = page.locator('main .arco-table thead');
+      await expect(thead.getByText('任务', { exact: true })).toBeVisible();
+      await expect(thead.getByText('类型', { exact: true })).toBeVisible();
+      await expect(thead.getByText('状态', { exact: true })).toBeVisible();
+      await expect(thead.getByText('创建时间', { exact: true })).toBeVisible();
+      await expect(thead.getByText('操作', { exact: true })).toBeVisible();
   - note: 2、已有行的状态为「已完成」
     assert: |-
-      await expect(page.locator('.arco-table tbody').getByText('已完成').first()).toBeVisible();
+      await expect(page.locator('main .arco-table tbody').getByText('已完成').first()).toBeVisible();
   - note: 3、操作有「查看过程」和「查看结果」
     assert: |-
-      const body = page.locator('.arco-table tbody').first();
+      const body = page.locator('main .arco-table tbody').first();
       await expect(body.getByRole('button', { name: '查看过程' }).first()).toBeVisible();
       await expect(body.getByRole('button', { name: '查看结果' }).first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

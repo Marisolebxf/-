@@ -1,0 +1,33 @@
+id: FUNC-01814
+func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01814
+priority: P1
+tier: B
+title: 主流程-查看画像
+entry_id: ent-eval-tech
+preconditions: []
+locators: {}
+steps:
+  - action: goto
+    target: /enterprise/evaluation?workspace=technology&mode=technology
+  - action: click
+    target: 前往对比篮选择企业
+  - action: wait
+    timeout_ms: 1200
+    for: 选择分析企业浮层
+  - action: assert_visible
+    target: 选择分析企业
+  - action: click
+    target: 查看画像
+  - action: wait
+    timeout_ms: 800
+    for: 画像抽屉
+expect:
+  - note: 标题为「企业画像快览」
+    assert: |-
+      await expect(page.getByText('企业画像快览')).toBeVisible()
+  - note: 可见基础摘要、竞争力摘要与风险摘要
+    assert: |-
+      await expect(page.getByText('基础摘要')).toBeVisible();
+      await expect(page.getByText('竞争力摘要')).toBeVisible();
+      await expect(page.getByText('风险摘要')).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

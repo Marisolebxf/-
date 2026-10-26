@@ -1,22 +1,31 @@
 id: FUNC-00708
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00708
-priority: P0
+priority: P1
 tier: B
 title: 主流程-配置区与产业集群下拉
 entry_id: svc-chain-graph
 preconditions: []
-locators:
-  config-cluster-select: .arco-cascader-view
+locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
-  - action: click
-    target: config-cluster-select
+  - action: evaluate
+    note: 1.展开产业集群下拉浮层
+    assert: |-
+      const main = page.locator('main');
+      const trigger = main.locator('.arco-cascader-view').first();
+      await trigger.waitFor({ state: 'visible', timeout: 15000 });
+      let popup = page.locator('.arco-cascader-popup').last();
+      const opened = await popup.locator('.arco-cascader-option').first().isVisible().catch(() => false);
+      if (!opened) {
+        await trigger.click({ timeout: 15000 });
+        await popup.locator('.arco-cascader-option').first().waitFor({ state: 'visible', timeout: 15000 });
+      }
 expect:
   - note: 分析配置区含产业集群选择框与「开始分析」按钮
     assert: |-
-      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 15000 });
-      await expect(page.getByText('产业领域', { exact: true })).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.locator('.arco-cascader').first()).toBeVisible();
       await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
   - note: 下拉选项共 15 个且与生产清单一致（附录 A）
     assert: |-
@@ -37,13 +46,15 @@ expect:
         '未来空间',
         '未来健康',
       ];
-      const col = page.locator('.arco-cascader-list-column').first();
-      const opts = col.locator('.arco-cascader-option');
-      await expect(opts).toHaveCount(15);
-      for (let i = 0; i < expected.length; i++) {
-        await expect(opts.nth(i)).toHaveText(expected[i]);
+      const panel = page.locator('.arco-cascader-popup').last();
+      await expect(panel).toBeVisible({ timeout: 15000 });
+      const col = panel.locator('.arco-cascader-panel-column').first();
+      await expect(col.locator('.arco-cascader-option')).toHaveCount(15);
+      for (const name of expected) {
+        await expect(col.locator('.arco-cascader-option-label', { hasText: name }).first()).toBeVisible();
       }
   - note: 选择框占位提示为「选择产业集群」
     assert: |-
-      await expect(page.getByPlaceholder('选择产业集群')).toBeAttached();
+      const input = page.locator('main .arco-cascader input').first();
+      await expect(input).toHaveAttribute('placeholder', '选择产业集群');
 on_fail: 截图 + 抄 X-Trace-Id

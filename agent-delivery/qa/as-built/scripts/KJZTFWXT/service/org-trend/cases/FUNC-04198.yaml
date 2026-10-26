@@ -1,120 +1,56 @@
 id: FUNC-04198
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04198
 priority: P0
-tier: A
-title: 主流程-去掉已选标签 · 关闭单家
-story: US-SVC-ORG-04
+tier: B
+title: 主流程-去掉已选标签
 entry_id: svc-org-trend
-preconditions:
-  - 配置区已回显一家机构（D2：弹窗空名单时用深链 org_ids 回填，见 fixtures/testdata known_org_id）
-locators:
-  selected_tag: '[data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag'
-  tag_close: .arco-tag-close-btn（aria-label=Close；无文字「移除」）
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service/institution-judgment?workspace=trend&tab=trend&industry=INB1701&org_ids[]=79bbcfc0e68027808f1f4caf1b6f0469
-  # 点标签 close-btn 自含在 expect[].assert（runner 步骤先于 assert，勿单列 click）
+    target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: evaluate
+    script: |-
+      const main = page.locator('main').first();
+      const pickBtn = main.getByRole('button', { name: '选择机构' });
+      if (await pickBtn.count()) {
+        await pickBtn.first().click();
+      } else {
+        const path =
+          '/service/institution-judgment?workspace=trend&tab=trend&open_compare_basket=1&compare_basket_mode=picker&compare_object_type=service_org&compare_picker_min=1&compare_picker_max=50';
+        await page.goto(new URL(path, page.url()).toString());
+      }
+      const dialog = page.locator('.arco-modal:visible').last();
+      await dialog.waitFor({ state: 'visible', timeout: 15000 });
+      const box = dialog.locator('.arco-checkbox').first();
+      await box.click();
+      const orgName = ((await box.locator('xpath=ancestor::*[contains(@class,"arco-list-item") or contains(@class,"card")][1]').innerText().catch(() => '')) || (await dialog.getByText(/有限公司|研究院|中心/).first().innerText())).trim().split('\n')[0];
+      globalThis.__p04198_org = orgName;
+      await dialog.getByText(/已选 1 家/).waitFor({ state: 'visible', timeout: 8000 });
+      await dialog.getByRole('button', { name: '确定' }).click();
+      await dialog.waitFor({ state: 'hidden', timeout: 15000 });
+      const shell = main.locator('[data-testid="svc-org-analysis-config"]').first();
+      const tag = shell.locator('.svc-org-pick-tag, .arco-tag').filter({ hasText: orgName }).first();
+      await tag.waitFor({ state: 'visible', timeout: 15000 });
+  - action: evaluate
+    script: |-
+      const main = page.locator('main').first();
+      const orgName = String(globalThis.__p04198_org || '').trim();
+      const shell = main.locator('[data-testid="svc-org-analysis-config"]').first();
+      const tag = shell.locator('.svc-org-pick-tag, .arco-tag').filter({ hasText: orgName }).first();
+      await tag.locator('.arco-tag-close-btn').click();
 expect:
   - note: 1、该机构不再出现在已选机构中
     assert: |-
-      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
-      const route = '/service/institution-judgment?workspace=trend&tab=trend';
-      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
-          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const configShell = () =>
-        page.locator('[data-testid="svc-org-analysis-config"]').first();
-      const orgTags = () =>
-        configShell().locator(
-          '[data-testid^="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag, [data-testid="svc-org-analysis-context"] .arco-tag.svc-org-pick-tag',
-        );
-      const ensureOneOrg = async () => {
-        if (/view=processing|view=result/.test(page.url())) {
-          await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(1500);
-        }
-        await dismissBasket();
-        await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(2000);
-        await expect(configShell()).toBeVisible({ timeout: 12000 });
-        let body = ((await configShell().innerText().catch(() => '')) || '');
-        let tags = orgTags();
-        let tagN = await tags.count();
-        const oneSelected =
-          /已选机构（1\s*家）/.test(body) ||
-          tagN === 1 ||
-          body.includes(knownOrg.slice(0, 12)) ||
-          page.url().includes(knownOrg);
-        if (!oneSelected) {
-          const pick = configShell().getByRole('button', { name: '选择机构', exact: true }).first();
-          if (!(await pick.isVisible().catch(() => false))) {
-            throw new Error(
-              'D2-SVC-ORG-TREND-NO-ORG-TAG-UI：trend 配置区无「选择机构」/已选 tag（新壳仅产业+维度条，无法执行标签关闭） body=' +
-                body.slice(0, 200),
-            );
-          }
-          await pick.click({ timeout: 8000 });
-          await page.waitForTimeout(800);
-          const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择服务机构' }).first();
-          await expect(dialog).toBeVisible({ timeout: 8000 });
-          const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
-          if ((await checks.count()) < 1) throw new Error('ENV-SVC-ORG-TREND-NO-ORGS：弹窗与深链均无法回填一家机构');
-          await checks.first().click({ timeout: 5000 });
-          await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          body = ((await configShell().innerText().catch(() => '')) || '');
-          tags = orgTags();
-          tagN = await tags.count();
-        }
-        if (!/已选机构（1\s*家）/.test(body) && tagN !== 1) {
-          throw new Error('前置未满足一家机构：tagN=' + tagN + ' body=' + body.slice(0, 280));
-        }
-        if (tagN < 1) {
-          throw new Error('D2-SVC-ORG-TREND-NO-ORG-TAG-UI：已选一家但无 svc-org-pick-tag 关闭钮（对齐 scout-p015 旧壳）');
-        }
-        const removedLabel = (await tags.first().innerText()).trim();
-        const rmBtn = tags.first().locator('.arco-tag-close-btn');
-        await expect(rmBtn).toBeVisible({ timeout: 8000 });
-        await rmBtn.click({ timeout: 8000 });
-        await page.waitForTimeout(1000);
-        globalThis.__p04198 = { removedLabel, knownOrg };
-      };
-      await ensureOneOrg();
-      const snap = globalThis.__p04198;
-      if (!snap?.removedLabel) throw new Error('前置：未点击标签关闭');
-      const tagsAfter = orgTags();
-      const n = await tagsAfter.count();
-      const mainTxt = ((await configShell().innerText().catch(() => '')) || '');
-      if (n > 0) {
-        for (let i = 0; i < n; i++) {
-          const t = (await tagsAfter.nth(i).innerText()).trim();
-          if (t === snap.removedLabel) throw new Error('被关闭机构仍在 tag 区: ' + snap.removedLabel);
-        }
-      }
-      if (mainTxt.includes(snap.removedLabel) && /已选机构（[1-9]/.test(mainTxt)) {
-        throw new Error('主区仍回显被关机构: ' + snap.removedLabel);
-      }
+      const main = page.locator('main').first();
+      const orgName = String(globalThis.__p04198_org || '').trim();
+      const shell = main.locator('[data-testid="svc-org-analysis-config"]').first();
+      await expect(shell.locator('.svc-org-pick-tag, .arco-tag').filter({ hasText: orgName })).toHaveCount(0);
   - note: 2、已选机构变为 0 家
     assert: |-
-      const snap = globalThis.__p04198;
-      if (!snap?.removedLabel) throw new Error('前置：未完成标签关闭');
-      const tags = page.locator('[data-testid="svc-org-analysis-config"] .arco-tag.svc-org-pick-tag');
-      await expect(tags).toHaveCount(0, { timeout: 8000 });
-      const body = ((await page.locator('[data-testid="svc-org-analysis-config"]').first().innerText().catch(() => '')) || '');
-      const zeroOk =
-        /已选机构（0\s*家）/.test(body) ||
-        (/未选择机构/.test(body) && !/已选机构（[1-9]/.test(body));
-      if (!zeroOk) {
-        throw new Error('已选机构未归零: ' + body.slice(0, 320));
-      }
-      if (/view=processing|view=result|[?&]task_id=/.test(page.url())) {
-        throw new Error('关标签不应进入过程/结果态: ' + page.url());
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  FUNC-04198；步骤：配置区一家机构 → 点 svc-org-pick-tag 的 .arco-tag-close-btn（D1 同 org-field NOTE-SVC-ORG-FIELD-TAG-CLOSE，无「移除」文案）。
-  前置 D2：深链 org_ids[]=known_org_id（testdata）或弹窗选 1 家。2026-10-21 30892 新 trend 壳无已选机构 tag/选择机构（仅产业+维度条，对齐 lumen-ui-topic 去 picker）→ D2-SVC-ORG-TREND-NO-ORG-TAG-UI；旧壳见 scout-p015。catalog_path 同 entry-seed。A 档零 allow_skip。
+      const main = page.locator('main').first();
+      const shell = main.locator('[data-testid="svc-org-analysis-config"]').first();
+      await expect(shell.locator('.svc-org-pick-tag, .arco-tag')).toHaveCount(0);
+      const zeroLabel = shell.getByText(/已选机构（0 家）|已选 0 家机构/);
+      if (await zeroLabel.count()) await expect(zeroLabel.first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

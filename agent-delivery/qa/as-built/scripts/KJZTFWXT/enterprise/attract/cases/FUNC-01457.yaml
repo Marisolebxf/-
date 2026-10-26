@@ -1,25 +1,16 @@
 id: FUNC-01457
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01457
 priority: P1
-title: 备选-本页隔离-侧栏进入仍为招引分析
-story: US-ENT-RECRUIT-A1
+tier: B
+title: 备选-本页隔离
 entry_id: ent-attract
-tier: A
-preconditions:
-  - 已登录，可从企业分析进入招引企业推荐分析
-locators:
-  sidebar_entry: 侧栏「招引企业推荐分析」
-  h1: heading「招引企业推荐分析」
-  tab_filter: tab「条件筛选推荐」
-  tab_cand: tab「候选工作台」
-  tab_recent: tab「最近分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/attraction?workspace=cultivation&recommendation_tab=cultivation
-  - action: evaluate
-    note: 从企业分析侧栏点「招引企业推荐分析」；标题与三页签在 expect 判定
+    target: /enterprise/enterprise-search
 expect:
-  - note: 1、标题为「招引企业推荐分析」
+  - note: 标题为「招引企业推荐分析」
     assert: |-
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
@@ -31,51 +22,24 @@ expect:
           }
         }
       };
-      const enterAttractFromMenu = async () => {
-        const link = page.getByRole('link', { name: '招引企业推荐分析', exact: true });
-        if (await link.count()) {
-          await link.first().click({ timeout: 10000 });
+      const enterAttractViaSidebar = async () => {
+        await dismissBasket();
+        const menuitem = page.getByRole('menuitem', { name: '招引企业推荐分析' });
+        if (await menuitem.count()) {
+          await menuitem.first().click({ timeout: 12000 });
         } else {
-          const item = page.locator('.arco-menu-item').filter({ hasText: /^招引企业推荐分析$/ });
-          await expect(item.first()).toBeVisible({ timeout: 10000 });
-          await item.first().click({ timeout: 10000 });
+          const pickMenu = page.locator('.arco-menu-item').filter({ hasText: /^招引企业推荐分析$/ });
+          await expect(pickMenu.first()).toBeVisible({ timeout: 10000 });
+          await pickMenu.first().click({ timeout: 12000 });
         }
-        await page.waitForURL(/attraction/, { timeout: 15000 });
+        await page.waitForURL(/\/enterprise\/attraction/, { timeout: 20000 });
         await page.waitForTimeout(600);
       };
-      await dismissBasket();
-      await enterAttractFromMenu();
-      await expect(page).toHaveURL(/workspace=attraction/);
-      await expect(page).not.toHaveURL(/workspace=cultivation/);
-      const main = page.locator('main').first();
-      await expect(main.getByRole('heading', { name: '招引企业推荐分析' }).first()).toBeVisible({ timeout: 8000 });
-      const body = await page.locator('body').innerText();
-      if (/培育企业推荐分析/.test(body) && !/招引企业推荐分析/.test(body.slice(0, 400))) {
-        throw new Error('侧栏进入后仍停在培育页语义');
-      }
-  - note: 2、页签为条件筛选推荐、候选工作台、最近分析
+      await enterAttractViaSidebar();
+      await expect(page.getByRole('heading', { name: '招引企业推荐分析', level: 1 })).toBeVisible({ timeout: 15000 });
+  - note: 页签为条件筛选推荐、候选工作台、最近分析
     assert: |-
-      const REQUIRED = ['条件筛选推荐', '候选工作台', '最近分析'];
-      const main = page.locator('main').first();
-      await expect(main.getByRole('heading', { name: '招引企业推荐分析' }).first()).toBeVisible({ timeout: 8000 });
-      const text = (await main.innerText()).replace(/\s+/g, ' ');
-      if (/培育企业推荐分析/.test(text) && !/招引企业推荐分析/.test(text.slice(0, 120))) {
-        throw new Error('仍停在培育页，main 前段=' + text.slice(0, 160));
-      }
-      for (const t of REQUIRED) {
-        if (!text.includes(t)) {
-          if (t === '最近分析') {
-            throw new Error('环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：30888 未见「最近分析」页签文案，main 前段=' + text.slice(0, 200));
-          }
-          throw new Error('main 未见页签「' + t + '」，前段=' + text.slice(0, 200));
-        }
-      }
-      const tablist = page.locator('[aria-label="招引企业推荐分析页签"], .global-workbench-tabs').first();
-      if (await tablist.isVisible().catch(() => false)) {
-        for (const t of REQUIRED) {
-          const hit = tablist.locator('[role="tab"], button').filter({ hasText: t });
-          if (await hit.count()) await expect(hit.first()).toBeVisible({ timeout: 5000 });
-        }
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 侧栏 arco-menu-item 进入；前置先落培育 workspace 再点招引验本页隔离。深链真源 /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction（catalog /enterprise/attraction）。D4·2026-10-20 机跑 rewrite-FUNC-01457 预期①标题绿、预期②缺「最近分析」仅两 Tab→交卷 blocked·ENV-ATTRACT-NO-HISTORY-TAB-001（同 01435~01441）。登录与关评审由 runner 前置。A 档零 allow_skip。
+      await expect(page.getByRole('tab', { name: '条件筛选推荐' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: '候选工作台' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: '最近分析' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

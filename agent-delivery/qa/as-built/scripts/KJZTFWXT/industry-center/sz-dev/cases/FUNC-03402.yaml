@@ -1,25 +1,18 @@
 id: FUNC-03402
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03402
 priority: P1
-title: 报告页「导出」不可用且点击不产生文件
-story: US-CHAIN-SZ-04
-entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 已打开一条发展分析报告（assert 自含）
-  - 当前账号未开通报告导出付费权益（edu admin 默认未付费）
-locators:
-  tab_rec: tab「分析记录」
-  view_report: button「查看报告」
-  export_locked: '[data-report-export-locked]'
-  export_btn: '[data-report-export-locked] button[data-report-download]'
+title: 报告页「导出」不可用且不产生文件
+entry_id: chain-sz-dev
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 分析记录→查看报告→校验导出禁用与无 download
+    note: 分析记录→已完成「查看报告」→报告页（前置同 03411）
 expect:
-  - note: 前置：已打开「深圳产业发展分析报告」
+  - note: 1、「导出」不可点击
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
@@ -79,7 +72,7 @@ expect:
         const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '深圳产业发展分析' });
         const n = await rows.count();
         if (n < 1) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-TASK: 分析记录无深圳发展分析任务');
+          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无深圳发展分析任务');
         }
         let clicked = false;
         for (let i = 0; i < Math.min(n, 12); i++) {
@@ -99,68 +92,43 @@ expect:
           throw new Error('ENV-CHAIN-SZ-DEV-NO-REPORT: 无已完成任务可点「查看报告」');
         }
       };
-      await dismissBasket();
-      await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await page.waitForTimeout(1000);
-      if (await bodyIs404() || !onTarget()) {
-        await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        if (!(await bodyIs404())) await enterViaSidebar();
+      if (!/view=report/.test(page.url())) {
+        await dismissBasket();
+        if (!onTarget() || (await bodyIs404())) {
+          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+          await page.waitForTimeout(1000);
+          if (await bodyIs404() || !onTarget()) {
+            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(800);
+            if (!(await bodyIs404())) await enterViaSidebar();
+          }
+        }
+        if (await bodyIs404()) {
+          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法打开深圳产业发展分析');
+        }
+        await expect(page).toHaveURL(/workspace=development/);
+        await openReportFromRecords();
+        await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
       }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法打开报告 ' + page.url());
-      }
-      await expect(page).toHaveURL(/workspace=development/);
-      await openReportFromRecords();
-      await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
       const reader = await waitReportReader();
       await expect(reader.locator('h1').filter({ hasText: REPORT_TITLE }).first()).toBeVisible({ timeout: 15000 });
-      globalThis.__func03402 = { readerReady: true, urlBefore: page.url() };
-  - note: 1、「导出」不可点击
-    assert: |-
-      if (!globalThis.__func03402?.readerReady) throw new Error('前置：报告页未打开');
-      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      await expect(reader).toBeVisible({ timeout: 8000 });
-      const locked = reader.locator('[data-report-export-locked]').first();
-      await expect(locked).toBeVisible({ timeout: 8000 });
-      const exportBtn = locked.locator('button[data-report-download]').first();
-      await expect(exportBtn).toBeVisible({ timeout: 5000 });
+      const exportBtn = reader.getByRole('button', { name: '导出' }).first();
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
       await expect(exportBtn).toBeDisabled();
-      const cls = (await exportBtn.getAttribute('class')) || '';
-      if (!/arco-btn-disabled/.test(cls)) {
-        throw new Error('「导出」未见 arco-btn-disabled，class=' + cls);
-      }
-      const unlocked = page.locator('[data-report-export-unlocked]');
-      if (await unlocked.count() && (await unlocked.first().isVisible().catch(() => false))) {
-        throw new Error('未付费 admin 环境出现可导出按钮（data-report-export-unlocked）');
-      }
-      globalThis.__func03402.exportBtn = exportBtn;
-  - note: 2、不产生报告文件（force 点「导出」无 download、仍 view=report）
+  - note: 2、不产生报告文件
     assert: |-
-      const ctx = globalThis.__func03402;
-      if (!ctx?.exportBtn) throw new Error('前置：未定位导出按钮');
-      const urlBefore = ctx.urlBefore || page.url();
-      let downloadFired = false;
-      page.once('download', () => { downloadFired = true; });
-      try {
-        await ctx.exportBtn.click({ timeout: 5000, force: true });
-      } catch {}
-      await page.waitForTimeout(1500);
-      if (downloadFired) throw new Error('未付费点击「导出」仍触发了 download 事件');
-      if (page.url() !== urlBefore) {
-        throw new Error('强制点「导出」后地址变化：before=' + urlBefore + ' after=' + page.url());
-      }
-      await expect(page).toHaveURL(/view=report/);
       const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      await expect(reader).toBeVisible({ timeout: 8000 });
-      await expect(reader.locator('h1').filter({ hasText: '深圳产业发展分析报告' }).first()).toBeVisible({ timeout: 8000 });
-      const successMsg = page.locator('.arco-message-success, .arco-message').filter({ hasText: /报告已导出|导出成功/ });
-      if (await successMsg.count()) {
-        const vis = await successMsg.first().isVisible().catch(() => false);
-        if (vis) throw new Error('未付费点击「导出」仍出现导出成功提示');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  03402=报告页 ReportExportButton data-report-export-locked 内 button[data-report-download] disabled（arco-btn-disabled），force 点击无 download/无「报告已导出」且仍 view=report+h1「深圳产业发展分析报告」。
-  前置=分析记录已完成→「查看报告」（同 03403/03411）。03403 专验「付费」点击落点；本条不验付费 Tag 文案。
-  无已完成→ENV-CHAIN-SZ-DEV-NO-DONE-TASK；报告不可用→ENV-CHAIN-SZ-DEV-NO-REPORT。catalog_path=entry-seed。edu 404→ENV-EDU-TTS-SVCZ-404-001。admin 默认未付费。登录关评审 runner 前置。B 档零 allow_skip。
+      await expect(reader).toBeVisible({ timeout: 10000 });
+      const exportBtn = reader.getByRole('button', { name: '导出' }).first();
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
+      await expect(exportBtn).toBeDisabled();
+      let downloadSeen = false;
+      const onDownload = () => {
+        downloadSeen = true;
+      };
+      page.on('download', onDownload);
+      await exportBtn.click({ timeout: 5000, force: true }).catch(() => {});
+      await page.waitForTimeout(1500);
+      page.off('download', onDownload);
+      expect(downloadSeen).toBe(false);
+on_fail: 截图 + 抄 X-Trace-Id

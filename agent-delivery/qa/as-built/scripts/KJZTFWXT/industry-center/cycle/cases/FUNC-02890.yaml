@@ -1,236 +1,121 @@
 id: FUNC-02890
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02890
-priority: P0
-title: 当天相同条件再次开始分析打开已有结果且不新增任务
-story: US-CHAIN-DIAG-01
+priority: P1
+tier: B
+title: 主流程-当天复用
 entry_id: chain-cycle
-tier: A
-preconditions:
-  - 当天已有一次与 02888 相同指纹的成功分析（assert 自含首次到达成功结果）
-locators:
-  cluster: '.arco-select-view[aria-label="集群"]'
-  industry: '.arco-select-view[aria-label="产业"]'
-  start: button「开始分析」
-  records_tab: tab「诊断记录」
-  same_day_hint: 今日已分析过相同条件，已打开结果
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=cycle&tab=cycle
   - action: evaluate
-    note: 02888 同款条件首次成功→回填同条件→再次开始分析；三条预期在 expect
+    note: 02888 首次完成分析并准备当天复用前置（判定在 expect）
 expect:
   - note: 1、提示「今日已分析过相同条件，已打开结果」
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
-      const assertCycleLand = async () => {
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
-        }
-        if (!/\/industry-center\/diagnosis/.test(page.url()) || !/workspace=cycle/.test(page.url())) {
-          await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(1200);
-          const body2 = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (/404|页面不存在/.test(body2)) throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
-        }
-        await dismissBasket();
-        await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 15000 });
-      };
-      const main = () => page.locator('main.content-shell-layout, main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const HINT = /今日已分析过相同条件，已打开结果/;
-      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup:visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const pickOption = async (view, textRe) => {
+      const main = () => page.locator('main').first();
+      const pickSelect = async (ariaLabel, label) => {
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-        const raw = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (textRe.test(raw)) return true;
-        await view.click({ timeout: 8000 });
+        const box = main().locator('.industry-cluster-select').first();
+        const trigger = box.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click({ timeout: 12000 });
         await page.waitForTimeout(600);
-        const popup = page.locator('.arco-trigger-popup:visible');
-        const opt = popup.locator('.arco-select-option').filter({ hasText: textRe });
-        if (!(await opt.count())) {
-          await page.keyboard.press('Escape').catch(() => {});
-          throw new Error('下拉未见选项 ' + textRe);
-        }
-        await opt.first().click({ timeout: 8000 });
-        await page.waitForTimeout(700);
-        return true;
-      };
-      const pickTimeRange = async (label) => {
-        const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first();
-        await timeSel.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
+        const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        const opt = popup.locator('.arco-select-option').filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 12000 });
+        await opt.click({ timeout: 12000 });
         await page.waitForTimeout(500);
       };
-      const apply02888Config = async () => {
-        await dismissBasket();
-        const cluster = page.locator('.arco-select-view[aria-label="集群"]').first();
-        const chain = page.locator('.arco-select-view[aria-label="产业"]').first();
-        await pickOption(cluster, /新一代信息技术/);
-        await pickOption(chain, /半导体与集成电路/);
-        await pickTimeRange('近5年');
-        const spins = page.locator('[role=spinbutton]');
-        await spins.nth(0).fill('88000');
+      const pickCycleConfig = async () => {
+        await pickSelect('集群', '新一代信息技术');
+        await pickSelect('产业', '半导体与集成电路');
+        const timeTrigger = main().locator('.diagnosis-config-identity .arco-select-view').first();
+        await timeTrigger.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const timePopup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
+        await timePopup.locator('.arco-select-option').filter({ hasText: '近5年' }).first().click({ timeout: 8000 });
         await page.waitForTimeout(300);
+        const marketRow = main().locator('tr').filter({ hasText: '市场规模' }).first();
+        const marketInput = marketRow.locator('input').first();
+        await marketInput.scrollIntoViewIfNeeded();
+        await marketInput.click();
+        await marketInput.fill('');
+        await marketInput.fill('88000');
+        await page.waitForTimeout(200);
       };
-      const isSuccessResult = async () => {
-        if (!/view=result/.test(page.url())) return false;
-        const t = await main().innerText().catch(() => '');
-        if (/产业周期分析生成中|可视化分析过程/.test(t) && !/产业周期分析结果/.test(t)) return false;
-        return await page.getByText('产业周期分析结果').first().isVisible().catch(() => false);
-      };
-      const openResultFromProcessing = async () => {
-        const btn = page.getByRole('button', { name: /查看分析结果/ });
-        for (let i = 0; i < 30; i++) {
-          if (await isSuccessResult()) return;
-          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
-            await btn.first().click({ timeout: 8000 }).catch(() => {});
-            await page.waitForTimeout(800);
-            if (await isSuccessResult()) return;
+      const failHint = () => main().getByText(/ADS_SERIES_UNAVAILABLE|分析生成失败|任务失败|本次分析生成失败/);
+      const reuseToast = () => page.locator('.arco-message').filter({ hasText: '今日已分析过相同条件，已打开结果' });
+      const openResultFromProcess = async () => {
+        if (await reuseToast().first().isVisible({ timeout: 3000 }).catch(() => false)) {
+          return;
+        }
+        if (await failHint().first().isVisible({ timeout: 3000 }).catch(() => false)) {
+          throw new Error('ENV-CYCLE-ANALYSIS-FAIL: 分析未成功，无法测当天复用');
+        }
+        if (await page.getByRole('heading', { name: '产业周期分析结果' }).isVisible({ timeout: 3000 }).catch(() => false)) {
+          return;
+        }
+        const done = page.getByText('分析结果已生成');
+        if (await done.isVisible({ timeout: 120000 }).catch(() => false)) {
+          await page.getByRole('button', { name: '查看分析结果' }).click({ timeout: 15000 });
+        } else if (await page.getByText('产业周期分析生成中').isVisible({ timeout: 5000 }).catch(() => false)) {
+          if (await failHint().first().isVisible({ timeout: 120000 }).catch(() => false)) {
+            throw new Error('ENV-CYCLE-ANALYSIS-FAIL: 过程页失败');
           }
-          await page.waitForTimeout(i < 6 ? 500 : 1500);
+          await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+          await page.getByRole('button', { name: '查看分析结果' }).click({ timeout: 15000 });
         }
+        await expect(page.getByRole('heading', { name: '产业周期分析结果' })).toBeVisible({ timeout: 20000 });
       };
-      const waitSuccessAfterStart = async () => {
-        let last = '';
-        for (let i = 0; i < 90; i++) {
-          await page.waitForTimeout(i < 4 ? 500 : 2000);
-          last = await main().innerText().catch(() => '');
-          if (await isSuccessResult()) return { sameDayHint: HINT.test(last) };
-          const toast = page.locator('.arco-message, .arco-notification').filter({ hasText: HINT });
-          if (await toast.count() && (await toast.first().isVisible().catch(() => false)) && (await isSuccessResult())) {
-            return { sameDayHint: true };
-          }
-          if (/分析结果已生成/.test(last)) {
-            await openResultFromProcessing();
-            if (await isSuccessResult()) return { sameDayHint: HINT.test(last) };
-          }
-          if (/分析失败|本次分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('ENV-CHAIN-CYCLE-ANALYSIS-FAIL-001：无法到达当天成功结果前置');
-          }
-        }
-        if (/view=processing|可视化分析过程/.test(page.url() + last)) {
-          throw new Error('ENV-CHAIN-CYCLE-ASYNC-NO-SUCCESS-001：首次分析长期停留过程态');
-        }
-        throw new Error('首次分析未在超时内到达成功结果：' + last.slice(0, 220));
+      const readTaskId = async () => {
+        const text = await main().innerText();
+        const m = text.match(/任务 ID[：:\s]+([A-Z0-9-]+)/i);
+        if (!m) throw new Error('未读到任务 ID');
+        return m[1];
       };
-      const openRecordsTab = async () => {
-        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(900);
+      const countHistoryRows = async () => {
+        await page.locator('.industry-workspace-tabs').getByText('诊断记录', { exact: true }).click({ timeout: 10000 });
+        await expect(main().getByRole('heading', { name: '诊断记录' })).toBeVisible({ timeout: 15000 });
+        await page.waitForTimeout(800);
+        return main().locator('.arco-table-body .arco-table-tr').count();
       };
-      const countChainRows = async () => {
-        const body = await main().innerText().catch(() => '');
-        const ids = body.match(TID_RE) || [];
-        return new Set(ids).size;
-      };
-      const reachTodaySuccessOnce = async () => {
-        if (await isSuccessResult()) return { sameDayHint: HINT.test(await main().innerText().catch(() => '')) };
-        await apply02888Config();
-        const start = main().getByRole('button', { name: '开始分析' }).first();
-        await expect(start).toBeEnabled({ timeout: 20000 });
-        await start.click({ timeout: 15000 });
-        let last = '';
-        for (let i = 0; i < 8; i++) {
-          await page.waitForTimeout(500);
-          last = await main().innerText().catch(() => '');
-          if (HINT.test(last) && (await isSuccessResult())) return { sameDayHint: true };
-        }
-        return await waitSuccessAfterStart();
-      };
-      const backToConfigTab = async () => {
-        const back = page.getByRole('button', { name: '返回配置' }).first();
-        if (await back.isVisible().catch(() => false)) {
-          await back.click({ timeout: 10000 });
-          await page.waitForTimeout(1200);
-        } else {
-          await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-        }
-        await dismissBasket();
-      };
-      await assertCycleLand();
-      await reachTodaySuccessOnce();
-      const taskFirst =
-        new URL(page.url()).searchParams.get('task_id') ||
-        (await main().innerText().catch(() => '')).match(TID_RE)?.[0] ||
-        '';
-      if (!taskFirst) throw new Error('首次成功未见 CHAIN 任务标识');
-      await backToConfigTab();
-      await openRecordsTab();
-      const nBefore = await countChainRows();
-      await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      await apply02888Config();
-      const start2 = main().getByRole('button', { name: '开始分析' }).first();
-      await expect(start2).toBeEnabled({ timeout: 20000 });
-      await start2.click({ timeout: 15000 });
-      let sawHint = false;
-      let last = '';
-      for (let i = 0; i < 24; i++) {
-        await page.waitForTimeout(i === 0 ? 400 : 600);
-        last = await main().innerText().catch(() => '');
-        const toast = page.locator('.arco-message, .arco-notification').filter({ hasText: HINT });
-        if (HINT.test(last)) sawHint = true;
-        if (await toast.count() && (await toast.first().isVisible().catch(() => false))) sawHint = true;
-        if (sawHint && (await isSuccessResult())) break;
-        if (await isSuccessResult() && (HINT.test(last) || (await toast.count()))) {
-          sawHint = true;
-          break;
-        }
-      }
-      globalThis.__func02890 = { taskFirst, nBefore, sawHint, lastBody: last };
-      if (!sawHint) {
-        await expect(page.getByText('今日已分析过相同条件，已打开结果').first()).toBeVisible({ timeout: 8000 });
-      }
-  - note: 2、打开的是已有任务的结果页（产业周期分析结果 + 同一 task_id）
+
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 15000 });
+      await pickCycleConfig();
+      await page.getByRole('button', { name: '开始分析' }).click({ timeout: 10000 });
+      await openResultFromProcess();
+      const firstTaskId = await readTaskId();
+      await page.getByRole('button', { name: '按此配置新建分析' }).click({ timeout: 15000 });
+      await expect(main().getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 15000 });
+      const historyBefore = await countHistoryRows();
+      await page.locator('.industry-workspace-tabs').getByText('产业周期分析', { exact: true }).click({ timeout: 10000 });
+      await expect(main().getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 15000 });
+      await pickCycleConfig();
+      await page.getByRole('button', { name: '开始分析' }).click({ timeout: 10000 });
+      await openResultFromProcess();
+      globalThis.__func02890 = { firstTaskId, historyBefore };
+      await expect(reuseToast().first()).toBeVisible({ timeout: 15000 });
+  - note: 2、打开的是已有任务的结果页
     assert: |-
-      const ctx = globalThis.__func02890;
-      if (!ctx) throw new Error('前置：未完成二次开始分析');
-      const main = () => page.locator('main.content-shell-layout, main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 15000 });
-      await expect(page).toHaveURL(/view=result/, { timeout: 10000 });
-      const taskSecond =
-        new URL(page.url()).searchParams.get('task_id') ||
-        (await main().innerText().catch(() => '')).match(TID_RE)?.[0] ||
-        '';
-      if (ctx.taskFirst && taskSecond && ctx.taskFirst !== taskSecond) {
-        throw new Error('同条件当天复用 task_id 不一致：' + ctx.taskFirst + ' vs ' + taskSecond);
+      if (!globalThis.__func02890) throw new Error('前置：未完成当天复用点击');
+      await expect(page.getByRole('heading', { name: '产业周期分析结果' })).toBeVisible({ timeout: 20000 });
+      const main = () => page.locator('main').first();
+      const text = await main().innerText();
+      const m = text.match(/任务 ID[：:\s]+([A-Z0-9-]+)/i);
+      if (!m || m[1] !== globalThis.__func02890.firstTaskId) {
+        throw new Error(`任务 ID 不一致：期望 ${globalThis.__func02890.firstTaskId} 实际 ${m?.[1] ?? '无'}`);
       }
-      const body = await main().innerText().catch(() => ctx.lastBody || '');
-      if (/产业周期分析生成中/.test(body) && !/产业周期分析结果/.test(body)) {
-        throw new Error('二次开始后仍停生成中页，未打开已有结果');
-      }
-  - note: 3、诊断记录不新增任务（用例步骤 3）
+  - note: 3、诊断记录不新增任务
     assert: |-
-      const ctx = globalThis.__func02890;
-      if (!ctx) throw new Error('前置：未完成二次开始分析');
-      const main = () => page.locator('main.content-shell-layout, main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const countChainRows = async () => {
-        const body = await main().innerText().catch(() => '');
-        const ids = body.match(TID_RE) || [];
-        return new Set(ids).size;
-      };
-      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      const nAfter = await countChainRows();
-      if (nAfter > ctx.nBefore) {
-        throw new Error('诊断记录 CHAIN 条数增加：' + ctx.nBefore + ' -> ' + nAfter);
+      if (!globalThis.__func02890) throw new Error('前置：未完成当天复用点击');
+      const main = () => page.locator('main').first();
+      await page.locator('.industry-workspace-tabs').getByText('诊断记录', { exact: true }).click({ timeout: 10000 });
+      await expect(main().getByRole('heading', { name: '诊断记录' })).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      const after = await main().locator('.arco-table-body .arco-table-tr').count();
+      if (after !== globalThis.__func02890.historyBefore) {
+        throw new Error(`诊断记录条数变化：复用前 ${globalThis.__func02890.historyBefore} 复用后 ${after}`);
       }
-      const body = await main().innerText().catch(() => '');
-      if (ctx.taskFirst && !body.includes(ctx.taskFirst)) {
-        throw new Error('诊断记录列表未见原任务 ' + ctx.taskFirst);
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·edu tts/svcz catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。指纹对齐 FUNC-02888（新一代信息技术/半导体与集成电路/近5年/市场规模88000）。前置=当天同指纹成功一次（诊断记录恢复或首次发起）。步骤=回填同条件→再次「开始分析」→诊断记录条数。现场直开 view=result（Message.info 口径）。D4·无成功且异步不落成功→ENV-CHAIN-CYCLE-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。A 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

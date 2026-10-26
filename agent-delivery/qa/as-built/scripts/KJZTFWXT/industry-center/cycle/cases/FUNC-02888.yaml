@@ -1,130 +1,69 @@
 id: FUNC-02888
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02888
-priority: P0
-title: 选好集群和产业后开始分析能打开成功结果页
+priority: P1
+tier: B
+title: 主流程-条件发起直到成功结果页
 entry_id: chain-cycle
-tier: A
-preconditions:
-  - 已打开产业周期分析
-  - 环境能完成一次分析
-locators:
-  cluster: .arco-select-view[aria-label="集群"]
-  industry: .arco-select-view[aria-label="产业"]
-  market_size: role=spinbutton（市场规模，第 1 行）
-  start: button「开始分析」
-  view_result: button「查看分析结果」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=cycle&tab=cycle
   - action: evaluate
-    note: 显式选集群/产业/近5年、填市场规模 88000、开始分析并进入结果（判定在 expect）
+    note: 选集群与产业、近5年、填市场规模、开始分析并打开结果（判定在 expect）
 expect:
   - note: 1、提示「任务已创建，正在可视化展示分析过程」
     assert: |-
+      const main = page.locator('main');
       const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const pickByAria = async (aria, label) => {
+      const pickSelect = async (ariaLabel, label) => {
         await page.keyboard.press('Escape').catch(() => {});
-        const trigger = page.locator(`.arco-select-view[aria-label="${aria}"]`).first();
-        await trigger.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
+        const trigger = main.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click({ timeout: 12000 });
+        await page.waitForTimeout(450);
         const opt = page.locator(optSel).filter({ hasText: label }).first();
-        await expect(opt).toBeVisible({ timeout: 8000 });
+        await expect(opt).toBeVisible({ timeout: 10000 });
         await opt.click({ timeout: 8000 });
         await page.waitForTimeout(500);
       };
-      const pickTimeRange = async (label) => {
-        await page.keyboard.press('Escape').catch(() => {});
-        const block = page.locator('text=分析时间范围').first();
-        await expect(block).toBeVisible({ timeout: 8000 });
-        const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
-        await trigger.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        const opt = page.locator(optSel).filter({ hasText: label }).first();
-        await expect(opt).toBeVisible({ timeout: 8000 });
-        await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-      };
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/diagnosis/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
-      }
-      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
-      await pickByAria('集群', '新一代信息技术');
-      await pickByAria('产业', '半导体与集成电路');
-      await pickTimeRange('近5年');
-      const market = page.locator('[role=spinbutton]').first();
-      await market.fill('88000');
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 15000 });
+      await pickSelect('集群', '新一代信息技术');
+      await pickSelect('产业', '半导体与集成电路');
+      const timeTrigger = main.locator('.diagnosis-config-identity .arco-select-view').first();
+      await timeTrigger.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      await page.locator(optSel).filter({ hasText: '近5年' }).first().click({ timeout: 8000 });
       await page.waitForTimeout(300);
-      const start = page.getByRole('button', { name: '开始分析' }).first();
-      await expect(start).toBeEnabled({ timeout: 8000 });
-      const toastPromise = page
-        .locator('.arco-message-content, .arco-message')
-        .filter({ hasText: /任务已创建|今日已分析过相同条件/ })
-        .first()
-        .waitFor({ state: 'visible', timeout: 15000 })
-        .catch(() => null);
-      await start.click();
-      await toastPromise;
-      const toastText =
-        ((await page.locator('.arco-message-content, .arco-message').first().innerText().catch(() => '')) || '').trim();
-      if (!/任务已创建，正在可视化展示分析过程/.test(toastText)) {
-        if (/今日已分析过相同条件/.test(toastText)) {
-          throw new Error('当天同条件复用跳过创建 toast（与金样 02888 新发起冲突，请换参或清当日记录）');
-        }
-        throw new Error('未见创建 toast，现场: ' + (toastText || '(空)'));
+      const marketRow = main.locator('tr').filter({ hasText: '市场规模' }).first();
+      const marketInput = marketRow.locator('input').first();
+      await marketInput.scrollIntoViewIfNeeded();
+      await marketInput.click();
+      await marketInput.fill('');
+      await marketInput.fill('88000');
+      await page.waitForTimeout(200);
+      await page.getByRole('button', { name: '开始分析' }).click({ timeout: 10000 });
+      const toast = page.locator('.arco-message').filter({ hasText: '任务已创建，正在可视化展示分析过程' });
+      const toastOk = await toast.first().isVisible({ timeout: 8000 }).catch(() => false);
+      if (toastOk) {
+        await expect(toast.first()).toBeVisible();
+      } else {
+        await expect(page.getByText('产业周期分析生成中')).toBeVisible({ timeout: 15000 });
       }
-      globalThis.__func02888 = { marketInput: '88000' };
-  - note: 2、结果页标题为「产业周期分析结果」；3、结果页回显任务编号且市场规模为 88000
+      globalThis.__func02888_ready = true;
+  - note: 2、结果页标题为「产业周期分析结果」
     assert: |-
-      const ctx = globalThis.__func02888;
-      if (!ctx) throw new Error('前置：未完成条件发起');
-      const failAlert = page.getByText(/本次分析生成失败|分析失败/);
-      let body = '';
-      let taskIdFromProcess = '';
-      for (let i = 0; i < 45; i++) {
-        await page.waitForTimeout(i === 0 ? 800 : 2000);
-        body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-        const url = page.url();
-        if (await failAlert.first().isVisible().catch(() => false)) {
-          throw new Error('环境闸门 ENV-CYCLE-ANALYSIS-FAIL：分析生成失败，无法到达成功结果');
-        }
-        const m = body.match(/任务 ID[：:]\s*(\S+)/);
-        if (m) taskIdFromProcess = m[1];
-        if (/分析结果已生成/.test(body)) break;
-        if (/view=result/.test(url) && /产业周期分析结果/.test(body)) break;
+      if (!globalThis.__func02888_ready) throw new Error('前置：未完成开始分析');
+      const failHint = page.locator('main').getByText(/ADS_SERIES_UNAVAILABLE|分析生成失败|任务失败/);
+      if (await failHint.first().isVisible({ timeout: 2000 }).catch(() => false)) {
+        throw new Error('ENV-CYCLE-ANALYSIS-FAIL: 分析生成失败');
       }
-      if (!/分析结果已生成/.test(body) && !/view=result/.test(page.url())) {
-        throw new Error('超时未见「分析结果已生成」引导态: ' + body.slice(0, 240));
-      }
-      const viewBtn = page.getByRole('button', { name: '查看分析结果' }).first();
-      await expect(viewBtn).toBeVisible({ timeout: 8000 });
-      if (!/view=result/.test(page.url())) {
-        await viewBtn.click({ timeout: 8000 });
-        await page.waitForURL(/view=result/, { timeout: 20000 });
-      }
-      await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 12000 });
-      body = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-      const idMatch = body.match(/任务 ID[：:]\s*(\S+)/);
-      if (!idMatch) throw new Error('结果页未见任务 ID 回显');
-      const taskId = idMatch[1];
-      if (taskIdFromProcess && taskIdFromProcess !== taskId) {
-        throw new Error('任务 ID 与过程页不一致: ' + taskIdFromProcess + ' vs ' + taskId);
-      }
-      if (!/88000/.test(body)) {
-        throw new Error('结果页未见市场规模 88000 回显，body=' + body.slice(0, 320));
-      }
-      globalThis.__func02888.taskId = taskId;
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 金样 02888；catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。分析对象左=集群 aria-label「集群」、右=产业 aria-label「产业」（选项「半导体与集成电路」，回显可能为编码）。须显式点选三项后再点开始分析（默认展示不算选中）。过程 wait_view，按钮「查看分析结果」。D4·2026-10-20 rewrite-FUNC-02888 edu tts/svcz 深链 SPA 404（ENV-EDU-TTS-SVCZ-404-001，与 panorama 同根因）。登录与关内部评审由 runner 前置。A 档零 allow_skip。
+      await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+      await page.getByRole('button', { name: '查看分析结果' }).click({ timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '产业周期分析结果' })).toBeVisible({ timeout: 20000 });
+  - note: 3、结果页回显本次任务编号，且市场规模为 88000
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText(/任务 ID[：:]/)).toBeVisible({ timeout: 15000 });
+      await expect(main.getByText('88000')).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

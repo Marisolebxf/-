@@ -10,47 +10,38 @@ steps:
   - action: goto
     target: /service-portal/region-map
 expect:
-  - note: 排行共 3 个省级行政区，名称见附录 C
+  - note: 1、排行共 3 个省级行政区，名称见附录 C
     assert: |-
-      const count = await page.evaluate(() => {
-        const title = Array.from(document.querySelectorAll('*')).find(
-          (el) => (el.textContent ?? '').trim() === '省级行政区排行',
-        );
-        const panel =
-          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
-          title?.parentElement?.parentElement;
-        if (!panel) return 0;
-        const rows = Array.from(panel.querySelectorAll('li, tr, [class*="rank"], [class*="list-item"]')).filter(
-          (el) => {
-            const t = (el.textContent ?? '').replace(/\s+/g, ' ');
-            return /[\u4e00-\u9fa5]{2,8}/.test(t) && /[\d,]+\s*家/.test(t);
-          },
-        );
-        if (rows.length) return rows.length;
-        const hits = (panel.innerText ?? '').match(/[\u4e00-\u9fa5]{2,10}\s*[\d,]+\s*家/g);
-        return hits ? hits.length : 0;
-      });
-      await expect(count === 3).toBeTruthy();
-  - note: 每个名称旁展示家数
+      const rank = page.locator('main').filter({ hasText: '省级行政区排行' });
+      const canvas = rank.locator('canvas').first();
+      await expect(canvas).toBeVisible();
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('无排行画布');
+      const probes = [
+        { name: '浙江省', y: 0.88 },
+        { name: '北京市', y: 0.55 },
+        { name: '广东省', y: 0.22 },
+      ];
+      for (const { name, y } of probes) {
+        await page.mouse.move(box.x + box.width * 0.65, box.y + box.height * y);
+        await page.waitForTimeout(400);
+        await expect(page.getByText(new RegExp(`${name}：`))).toBeVisible();
+      }
+  - note: 2、每个名称旁展示家数
     assert: |-
-      const ok = await page.evaluate(() => {
-        const title = Array.from(document.querySelectorAll('*')).find(
-          (el) => (el.textContent ?? '').trim() === '省级行政区排行',
-        );
-        const panel =
-          title?.closest('[class*="card"], [class*="panel"], section, .arco-card') ??
-          title?.parentElement?.parentElement;
-        if (!panel) return false;
-        const rows = Array.from(panel.querySelectorAll('li, tr, [class*="rank"], [class*="list-item"]')).filter(
-          (el) => {
-            const t = (el.textContent ?? '').replace(/\s+/g, ' ');
-            return /[\u4e00-\u9fa5]{2,8}/.test(t) && /[\d,]+\s*家/.test(t);
-          },
-        );
-        if (rows.length >= 3) {
-          return rows.slice(0, 3).every((el) => /[\d,]+\s*家/.test(el.textContent ?? ''));
-        }
-        const hits = (panel.innerText ?? '').match(/[\u4e00-\u9fa5]{2,10}\s*[\d,]+\s*家/g) ?? [];
-        return hits.length >= 3 && hits.every((s) => /[\d,]+\s*家/.test(s));
-      });
-      await expect(ok).toBeTruthy();
+      const rank = page.locator('main').filter({ hasText: '省级行政区排行' });
+      const canvas = rank.locator('canvas').first();
+      await expect(canvas).toBeVisible();
+      const box = await canvas.boundingBox();
+      if (!box) throw new Error('无排行画布');
+      const probes = [
+        { name: '浙江省', y: 0.88 },
+        { name: '北京市', y: 0.55 },
+        { name: '广东省', y: 0.22 },
+      ];
+      for (const { name, y } of probes) {
+        await page.mouse.move(box.x + box.width * 0.65, box.y + box.height * y);
+        await page.waitForTimeout(400);
+        await expect(page.getByText(new RegExp(`${name}：\\d[\\d,]* 家（占`))).toBeVisible();
+      }
+on_fail: 截图 + 抄 X-Trace-Id

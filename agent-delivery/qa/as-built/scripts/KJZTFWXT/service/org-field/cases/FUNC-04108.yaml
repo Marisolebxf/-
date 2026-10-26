@@ -11,7 +11,7 @@ steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 前置：打开机构弹窗、搜索为空；点击 footer「全选所有」
+  - note: 前置：打开「选择分析服务机构」弹窗
     assert: |-
       await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 20000 });
       const openBasket = page
@@ -20,28 +20,42 @@ expect:
         .first();
       await expect(openBasket).toBeVisible({ timeout: 12000 });
       await openBasket.click({ timeout: 12000 });
-      await page.waitForTimeout(1000);
-      const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择分析服务机构' }).first();
-      await expect(dialog).toBeVisible({ timeout: 15000 });
-      const orgRows = dialog.getByRole('button', { name: '移除' });
+      await expect(page.getByRole('button', { name: '全选当前筛选结果' })).toBeVisible({ timeout: 15000 });
+  - note: 1.点击「全选所有」（源码可见名：全选当前筛选结果）
+    assert: |-
+      const picker = page
+        .locator('div')
+        .filter({ has: page.getByRole('button', { name: '全选当前筛选结果' }) })
+        .filter({ has: page.getByRole('button', { name: '确定' }) })
+        .last();
+      await expect(picker).toBeVisible({ timeout: 8000 });
+      const orgRows = picker.getByRole('button', { name: '移除' });
       await expect(orgRows.first()).toBeVisible({ timeout: 12000 });
       const totalInList = await orgRows.count();
       if (totalInList < 1) throw new Error('弹窗列表无服务机构行');
       globalThis.__p04108 = { totalInList };
-      const selectAll = dialog.getByRole('button', { name: '全选当前筛选结果' });
-      await expect(selectAll).toBeVisible({ timeout: 8000 });
-      await selectAll.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+      await picker.getByRole('button', { name: '全选当前筛选结果' }).click({ timeout: 8000 });
+      await expect
+        .poll(async () => {
+          const body = ((await picker.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          const m = body.match(/已选\s*(\d+)\s*家机构/);
+          return m ? parseInt(m[1], 10) : 0;
+        }, { timeout: 15000 })
+        .toBe(totalInList);
   - note: 1、弹窗「已选」家数等于列表中的全部机构数
     assert: |-
       const snap = globalThis.__p04108;
       if (!snap || snap.totalInList < 1) throw new Error('前置：未统计列表机构总数');
-      const dialog = page.locator('.arco-modal:visible').filter({ hasText: '选择分析服务机构' }).first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      const body = ((await dialog.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const picker = page
+        .locator('div')
+        .filter({ has: page.getByRole('button', { name: '全选当前筛选结果' }) })
+        .filter({ has: page.getByRole('button', { name: '确定' }) })
+        .last();
+      await expect(picker).toBeVisible({ timeout: 8000 });
+      const body = ((await picker.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       const m = body.match(/已选\s*(\d+)\s*家机构/);
       const countAfter = m ? parseInt(m[1], 10) : -1;
-      if (countAfter < 0) throw new Error('未能读取弹窗已选家数: ' + body.slice(0, 200));
+      if (countAfter < 0) throw new Error('未能读取弹窗已选家数: ' + body.slice(0, 240));
       if (countAfter !== snap.totalInList) {
         throw new Error('已选家数不等于列表全部机构：列表=' + snap.totalInList + ' 已选=' + countAfter);
       }

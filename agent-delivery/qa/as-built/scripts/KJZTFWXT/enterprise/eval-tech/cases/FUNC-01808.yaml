@@ -1,34 +1,28 @@
 id: FUNC-01808
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01808
 priority: P1
-title: 已取消记录不能打开 HTML 报告
-story: US-ENT-EVAL-HISTORY
-entry_id: ent-eval-tech
 tier: B
-preconditions:
-  - 最近评估中有状态为已取消的记录（无则真红 ticket=ENV-EVAL-TECH-HISTORY-CANCELLED-001）
-locators:
-  recent_tab: tab「最近评估」
-  html_report_btn: button「查看 HTML 报告」
+title: 已取消记录不能打开 HTML 报告
+entry_id: ent-eval-tech
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+    target: /enterprise/evaluation?workspace=technology&mode=technology
   - action: evaluate
-    note: 最近评估→定位「已取消」行→断言该行「查看 HTML 报告」禁用
+    note: 点击「最近评估」Tab
+    script: |-
+      const tabs = page.locator('.enterprise-center-primary-tabs');
+      const historyTab = tabs.getByText('最近评估', { exact: true });
+      await expect(historyTab).toBeVisible({ timeout: 15000 });
+      await historyTab.click({ timeout: 8000 });
+      await expect(page.locator('main.diagnosis-main table')).toBeVisible({ timeout: 15000 });
+      await page.waitForTimeout(500);
 expect:
   - note: 1、该行「查看 HTML 报告」为禁用
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
-      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
-      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
-      const main = () => page.locator('main.app-main').first();
-      const closeBasket = async () => {
-        const closeB = page.locator('button[aria-label="关闭对比篮"]');
-        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
-          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const pickCancelledHtmlReportBtnOnPage = async () => {
+      const main = () => page.locator('main.diagnosis-main, main.app-main').first();
+      const pickCancelledRowBtn = async () => {
         const rows = main().locator('table tbody tr');
         const n = await rows.count();
         for (let i = 0; i < n; i++) {
@@ -37,53 +31,26 @@ expect:
           const rowText = await row.innerText().catch(() => '');
           if (!/已取消/.test(rowText)) continue;
           const htmlBtn = row.getByRole('button', { name: /查看\s*HTML\s*报告/ }).first();
-          if (!(await htmlBtn.count())) {
-            const attrBtn = row.locator('[data-eval-history-open-html-report]').first();
-            if (await attrBtn.count()) return { row, htmlBtn: attrBtn };
-            continue;
-          }
-          return { row, htmlBtn };
+          if (await htmlBtn.count()) return htmlBtn;
         }
         return null;
       };
-      const pickCancelledHtmlReportBtn = async () => {
+      let htmlBtn = await pickCancelledRowBtn();
+      if (!htmlBtn) {
         const pag = main().locator('.arco-pagination');
-        const visited = new Set();
-        for (let guard = 0; guard < 20; guard++) {
-          const picked = await pickCancelledHtmlReportBtnOnPage();
-          if (picked) return picked;
-          if (!(await pag.count())) break;
-          const active = pag.locator('.arco-pagination-item-active').first();
-          const pageKey = (await active.innerText().catch(() => String(guard))).trim();
-          if (visited.has(pageKey)) break;
-          visited.add(pageKey);
+        for (let guard = 0; guard < 15 && !htmlBtn; guard++) {
           const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
           if (!(await next.count()) || !(await next.isVisible().catch(() => false))) break;
-          const clicked = await next.click({ timeout: 5000 }).then(() => true).catch(() => false);
-          if (!clicked) break;
-          await page.waitForTimeout(1200);
+          const ok = await next.click({ timeout: 5000 }).then(() => true).catch(() => false);
+          if (!ok) break;
+          await page.waitForTimeout(1000);
+          htmlBtn = await pickCancelledRowBtn();
         }
-        return null;
-      };
-      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(800);
-      await closeBasket();
-      const tab = page.getByRole('tab', { name: '最近评估', exact: true });
-      await expect(tab).toBeVisible({ timeout: 10000 });
-      await tab.click({ timeout: 8000 });
-      await page.waitForTimeout(1200);
-      const picked = await pickCancelledHtmlReportBtn();
-      if (!picked) {
+      }
+      if (!htmlBtn) {
         throw new Error('最近评估无状态为已取消的记录（ticket=ENV-EVAL-TECH-HISTORY-CANCELLED-001）');
       }
-      const { row, htmlBtn } = picked;
       await htmlBtn.scrollIntoViewIfNeeded().catch(() => {});
       await expect(htmlBtn).toBeVisible({ timeout: 10000 });
-      const disabled = await htmlBtn.isDisabled().catch(() => true);
-      const hasDisabledClass = await htmlBtn.evaluate((el) => el.classList.contains('arco-btn-disabled') || el.hasAttribute('disabled')).catch(() => false);
-      if (!disabled && !hasDisabledClass) {
-        throw new Error('已取消行「查看 HTML 报告」应为禁用');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: |-
-  01808 验「最近评估」已取消行「查看 HTML 报告」禁用（30888 enterprise-center/evaluation）。与 01807 同行锚定「已取消」Tag；01825 已完成行同按钮可点。无已取消历史 ENV-EVAL-TECH-HISTORY-CANCELLED-001。B 档零 allow_skip。
+      await expect(htmlBtn).toBeDisabled();
+on_fail: 截图 + 抄 X-Trace-Id

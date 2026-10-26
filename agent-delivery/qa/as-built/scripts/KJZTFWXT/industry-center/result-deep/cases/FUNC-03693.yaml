@@ -8,15 +8,15 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/results/EVAL-20261015-010
+    target: /industry-center/results/CHAIN-20261021-002
 expect:
   - note: 页面仍位于产业链分析结果深链
     assert: |-
-      await expect(page).toHaveURL(/\/industry-center\/results\/EVAL-20261015-010/)
+      await expect(page).toHaveURL(/\/industry-center\/results\/CHAIN-20261021-002/)
   - note: 标题为无法打开产业链分析深链
     assert: |-
-      await expect(page.getByText('无法打开产业链分析深链')).toBeVisible()
+      await expect(page.getByRole('heading', { name: '无法打开产业链分析深链' })).toBeVisible()
   - note: 说明文案为该任务尚无可查看的结果
     assert: |-
-      await expect(page.getByText('该任务尚无可查看的结果')).toBeVisible()
+      await expect(page.locator('main').getByText('该任务尚无可查看的结果', { exact: true })).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

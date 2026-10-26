@@ -12,15 +12,15 @@ locators:
   report_title: 技术力评估报告
 steps:
   - action: goto
-    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+    target: /enterprise/evaluation?workspace=technology&mode=technology
   - action: evaluate
     note: 进入结果态→点「查看 HTML 报告」→断言报告标题与附录C 七节目录；机检在 expect
 expect:
-  - note: 1、页面出现「技术力评估报告」；2、报告目录共 7 节（附录C）
+  - note: 1、页面出现「技术力评估报告」
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
       const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
-      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
+      const evalRoute = '/enterprise/evaluation?workspace=technology&mode=technology';
       const main = () => page.locator('main.app-main').first();
       const TOC7 = ['01 报告身份', '02 执行摘要', '03 对象与范围', '04 关键发现', '05 证据与分析', '06 数据来源与生成说明', '07 局限性与使用边界'];
       const closeBasket = async () => {
@@ -64,7 +64,7 @@ expect:
       const ensureBasketEnterprises = async (min) => {
         let n = await basketEntCount();
         if (n >= min) return;
-        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(1000);
         await closeBasket();
         const recSection = main().locator('section').filter({ hasText: '推荐企业' }).first();
@@ -145,6 +145,9 @@ expect:
       if (!(await reportVisible())) throw new Error('未进入只读报告（view=report 或报告正文）：' + page.url());
       await expect(page.getByText('技术力评估报告').first()).toBeVisible({ timeout: 15000 });
       await expect(page.getByText(/只读报告/).first()).toBeVisible({ timeout: 10000 });
+  - note: 2、报告目录共 7 节（名称见附录C）
+    assert: |-
+      const TOC7 = ['01 报告身份', '02 执行摘要', '03 对象与范围', '04 关键发现', '05 证据与分析', '06 数据来源与生成说明', '07 局限性与使用边界'];
       const body = await page.locator('body').innerText().catch(() => '');
       if (!body.includes('报告目录')) throw new Error('报告页缺「报告目录」');
       const miss = TOC7.filter((s) => !body.includes(s));

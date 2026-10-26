@@ -16,8 +16,7 @@ expect:
       const tab = page.getByRole('tab', { name: '诊断记录' }).first();
       await expect(tab).toBeVisible({ timeout: 15000 });
       await tab.click({ timeout: 10000 });
-      await page.waitForTimeout(800);
-      await expect(tab).toHaveAttribute('aria-selected', 'true');
+      await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
       const filters = main().locator('.diagnosis-records__filters').first();
       await expect(filters).toBeVisible({ timeout: 10000 });
       const trigger = filters.locator('.arco-select-view').first();
@@ -29,33 +28,18 @@ expect:
         .first();
       await expect(optFail).toBeVisible({ timeout: 8000 });
       await optFail.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+      await expect(trigger).toContainText('失败', { timeout: 8000 });
+      await expect(main().locator('tbody tr, .arco-table-tr').filter({ hasText: /失败/ }).first()).toBeVisible({
+        timeout: 15000,
+      });
       const resetBtn = filters.getByRole('button', { name: '重置', exact: true });
       await expect(resetBtn).toBeVisible({ timeout: 8000 });
       await resetBtn.click({ timeout: 8000 });
       await page.waitForTimeout(900);
-      await expect(trigger).toContainText('全部状态');
+      await expect(trigger).toContainText('全部状态', { timeout: 10000 });
   - note: 2、列表同时能看到已完成和失败
     assert: |-
-      const main = () => page.locator('main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
-      await expect(rows.first()).toBeVisible({ timeout: 10000 });
-      const n = await rows.count();
-      let hasDone = false;
-      let hasFail = false;
-      for (let i = 0; i < n; i++) {
-        const rt = ((await rows.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/已完成/.test(rt)) hasDone = true;
-        if (/失败/.test(rt)) hasFail = true;
-      }
-      if (!hasDone || !hasFail) {
-        throw new Error(
-          'ENV-CHAIN-BOTTLENECK-FILTER-MIX-03215：重置后列表未同时含已完成与失败（done=' +
-            hasDone +
-            ' fail=' +
-            hasFail +
-            '）',
-        );
-      }
+      const main = page.locator('main').first();
+      await expect(main.getByRole('cell', { name: '已完成' }).first()).toBeVisible({ timeout: 15000 });
+      await expect(main.getByRole('cell', { name: '失败' }).first()).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

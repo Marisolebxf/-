@@ -9,12 +9,10 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
-  - action: evaluate
-    assert: |-
-      await page.locator('.arco-breadcrumb-item').filter({ hasText: '专题服务' }).first().click();
-      await page.waitForURL(/\/service-portal\/overview/);
 expect:
   - note: 1、主标题变为「全球服务机构概况」
     assert: |-
-      await expect(page.locator('.arco-layout-content').getByText('全球服务机构概况', { exact: true }).first()).toBeVisible();
+      await page.locator('nav[aria-label="面包屑"]').getByRole('link', { name: '专题服务' }).click();
+      await page.waitForURL(/\/service-portal\/overview(?:\?|$)/);
+      await expect(page.locator('h1.svc-portal-title')).toHaveText('全球服务机构概况');
 on_fail: 截图 + 抄 X-Trace-Id

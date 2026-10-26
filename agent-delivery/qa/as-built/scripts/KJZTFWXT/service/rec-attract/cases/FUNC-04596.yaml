@@ -1,6 +1,6 @@
 id: FUNC-04596
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04596
-priority: P0
+priority: P1
 tier: B
 title: 主流程-结果页签发分提示
 entry_id: svc-rec-attract
@@ -9,9 +9,30 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 重点产业方向
+    locator: |-
+      page.locator('main [data-testid="svc-rec-analysis-context"] .arco-cascader-view, main [data-testid="svc-rec-analysis-context"] .arco-select-view').first()
+  - action: click
+    target: 生物
+    locator: |-
+      page.locator('.arco-cascader-popup:visible .arco-cascader-list-column, .arco-select-dropdown:visible').getByText('生物', { exact: true }).first()
+  - action: click
+    target: 生成招引名单
+    locator: |-
+      page.locator('main [data-testid="svc-rec-start-analysis"]')
+  - action: wait
+    ms: 2000
+  - action: click
+    target: 查看结果
+    locator: |-
+      page.locator('main').getByRole('button', { name: '查看结果' })
+  - action: wait
+    ms: 2000
 expect:
   - note: 提示为「当前为后端签发分，页面权重仅演示配置，未改名单分数」
     assert: |-
-      await page.getByRole('button', { name: '生成招引名单' }).click();
-      await expect(page.getByText('当前为后端签发分，页面权重仅演示配置，未改名单分数')).toBeVisible({ timeout: 60000 })
+      await expect(page.locator('main [data-testid="svc-rec-issued-score"]')).toContainText('当前为后端签发分，页面权重仅演示配置，未改名单分数', { timeout: 60000 })
 on_fail: 截图 + 抄 X-Trace-Id

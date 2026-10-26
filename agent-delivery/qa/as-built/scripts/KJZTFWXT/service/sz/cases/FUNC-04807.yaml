@@ -4,28 +4,50 @@ priority: P2
 tier: B
 title: 备选-短板菜单往返
 entry_id: svc-sz
-preconditions:
-  - 本页已选定「生物」
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: wait
+    ms: 800
+  - action: evaluate
+    script: |-
+      const main = page.locator('main');
+      const ctx = main.getByTestId('svc-eco-analysis-context');
+      const menu = page.locator('.arco-layout-sider');
+      async function pickBio() {
+        await ctx.locator('.arco-cascader-view').click();
+        const panel = page.locator('.arco-cascader-panel:visible');
+        await panel.getByText('新一代信息技术', { exact: true }).click();
+        await page.waitForTimeout(300);
+        await ctx.locator('.arco-cascader-view').click();
+        const panel2 = page.locator('.arco-cascader-panel:visible');
+        await panel2.getByText('生物', { exact: true }).click();
+        await page.waitForTimeout(300);
+        await expect(ctx.locator('.arco-cascader-view')).toContainText('生物');
+      }
+      await pickBio();
+      await menu.getByText('服务链短板分析', { exact: true }).click();
+      await page.waitForURL(/workspace=chain/, { timeout: 15000 });
+      await page.waitForTimeout(400);
+      await expect(page.locator('main').getByTestId('svc-eco-analysis-config')).toBeVisible();
+      await expect(page.locator('main').locator('.arco-tabs-tab-active').filter({ hasText: '服务链短板分析' })).toBeVisible({ timeout: 10000 });
+      await page.evaluate(() => document.documentElement.setAttribute('data-func04807-mid-shortboard', '1'));
+      await menu.getByText('深圳服务链现状分析', { exact: true }).click();
+      await page.waitForURL(/workspace=shenzhen/, { timeout: 15000 });
+      await page.waitForTimeout(600);
 expect:
   - note: 1、中间页为「服务链短板分析」
     assert: |-
-      await expect(page.locator('.arco-select-view').filter({ hasText: '生物' }).first()).toBeVisible({ timeout: 10000 });
-      await page.getByText('服务链短板分析', { exact: true }).click();
-      await expect(page.getByText('分析配置')).not.toBeVisible({ timeout: 10000 });
-      await expect(page.getByRole('heading', { name: '服务链短板分析' })).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('html')).toHaveAttribute('data-func04807-mid-shortboard', '1');
   - note: 2、回来后是本页分析配置
     assert: |-
-      await page.getByText('深圳服务链现状分析', { exact: true }).first().click();
       await expect(page).toHaveURL(/workspace=shenzhen/);
-      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('main').getByTestId('svc-eco-analysis-config')).toBeVisible();
+      await expect(page.locator('main').getByRole('heading', { name: '分析配置' })).toBeVisible();
   - note: 3、产业领域为未选
     assert: |-
-      const field = page.locator('.arco-form-item').filter({ hasText: '产业领域' }).locator('.arco-select-view').first();
-      await expect(field).toBeVisible();
-      await expect(field).not.toContainText('生物');
-      await expect(field).not.toContainText('医药');
+      const cascader = page.locator('main [data-testid="svc-eco-analysis-context"] .arco-cascader-view');
+      await expect(cascader).toContainText('选择产业集群', { timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

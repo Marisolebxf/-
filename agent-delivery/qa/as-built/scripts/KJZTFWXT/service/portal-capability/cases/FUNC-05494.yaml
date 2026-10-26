@@ -9,32 +9,36 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: evaluate
-    note: 点击一行「分析画像」
-    assert: |-
-      const main = page.locator('main');
-      await expect(main.getByText('在库/返回', { exact: false })).toBeVisible({ timeout: 20000 });
-      const profileBtn = main.getByRole('button', { name: '分析画像' }).first();
-      await expect(profileBtn).toBeVisible({ timeout: 20000 });
-      await profileBtn.click({ timeout: 10000 });
+  - action: wait
+    for: 榜单加载
+    timeout_ms: 1500
+  - action: click
+    target: 按钮 分析画像
 expect:
   - note: 抽屉标题为「机构画像」加该行机构名
     assert: |-
       const main = page.locator('main');
       const orgName = ((await main.locator('.svc-portal-org__name').first().textContent()) ?? '').trim();
-      if (!orgName) throw new Error('榜无数据行，无法点「分析画像」');
-      const title = page.locator('.svc-org-drawer-title');
-      await expect(title).toBeVisible({ timeout: 20000 });
-      await expect(title).toContainText('机构画像');
-      await expect(title).toContainText(orgName);
+      if (!orgName) throw new Error('无法读取榜单行机构名');
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible({ timeout: 20000 });
+      await expect(drawer).toContainText('机构画像');
+      await expect(drawer).toContainText(orgName);
   - note: 区块依次为基本信息、领域覆盖细分、技术力五维、近三年新增服务记录
     assert: |-
-      const drawer = page.locator('[data-testid="svc-org-profile-drawer"]');
+      const drawer = page.locator('.arco-drawer');
       await expect(drawer).toBeVisible({ timeout: 20000 });
-      const headings = drawer.locator('section.svc-drawer-section > h4');
-      await expect(headings).toHaveCount(4);
-      await expect(headings.nth(0)).toContainText('基本信息');
-      await expect(headings.nth(1)).toContainText('领域覆盖细分');
-      await expect(headings.nth(2)).toContainText('技术力五维');
-      await expect(headings.nth(3)).toContainText('近三年新增服务记录');
+      const sections = drawer.locator('section.svc-drawer-section');
+      await expect(sections).toHaveCount(4, { timeout: 20000 });
+      const titles = ['基本信息', '领域覆盖细分', '技术力五维', '近三年新增服务记录'];
+      for (let i = 0; i < titles.length; i++) {
+        await expect(sections.nth(i)).toContainText(titles[i]);
+      }
+      const drawerText = ((await drawer.textContent()) ?? '').replace(/\s+/g, ' ');
+      let last = -1;
+      for (const t of titles) {
+        const idx = drawerText.indexOf(t);
+        if (idx < 0 || idx <= last) throw new Error(`区块顺序不符: ${t}`);
+        last = idx;
+      }
 on_fail: 截图 + 抄 X-Trace-Id

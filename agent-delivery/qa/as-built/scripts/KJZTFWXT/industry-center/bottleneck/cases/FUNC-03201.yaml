@@ -1,44 +1,57 @@
 id: FUNC-03201
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03201
-priority: P0
-title: 结果页展示瓶颈堵点数和瓶颈严重度
-story: US-CHAIN-DIAG-06
-entry_id: chain-bottleneck
+priority: P1
 tier: B
-preconditions:
-  - 已打开一条结果页
-locators:
-  summary_count: 摘要卡「瓶颈堵点数」
-  summary_severity: 摘要卡「瓶颈严重度」
+title: 结果页展示瓶颈堵点数和瓶颈严重度
+entry_id: chain-bottleneck
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
 expect:
-  - note: 前置：诊断记录点「查看结果」进入结果页
+  - note: 1、可见「瓶颈堵点数」
     assert: |-
       const main = () => page.locator('main').first();
-      const tabRecords = page.getByRole('tab', { name: '诊断记录' }).first();
-      await expect(tabRecords).toBeVisible({ timeout: 10000 });
-      await tabRecords.click({ timeout: 10000 });
-      await page.waitForTimeout(1000);
-      const rows = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '产业瓶颈堵点识别' });
-      await expect(rows.first()).toBeVisible({ timeout: 15000 });
-      let opened = false;
-      const n = await rows.count();
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
-        const btn = row.getByRole('button', { name: '查看结果' }).first();
-        if (!(await btn.count())) continue;
-        if (await btn.isDisabled().catch(() => true)) continue;
-        await btn.click({ timeout: 15000 });
-        opened = true;
-        break;
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 15000 });
+      await page.waitForTimeout(800);
+      const completedRow = main().locator('tbody tr, .arco-table-tr').filter({ hasText: '已完成' }).first();
+      if (!(await completedRow.isVisible().catch(() => false))) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03201：诊断记录无已完成任务');
       }
-      if (!opened) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03201：诊断记录无可用「查看结果」，无法进入结果页');
+      const copyBtn = completedRow.getByRole('button', { name: '复制配置' }).first();
+      if (await copyBtn.isDisabled().catch(() => true)) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03201：已完成行「复制配置」不可用');
       }
-      await page.waitForTimeout(1500);
-      await expect(page.getByText('瓶颈堵点数').first()).toBeVisible({ timeout: 20000 });
+      await copyBtn.click({ timeout: 15000 });
+      await page.waitForTimeout(500);
+      await main().getByRole('button', { name: '开始分析' }).click({ timeout: 15000 });
+      const resultTitle = page.getByText('产业瓶颈堵点识别结果').first();
+      const processDone = page.getByText('分析结果已生成').first();
+      let onResult = false;
+      for (let i = 0; i < 240; i++) {
+        if (await resultTitle.isVisible().catch(() => false)) {
+          onResult = true;
+          break;
+        }
+        if (await processDone.isVisible().catch(() => false)) {
+          await page.getByRole('button', { name: '查看分析结果' }).click({ timeout: 15000 });
+          onResult = true;
+          break;
+        }
+        await page.waitForTimeout(500);
+      }
+      if (!onResult) {
+        throw new Error('ENV-CHAIN-BOTTLENECK-NO-RESULT-03201：开始分析后未进入结果页');
+      }
+      await expect(resultTitle).toBeVisible({ timeout: 30000 });
+      await expect(main().getByText('瓶颈堵点数').first()).toBeVisible({ timeout: 15000 });
+  - note: 2、可见「瓶颈严重度」
+    assert: |-
+      await expect(page.locator('main').getByText('瓶颈严重度').first()).toBeVisible({ timeout: 15000 });
+  - note: 3、两项均有文字，为数字或「暂无」
+    assert: |-
+      const main = page.locator('main').first();
       const valueOk = (t) => {
         const s = (t || '').trim();
         if (!s) return false;
@@ -46,44 +59,14 @@ expect:
         return /\d/.test(s);
       };
       const readCardValue = async (label) => {
-        const card = page.locator('.diagnosis-metric-card').filter({ hasText: label }).first();
+        const card = main.locator('.diagnosis-metric-card, [class*="metric-card"]').filter({ hasText: label }).first();
         await expect(card).toBeVisible({ timeout: 10000 });
         const val = card.locator('strong').first();
         await expect(val).toBeVisible({ timeout: 5000 });
         return ((await val.innerText().catch(() => '')) || '').trim();
       };
-      globalThis.__func03201 = {
-        count: await readCardValue('瓶颈堵点数'),
-        severity: await readCardValue('瓶颈严重度'),
-      };
-  - note: 1、可见「瓶颈堵点数」
-    assert: |-
-      await expect(page.getByText('瓶颈堵点数').first()).toBeVisible({ timeout: 10000 });
-  - note: 2、可见「瓶颈严重度」
-    assert: |-
-      await expect(page.getByText('瓶颈严重度').first()).toBeVisible({ timeout: 10000 });
-  - note: 3、两项均有文字，为数字或「暂无」
-    assert: |-
-      const valueOk = (t) => {
-        const s = (t || '').trim();
-        if (!s) return false;
-        if (s === '暂无') return true;
-        return /\d/.test(s);
-      };
-      let count = globalThis.__func03201?.count;
-      let severity = globalThis.__func03201?.severity;
-      if (count == null || severity == null) {
-        const read = async (label) => {
-          const card = page.locator('.diagnosis-metric-card').filter({ hasText: label }).first();
-          return ((await card.locator('strong').first().innerText().catch(() => '')) || '').trim();
-        };
-        count = await read('瓶颈堵点数');
-        severity = await read('瓶颈严重度');
-      }
-      if (!valueOk(count)) throw new Error('瓶颈堵点数取值无效（须为数字或「暂无」）: ' + JSON.stringify(count));
-      if (!valueOk(severity)) throw new Error('瓶颈严重度取值无效（须为数字或「暂无」）: ' + JSON.stringify(severity));
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck；摘要卡 IndustryBottleneckResultBoard
-  + IndustryMetricCard（label 瓶颈堵点数/瓶颈严重度，strong 为值）。前置=诊断记录首条可用「查看结果」。
-  无可用查看结果→ENV-CHAIN-BOTTLENECK-NO-RESULT-03201。B 档零 allow_skip。
+      const count = await readCardValue('瓶颈堵点数');
+      const severity = await readCardValue('瓶颈严重度');
+      if (!valueOk(count)) throw new Error('瓶颈堵点数取值无效: ' + JSON.stringify(count));
+      if (!valueOk(severity)) throw new Error('瓶颈严重度取值无效: ' + JSON.stringify(severity));
+on_fail: 截图 + 抄 X-Trace-Id

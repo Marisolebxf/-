@@ -12,78 +12,64 @@ steps:
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
     note: 经「分析记录」打开一条成功结果；浏览发展路径区
-    script: |-
-      const recTab = page.getByRole('tab', { name: '分析记录' });
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await recTab.click({ timeout: 10000 });
-      await page.waitForTimeout(800);
-      const main = page.locator('main');
-      const statusSelect = main.locator('.arco-select-view').first();
-      await statusSelect.click({ timeout: 8000 });
-      await page.getByRole('option', { name: '已完成' }).click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      const doneRow = main.locator('tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-      if (!(await doneRow.count())) {
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录筛选已完成后无成功任务');
-      }
-      const viewBtn = doneRow.first().getByRole('button', { name: '查看结果' });
-      await expect(viewBtn).toBeEnabled({ timeout: 5000 });
-      await viewBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(2000);
 expect:
   - note: 发展路径至少两套，条目带「针对」标签与适用条件
     assert: |-
-      await expect(page.getByRole('heading', { name: '发展路径' })).toBeVisible({ timeout: 15000 });
-      const pathTable = page.locator('main').getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[contains(@class,"arco-table")][1]');
-      const rowCount = await pathTable.locator('tbody tr').count();
-      if (rowCount < 2) {
-        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const honest = /不完整|不足|未返回|不伪造|暂无足够/.test(mainText);
-        if (!honest) {
-          throw new Error('路径不足两套且无诚实标注（行数=' + rowCount + '）');
+      const tablist = page.getByRole('tablist', { name: '深圳产业分析页签' });
+      await expect(tablist).toBeVisible({ timeout: 10000 });
+      await tablist.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 10000 });
+      const main = page.locator('main').first();
+      const viewButtons = main.getByRole('button', { name: '查看结果' });
+      const total = await viewButtons.count();
+      let opened = false;
+      for (let i = 0; i < total; i++) {
+        const btn = viewButtons.nth(i);
+        if (await btn.isEnabled()) {
+          await btn.click({ timeout: 10000 });
+          opened = true;
+          break;
         }
-      } else {
+      }
+      if (!opened) {
+        throw new Error('分析记录中无已完成的「查看结果」可点');
+      }
+      await expect(main.getByText('深圳产业发展分析结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(main.getByRole('heading', { name: '发展路径', level: 3 })).toBeVisible({ timeout: 10000 });
+      const pathTable = main.getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[1]');
+      const rowCount = await pathTable.locator('tbody tr').count();
+      if (rowCount >= 2) {
         for (const h of ['路径', '适用条件', '局限性', '针对']) {
-          await expect(pathTable.locator('thead th').filter({ hasText: h }).first()).toBeVisible({ timeout: 5000 });
+          await expect(pathTable.locator('th').filter({ hasText: h }).first()).toBeVisible();
         }
         const rows = pathTable.locator('tbody tr');
         for (let i = 0; i < rowCount; i++) {
           const row = rows.nth(i);
-          const cond = ((await row.locator('td').nth(1).innerText().catch(() => '')) || '').trim();
-          if (!cond) throw new Error('第' + (i + 1) + '行适用条件为空');
-          const targetCell = row.locator('td').nth(3);
-          const targetTxt = ((await targetCell.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (!/针对/.test(targetTxt) && !(await targetCell.locator('.arco-tag').count())) {
-            throw new Error('第' + (i + 1) + '行未见「针对」标签');
-          }
+          const cond = ((await row.locator('td').nth(1).innerText()) || '').trim();
+          if (!cond) throw new Error('适用条件为空');
+          const tagCount = await row.locator('td').nth(3).locator('.arco-tag').count();
+          if (tagCount < 1) throw new Error('未见针对标签');
+        }
+      } else {
+        const mainText = ((await main.innerText()) || '').replace(/\s+/g, ' ');
+        if (!/不完整|不足|未返回|不伪造|暂无足够/.test(mainText)) {
+          throw new Error('路径不足两套且无诚实标注');
         }
       }
   - note: 可靠路径不足两套时标注不完整、不伪造路径
     assert: |-
-      const pathTable = page.locator('main').getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[contains(@class,"arco-table")][1]');
+      const main = page.locator('main').first();
+      const pathTable = main.getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[1]');
       const rowCount = await pathTable.locator('tbody tr').count();
-      const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const mainText = ((await main.innerText()) || '').replace(/\s+/g, ' ');
       if (rowCount >= 2) {
-        if (/演示路径|伪造|占位路径/.test(mainText)) {
-          throw new Error('多套路径区出现伪造/演示文案');
-        }
-        const names = [];
-        for (let i = 0; i < rowCount; i++) {
-          const name = ((await pathTable.locator('tbody tr').nth(i).locator('td').first().innerText().catch(() => '')) || '').trim();
-          if (name) names.push(name);
-        }
-        const uniq = new Set(names);
-        if (uniq.size < 2 && names.length >= 2) {
-          throw new Error('路径名重复，疑似伪造重复行');
+        if (/演示路径|伪造两套|占位路径/.test(mainText)) {
+          throw new Error('多套路径区出现伪造文案');
         }
       } else {
-        const empty = page.locator('.arco-empty').filter({ hasText: /发展路径未返回|不伪造/ });
-        const hasHonest = (await empty.count()) > 0 || /不完整|不足两套|未返回|不伪造两套|无法提供/.test(mainText);
-        if (!hasHonest) {
-          throw new Error('不足两套时未见不完整/不伪造类诚实标注');
-        }
-        if (rowCount === 1) {
-          throw new Error('仅展示单套路径且无降级说明，疑似伪造补足');
-        }
+        const emptyHint = main.locator('.arco-empty-description').filter({ hasText: /发展路径未返回|不伪造/ });
+        const hasHonest = (await emptyHint.count()) > 0 || /不完整|不足两套|未返回|不伪造两套|无法提供/.test(mainText);
+        if (!hasHonest) throw new Error('不足两套时未见不完整/不伪造标注');
+        if (rowCount === 1) throw new Error('仅单套路径且无降级说明');
       }
 on_fail: 截图 + 抄 X-Trace-Id

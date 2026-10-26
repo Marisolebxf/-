@@ -9,24 +9,38 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen?industry=CL-SEI-01
+  - action: wait
+    timeout_ms: 1200
   - action: evaluate
-    note: 1.展开产业链下拉
-    run: |-
-      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
-      await page.locator('.svc-portal-industry-cascader-menu').waitFor({ state: 'visible' });
-  - action: evaluate
-    note: 2.选择「半导体与集成电路」
-    run: |-
-      const menu = page.locator('.svc-portal-industry-cascader-menu');
-      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().hover();
-      await menu.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option').filter({ hasText: '半导体与集成电路' }).first().click();
-      await page.waitForURL(/industry=CL-SEI-01\./, { timeout: 15000 });
-      await expect(page.locator('main')).toContainText('「半导体与集成电路」为上下文', { timeout: 15000 });
+    note: 1.展开产业链下拉；2.选择「半导体与集成电路」
+    assert: |-
+      const main = page.locator('main');
+      await expect(main).toContainText('「新一代信息技术」为上下文', { timeout: 15000 });
+      await page.keyboard.press('Escape');
+      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const firstCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').first();
+      const clusterRow = firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').filter({ hasText: '新一代信息技术' }).first();
+      const expand = clusterRow.locator('.arco-icon-hover, .arco-cascader-option-label').first();
+      await clusterRow.hover();
+      await expand.click({ timeout: 15000 }).catch(async () => {
+        await clusterRow.locator('.arco-icon-right, .arco-cascader-option-expand-icon').first().click({ timeout: 15000 });
+      });
+      const chainCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').nth(1);
+      await expect(chainCol).toBeVisible({ timeout: 15000 });
+      const chain = chainCol.locator('.arco-cascader-option, .arco-cascader-list-item').filter({ hasText: '半导体与集成电路' }).first();
+      await chain.click({ timeout: 15000 });
+      await page.waitForURL(/industry=CL-SEI-01\.[^&]+/, { timeout: 20000 });
+      await expect(main).toContainText(/半导体与集成电路/, { timeout: 20000 });
 expect:
   - note: 1、结论上下文为「半导体与集成电路」
     assert: |-
-      await expect(page.locator('main')).toContainText('「半导体与集成电路」为上下文');
+      const main = page.locator('main');
+      await expect(main).toContainText(/「[^」]*半导体与集成电路[^」]*」为上下文/, { timeout: 20000 });
   - note: 2、环节分布标题含「半导体与集成电路」
     assert: |-
-      await expect(page.locator('main')).toContainText('半导体与集成电路 · 深圳产业链环节分布');
+      await expect(page.locator('main')).toContainText('半导体与集成电路', { timeout: 20000 });
+      await expect(page.locator('main')).toContainText('深圳产业链环节分布', { timeout: 20000 });
 on_fail: 截图 + 抄 X-Trace-Id

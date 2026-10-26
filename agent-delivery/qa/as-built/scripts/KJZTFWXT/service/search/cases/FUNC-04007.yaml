@@ -1,44 +1,44 @@
 id: FUNC-04007
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04007
-priority: P0
+priority: P1
 tier: B
-title: 主流程-成立年份运算符（下拉选项）
+title: 主流程-成立年份运算符
 entry_id: svc-search
-preconditions:
-  - 已添加「成立年份」
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-center/search?mode=advanced
-  - action: wait
-    for: 高级筛选字段库就绪
-    timeout_ms: 15000
+    target: /service-center/search
   - action: evaluate
-    note: 字段库点成立年份并展开运算符下拉（判定在 expect）
+    note: 点击「高级筛选」Tab（同册 01329）
+    script: |-
+      await page.locator('main').getByRole('tab', { name: '高级筛选' }).click();
+      await page.waitForURL(/[?&]mode=advanced/, { timeout: 15000 });
+      await expect(page.locator('main').getByText('从字段库添加筛选条件')).toBeVisible({ timeout: 15000 });
+  - action: evaluate
+    note: 点击「成立年份」添加条件（同册 03990/04033 点字段名添加）
+    script: |-
+      const main = page.locator('main');
+      const yearField = main.getByText('成立年份', { exact: true }).first();
+      await expect(yearField).toBeVisible({ timeout: 10000 });
+      await yearField.click();
+      const condRow = main
+        .locator('.condition-builder')
+        .filter({ has: main.locator('.condition-builder__label', { hasText: '成立年份' }) })
+        .first();
+      await expect(condRow).toBeVisible({ timeout: 10000 });
 expect:
   - note: 1、选项为「≥」「≤」「等于」共 3 个
     assert: |-
-      const fieldLib = page.locator('section[aria-label="高级筛选字段库"]');
-      await expect(fieldLib).toBeVisible({ timeout: 15000 });
-      let condRow = page
+      const main = page.locator('main');
+      const condRow = main
         .locator('.condition-builder')
-        .filter({ has: page.locator('.condition-builder__label', { hasText: '成立年份' }) })
+        .filter({ has: main.locator('.condition-builder__label', { hasText: '成立年份' }) })
         .first();
-      if (!(await condRow.isVisible().catch(() => false))) {
-        const yearTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '成立年份' }).first();
-        await expect(yearTag).toBeVisible({ timeout: 8000 });
-        await yearTag.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        condRow = page
-          .locator('.condition-builder')
-          .filter({ has: page.locator('.condition-builder__label', { hasText: '成立年份' }) })
-          .first();
-      }
       await expect(condRow).toBeVisible({ timeout: 8000 });
       const opTrigger = condRow.locator('.condition-builder__op .arco-select-view');
       await expect(opTrigger).toBeVisible({ timeout: 8000 });
-      await opTrigger.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
+      await opTrigger.click();
       const pop = page.locator('.arco-select-dropdown:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });
       const opts = pop.locator('.arco-select-option');
@@ -46,5 +46,4 @@ expect:
       await expect(pop.getByText('≥', { exact: true })).toBeVisible();
       await expect(pop.getByText('≤', { exact: true })).toBeVisible();
       await expect(pop.getByText('等于', { exact: true })).toBeVisible();
-      await page.keyboard.press('Escape').catch(() => {});
 on_fail: 截图 + 抄 X-Trace-Id

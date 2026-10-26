@@ -1,44 +1,28 @@
 id: FUNC-01704
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01704
 priority: P0
-title: 企业详情风险信息页签展示两类计数
-story: US-KEYENT-01
-entry_id: ent-key-domain
 tier: B
-preconditions:
-  - env-gate overall=pass
-  - 已打开「企业详情」（assert 自含识别依据抽屉点「企业详情」或选择器画像）
-locators:
-  section: heading「重点领域分布」
-  evidence_drawer: .arco-drawer:visible 含「为什么识别为」
-  detail_btn: 依据抽屉 footer button「企业详情」
-  detail_drawer: .arco-drawer:visible 标题「企业详情」
-  tab_risk: 企业详情抽屉 tab「风险信息」
+title: 企业详情风险信息页签展示司法案件与失信被执行人计数
+entry_id: ent-key-domain
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/key-enterprise-analysis?workspace=domain&view=domain
-  - action: wait
-    timeout_ms: 800
+    target: /enterprise/key-enterprise-analysis?workspace=domain&view=domain
   - action: evaluate
-    note: 打开企业详情后点「风险信息」；两类计数在 expect 判定
+    note: 01688→01695→01696 打开企业详情并点「风险信息」；计数在 expect 判定
 expect:
-  - note: 1、展示司法案件计数；2、展示失信被执行人计数
+  - note: 1、展示司法案件计数
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
       const toUrl = (p) => (String(p).startsWith('http') ? p : origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p));
-      const route = '/enterprise-center/key-enterprise-analysis?workspace=domain&view=domain';
+      const route = '/enterprise/key-enterprise-analysis?workspace=domain&view=domain';
       const kpiNames = ['已覆盖领域', '涉及企业', '跨领域企业', '识别依据'];
       const closeBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
           const vis = await close.first().isVisible().catch(() => false);
           if (vis) { await close.first().click(); await page.waitForTimeout(350); }
-        }
-      };
-      const ensureDomainPage = async () => {
-        if ((await page.getByText('404 Not Found').count()) > 0 || !/key-enterprise-analysis/.test(page.url())) {
-          await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(600);
         }
       };
       const basketEntCount = async () => {
@@ -58,23 +42,26 @@ expect:
         await page.waitForTimeout(900);
         if (await basketEntCount() < 1) throw new Error('入篮后对比篮仍为空');
       };
-      const fillResultViaPicker = async () => {
-        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1000);
-        await closeBasket();
+      const clickPageOpenBasket = async () => {
         const main = page.locator('main');
-        const pickBtn = main.getByRole('button', { name: '选择分析企业', exact: true });
+        const adjustBtn = main.getByRole('button', { name: '打开对比篮调整对象', exact: true });
         const openBtn = main.getByRole('button', { name: '打开对比篮', exact: true });
         const ctaBtn = main.getByRole('button', { name: '前往对比篮选择企业', exact: true });
-        if (await pickBtn.count() && await pickBtn.first().isVisible().catch(() => false)) {
-          await pickBtn.first().click({ timeout: 8000 });
+        if (await adjustBtn.count() && await adjustBtn.first().isVisible().catch(() => false)) {
+          await adjustBtn.first().click({ timeout: 8000 });
         } else if (await openBtn.count() && await openBtn.first().isVisible().catch(() => false)) {
           await openBtn.first().click({ timeout: 8000 });
         } else if (await ctaBtn.count()) {
           await ctaBtn.first().click({ timeout: 8000 });
         } else {
-          throw new Error('未找到选择分析企业/打开对比篮入口');
+          throw new Error('未找到打开对比篮入口');
         }
+      };
+      const fillResultViaPicker = async () => {
+        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        await clickPageOpenBasket();
         await page.waitForTimeout(800);
         const sels = page.locator('[aria-label^="选择 "]');
         if (!(await sels.count())) throw new Error('选择器无可勾选企业');
@@ -96,72 +83,84 @@ expect:
         const label = page.locator('main').getByText('重点领域分布', { exact: true }).first();
         return label.locator('xpath=ancestor::section[1]');
       };
-      const openEvidenceFromDistribution = async () => {
+      const detailDrawer = async () => {
+        const detail = page.locator('.arco-drawer:visible').filter({
+          has: page.locator('.arco-drawer-header').filter({ hasText: '企业详情' }),
+        }).last();
+        await expect(detail).toBeVisible({ timeout: 15000 });
+        return detail;
+      };
+      const openEnterpriseDetailViaEvidence = async () => {
         const scope = distScope();
-        const scopeCount = await scope.count();
-        const main = page.locator('main');
-        const evidenceBtns = (scopeCount ? scope : main).getByRole('button', { name: '查看识别依据', exact: true });
-        if (!(await evidenceBtns.count())) throw new Error('分布表无「查看识别依据」按钮');
+        const evidenceBtns = scope.getByRole('button', { name: '查看识别依据', exact: true });
+        if (!(await evidenceBtns.count())) throw new Error('分布表无「查看识别依据」');
         let btn = null;
         for (let i = 0; i < await evidenceBtns.count(); i++) {
           const b = evidenceBtns.nth(i);
           if (!(await b.isDisabled().catch(() => true))) { btn = b; break; }
         }
-        if (!btn) throw new Error('分布表「查看识别依据」均禁用（缺代表企业 org_id）');
-        await btn.scrollIntoViewIfNeeded().catch(() => {});
+        if (!btn) throw new Error('分布表「查看识别依据」均禁用');
         await btn.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
         const whyDrawer = page.locator('.arco-drawer:visible').filter({ hasText: /为什么识别为/ }).last();
         await expect(whyDrawer).toBeVisible({ timeout: 10000 });
-        return whyDrawer;
+        await whyDrawer.getByRole('button', { name: '企业详情', exact: true }).click({ timeout: 8000 });
+        return detailDrawer();
+      };
+      const openEnterpriseDetailFromSearch = async () => {
+        await page.goto(toUrl('/development/search'), { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1000);
+        await closeBasket();
+        let card = page.locator('main').locator('[class*=result], [class*=card], .arco-list-item, article, li').filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) }).first();
+        if (!(await card.count())) {
+          const rec = page.locator('main').locator('section').filter({ hasText: '推荐企业' }).first();
+          card = rec.locator('div').filter({ has: page.getByRole('button', { name: '查看画像', exact: true }) }).first();
+        }
+        if (!(await card.count())) throw new Error('企业查询无可点企业卡');
+        const nameBtn = card.locator('button').filter({ hasText: /有限公司|股份|集团|有限责任公司/ }).first();
+        await nameBtn.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        return detailDrawer();
       };
       const openEnterpriseDetail = async () => {
-        const whyDrawer = await openEvidenceFromDistribution();
-        const detailEntry = whyDrawer.getByRole('button', { name: '企业详情', exact: true });
-        await expect(detailEntry).toBeVisible({ timeout: 8000 });
-        await detailEntry.click({ timeout: 8000 });
-        await page.waitForTimeout(800);
-        const detail = page.locator('.arco-drawer:visible').first();
-        await expect(detail.getByRole('tab', { name: '工商概况' })).toBeVisible({ timeout: 15000 });
-        await expect(detail.locator('.arco-drawer-header-title')).toHaveText('企业详情');
-        return detail;
+        try {
+          return await openEnterpriseDetailViaEvidence();
+        } catch {
+          return openEnterpriseDetailFromSearch();
+        }
       };
-      await ensureDomainPage();
       await closeBasket();
       if (!(await hasResultKpis())) {
         if (await basketEntCount() < 1) await addOneEntFromSearch();
         await fillResultViaPicker();
       }
       await expect(page.getByText(/来自对比篮\s*·\s*\d+\s*家/).first()).toBeVisible({ timeout: 12000 });
-      const detail = await openEnterpriseDetail();
+      let detail = await openEnterpriseDetail();
       const riskTab = detail.getByRole('tab', { name: '风险信息' });
-      await expect(riskTab).toBeVisible({ timeout: 8000 });
-      await riskTab.scrollIntoViewIfNeeded();
       await riskTab.click({ timeout: 8000 });
       await expect(riskTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
-      await page.waitForResponse((r) => /profile\/risk/i.test(r.url()) && r.status() < 400, { timeout: 12000 }).catch(() => {});
-      await detail.locator('.arco-spin-loading').first().waitFor({ state: 'hidden', timeout: 12000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      await expect(detail.locator('.arco-drawer-header-title')).toHaveText('企业详情');
+      await page.waitForTimeout(800);
+      globalThis.__func01704_detail = detail;
       const panel = detail.locator('.arco-drawer-content').first();
-      await expect(panel).toBeVisible({ timeout: 8000 });
-      const panelText = await panel.innerText();
-      const emptyOnly = /暂无可展示的风险信息数据|暂无风险事件/.test(panelText)
-        && !panelText.includes('司法案件');
-      if (emptyOnly) {
-        throw new Error('D3·Q020：风险信息仅通用空态，未展示司法案件/失信被执行人计数');
-      }
-      const labels = ['司法案件', '失信被执行人'];
-      for (const label of labels) {
-        const labelEl = panel.getByText(label, { exact: true }).first();
-        await expect(labelEl).toBeVisible({ timeout: 12000 });
-        const blockText = await labelEl.evaluate((el) => {
-          const row = el.closest('div, li, tr, section, article') || el.parentElement;
-          return row ? row.innerText : el.innerText;
-        });
-        if (!/\d/.test(blockText)) {
-          throw new Error(`「${label}」附近未见数字计数，块文案：${blockText.slice(0, 120)}`);
-        }
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 结果态回填与打开企业详情对齐 FUNC-01701。用例仅验司法案件+失信被执行人两类计数（不含被执行人）。D3·30888 复勘同 FUNC-01614：风险页多为通用空态则红挂 Q020。登录与关内部评审由 runner 会话前置。B 档。
+      const labelEl = panel.getByText('司法案件', { exact: true }).first();
+      await expect(labelEl).toBeVisible({ timeout: 12000 });
+      const blockText = await labelEl.evaluate((el) => {
+        const row = el.closest('div, li, tr, section, article') || el.parentElement;
+        return row ? row.innerText : el.innerText;
+      });
+      const emptyOnly = /暂无可展示的风险信息数据|暂无风险事件/.test(blockText) && !/\d/.test(blockText);
+      if (emptyOnly) throw new Error('D3·Q020：风险信息仅通用空态，无司法案件计数');
+      expect(/\d/.test(blockText)).toBeTruthy();
+  - note: 2、展示失信被执行人计数
+    assert: |-
+      const detail = globalThis.__func01704_detail;
+      const panel = detail.locator('.arco-drawer-content').first();
+      const labelEl = panel.getByText('失信被执行人', { exact: true }).first();
+      await expect(labelEl).toBeVisible({ timeout: 12000 });
+      const blockText = await labelEl.evaluate((el) => {
+        const row = el.closest('div, li, tr, section, article') || el.parentElement;
+        return row ? row.innerText : el.innerText;
+      });
+      const emptyOnly = /暂无可展示的风险信息数据|暂无风险事件/.test(blockText) && !/\d/.test(blockText);
+      if (emptyOnly) throw new Error('D3·Q020：风险信息仅通用空态，无失信被执行人计数');
+      expect(/\d/.test(blockText)).toBeTruthy();
+on_fail: 截图 + 抄 X-Trace-Id

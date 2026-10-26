@@ -12,15 +12,26 @@ steps:
 expect:
   - note: 地图视野放大
     assert: |-
-      const zoomIn = page.getByText('+', { exact: true }).first();
+      const main = page.locator('main');
+      const section = main.locator('.svc-portal-map');
+      const pane = section.locator('.leaflet-map-pane').first();
+      const readScale = async () =>
+        pane.evaluate((el) => {
+          const tr = getComputedStyle(el).transform;
+          if (!tr || tr === 'none') return 0;
+          const m = tr.match(/matrix\(([^,]+)/);
+          return m ? parseFloat(m[1]) : 0;
+        });
+      const zoomIn = section.locator('a.leaflet-control-zoom-in');
       await expect(zoomIn).toBeVisible();
-      const pane = page.locator('.leaflet-map-pane');
-      const before = await pane.evaluate((el) => getComputedStyle(el).transform);
+      const before = await readScale();
       await zoomIn.click();
-      await expect
-        .poll(async () => pane.evaluate((el) => getComputedStyle(el).transform))
-        .not.toBe(before);
+      await page.waitForTimeout(200);
+      const after = await readScale();
+      if (!(after > before)) {
+        throw new Error(`地图未放大：scale ${before} -> ${after}`);
+      }
   - note: 地图区块标题仍为「全国视图 · 地理分布」
     assert: |-
-      await expect(page.getByText('全国视图 · 地理分布')).toBeVisible();
+      await expect(page.getByText('全国视图 · 地理分布')).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

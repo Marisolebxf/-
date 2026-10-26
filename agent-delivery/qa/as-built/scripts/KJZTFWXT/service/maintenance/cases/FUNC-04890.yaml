@@ -12,8 +12,11 @@ steps:
 expect:
   - note: 1、出现当前账号无权访问该页面的提示
     assert: |-
+      const origin = new URL(page.url()).origin;
+      const unauthorized = page.locator('.arco-message-content').filter({ hasText: '当前账号无权访问该页面' });
       await Promise.all([
-        expect(page.getByText('当前账号无权访问该页面')).toBeVisible({ timeout: 15000 }),
-        page.goto('/service/maintenance', { waitUntil: 'commit' }),
-      ])
+        unauthorized.first().waitFor({ state: 'visible', timeout: 20000 }),
+        page.goto(`${origin}/service/maintenance`, { waitUntil: 'commit' }),
+      ]);
+      await expect(unauthorized.first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,37 +1,48 @@
 id: FUNC-02728
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02728
 priority: P1
+tier: B
 title: 使用查询方案套用集成电路进入检索结果
 entry_id: chain-search
-tier: B
-preconditions:
-  - 高级筛选已打开
-  - 使用查询方案中有「集成电路」
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/search
   - action: evaluate
-    note: 高级筛选 Tab、使用查询方案点「集成电路」
+    note: 打开高级筛选；使用查询方案选「集成电路」
 expect:
   - note: 1、出现「检索结果」
     assert: |-
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
-      await expect(advTab).toBeVisible({ timeout: 10000 });
-      await advTab.click({ timeout: 8000 });
-      await page.waitForURL(/[?&]mode=advanced/, { timeout: 10000 });
-      const usePlanBtn = page.getByRole('button', { name: /使用查询方案/ });
-      await expect(usePlanBtn).toBeEnabled({ timeout: 10000 });
-      await usePlanBtn.click({ timeout: 8000 });
-      const planOpt = page.locator('.arco-dropdown-option').filter({ hasText: /^集成电路$/ }).first();
-      await expect(planOpt).toBeVisible({ timeout: 8000 });
-      await planOpt.click({ timeout: 8000 });
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      const tabs = page.locator('.enterprise-search-mode-tabs [role=tab]');
+      await tabs.nth(2).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await expect(page).toHaveURL(/[?&]mode=advanced/);
+      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 10000 });
+      const usePlan = fieldLib.getByRole('button', { name: /使用查询方案/ });
+      await expect(usePlan).toBeEnabled({ timeout: 8000 });
+      await usePlan.click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const drop = page.locator('.arco-dropdown-list:visible, .arco-trigger-popup:visible').last();
+      await expect(drop).toBeVisible({ timeout: 8000 });
+      await drop.getByText('集成电路', { exact: true }).click({ timeout: 8000 });
       await page.waitForTimeout(1200);
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      await expect(region).toBeVisible({ timeout: 15000 });
-      await expect(region.getByRole('heading', { name: '检索结果' })).toBeVisible({ timeout: 15000 });
+      await expect(region.getByRole('heading', { name: '检索结果' })).toBeVisible({ timeout: 20000 });
   - note: 2、摘要中出现「当前条件」
     assert: |-
-      const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      await expect(region.getByText('当前条件', { exact: true }).first()).toBeVisible({ timeout: 10000 });
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+      await expect(page.locator('main').getByText('当前条件', { exact: true })).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

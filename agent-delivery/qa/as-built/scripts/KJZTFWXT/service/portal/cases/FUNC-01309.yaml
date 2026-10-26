@@ -1,85 +1,107 @@
 id: FUNC-01309
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01309
 priority: P0
-tier: A
-title: 产业选择与产业链级联解锁
-story: US-SVC-PT-02
+tier: B
+title: 主流程-产业选择与产业链级联解锁
 entry_id: svc-portal
-preconditions:
-  - 已进入门户；筛选区可见；env-gate G3 pass
-locators:
-  industry: select placeholder 全部产业
-  chain: select placeholder 全部产业链
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service-portal/overview
+    target: /service-portal
+  - action: wait
+    for: 概况默认视图
+    timeout_ms: 15000
   - action: evaluate
-    note: 展开产业下拉；切换为任一产业集群；展开产业链下拉
+    note: 展开产业下拉；切换产业为任一产业集群；展开产业链下拉
 expect:
   - note: 1、产业下拉选项共 15 个产业集群（清单见附录 B）
     assert: |-
-      const close = page.locator('button[aria-label="关闭对比篮"]');
-      if (await close.count()) {
-        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-      }
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001：/service-portal/overview SPA 404，筛选区不可达');
-      }
-      const expected = [
+      await page.waitForURL(/\/service-portal\/overview/, { timeout: 20000 });
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      await expect(filter).toBeVisible({ timeout: 12000 });
+      const industryCtrl = filter.locator('.arco-cascader-view, .arco-select-view').first();
+      await industryCtrl.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const clusters = [
         '新一代信息技术', '生物', '新能源', '新材料', '高端装备',
         '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋',
         '未来制造', '未来信息', '未来能源', '未来空间', '未来健康',
       ];
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await ind.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      let opts = popup.locator('.arco-select-option');
+      if ((await opts.count()) === 0) {
+        const col = popup.locator('.arco-cascader-list-column').first();
+        opts = col.locator('.arco-cascader-list-item');
+      }
       const n = await opts.count();
-      if (n !== 15) throw new Error('产业选项数 ' + n + ' ≠15');
+      if (n !== 15) throw new Error('产业下拉选项数 ' + n + ' ≠ 15');
       const texts = [];
       for (let i = 0; i < n; i++) {
-        texts.push((await opts.nth(i).innerText()).trim());
+        texts.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
       }
-      for (const name of expected) {
-        if (!texts.includes(name)) throw new Error('产业选项缺少：' + name);
+      for (const name of clusters) {
+        if (!texts.some((t) => t.includes(name))) throw new Error('产业选项缺少：' + name);
       }
       await page.keyboard.press('Escape');
       await page.waitForTimeout(300);
   - note: 2、选中产业后产业链下拉转为可选、选项随所选产业联动刷新
     assert: |-
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await ind.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await page.waitForTimeout(1000);
-      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
-      if (dis) throw new Error('选产业后产业链仍禁用');
-      await chain.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const chainOpts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
-      if (chainOpts < 1) throw new Error('产业链无联动选项');
-      const chainTexts = [];
-      for (let i = 0; i < chainOpts; i++) {
-        chainTexts.push((await page.locator('.arco-trigger-popup:visible .arco-select-option').nth(i).innerText()).trim());
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count()) {
+        try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
       }
-      const needSix = ['半导体与集成电路', '人工智能与应用', '新型网络与通信', '超高清视频与显示', '智能终端', '软件与信息服务'];
-      for (const c of needSix) {
-        if (!chainTexts.includes(c)) throw new Error('新一代信息技术下产业链缺少：' + c);
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      const industryCtrl = filter.locator('.svc-portal-industry-cascader .arco-cascader-view, .arco-cascader-view').first();
+      async function openSecondColumn(clusterLabel) {
+        await industryCtrl.click({ timeout: 10000 });
+        await page.waitForTimeout(400);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        await popup.locator('.arco-cascader-list-column').first().getByText(clusterLabel, { exact: false }).first().click();
+        await page.waitForTimeout(600);
+        const col2 = popup.locator('.arco-cascader-list-column').nth(1);
+        await expect(col2).toBeVisible({ timeout: 8000 });
+        return col2.locator('.arco-cascader-list-item');
+      }
+      const bioItems = await openSecondColumn('生物');
+      const bioCount = await bioItems.count();
+      if (bioCount < 1) throw new Error('选中生物后产业链/L0 列为空');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(400);
+      const itItems = await openSecondColumn('新一代信息技术');
+      const itCount = await itItems.count();
+      if (itCount < 1) throw new Error('选中新一代信息技术后产业链/L0 列为空');
+      if (itCount === bioCount) {
+        const a = ((await itItems.first().innerText()) || '').trim();
+        const b = ((await bioItems.first().innerText()) || '').trim();
+        if (a === b) throw new Error('切换产业后产业链选项未联动刷新');
       }
       await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
   - note: 3、产业链选项不自动代选第一项
     assert: |-
-      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      const ph = await chain.locator('input').getAttribute('placeholder');
-      if (ph !== '全部产业链') throw new Error('产业链 placeholder 非全部产业链: ' + ph);
-      const valueInput = chain.locator('input.arco-select-view-input');
-      const val = (await valueInput.inputValue()).trim();
-      if (val) throw new Error('产业链似已代选 input 值: ' + val);
-      const tag = chain.locator('.arco-select-view-value');
-      if (await tag.count()) {
-        const t = (await tag.first().innerText()).trim();
-        if (t && t !== '全部产业链') throw new Error('产业链似已代选展示值: ' + t);
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      const industryCtrl = filter.locator('.svc-portal-industry-cascader .arco-cascader-view, .arco-cascader-view').first();
+      await industryCtrl.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-trigger-popup:visible').last();
+      await popup.locator('.arco-cascader-list-column').first().getByText('生物', { exact: false }).first().click();
+      await page.waitForTimeout(600);
+      const col2 = popup.locator('.arco-cascader-list-column').nth(1);
+      await expect(col2).toBeVisible({ timeout: 8000 });
+      const firstLeafText = ((await col2.locator('.arco-cascader-list-item').first().innerText()) || '').trim();
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+      const shown = ((await industryCtrl.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (firstLeafText && shown.includes(firstLeafText)) {
+        throw new Error('产业链选项已自动代选第一项：' + firstLeafText);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: P7 点 .arco-select-view；15 集群附录 B 全集+选「新一代信息技术」链 6 项附录 C。2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto overview SPA 404→ENV-EDU-TTS-SVCZ-404-001→ledger blocked；断言仍依用例册 01309。
+      if (/\/.+/.test(shown) && shown.includes('生物') && firstLeafText && shown.split('/').pop().trim().includes(firstLeafText.split(/（/)[0])) {
+        throw new Error('仅选产业集群时不应自动代选产业链首项，实际：' + shown);
+      }
+on_fail: 截图 + 抄 X-Trace-Id

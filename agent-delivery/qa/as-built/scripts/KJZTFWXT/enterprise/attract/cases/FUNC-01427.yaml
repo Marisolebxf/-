@@ -1,27 +1,25 @@
 id: FUNC-01427
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01427
-priority: P0
-title: 主流程-风险明细抽屉类别
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；已打开一条条件筛选的成功结果（assert 自含条件筛选发起）
-locators:
-  risk_detail_btn: 结果侧栏 button「查看风险明细」
-  risk_drawer: .arco-drawer:visible 标题含「企业风险与信用」
+title: 主流程-风险明细
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+    target: /enterprise/enterprise-search
+  - action: wait
+    for: 企业查询页渲染
+    timeout_ms: 3000
   - action: evaluate
-    note: 成功结果→选中企业→侧栏点「查看风险明细」；标题与五类在 expect
+    note: 侧栏进入招引页；同册01437恢复成功结果；点击「查看风险明细」
 expect:
-  - note: 1、抽屉标题以「企业风险与信用」开头并含当前企业名 2、类别为全部、司法涉诉、失信被执行、经营异常、行政处罚共 5 项
+  - note: 1、抽屉标题以「企业风险与信用」开头并含当前企业名
     assert: |-
-      const CATEGORIES = ['全部', '司法涉诉', '失信被执行', '经营异常', '行政处罚'];
       const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
@@ -32,65 +30,57 @@ expect:
           }
         }
       };
-      const parseCounts = (text) => {
-        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
-        if (!analyzedM) return null;
-        return { analyzed: parseInt(analyzedM[1], 10) };
+      const enterAttractViaSidebar = async () => {
+        await dismissBasket();
+        const leaf = page.getByRole('menuitem', { name: '招引企业推荐分析' });
+        if (await leaf.count()) {
+          await leaf.first().click({ timeout: 12000 });
+        } else {
+          await page.getByText('招引企业推荐分析', { exact: true }).first().click({ timeout: 12000 });
+        }
+        await page.waitForURL(/\/enterprise\/attraction/, { timeout: 20000 });
+        await page.waitForTimeout(800);
       };
       const isSuccessResult = async () => {
-        const st = stack();
-        const t = await st.innerText().catch(() => '');
-        const url = page.url();
-        const counts = parseCounts(t);
-        return (
-          counts &&
-          counts.analyzed >= 1 &&
-          ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
+        const t = await stack().innerText().catch(() => '');
+        return /共分析\s*\d+\s*家/.test(t) && /招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t);
+      };
+      const gotoFilterEntry = async () => {
+        const origin = new URL(page.url()).origin;
+        await page.goto(
+          origin + '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction',
+          { waitUntil: 'domcontentloaded' },
         );
-      };
-      const tryRestoreCompletedFilter = async () => {
-        const byKey = page.locator('button[data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
-        const tab = (await byKey.count()) ? byKey.first() : byName.first();
-        await tab.click({ timeout: 8000 });
         await page.waitForTimeout(900);
-        const st = stack();
-        const buttons = st.getByRole('button', { name: '恢复结果' });
-        const n = await buttons.count();
-        for (let i = 0; i < n; i++) {
-          const btn = buttons.nth(i);
-          let row = btn.locator('xpath=ancestor::tr[1]');
-          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
-            await btn.click({ timeout: 15000 });
-            for (let j = 0; j < 20; j++) {
-              await page.waitForTimeout(500);
-              if (await isSuccessResult()) return true;
-            }
-            return false;
-          }
-        }
-        return false;
       };
-      const reachFilterSuccess = async () => {
+      const waitFilterReady = async () => {
         if (await isSuccessResult()) return;
-        if (await tryRestoreCompletedFilter()) return;
-        const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-        const openPh = async (ph) => {
-          await page.keyboard.press('Escape').catch(() => {});
-          const i = page.locator(`input[placeholder="${ph}"]`).first();
-          await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        for (let i = 0; i < 24; i++) {
+          const tag = page.locator('input[placeholder="全部企业标签"]').first();
+          if (await tag.isVisible().catch(() => false)) return;
+          if (/analysis_view=result/.test(page.url())) {
+            await gotoFilterEntry();
+          }
           await page.waitForTimeout(500);
-        };
-        const pickOption = async (text) => {
-          const opt = page.locator(optSel).filter({ hasText: text }).first();
-          await opt.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-        };
+        }
+        throw new Error('条件区未渲染，url=' + page.url());
+      };
+      const openPh = async (ph) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const i = page.locator(`input[placeholder="${ph}"]`).first();
+        await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const pickOption = async (text) => {
+        const opt = page.locator(optSel).filter({ hasText: text }).first();
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      const run01408IfNeeded = async () => {
+        await dismissBasket();
+        await waitFilterReady();
         await openPh('全部企业标签');
-        await pickOption('高新技术企业');
+        await pickOption('专精特新');
         await openPh('全部行业领域');
         const ai = page.locator(optSel).filter({ hasText: '人工智能' });
         if (await ai.count()) await ai.first().click({ timeout: 8000 });
@@ -99,72 +89,148 @@ expect:
         const start = page.getByRole('button', { name: '开始分析' }).first();
         await expect(start).toBeEnabled({ timeout: 8000 });
         await start.click();
-        const st = stack();
-        let ok = false;
-        let last = '';
-        for (let i = 0; i < 48; i++) {
+        for (let i = 0; i < 36; i++) {
           await page.waitForTimeout(2500);
-          last = await st.innerText().catch(() => '');
+          const t = await page.locator('body').innerText();
           const url = page.url();
-          if ((/招引推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
-            if (parseCounts(last)?.analyzed >= 1) {
-              ok = true;
-              break;
+          if ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result')) {
+            return;
+          }
+          if (/任务失败|分析失败|推荐分析失败/.test(t) && !/可视化分析过程/.test(t)) {
+            throw new Error('推荐分析进入失败态: ' + t.slice(0, 240));
+          }
+          if (/筛选无命中|无匹配企业|ENV-NO-CANDIDATE/.test(t)) {
+            throw new Error('ENV-NO-CANDIDATE: 筛选无命中企业');
+          }
+        }
+        throw new Error('ENV-ATTRACT-ASYNC-NO-SUCCESS-001：同册01408未在超时内到达成功结果态');
+      };
+      const historyDeepLink = async () => {
+        const origin = new URL(page.url()).origin;
+        await page.goto(
+          origin + '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=history',
+          { waitUntil: 'domcontentloaded' },
+        );
+        await page.waitForTimeout(1200);
+      };
+      const hasHistoryTab = async () => {
+        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
+        const byName = page.getByRole('tab', { name: '最近分析' });
+        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+      };
+      const openRecentTab = async () => {
+        await waitFilterReady().catch(() => {});
+        if (await hasHistoryTab()) {
+          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+          if ((await tab.count()) < 1) {
+            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
+            await expect(legacy).toBeVisible({ timeout: 12000 });
+            await legacy.click({ timeout: 8000 });
+          } else {
+            await expect(tab).toBeVisible({ timeout: 12000 });
+            await tab.click({ timeout: 8000 });
+          }
+          await page.waitForTimeout(900);
+          return;
+        }
+        await historyDeepLink();
+        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
+          throw new Error('ENV-ATTRACT-NO-HISTORY-TAB-001：无「最近分析」Tab');
+        }
+      };
+      const waitHistoryShell = async () => {
+        const st = stack();
+        for (let i = 0; i < 30; i++) {
+          const t = await st.innerText().catch(() => '');
+          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
+            return;
+          }
+          await page.waitForTimeout(500);
+        }
+        throw new Error('最近分析未渲染，url=' + page.url());
+      };
+      const findCompletedFilterRestore = async () => {
+        const st = stack();
+        const scanPage = async () => {
+          const buttons = st.getByRole('button', { name: '恢复结果' });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            let row = btn.locator('xpath=ancestor::tr[1]');
+            if ((await row.count()) < 1) {
+              row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
             }
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) return btn;
           }
-          if (/任务失败|分析失败|推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('推荐分析进入失败态: ' + last.slice(0, 240));
-          }
+          return null;
+        };
+        for (let pass = 0; pass < 12; pass++) {
+          const hit = await scanPage();
+          if (hit) return hit;
+          const next = st.locator('.arco-pagination .arco-pagination-item-next:not(.arco-pagination-item-disabled)');
+          if ((await next.count()) < 1) break;
+          const clicked = await next.first().click({ timeout: 5000 }).then(() => true).catch(() => false);
+          if (!clicked) break;
+          await page.waitForTimeout(800);
         }
-        if (!ok) {
-          const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-          if (stuck) {
-            throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：条件筛选发起后长期停留在可视化分析过程，无法在超时内到达「招引推荐分析结果」以测风险明细（30888 与 FUNC-01408/01418 同源 D4）');
-          }
-          throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
-        }
-        await expect(st.getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
+        return null;
       };
-      const readRowEnterpriseName = async (row) => {
-        const link = row.getByRole('link').first();
-        if (await link.count()) {
-          const raw = ((await link.innerText({ timeout: 8000 }).catch(() => '')) || '').trim();
-          if (raw.length >= 2) return raw;
+      const waitSuccessResult = async () => {
+        for (let i = 0; i < 24; i++) {
+          await page.waitForTimeout(500);
+          const t = await stack().innerText().catch(() => '');
+          if (/共分析\s*\d+\s*家/.test(t) && (/招引推荐分析结果/.test(t) || /数据更新时间/.test(t))) return;
+          if (/查看结果/.test(t) && !/共分析/.test(t)) {
+            await stack().getByRole('button', { name: '查看结果' }).first().click({ timeout: 8000 }).catch(() => {});
+          }
         }
-        const txt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        const parts = txt.split(/\s+/).filter((p) => p.length >= 2 && !/^\d+(\.\d+)?$/.test(p));
-        const hit = parts.find((p) => /公司|集团|有限|科技/.test(p));
-        if (hit) return hit;
-        throw new Error('结果行无企业名称可读: ' + txt.slice(0, 120));
+        throw new Error('未见条件筛选成功结果页');
       };
-      await dismissBasket();
-      await reachFilterSuccess();
-      const st = stack();
-      const row = st.locator('.arco-table-body .arco-table-tr').first();
-      await expect(row).toBeVisible({ timeout: 10000 });
-      const entName = await readRowEnterpriseName(row);
-      const detail = row.getByRole('button', { name: '详情' }).first();
-      await expect(detail).toBeVisible({ timeout: 8000 });
-      await detail.click({ timeout: 10000 });
-      await page.waitForTimeout(500);
-      await page.keyboard.press('Escape').catch(() => {});
-      await page.waitForTimeout(400);
-      const riskBtn = st.getByRole('button', { name: '查看风险明细' }).first();
-      await expect(riskBtn).toBeVisible({ timeout: 10000 });
-      await riskBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(500);
-      const drawers = page.locator('.arco-drawer:visible');
-      const riskDrawer = drawers.filter({ hasText: '企业风险与信用' }).last();
-      await expect(riskDrawer).toBeVisible({ timeout: 10000 });
-      const title = await riskDrawer.locator('.arco-drawer-header, .arco-drawer-title').first().innerText().catch(() => '');
-      const titleText = title || (await riskDrawer.innerText().catch(() => '')).split('\n')[0] || '';
-      if (!titleText.startsWith('企业风险与信用')) throw new Error('风险抽屉标题未以「企业风险与信用」开头: ' + titleText.slice(0, 120));
-      if (!titleText.includes(entName)) throw new Error('风险抽屉标题未含企业名「' + entName + '」: ' + titleText.slice(0, 120));
-      for (const cat of CATEGORIES) {
-        await expect(riskDrawer.getByRole('radio', { name: cat }).first()).toBeVisible({ timeout: 8000 });
+      await enterAttractViaSidebar();
+      if (!(await isSuccessResult())) {
+        await openRecentTab();
+        await waitHistoryShell();
+        let restoreBtn = await findCompletedFilterRestore();
+        if (restoreBtn) {
+          await restoreBtn.scrollIntoViewIfNeeded();
+          await restoreBtn.click({ timeout: 15000 });
+          await waitSuccessResult();
+        } else {
+          await gotoFilterEntry();
+          await page.locator('.global-workbench-tabs button[data-tab-key="filter"]').first().click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(600);
+          await run01408IfNeeded();
+        }
       }
-      const radioCount = await riskDrawer.locator('.arco-radio-button').count();
-      if (radioCount !== 5) throw new Error('风险类别应为 5 项，现场 radio 数=' + radioCount);
-      await page.keyboard.press('Escape').catch(() => {});
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；风险抽屉真源 RecruitRiskDetailDrawer（标题 `企业风险与信用 · ${name}`；a-radio-group 五类）。结果侧栏 RecruitDetailPanel「查看风险明细」；点详情会叠开招引详情 Drawer，先 Esc 再点侧栏按钮。前置同 01418~026。D4·无异步成功→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。
+      if (!(await isSuccessResult())) {
+        throw new Error('未到达条件筛选成功结果页');
+      }
+      const st = stack();
+      const sideText = await st.innerText().catch(() => '');
+      const nameM = sideText.match(/[\u4e00-\u9fa5（）()A-Za-z0-9·]{2,40}?(?=招引推荐详情|查看风险明细|核心优势)/);
+      const tableName = await st.locator('table tbody tr').first().locator('td').nth(1).innerText().catch(() => '');
+      const enterpriseName = (tableName || '').trim().split('\n')[0] || (nameM ? nameM[0].trim() : '');
+      if (!enterpriseName) throw new Error('未能识别侧栏当前企业名');
+      globalThis.__func01427_enterpriseName = enterpriseName;
+      const riskBtn = st.getByRole('button', { name: '查看风险明细' }).first();
+      await expect(riskBtn).toBeVisible({ timeout: 12000 });
+      await riskBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(600);
+      const title = page.locator('.arco-drawer').getByText(/^企业风险与信用 · /).first();
+      await expect(title).toBeVisible({ timeout: 10000 });
+      const titleText = await title.innerText().catch(() => '');
+      if (!titleText.includes(enterpriseName)) {
+        throw new Error('抽屉标题未含当前企业名：title=' + titleText + ' name=' + enterpriseName);
+      }
+  - note: 2、类别为全部、司法涉诉、失信被执行、经营异常、行政处罚共 5 项
+    assert: |-
+      if (!globalThis.__func01427_enterpriseName) throw new Error('前置：未打开风险明细抽屉');
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible({ timeout: 8000 });
+      const expected = ['全部', '司法涉诉', '失信被执行', '经营异常', '行政处罚'];
+      for (const cat of expected) {
+        await expect(drawer.getByRole('radio', { name: cat })).toBeVisible({ timeout: 8000 });
+      }
+      await expect(drawer.getByRole('radio')).toHaveCount(5);
+on_fail: 截图 + 抄 X-Trace-Id

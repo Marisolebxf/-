@@ -4,40 +4,62 @@ priority: P1
 tier: B
 title: 主流程-导出名单
 entry_id: svc-rec-attract
-preconditions:
-  - 结果页已选中一个产业集群
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: wait
+    ms: 1500
   - action: click
-    text: 生成招引名单
+    target: 重点产业方向
+    locator: |-
+      page.locator('main [data-testid="svc-rec-analysis-context"] .arco-cascader-view').first()
+  - action: click
+    target: 生物
+    locator: |-
+      page.locator('.arco-cascader-popup:visible .arco-cascader-list-column').first().getByText('生物', { exact: true })
+  - action: click
+    target: 生成招引名单
+    locator: |-
+      page.locator('main [data-testid="svc-rec-start-analysis"]')
+  - action: wait
+    ms: 8000
+  - action: click
+    target: 查看结果
+    locator: |-
+      page.locator('main').getByRole('button', { name: '查看结果' })
+  - action: wait
+    ms: 3000
 expect:
   - note: 1、下载文件名含当前产业名称
     assert: |-
-      await expect(page.getByRole('button', { name: '导出名单' })).toBeVisible({ timeout: 60000 });
-      const industryRaw = await page.locator('.arco-select-view-value, .arco-cascader-view-value').first().innerText();
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+      const industryRaw = await page.locator('main [data-testid="svc-rec-result-context"] .arco-cascader-view-value').first().innerText();
       const industryName = (industryRaw.split('/').pop() || industryRaw).trim();
+      await expect(industryName.length).toBeGreaterThan(0);
       const downloadPromise = page.waitForEvent('download');
-      await page.getByRole('button', { name: '导出名单' }).click();
+      await page.locator('main [data-testid="svc-rec-export"]').click();
       const download = await downloadPromise;
-      const fileName = download.suggestedFilename();
-      await expect(fileName).toContain(industryName);
+      await expect(download.suggestedFilename()).toContain(industryName);
   - note: 2、表头依次为名次、机构、城市、综合分、招引指数、推荐理由
     assert: |-
       const downloadPromise = page.waitForEvent('download');
-      await page.getByRole('button', { name: '导出名单' }).click();
+      await page.locator('main [data-testid="svc-rec-export"]').click();
       const download = await downloadPromise;
       const path = await download.path();
       const fs = require('fs');
       const text = fs.readFileSync(path, 'utf8');
-      const headers = ['名次', '机构', '城市', '综合分', '招引指数', '推荐理由'];
-      const firstLine = text.split(/\r?\n/)[0].replace(/^\uFEFF/, '');
-      const cols = firstLine.split(/,|\t/);
-      for (let i = 0; i < headers.length; i++) {
-        await expect(cols[i]?.trim()).toBe(headers[i]);
+      const headerLine = text.split(/\r?\n/).find((line) => line && !line.startsWith('#'))?.replace(/^\uFEFF/, '') ?? '';
+      const cols = headerLine.split(',');
+      const expected = ['名次', '机构', '城市', '综合分', '招引指数', '推荐理由'];
+      let prev = -1;
+      for (const name of expected) {
+        const pos = cols.indexOf(name);
+        await expect(pos).toBeGreaterThan(prev);
+        prev = pos;
       }
   - note: 3、页面提示已导出
     assert: |-
-      await expect(page.getByText(/已导出/)).toBeVisible();
+      await expect(page.getByText(/已导出/)).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

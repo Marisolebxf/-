@@ -1,6 +1,6 @@
 id: FUNC-04496
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04496
-priority: P0
+priority: P1
 tier: B
 title: 主流程-生态网密度
 entry_id: svc-chain-graph
@@ -9,20 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: wait
+    timeout_ms: 800
   - action: click
-    selector: '.arco-form-item:has(.arco-form-item-label:has-text("产业领域")) .arco-select-view'
+    target: 按钮 开始分析
+  - action: wait
+    timeout_ms: 8000
   - action: click
-    target: 新一代信息技术
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
+    target: 按钮 查看结果
+  - action: wait
+    timeout_ms: 3000
 expect:
-  - note: 出现「生态网密度」
+  - note: 1、出现「生态网密度」
     assert: |-
-      await expect(page.getByText('生态网密度', { exact: true })).toBeVisible()
-  - note: 数值为 0
+      const main = page.locator('main');
+      await expect(main.getByText('生态网密度').first()).toBeVisible({ timeout: 15000 });
+  - note: 2、数值为 0
     assert: |-
-      const row = page.locator('*').filter({ has: page.getByText('生态网密度', { exact: true }) }).first();
-      await expect(row).toContainText('0');
+      await expect(page.locator('[data-testid="svc-eco-density-eco"]')).toHaveText(/^0(\.0+)?$/, { timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id

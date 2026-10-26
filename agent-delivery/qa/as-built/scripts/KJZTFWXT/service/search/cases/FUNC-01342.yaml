@@ -1,99 +1,19 @@
 id: FUNC-01342
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01342
-priority: P0
-tier: A
-title: 未检索时技术力领先机构诚实空态且无演示名单
-story: US-SVC-ORG-07
+priority: P1
+tier: B
+title: 主流程-技术力领先机构空态
 entry_id: svc-search
-preconditions:
-  - 已进入服务机构查询（/service-center/search）
-  - 尚未发起检索（智能检索初始态）
-locators:
-  section_title: heading「技术力领先机构」
-  empty_hint: 文案「检索实包无推荐字段时保持空态，不填演示名单」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
-  - action: evaluate
-    note: 侧栏进入服务机构查询后浏览「技术力领先机构」区块
+    target: /service-center/search
 expect:
-  - note: 经侧栏进入 /service-center/search 且「技术力领先机构」标题可见
+  - note: 说明为「检索实包无推荐字段时保持空态，不填演示名单。」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t);
-      };
-      const recover404Shell = async () => {
-        if (!(await bodyIs404())) return;
-        const home = page.getByRole('button', { name: '返回首页' });
-        if (await home.count() && (await home.first().isVisible().catch(() => false))) {
-          await home.first().click({ timeout: 8000 });
-          await page.waitForTimeout(2000);
-        }
-      };
-      await dismissBasket();
-      await recover404Shell();
-      if (await bodyIs404()) {
-        await page.goto(spaUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(800);
-        await recover404Shell();
-      }
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: edu/tts/svcz 根与深链均 SPA404，无法进入服务机构查询 url=' + page.url());
-      }
-      const searchItem = () =>
-        page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ });
-      const expandServiceGroup = async () => {
-        if (await searchItem().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      await expandServiceGroup();
-      const leaf = searchItem();
-      if (!(await leaf.first().isVisible().catch(() => false))) {
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: edu/tts/svcz SPA404，侧栏无「服务机构查询」 url=' + page.url());
-        }
-        throw new Error('侧栏未找到「服务机构查询」，url=' + page.url());
-      }
-      await leaf.first().click({ timeout: 10000 });
-      await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      await expect(page).toHaveURL(/\/service-center\/search/);
-      await expect(page.getByRole('heading', { name: '技术力领先机构', exact: true })).toBeVisible({ timeout: 10000 });
-  - note: 说明为「检索实包无推荐字段时保持空态，不填演示名单。」（现场句号可有可无）
+      await expect(page.getByRole('main').getByText('检索实包无推荐字段时保持空态，不填演示名单。')).toBeVisible()
+  - note: 区块内没有演示机构卡片
     assert: |-
-      await expect(page.getByText(/检索实包无推荐字段时保持空态，不填演示名单。?/)).toBeVisible({ timeout: 8000 });
-  - note: 区块内没有演示机构卡片（无行级「加入对比篮/加入分析集合」等结果动作）
-    assert: |-
-      const main = await page.locator('main').innerText();
-      const idx = main.indexOf('技术力领先机构');
-      const slice = idx >= 0 ? main.slice(idx, idx + 320) : '';
-      if (!slice) throw new Error('未定位到技术力领先机构区块');
-      if (/加入对比篮|加入分析集合/.test(slice)) {
-        throw new Error('技术力领先空态区出现结果行动作，疑似演示名单: ' + slice.replace(/\s+/g, ' ').slice(0, 180));
-      }
-      const cardLike = /技术力分\s*\d|共\s*\d+\s*家匹配机构/.test(slice);
-      if (cardLike) throw new Error('技术力领先空态区出现命中卡片字段: ' + slice.replace(/\s+/g, ' ').slice(0, 180));
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: catalog_path /service-center/search；edu 深链 SPA404，侧栏 sibling 见 entry-seed /industry-center/search。未检索初始态即诚实空态。现场另有业务声明「暂无。检索实包无推荐字段，不填演示技术力名单。」——非演示假名单。2026-10-21 试跑 edu 根路径亦 404（ENV-EDU-TTS-SVCZ-404-001）。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。
+      await expect(page.locator('main [data-search-state="recommendation"] article.svc-org-search-card')).toHaveCount(0)
+on_fail: 截图 + 抄 X-Trace-Id

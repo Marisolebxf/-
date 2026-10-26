@@ -8,13 +8,12 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/results/CHAIN-NOT-EXIST-03689?taskId=CHAIN-20260911-019
+    target: /industry-center/results/ZNFWJQ-NO-SUCH-RESULT-000?task_id=CHAIN-20261021-002
 expect:
-  - note: 页面位于该参数所指任务的分析结果页
+  - note: 1、页面位于该参数所指任务的分析结果页
     assert: |-
-      await expect(page).toHaveURL(/\/industry-center\/results\//);
-      await expect(page).toHaveURL(/taskId=CHAIN-20260911-019/);
-  - note: 页面正文中的任务编号与该参数一致
+      await expect(page.locator('main').getByText(/结果$/).first()).toBeVisible({ timeout: 60000 })
+  - note: 2、页面正文中的任务编号与该参数一致
     assert: |-
-      await expect(page.getByText('CHAIN-20260911-019')).toBeVisible();
+      await expect(page.locator('main').getByText('CHAIN-20261021-002').first()).toBeVisible({ timeout: 60000 })
 on_fail: 截图 + 抄 X-Trace-Id

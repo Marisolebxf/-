@@ -2,7 +2,7 @@ id: FUNC-05000
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05000
 priority: P1
 tier: B
-title: 只选产业时结论条
+title: 备选-只选产业时结论条
 entry_id: svc-portal-industry
 preconditions: []
 locators: {}
@@ -13,25 +13,26 @@ steps:
     note: 选择产业「生物」
     assert: |-
       const main = page.locator('main');
-      await main.locator('.arco-cascader-view').first().click({ timeout: 15000 });
-      await page.waitForTimeout(400);
-      const popup = page.locator('.arco-trigger-popup:visible');
-      await popup.getByText('生物', { exact: true }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const col = menu.locator('.arco-cascader-list-column').first();
+      const bio = col.locator('.arco-cascader-option').filter({ hasText: /^生物/ }).first();
+      await bio.click({ timeout: 15000 });
+      await expect(cascader).toContainText(/生物/, { timeout: 15000 });
 expect:
   - note: 1、结论条以「生物」起头
     assert: |-
-      const strip = page.locator('main .ent-judgment-strip, main .svc-portal-conclusion').first();
+      const strip = page.locator('main .ent-judgment-strip, main .judgment-strip').first();
       await expect(strip).toBeVisible({ timeout: 15000 });
       const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!/^「生物/.test(txt)) {
-        throw new Error('结论条未以「生物」起头: ' + txt.slice(0, 160));
+        throw new Error('结论条未以「生物」起头: ' + txt.slice(0, 200));
       }
   - note: 2、结论条仍写明本包络不按产业切片
     assert: |-
-      const strip = page.locator('main .ent-judgment-strip, main .svc-portal-conclusion').first();
-      const txt = ((await strip.innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!/本包络不按产业切片/.test(txt)) {
-        throw new Error('结论条未写明本包络不按产业切片: ' + txt.slice(0, 160));
-      }
+      const strip = page.locator('main .ent-judgment-strip, main .judgment-strip').first();
+      await expect(strip).toBeVisible({ timeout: 15000 });
+      await expect(strip).toContainText('本包络不按产业切片');
 on_fail: 截图 + 抄 X-Trace-Id

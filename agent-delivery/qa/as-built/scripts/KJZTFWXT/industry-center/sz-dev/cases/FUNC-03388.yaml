@@ -1,30 +1,42 @@
 id: FUNC-03388
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03388
 priority: P0
-title: 已完成记录打开成功结果页
+tier: B
+title: 从已完成记录点查看结果打开深圳产业发展分析结果页
 entry_id: chain-sz-dev
-tier: A
-preconditions:
-  - 已进入深圳产业发展分析页
-  - 分析记录里有一条状态为「已完成」的记录
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 点击「分析记录」；在已完成记录上点「查看结果」
+    note: 1.点击「分析记录」；2.在已完成记录上点击「查看结果」
 expect:
-  - note: 页内出现标题「深圳产业发展分析结果」
+  - note: 1、页内出现标题「深圳产业发展分析结果」
     assert: |-
-      const recTab = page.getByRole('tab', { name: '分析记录' });
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await recTab.click({ timeout: 10000 });
+      const main = () => page.locator('main').first();
       await page.waitForTimeout(800);
-      const doneRow = page.locator('main tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-      await expect(doneRow.first()).toBeVisible({ timeout: 10000 });
-      const viewBtn = doneRow.first().getByRole('button', { name: '查看结果' });
-      await expect(viewBtn).toBeEnabled({ timeout: 5000 });
-      await viewBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(1500);
-      await expect(page.locator('main h3').filter({ hasText: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+      await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 15000 });
+      await expect(main().getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 20000 });
+      await page.waitForTimeout(1200);
+      const rows = main().locator('.arco-table-body .arco-table-tr');
+      await expect(rows.first()).toBeVisible({ timeout: 15000 }).catch(() => {});
+      const count = await rows.count();
+      let opened = false;
+      for (let i = 0; i < count; i++) {
+        const row = rows.nth(i);
+        const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/已完成/.test(rowText)) continue;
+        const btn = row.getByRole('button', { name: '查看结果' }).first();
+        if (await btn.isEnabled().catch(() => false)) {
+          await btn.click({ timeout: 10000 });
+          opened = true;
+          break;
+        }
+      }
+      if (!opened) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK：分析记录仅失败任务或无已完成可点查看结果');
+      }
+      await page.waitForTimeout(1200);
+      await expect(main().getByRole('heading', { name: '深圳产业发展分析结果', level: 2 })).toBeVisible({ timeout: 25000 });
 on_fail: 截图 + 抄 X-Trace-Id

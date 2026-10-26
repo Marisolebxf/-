@@ -1,71 +1,46 @@
 id: FUNC-03394
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03394
 priority: P1
+tier: B
 title: 重置参数后对比来源清空且开始分析不可用
 entry_id: chain-sz-dev
-tier: B
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 选产业+绑定有效来源→点「重置参数」
+    note: 分析记录点「复制配置」后点「重置参数」（同册 03410 + 本条步骤）
+    script: |-
+      const main = page.locator('main');
+      await main.getByText('分析记录', { exact: true }).click();
+      await page.waitForTimeout(800);
+      const copy = main.getByRole('button', { name: '复制配置' }).first();
+      const copyCount = await copy.count();
+      if (copyCount === 0) throw new Error('D3: 分析记录无「复制配置」行，无法建立已绑定对比来源前置');
+      await copy.click();
+      await main.getByRole('heading', { name: '分析配置' }).waitFor({ timeout: 15000 });
+      await page.waitForTimeout(500);
+      const startBtn = main.getByRole('button', { name: '开始分析' });
+      if (await startBtn.isEnabled()) {
+        /* 已选产业并绑定有效对比来源 */
+      } else {
+        throw new Error('D3: 复制配置后「开始分析」仍不可用，无法建立前置');
+      }
+      await main.getByRole('button', { name: '重置参数' }).click();
+      await page.waitForTimeout(400);
 expect:
   - note: 1、对比来源恢复为未选占位
     assert: |-
       const main = page.locator('main');
-      const industrySel = main.locator('.industry-catalog-select').first();
-      const sourceInput = main.locator('input[placeholder="请显式选择有效结构化结果"]');
-      const sourceView = sourceInput.locator('xpath=ancestor::div[contains(@class,"arco-select-view")]').first();
-      const readSourceLabel = async () => {
-        const t = ((await sourceView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!t || /请显式选择有效结构化结果/.test(t)) return '';
-        return t;
-      };
-      const pickIndustry = async (name) => {
-        await industrySel.click({ timeout: 15000 });
-        await page.waitForTimeout(400);
-        await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      };
-      const bindFirstValid = async () => {
-        for (let i = 0; i < 12; i++) {
-          await sourceView.click({ timeout: 8000 }).catch(() => {});
-          await page.waitForTimeout(500);
-          const opt = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
-          if (await opt.count()) {
-            await opt.first().click({ timeout: 8000 });
-            await page.waitForTimeout(600);
-            return;
-          }
-          await page.keyboard.press('Escape').catch(() => {});
-          await page.waitForTimeout(400);
-        }
-        throw new Error('D3: 无有效对比来源可选');
-      };
-      await expect(main.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 15000 });
-      await expect(industrySel).toBeVisible({ timeout: 15000 });
-      const indTxt = ((await industrySel.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!indTxt.includes('新一代信息技术')) await pickIndustry('新一代信息技术');
-      await expect(industrySel).toContainText('新一代信息技术', { timeout: 10000 });
-      let bound = await readSourceLabel();
-      if (!bound || !/CHAIN-/.test(bound)) {
-        await bindFirstValid();
-        bound = await readSourceLabel();
-      }
-      if (!bound || !/CHAIN-/.test(bound)) throw new Error('前置：未绑定有效对比来源');
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
-      await page.getByRole('button', { name: '重置参数' }).click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      await expect(sourceInput.first()).toBeVisible({ timeout: 8000 });
-      const ph = await sourceInput.first().getAttribute('placeholder');
-      if (ph !== '请显式选择有效结构化结果') throw new Error('绑定占位不符: ' + ph);
-      const after = await readSourceLabel();
-      if (after && /CHAIN-/.test(after)) throw new Error('重置后绑定未清: ' + after);
-      const indAfter = ((await industrySel.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!indAfter.includes('新一代信息技术')) throw new Error('意外：重置后产业也被清空: ' + indAfter);
+      const sourceRow = main.locator('.arco-form-item').filter({ hasText: '有效的深圳产业情况分析对比结果' });
+      const sourceView = sourceRow.locator('.arco-select-view');
+      await expect(sourceView).toBeVisible();
+      await expect(sourceRow.locator('.arco-select-view-value')).toHaveCount(0);
+      const label = ((await sourceView.innerText()) || '').replace(/\s+/g, '');
+      expect(label === '' || label.includes('请显式选择有效结构化结果')).toBe(true);
   - note: 2、「开始分析」不可点击
     assert: |-
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id
+      const main = page.locator('main');
+      await expect(main.getByRole('button', { name: '开始分析' })).toBeDisabled();
+on_fail: 截图 + 抄 X-Trace-Id

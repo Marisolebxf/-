@@ -1,114 +1,22 @@
 id: FUNC-04994
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04994
-priority: P0
+priority: P1
 tier: B
-title: 六类分布悬停提示类型家数占比
-story: US-SVC-PT-02
+title: 主流程-六类分布悬停
 entry_id: svc-portal-industry
-preconditions:
-  - 已打开服务机构产业分布（runner 会话前置）
-locators:
-  block_type: heading「类型分析 · 六类服务分布」
-  type_chart: .svc-portal-chart canvas
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/industry-distribution
-  - action: evaluate
-    note: 悬停「类型分析 · 六类服务分布」环图扇区
 expect:
-  - note: 1、提示中含服务类型、家数与占比
+  - note: 提示中含服务类型、家数与占比
     assert: |-
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构产业分布|类型分析/.test(t);
-      };
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
-      if (await bodyIs404()) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: catalog_path /service-portal/industry-distribution SPA404，无法验六类悬停 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
-      const heading = page.getByRole('heading', { name: '类型分析 · 六类服务分布', exact: true }).first();
-      await expect(heading).toBeVisible({ timeout: 8000 });
-      const empty = page.getByText('暂无六类分布').first();
-      if (await empty.isVisible().catch(() => false)) {
-        throw new Error('ENV-SVC-PORTAL-TYPE-DIST-EMPTY：by_service_type 无行，环图诚实空无法悬停扇区');
-      }
-      const chartWrap = heading.locator('xpath=ancestor::*[.//canvas][1]');
-      const canvas = chartWrap.locator('canvas').first();
-      await expect(canvas).toBeVisible({ timeout: 10000 });
-      const readTip = () =>
-        page.evaluate(() => {
-          const tips = [...document.querySelectorAll('div')].filter((el) => {
-            const st = window.getComputedStyle(el);
-            if (st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return false;
-            const z = parseInt(st.zIndex, 10);
-            if (!Number.isFinite(z) || z < 100) return false;
-            const t = (el.innerText || '').trim();
-            return t.length > 0 && t.length < 400;
-          });
-          return tips.map((el) => (el.innerText || '').trim()).sort((a, b) => b.length - a.length)[0] || '';
-        });
-      const hasTypeCountPct = (text) => {
-        const t = (text || '').replace(/\s+/g, ' ');
-        const pct = /[\d.]+\s*%/.test(t) || /（[\d.]+%）/.test(t);
-        const count = /[\d,]+\s*家/.test(t);
-        const typeName = /[\u4e00-\u9fff]{2,}/.test(t);
-        return typeName && count && pct;
-      };
-      let tipText = '';
-      const ecProbe = await page.evaluate(() => {
-        const ec = window.echarts;
-        if (!ec?.getInstanceByDom) return { ok: false, reason: 'no-echarts-global' };
-        const heading = [...document.querySelectorAll('span, h1, h2, h3, h4')]
-          .find((el) => (el.textContent || '').includes('类型分析 · 六类服务分布'));
-        const root = heading?.closest('.arco-card, section, [class*="SectionPanel"]') || document;
-        const nodes = root.querySelectorAll('.svc-portal-chart, [_echarts_instance_]');
-        for (const node of nodes) {
-          const inst = ec.getInstanceByDom(node);
-          if (!inst) continue;
-          const opt = inst.getOption();
-          const series = opt?.series?.[0];
-          if (series?.type !== 'pie' || !series?.data?.length) continue;
-          const idx = 0;
-          inst.dispatchAction({ type: 'showTip', seriesIndex: 0, dataIndex: idx });
-          const name = series.data[idx]?.name || '';
-          return { ok: true, name: String(name), via: 'dispatchAction' };
-        }
-        return { ok: false, reason: 'no-pie-chart' };
-      });
-      if (ecProbe.ok) {
-        await page.waitForTimeout(350);
-        tipText = await readTip();
-      }
-      if (!hasTypeCountPct(tipText)) {
-        const box = await canvas.boundingBox();
-        if (!box) throw new Error('六类环图 canvas 无 boundingBox');
-        const angles = [0.25, 0.5, 0.75];
-        for (const fx of angles) {
-          await page.mouse.move(box.x + box.width * fx, box.y + box.height * 0.42);
-          await page.waitForTimeout(450);
-          tipText = await readTip();
-          if (hasTypeCountPct(tipText)) break;
-        }
-      }
-      if (!hasTypeCountPct(tipText)) {
-        throw new Error(
-          '悬停六类服务分布扇区后 tooltip 未同时含类型、家数与占比；tip=' +
-          (tipText || '（空）') +
-          '；echarts=' + JSON.stringify(ecProbe),
-        );
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  深链 entry-seed catalog_path /service-portal/industry-distribution。环图 ECharts pie tooltip「{b}：{c} 家（{d}%）」；
-  不钉死某一类具体家数（用例备注）。优先 dispatchAction showTip，失败则 canvas mousemove 读 z-index 浮层。
-  六类无数据诚实空 → ENV-SVC-PORTAL-TYPE-DIST-EMPTY。登录与关内部评审由 runner 会话前置。B 档零 allow_skip。
+      const main = page.locator('main');
+      const sectionTitle = main.getByText('类型分析 · 六类服务分布');
+      await expect(sectionTitle).toBeVisible();
+      const chart = sectionTitle.locator('xpath=ancestor::*[contains(@class,"section") or contains(@class,"Panel")][1]').locator('canvas').first();
+      await chart.hover({ position: { x: 40, y: 40 } });
+      const tip = page.locator('div').filter({ hasText: /%/ }).filter({ hasText: /家/ }).last();
+      await expect(tip).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

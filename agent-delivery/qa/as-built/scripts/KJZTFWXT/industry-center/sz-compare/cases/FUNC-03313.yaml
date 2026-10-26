@@ -1,82 +1,36 @@
 id: FUNC-03313
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03313
 priority: P1
-title: 分析记录「复制配置」回显产业与标杆
-story: US-CHAIN-SZ-05
-entry_id: chain-sz-compare
 tier: B
-preconditions:
-  - 分析记录里有已完成的对比任务
-locators:
-  records_tab: tab「分析记录」
-  copy_config: button「复制配置」
-  start: button「开始分析」
+title: 分析记录「复制配置」回显产业与标杆
+entry_id: chain-sz-compare
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
   - action: evaluate
-    note: 分析记录对已完成行点「复制配置」；配置回显与开始分析在 expect
+    note: 分析记录对已完成行点「复制配置」
 expect:
   - note: 1、回到分析配置
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=comparison&tab=comparison';
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
+      const cmpTab = () => page.locator('[role=tab][data-tab-key="comparison"]');
+      const recTab = () => page.locator('[role=tab][data-tab-key="records"]');
+      const readIndustryLabel = async () => {
+        const indView = page.locator('.arco-select-view[aria-label="产业"]').first();
+        if (await indView.count()) {
+          return ((await indView.getAttribute('title')) || (await indView.innerText()) || '').replace(/\s+/g, ' ').trim();
         }
-      };
-      const bodyIs404 = async () => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/深圳产业情况分析对比/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=comparison/.test(page.url()) &&
-        /tab=comparison/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业情况分析对比$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 20000 });
-      };
-      const enterSzCompare = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
+        const field = main().locator('.arco-form-item').filter({ hasText: /分析对象/ }).first();
+        const views = field.locator('.arco-select-view');
+        if ((await views.count()) >= 2) {
+          return ((await views.nth(1).getAttribute('title')) || (await views.nth(1).innerText()) || '').replace(/\s+/g, ' ').trim();
         }
-        if (await bodyIs404() || !onTarget()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 深链与侧栏均 SPA404，无法执行 03313 ' + page.url());
-        }
-        await expect(page).toHaveURL(/workspace=comparison/);
-        await expect(page).toHaveURL(/tab=comparison/);
+        return '';
       };
       const readBenchmarkTags = async () => {
-        const benchField = main()
-          .locator('.arco-form-item')
-          .filter({ hasText: /标杆区域/ })
-          .first();
+        const benchField = main().locator('.arco-form-item').filter({ hasText: /标杆区域/ }).first();
         const tags = benchField.locator('.arco-tag');
         const n = await tags.count();
         const out = [];
@@ -84,48 +38,88 @@ expect:
           const t = ((await tags.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
           if (t) out.push(t);
         }
+        if (!out.length) {
+          const cascader = benchField.locator('.arco-cascader-view').first();
+          const t = ((await cascader.getAttribute('title')) || (await cascader.innerText()) || '').replace(/\s+/g, ' ').trim();
+          if (t && !/Q016|请选择|标杆清单/.test(t)) out.push(t);
+        }
         return out;
       };
-      const readIndustry = async () => {
-        const view = page.locator('.arco-select-view[aria-label="产业"]').first();
-        return ((await view.getAttribute('title')) || (await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      const pickBenchmarkCities = async (cities) => {
+        const bench = main().locator('.arco-form-item').filter({ hasText: /标杆区域/ }).first();
+        await bench.locator('.arco-cascader-view').click({ timeout: 10000 });
+        for (const city of cities) {
+          const panel = page.locator('.arco-cascader-panel:visible');
+          await panel.getByText(city, { exact: true }).last().click({ timeout: 10000 });
+          await page.waitForTimeout(300);
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
       };
-      await enterSzCompare();
-      const recTab = page.locator('[role=tab][data-tab-key="records"]');
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await recTab.click({ timeout: 10000 });
+      const ensureCompletedTask = async () => {
+        await cmpTab().click({ timeout: 10000 });
+        await page.waitForTimeout(600);
+        const cluster = main().locator('.arco-form-item').filter({ hasText: /分析对象/ }).first().locator('.arco-select-view').first();
+        await cluster.click({ timeout: 10000 });
+        await page.locator('.arco-select-dropdown:visible').last().getByText('新一代信息技术', { exact: true }).click({ timeout: 10000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-select-view[aria-label="产业"]').first().click({ timeout: 10000 });
+        await page.locator('.arco-select-dropdown:visible').last().getByText('人工智能与应用', { exact: true }).click({ timeout: 10000 });
+        await page.waitForTimeout(400);
+        await pickBenchmarkCities(['上海市', '北京市']);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (!(await start.isEnabled().catch(() => false))) return;
+        await start.click({ timeout: 15000 });
+        await page.waitForTimeout(1200);
+        const viewResult = page.getByRole('button', { name: '查看分析结果' });
+        if (await viewResult.first().isVisible().catch(() => false)) {
+          await viewResult.first().click({ timeout: 15000 });
+          await page.waitForTimeout(800);
+        }
+      };
+      await expect(page).toHaveURL(/workspace=comparison/);
+      await expect(recTab()).toBeVisible({ timeout: 10000 });
+      await recTab().click({ timeout: 10000 });
       await page.waitForTimeout(1200);
-      await expect(recTab).toHaveAttribute('aria-selected', 'true');
-      const rows = main()
+      let rows = main()
         .locator('tbody tr, .arco-table-tr')
         .filter({ hasText: '深圳产业情况分析对比' })
-        .filter({ hasText: /已完成|成功/ });
-      const n = await rows.count();
-      if (n < 1) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03313：分析记录无已完成深圳对比任务');
+        .filter({ hasText: /已完成/ });
+      if ((await rows.count()) < 1) {
+        await ensureCompletedTask();
+        await recTab().click({ timeout: 10000 });
+        await page.waitForTimeout(1200);
+        rows = main()
+          .locator('tbody tr, .arco-table-tr')
+          .filter({ hasText: '深圳产业情况分析对比' })
+          .filter({ hasText: /已完成/ });
       }
+      if ((await rows.count()) < 1) throw new Error('ENV-CHAIN-SZ-COMPARE-NO-DONE-TASK-03313：分析记录无已完成深圳对比任务');
+      const prefer = rows.filter({ hasText: /人工智能/ });
+      const list = (await prefer.count()) > 0 ? prefer : rows;
       let copied = false;
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
+      const total = await list.count();
+      for (let i = 0; i < Math.min(total, 10); i++) {
+        const row = list.nth(i);
         const copyBtn = row.getByRole('button', { name: '复制配置' }).first();
         if (!(await copyBtn.count()) || (await copyBtn.isDisabled().catch(() => true))) continue;
         await copyBtn.click({ timeout: 15000 });
-        copied = true;
-        break;
+        await page.waitForTimeout(900);
+        await expect(cmpTab()).toHaveAttribute('aria-selected', 'true', { timeout: 12000 });
+        await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        if (await start.isEnabled().catch(() => false)) {
+          copied = true;
+          break;
+        }
+        await recTab().click({ timeout: 10000 });
+        await page.waitForTimeout(600);
       }
-      if (!copied) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-NO-COPY-03313：无已完成行可点「复制配置」');
-      }
-      await page.waitForTimeout(900);
-      const cmpTab = page.locator('[role=tab][data-tab-key="comparison"]');
-      await expect(cmpTab).toHaveAttribute('aria-selected', 'true');
-      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
-      if (await page.getByText('任务状态').first().isVisible().catch(() => false)) {
-        throw new Error('复制配置后仍见分析记录筛选，未回到对比配置区');
-      }
-      const industry = await readIndustry();
-      const benchmarks = await readBenchmarkTags();
-      globalThis.__func03313 = { industry, benchmarks };
+      if (!copied) throw new Error('ENV-CHAIN-SZ-COMPARE-BENCH-INVALID-03313：已完成行复制后标杆仍无法识别');
+      globalThis.__func03313 = {
+        industry: await readIndustryLabel(),
+        benchmarks: await readBenchmarkTags(),
+      };
   - note: 2、产业名称和标杆城市都回显
     assert: |-
       const snap = globalThis.__func03313;
@@ -136,24 +130,13 @@ expect:
       }
       const benchmarks = Array.isArray(snap.benchmarks) ? snap.benchmarks : [];
       const mainTxt = ((await page.locator('main').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      const benchEcho =
-        benchmarks.length > 0
-          ? benchmarks.join(' ')
-          : mainTxt;
-      if (!/(上海|北京|广州|杭州|苏州|南京|成都|shanghai|beijing|suzhou|guangzhou|hangzhou|nanjing|chengdu)/i.test(benchEcho)) {
+      const benchEcho = benchmarks.length > 0 ? benchmarks.join(' ') : mainTxt;
+      if (!/(上海|北京)/.test(benchEcho)) {
         throw new Error('标杆城市未回显：tags=' + JSON.stringify(benchmarks));
       }
-      await expect(page.locator('.arco-select-view[aria-label="产业"]').first()).toBeVisible({ timeout: 8000 });
   - note: 3、「开始分析」可点击
     assert: |-
       const start = page.getByRole('button', { name: '开始分析' }).first();
       await expect(start).toBeVisible({ timeout: 8000 });
-      const warn = page.getByText('存在无法识别的标杆区域').first();
-      if (await warn.isVisible().catch(() => false)) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCH-INVALID-03313：复制配置后标杆无法识别，开始分析保持禁用');
-      }
       await expect(start).toBeEnabled({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=entry-seed /industry-center/shenzhen?workspace=comparison&tab=comparison；用例=分析记录已完成行「复制配置」→对比 Tab 分析配置区产业+标杆 tag 回显且「开始分析」enabled（onCopyHistoryConfig + patchQuery tab=comparison）。
-  无已完成/复制 disabled/产业或标杆未回显→ENV-CHAIN-SZ-COMPARE-NO-*-03313。edu SPA404→ENV-EDU-TTS-SVCZ-404-001。调整条件走本条不走 03312。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

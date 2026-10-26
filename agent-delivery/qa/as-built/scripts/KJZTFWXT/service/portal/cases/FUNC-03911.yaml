@@ -2,37 +2,56 @@ id: FUNC-03911
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03911
 priority: P1
 tier: B
-title: 页签往返保留产业
+title: 备选-页签往返保留产业
 entry_id: svc-portal
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service-portal
-  - action: evaluate
-    note: 选择产业「生物」；点击「服务机构区域分布」页签；点击「全球服务机构概况」页签
 expect:
   - note: 1、两次切页后产业选择仍为「生物」
     assert: |-
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 20000 });
-      const cascader = page.locator('.svc-portal-filter .arco-cascader-view').first();
-      await expect(cascader).toBeVisible({ timeout: 8000 });
-      await cascader.click();
-      const popup = page.locator('.arco-trigger-popup:visible');
-      await expect(popup).toBeVisible({ timeout: 8000 });
-      const bioInPopup = popup.locator('.arco-cascader-list-item-label').filter({ hasText: /生物/ }).first();
-      await bioInPopup.click();
-      if (await popup.isVisible().catch(() => false)) {
-        const bioLeaf = popup.locator('.arco-cascader-list-item-label').filter({ hasText: /生物/ }).first();
-        if (await bioLeaf.isVisible().catch(() => false)) await bioLeaf.click();
+      const main = () => page.locator('main').first();
+      const filter = () => main().locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      await expect(main().getByRole('heading', { name: '全球服务机构概况' })).toBeVisible({ timeout: 20000 });
+      await expect(filter()).toBeVisible({ timeout: 15000 });
+      const pickBio = async () => {
+        const cluster = filter().locator('.arco-cascader-view').first();
+        await cluster.waitFor({ state: 'visible', timeout: 15000 });
+        let text = ((await filter().innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (/生物/.test(text) && !/新一代信息技术/.test(text)) return;
+        await cluster.click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-cascader-popup:visible').last();
+        await popup.waitFor({ state: 'visible', timeout: 10000 });
+        let clusterOpt = popup.locator('.arco-cascader-option-label').filter({ hasText: /^生物$/ });
+        if (!(await clusterOpt.count())) {
+          clusterOpt = popup.locator('.arco-cascader-option-label').filter({ hasText: /生物产业/ });
+        }
+        await clusterOpt.first().click({ timeout: 10000 });
+        await page.waitForTimeout(500);
+        const l0Opt = popup.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option-label').filter({ hasText: /生物医药/ });
+        if (await l0Opt.count()) {
+          await l0Opt.first().click({ timeout: 8000 });
+        }
+        await page.waitForTimeout(1000);
+        await page.keyboard.press('Escape').catch(() => {});
+        text = ((await filter().innerText()) || '').replace(/\s+/g, ' ').trim();
+        if (!/生物/.test(text) || /新一代信息技术/.test(text)) {
+          throw new Error('产业未选中生物，现场=' + text);
+        }
+      };
+      await pickBio();
+      await main().getByText('服务机构区域分布', { exact: true }).first().click({ timeout: 10000 });
+      await page.waitForURL(/service-portal\/region-map/, { timeout: 20000 });
+      await expect(filter()).toBeVisible({ timeout: 15000 });
+      await main().getByText('全球服务机构概况', { exact: true }).first().click({ timeout: 10000 });
+      await page.waitForURL(/service-portal\/overview/, { timeout: 20000 });
+      await expect(filter()).toBeVisible({ timeout: 15000 });
+      const text = ((await filter().innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/生物/.test(text) || /新一代信息技术/.test(text)) {
+        throw new Error('两次切页后产业未保留生物，现场=' + text);
       }
-      await page.waitForTimeout(400);
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '服务机构区域分布', exact: true }).click();
-      await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
-      await expect(cascader).toContainText(/生物/, { timeout: 8000 });
-      await tablist.getByRole('tab', { name: '全球服务机构概况', exact: true }).click();
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: '全球服务机构概况', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      await expect(cascader).toContainText(/生物/, { timeout: 8000 });
+      await expect(filter().getByText(/生物/)).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

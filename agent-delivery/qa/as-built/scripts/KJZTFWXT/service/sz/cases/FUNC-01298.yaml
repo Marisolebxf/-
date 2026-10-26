@@ -9,20 +9,42 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
+  - action: wait
+    target: "800"
+  - action: evaluate
+    target: |-
+      const main = page.locator('main').first();
+      const view = main.locator('[data-testid="svc-eco-analysis-context"] .arco-cascader-view');
+      await view.click({ timeout: 15000 });
+      const panel = page.locator('.arco-cascader-panel').last();
+      const option = panel.locator('.arco-cascader-option').filter({ hasText: /^新能源$/ }).first();
+      await option.waitFor({ state: 'visible', timeout: 15000 });
+      await option.click({ timeout: 15000 });
+      await expect(view).toContainText('新能源', { timeout: 10000 });
+  - action: click
+    target: locator('[data-tab-key="records"]')
+  - action: wait
+    target: "600"
+  - action: click
+    target: locator('[data-tab-key="shenzhen"]')
+  - action: wait
+    target: "400"
 expect:
   - note: 1、两个页签都能进入
     assert: |-
-      await page.getByText('新能源', { exact: true }).click();
-      await page.getByRole('tab', { name: '分析记录' }).click();
-      await expect(page.getByRole('tab', { name: '分析记录' })).toHaveAttribute('aria-selected', 'true');
-      await page.getByRole('tab', { name: '深圳服务链现状分析' }).click();
-      await expect(page.getByRole('tab', { name: '深圳服务链现状分析' })).toHaveAttribute('aria-selected', 'true');
-      await expect(page).toHaveURL(/tab=shenzhen/);
+      const tablist = page.locator('.global-workbench-tabs[role="tablist"]').first();
+      await expect(page.locator('[data-tab-key="records"]')).toBeVisible();
+      await expect(page.locator('[data-tab-key="shenzhen"]')).toBeVisible();
+      await page.locator('[data-tab-key="records"]').click();
+      await expect(page.locator('[data-testid="svc-eco-analysis-records"]')).toBeVisible({ timeout: 10000 });
+      await page.locator('[data-tab-key="shenzhen"]').click();
+      await expect(page.locator('[data-testid="svc-eco-analysis-config"]')).toBeVisible({ timeout: 10000 });
   - note: 2、回来后产业仍为「新能源」
     assert: |-
-      await expect(page.locator('.arco-select-view').filter({ hasText: '新能源' }).first()).toBeVisible();
+      await expect(page.locator('main [data-testid="svc-eco-analysis-context"] .arco-cascader-view')).toContainText('新能源');
   - note: 3、往返不创建分析任务
     assert: |-
-      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByText('深圳服务链现状分析生成中')).toHaveCount(0);
+      await expect(page.locator('[data-testid="svc-eco-analysis-config"]')).toBeVisible();
       await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

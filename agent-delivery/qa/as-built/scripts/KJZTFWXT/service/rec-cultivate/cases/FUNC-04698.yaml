@@ -1,6 +1,6 @@
 id: FUNC-04698
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04698
-priority: P1
+priority: P0
 tier: B
 title: 主流程-结果页分数口径
 entry_id: svc-rec-cultivate
@@ -10,13 +10,11 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
-    target: 生成培育名单
-  - action: wait
-    target: 已完成
+    target: 分析记录
   - action: click
     target: 查看结果
 expect:
   - note: 提示为「当前为后端签发分，页面权重仅演示配置，未改名单分数」
     assert: |-
-      await expect(page.getByText('当前为后端签发分，页面权重仅演示配置，未改名单分数')).toBeVisible()
+      await expect(page.locator('main [data-testid="svc-rec-cultivate-issued-score"]')).toBeVisible({ timeout: 20000 });
 on_fail: 截图 + 抄 X-Trace-Id

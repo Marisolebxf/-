@@ -1,162 +1,65 @@
 id: FUNC-02904
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02904
-priority: P0
-title: 成功结果页叙述降级与周期旅程未返回说明
-story: US-CHAIN-DIAG-02
+priority: P1
+tier: B
+title: 主流程-结果摘要-降级说明
 entry_id: chain-cycle
-tier: A
-preconditions:
-  - 已打开成功结果（assert 自含：诊断记录恢复或 02888 指纹首次成功）
-locators:
-  degrade_notice: text「叙述能力不可用，已按规则结果诚实降级。」
-  journey_placeholder: text「周期旅程未返回，不伪造阶段文案」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=cycle&tab=cycle
   - action: evaluate
-    note: 打开该次成功结果页；降级说明在 expect
+    note: 02888 金样至成功结果页（前置：已打开成功结果）
 expect:
-  - note: 前置：打开该次结果页（步骤 1）
-    assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const route = '/industry-center/diagnosis?workspace=cycle&tab=cycle';
-      const main = () => page.locator('main.content-shell-layout, main').first();
-      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup:visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const pickSelect = async (aria, text) => {
-        await page.keyboard.press('Escape').catch(() => {});
-        const view = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
-        await expect(view).toBeVisible({ timeout: 8000 });
-        const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (shown.includes(text)) return;
-        await view.click({ timeout: 8000 });
-        await page.waitForTimeout(450);
-        const opt = page.locator(optSel).filter({ hasText: text }).first();
-        await expect(opt).toBeVisible({ timeout: 8000 });
-        await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      };
-      const pickTimeRange = async (label) => {
-        const timeSel = page.locator('.arco-select-view').filter({ hasText: /近\d年/ }).first();
-        await timeSel.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-      };
-      const apply02888Config = async () => {
-        await dismissBasket();
-        await pickSelect('集群', '新一代信息技术');
-        await pickSelect('产业', '半导体与集成电路');
-        await pickTimeRange('近5年');
-        await page.locator('[role=spinbutton]').nth(0).fill('88000');
-        await page.waitForTimeout(300);
-      };
-      const isSuccessResult = async () => {
-        if (!/view=result/.test(page.url()) && !new URL(page.url()).searchParams.get('task_id')) return false;
-        const t = await main().innerText().catch(() => '');
-        if (/产业周期分析生成中|可视化分析过程/.test(t) && !/产业周期分析结果/.test(t)) return false;
-        return await page.getByText('产业周期分析结果').first().isVisible().catch(() => false);
-      };
-      const openResultFromProcessing = async () => {
-        const btn = page.getByRole('button', { name: /查看分析结果/ });
-        for (let i = 0; i < 30; i++) {
-          if (await isSuccessResult()) return;
-          if (await btn.count() && (await btn.first().isVisible().catch(() => false))) {
-            await btn.first().click({ timeout: 8000 }).catch(() => {});
-            await page.waitForTimeout(800);
-            if (await isSuccessResult()) return;
-          }
-          await page.waitForTimeout(i < 6 ? 500 : 1500);
-        }
-      };
-      const waitSuccessAfterStart = async () => {
-        let last = '';
-        for (let i = 0; i < 90; i++) {
-          await page.waitForTimeout(i < 4 ? 500 : 2000);
-          last = await main().innerText().catch(() => '');
-          if (await isSuccessResult()) return;
-          if (/分析结果已生成/.test(last)) {
-            await openResultFromProcessing();
-            if (await isSuccessResult()) return;
-          }
-          if (/分析失败|本次分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('ENV-CHAIN-CYCLE-ANALYSIS-FAIL-001：无法到达成功结果前置');
-          }
-        }
-        if (/view=processing|可视化分析过程/.test(page.url() + last)) {
-          throw new Error('ENV-CHAIN-CYCLE-ASYNC-NO-SUCCESS-001：分析长期停留过程态');
-        }
-        throw new Error('成功结果未在超时内打开：' + last.slice(0, 220));
-      };
-      const restoreCompletedIfNeeded = async () => {
-        if (await isSuccessResult()) return true;
-        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(900);
-        const views = main().getByRole('button', { name: '查看结果' });
-        const n = await views.count();
-        for (let i = 0; i < Math.min(n, 8); i++) {
-          let row = views.nth(i).locator('xpath=ancestor::tr[1]');
-          if ((await row.count()) < 1) row = views.nth(i).locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-          const rt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (!rt || !/已完成/.test(rt) || !/产业周期分析/.test(rt)) continue;
-          await views.nth(i).click({ timeout: 15000 });
-          for (let j = 0; j < 24; j++) {
-            await page.waitForTimeout(500);
-            if (await isSuccessResult()) return true;
-          }
-        }
-        return false;
-      };
-      await dismissBasket();
-      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(1000);
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业周期分析 SPA 404 ' + page.url());
-      }
-      if (!(await restoreCompletedIfNeeded())) {
-        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1000);
-        await apply02888Config();
-        const start = main().getByRole('button', { name: '开始分析' }).first();
-        await expect(start).toBeEnabled({ timeout: 20000 });
-        await start.click({ timeout: 15000 });
-        await waitSuccessAfterStart();
-      }
-      await expect(page.getByText('产业周期分析结果').first()).toBeVisible({ timeout: 15000 });
-      globalThis.__func02904 = { body: await main().innerText().catch(() => '') };
   - note: 1、出现「叙述能力不可用，已按规则结果诚实降级。」
     assert: |-
-      const needle = '叙述能力不可用，已按规则结果诚实降级。';
-      const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
-      if (!body.includes(needle)) {
-        if (/产业周期阶段判断|阶段旅程已/.test(body) && !body.includes('周期旅程未返回')) {
-          throw new Error('ENV-CHAIN-CYCLE-NARRATIVE-LIVE-001：叙述能力已返回，本用例验降级说明');
-        }
-        throw new Error('结果页应出现叙述降级说明，实际摘要=' + JSON.stringify(body.slice(0, 280)));
+      const main = page.locator('main');
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const pickSelect = async (ariaLabel, label) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = main.locator(`.arco-select-view[aria-label="${ariaLabel}"]`).first();
+        await trigger.scrollIntoViewIfNeeded();
+        await trigger.click({ timeout: 12000 });
+        await page.waitForTimeout(450);
+        const opt = page.locator(optSel).filter({ hasText: label }).first();
+        await expect(opt).toBeVisible({ timeout: 10000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+      };
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 15000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      const clusterTrigger = main.locator('.arco-select-view[aria-label="集群"]');
+      if (await clusterTrigger.isVisible().catch(() => false)) {
+        await pickSelect('集群', '新一代信息技术');
       }
-      await expect(page.getByText(needle).first()).toBeVisible({ timeout: 8000 });
+      const industryTrigger = main.locator('.arco-select-view[aria-label="产业"]');
+      const industryText = await industryTrigger.innerText().catch(() => '');
+      if (!industryText.includes('半导体与集成电路')) {
+        await pickSelect('产业', '半导体与集成电路');
+      }
+      const timeTrigger = main.locator('.diagnosis-config-identity .arco-select-view').first();
+      await timeTrigger.click({ timeout: 8000 });
+      await page.waitForTimeout(350);
+      await page.locator(optSel).filter({ hasText: '近5年' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(300);
+      const marketRow = main.locator('tr').filter({ hasText: '市场规模' }).first();
+      const marketInput = marketRow.locator('input').first();
+      await marketInput.scrollIntoViewIfNeeded();
+      await marketInput.click();
+      await marketInput.fill('');
+      await marketInput.fill('88000');
+      await page.waitForTimeout(200);
+      await page.getByRole('button', { name: '开始分析' }).click({ timeout: 10000 });
+      const openedResult = page.getByRole('heading', { name: '产业周期分析结果' });
+      const onResult = await openedResult.isVisible({ timeout: 5000 }).catch(() => false);
+      if (!onResult) {
+        await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+        await page.getByRole('button', { name: '查看分析结果' }).click({ timeout: 15000 });
+        await expect(openedResult).toBeVisible({ timeout: 20000 });
+      }
+      await expect(main.getByText('叙述能力不可用，已按规则结果诚实降级。')).toBeVisible({ timeout: 15000 });
   - note: 2、出现「周期旅程未返回，不伪造阶段文案」
     assert: |-
-      const body = globalThis.__func02904?.body || (await page.locator('main.content-shell-layout, main').first().innerText().catch(() => ''));
-      const needle = '周期旅程未返回，不伪造阶段文案';
-      if (!body.includes(needle)) {
-        const afterStage = body.match(/周期阶段[\s\S]{0,200}/);
-        if (afterStage && !/未返回|不伪造/.test(afterStage[0])) {
-          throw new Error('ENV-CHAIN-CYCLE-JOURNEY-LIVE-001：周期旅程已返回阶段文案，本用例验未返回占位');
-        }
-        throw new Error('结果页应出现周期旅程未返回说明，实际=' + JSON.stringify(body.slice(body.indexOf('周期阶段') >= 0 ? body.indexOf('周期阶段') : 0, 320)));
-      }
-      await expect(page.getByText(needle).first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle。成功结果页叙述不可用时展示
-  「叙述能力不可用，已按规则结果诚实降级。」与「周期旅程未返回，不伪造阶段文案」（scout-version-result head）。
-  叙述/旅程均已接通时为另态 ENV-CHAIN-CYCLE-NARRATIVE-LIVE-001 / ENV-CHAIN-CYCLE-JOURNEY-LIVE-001。前置同 02901。A 档零 allow_skip。
+      await expect(page.locator('main').getByText('周期旅程未返回，不伪造阶段文案')).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

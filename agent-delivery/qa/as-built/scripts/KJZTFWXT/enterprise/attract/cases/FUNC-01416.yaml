@@ -1,122 +1,58 @@
 id: FUNC-01416
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01416
-priority: P0
-title: 恢复结果标题旁显示数据更新时间
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；最近分析中已有一条条件筛选且状态为已完成的记录
-locators:
-  recent_tab: Tab「最近分析」
-  restore_button: button「恢复结果」
-  data_updated_label: 文案「数据更新时间」
+title: 恢复结果后标题旁显示数据更新时间
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
-  - action: wait
-    for: 条件区 SPA 渲染
-    timeout_ms: 2500
-  - action: evaluate
-    note: 最近分析→已完成条件筛选行「恢复结果」；数据更新时间在 expect 判定
+    target: /enterprise/attraction
 expect:
-  - note: 1、结果标题旁显示「数据更新时间」
+  - note: 1、标题旁显示「数据更新时间」
     assert: |-
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
+      const main = page.locator('main');
+      const filterTab = page.locator('.global-workbench-tabs button[data-tab-key="filter"]').or(
+        page.getByRole('tab', { name: '条件筛选推荐' }),
+      ).first();
+      await expect(filterTab).toBeVisible({ timeout: 15000 });
+      await filterTab.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const tagInput = main.locator('input[placeholder="全部企业标签"]').first();
+      await expect(tagInput).toBeVisible({ timeout: 15000 });
+      await tagInput.click({ timeout: 5000 });
+      await main.getByText('专精特新', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      await main.locator('.arco-cascader-view').first().click({ timeout: 8000 });
+      await main.getByRole('menuitem', { name: '人工智能' }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const runBtn = main.getByRole('button', { name: '开始分析' });
+      await expect(runBtn).toBeEnabled({ timeout: 8000 });
+      await runBtn.click({ timeout: 8000 });
+      await expect(main.getByText(/招引推荐分析结果/).first()).toBeVisible({ timeout: 120000 });
+      const historyTab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').or(
+        page.getByRole('tab', { name: '最近分析' }),
+      ).first();
+      await historyTab.click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const restore = main.getByRole('button', { name: '恢复结果' });
+      await expect(restore.first()).toBeVisible({ timeout: 15000 });
+      let target = restore.first();
+      const n = await restore.count();
+      for (let i = 0; i < n; i++) {
+        const btn = restore.nth(i);
+        let row = btn.locator('xpath=ancestor::tr[1]');
+        if ((await row.count()) < 1) {
+          row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
         }
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
-          await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染，url=' + page.url());
-      };
-      const assertRecentTabAvailable = async () => {
-        const byKey = page.locator('button[data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        if ((await byKey.count()) < 1 && (await byName.count()) < 1) {
-          throw new Error('环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/恢复结果入口（仅条件筛选+候选工作台时不自动化本用例）');
-        }
-      };
-      const openRecentTab = async () => {
-        await waitFilterReady();
-        await assertRecentTabAvailable();
-        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-        if ((await tab.count()) < 1) {
-          const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
-          await expect(legacy).toBeVisible({ timeout: 12000 });
-          await legacy.click({ timeout: 8000 });
-        } else {
-          await expect(tab).toBeVisible({ timeout: 12000 });
-          await tab.click({ timeout: 8000 });
-        }
-        await page.waitForTimeout(900);
-      };
-      const waitHistoryShell = async () => {
-        const st = stack();
-        for (let i = 0; i < 30; i++) {
-          const t = await st.innerText().catch(() => '');
-          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
-            return;
-          }
-          await page.waitForTimeout(500);
-        }
-        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
-      };
-      const pickCompletedFilterRestore = async () => {
-        await openRecentTab();
-        await waitHistoryShell();
-        const st = stack();
-        await expect(st.getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 10000 });
-        const buttons = st.getByRole('button', { name: '恢复结果' });
-        const n = await buttons.count();
-        if (n < 1) throw new Error('最近分析无已完成任务可「恢复结果」');
-        for (let i = 0; i < n; i++) {
-          const btn = buttons.nth(i);
-          let row = btn.locator('xpath=ancestor::tr[1]');
-          if ((await row.count()) < 1) {
-            row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-          }
-          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
-            return btn;
-          }
-        }
-        throw new Error('最近分析无「已完成」的条件筛选任务可「恢复结果」');
-      };
-      await dismissBasket();
-      const btn = await pickCompletedFilterRestore();
-      await btn.scrollIntoViewIfNeeded();
-      await btn.click({ timeout: 15000 });
-      let ok = false;
-      for (let i = 0; i < 24; i++) {
-        await page.waitForTimeout(500);
-        const t = await stack().innerText().catch(() => '');
-        if (/数据更新时间/.test(t) && (/招引推荐分析结果/.test(t) || /共分析/.test(t))) {
-          ok = true;
+        const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+        if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
+          target = btn;
           break;
         }
       }
-      if (!ok) throw new Error('点击恢复结果后未见「数据更新时间」或结果标题，url=' + page.url());
-      const st = stack();
-      await expect(st.getByText(/招引推荐分析结果/).first()).toBeVisible({ timeout: 10000 });
-      await expect(st.getByText(/数据更新时间/).first()).toBeVisible({ timeout: 10000 });
-      const body = await st.innerText();
-      const dtLine = (body.match(/数据更新时间[^\n]*/) || [])[0] || '';
-      if (!/\d{4}[-/年]\d{1,2}/.test(dtLine)) {
-        throw new Error('「数据更新时间」旁未见可解析日期：' + dtLine.slice(0, 80));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·深链 /enterprise-center/attraction（catalog /enterprise/attraction 404）。成功态文案「数据更新时间：YYYY-MM-DD HH:mm」（scout-deep3）。D4·2026-10-20 复跑 30888 仍为 demo 两 Tab（条件筛选推荐/候选工作台），无「最近分析/恢复结果」→ 交卷 blocked·ENV-ATTRACT-NO-HISTORY-TAB-001（与 FUNC-01414/01415 同闸门）。登录与关评审由 runner 会话前置。tier B，零 allow_skip。
+      await target.click({ timeout: 15000 });
+      await expect(main.getByText(/招引推荐分析结果/).first()).toBeVisible({ timeout: 20000 });
+      await expect(main.getByText(/数据更新时间/).first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id

@@ -4,24 +4,34 @@ priority: P1
 tier: B
 title: 备选-当天再次开始
 entry_id: svc-rec-attract
-preconditions:
-  - 当天已有一次相同条件的成功结果
-  - 已回到分析配置且条件未改
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service/institution-decision?workspace=attract&tab=attract
+    target: /service/institution-decision?workspace=attract&tab=attract&industry=CL-SEI-02.INB2503
+  - action: wait
+    target: 800ms
   - action: click
-    target: 生成招引名单
+    target: 按钮 生成招引名单
+  - action: wait
+    target: 分析过程完成
   - action: click
-    target: 分析配置
+    target: 按钮 查看结果
+  - action: wait
+    target: 名单加载
   - action: click
-    target: 生成招引名单
+    target: 按钮 返回配置
+  - action: wait
+    target: 800ms
+  - action: click
+    target: 按钮 生成招引名单
+  - action: wait
+    target: 800ms
 expect:
-  - note: 打开已有结果页
+  - note: 1、打开已有结果页
     assert: |-
-      await expect(page.getByRole('button', { name: '重新分析' })).toBeVisible()
-  - note: 不新增分析任务
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 })
+  - note: 2、不新增分析任务
     assert: |-
-      await expect(page.getByText('分析中')).toHaveCount(0)
+      await expect(page.getByRole('button', { name: '查看结果' })).not.toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

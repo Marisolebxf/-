@@ -11,15 +11,20 @@ steps:
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
     target: 分析记录
+  - action: wait
+    timeout_ms: 2000
 expect:
   - note: 表头为任务、类型、状态、创建时间、操作
     assert: |-
-      const table = page.locator('.arco-table').first();
-      for (const name of ['任务号', '分析类型', '任务状态', '提交时间', '操作']) {
-        await expect(table.getByRole('columnheader', { name })).toBeVisible();
-      }
+      const records = page.getByTestId('svc-rec-cultivate-records');
+      await expect(records.getByRole('columnheader', { name: '任务号' })).toBeVisible();
+      await expect(records.getByRole('columnheader', { name: '分析类型' })).toBeVisible();
+      await expect(records.getByRole('columnheader', { name: '任务状态' })).toBeVisible();
+      await expect(records.getByRole('columnheader', { name: '提交时间' })).toBeVisible();
+      await expect(records.getByRole('columnheader', { name: '操作' })).toBeVisible();
   - note: 列表中能看到已完成和失败
     assert: |-
-      await expect(page.locator('.arco-table').getByText('已完成').first()).toBeVisible();
-      await expect(page.locator('.arco-table').getByText('失败').first()).toBeVisible();
+      const records = page.getByTestId('svc-rec-cultivate-records');
+      await expect(records.getByText('已完成').first()).toBeVisible();
+      await expect(records.getByText('失败').first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

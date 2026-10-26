@@ -1,69 +1,81 @@
 id: FUNC-03208
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03208
-priority: P0
-title: 诊断记录「查看结果」打开历史结果
-story: US-CHAIN-DIAG-07
-entry_id: chain-bottleneck
+priority: P1
 tier: B
-preconditions:
-  - 诊断记录中有已完成任务
+title: 诊断记录查看结果打开历史结果页
+entry_id: chain-bottleneck
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
   - action: evaluate
-    note: 诊断记录 tab 内对已完成行点「查看结果」
-expect:
-  - note: 步骤 1=对已完成任务点「查看结果」；预期 1=进入「产业瓶颈堵点识别结果」
-    assert: |-
+    note: 诊断记录→若无已完成则按金样复制配置并分析→对已完成行点「查看结果」
+    target: |-
       const main = () => page.locator('main').first();
-      const extractTaskId = (rowText) => {
-        const m = rowText.match(/CHAIN-\d{8}-\d{3}/);
-        return m ? m[0] : null;
-      };
-      const recordsTab = page.getByRole('tab', { name: '诊断记录' }).first();
-      await expect(recordsTab).toBeVisible({ timeout: 15000 });
-      await recordsTab.click({ timeout: 10000 });
-      await page.waitForTimeout(1000);
-      const rows = main()
-        .locator('tbody tr, .arco-table-tr')
-        .filter({ hasText: '产业瓶颈堵点识别' })
-        .filter({ hasText: /已完成/ });
-      const n = await rows.count();
-      if (n < 1) {
-        throw new Error('前置未满足：30892 诊断记录无已完成瓶颈任务');
+      const recordsTab = () => page.getByRole('tab', { name: '诊断记录' }).first();
+
+      async function pickStatus(label) {
+        const box = main().locator('.diagnosis-records__filters .arco-select-view').first();
+        await box.click();
+        await page.getByRole('option', { name: label }).click();
+        await page.waitForTimeout(800);
       }
-      let opened = false;
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
-        const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const taskId = extractTaskId(rowText);
-        if (!taskId) continue;
-        const view = row.getByRole('button', { name: '查看结果' }).first();
-        if (!(await view.count()) || (await view.isDisabled().catch(() => true))) continue;
-        await view.click({ timeout: 12000 });
-        for (let j = 0; j < 30; j++) {
-          await page.waitForTimeout(500);
-          const body = await main().innerText().catch(() => '');
-          if (/产业瓶颈堵点识别结果/.test(body)) {
-            globalThis.__func03208 = { taskId };
-            opened = true;
-            break;
-          }
+
+      async function findCompletedRow() {
+        const rows = main().locator('tbody tr');
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          const status = ((await row.locator('td').nth(2).innerText()) || '').trim();
+          if (!status.includes('已完成')) continue;
+          const btn = row.getByRole('button', { name: '查看结果' });
+          if (await btn.isEnabled()) return row;
         }
-        if (opened) break;
+        return null;
       }
-      if (!opened) {
-        throw new Error('已完成行「查看结果」未进入结果页');
+
+      async function runGoldFromRecords() {
+        await pickStatus('全部状态');
+        await main().locator('tbody tr').first().getByRole('button', { name: '复制配置' }).click();
+        await expect(page.getByText('已复制分析配置，可调整后重新分析')).toBeVisible({ timeout: 8000 });
+        await main().getByRole('button', { name: '开始分析' }).click();
+        await expect(main().getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+        await main().getByRole('button', { name: '查看分析结果' }).click();
+        await expect(main.getByText('产业瓶颈堵点识别结果', { exact: true })).toBeVisible();
       }
-      await expect(main().getByText('产业瓶颈堵点识别结果').first()).toBeVisible({ timeout: 20000 });
+
+      await recordsTab().click();
+      await page.waitForURL(/tab=records/);
+      await pickStatus('已完成');
+      let row = await findCompletedRow();
+      if (!row) {
+        await runGoldFromRecords();
+        await recordsTab().click();
+        await page.waitForURL(/tab=records/);
+        await pickStatus('已完成');
+        row = await findCompletedRow();
+        if (!row) throw new Error('诊断记录仍无已完成瓶颈任务');
+      }
+
+      const taskId = ((await row.locator('td').first().innerText()) || '').trim().split(/\s+/)[0];
+      if (!taskId) throw new Error('未读到任务 ID');
+      await page.evaluate((id) => {
+        window.__func03208TaskId = id;
+      }, taskId);
+      await row.getByRole('button', { name: '查看结果' }).click();
+      await expect(main().getByText('产业瓶颈堵点识别结果', { exact: true })).toBeVisible({ timeout: 15000 });
+  - action: wait
+    note: 结果页渲染
+    target: 800ms
+expect:
+  - note: 1、进入「产业瓶颈堵点识别结果」
+    assert: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('产业瓶颈堵点识别结果', { exact: true })).toBeVisible();
   - note: 2、任务 ID 与所点行一致
     assert: |-
-      const taskId = globalThis.__func03208?.taskId;
-      if (!taskId) throw new Error('前置：未记录所点行任务 ID');
       const main = page.locator('main').first();
-      const body = await main.innerText().catch(() => '');
-      if (!body.includes(taskId)) {
-        throw new Error('结果页任务 ID 与所点行不一致：' + taskId);
-      }
-on_fail: 截图 + X-Trace-Id
+      const taskId = await page.evaluate(() => window.__func03208TaskId);
+      await expect(main.getByText(`任务 ID：${taskId}`)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

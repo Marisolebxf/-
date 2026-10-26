@@ -10,16 +10,17 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
-    target: 分析记录
+    target: '[data-testid="svc-rec-cultivate-shell"] >> text=分析记录'
 expect:
   - note: 失败行的「查看结果」不可用
     assert: |-
-      await page.locator('.arco-select').filter({ hasText: '全部状态' }).locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '失败' }).click();
-      const failedRow = page.locator('tr').filter({ hasText: '失败' }).first();
-      await expect(failedRow.getByRole('button', { name: '查看结果' })).toBeDisabled();
+      const main = page.locator('main');
+      const failRow = main.getByRole('row').filter({ hasText: '失败' }).first();
+      await expect(failRow).toBeVisible();
+      await expect(failRow.getByRole('button', { name: '查看结果' })).toBeDisabled();
   - note: 同一行的「查看过程」可用
     assert: |-
-      const failedRow = page.locator('tr').filter({ hasText: '失败' }).first();
-      await expect(failedRow.getByRole('button', { name: '查看过程' })).toBeEnabled();
+      const main = page.locator('main');
+      const failRow = main.getByRole('row').filter({ hasText: '失败' }).first();
+      await expect(failRow.getByRole('button', { name: '查看过程' })).toBeEnabled();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -9,18 +9,30 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: evaluate
-    target: |-
-      const main = page.locator('main');
-      await main.locator('.arco-cascader-view').first().click();
-      await page.locator('.arco-cascader-panel-column').first().getByText('新一代信息技术', { exact: true }).click();
-      await main.locator('.arco-cascader-view').nth(1).click();
-      await page.locator('.arco-cascader-panel-column').first().getByText('半导体与集成电路', { exact: true }).click();
+  - action: click
+    note: 选择产业「新一代信息技术」
+    assert: |-
+      const filter = page.locator('.svc-portal-filter');
+      await filter.locator('.arco-cascader-view').click({ timeout: 15000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.locator('.arco-cascader-column').nth(0).getByText('新一代信息技术', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+  - action: click
+    note: 选择产业链「半导体与集成电路」
+    assert: |-
+      const filter = page.locator('.svc-portal-filter');
+      let popup = page.locator('.arco-cascader-popup:visible');
+      if (!(await popup.count())) {
+        await filter.locator('.arco-cascader-view').click({ timeout: 15000 });
+        popup = page.locator('.arco-cascader-popup:visible');
+      }
+      await popup.locator('.arco-cascader-column').nth(1).getByText('半导体与集成电路', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
 expect:
   - note: 1、榜单标题为「半导体与集成电路 · 技术力 Top30」
     assert: |-
-      await expect(page.getByRole('main').getByText('半导体与集成电路 · 技术力 Top30')).toBeVisible()
+      await expect(page.getByText('半导体与集成电路 · 技术力 Top30')).toBeVisible({ timeout: 20000 });
   - note: 2、上下文句子含「半导体与集成电路」
     assert: |-
-      await expect(page.getByRole('main').getByText(/半导体与集成电路/)).toBeVisible()
+      await expect(page.locator('body')).toContainText('半导体与集成电路', { timeout: 20000 });
 on_fail: 截图 + 抄 X-Trace-Id

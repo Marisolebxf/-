@@ -1,6 +1,6 @@
 id: FUNC-04509
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04509
-priority: P1
+priority: P0
 tier: B
 title: 备选-重新分析
 entry_id: svc-chain-graph
@@ -9,25 +9,52 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
-  - action: select_option
-    target: 产业领域
-    value: 新一代信息技术
+  - action: evaluate
+    target: |-
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-popup:visible').locator('.arco-cascader-option-label').filter({ hasText: /^新一代信息技术/ }).first().click({ timeout: 15000 });
   - action: click
     target: 开始分析
+  - action: evaluate
+    target: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('分析结果已生成')).toBeVisible({ timeout: 90000 });
+      await expect(main.getByText('已完成').first()).toBeVisible({ timeout: 15000 });
+      const bodyText = await main.innerText();
+      const m = bodyText.match(/任务 ID\\s*(SVC-[A-Za-z0-9-]+)/);
+      const taskNo = m ? m[1] : '';
+      await page.evaluate((id) => { window.__qaFunc04509Task1 = id; }, taskNo);
   - action: click
     target: 查看结果
-  - action: click
-    target: 重新分析
+  - action: evaluate
+    target: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('服务生态关系图谱')).toBeVisible({ timeout: 30000 });
+      await main.getByRole('button', { name: '重新分析', exact: true }).click();
+  - action: evaluate
+    target: |-
+      const main = page.locator('main').first();
+      await expect(main.getByText('分析结果已生成')).toBeVisible({ timeout: 90000 });
+      await expect(main.getByText('已完成').first()).toBeVisible({ timeout: 15000 });
+      const bodyText = await main.innerText();
+      const m = bodyText.match(/任务 ID\\s*(SVC-[A-Za-z0-9-]+)/);
+      const taskNo = m ? m[1] : '';
+      await page.evaluate((id) => { window.__qaFunc04509Task2 = id; window.__qaFunc04509Round2Done = true; }, taskNo);
   - action: click
     target: 查看结果
 expect:
-  - note: 图谱滤镜变为「② 机构+关联主体」
+  - note: 进入新的过程页且任务号与上一轮不同
     assert: |-
-      await expect(page.getByText('② 机构+关联主体')).toBeVisible()
-  - note: 不出现「生成中」
+      const t1 = await page.evaluate(() => window.__qaFunc04509Task1);
+      const t2 = await page.evaluate(() => window.__qaFunc04509Task2);
+      if (!t1 || !t2) throw new Error(`missing task ids t1=${t1} t2=${t2}`);
+      if (t1 === t2) throw new Error(`task id unchanged: ${t1}`);
+  - note: 新过程页状态为「已完成」
     assert: |-
-      await expect(page.getByText('生成中')).toHaveCount(0)
-  - note: 仍显示「服务生态关系图谱」
+      const done = await page.evaluate(() => window.__qaFunc04509Round2Done);
+      if (!done) throw new Error('round2 process not completed');
+  - note: 再次出现「服务生态关系图谱」
     assert: |-
-      await expect(page.getByText('服务生态关系图谱')).toBeVisible()
+      await expect(page.locator('main').first().getByText('服务生态关系图谱')).toBeVisible({ timeout: 30000 });
 on_fail: 截图 + 抄 X-Trace-Id

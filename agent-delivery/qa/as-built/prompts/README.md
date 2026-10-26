@@ -14,6 +14,8 @@
 | 2f | **剩余 pending 32 条父控** | [`rewrite-wave-parent-pending.md`](rewrite-wave-parent-pending.md) | 只派当前 32 条 pending。已有 yaml 的 04296、05191 按用例覆盖。新对话只读此文件。子提示词仍用 2b |
 | 2g | **覆盖表补齐父控** | [`coverage-fp-parent.md`](coverage-fp-parent.md) | 一册一路，并行 3。齐了父控自己合 B 线交付表。子提示词用 2h |
 | 2h | **覆盖表子 agent** | [`coverage-fp-child.md`](coverage-fp-child.md) | 只改一个目录的 coverage-fp.md |
+| 2i | **脚本修订父控** | [`rewrite-wave-parent-revise.md`](rewrite-wave-parent-revise.md) | 只派 blocked 与 fail。用例册不改。新对话只读此文件。子提示词用 2j |
+| 2j | **脚本修订子 agent** | [`rewrite-wave-child-revise.md`](rewrite-wave-child-revise.md) | 只读当前这一册，用同册步骤补前置后再写本条脚本 |
 | 3 | **测试结果** | [`_result.md`](_result.md) | `as-built/runs/{run-id}/` 明细 + `SUMMARY.md` |
 | 4 | **总集提交表** | [`_submit.md`](_submit.md) | 场景用例 **切点投影** 成「一功能点一行」；不处理未覆盖点 |
 

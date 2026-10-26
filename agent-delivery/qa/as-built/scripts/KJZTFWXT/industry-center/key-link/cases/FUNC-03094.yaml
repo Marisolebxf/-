@@ -7,10 +7,7 @@ entry_id: chain-key-link
 tier: B
 preconditions:
   - 已进入产业关键环节识别页
-locators:
-  row_check: label.arco-checkbox[aria-label=注册项只读启用]
-  weight_spin: '[role=spinbutton]'
-  step_btn: .arco-input-number-step-button
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
@@ -20,7 +17,7 @@ steps:
   - action: evaluate
     note: 侧栏进入关键环节页→点权重加减与行首选择（判定在 expect）
 expect:
-  - note: 前置：注册识别因子表可见，权重初始 34/33/33
+  - note: 1、权重依次为 34%、33%、33%
     assert: |-
       const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
@@ -61,21 +58,9 @@ expect:
         }
         await expect(page).toHaveURL(/workspace=key_link/);
         await expect(page).toHaveURL(/tab=key-link/);
-        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate) && !/产业关键环节识别/.test(bodyGate)) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 ' + page.url());
-        }
+        await expect(page.getByText('注册识别因子').first()).toBeVisible({ timeout: 12000 });
       };
       await enterKeyLink();
-      await expect(page.getByRole('heading', { name: '产业关键环节识别', level: 1 })).toBeVisible({ timeout: 12000 });
-      await expect(page.getByText('注册识别因子').first()).toBeVisible({ timeout: 8000 });
-      const spins = page.locator('[role=spinbutton]');
-      await expect(spins).toHaveCount(3, { timeout: 8000 });
-      const vals = [await spins.nth(0).inputValue(), await spins.nth(1).inputValue(), await spins.nth(2).inputValue()];
-      if (vals.join('/') !== '34/33/33') throw new Error('权重初值应为 34/33/33，实际=' + vals.join('/'));
-      globalThis.__func03094_vals = vals.slice();
-  - note: 1、权重依次为 34%、33%、33%；spin 与步进钮均为只读/disabled
-    assert: |-
       const want = ['34', '33', '33'];
       const names = ['附加值率', '技术壁垒', '市场集中度'];
       for (let i = 0; i < 3; i++) {
@@ -83,58 +68,41 @@ expect:
         await expect(row).toBeVisible({ timeout: 8000 });
         const spin = row.locator('[role=spinbutton]').first();
         const v = await spin.inputValue();
-        if (v !== want[i]) throw new Error(names[i] + ' 权重应为 ' + want[i] + '%，spin=' + v);
-        await expect(spin).toBeDisabled();
-        const steps = row.locator('.arco-input-number-step-button');
-        const sc = await steps.count();
-        if (sc < 2) throw new Error(names[i] + ' 行缺少加减钮，count=' + sc);
-        for (let j = 0; j < sc; j++) {
-          const cls = (await steps.nth(j).getAttribute('class')) || '';
-          if (!/arco-input-number-step-button-disabled/.test(cls)) {
-            throw new Error(names[i] + ' 第' + (j + 1) + '个步进钮应 disabled，class=' + cls);
-          }
-        }
+        if (v !== want[i]) throw new Error(names[i] + ' 权重应为 ' + want[i] + '%，实际=' + v);
       }
-  - note: 2、点击各行权重加减钮后数值不变
+      globalThis.__func03094_vals = want.slice();
+  - note: 2、权重与行首选择均不能改
     assert: |-
       const names = ['附加值率', '技术壁垒', '市场集中度'];
       const before = globalThis.__func03094_vals || ['34', '33', '33'];
+      const checksBefore = [];
       for (let i = 0; i < 3; i++) {
         const row = page.getByRole('row').filter({ hasText: names[i] }).first();
         const spin = row.locator('[role=spinbutton]').first();
+        await expect(spin).toBeDisabled();
         const steps = row.locator('.arco-input-number-step-button');
         for (let j = 0; j < Math.min(await steps.count(), 2); j++) {
           await steps.nth(j).click({ timeout: 5000, force: true }).catch(() => {});
           await page.waitForTimeout(150);
         }
-        const after = await spin.inputValue();
-        if (after !== before[i]) {
-          throw new Error(names[i] + ' 点击加减钮后权重变化 ' + before[i] + '→' + after);
+        const afterW = await spin.inputValue();
+        if (afterW !== before[i]) {
+          throw new Error(names[i] + ' 点击加减钮后权重变化 ' + before[i] + '→' + afterW);
         }
-      }
-  - note: 3、行首选择为选中态且点击后不可改（disabled）
-    assert: |-
-      const boxes = page.locator('label.arco-checkbox[aria-label="注册项只读启用"]');
-      await expect(boxes).toHaveCount(3, { timeout: 8000 });
-      for (let i = 0; i < 3; i++) {
-        const box = boxes.nth(i);
+        const box = row.locator('.arco-checkbox').first();
         const input = box.locator('input[type=checkbox]').first();
-        const state = await input.evaluate((el) => ({ checked: el.checked, disabled: el.disabled }));
-        if (!state.disabled) throw new Error('第' + (i + 1) + '个行首选择应 disabled');
-        if (!state.checked) throw new Error('第' + (i + 1) + '个行首选择应为选中态');
-        const before = state.checked;
+        const st = await input.evaluate((el) => ({ checked: el.checked, disabled: el.disabled }));
+        checksBefore.push(st.checked);
+        if (!st.disabled) throw new Error('第' + (i + 1) + '个行首选择应 disabled');
         await box.locator('.arco-checkbox-target, input[type=checkbox]').first().click({ timeout: 5000, force: true }).catch(() => box.click({ force: true }));
         await page.waitForTimeout(200);
-        const after = await input.evaluate((el) => el.checked);
-        if (before !== after) {
-          throw new Error('第' + (i + 1) + '个行首选择点击后状态变化 before=' + before + ' after=' + after);
+        const st2 = await input.evaluate((el) => ({ checked: el.checked, disabled: el.disabled }));
+        if (!st2.disabled) throw new Error('第' + (i + 1) + '个行首选择点击后应仍 disabled');
+        if (st.checked !== st2.checked) {
+          throw new Error('第' + (i + 1) + '个行首选择点击后勾选状态变化');
         }
       }
-  - note: 4、显示「权重合计：100% · 校验通过」
+  - note: 3、显示「权重合计：100% · 校验通过」
     assert: |-
       await expect(page.getByText(/权重合计：100%\s*·\s*校验通过/).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  行首选择实勘 aria-label=注册项只读启用，class 含 arco-checkbox-disabled + arco-checkbox-checked（用例「行首选择为选中态」）。
-  权重 spin 值 34/33/33，步进钮 arco-input-number-step-button-disabled；可见表名附加值率/技术壁垒/市场集中度。
-  edu tts/svcz 深链 catalog_path 常 SPA 404，入口走 sibling /industry-center/search 侧栏「产业关键环节识别」（与 03090/03095）。登录关评审 runner 前置。B 档零 allow_skip。

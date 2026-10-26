@@ -3,16 +3,9 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04312
 priority: P1
 tier: B
 title: 备选-清空对比篮 · 确定后机构消失
-story: US-SVC-ORG-08
 entry_id: svc-org-capability
-preconditions:
-  - 已登录 admin（runner 会话前置）
-  - 已打开「返回对比篮」；篮内有服务机构
-locators:
-  import_btn: '[data-testid="svc-org-cap-import-basket"]'
-  return_basket: '[data-testid="svc-org-cap-open-basket"]'
-  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
-  clear_basket: button「清空对比篮」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=capability&tab=capability
@@ -35,11 +28,30 @@ expect:
       };
       const pickerScope = () =>
         page.locator('[data-system-surface-id="compare-basket"]').filter({ hasText: '选择分析服务机构' });
+      const seedOneOrgIfEmpty = async () => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const join = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        if (!(await join.count())) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：检索页无可入篮服务机构');
+        }
+        await join.click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
       const openPickerAfterImport = async () => {
         await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForTimeout(1200);
         await closeBasket();
-        const tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        let tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        if (tagN < 1) {
+          await seedOneOrgIfEmpty();
+          tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        }
         if (tagN < 1) {
           throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：对比篮服务机构不足 1 家，当前 tags=' + tagN);
         }
@@ -68,9 +80,9 @@ expect:
       if (!bodyText.includes('清空篮内全部服务机构')) {
         throw new Error('询问文案未含「清空篮内全部服务机构」：' + bodyText.slice(0, 160));
       }
-      const okBtn = modal.getByRole('button', { name: '确定', exact: true }).or(modal.locator('.arco-btn-primary'));
-      await expect(okBtn.first()).toBeVisible({ timeout: 8000 });
-      await okBtn.first().click({ timeout: 8000 });
+      const okBtn = modal.getByRole('button', { name: '确定', exact: true });
+      await expect(okBtn).toBeVisible({ timeout: 8000 });
+      await okBtn.click({ timeout: 8000 });
       await page.waitForTimeout(600);
       globalThis.__func04312 = { wsReady: true };
   - note: 2、出现「对比篮已清空」
@@ -87,8 +99,4 @@ expect:
       if (selN > 0) {
         throw new Error('清空后仍列出服务机构，aria-label 选择项数=' + selN);
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<1 家→ENV-SVCCAP-BASKET-ORG-LT1-001
-as_built_note: >-
-  蓝本 FUNC-04312（清空对比篮弹框点确定，篮内服务机构清空）。前置=tags≥1→「从对比篮带入」→「返回对比篮」
-  →workspace 点「清空对比篮」→Modal 正文含「清空篮内全部服务机构」→「确定」→Message「对比篮已清空」+「对比篮暂无服务机构」（对称 FUNC-04296 取消）。
-  对齐 ServiceOrgCompareBasketPanel.confirmClearBasket。会清掉当前账号篮内全部服务机构。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04312。零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

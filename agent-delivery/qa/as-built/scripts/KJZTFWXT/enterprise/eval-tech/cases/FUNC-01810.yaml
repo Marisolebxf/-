@@ -1,102 +1,60 @@
 id: FUNC-01810
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01810
 priority: P1
-title: 最近评估翻到第 2 页后换成另一批任务
-story: US-ENT-EVAL-HISTORY
-entry_id: ent-eval-tech
 tier: B
+title: 最近评估翻到第2页后换成另一批任务
+entry_id: ent-eval-tech
 preconditions:
-  - 最近评估总数超过一页（现场表分页 pageSize=10；不足则 ticket=ENV-EVAL-TECH-HISTORY-PAGE2-001）
-locators:
-  tab_recent: tab「最近评估」
-  page2: .arco-pagination-item「2」
+  - 最近评估总数超过一页
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/evaluation?workspace=technology&mode=technology
+    target: /enterprise/evaluation?workspace=technology&mode=technology
   - action: evaluate
-    note: 最近评估→读第 1 页任务 ID→点分页「2」→与第 1 页比对断言在 expect
+    note: 点击「最近评估」
 expect:
   - note: 1、第 2 页任务与第 1 页不同
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892/';
-      const toUrl = (p) => origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p);
-      const evalRoute = '/enterprise-center/evaluation?workspace=technology&mode=technology';
       const PAGE_SIZE = 10;
-      const TID_RE = /(?:DEMO-EVAL-\d{8}-\d+|EVAL-\d{8}-\d{3})/;
-      const main = () => page.locator('main.app-main').first();
-      const closeBasket = async () => {
-        const closeB = page.locator('button[aria-label="关闭对比篮"]');
-        if (await closeB.count() && await closeB.first().isVisible().catch(() => false) && await closeB.first().isEnabled().catch(() => false)) {
-          try { await closeB.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      const clickRecentTab = async () => {
-        const tablists = page.locator('[role=tablist]').filter({ has: page.getByRole('tab', { name: '最近评估', exact: true }) });
-        const list = (await tablists.count()) ? tablists.first() : page.locator('[role=tablist]').first();
-        const recent = list.getByRole('tab', { name: '最近评估', exact: true });
-        await expect(recent).toBeVisible({ timeout: 10000 });
-        await recent.click({ timeout: 8000 });
-        await page.waitForTimeout(800);
-        await expect(recent).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
-      };
-      const readTotalFromPagination = async () => {
-        const pg = main().locator('.arco-pagination').first();
-        if (!(await pg.count()) || !(await pg.isVisible().catch(() => false))) return null;
-        const t = (await pg.innerText().catch(() => '')).replace(/\s+/g, ' ');
-        const m = t.match(/共\s*(\d+)\s*条/);
-        return m ? parseInt(m[1], 10) : null;
-      };
-      const readRowTaskIds = async () => {
-        return await page.evaluate((reSource) => {
-          const re = new RegExp(reSource);
-          const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
-          const ids = [];
-          const tables = [...document.querySelectorAll('main table, main .arco-table')];
-          for (const table of tables) {
-            const rows = [...table.querySelectorAll('tbody tr, .arco-table-body .arco-table-tr')];
-            for (const row of rows) {
-              const text = norm(row.innerText);
-              const m = text.match(re);
-              if (m) ids.push(m[0]);
-            }
-            if (ids.length) break;
-          }
-          return [...new Set(ids)];
-        }, TID_RE.source);
-      };
-      await page.goto(toUrl(evalRoute), { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(800);
-      await closeBasket();
-      await expect(page.getByRole('heading', { name: '企业技术力评估对比分析' }).first()).toBeVisible({ timeout: 15000 });
-      await clickRecentTab();
-      await expect(page.getByRole('button', { name: '新建评估' }).first()).toBeVisible({ timeout: 10000 });
-      const total = await readTotalFromPagination();
-      if (total !== null && total <= PAGE_SIZE) {
-        throw new Error('数据闸门：最近评估共 ' + total + ' 条不大于单页 ' + PAGE_SIZE + '，无法验翻页（ticket=ENV-EVAL-TECH-HISTORY-PAGE2-001）');
+      const tablists = page.locator('[role=tablist]').filter({ has: page.getByRole('tab', { name: '最近评估', exact: true }) });
+      const list = (await tablists.count()) ? tablists.first() : page.locator('[role=tablist]').first();
+      const recent = list.getByRole('tab', { name: '最近评估', exact: true });
+      await expect(recent).toBeVisible({ timeout: 15000 });
+      await recent.click({ timeout: 8000 });
+      await expect(recent).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
+      await expect(page.getByRole('button', { name: '新建评估' }).first()).toBeVisible({ timeout: 15000 });
+      const main = page.locator('main');
+      await expect(main.locator('thead th, .arco-table-header .arco-table-th').first()).toBeVisible({ timeout: 15000 });
+      const pagination = main.locator('.arco-pagination');
+      if (await pagination.count()) await pagination.first().scrollIntoViewIfNeeded();
+      const page2Item = main.locator('.arco-pagination-item').filter({ hasText: /^2$/ });
+      const page2Btn = main.getByRole('button', { name: '2', exact: true });
+      const page2Visible =
+        ((await page2Item.count()) > 0 && (await page2Item.first().isVisible())) ||
+        ((await page2Btn.count()) > 0 && (await page2Btn.first().isVisible()));
+      if (!page2Visible) {
+        throw new Error('数据闸门：最近评估未超过一页（ticket=ENV-EVAL-TECH-HISTORY-PAGE2-001）');
       }
-      const page2Btn = main().locator('.arco-pagination-item').filter({ hasText: /^2$/ }).first();
-      const hasPage2 = (await page2Btn.count()) > 0 && (await page2Btn.isVisible().catch(() => false));
-      if (!hasPage2) {
-        if (total !== null && total > PAGE_SIZE) {
-          throw new Error('产品异常：总数 ' + total + ' 超过单页但未见分页「2」（ticket=GAP-EVAL-HISTORY-PAGINATION-001）');
-        }
-        throw new Error('数据闸门：分页「2」不可见，最近评估未超过一页（ticket=ENV-EVAL-TECH-HISTORY-PAGE2-001）');
+      const page2Click = (await page2Item.count()) > 0 ? page2Item.first() : page2Btn.first();
+      const rows = main.locator('tbody tr.arco-table-tr');
+      await expect(rows.first()).toBeVisible({ timeout: 10000 });
+      const page1Ids = [];
+      const rowCount = await rows.count();
+      for (let i = 0; i < rowCount; i++) {
+        const cells = rows.nth(i).locator('td');
+        if ((await cells.count()) > 1) page1Ids.push((await cells.nth(1).innerText()).trim());
       }
-      const idsPage1 = await readRowTaskIds();
-      if (!idsPage1.length) {
-        throw new Error('第 1 页未见任务 ID 行（ticket=ENV-EVAL-TECH-HISTORY-001）');
+      expect(page1Ids.length).toBeGreaterThan(0);
+      await page2Click.click({ timeout: 8000 });
+      await expect(page2Click).toHaveClass(/active/, { timeout: 10000 });
+      const page2Ids = [];
+      const rowCount2 = await rows.count();
+      for (let i = 0; i < rowCount2; i++) {
+        const cells = rows.nth(i).locator('td');
+        if ((await cells.count()) > 1) page2Ids.push((await cells.nth(1).innerText()).trim());
       }
-      await page2Btn.click({ timeout: 8000 });
-      await page.waitForTimeout(1200);
-      await expect(page2Btn).toHaveClass(/arco-pagination-item-active/, { timeout: 8000 });
-      const idsPage2 = await readRowTaskIds();
-      if (!idsPage2.length) {
-        throw new Error('点击分页「2」后未见任务行');
+      expect(page2Ids.length).toBeGreaterThan(0);
+      for (const id of page2Ids) {
+        expect(page1Ids).not.toContain(id);
       }
-      const overlap = idsPage1.filter((id) => idsPage2.includes(id));
-      if (overlap.length) {
-        throw new Error('第 2 页与第 1 页任务 ID 重叠: ' + overlap.join(', '));
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: |-
-  D1·30888 路由 enterprise-center/evaluation；最近评估表前端分页 pageSize=10（EvalHistoryTable.vue），列表 API 一次拉 size=20。翻页点为 main 内 .arco-pagination-item「2」。2026-10-19 复勘 admin 仅「共 1 条」无第 2 页→环境闸门 ENV-EVAL-TECH-HISTORY-PAGE2-001。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

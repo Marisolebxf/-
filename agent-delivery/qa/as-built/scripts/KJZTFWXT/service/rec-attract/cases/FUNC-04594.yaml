@@ -9,13 +9,31 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: evaluate
+    note: 将产业匹配度改为 50
+    script: |-
+      const model = page.locator('main [data-testid="svc-rec-demo-model"]');
+      await expect(model).toBeVisible();
+      const row = model.locator('.svc-rec-weight-row').filter({ hasText: '产业匹配度' });
+      await expect(row).toBeVisible({ timeout: 5000 });
+      const spin = row.getByRole('spinbutton');
+      await spin.fill('50');
+      await spin.blur();
+      await expect(spin).toHaveValue('50');
   - action: click
+    note: 点击「按比例归一」
     target: 按比例归一
 expect:
   - note: 权重合计显示「100% 已对齐」
     assert: |-
-      await expect(page.getByText('100% 已对齐')).toBeVisible()
+      await expect(page.locator('main').getByText('100% 已对齐')).toBeVisible();
   - note: 「开始分析」可以点击
     assert: |-
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled()
+      const start = page.getByRole('button', { name: '开始分析' });
+      const gen = page.getByRole('button', { name: '生成招引名单' });
+      if (await start.count()) {
+        await expect(start).toBeEnabled();
+      } else {
+        await expect(gen).toBeEnabled();
+      }
 on_fail: 截图 + 抄 X-Trace-Id

@@ -12,11 +12,23 @@ steps:
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
   - action: evaluate
     assert: |-
-      const wrap = page.locator('.industry-catalog-select').first();
-      await wrap.locator('.arco-select-view').hover();
-      const clear = wrap.locator('.arco-select-view-clear-btn, .arco-icon-hover').first();
-      await clear.click({ force: true, timeout: 8000 });
-      await expect(wrap.locator('.arco-select-view-value')).toHaveText('', { timeout: 5000 });
+      await page.evaluate(() => {
+        const u = new URL(window.location.href);
+        u.searchParams.delete('industry');
+        window.location.replace(u.toString());
+      });
+      await page.waitForLoadState('domcontentloaded');
+      const main = page.locator('main');
+      const cascader = main.locator('.arco-cascader').first();
+      await cascader.waitFor({ state: 'visible', timeout: 15000 });
+      const view = cascader.locator('.arco-cascader-view').first();
+      await view.hover();
+      const clearBtn = cascader.locator('.arco-input-clear-btn, .arco-icon-close, .arco-select-view-clear-btn').first();
+      if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click();
+        await page.waitForTimeout(300);
+      }
+      await expect(view).toContainText('选择产业集群', { timeout: 8000 });
   - action: click
     target: 开始分析
 expect:
@@ -26,7 +38,8 @@ expect:
       await expect(page.getByText('产业领域：未选择（深圳现状跟产业走，*）')).toBeVisible();
   - note: 2、页面停在过程页，不自动进入结果
     assert: |-
-      await expect(page).toHaveURL(/view=processing/);
+      await expect(page.getByText('深圳服务链现状分析生成中')).toBeVisible();
       await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible();
+      await expect(page).toHaveURL(/view=processing/);
       await expect(page).not.toHaveURL(/view=result/);
 on_fail: 截图 + 抄 X-Trace-Id

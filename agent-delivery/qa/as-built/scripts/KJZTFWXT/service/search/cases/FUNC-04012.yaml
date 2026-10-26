@@ -1,67 +1,58 @@
 id: FUNC-04012
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04012
-priority: P0
+priority: P1
 tier: B
-title: 主流程-标准制定条件（运算符与单位）
-story: US-SVC-ORG-07
+title: 主流程-标准制定条件
 entry_id: svc-search
-preconditions:
-  - 已进入「高级筛选」
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
+    target: /service-center/search?mode=advanced
   - action: evaluate
-    note: 侧栏进入服务机构查询、高级筛选、点标准制定并展开运算符
+    note: 点击「标准制定」；展开运算符下拉
 expect:
   - note: 1、运算符为「≥」「≤」「范围」共 3 个
     assert: |-
-      const searchItem = page.locator('.arco-menu-item').filter({ hasText: /^服务机构查询$/ }).first();
-      if (!(await searchItem.isVisible().catch(() => false))) {
-        await page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-      }
-      await searchItem.click({ timeout: 10000 });
-      await page.waitForURL(/\/service-center\/search/, { timeout: 15000 });
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
-      await advTab.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await expect(page).toHaveURL(/[?&]mode=advanced/);
-      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
-      await fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '标准制定' }).first().click({ timeout: 8000 });
+      const main = page.locator('main').first();
+      const fieldLib = main.getByRole('region', { name: '高级筛选字段库' });
+      await expect(fieldLib).toBeVisible({ timeout: 15000 });
+      const tag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '标准制定' }).first();
+      await expect(tag).toBeVisible({ timeout: 8000 });
+      await tag.scrollIntoViewIfNeeded();
+      await tag.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const condRow = page.locator('main .condition-builder').filter({ hasText: '标准制定' }).first();
+      const condRow = main.locator('.condition-builder').filter({ hasText: '标准制定' }).first();
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opWrap = condRow.locator('.condition-builder__op');
-      const opView = opWrap.locator('.arco-select-view-single, .arco-select-view').first();
-      await opView.click({ timeout: 8000 });
+      const op = condRow.locator('.condition-builder__op');
+      await expect(op).toBeVisible({ timeout: 8000 });
+      const selectView = op.locator('.arco-select-view');
+      if (await selectView.count() && (await selectView.first().isVisible().catch(() => false))) {
+        await selectView.first().click({ timeout: 8000 });
+      } else {
+        await op.click({ timeout: 8000 });
+      }
       await page.waitForTimeout(300);
       const pop = page.locator('.arco-trigger-popup:visible').last();
-      await expect(pop).toBeVisible({ timeout: 8000 });
+      await expect(pop).toBeVisible({ timeout: 5000 });
       const opts = pop.locator('.arco-select-option');
       const count = await opts.count();
       const labels = [];
       for (let i = 0; i < count; i++) {
         labels.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
       }
-      const want = ['≥', '≤', '范围'];
       if (count !== 3) {
-        throw new Error('标准制定运算符应共 3 个选项，实际 count=' + count + ' labels=' + JSON.stringify(labels));
+        throw new Error('标准制定运算符应为 3 个，实际 count=' + count + ' labels=' + JSON.stringify(labels));
       }
-      for (const w of want) {
-        if (!labels.some((l) => l === w || l.includes(w))) {
-          throw new Error('缺少运算符「' + w + '」，实际 labels=' + JSON.stringify(labels));
+      for (const need of ['≥', '≤', '范围']) {
+        if (!labels.some((l) => l === need || l.includes(need))) {
+          throw new Error('缺少运算符「' + need + '」，实际 labels=' + JSON.stringify(labels));
         }
       }
-      await page.keyboard.press('Escape').catch(() => {});
   - note: 2、单位为「项」
     assert: |-
-      const condRow = page.locator('main .condition-builder').filter({ hasText: '标准制定' }).first();
+      const main = page.locator('main').first();
+      const condRow = main.locator('.condition-builder').filter({ hasText: '标准制定' }).first();
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const unitEl = condRow.locator('.condition-builder__unit');
-      await expect(unitEl).toBeVisible({ timeout: 8000 });
-      await expect(unitEl).toHaveText(/项/);
+      await expect(condRow.getByText('项', { exact: true })).toBeVisible({ timeout: 5000 });
 on_fail: 截图 + 抄 X-Trace-Id

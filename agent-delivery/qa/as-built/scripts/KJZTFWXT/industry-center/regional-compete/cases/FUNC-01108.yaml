@@ -1,91 +1,87 @@
 id: FUNC-01108
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01108
-priority: P0
+priority: P1
+tier: B
 title: 权重合计为 100% 方可提交且不静默归一化
 entry_id: chain-regional-compete
-tier: B
-preconditions:
-  - 已进入工作区；三大维度已各选至少 1 项
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 选产业与区域后调整权重使合计偏离 100%（用例步骤 1）
+    note: 同册 03488 前置：生物产业/生物/深圳市，再改企业能力权重为 50（用例步骤 1）
 expect:
   - note: 1、合计偏离 100% 时「开始分析」不可提交
     assert: |-
-      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      const pickSelectOption = async (view, optionText) => {
-        await view.click({ timeout: 8000 });
-        await page.waitForTimeout(450);
-        const pop = page.locator('.arco-select-dropdown:visible, .arco-trigger-popup:visible').last();
-        const search = pop.locator('input').first();
-        if (optionText && (await search.isVisible().catch(() => false))) {
-          await search.fill(optionText);
-          await page.waitForTimeout(350);
+      const main = page.locator('main');
+      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      const popup = () => page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible, .arco-cascader-panel:visible');
+      const pickPopup = (name) => popup().getByText(name, { exact: true }).first();
+      const ensureCombo = async () => {
+        const objectHost = main.locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
+        const needIndustry = await main.getByText('单产业模式请选择 1 个产业').isVisible().catch(() => false);
+        const needRegion = await main.getByText(/请选择 1–5 个区域/).isVisible().catch(() => false);
+        if (needIndustry) {
+          const objCtrl = objectHost.locator('.arco-cascader-view, .arco-select-view').first();
+          await objCtrl.click({ timeout: 8000 });
+          const casc = page.locator('.arco-cascader-panel:visible');
+          if (await casc.count()) {
+            await casc.locator('.arco-cascader-option').filter({ hasText: '生物产业' }).first().click();
+            await casc.locator('.arco-cascader-option').filter({ hasText: /^生物$/ }).first().click();
+          } else {
+            await pickPopup('生物产业').click();
+            await objectHost.locator('.arco-select-view, .arco-cascader-view').first().click();
+            await pickPopup('生物').click();
+          }
         }
-        const opt = pop.locator('.arco-select-option').filter({ hasText: optionText }).first();
-        await opt.click({ timeout: 8000 });
+        if (needRegion) {
+          await objectHost.locator('.arco-select-view').last().click({ timeout: 8000 });
+          await pickPopup('深圳市').click();
+        }
+        await main.getByText('三大一级维度权重').click();
         await page.waitForTimeout(500);
+        await expect(main.getByText('单产业模式请选择 1 个产业')).toHaveCount(0, { timeout: 8000 });
       };
-      const clusterView = page.locator('main .arco-select-view[aria-label="集群"]').first();
-      if (await clusterView.isVisible().catch(() => false)) {
-        const clusterText = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!clusterText || /请选择/.test(clusterText)) {
-          await clusterView.click({ timeout: 8000 });
-          await page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').first().click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-        }
-      }
-      const industryView = page.locator('main .arco-select-view[aria-label="产业"]').first();
-      await expect(industryView).toBeVisible({ timeout: 10000 });
-      const industryShown = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (!industryShown || /请选择/.test(industryShown)) {
-        await pickSelectOption(industryView, '集成电路').catch(() => pickSelectOption(industryView, '新一代信息技术'));
-      }
-      const regionView = page.locator('main .policy-analysis-filter-row__field').filter({ has: page.getByText('评价区域', { exact: false }) }).locator('.arco-select-view').first();
-      await pickSelectOption(regionView, '深圳市').catch(() => {});
-      await page.keyboard.press('Escape').catch(() => {});
-      await expect(page.getByText('单产业模式请选择 1 个产业')).toHaveCount(0, { timeout: 8000 });
-      const w1 = page.getByRole('spinbutton', { name: '企业能力权重' });
-      const w2 = page.getByRole('spinbutton', { name: '学术生态权重' });
-      const w3 = page.getByRole('spinbutton', { name: '配套生态力权重' });
-      await expect(w1).toBeVisible({ timeout: 8000 });
-      await w1.fill('50');
-      await w2.fill('50');
-      await w3.fill('50');
-      await page.waitForTimeout(600);
-      const vals = [
-        String(await w1.inputValue()).trim(),
-        String(await w2.inputValue()).trim(),
-        String(await w3.inputValue()).trim(),
-      ];
-      const sum = vals.map(Number).reduce((a, b) => a + b, 0);
-      if (sum === 100) throw new Error('权重被静默归一化回 100%');
-      globalThis.__func01108 = { vals, sum };
+      await ensureCombo();
+      const weightTable = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      const setWeight = async (label, val) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        const input = row.locator('input').first();
+        await input.click({ timeout: 8000 });
+        await input.fill(String(val));
+        await input.press('Tab');
+        await page.waitForTimeout(300);
+      };
+      await setWeight('企业能力', 50);
+      globalThis.__func01108 = { deviated: true };
+      await expect(main.getByText(/权重合计须为 100%|110%/).first()).toBeVisible({ timeout: 8000 });
       await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
   - note: 2、偏离期间各维度权重保持所填值，不静默归一化
     assert: |-
-      if (!globalThis.__func01108?.vals) throw new Error('前置：权重偏离步骤未完成');
-      const w1 = page.getByRole('spinbutton', { name: '企业能力权重' });
-      const w2 = page.getByRole('spinbutton', { name: '学术生态权重' });
-      const w3 = page.getByRole('spinbutton', { name: '配套生态力权重' });
-      const now = [
-        String(await w1.inputValue()).trim(),
-        String(await w2.inputValue()).trim(),
-        String(await w3.inputValue()).trim(),
-      ];
-      const expectVals = globalThis.__func01108.vals;
-      if (now.join(',') !== expectVals.join(',')) {
-        throw new Error('权重被改写，期望 ' + expectVals.join('/') + ' 得 ' + now.join('/'));
-      }
-      const sum = now.map(Number).reduce((a, b) => a + b, 0);
-      if (sum === 100) throw new Error('权重被静默归一化');
+      if (!globalThis.__func01108?.deviated) throw new Error('前置：权重偏离步骤未完成');
+      const main = page.locator('main');
+      const weightTable = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      const readW = async (label) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        return String(await row.locator('input').first().inputValue());
+      };
+      const w1 = await readW('企业能力');
+      const w2 = await readW('学术生态');
+      const w3 = await readW('配套生态力');
+      globalThis.__func01108.vals = { w1, w2, w3 };
+      expect(w1).toBe('50');
+      expect(w2).toBe('35');
+      expect(w3).toBe('25');
   - note: 3、合计回到 100% 后恢复可提交
     assert: |-
-      await page.getByRole('button', { name: '一键均分' }).click();
-      await page.waitForTimeout(800);
-      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
+      const main = page.locator('main');
+      const weightTable = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      const input = weightTable.getByRole('row').filter({ hasText: '企业能力' }).first().locator('input').first();
+      await input.click({ timeout: 8000 });
+      await input.fill('40');
+      await input.press('Tab');
+      await page.waitForTimeout(500);
+      await expect(main.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 8000 });
       await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

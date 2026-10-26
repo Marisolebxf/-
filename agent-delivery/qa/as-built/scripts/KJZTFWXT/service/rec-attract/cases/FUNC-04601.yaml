@@ -1,6 +1,6 @@
 id: FUNC-04601
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04601
-priority: P0
+priority: P1
 tier: B
 title: 主流程-加入对比篮
 entry_id: svc-rec-attract
@@ -9,19 +9,32 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
-  - action: click
-    target: 生成招引名单
   - action: wait
-    target: 5000
+    ms: 1500
+  - action: evaluate
+    target: |-
+      const start = page.locator('main [data-testid="svc-rec-start-analysis"]');
+      if (await start.isVisible().catch(() => false)) {
+        await start.click();
+      }
+      const viewResult = page.getByRole('button', { name: '查看结果' });
+      if (await viewResult.isVisible().catch(() => false)) {
+        await viewResult.click({ timeout: 60000 });
+      }
+      await page.locator('[data-testid="svc-rec-list"] button.svc-rec-org-link').first().waitFor({ state: 'visible', timeout: 60000 });
   - action: click
-    target: 查看画像
+    target: 名单第一家机构
+    locator: |-
+      page.locator('main [data-testid="svc-rec-list"] button.svc-rec-org-link').first()
   - action: click
     target: 加入对比篮
+    locator: |-
+      page.locator('.arco-drawer').getByRole('button', { name: '加入对比篮' })
 expect:
   - note: 提示该机构已加入对比篮
     assert: |-
-      await expect(page.getByText(/已加入对比篮/)).toBeVisible();
+      await expect(page.getByText(/已加入对比篮/)).toBeVisible({ timeout: 15000 });
   - note: 按钮变为「已在对比篮」
     assert: |-
-      await expect(page.getByRole('button', { name: '已在对比篮' })).toBeVisible();
+      await expect(page.locator('.arco-drawer').getByRole('button', { name: '已在对比篮' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

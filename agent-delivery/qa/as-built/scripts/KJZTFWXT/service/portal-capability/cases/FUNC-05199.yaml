@@ -9,16 +9,30 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: click
-    target: 分析画像
   - action: evaluate
-    target: |-
-      await page.locator('.arco-drawer').getByRole('button', { name: '加入对比篮' }).click();
-expect:
-  - note: 抽屉按钮变为「已在对比篮」
     assert: |-
-      await expect(page.locator('.arco-drawer').getByRole('button', { name: '已在对比篮' })).toBeVisible()
+      const main = page.locator('main');
+      const row = main.locator('tbody tr').filter({ has: main.getByRole('button', { name: '加入对比篮' }) }).first();
+      await row.getByRole('button', { name: '分析画像' }).click();
+      const drawer = page.locator('.arco-drawer');
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.getByRole('button', { name: '加入对比篮' })).toBeVisible();
+      let msgText = '';
+      await Promise.all([
+        (async () => {
+          const msg = page.locator('.arco-message').filter({ hasText: /加入对比篮/ });
+          await msg.first().waitFor({ state: 'visible', timeout: 8000 });
+          msgText = await msg.first().innerText();
+        })(),
+        drawer.getByRole('button', { name: '加入对比篮' }).click(),
+      ]);
+      await page.evaluate((t) => sessionStorage.setItem('__func05199_msg', t), msgText);
+      await expect(drawer.getByRole('button', { name: '已在对比篮' })).toBeVisible();
+expect:
   - note: 提示已将该机构加入对比篮
     assert: |-
-      await expect(page.locator('.arco-message-success')).toContainText('加入对比篮')
+      await expect.poll(async () => page.evaluate(() => sessionStorage.getItem('__func05199_msg') || ''), { timeout: 2000 }).toMatch(/已将「.+」加入对比篮/);
+  - note: 抽屉按钮变为「已在对比篮」
+    assert: |-
+      await expect(page.locator('.arco-drawer').getByRole('button', { name: '已在对比篮' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

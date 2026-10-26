@@ -10,20 +10,21 @@ steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
   - action: click
-    target: getByText('分析记录', { exact: true })
+    target: 开始分析
   - action: click
-    target: getByRole('button', { name: '查看结果' }).first()
+    target: 查看结果
   - action: click
-    target: getByRole('checkbox', { name: '服务网络密度' })
+    target: 服务网络密度
 expect:
   - note: 「服务网络密度」变为未勾选
     assert: |-
-      await expect(page.getByRole('checkbox', { name: '服务网络密度' })).toHaveAttribute('aria-checked', 'false')
+      await expect(page.locator('main').getByRole('checkbox', { name: '服务网络密度' })).toHaveAttribute('aria-checked', 'false')
   - note: 服务机构数量和平均技术力得分仍勾选
     assert: |-
-      await expect(page.getByRole('checkbox', { name: '服务机构数量' })).toHaveAttribute('aria-checked', 'true')
-      await expect(page.getByRole('checkbox', { name: '平均技术力得分' })).toHaveAttribute('aria-checked', 'true')
+      await expect(page.locator('main').getByRole('checkbox', { name: '服务机构数量' })).toHaveAttribute('aria-checked', 'true')
+      await expect(page.locator('main').getByRole('checkbox', { name: '平均技术力得分' })).toHaveAttribute('aria-checked', 'true')
   - note: 不进入新的过程页
     assert: |-
-      await expect(page.getByText('分析中', { exact: false })).toHaveCount(0)
+      await expect(page.getByText('深圳服务链现状分析生成中')).toHaveCount(0)
+      await expect(page.locator('main [data-testid="svc-eco-sz-result-bar"]')).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

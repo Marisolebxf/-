@@ -9,13 +9,14 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
-  - action: click
-    target: 全球视图
-    force: true
+  - action: evaluate
+    script: |-
+      const global = page.getByRole('radio', { name: '全球视图' });
+      await global.click({ force: true, timeout: 500 }).catch(() => {});
 expect:
   - note: 「全国视图」仍为选中
     assert: |-
-      await expect(page.getByRole('radio', { name: '全国视图' })).toHaveAttribute('aria-checked', 'true')
+      await expect(page.locator('label.arco-radio-checked').filter({ hasText: '全国视图' })).toBeVisible()
   - note: 「全球视图」仍为禁用
     assert: |-
       await expect(page.getByRole('radio', { name: '全球视图' })).toBeDisabled()

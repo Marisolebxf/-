@@ -1,23 +1,18 @@
 id: FUNC-02715
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02715
-priority: P0
-title: 选入本页同类型后已选数增加且类型一致
+priority: P1
+tier: B
+title: 检索结果选入本页同类型后已选数增加且类型一致
 entry_id: chain-search
-tier: A
-preconditions:
-  - 已用「光刻」搜出含产业与产业链的检索结果
-  - 已勾选一行产业且选择条已出现
-locators:
-  result_region: '[role=region][aria-label="产业查询结果"]'
-  selection_toolbar: .industry-search-selection-toolbar
-  btn_same_type: .industry-search-selection-toolbar button「选入本页同类型」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
   - action: evaluate
-    note: 光刻结果→勾选一条产业→点「选入本页同类型」；预期在 expect
+    note: 热门场景重点产业出结果、勾首行可选、点选入本页同类型
 expect:
-  - note: 前置：光刻混合结果，本页至少 2 条可勾选且同类型「产业」，并已勾选首条产业
+  - note: 已选数量增加
     assert: |-
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
@@ -29,134 +24,70 @@ expect:
           }
         }
       };
-      const region = () => page.locator('[role=region][aria-label="产业查询结果"]');
-      const cardType = async (card) => {
-        const tag = card.locator('.industry-search-result-title .arco-tag').first();
-        return ((await tag.innerText()) || '').replace(/\s+/g, ' ').trim();
-      };
-      const isEligibleCard = async (card) => {
-        if (!(await card.isVisible().catch(() => false))) return false;
-        const cls = (await card.getAttribute('class')) || '';
-        if (cls.includes('is-unavailable') || cls.includes('is-permission-locked')) return false;
-        const chk = card.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
-        return (await chk.count()) > 0;
-      };
-      const parseSelectedCount = (toolbarText) => {
-        const m = toolbarText.match(/已选\s*(\d+)/);
-        return m ? parseInt(m[1], 10) : null;
-      };
       await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('产业查询入口 SPA 404 ' + page.url());
-      }
-      const input = page.getByPlaceholder(/输入产业、产业链、链位方向或同义词/);
-      await expect(input).toBeVisible({ timeout: 8000 });
-      await input.fill('人工智能');
-      await page.getByRole('button', { name: '搜索', exact: true }).click();
-      await page.waitForTimeout(800);
-      const reg = region();
-      await expect(reg).toBeVisible({ timeout: 15000 });
-      const regionText = ((await reg.innerText()) || '').replace(/\s+/g, ' ');
-      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
-        throw new Error('前置：人工智能检索为空');
-      }
-      const cards = reg.locator('.industry-search-result-card');
-      const n = await cards.count();
-      if (n < 2) throw new Error('前置：人工智能当前页可见卡片应≥2');
-      for (let i = 0; i < n; i++) {
-        const card = cards.nth(i);
-        if (!(await card.isVisible().catch(() => false))) continue;
-        const inBasket = await card.getByText('已入篮', { exact: true }).isVisible().catch(() => false);
-        if (inBasket) {
-          await card.getByText('已入篮', { exact: true }).click({ timeout: 5000 }).catch(() => {});
-          await page.waitForTimeout(400);
-        }
-      }
-      const industryCards = [];
-      for (let i = 0; i < n; i++) {
-        const card = cards.nth(i);
-        if (!(await isEligibleCard(card))) continue;
-        const t = await cardType(card);
-        if (t === '产业') industryCards.push(card);
-      }
-      if (industryCards.length < 2) {
-        throw new Error('数据闸门：本页可勾选「产业」行应≥2 才能验选入同类型（实际=' + industryCards.length + '）');
-      }
-      const anchor = industryCards[0];
-      const anchorType = await cardType(anchor);
-      const chk = anchor.locator('.industry-search-result-select .arco-checkbox:not(.arco-checkbox-disabled)').first();
-      await chk.scrollIntoViewIfNeeded().catch(() => {});
-      const checkedCls = (await chk.getAttribute('class').catch(() => '')) || '';
-      if (!checkedCls.includes('arco-checkbox-checked')) {
-        await chk.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-      }
-      const toolbar = page.locator('.industry-search-selection-toolbar');
-      await expect(toolbar).toBeVisible({ timeout: 8000 });
-      const tbBefore = ((await toolbar.innerText()) || '').replace(/\s+/g, ' ');
-      const countBefore = parseSelectedCount(tbBefore);
-      if (countBefore !== 1) {
-        throw new Error('前置：勾选一行后应显示已选 1，现场=' + tbBefore.slice(0, 120));
-      }
-      if (!tbBefore.includes('产业')) {
-        throw new Error('前置：锚定类型应为产业，工具条=' + tbBefore);
-      }
-      globalThis.__func02715_anchorType = anchorType;
-      globalThis.__func02715_countBefore = countBefore;
-      globalThis.__func02715_ready = true;
-  - note: 1、点击「选入本页同类型」后已选数量增加
-    assert: |-
-      if (!globalThis.__func02715_ready) throw new Error('前置未完成');
-      const countBefore = globalThis.__func02715_countBefore;
-      const toolbar = page.locator('.industry-search-selection-toolbar');
-      await toolbar.getByRole('button', { name: '选入本页同类型', exact: true }).click({ timeout: 8000 });
-      await page.waitForTimeout(600);
-      const tbAfter = ((await toolbar.innerText()) || '').replace(/\s+/g, ' ');
-      const m = tbAfter.match(/已选\s*(\d+)/);
-      const countAfter = m ? parseInt(m[1], 10) : null;
-      if (countAfter === null || Number.isNaN(countAfter)) {
-        throw new Error('未能解析已选数；工具条=' + tbAfter.slice(0, 120));
-      }
-      if (countAfter <= countBefore) {
-        throw new Error('已选数量应增加（前 ' + countBefore + ' 后 ' + countAfter + '）');
-      }
-      globalThis.__func02715_countAfter = countAfter;
-  - note: 2、已选类型与最初勾选的行一致（工具条类型标签 + 当前页已勾选行类型均为产业）
-    assert: |-
-      if (!globalThis.__func02715_ready) throw new Error('前置未完成');
-      const anchorType = globalThis.__func02715_anchorType;
-      const toolbar = page.locator('.industry-search-selection-toolbar');
-      const tbText = ((await toolbar.innerText()) || '').replace(/\s+/g, ' ');
-      if (!tbText.includes(anchorType)) {
-        throw new Error('工具条应显示锚定类型「' + anchorType + '」，现场=' + tbText.slice(0, 120));
-      }
+      const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^重点产业$/ }).first();
+      await expect(chip).toBeVisible({ timeout: 10000 });
+      await chip.click();
+      await page.waitForTimeout(1200);
       const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      const cards = region.locator('.industry-search-result-card');
-      const n = await cards.count();
-      let checked = 0;
-      for (let i = 0; i < n; i++) {
-        const card = cards.nth(i);
-        if (!(await card.isVisible().catch(() => false))) continue;
-        const chk = card.locator('.industry-search-result-select .arco-checkbox').first();
-        if ((await chk.count()) < 1) continue;
-        const cls = (await chk.getAttribute('class')) || '';
-        if (!cls.includes('arco-checkbox-checked')) continue;
-        checked++;
-        const tag = card.locator('.industry-search-result-title .arco-tag').first();
-        const label = ((await tag.innerText()) || '').replace(/\s+/g, ' ').trim();
-        if (label !== anchorType) {
-          throw new Error('已勾选行类型应均为「' + anchorType + '」，发现=' + label);
+      await expect(region).toBeVisible({ timeout: 20000 });
+      const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
+      const totalM = regionText.match(/共\s*(\d+)\s*条/);
+      const total = totalM ? parseInt(totalM[1], 10) : 0;
+      if (total < 2) {
+        throw new Error('重点产业结果不足 2 条，无法验证同类型批量选入：' + regionText.slice(0, 160));
+      }
+      const list = page.locator('.industry-search-result-list');
+      await expect(list).toBeVisible({ timeout: 10000 });
+      const boxes = list.locator('.arco-checkbox');
+      const cbCount = await boxes.count();
+      let picked = false;
+      for (let i = 0; i < cbCount; i++) {
+        const cb = boxes.nth(i);
+        if (!(await cb.isVisible().catch(() => false))) continue;
+        await cb.click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(600);
+        const bar = page.locator('.industry-search-selection-toolbar');
+        if (await bar.getByText(/已选\s*1/).isVisible().catch(() => false)) {
+          picked = true;
+          break;
         }
+        await cb.click({ timeout: 3000 }).catch(() => {});
+        await page.waitForTimeout(300);
       }
-      const expectCount = globalThis.__func02715_countAfter;
-      if (checked !== expectCount) {
-        throw new Error('当前页已勾选行数(' + checked + ')应与工具条已选数(' + expectCount + ')一致');
+      if (!picked) {
+        throw new Error('结果区未找到可勾选一行（选择条未出现）');
       }
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
-as_built_note: >-
-  路由 catalog_path /industry-center/search；前置=智能检索「光刻」（同 FUNC-02712 混合类型页）。
-  锚定勾选首条可勾选「产业」行；选择条 .industry-search-selection-toolbar 文案「已选 N · 产业」；
-  「选入本页同类型」= selectEligibleIndustrySearchPage(visibleMatches,…)。本页可勾选产业≥2 为数据闸门。
-  登录与关内部评审由 runner 前置。A 档零 allow_skip。
+      const barBefore = page.locator('.industry-search-selection-toolbar');
+      const beforeText = ((await barBefore.innerText()) || '').replace(/\s+/g, ' ');
+      const typeM = beforeText.match(/已选\s*1\s*·\s*(产业|产业链)/);
+      if (!typeM) {
+        throw new Error('勾选后选择条未见类型标记：' + beforeText);
+      }
+      await page.evaluate((t) => { globalThis.__gkx02715Type = t; }, typeM[1]);
+      const nBefore = 1;
+      const sameTypeBtn = page.getByRole('button', { name: '选入本页同类型' });
+      await expect(sameTypeBtn).toBeVisible({ timeout: 5000 });
+      await sameTypeBtn.click();
+      await page.waitForTimeout(800);
+      const afterText = ((await barBefore.innerText()) || '').replace(/\s+/g, ' ');
+      const afterM = afterText.match(/已选\s*(\d+)/);
+      const nAfter = afterM ? parseInt(afterM[1], 10) : 0;
+      if (nAfter <= nBefore) {
+        throw new Error('选入本页同类型后已选数未增加；前=' + beforeText + ' 后=' + afterText);
+      }
+      await page.evaluate((n) => { globalThis.__gkx02715Count = n; }, nAfter);
+  - note: 已选类型与最初勾选的行一致
+    assert: |-
+      const lockedType = await page.evaluate(() => globalThis.__gkx02715Type);
+      const nAfter = await page.evaluate(() => globalThis.__gkx02715Count);
+      if (!lockedType || !nAfter) {
+        throw new Error('前置步骤未记录类型或已选数');
+      }
+      const bar = page.locator('.industry-search-selection-toolbar');
+      const text = ((await bar.innerText()) || '').replace(/\s+/g, ' ');
+      const re = new RegExp('已选\\s*' + nAfter + '\\s*·\\s*' + lockedType);
+      if (!re.test(text)) {
+        throw new Error('已选类型与首行不一致或计数不符：期望 ·' + lockedType + ' 实际=' + text);
+      }
+on_fail: 截图 + 抄 X-Trace-Id

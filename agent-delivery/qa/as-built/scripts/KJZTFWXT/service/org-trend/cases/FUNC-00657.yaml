@@ -1,38 +1,29 @@
 id: FUNC-00657
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00657
-priority: P0
-tier: A
+priority: P1
+tier: B
 title: 主流程-配置区与产业下拉 · 15 选项
-story: US-SVC-ORG-04
 entry_id: svc-org-trend
-preconditions:
-  - 系统正常；已登录 admin（runner 会话前置）
-  - 已进入 trend 工作区且配置区可见
-locators:
-  config: 分析配置
-  field_filter: placeholder「筛选领域（不改分析指纹）」
-  industry: main .industry-catalog-select
-  org_picker: button「选择机构」
-  start: button「开始分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=trend&tab=trend
+  - action: click
+    target: main 内产业领域级联或下拉以展开浮层
 expect:
   - note: 1、分析配置区含领域筛选框、机构入口与「开始分析」按钮
     assert: |-
-      const close = page.locator('button[aria-label="关闭对比篮"]');
-      if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-      }
-      await expect(page).toHaveURL(/\/service\/institution-judgment/, { timeout: 12000 });
-      await expect(page).toHaveURL(/workspace=trend/, { timeout: 8000 });
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      const configShell = page.locator('[data-testid="svc-org-analysis-config"]').first();
+      await expect(configShell).toBeVisible({ timeout: 12000 });
       await expect(page.getByPlaceholder('筛选领域（不改分析指纹）')).toBeVisible({ timeout: 8000 });
       await expect(page.getByRole('button', { name: '选择机构', exact: true })).toBeVisible({ timeout: 8000 });
       await expect(page.getByRole('button', { name: '开始分析', exact: true })).toBeVisible({ timeout: 8000 });
   - note: 2、产业下拉选项共 15 个（名称见附录 A）
     assert: |-
-      await page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select').first().click({ timeout: 8000 });
+      const flat = page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select').first();
+      await expect(flat).toBeVisible({ timeout: 8000 });
+      await flat.click({ timeout: 8000 });
       await page.waitForTimeout(600);
       const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
       const n = await opts.count();
@@ -43,9 +34,6 @@ expect:
         if (!texts.some((t) => t === k || t.includes(k))) throw new Error('缺产业项: ' + k + ' / 实见 ' + texts.join(','));
       }
   - note: 3、领域筛选占位提示为「筛选领域（不改分析指纹）」
-    assert: await expect(page.getByPlaceholder('筛选领域（不改分析指纹）')).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  2026-10-21 关评审复勘：深链 catalog_path 可达（双 Tab+开始分析在屏），但主区为「产业领域 生物产业/生物医药」级联态，
-  无「分析配置」文案、无 .industry-catalog-select、无「选择机构」、无 placeholder「筛选领域（不改分析指纹）」；
-  与用例/USM 附录 A 15 项平铺下拉不一致（D2 待产品回开用例或恢复配置区）。
+    assert: |-
+      await expect(page.getByPlaceholder('筛选领域（不改分析指纹）')).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id
