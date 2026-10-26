@@ -41300,3 +41300,43 @@ tasks:
       - "开放项不替甲方拍板：QC03/QC06/QC10 只引用客户决策清单 🟡，两套相位口径并存事实登记不调和"
       - "架构合规自检：调用链 前端→Java→Python /internal、LLM 只在算法侧且 Key 不出集群 Secret、无 RustFS 新写路径、Design.md §7.4/D9 角标对齐"
     update_time: "2026-10-26T20:35:34+08:00"
+  - id: LUMEN-SVC-JAVA-SVC-REPORT-ARTIFACT-L01
+    title: "服务链 8 分析页报告下载全挂 — Java 产物链扩 svc *_report 白名单（大单）"
+    status: "ready"
+    agent: "api-agent"
+    epic: "E7-产业服务链分析"
+    priority: "P0"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "bugfix"
+    graph_role: "leaf"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: |
+      2026-10-26 human:徐滕强 拍板：服务链全部 8 个分析页的「生成/查看报告→下载 PDF」均报「功能尚未开放或不支持的 analysisType」；根因为 10-20 LUMEN-SVC-FE-MANUAL-FIX-L01（29793b3）前端产物类型 ${leaf}_report（如 shortboard_report）未在 Java ArtifactAnalysisTypes 登记（仅企业域 3 报告 3 导出），demo 原型为纯前端 PDF 渲染可下载，lumen 复刻改走 Java 异步产物链后后端能力缺失。大单统一修 Java 侧，前端零改动。监管人 human:徐滕强。
+    collaborators:
+      - "qa-agent"
+    touched_files:
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/java/com/topcomm/gkxlumen/topic/async/support/artifact/ArtifactAnalysisTypes.java"
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/java/com/topcomm/gkxlumen/topic/async/support/analysis/AnalysisTaskIdGenerator.java"
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/java/com/topcomm/gkxlumen/topic/async/service/artifact/ArtifactSnapshotReaderImpl.java"
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/main/resources/templates/analysis/report.html"
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/test/java/com/topcomm/gkxlumen/topic/async/support/artifact/ArtifactAnalysisTypesTest.java"
+      - "gkxlumen-topic-async-service/gkxlumen-topic-async-service-biz/src/test/java/com/topcomm/gkxlumen/topic/async/service/impl/analysis/AnalysisTaskServiceImplSvcJobTest.java"
+    design_refs:
+      - "gkxlumen-topic-async-service/.../support/artifact/ArtifactAnalysisTypes.java"
+      - "gkxlumen-topic-async-service/.../support/analysis/SvcAnalysisTypes.java"
+      - "lumen-ui-topic/src/components/service/SvcAnalysisReportPanel.vue"
+      - "lumen-ui-topic/src/components/report/serviceDomainReports.ts"
+      - "agent-delivery/agent-handoffs/服务机构-SVC/LUMEN-SVC-FE-MANUAL-FIX-L01.md"
+    definition_of_done:
+      - "ArtifactAnalysisTypes.REPORT_TYPES 扩展服务链 8 叶子：org_coverage_report / org_trend_report / tech_power_report / shortboard_report / graph_report / shenzhen_report / attract_report / cultivate_report（与前端 svcReportTypeOf 命名逐一对齐，禁止前端改类型名）"
+      - "AnalysisTaskIdGenerator PREFIX 补 8 个类型 → REP 前缀映射；Report_Label（模板 analysisTypeLabel）补 8 叶中文标签（复用 REPORT_LABEL：服务机构产业领域分析/新增趋势/技术力评估/服务链短板/图谱/深圳现状/引入推荐/培育推荐）"
+      - "ArtifactSnapshotReader 适配 svc 父任务：parent.analysisType 为 svc:analysis:* / svcan.*.v0 时正确读取 result 快照，svc 结果结构（gap/matrix/ranking 等）入报告 sections 不空白"
+      - "报告模板渲染 8 类报告含：标题/对象/父任务 ID/类型中文标签/生成时间 + 结果关键结论；PDF 产物落 MinIO 且 asset 接口可下载"
+      - "互斥复用与并发闸门：同用户同类型在跑返回旧单行为与 eval_report 一致；父任务未成功时报错文案明确（父任务未成功完成，无法创建产物任务）"
+      - "测试：SvcAnalysisTypesTest / AnalysisTaskServiceImplSvcJobTest / ArtifactAnalysisTypesTest 扩 8 类型的 create→snapshot→render→asset 全链用例，mvn 全绿；禁止回归企业域 3 报告 3 导出"
+      - "回归验证：K8s dev 发布后，服务链短板分析页真实发起 shortboard_report 产物任务成功并下载 PDF（截图/日志入 evidence）；其余 7 叶至少抽 2 叶验证 create 成功"
+      - "handoff 按 7 项合规自检（含 D8/D9/D10/D12/D14）+ cost 四字段回填；ponytail: full"
+    update_time: "2026-10-26T20:40:57+08:00"
