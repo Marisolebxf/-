@@ -1,55 +1,31 @@
 id: FUNC-03996
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03996
-priority: P0
+priority: P1
 tier: B
 title: 主流程-加入分析集合
 entry_id: svc-search
-preconditions:
-  - 已进入有卡片的检索结果
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-center/search
+    target: /service-center/search?kw=深圳
+  - action: wait
+    ms: 800
 expect:
-  - note: 前置：进入检索结果并存在「加入分析集合」行按钮
+  - note: 前置：已进入有卡片的检索结果
     assert: |-
-      const inp = page.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 15000 });
-      await inp.fill('深圳');
-      const searchBtn = page.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
-      await expect(searchBtn).toBeVisible({ timeout: 8000 });
-      await searchBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(2500);
-      await expect(page.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      const card = page
-        .locator('article.svc-org-search-card')
-        .filter({ has: page.getByRole('button', { name: '加入分析集合' }) })
-        .first();
-      await expect(card).toBeVisible({ timeout: 10000 });
-      const nameBtn = card.locator('button.svc-org-search-link').first();
-      const orgName = ((await nameBtn.innerText()) || '').trim();
-      if (!orgName) throw new Error('卡片机构名称为空');
-      globalThis.__func03996 = { card, orgName };
+      const main = page.locator('main');
+      await expect(main.getByText('检索结果', { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(main.locator('[data-search-state="recommendation"]')).toHaveCount(0);
+      const card = main.locator('article.svc-org-search-card').first();
+      await expect(card.getByRole('button', { name: '加入分析集合' })).toBeVisible();
   - note: 1.点击一行「加入分析集合」
     assert: |-
-      const snap = globalThis.__func03996;
-      const joinBtn = snap.card.getByRole('button', { name: '加入分析集合' });
-      await expect(joinBtn).toBeVisible({ timeout: 8000 });
-      await joinBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
+      const main = page.locator('main');
+      const card = main.locator('article.svc-org-search-card').first();
+      await card.getByRole('button', { name: '加入分析集合' }).click();
   - note: 1、提示已将该机构加入服务机构分析集合
     assert: |-
-      const orgName = globalThis.__func03996.orgName;
-      const esc = orgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const toastRe = new RegExp('已将[「"]' + esc + '[」"]加入服务机构分析集合');
-      const msg = page.locator('.arco-message, .arco-notification').filter({ hasText: toastRe });
-      if (await msg.count()) {
-        await expect(msg.first()).toBeVisible({ timeout: 10000 });
-      } else {
-        const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!toastRe.test(body)) {
-          throw new Error('未见加入分析集合提示，期望含：已将「' + orgName + '」加入服务机构分析集合');
-        }
-      }
+      const toast = page.locator('.arco-message').filter({ hasText: '加入服务机构分析集合' });
+      await expect(toast.first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

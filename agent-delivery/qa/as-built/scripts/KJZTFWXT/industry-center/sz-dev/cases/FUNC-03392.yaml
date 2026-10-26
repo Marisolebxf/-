@@ -1,99 +1,41 @@
 id: FUNC-03392
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03392
 priority: P1
+tier: B
 title: 更换分析对象后对比来源列表按产业刷新且仍含置灰 PDF 项
 entry_id: chain-sz-dev
-tier: B
-preconditions:
-  - 已进入深圳产业发展分析页
-locators:
-  industry: main .industry-catalog-select
-  bind_input: main input[placeholder="请显式选择有效结构化结果"]
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 选新一代信息技术并展开对比来源；改选生物后再次展开对比来源
+    note: 选择「新一代信息技术」并展开对比来源；改选「生物」并再次展开对比来源
 expect:
-  - note: 1、第二次对比来源列表相对「新一代信息技术」时已按「生物」刷新（选项集变化）
+  - note: 1、第二次列表按「生物」刷新
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const ensurePage = async () => {
-        await dismissBasket();
-        await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(1000);
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404() || !onTarget()) {
-          throw new Error('ENV-ENTRY-UNREACHABLE: 无法进入深圳产业发展分析 ' + page.url());
-        }
-        await expect(page.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 8000 });
-      };
-      const indView = () => page.locator('main .industry-catalog-select .arco-select-view, main .arco-select-view').first();
+      await expect(page.getByText('有效的深圳产业情况分析对比结果').first()).toBeVisible({ timeout: 15000 });
+      const indView = () => page.locator('main .industry-catalog-select .arco-select-view').first();
       const bindView = () => page.locator('main .arco-select-view').nth(1);
       const pickIndustry = async (name) => {
-        const view = indView();
-        const txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (new RegExp(name).test(txt)) return;
+        const txt = ((await indView().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (txt.includes(name)) return;
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(250);
-        await view.click({ timeout: 12000 });
-        await page.waitForTimeout(450);
+        await indView().click({ timeout: 12000 });
+        await page.waitForTimeout(400);
         const opt =
           name === '生物'
-            ? page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物$/ })
-            : page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name });
-        await expect(opt.first()).toBeVisible({ timeout: 8000 });
-        await opt.first().click();
-        await page.waitForTimeout(name === '生物' ? 1200 : 800);
+            ? page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^生物$/ }).first()
+            : page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click();
         await expect(indView()).toContainText(name, { timeout: 8000 });
+        await page.waitForTimeout(name === '生物' ? 1200 : 800);
       };
       const readBindOptions = async () => {
         const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+        await expect(opts.first()).toBeVisible({ timeout: 8000 });
         const n = await opts.count();
-        if (n < 1) throw new Error('对比来源下拉无选项');
         const rows = [];
         for (let i = 0; i < n; i++) {
           const el = opts.nth(i);
@@ -106,27 +48,25 @@ expect:
       const openBind = async () => {
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(250);
-        await expect(bindView()).toBeVisible({ timeout: 10000 });
         await bindView().click({ timeout: 12000 });
-        await page.waitForTimeout(800);
+        await page.waitForTimeout(700);
         return readBindOptions();
       };
-      const closePopup = async () => {
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(350);
-      };
       const fingerprint = (rows) =>
-        rows
-          .map((r) => (r.disabled ? 'D:' : 'E:') + r.text)
-          .sort()
-          .join('|');
-      await ensurePage();
+        rows.map((r) => (r.disabled ? 'D:' : 'E:') + r.text).sort().join('|');
       await pickIndustry('新一代信息技术');
       const listIt = await openBind();
-      const fpIt = fingerprint(listIt);
-      await closePopup();
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
       await pickIndustry('生物');
       const listBio = await openBind();
+      await page.evaluate(
+        (payload) => {
+          document.documentElement.setAttribute('data-func03392-bio', payload.bio);
+        },
+        { bio: JSON.stringify(listBio) },
+      );
+      const fpIt = fingerprint(listIt);
       const fpBio = fingerprint(listBio);
       if (fpIt === fpBio) {
         throw new Error('对比来源未随产业刷新（IT 与 生物 选项指纹相同）');
@@ -137,26 +77,26 @@ expect:
       if (enabledIt.length >= 1 && enabledBio.join('§') === enabledIt.join('§')) {
         throw new Error('有效对比来源条目未随产业变化');
       }
-  - note: 2、第二次展开仍含一条置灰的 PDF 相关无效项
+  - note: 2、仍含一条置灰的 PDF 项
     assert: |-
-      const bindView = () => page.locator('main .arco-select-view').nth(1);
-      if (!(await page.locator('.arco-trigger-popup:visible .arco-select-option').count())) {
+      let listBio = JSON.parse((await page.locator('html').getAttribute('data-func03392-bio')) || '[]');
+      if (!listBio.length) {
+        const bindView = () => page.locator('main .arco-select-view').nth(1);
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
         await bindView().click({ timeout: 12000 });
         await page.waitForTimeout(700);
-      }
-      const disabled = page.locator('.arco-trigger-popup:visible .arco-select-option.arco-select-option-disabled');
-      const n = await disabled.count();
-      if (n < 1) throw new Error('生物产业对比来源下未见置灰无效项');
-      let pdfFound = false;
-      for (let i = 0; i < n; i++) {
-        const t = ((await disabled.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/PDF|导出/.test(t) || /无效|不可作为输入/.test(t)) {
-          pdfFound = true;
-          break;
+        const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
+        const n = await opts.count();
+        listBio = [];
+        for (let i = 0; i < n; i++) {
+          const el = opts.nth(i);
+          const text = ((await el.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+          const disabled = await el.evaluate((e) => e.classList.contains('arco-select-option-disabled')).catch(() => false);
+          listBio.push({ text, disabled });
         }
       }
+      const disabledRows = listBio.filter((r) => r.disabled);
+      if (disabledRows.length < 1) throw new Error('生物产业对比来源下未见置灰无效项');
+      const pdfFound = disabledRows.some((r) => /PDF|导出/.test(r.text) || /无效|不可作为输入/.test(r.text));
       if (!pdfFound) throw new Error('置灰项中未见 PDF/无效标注');
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 对比来源=绑定区「有效的深圳产业情况分析对比结果」下拉（同 00760）。产业 industry-catalog-select；换产业后有效 CHAIN 与无效 PDF 项组合应变化且仍保留置灰 PDF。catalog_path=entry-seed。
+on_fail: 截图 + 抄 X-Trace-Id

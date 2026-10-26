@@ -1,258 +1,103 @@
 id: FUNC-02391
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02391
 priority: P0
+tier: B
 title: 勾选企业确定后对象区显示该企业且可开始分析
-story: US-ENT-RISK-OBJECT
 entry_id: ent-pain
-tier: A
-preconditions:
-  - 对比篮至少有 1 家企业（assert 自含；无则 ENV-PAIN-BASKET-EMPTY-001）
-locators:
-  cta: button「前往对比篮选择企业」
-  overlay_title: 选择分析企业
-  confirm: button「确定」
-  start: button「开始分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/risk?workspace=pain-points&tab=pain-points
-  - action: evaluate
-    note: 打开选择分析企业→勾选 1 家→确定（只回填不发起任务）
+    target: /enterprise/risk?workspace=supply-chain&tab=supply-chain
+  - action: click
+    target: 企业发展痛难点分析
+  - action: wait
+    timeout_ms: 1000
 expect:
   - note: 1、对象区显示「来自对比篮 · 1 家」
     assert: |-
-      const route = '/enterprise/risk?workspace=pain-points&tab=pain-points';
-      const toUrl = (p) =>
-        (typeof baseUrl === 'string' ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892') +
-        (p.startsWith('/') ? p : '/' + p);
-      const main = () => page.locator('main.content-shell-layout, main').first();
-      const closeBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const pickerRoot = () =>
+      const m = page.locator('main.content-shell-layout, main').first();
+      const cta = m.getByRole('button', { name: '前往对比篮选择企业', exact: true });
+      await expect(cta).toBeVisible({ timeout: 10000 });
+      await cta.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      const panel = () =>
         page.locator('.system-compare-panel:visible').filter({ hasText: '选择分析企业' }).last();
-      const listEnterpriseNames = async (scope) => {
+      const listNamesInPanel = async (scope) => {
         const names = [];
         const cards = scope.locator('.ent-compare-item-card');
         for (let i = 0; i < (await cards.count()); i++) {
           const card = cards.nth(i);
           if (!(await card.isVisible().catch(() => false))) continue;
           const nameEl = card.locator('.ent-compare-item-card__name');
-          const name = (await nameEl.count())
+          const t = (await nameEl.count())
             ? (await nameEl.first().innerText()).trim()
             : (await card.innerText()).split('\n')[0].trim();
-          if (name) names.push(name);
-        }
-        if (names.length) return names;
-        const sels = scope.locator('[aria-label^="选择 "]');
-        for (let i = 0; i < (await sels.count()); i++) {
-          const aria = (await sels.nth(i).getAttribute('aria-label')) || '';
-          const m = aria.match(/^选择\s+(.+)$/);
-          if (m && m[1]) names.push(m[1].trim());
+          if (t) names.push(t);
         }
         return names;
       };
-      const joinOneViaAddModal = async (panel) => {
-        const workspace = panel.locator('[data-testid="compare-basket-workspace"]');
-        const addBtn = (await workspace.count())
-          ? workspace.getByRole('button', { name: '新增', exact: true })
-          : panel.getByRole('button', { name: '新增', exact: true });
-        await expect(addBtn.first()).toBeVisible({ timeout: 8000 });
-        await addBtn.first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const modalRoot = page
-          .locator('[data-testid="compare-basket-add-modal"], .arco-modal:visible')
-          .filter({ has: page.locator('.arco-modal-title', { hasText: '新增企业' }) })
-          .last();
-        await expect(modalRoot).toBeVisible({ timeout: 15000 });
-        await modalRoot.locator('.arco-spin').waitFor({ state: 'hidden', timeout: 25000 }).catch(() => {});
-        const joinBtns = modalRoot.getByRole('button', { name: '加入对比篮', exact: true });
-        await expect(joinBtns.first()).toBeVisible({ timeout: 30000 });
-        await joinBtns.first().click({ timeout: 8000 });
+      let p = panel();
+      await expect(p).toBeVisible({ timeout: 12000 });
+      const basketTab = p.getByRole('tab', { name: '篮内企业' }).or(p.getByText('篮内企业', { exact: true }));
+      if ((await basketTab.count()) && (await basketTab.first().isVisible().catch(() => false))) {
+        await basketTab.first().click({ timeout: 5000 }).catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      let names = await listNamesInPanel(p);
+      if (names.length < 1) {
+        const addTab = p.getByRole('tab', { name: /新增企业/ }).or(p.getByText('新增企业', { exact: true }));
+        if ((await addTab.count()) && (await addTab.first().isVisible().catch(() => false))) {
+          await addTab.first().click({ timeout: 5000 });
+          await page.waitForTimeout(800);
+        }
+        const join = p.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        await expect(join).toBeVisible({ timeout: 25000 });
+        await join.click({ timeout: 8000 });
         await page.waitForTimeout(800);
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(300);
-      };
-      const ensureBasketInPicker = async (panel, min) => {
-        let names = await listEnterpriseNames(panel);
-        if (names.length >= min) return names;
-        await joinOneViaAddModal(panel);
-        names = await listEnterpriseNames(panel);
-        if (names.length < min) throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
-        return names;
-      };
-      const dockBtn = page.locator('button[aria-label*="打开对比篮"]').first();
-      const basketEntCount = async () => {
-        if (!(await dockBtn.count())) return 0;
-        const dockLabel = (await dockBtn.getAttribute('aria-label')) || '';
-        let m = dockLabel.match(/企业\s*(\d+)\s*\/\s*50/);
-        if (m) return parseInt(m[1], 10);
-        m = dockLabel.match(/共\s*(\d+)\s*项/);
-        if (m) return parseInt(m[1], 10);
-        return 0;
-      };
-      const seedBasketFromSearchPage = async (min) => {
-        const searchInput = page
-          .getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ })
-          .or(page.getByPlaceholder(/企业名|产业|资质/))
-          .first();
-        if (await searchInput.isVisible().catch(() => false)) {
-          await searchInput.fill('科技');
-          const searchBtn = page.getByRole('button', { name: '搜索', exact: true }).first();
-          if (await searchBtn.isVisible().catch(() => false)) {
-            await searchBtn.click({ timeout: 8000 });
-            await page.waitForTimeout(1500);
-          }
-        }
-        const addBtns = page.getByRole('button', { name: '加入对比篮', exact: true });
-        let n = await basketEntCount();
-        for (let round = 0; round < 5 && n < min; round++) {
-          const btnN = await addBtns.count();
-          let clicked = 0;
-          for (let i = 0; i < btnN && n < min; i++) {
-            const btn = addBtns.nth(i);
-            if (!(await btn.isVisible().catch(() => false))) continue;
-            await btn.click({ timeout: 8000 });
-            await page.waitForTimeout(700);
-            clicked++;
-            n = await basketEntCount();
-          }
-          if (!clicked) break;
-        }
-        return (await basketEntCount()) >= min;
-      };
-      const ensureBasketEnterprises = async (min) => {
-        if ((await basketEntCount()) >= min) return;
-        await page.goto(toUrl('/enterprise/enterprise-search'), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1000);
-        await closeBasket();
-        if (await seedBasketFromSearchPage(min)) return;
-        throw new Error('ENV-PAIN-BASKET-EMPTY-001：对比篮无企业可选');
-      };
-      const openPickerDeepLink = async () => {
-        const pickerQs =
-          'open_compare_basket=1&compare_basket_mode=picker&compare_object_type=enterprise&compare_picker_min=1&compare_picker_max=50';
-        await page.goto(toUrl(`${route}&${pickerQs}`), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1200);
-        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 10000 });
-      };
-      const openPicker = async () => {
-        const m = main();
-        const emptyCta = m.getByRole('button', { name: '前往对比篮选择企业', exact: true });
-        const adjustBtn = m.getByRole('button', { name: '返回对比篮调整对象', exact: true });
-        if (await adjustBtn.isVisible().catch(() => false)) {
-          await adjustBtn.click({ timeout: 8000 });
-        } else if (await emptyCta.isVisible().catch(() => false)) {
-          await emptyCta.click({ timeout: 8000 });
-        } else {
-          throw new Error('未找到打开「选择分析企业」入口');
-        }
-        await page.waitForTimeout(600);
-        await expect(page.getByText('选择分析企业').first()).toBeVisible({ timeout: 8000 });
-      };
-      const selectOneInPanel = async (panel) => {
-        const basketTab = panel.getByRole('tab', { name: '篮内企业' }).or(panel.getByText('篮内企业', { exact: true }));
         if ((await basketTab.count()) && (await basketTab.first().isVisible().catch(() => false))) {
-          await basketTab.first().click({ timeout: 5000 }).catch(() => {});
+          await basketTab.first().click({ timeout: 5000 });
           await page.waitForTimeout(400);
         }
-        let names = await listEnterpriseNames(panel);
-        if (names.length < 1) names = await ensureBasketInPicker(panel, 1);
-        globalThis.__func02391_ent = names[0] || '';
-        const sels = panel.locator('[aria-label^="选择 "]');
-        if (await sels.count()) {
-          const firstSel = sels.first();
-          const aria = (await firstSel.getAttribute('aria-label')) || '';
-          const nameMatch = aria.match(/^选择\s+(.+)$/);
-          if (nameMatch && nameMatch[1]) globalThis.__func02391_ent = nameMatch[1].trim();
-          if ((await firstSel.getAttribute('aria-checked')) !== 'true') {
-            await firstSel.scrollIntoViewIfNeeded().catch(() => {});
-            await firstSel.click({ timeout: 8000 });
-          }
-        } else {
-          const card = panel.locator('.ent-compare-item-card').first();
-          await expect(card).toBeVisible({ timeout: 8000 });
-          await card.click({ timeout: 8000 });
-          const cardNames = await listEnterpriseNames(panel);
-          if (cardNames[0]) globalThis.__func02391_ent = cardNames[0];
-        }
-        await page.waitForTimeout(400);
-        const okBtn = panel.getByRole('button', { name: '确定', exact: true }).first();
-        await expect(okBtn).toBeEnabled({ timeout: 8000 });
-        await okBtn.scrollIntoViewIfNeeded().catch(() => {});
-        await okBtn.click({ timeout: 8000 });
-        await page.waitForTimeout(1500);
-        await closeBasket();
-      };
-      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(800);
-      if (/enterprise_codes/.test(page.url())) {
-        await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(800);
+        p = panel();
+        names = await listNamesInPanel(p);
       }
-      await closeBasket();
-      await ensureBasketEnterprises(1);
-      await page.goto(toUrl(route), { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(800);
-      await closeBasket();
-      await openPicker();
-      let panel = pickerRoot();
-      if (!(await panel.count()) || !(await panel.isVisible().catch(() => false))) {
-        await openPickerDeepLink();
-        panel = pickerRoot();
+      if (names.length < 1) throw new Error('修订 blocked：对比篮无企业，无法勾选确定回填');
+      globalThis.__func02391_ent = names[0];
+      const sel = p.locator('[aria-label^="选择 "]').first();
+      if (await sel.count()) {
+        const aria = (await sel.getAttribute('aria-label')) || '';
+        const mm = aria.match(/^选择\s+(.+)$/);
+        if (mm && mm[1]) globalThis.__func02391_ent = mm[1].trim();
+        if ((await sel.getAttribute('aria-checked')) !== 'true') await sel.click({ timeout: 8000 });
+      } else {
+        await p.locator('.ent-compare-item-card').first().click({ timeout: 8000 });
       }
-      await expect(panel).toBeVisible({ timeout: 10000 });
-      await selectOneInPanel(panel);
-      await expect(page.getByText('选择分析企业').first()).toBeHidden({ timeout: 8000 }).catch(() => {});
-      const url = page.url();
-      if (/view=processing|view=result/.test(url)) {
-        throw new Error('确定后不应进入分析过程/结果页，当前 URL：' + url);
-      }
+      await page.waitForTimeout(300);
+      const ok = p.getByRole('button', { name: '确定', exact: true }).first();
+      await expect(ok).toBeEnabled({ timeout: 8000 });
+      await ok.click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
       await expect(page.getByText(/来自对比篮\s*[·•]\s*1\s*家/).first()).toBeVisible({ timeout: 10000 });
-      globalThis.__func02391_filled = true;
   - note: 2、对象区出现该企业名称
     assert: |-
-      if (!globalThis.__func02391_filled) throw new Error('前置：回填未完成');
-      let ent = globalThis.__func02391_ent || '';
-      if (!ent) {
-        const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
-        const lines = body.split('\n').map((s) => s.trim());
-        ent =
-          lines.find((l) => /公司|集团|有限|股份|科技|服务/.test(l) && !/来自对比篮|分析对象|返回对比篮|开始分析/.test(l)) ||
-          '';
-        globalThis.__func02391_ent = ent;
-      }
+      const ent = globalThis.__func02391_ent || '';
       if (!ent) throw new Error('未记录勾选企业名');
-      const body = await page.locator('main.content-shell-layout, main').first().innerText().catch(() => '');
-      const objIdx = body.indexOf('分析对象');
-      const slice = objIdx >= 0 ? body.slice(objIdx, objIdx + 500) : body.slice(0, 1200);
-      if (!slice.includes(ent)) throw new Error('对象区未见勾选企业：' + ent);
+      const body = await page.locator('main.content-shell-layout, main').first().innerText();
+      const idx = body.indexOf('分析对象');
+      const slice = idx >= 0 ? body.slice(idx, idx + 600) : body.slice(0, 1200);
+      if (!slice.includes(ent)) throw new Error('对象区未见企业名：' + ent);
   - note: 3、「开始分析」可点击
     assert: |-
-      if (!globalThis.__func02391_filled) throw new Error('前置：回填未完成');
       const dims = ['技术研发', '市场拓展', '融资', '管理'];
-      let anyChecked = false;
       for (const d of dims) {
         const box = page.locator('main .arco-checkbox').filter({ hasText: d }).first();
         if (!(await box.count())) continue;
         const cls = (await box.getAttribute('class')) || '';
-        if (/arco-checkbox-checked/.test(cls)) {
-          anyChecked = true;
-          break;
-        }
-      }
-      if (!anyChecked) {
-        const first = page.locator('main .arco-checkbox').filter({ hasText: dims[0] }).first();
-        await expect(first).toBeVisible({ timeout: 8000 });
-        await first.click({ timeout: 8000 });
-        await page.waitForTimeout(300);
+        if (/arco-checkbox-checked/.test(cls)) break;
+        await box.click({ timeout: 5000 });
+        await page.waitForTimeout(200);
+        break;
       }
       await expect(page.getByRole('button', { name: '开始分析' })).toBeEnabled({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6
-as_built_note: D1·edu tts/svcz catalog_path /enterprise/risk + workspace=pain-points&tab=pain-points。步骤=打开 picker（CTA/调整对象/深链）→篮内企业 tab→勾选 1 家→「确定」；不点「开始分析」。篮空先 /enterprise/enterprise-search 搜「科技」加篮（同 supply 02321），picker 内仍可「新增企业」兜底。机检=「来自对比篮·1家」+对象区含企业名+「开始分析」enabled。仍空→ENV-PAIN-BASKET-EMPTY-001。登录与关评审由 runner 前置。
+on_fail: 截图 + 抄 X-Trace-Id

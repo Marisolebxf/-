@@ -2,45 +2,53 @@ id: FUNC-03910
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03910
 priority: P1
 tier: B
-title: 清除产业选择
+title: 备选-清除产业选择
 entry_id: svc-portal
 preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/overview
+    target: /service-portal
+  - action: wait
+    for: 概况默认视图
+    timeout_ms: 1200
   - action: evaluate
-    note: 选择产业「生物」；点击产业选择上的清除图标
+    note: 选择产业「生物」；点击该产业选择上的清除图标
 expect:
   - note: 1、产业恢复占位「全部产业」
     assert: |-
-      const main = page.locator('main');
-      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
-      await cascader.click({ timeout: 8000 });
+      await page.waitForURL(/\/service-portal\/overview/, { timeout: 20000 });
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      await expect(filter).toBeVisible({ timeout: 10000 });
+      const cascader = main.getByLabel('产业集群与产业筛选');
+      await expect(cascader).toBeVisible({ timeout: 15000 });
+      const cascView = cascader.locator('.arco-cascader-view').first();
+      await cascView.click({ timeout: 10000 });
+      const panel = page.locator('.arco-cascader-popup:visible .arco-cascader-panel').first();
+      await panel.waitFor({ state: 'visible', timeout: 10000 });
+      const col0 = panel.locator('.arco-cascader-panel-column').first();
+      await col0.getByText(/^生物/, { exact: false }).first().click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const col0 = page.locator('.arco-cascader-panel-column').first();
-      await col0.getByText(/生物/, { exact: false }).first().click({ timeout: 8000 });
+      const col1 = panel.locator('.arco-cascader-panel-column').nth(1);
+      if (await col1.isVisible().catch(() => false)) {
+        const leaf = col1.getByText(/生物医药/).first();
+        if (await leaf.count()) await leaf.click({ timeout: 8000 });
+      }
+      await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(600);
-      const label = ((await cascader.innerText().catch(() => '')) || '').trim();
-      if (!/生物/.test(label)) throw new Error('前置：产业未选中含「生物」，现场=' + label);
-      await cascader.hover();
-      await page.waitForTimeout(300);
-      const clr = main.locator('.svc-portal-industry-cascader .arco-icon-close, .svc-portal-industry-cascader .arco-cascader-view-clear-icon').first();
-      if (!(await clr.count())) throw new Error('产业已选但未见清除图标（级联 allowClear）');
-      await clr.click({ force: true, timeout: 5000 });
-      await page.waitForTimeout(800);
-      const ph = await main.locator('.svc-portal-industry-cascader input').first().getAttribute('placeholder');
-      if (ph !== '全部产业') throw new Error('清除后 placeholder 非全部产业: ' + ph);
-      const shown = ((await cascader.innerText().catch(() => '')) || '').trim();
-      if (shown && !/^全部产业$/.test(shown)) throw new Error('清除后仍回显产业: ' + shown);
+      await expect(cascView).toContainText(/生物/);
+      const clearIcon = cascader.locator('.arco-cascader-view-clear-icon, .arco-icon-close-circle-fill, .arco-icon-hover').first();
+      await clearIcon.click({ timeout: 8000 });
+      await expect(cascView).toContainText('全部产业');
   - note: 2、产业链下拉恢复禁用
     assert: |-
-      const chain = page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      if (!(await chain.count())) throw new Error('页上无 placeholder「全部产业链」的产业链下拉');
-      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
-      if (!dis) throw new Error('清除产业后产业链未恢复禁用');
-      try { await chain.click({ timeout: 1500 }); } catch {}
-      await page.waitForTimeout(300);
-      const opts = await page.locator('.arco-trigger-popup:visible .arco-select-option').count();
-      if (opts > 0) throw new Error('产业链禁用态仍弹出选项');
+      const main = page.locator('main').first();
+      const filter = main.locator('.svc-portal-filter, [aria-label="筛选条"]').first();
+      const chainInput = filter.locator('input[placeholder="全部产业链"]').first();
+      if ((await chainInput.count()) === 0) {
+        throw new Error('30892 筛选条无产业链下拉，仅产业集群级联');
+      }
+      const chainView = chainInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")]').first();
+      await expect(chainView).toHaveClass(/arco-select-view-disabled|disabled/, { timeout: 5000 });
 on_fail: 截图 + 抄 X-Trace-Id

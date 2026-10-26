@@ -1,96 +1,63 @@
 id: FUNC-01619
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01619
 priority: P1
-title: 选到无企业的热门城市后清单为空态
-story: US-KEYENT-04
-entry_id: ent-key-type
 tier: B
-preconditions:
-  - 已进入重点企业类型分析页
-locators:
-  region_cascader: main 内 role=combobox「选择区域」
-  cascade_hot: 级联第一级「全国热门科创城市」
-  cascade_beijing: 级联第二级「北京」
-  list_btn: button 文案含「查看企业清单」
-  drawer: .arco-drawer:visible
+title: 异常-零匹配清单空态
+entry_id: ent-key-type
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/key-enterprise-analysis?workspace=type&view=type
-  - action: evaluate
-    note: 区域级联选北京后点击「查看企业清单」；空态与来源摘要在 expect 判定
+    target: /enterprise/key-enterprise-analysis?view=type
 expect:
-  - note: 1、文案为「当前搜索条件无匹配企业」；2、来源摘要家数为 0
+  - note: 1、文案为「当前搜索条件无匹配企业」
     assert: |-
-      async function readSourceTotal(drawer) {
-        const block = drawer.locator('div').filter({ hasText: '企业清单来源' }).first();
-        await expect(block).toBeVisible({ timeout: 8000 });
-        const txt = ((await block.innerText()) || '').replace(/\s+/g, ' ');
-        const m = txt.match(/共\s*(\d+)\s*家/);
-        if (!m) throw new Error('来源摘要未含「共 N 家」: ' + txt.slice(0, 200));
-        return parseInt(m[1], 10);
-      }
       async function selectHotCityBeijing(main) {
-        const regionCombo = main.getByRole('combobox', { name: '选择区域' });
-        await expect(regionCombo).toBeVisible({ timeout: 8000 });
-        await regionCombo.click({ force: true, timeout: 8000 });
-        await page.waitForTimeout(700);
-        const popupId = await regionCombo.getAttribute('aria-controls');
-        if (!popupId) throw new Error('区域级联未展开（无 aria-controls）');
-        const panel = page.locator('#' + popupId);
-        await expect(panel).toBeVisible({ timeout: 8000 });
-        await panel.getByText('全国热门科创城市', { exact: true }).first().click({ timeout: 8000 });
+        const cascader = main.locator('.arco-cascader-view').first();
+        await expect(cascader).toBeVisible({ timeout: 10000 });
+        await cascader.click({ timeout: 8000 });
         await page.waitForTimeout(600);
-        await panel.getByText('北京', { exact: true }).first().click({ timeout: 8000 });
+        const popup = page.locator('.arco-cascader-popup-visible').last();
+        await expect(popup).toBeVisible({ timeout: 8000 });
+        await popup.getByText('全国热门科创城市', { exact: true }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await popup.getByText('北京', { exact: true }).first().click({ timeout: 8000 });
         await page.waitForTimeout(1000);
         await page.keyboard.press('Escape');
         await page.waitForTimeout(400);
-      }
-      const close = page.locator('[aria-label="关闭对比篮"]');
-      if (await close.count()) {
-        const vis = await close.first().isVisible().catch(() => false);
-        if (vis) {
-          await close.first().click();
-          await page.waitForTimeout(300);
-        }
       }
       const main = page.locator('main');
       await expect(main.getByRole('heading', { name: '重点企业类型分析' }).first()).toBeVisible({
         timeout: 10000,
       });
       await selectHotCityBeijing(main);
-      const regionCombo = main.getByRole('combobox', { name: '选择区域' });
-      const titleEl = regionCombo.locator('[title]').first();
-      const title1 = (await titleEl.getAttribute('title')) || '';
-      const ph1 =
-        (await main.locator('input[placeholder*="全国热门"]').first().getAttribute('placeholder')) || '';
-      if (!/北京/.test(title1 + ' ' + ph1)) {
-        throw new Error('区域级联未选到北京 title=' + title1 + ' ph=' + ph1);
+      const regionEcho = ((await main.innerText()) || '').replace(/\s+/g, ' ');
+      if (!/北京/.test(regionEcho)) {
+        throw new Error('区域级联未选到北京，主区未含「北京」');
       }
-      const listBtn = page.getByRole('button', { name: /查看.+清单/ }).first();
+      const listBtn = main.getByRole('button', { name: /查看.+清单/ }).first();
       await listBtn.scrollIntoViewIfNeeded();
       const listLbl = ((await listBtn.textContent()) || '').trim();
       const countM = listLbl.match(/（(\d+)）/);
       const listN = countM ? parseInt(countM[1], 10) : null;
-      if (listN === null) {
-        throw new Error('清单入口未解析到家数：' + listLbl);
-      }
       if (listN !== 0) {
         throw new Error(
-          'D3·北京筛选后清单入口为「' +
-            listLbl +
-            '」（N=' +
-            listN +
-            '），用例预期零匹配空态（入口应为 0）；区域回显已含北京，清单家数未随筛选归零',
+          'D3·选北京后清单入口为「' + listLbl + '」，用例要求零匹配（入口应为 0）',
         );
       }
       await listBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(600);
+      const drawer = page.locator('.arco-drawer:visible').first();
+      await expect(drawer).toBeVisible({ timeout: 10000 });
+      await expect(drawer.getByText('当前搜索条件无匹配企业').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、来源摘要家数为 0
+    assert: |-
       const drawer = page.locator('.arco-drawer:visible').first();
       await expect(drawer).toBeVisible({ timeout: 8000 });
-      await expect(drawer.getByText('当前搜索条件无匹配企业').first()).toBeVisible({ timeout: 8000 });
-      const total = await readSourceTotal(drawer);
-      if (total !== 0) {
-        throw new Error('来源摘要家数应为 0，实际共 ' + total + ' 家');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D3·30888 选「全国热门科创城市→北京」后区域回显含北京，但清单入口仍非 0（如 50），清单 total 未跟区域筛选归零，与用例零匹配空态不符；脚本按用例断言入口（0）+抽屉「当前搜索条件无匹配企业」+来源摘要共 0，现场有数则机跑红。级联口径同 FUNC-00389（combobox force + #arco-cascader-popup-*）。登录与关内部评审由 runner 会话前置。
+      const block = drawer.locator('div').filter({ hasText: '企业清单来源' }).first();
+      await expect(block).toBeVisible({ timeout: 8000 });
+      const txt = ((await block.innerText()) || '').replace(/\s+/g, ' ');
+      const m = txt.match(/共\s*(\d+)\s*家/);
+      if (!m) throw new Error('来源摘要未含「共 N 家」');
+      expect(parseInt(m[1], 10)).toBe(0);
+on_fail: 截图 + 抄 X-Trace-Id

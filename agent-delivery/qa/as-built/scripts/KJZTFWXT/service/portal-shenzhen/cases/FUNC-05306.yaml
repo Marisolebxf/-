@@ -9,10 +9,15 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
+  - action: wait
+    timeout_ms: 1200
   - action: click
-    target: '[data-tab-key="overview"]'
+    target: 全球服务机构概况
+  - action: wait
+    timeout_ms: 800
 expect:
-  - note: 主标题为「全球服务机构概况」
+  - note: 1、主标题为「全球服务机构概况」
     assert: |-
-      await expect(page.getByRole('heading', { level: 1, name: '全球服务机构概况' })).toBeVisible()
+      await expect(page).toHaveURL(/\/service-portal\/overview(\?|$)/, { timeout: 15000 });
+      await expect(page.getByRole('heading', { name: '全球服务机构概况', level: 1 })).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

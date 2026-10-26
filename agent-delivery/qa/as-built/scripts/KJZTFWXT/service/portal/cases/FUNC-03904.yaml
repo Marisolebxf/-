@@ -1,54 +1,63 @@
 id: FUNC-03904
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03904
-priority: P0
-tier: A
-title: 深圳三张指标卡
-story: US-SVC-PT-05
+priority: P1
+tier: B
+title: 深圳介绍页三张指标卡约数与暂无态
 entry_id: svc-portal
-preconditions:
-  - 已进入门户（runner 会话前置 + goto 概况）
-locators:
-  tab_sz: tab「深圳产业服务介绍」
-  kpi_grid: .svc-portal-kpi-grid
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal
-  - action: evaluate
-    note: 点击「深圳产业服务介绍」页签
 expect:
   - note: 1、「深圳机构约数」展示家数
     assert: |-
-      const kpiBlock = (label) =>
-        page.locator('.svc-portal-kpi').filter({
-          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
-        }).first();
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
+      const bodyIs404 = async () => {
+        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
+        const homeBtn = page.getByRole('button', { name: '返回首页' });
+        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
+        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return /404|页面不存在/.test(t) && !/全球服务机构概况|深圳产业服务介绍/.test(t);
+      };
+      const dismissBasket = async () => {
+        const close = page.locator('button[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
+        }
+      };
+      await dismissBasket();
+      if (await bodyIs404()) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal SPA404 url=' + page.url());
+      }
+      await page.waitForURL(/\/service-portal\/overview/, { timeout: 30000 }).catch(() => {});
+      const szTab = page.getByRole('tab', { name: '深圳产业服务介绍', exact: true });
+      await szTab.click({ timeout: 8000 });
       await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
-      const totalKpi = kpiBlock('深圳机构约数');
-      await expect(totalKpi).toBeVisible({ timeout: 8000 });
-      await expect(totalKpi.locator('.svc-portal-kpi__value')).toContainText(/\d/, { timeout: 20000 });
-      await expect(totalKpi).toContainText(/家/, { timeout: 8000 });
+      const grid = page.locator('.svc-portal-kpi-grid').first();
+      await expect(grid).toBeVisible({ timeout: 8000 });
+      const card = grid.locator('.svc-portal-kpi').nth(0);
+      await expect(card.locator('.svc-portal-kpi__label').first()).toContainText('深圳机构约数', { timeout: 8000 });
+      const valueEl = card.locator('.svc-portal-kpi__value').first();
+      await expect(valueEl).toBeVisible({ timeout: 8000 });
+      await expect(valueEl).toContainText(/[\d,]+/, { timeout: 20000 });
+      await expect(card.locator('.svc-portal-kpi__unit').first()).toHaveText('家', { timeout: 8000 });
   - note: 2、「本年新增」为暂无
     assert: |-
-      const kpiBlock = (label) =>
-        page.locator('.svc-portal-kpi').filter({
-          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
-        }).first();
-      const newKpi = kpiBlock('本年新增');
-      await expect(newKpi).toBeVisible({ timeout: 8000 });
-      const valTxt = ((await newKpi.locator('.svc-portal-kpi__value').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (valTxt !== '暂无') throw new Error('本年新增应为暂无；现场=' + valTxt);
+      const grid = page.locator('.svc-portal-kpi-grid').first();
+      const card = grid.locator('.svc-portal-kpi').nth(1);
+      await expect(card.locator('.svc-portal-kpi__label').first()).toContainText('本年新增', { timeout: 8000 });
+      const valueText = ((await card.locator('.svc-portal-kpi__value').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (valueText !== '暂无') {
+        throw new Error('本年新增应为暂无，实际: ' + valueText.slice(0, 80));
+      }
   - note: 3、「覆盖领域数」为暂无
     assert: |-
-      const kpiBlock = (label) =>
-        page.locator('.svc-portal-kpi').filter({
-          has: page.locator('.svc-portal-kpi__label').filter({ hasText: label }),
-        }).first();
-      const covKpi = kpiBlock('覆盖环节数');
-      await expect(covKpi).toBeVisible({ timeout: 8000 });
-      const valTxt = ((await covKpi.locator('.svc-portal-kpi__value').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (valTxt !== '暂无') throw new Error('覆盖环节数应为暂无；现场=' + valTxt);
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  Tab /service-portal/shenzhen。KPI 在 .svc-portal-kpi-grid；页签 label 为覆盖环节数；sz_total 异步 toContainText 数字。
+      const grid = page.locator('.svc-portal-kpi-grid').first();
+      const card = grid.locator('.svc-portal-kpi').nth(2);
+      await expect(card.locator('.svc-portal-kpi__label').first()).toContainText('覆盖环节数', { timeout: 8000 });
+      await expect(card).toBeVisible({ timeout: 8000 });
+      const valueText = ((await card.locator('.svc-portal-kpi__value').first().innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      if (valueText !== '暂无') {
+        throw new Error('覆盖环节数应为暂无，实际: ' + valueText.slice(0, 80));
+      }
+on_fail: 截图 + 抄 X-Trace-Id

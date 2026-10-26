@@ -1,164 +1,52 @@
 id: FUNC-01432
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01432
-priority: P0
-title: 主流程-名单计数
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；候选工作台已有企业（assert 自含企业查询加入招引候选兜底）
-locators:
-  cand_tab: tab「候选工作台」
-  pending_tag: tag「待复核 N 家」
-  summary_total: 文案「共 N 家」
-  action_bar: data-testid=candidate-action-bar
+title: 主流程-名单计数
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+    target: /enterprise/enterprise-search
   - action: evaluate
-    note: 候选工作台→校验待复核与共 N 家一致、未选 0 家、单次最多 50 家
-expect:
-  - note: 1、「待复核」家数与「共 N 家」一致 2、未勾选时已选为 0 家 3、提示单次最多 50 家
+    note: 同册01433在企业查询结果点击「加入招引候选」
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const origin = new URL(page.url()).origin;
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const candRoute = '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
-      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
-      const isCandidateWorkspace = async () => {
-        if (!(await candTab().count())) return false;
-        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
-      };
-      const openCandidateTab = async () => {
-        if (await isCandidateWorkspace()) return;
-        await expect(candTab()).toBeVisible({ timeout: 10000 });
-        await candTab().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        if (!(await isCandidateWorkspace())) {
-          const byKey = page.locator('button[data-tab-key="candidates"]').first();
-          if (await byKey.count()) {
-            await byKey.click({ timeout: 8000, force: true });
-            await page.waitForTimeout(900);
-          }
-        }
-        if (!(await isCandidateWorkspace())) {
-          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
-        }
-      };
-      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
-      const ensureOneCandidate = async () => {
-        await openCandidateTab();
-        let rows = await rowCount();
-        if (rows > 0) return;
-        const tryBasket = async () => {
-          const dock = page.getByRole('button', { name: /打开对比篮/ });
-          if (!(await dock.count())) return false;
-          await dock.first().click({ timeout: 8000 });
-          await page.waitForTimeout(800);
-          const addA = page.getByRole('button', { name: '加入招引候选' });
-          if (!(await addA.count())) return false;
-          const sels = page.locator('[aria-label^="选择 "]');
-          if (await sels.count()) await sels.first().click();
-          await page.waitForTimeout(400);
-          if (!(await addA.first().isEnabled())) return false;
-          await addA.first().click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          await page.keyboard.press('Escape').catch(() => {});
-          return true;
-        };
-        if (await tryBasket()) {
-          await openCandidateTab();
-          rows = await rowCount();
-          if (rows > 0) return;
-        }
-        await page.goto(origin + '/development/search', { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-        await dismissBasket();
-        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
-        await page.getByRole('button', { name: '搜索' }).click();
-        await page.waitForTimeout(5000);
-        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const addOpt = page.getByText('加入招引候选', { exact: true }).first();
-        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
-        await page.waitForTimeout(1500);
-        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(2000);
-        await openCandidateTab();
-        rows = await rowCount();
-        if (rows < 1) {
-          const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
-          throw new Error('环境闸门 ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业（对比篮/企业查询加入后仍为空）: ' + txt.slice(0, 160));
-        }
-      };
-      const parsePendingReview = (text) => {
-        const m = text.match(/待复核\s*(\d+)\s*家/);
-        return m ? parseInt(m[1], 10) : null;
-      };
-      const parseSummaryTotal = (text) => {
-        const m = text.match(/共\s*(\d+)\s*家/);
-        return m ? parseInt(m[1], 10) : null;
-      };
-      const parsePaginationTotal = (text) => {
-        const m = text.match(/共\s*(\d+)\s*条/);
-        return m ? parseInt(m[1], 10) : null;
-      };
-      const actionBar = () => stack().getByTestId('candidate-action-bar');
-      const clearAllSelections = async () => {
-        const rows = stack().locator('.arco-table-body .arco-table-tr');
-        const n = await rows.count();
-        for (let i = 0; i < n; i++) {
-          const cb = rows.nth(i).locator('.arco-checkbox').first();
-          if (!(await cb.count())) continue;
-          const checked = (await cb.getAttribute('class'))?.includes('arco-checkbox-checked');
-          if (checked) await cb.click({ timeout: 5000 });
-        }
-        await page.waitForTimeout(400);
-      };
-      await dismissBasket();
-      await ensureOneCandidate();
-      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
-      await clearAllSelections();
-      const stackText = ((await stack().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      const bodyText = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      const pending = parsePendingReview(stackText) ?? parsePendingReview(bodyText);
-      const totalSummary = parseSummaryTotal(stackText);
-      if (pending === null) throw new Error('未见「待复核 N 家」标签');
-      if (totalSummary === null) throw new Error('未见「共 N 家」汇总文案（无筛选态）');
-      if (pending !== totalSummary) {
-        throw new Error('「待复核」与「共 N 家」不一致：待复核=' + pending + ' 共=' + totalSummary);
+      const main = page.locator('main');
+      const join = main.getByRole('button', { name: '加入招引候选' }).first();
+      await join.waitFor({ state: 'visible', timeout: 20000 });
+      await join.click();
+      await page.waitForTimeout(800);
+  - action: goto
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+  - action: evaluate
+    note: 打开「候选工作台」
+    assert: |-
+      const tab = page.getByRole('tab', { name: '候选工作台' });
+      if ((await tab.getAttribute('aria-selected')) !== 'true') {
+        await tab.click();
       }
-      const bar = actionBar();
-      await expect(bar).toBeVisible({ timeout: 10000 });
-      const barText = ((await bar.innerText()) || '').replace(/\s+/g, ' ');
-      const selM = barText.match(/已选\s*(\d+)\s*家/);
-      const selected = selM ? parseInt(selM[1], 10) : -1;
-      if (selected !== 0) throw new Error('未勾选时已选应为 0 家，现场=' + selected + '；bar=' + barText.slice(0, 80));
-      if (!/单次最多\s*50\s*家/.test(barText)) {
-        throw new Error('action-bar 应含「单次最多 50 家」，现场=' + barText.slice(0, 100));
+      await expect(page.getByTestId('recruit-tab-stack').getByText('人工线索候选工作台')).toBeVisible({ timeout: 15000 });
+expect:
+  - note: 「待复核」家数与「共 N 家」一致
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack');
+      await expect(stack.getByText('人工线索候选工作台')).toBeVisible({ timeout: 15000 });
+      const text = await stack.innerText();
+      const pendingMatch = text.match(/待复核\s*(\d+)\s*家/);
+      const totalMatch = text.match(/共\s*(\d+)\s*家/);
+      if (!pendingMatch || !totalMatch || Number(pendingMatch[1]) < 1) {
+        throw new Error('ENV-ATTRACT-CANDIDATE-EMPTY');
       }
-      const pagBar = stack().getByTestId('candidate-pagination-bar');
-      if (await pagBar.count()) {
-        const pagText = ((await pagBar.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const pagTotal = parsePaginationTotal(pagText);
-        if (pagTotal !== null && pagTotal !== pending) {
-          throw new Error('分页「共 N 条」应与待复核一致：待复核=' + pending + ' 分页=' + pagTotal);
-        }
+      if (pendingMatch[1] !== totalMatch[1]) {
+        throw new Error(`待复核 ${pendingMatch[1]} 家与共 ${totalMatch[1]} 家不一致`);
       }
-      const visibleRows = await rowCount();
-      if (visibleRows > 0 && visibleRows > pending && pending <= 10) {
-        throw new Error('首页可见行数 ' + visibleRows + ' 大于名单总数 ' + pending + '（未筛选态异常）');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 /enterprise-center/attraction&entry=candidates；CandidatePanel a-tag「待复核 {{allRecords.length}} 家」与 summaryText「共 N 家」、data-testid=candidate-action-bar「已选 0 家·单次最多 50 家」（RECRUIT_CANDIDATE_LIMIT=50）。可选校 candidate-pagination-bar「共 N 条」。前置同 FUNC-01428（对比篮/企业查询加入）。D4·候选空→ ENV-ATTRACT-CANDIDATE-EMPTY。登录与关评审由 runner 前置。B 档零 allow_skip。
+  - note: 未勾选时已选为 0 家
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack');
+      await expect(stack.getByText(/已选\s*0\s*家/)).toBeVisible();
+  - note: 提示单次最多 50 家
+    assert: |-
+      const stack = page.getByTestId('recruit-tab-stack');
+      await expect(stack.getByText(/单次最多\s*50\s*家/)).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

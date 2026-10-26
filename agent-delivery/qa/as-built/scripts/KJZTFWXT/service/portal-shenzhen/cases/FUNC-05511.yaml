@@ -9,17 +9,29 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
+  - action: evaluate
+    note: 点击任一重点机构卡片（同册05497）
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      await main.getByText('重点产业服务机构').scrollIntoViewIfNeeded();
+      await main.getByText('广州合一健康科技有限公司').first().click({ timeout: 15000 });
+      const drawer = page.locator('.arco-drawer');
+      await expect(page.getByText('进入分析侧画像')).toBeVisible({ timeout: 15000 });
+      await expect(drawer.getByRole('button', { name: '加入对比篮' })).toBeVisible({ timeout: 10000 });
   - action: click
-    role: button
-    name: 查看详情（概况/规模/领域/业务分布）
-  - action: click
-    role: button
-    name: 加入对比篮
+    note: 1.点击「加入对比篮」
+    target: 加入对比篮
+    locator: |-
+      page.locator('.arco-drawer').getByRole('button', { name: '加入对比篮' })
 expect:
   - note: 该按钮变为「已在对比篮」
     assert: |-
-      await expect(page.getByRole('button', { name: '已在对比篮' })).toBeVisible()
+      await expect(page.locator('.arco-drawer').getByRole('button', { name: '已在对比篮' })).toBeVisible({ timeout: 10000 });
   - note: 提示已将该机构加入对比篮
     assert: |-
-      await expect(page.getByText(/已将该机构加入对比篮/)).toBeVisible()
+      await expect(page.locator('.arco-message').filter({ hasText: /加入对比篮/ }).first()).toBeVisible({ timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id

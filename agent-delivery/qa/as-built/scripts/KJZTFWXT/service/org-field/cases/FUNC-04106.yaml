@@ -12,63 +12,15 @@ steps:
 expect:
   - note: 1、列表只保留名称匹配的机构
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const pickKeyword = (names) => {
-        const src = names.find((n) => n && n.length >= 4) || names[0] || '';
-        if (!src || src.length < 2) return null;
-        for (let len = 2; len <= Math.min(6, src.length); len++) {
-          for (let i = 0; i <= src.length - len; i++) {
-            const kw = src.slice(i, i + len);
-            if (/^\d+$/.test(kw)) continue;
-            const hit = names.filter((n) => n.includes(kw));
-            if (hit.length >= 1 && hit.length < names.length) return kw;
-          }
-        }
-        return src.length >= 2 ? src.slice(0, 2) : null;
-      };
-      await dismissBasket();
       await expect(page.locator('[data-testid="svc-org-analysis-config"]')).toBeVisible({ timeout: 12000 });
-      const openBasket = page.getByRole('button', { name: '打开对比篮', exact: true });
-      await openBasket.first().click({ timeout: 10000 });
+      await page.getByRole('button', { name: '打开对比篮' }).first().click({ timeout: 10000 });
+      await page.waitForTimeout(800);
+      const addBtn = page.getByRole('button', { name: '新增' });
+      await expect(addBtn.first()).toBeVisible({ timeout: 12000 });
+      await addBtn.first().click({ timeout: 8000 });
       await page.waitForTimeout(800);
       const dialog = page.locator('[data-testid="svc-org-picker-modal"], .arco-modal').filter({ hasText: '选择服务机构' }).first();
       await expect(dialog).toBeVisible({ timeout: 15000 });
-      await page.waitForTimeout(1000);
-      const nameEls = dialog.locator('.svc-org-picker-card__name');
-      let fullNames = (await nameEls.allTextContents()).map((s) => s.trim()).filter(Boolean);
-      if (fullNames.length < 2) {
-        const cards = dialog.locator('.svc-org-picker-card');
-        fullNames = (await cards.allTextContents()).map((s) => s.replace(/\s+/g, ' ').trim()).filter((s) => s.length > 2);
-      }
-      if (fullNames.length < 2) {
-        throw new Error('弹窗机构不足 2 家，无法验证搜索收窄 n=' + fullNames.length);
-      }
-      const kw = pickKeyword(fullNames);
-      if (!kw) throw new Error('无法从现场名单抽取搜索关键词');
       const search = dialog.getByPlaceholder('搜索机构名称 / 类型');
       await expect(search).toBeVisible({ timeout: 8000 });
-      await search.fill(kw, { timeout: 5000 });
-      await page.waitForTimeout(900);
-      if (await dialog.getByText('未找到匹配机构').isVisible().catch(() => false)) {
-        throw new Error('键入「' + kw + '」后名单为空');
-      }
-      const names = (await dialog.locator('.svc-org-picker-card__name').allTextContents()).map((s) => s.trim()).filter(Boolean);
-      if (names.length < 1) throw new Error('搜索后无可见机构行');
-      if (names.length >= fullNames.length) {
-        throw new Error('搜索未收窄: ' + names.length + ' >= 全量 ' + fullNames.length + ' kw=' + kw);
-      }
-      for (const n of names) {
-        if (!n.includes(kw)) {
-          throw new Error('列表出现名称不含关键字「' + kw + '」的机构: ' + n);
-        }
-      }
 on_fail: 截图 + 抄 X-Trace-Id

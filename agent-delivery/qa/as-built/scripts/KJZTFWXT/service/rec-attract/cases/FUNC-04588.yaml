@@ -9,22 +9,32 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
-  - action: select
-    target: 重点产业方向
-    value: 生物
+  - action: wait
+    ms: 1500
   - action: click
-    target: 开始分析
+    target: 重点产业方向
+    locator: |-
+      page.locator('main [data-testid="svc-rec-analysis-context"] .arco-cascader-view, main [data-testid="svc-rec-analysis-context"] .arco-select-view').first()
+  - action: click
+    target: 生物
+    locator: |-
+      page.locator('.arco-cascader-list-column, .arco-select-dropdown:visible').first().getByText('生物', { exact: true })
+  - action: click
+    target: 生成招引名单
+    locator: |-
+      page.locator('main [data-testid="svc-rec-start-analysis"]')
   - action: click
     target: 查看结果
+    locator: |-
+      page.locator('main').getByRole('button', { name: '查看结果' })
 expect:
   - note: 结果页出现「外部机构引进推荐名单」
     assert: |-
-      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible();
+      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 })
   - note: 重点产业方向回显「生物」
     assert: |-
-      const industryBlock = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
-      await expect(industryBlock.locator('.arco-select-view')).toContainText('生物');
+      await expect(page.locator('main [data-testid="svc-rec-result-context"]').getByText('生物')).toBeVisible()
   - note: 名单至少有一行机构
     assert: |-
-      await expect(page.locator('.arco-table-body tbody tr').first()).toBeVisible();
+      await expect(page.locator('[data-testid="svc-rec-list"] article').first()).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

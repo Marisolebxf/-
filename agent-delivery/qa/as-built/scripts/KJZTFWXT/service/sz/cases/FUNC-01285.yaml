@@ -2,52 +2,85 @@ id: FUNC-01285
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01285
 priority: P1
 tier: B
-title: 主流程-产业选定与清空
+title: 主流程-产业选定与清空（回显与清空且不自动起任务）
 entry_id: svc-sz
-preconditions:
-  - 已进入分析配置
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
-  - action: evaluate
-    assert: |-
-      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await item.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '新一代信息技术' }).click();
-  - action: evaluate
-    assert: |-
-      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await item.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '生物' }).click();
-  - action: evaluate
-    assert: |-
-      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await item.locator('.arco-select-allow-clear').click();
-  - action: click
-    target: 分析记录
-  - action: click
-    target: 分析配置
 expect:
-  - note: 选定或改选后回显当前产业
+  - note: 1、选定或改选后回显当前产业
     assert: |-
-      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await item.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '新一代信息技术' }).click();
-      await expect(item.locator('.arco-select-view')).toContainText('新一代信息技术');
-      await item.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '生物' }).click();
-      await expect(item.locator('.arco-select-view')).toContainText('生物');
-  - note: 清空后回到未选，不写回默认产业
+      globalThis.__p1285Posts = [];
+      page.on('request', (r) => {
+        if (r.method() === 'POST' && /\/topicAsync\/topic\/v1\/analysis\/tasks\/?(\?|$)/.test(r.url())) {
+          globalThis.__p1285Posts.push(r.url());
+        }
+      });
+      await page.waitForTimeout(2000);
+      const close = page.locator('button[aria-label="关闭对比篮"]');
+      if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
+        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
+      }
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]').first();
+      await expect(cfg).toBeVisible({ timeout: 12000 });
+      const clusterSelect = () => cfg.locator('.arco-select-view').first();
+      const readClusterEcho = async () => {
+        const v = cfg.locator('.arco-select-view').first().locator('.arco-select-view-value').first();
+        return ((await v.innerText().catch(() => '')) || (await clusterSelect().innerText().catch(() => '')) || '').trim().replace(/\s+/g, ' ');
+      };
+      const pickCluster = async (name) => {
+        const view = clusterSelect();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await page.keyboard.press('Escape').catch(() => {});
+      };
+      await pickCluster('新一代信息技术');
+      let echo = await readClusterEcho();
+      if (!/新一代信息技术/.test(echo)) throw new Error('选定后未回显新一代信息技术: ' + echo);
+      if (/view=processing|view=result/.test(page.url())) throw new Error('选定后不应自动进过程/结果: ' + page.url());
+      await pickCluster('生物');
+      echo = await readClusterEcho();
+      if (!/^生物/.test(echo)) throw new Error('改选后未回显生物: ' + echo);
+      if (/view=processing|view=result/.test(page.url())) throw new Error('改选后不应自动进过程/结果: ' + page.url());
+  - note: 2、清空后回到未选，不写回默认产业
     assert: |-
-      const item = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await item.locator('.arco-select-allow-clear').click();
-      const view = item.locator('.arco-select-view');
-      await expect(view).not.toContainText('生物产业');
-      await expect(view).not.toContainText('新一代信息技术');
-      await expect(view).toContainText('请选择');
-  - note: 全程不自动发起分析
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]').first();
+      const view = cfg.locator('.arco-select-view').first();
+      await view.hover();
+      await page.waitForTimeout(250);
+      const clr = cfg.locator('.arco-select-view-clear-btn, .arco-select-clear-icon').first();
+      if (!(await clr.count()) || !(await clr.isVisible().catch(() => false))) throw new Error('未见产业领域清空按钮');
+      await clr.click({ force: true, timeout: 5000 });
+      await page.waitForTimeout(900);
+      const echo = ((await view.locator('.arco-select-view-value').first().innerText().catch(() => '')) || (await view.innerText().catch(() => '')) || '').trim().replace(/\s+/g, ' ');
+      if (/生物|新一代信息技术|新能源|新材料|高端装备|人工智能/.test(echo)) {
+        throw new Error('清空后仍回显产业，未回到未选: ' + echo);
+      }
+      if (!/选择|请选择|^$/.test(echo)) throw new Error('清空后未见未选占位: ' + echo);
+      if (/view=processing|view=result/.test(page.url())) throw new Error('清空后不应自动进过程/结果: ' + page.url());
+  - note: 3、全程不自动发起分析
     assert: |-
-      await expect(page.getByText('分析中')).toHaveCount(0);
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible();
+      const rec = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true }));
+      await expect(rec.first()).toBeVisible({ timeout: 8000 });
+      await rec.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=records/, { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      await expect(page.locator('[data-testid="svc-eco-analysis-records"]').first()).toBeVisible({ timeout: 8000 });
+      const sz = page.locator('[role=tab][data-tab-key="shenzhen"]').or(page.getByRole('tab', { name: '深圳服务链现状分析', exact: true }));
+      await expect(sz.first()).toBeVisible({ timeout: 8000 });
+      await sz.first().click({ timeout: 8000 });
+      await page.waitForURL(/tab=shenzhen/, { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(1200);
+      await expect(page.locator('[data-testid="svc-eco-analysis-config"]').first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('button', { name: '开始分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
+      if (/深圳服务链现状分析生成中/.test(body)) throw new Error('切回后不应停在过程页: ' + body.slice(0, 200));
+      if ((globalThis.__p1285Posts || []).length > 0) throw new Error('全程不应 POST 创建分析任务: ' + JSON.stringify(globalThis.__p1285Posts));
+      if (/view=processing|view=result/.test(page.url())) throw new Error('切回后 URL 不应为过程/结果: ' + page.url());
 on_fail: 截图 + 抄 X-Trace-Id

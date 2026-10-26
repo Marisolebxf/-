@@ -2,7 +2,7 @@ id: FUNC-04011
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04011
 priority: P1
 tier: B
-title: 主流程-成功案例条件（运算符与单位）
+title: 主流程-成功案例条件
 entry_id: svc-search
 preconditions: []
 locators: {}
@@ -10,44 +10,27 @@ steps:
   - action: goto
     target: /service-center/search?mode=advanced
   - action: evaluate
-    note: 字段库点「成功案例」
     script: |-
-      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
-      await expect(fieldLib).toBeVisible({ timeout: 15000 });
-      const successTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '成功案例' }).first();
-      await expect(successTag).toBeVisible({ timeout: 8000 });
-      await successTag.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
+      const main = page.locator('main');
+      await expect(main.getByText('高级筛选 · 字段库')).toBeVisible();
+      await main.getByPlaceholder('搜索字段名称 / key').fill('成功案例');
+      const caseTag = main.locator('.fp-tags .arco-tag').filter({ hasText: '成功案例' });
+      await expect(caseTag).toBeVisible();
+      await caseTag.click();
+      await expect(main.locator('.condition-builder').filter({ hasText: '成功案例' })).toBeVisible();
   - action: evaluate
-    note: 展开运算符下拉
     script: |-
-      const condRow = page
-        .locator('main .condition-builder')
-        .filter({ hasText: '成功案例' })
-        .filter({ has: page.locator('.condition-builder__unit') })
-        .first();
-      await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opCombo = condRow.locator('.condition-builder__op').getByRole('combobox');
-      await expect(opCombo).toBeVisible({ timeout: 8000 });
-      await opCombo.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
+      const row = page.locator('main .condition-builder').filter({ hasText: '成功案例' });
+      await row.locator('.condition-builder__op .arco-select-view').click();
 expect:
   - note: 1、运算符为「≥」「≤」「范围」共 3 个
     assert: |-
-      const pop = page.locator('.arco-select-dropdown:visible').last();
-      await expect(pop).toBeVisible({ timeout: 8000 });
-      const opts = pop.locator('.arco-select-option');
-      await expect(opts).toHaveCount(3);
-      await expect(pop.getByText('≥', { exact: true })).toBeVisible();
-      await expect(pop.getByText('≤', { exact: true })).toBeVisible();
-      await expect(pop.getByText('范围', { exact: true })).toBeVisible();
-      await page.keyboard.press('Escape').catch(() => {});
+      const dropdown = page.locator('.arco-select-dropdown:visible');
+      await expect(dropdown.getByText('≥', { exact: true })).toBeVisible();
+      await expect(dropdown.getByText('≤', { exact: true })).toBeVisible();
+      await expect(dropdown.getByText('范围', { exact: true })).toBeVisible();
   - note: 2、单位为「个」
     assert: |-
-      const condRow = page
-        .locator('main .condition-builder')
-        .filter({ hasText: '成功案例' })
-        .filter({ has: page.locator('.condition-builder__unit') })
-        .first();
-      await expect(condRow.locator('.condition-builder__unit')).toHaveText('个');
+      const row = page.locator('main .condition-builder').filter({ hasText: '成功案例' });
+      await expect(row.locator('.condition-builder__unit')).toHaveText('个');
 on_fail: 截图 + 抄 X-Trace-Id

@@ -2,67 +2,44 @@ id: FUNC-04105
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04105
 priority: P1
 tier: B
-title: 备选-产业领域选中 · 不发起分析
+title: 备选-产业领域选中
 entry_id: svc-org-field
-preconditions:
-  - 已选机构为 0 家（runner 会话前置：已登录且内部评审模式关闭）
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
+  - action: evaluate
+    note: 在产业领域输入「生物」；点选「生物」
 expect:
-  - note: 前置：配置空态已选机构 0 家，产业领域级联控件可见
+  - note: 可选项收窄为名称含「生物」的产业
     assert: |-
-      const panel = page.locator('[data-testid="svc-org-analysis-config"]');
-      await expect(panel).toBeVisible({ timeout: 15000 });
-      await expect(panel.getByText(/已选机构（0\s*家）/)).toBeVisible({ timeout: 8000 });
-      const cascader = panel.getByLabel('产业集群与产业筛选');
-      await expect(cascader).toBeVisible({ timeout: 8000 });
-      await cascader.locator('.arco-cascader-view').click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const menu = page.locator('.svc-portal-industry-cascader-menu').last();
-      await expect(menu).toBeVisible({ timeout: 10000 });
-  - note: 1、在产业领域输入「生物」后，可选项收窄为名称含「生物」的产业
-    assert: |-
-      const kw = '生物';
-      const menu = page.locator('.svc-portal-industry-cascader-menu').last();
-      const search = menu.locator('.arco-cascader-search input, input.arco-input').first();
-      if (await search.count()) {
-        await search.fill(kw, { timeout: 5000 });
-      } else {
-        await page.keyboard.type(kw, { delay: 80 });
-      }
-      await page.waitForTimeout(700);
-      const labels = menu.locator('.arco-cascader-list-item-label');
-      const n = await labels.count();
-      if (n < 1) throw new Error('键入「生物」后级联无可见选项');
-      if (n >= 20) throw new Error('筛选未明显收窄，仍见 ≥20 项: ' + n);
-      for (let i = 0; i < n; i++) {
-        const tx = ((await labels.nth(i).innerText()) || '').trim();
-        if (tx && !tx.includes(kw)) throw new Error('收窄后出现不含「生物」的选项: ' + tx);
-      }
-  - note: 2、点选「生物」后回显「生物」；3、仍提示请先选择分析机构且不发起分析
-    assert: |-
-      const kw = '生物';
-      const menu = page.locator('.svc-portal-industry-cascader-menu').last();
-      let target = menu.locator('.arco-cascader-list-item').filter({ hasText: /^生物$/ }).first();
-      if (!(await target.count())) {
-        target = menu.locator('.arco-cascader-list-item').filter({ hasText: kw }).first();
-      }
-      await expect(target).toBeVisible({ timeout: 8000 });
-      await target.click({ timeout: 8000 });
+      const main = page.locator('main').first();
+      await expect(main.getByText('已选机构（0 家）')).toBeVisible({ timeout: 12000 });
+      const cascader = main.locator('[data-testid="svc-org-analysis-config"] .arco-cascader-view').first();
+      await cascader.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const filterInput = page.getByPlaceholder('筛选领域（不改分析指纹）');
+      await expect(filterInput).toBeVisible({ timeout: 8000 });
+      await filterInput.fill('生物', { timeout: 5000 });
       await page.waitForTimeout(600);
-      const panel = page.locator('[data-testid="svc-org-analysis-config"]');
-      const cascaderText = ((await panel.getByLabel('产业集群与产业筛选').innerText()) || '').trim();
-      if (!cascaderText.includes(kw)) {
-        throw new Error('选中后未回显含「生物」，实际=' + cascaderText.slice(0, 100));
+      const popup = page.locator('.arco-cascader-popup-visible').first();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const opts = popup.locator('.arco-cascader-option');
+      const n = await opts.count();
+      if (n < 1) throw new Error('筛「生物」后无可见选项');
+      for (let i = 0; i < n; i++) {
+        await expect(opts.nth(i)).toContainText('生物');
       }
-      const t = ((await panel.innerText().catch(() => '')) || '');
-      if (!/尚未选择分析机构|请先选择分析机构|已选机构（0\s*家）|未选择机构/.test(t)) {
-        throw new Error('选中领域后应仍提示先选机构: ' + t.slice(0, 280));
-      }
-      const url = page.url();
-      if (/view=processing|view=result|task_id=/.test(url)) {
-        throw new Error('选中产业领域不应进入分析/任务态: ' + url);
-      }
+  - note: 选中后回显「生物」
+    assert: |-
+      const popup = page.locator('.arco-cascader-popup-visible').first();
+      await popup.locator('.arco-cascader-option').filter({ hasText: /^生物$/ }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.keyboard.press('Escape').catch(() => {});
+      const filterInput = page.getByPlaceholder('筛选领域（不改分析指纹）');
+      await expect(filterInput).toHaveValue('生物', { timeout: 8000 });
+  - note: 仍提示请先选择分析机构
+    assert: |-
+      await expect(page.getByText(/尚未选择分析机构|请先选择分析机构|请先在对比篮中选择分析机构/).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

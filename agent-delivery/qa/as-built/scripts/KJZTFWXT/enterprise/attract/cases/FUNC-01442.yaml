@@ -1,28 +1,28 @@
 id: FUNC-01442
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01442
 priority: P1
-title: 地域来源选全国后第二列 32 项
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录，可从企业分析进入招引企业推荐分析
-locators:
-  stack: recruit-tab-stack
-  region_cascader: .sci-arco-cascader[aria-label="地域来源"]
+title: 备选-地域全国
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+    target: /enterprise/attraction
   - action: wait
     for: 条件区 SPA 渲染
     timeout_ms: 2500
   - action: evaluate
     note: 展开地域来源、点选全国；第二列项数与附录 C 在 expect 判定
 expect:
-  - note: 条件区地域来源级联可见
+  - note: 1、第二列共 32 项，名称见附录 C
     assert: |-
+      const APPENDIX_C = [
+        '中国', '北京市', '天津市', '河北省', '山西省', '内蒙古自治区', '辽宁省', '吉林省', '黑龙江省',
+        '上海市', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省', '湖北省', '湖南省',
+        '广东省', '广西壮族自治区', '海南省', '重庆市', '四川省', '贵州省', '云南省', '西藏自治区', '陕西省',
+        '甘肃省', '青海省', '宁夏回族自治区', '新疆维吾尔自治区',
+      ];
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
         if (await close.count()) {
@@ -41,49 +41,49 @@ expect:
         }
         throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
       };
+      const regionView = () =>
+        page
+          .locator('#recruit-condition-panel .flex.flex-col')
+          .filter({ has: page.locator('span', { hasText: '地域来源' }) })
+          .locator('.sci-arco-cascader')
+          .first();
+      const regionPopup = () =>
+        page
+          .locator('.arco-trigger-popup:visible')
+          .filter({ has: page.locator('.arco-cascader-option, .arco-cascader-list-item') })
+          .first();
       await dismissBasket();
       await waitFilterReady();
       const tab = page.getByRole('tab', { name: '条件筛选推荐' });
       if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(400);
-      let region = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
-      if ((await region.count()) < 1) {
-        region = page.locator('[aria-label="选择区域"]').first();
-      }
-      if ((await region.count()) < 1) {
-        throw new Error('条件区未见地域来源级联，url=' + page.url());
-      }
-      await expect(region).toBeVisible({ timeout: 8000 });
-  - note: 点选全国后第二列共 32 项且名称同附录 C
-    assert: |-
-      const APPENDIX_C = [
-        '中国', '北京市', '天津市', '河北省', '山西省', '内蒙古自治区', '辽宁省', '吉林省', '黑龙江省',
-        '上海市', '江苏省', '浙江省', '安徽省', '福建省', '江西省', '山东省', '河南省', '湖北省', '湖南省',
-        '广东省', '广西壮族自治区', '海南省', '重庆市', '四川省', '贵州省', '云南省', '西藏自治区', '陕西省',
-        '甘肃省', '青海省', '宁夏回族自治区', '新疆维吾尔自治区',
-      ];
       await page.keyboard.press('Escape').catch(() => {});
-      let regionView = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
-      if ((await regionView.count()) < 1) {
-        regionView = page.locator('[aria-label="选择区域"]').first();
+      const trig = regionView();
+      if ((await trig.count()) < 1) {
+        throw new Error('条件区未见地域来源级联（#recruit-condition-panel），url=' + page.url());
       }
-      await regionView.scrollIntoViewIfNeeded();
-      await regionView.click({ timeout: 8000 });
+      await trig.scrollIntoViewIfNeeded();
+      await trig.click({ timeout: 8000 });
       await page.waitForTimeout(700);
-      const firstCol = page.locator('.arco-cascader-list-column').first();
+      const popup = regionPopup();
+      const firstCol = popup.locator('.arco-cascader-panel-column, .arco-cascader-list-column').first();
       await expect(firstCol).toBeVisible({ timeout: 8000 });
-      const national = firstCol.locator('.arco-cascader-list-item').filter({ hasText: /^全国$/ });
-      const nationalLoose = firstCol.locator('.arco-cascader-list-item').filter({ hasText: '全国' });
+      const national = firstCol
+        .locator('.arco-cascader-option, .arco-cascader-list-item')
+        .filter({ hasText: /^全国$/ });
+      const nationalLoose = firstCol
+        .locator('.arco-cascader-option, .arco-cascader-list-item')
+        .filter({ hasText: '全国' });
       const pick = (await national.count()) ? national.first() : nationalLoose.first();
       if ((await pick.count()) < 1) {
-        const sample = await firstCol.locator('.arco-cascader-list-item').allTextContents();
+        const sample = await firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').allTextContents();
         throw new Error('第一列未见「全国」，实际=' + sample.join('|'));
       }
       await pick.click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      const secondCol = page.locator('.arco-cascader-list-column').nth(1);
+      const secondCol = popup.locator('.arco-cascader-panel-column, .arco-cascader-list-column').nth(1);
       await expect(secondCol).toBeVisible({ timeout: 8000 });
-      const items = secondCol.locator('.arco-cascader-list-item');
+      const items = secondCol.locator('.arco-cascader-option, .arco-cascader-list-item');
       const count = await items.count();
       const texts = (await items.allTextContents())
         .map((t) => t.replace(/\s+/g, '').trim())
@@ -101,5 +101,4 @@ expect:
       if (extra.length) {
         throw new Error('第二列多出未在附录 C 的项：' + extra.join('、'));
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；步骤=条件区展开地域来源→第一列点「全国」→第二列 32 项与附录 C 全量匹配。D4·2026-10-20 机跑 rewrite-FUNC-01442（21:25Z+8）：第二列仅 1 项「主要科创城市」（demo 旧树，非 region-scopes 附录 C），交卷 fail·C6 产品偏差（地域级联 D3，同 FUNC-01412）。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

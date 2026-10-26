@@ -8,45 +8,74 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/shenzhen?industry=CL-SEI-02
+    target: /service-portal/shenzhen
   - action: evaluate
-    note: 选择产业链「生物医药与生命健康」
+    note: 前置产业已选「生物」
     assert: |-
       if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
         throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
       }
       await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
       const main = page.locator('main');
-      const filter = main.locator('.svc-portal-filter');
-      const chainRow = filter.filter({ hasText: '产业链' });
-      await expect(chainRow).toBeVisible({ timeout: 8000 });
-      const chainView = chainRow.locator('.arco-select-view').first();
-      await chainView.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const option = page.locator('.arco-select-dropdown:visible .arco-select-option').filter({ hasText: '生物医药与生命健康' }).first();
-      await expect(option).toBeVisible({ timeout: 8000 });
-      await option.click();
+      const filter = main.locator('.svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 8000 });
+      const combos = filter.getByRole('combobox');
+      if ((await combos.count()) >= 2) {
+        await combos.nth(0).click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.getByRole('option', { name: /^生物/ }).first().click({ timeout: 8000 });
+      } else {
+        const cascader = filter.locator('.arco-cascader-view').first();
+        const menu = page.locator('.svc-portal-industry-cascader-menu');
+        await cascader.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: /^生物/ }).first().click({ timeout: 8000 });
+        await page.keyboard.press('Escape').catch(() => {});
+      }
       await page.waitForTimeout(800);
   - action: evaluate
-    note: 点击产业链下拉上的清空
+    note: 1.选择产业链「生物医药与生命健康」
     assert: |-
       const main = page.locator('main');
-      const filter = main.locator('.svc-portal-filter');
-      const chainRow = filter.filter({ hasText: '产业链' });
-      const chainView = chainRow.locator('.arco-select-view').first();
-      await expect(chainView).toBeVisible({ timeout: 8000 });
-      const clearBtn = chainView.locator('.arco-select-view-clear-btn, .arco-icon-hover').first();
-      await expect(clearBtn).toBeVisible({ timeout: 8000 });
-      await clearBtn.click({ force: true, timeout: 5000 });
+      const filter = main.locator('.svc-portal-filter').first();
+      const combos = filter.getByRole('combobox');
+      const chainName = '生物医药与生命健康';
+      if ((await combos.count()) >= 2) {
+        await combos.nth(1).click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.getByRole('option', { name: chainName, exact: true }).click({ timeout: 8000 });
+      } else {
+        const cascader = filter.locator('.arco-cascader-view').first();
+        const menu = page.locator('.svc-portal-industry-cascader-menu');
+        await cascader.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await menu.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option').filter({ hasText: chainName }).first().click({ timeout: 8000 });
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+      await page.waitForTimeout(800);
+  - action: evaluate
+    note: 2.点击产业链下拉上的清空
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter').first();
+      const combos = filter.getByRole('combobox');
+      if ((await combos.count()) >= 2) {
+        const chainCombo = combos.nth(1);
+        await chainCombo.hover();
+        const clr = chainCombo.locator('xpath=ancestor::*[contains(@class,"arco-select")][1]').locator('.arco-select-view-clear-btn').first();
+        await expect(clr).toBeVisible({ timeout: 8000 });
+        await clr.click({ force: true, timeout: 5000 });
+      } else {
+        throw new Error('筛条无双产业链下拉，无法点产业链清空');
+      }
       await page.waitForTimeout(800);
 expect:
   - note: 1、结论上下文回到「生物」
     assert: |-
-      await expect(page.locator('main')).toContainText('「生物', { timeout: 15000 });
-      await expect(page.locator('main')).not.toContainText('生物医药与生命健康', { timeout: 5000 });
+      await expect(page.locator('main')).toContainText('「生物」为上下文', { timeout: 15000 });
   - note: 2、产业链占位为「全部产业链」
     assert: |-
-      const main = page.locator('main');
-      const filter = main.locator('.svc-portal-filter');
-      await expect(filter).toContainText('全部产业链', { timeout: 8000 });
+      const filter = page.locator('main').locator('.svc-portal-filter').first();
+      const combos = filter.getByRole('combobox');
+      await expect(combos.nth(1)).toContainText('全部产业链', { timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

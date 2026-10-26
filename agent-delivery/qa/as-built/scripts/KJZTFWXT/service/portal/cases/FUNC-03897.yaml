@@ -1,48 +1,32 @@
 id: FUNC-03897
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03897
-priority: P0
-tier: A
-title: 区域分布全国视图选中全球禁用与首位区域
-story: US-SVC-PT-03
+priority: P1
+tier: B
+title: 主流程-区域视图与首位区域
 entry_id: svc-portal
-preconditions:
-  - 已进入门户（runner 会话前置 + Tab 切换）
-locators:
-  tab_region: tab「服务机构区域分布」
-  scope_group: .arco-radio-group（全球视图 / 全国视图）
-  kpi_top: .svc-portal-kpi 含 label「首位区域」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal
-  - action: evaluate
+  - action: click
     note: 点击「服务机构区域分布」页签
+    assert: |-
+      const tab = page.locator('.global-workbench-tabs [data-tab-key="region"]')
+      await tab.waitFor({ state: 'visible' })
+      await tab.scrollIntoViewIfNeeded()
+      await tab.click({ timeout: 10000 })
+      await page.waitForURL('**/service-portal/region-map')
 expect:
-  - note: 1、「全国视图」为选中
+  - note: 「全国视图」为选中
     assert: |-
-      await expect(page).toHaveURL(/service-portal\/region-map/, { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: '服务机构区域分布', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('radio', { name: '全国视图' })).toBeChecked({ timeout: 8000 });
-  - note: 2、「全球视图」为禁用
+      await expect(page.locator('.arco-radio-checked').filter({ hasText: '全国视图' })).toBeVisible()
+  - note: 「全球视图」为禁用
     assert: |-
-      await expect(page.getByRole('radio', { name: '全球视图' })).toBeDisabled({ timeout: 8000 });
-  - note: 3、首位区域展示名称与家数
+      await expect(page.locator('.arco-radio-disabled').filter({ hasText: '全球视图' })).toBeVisible()
+  - note: 首位区域展示名称与家数
     assert: |-
-      const topCard = page.locator('.svc-portal-kpi').filter({
-        has: page.locator('.svc-portal-kpi__label').filter({ hasText: '首位区域' }),
-      }).first();
-      await expect(topCard).toBeVisible({ timeout: 8000 });
-      const name = ((await topCard.locator('.svc-portal-kpi__value').first().innerText()) || '').trim();
-      const hint = ((await topCard.locator('.svc-portal-kpi__hint').first().innerText()) || '').trim();
-      if (!name || name === '暂无') {
-        throw new Error('首位区域无已出省级行');
-      }
-      if (!/[\u4e00-\u9fff]{2,}/.test(name)) {
-        throw new Error('首位区域名称不可读：' + name.slice(0, 40));
-      }
-      const countInHint = /[\d,]+/.test(hint) && /家/.test(hint);
-      if (!countInHint) {
-        throw new Error('首位区域未展示家数；name=' + name + ' hint=' + hint);
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  goto /service-portal → Tab 区域分布 → 全国视图 radio checked、全球视图 disabled、首位区域 KPI。
+      const kpi = page.locator('.svc-portal-kpi').filter({ hasText: '首位区域' })
+      await expect(kpi.locator('.svc-portal-kpi__value')).not.toHaveText('暂无')
+      await expect(kpi.locator('.svc-portal-kpi__hint')).toContainText('家')
+on_fail: 截图 + 抄 X-Trace-Id

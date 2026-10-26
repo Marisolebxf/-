@@ -10,16 +10,16 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
   - action: click
-    target: getByText('分析记录', { exact: true })
+    target: getByRole('tablist', { name: '培育服务机构推荐分析页签' }).getByRole('tab', { name: '分析记录' })
   - action: click
-    target: getByRole('row').filter({ hasText: '失败' }).first()
+    target: locator('main').getByRole('row').filter({ hasText: '失败' }).getByRole('button', { name: '查看过程' }).first()
   - action: click
-    target: getByRole('button', { name: '返回配置重试' })
+    target: locator('main').getByRole('button', { name: '返回配置重试' })
 expect:
   - note: 回到分析配置
     assert: |-
-      await expect(page.getByText('分析配置', { exact: true })).toBeVisible()
+      await expect(page.locator('main').getByTestId('svc-rec-cultivate-config')).toBeVisible()
   - note: 培育评估模型区仍在
     assert: |-
-      await expect(page.getByText('培育评估模型', { exact: false })).toBeVisible()
+      await expect(page.locator('main').getByTestId('svc-rec-cultivate-model')).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

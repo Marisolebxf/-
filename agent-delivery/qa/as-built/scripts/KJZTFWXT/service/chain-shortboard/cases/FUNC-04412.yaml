@@ -2,280 +2,35 @@ id: FUNC-04412
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04412
 priority: P1
 tier: B
-title: 异常-失败回退 · 回到分析记录
-story: US-SVC-ECO-01
+title: 失败过程页点返回配置重试回到分析记录
 entry_id: svc-chain-shortboard
-preconditions:
-  - 已从失败记录点「查看过程」进入失败过程页（脚本自含：对齐 FUNC-04411）
-locators:
-  tab_records: tab「分析记录」（[data-tab-key=records]）
-  back_retry: button「返回配置重试」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=chain&tab=chain
 expect:
-  - note: 前置：失败过程页点击「返回配置重试」（用例步骤 1～2）
+  - note: 前置：点击「分析记录」→ 失败行点「查看过程」→ 点击「返回配置重试」（04411 前置 + 用例步骤 1）
     assert: |-
-      const route = '/service/chain-analysis?workspace=chain&tab=chain';
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const closeBasket = async () => {
-        for (let i = 0; i < 3; i++) {
-          const close = page.locator('[aria-label="关闭对比篮"]');
-          if (
-            (await close.count()) &&
-            (await close.first().isVisible().catch(() => false)) &&
-            (await close.first().isEnabled().catch(() => false))
-          ) {
-            try {
-              await close.first().click({ timeout: 1500 });
-              await page.waitForTimeout(300);
-            } catch {}
-          } else break;
-        }
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-      };
-      const waitFailedProcessShell = async () => {
-        let last = '';
-        for (let i = 0; i < 40; i++) {
-          await page.waitForTimeout(i < 5 ? 800 : 1200);
-          last = ((await page.locator('main').last().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const back = page.getByRole('button', { name: '返回配置重试' }).first();
-          if (/本次分析生成失败/.test(last) && (await back.isVisible().catch(() => false))) {
-            return last;
-          }
-        }
-        throw new Error('未进入失败过程页（无「本次分析生成失败」+「返回配置重试」）片段=' + last.slice(0, 280));
-      };
-      const openProcessingDeepLink = async (taskId) => {
-        const dl = new URL(spaUrl(route));
-        dl.searchParams.set('workspace', 'chain');
-        dl.searchParams.set('tab', 'chain');
-        dl.searchParams.set('view', 'processing');
-        dl.searchParams.set('demo_state', 'processing');
-        dl.searchParams.set('task_id', taskId);
-        await page.goto(dl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(2000);
-      };
-      const installFailedHydrate = async (taskId) => {
-        await page.unroute({ behavior: 'ignoreErrors' }).catch(() => {});
-        await page.route('**/topic/v1/analysis/tasks/' + taskId + '**', async (route) => {
-          const body = {
-            code: 0,
-            ok: true,
-            data: {
-              taskId,
-              status: 'failed',
-              taskName: taskId,
-              errorMsg: 'QA-04412 hydrate failed (no live failed record)',
-              createTime: new Date().toISOString(),
-            },
-          };
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-        });
-      };
-      const openRecordsPane = async () => {
-        const rec = page
-          .locator('[role=tab][data-tab-key="records"]')
-          .or(page.getByRole('tab', { name: '分析记录', exact: true }));
-        await expect(rec.first()).toBeVisible({ timeout: 8000 });
-        await rec.first().click({ timeout: 8000 });
-        await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(() => {});
-        if (!/tab=records/.test(page.url())) {
-          await page.goto(spaUrl('/service/chain-analysis?workspace=chain&tab=records'), {
-            waitUntil: 'domcontentloaded',
-          });
-          await page.waitForTimeout(1500);
-        }
-        const recordsPane = page.locator('[data-testid="svc-eco-analysis-records"]');
-        await expect(recordsPane).toBeVisible({ timeout: 15000 });
-        await expect(page.locator('[data-testid="svc-eco-analysis-records"] .arco-table-td').first()).toBeVisible({
-          timeout: 20000,
-        });
-        return recordsPane;
-      };
-      const setRecordsStatusFilter = async (recordsPane, label) => {
-        const statusSel = recordsPane.locator('.arco-select').first();
-        if (!(await statusSel.count())) return;
-        await statusSel.click({ timeout: 5000 }).catch(() => {});
-        await page.waitForTimeout(400);
-        const opt = page
-          .locator('.arco-trigger-popup:visible .arco-select-option')
-          .filter({ hasText: new RegExp('^' + label + '$') });
-        if (await opt.count()) {
-          await opt.first().click({ timeout: 5000 });
-          await page.waitForTimeout(1500);
-        }
-      };
-      const syntheticFailedProcess = async () => {
-        const recordsPane = await openRecordsPane();
-        await setRecordsStatusFilter(recordsPane, '全部状态');
-        const mainRec = ((await recordsPane.innerText().catch(() => '')) || '').trim();
-        const m = mainRec.match(/SVC-\d{8}-\d+/);
-        if (!m) throw new Error('ENV-SVC-ECO-CHAIN-NO-RECORDS-04412：分析记录无 task_id 可 hydrate');
-        const taskId = m[0];
-        await installFailedHydrate(taskId);
-        let entryPath = 'synthetic_hydrate_deeplink';
-        const failRow = page.locator('main tr').filter({ hasText: '失败' }).filter({ hasText: taskId }).first();
-        const procOnFail = failRow.getByRole('button', { name: /查看过程/ }).first();
-        if ((await failRow.count()) && (await procOnFail.count()) && !(await procOnFail.isDisabled().catch(() => true))) {
-          await procOnFail.click({ timeout: 8000 });
-          entryPath = 'synthetic_records_fail_row';
-        } else {
-          const procAny = page.getByRole('button', { name: /查看过程/ }).first();
-          const procText = recordsPane.getByText(/^查看过程$/).first();
-          const procRow = recordsPane
-            .locator('tbody tr, .arco-table-tr')
-            .filter({ hasText: taskId })
-            .getByText(/^查看过程$/)
-            .first();
-          let clicked = false;
-          if (await procRow.count() && !(await procRow.isDisabled().catch(() => true))) {
-            await procRow.click({ timeout: 8000 });
-            clicked = true;
-          } else if (await procText.count() && !(await procText.isDisabled().catch(() => true))) {
-            await procText.click({ timeout: 8000 });
-            clicked = true;
-          } else if (await procAny.count() && !(await procAny.isDisabled().catch(() => true))) {
-            await procAny.click({ timeout: 8000 });
-            clicked = true;
-          }
-          if (clicked) {
-            entryPath = 'synthetic_hydrate_records';
-          } else {
-            await openProcessingDeepLink(taskId);
-          }
-        }
-        await waitFailedProcessShell();
-        globalThis.__func04412 = {
-          taskId,
-          path: entryPath,
-          ticket: 'ENV-SVC-ECO-CHAIN-NO-FAIL-RECORD-04412',
-        };
-      };
-      const openViaFailedRowClick = async () => {
-        const recordsPane = await openRecordsPane();
-        const mainAll = ((await recordsPane.innerText().catch(() => '')) || '').trim();
-        const failRowOnly = page.locator('main tr').filter({ hasText: /失败/ }).filter({ hasText: /SVC-\d{8}-\d+/ });
-        if ((await failRowOnly.count()) < 1) return null;
-        if (!/SVC-\d{8}-\d+/.test(mainAll)) {
-          throw new Error('ENV-SVC-ECO-CHAIN-NO-RECORDS：分析记录无历史任务');
-        }
-        if (!/失败/.test(mainAll)) return null;
-        await setRecordsStatusFilter(recordsPane, '失败');
-        const mainRec = ((await recordsPane.innerText().catch(() => '')) || '').trim();
-        if (!/失败/.test(mainRec)) return null;
-        const rows = page.locator('main tr').filter({ hasText: '失败' });
-        const rowN = await rows.count();
-        if (!rowN) return null;
-        for (let i = 0; i < Math.min(rowN, 3); i++) {
-          const row = rows.nth(i);
-          const rowTxt = ((await row.innerText().catch(() => '')) || '').trim();
-          const m = rowTxt.match(/SVC-\d{8}-\d+/);
-          const taskId = m ? m[0] : '';
-          const procBtn = row.getByRole('button', { name: /查看过程/ }).first();
-          if (!(await procBtn.count())) continue;
-          if (await procBtn.isDisabled().catch(() => false)) continue;
-          await procBtn.click({ timeout: 8000 });
-          try {
-            await waitFailedProcessShell();
-            globalThis.__func04412 = { taskId, path: 'records_click_view_process' };
-            return taskId || true;
-          } catch {
-            if (taskId) {
-              await installFailedHydrate(taskId);
-              await openProcessingDeepLink(taskId);
-              try {
-                await waitFailedProcessShell();
-                globalThis.__func04412 = { taskId, path: 'records_deeplink_after_click' };
-                return taskId;
-              } catch {}
-            }
-            await openRecordsPane();
-          }
-        }
-        return null;
-      };
-      if (!page.url().includes('/service/chain-analysis') || !/workspace=chain/.test(page.url())) {
-        await page.goto(spaUrl(route), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-      }
-      await closeBasket();
-      await expect(page.getByRole('tab', { name: /服务链短板分析/ }).first()).toBeVisible({ timeout: 8000 });
-      if (!(await openViaFailedRowClick())) {
-        await syntheticFailedProcess();
-      }
-      const backBtn = page.getByRole('button', { name: '返回配置重试' }).first();
-      await expect(backBtn).toBeVisible({ timeout: 8000 });
-      await backBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(1500);
-      globalThis.__func04412.clickedBack = true;
-      console.log(
-        '[FUNC-04412 observed] path=' +
-          String(globalThis.__func04412?.path || '') +
-          ' task=' +
-          String(globalThis.__func04412?.taskId || '') +
-          ' ticket=' +
-          String(globalThis.__func04412?.ticket || 'none'),
-      );
-  - note: 1、回到标题为「分析记录」的列表（用例预期 1）
+      const main = page.locator('main');
+      await page.getByRole('tab', { name: '分析记录' }).click();
+      await expect(page).toHaveURL(/tab=records/, { timeout: 15000 });
+      const failedRow = main.getByRole('row').filter({ hasText: '失败' }).first();
+      await expect(failedRow).toBeVisible({ timeout: 15000 });
+      await failedRow.getByRole('button', { name: '查看过程' }).click();
+      await expect(main.getByRole('button', { name: '返回配置重试' })).toBeVisible({ timeout: 15000 });
+      await main.getByRole('button', { name: '返回配置重试' }).click();
+      globalThis.__func04412 = { clickedBack: true };
+  - note: 1、回到标题为「分析记录」的列表
     assert: |-
       if (!globalThis.__func04412?.clickedBack) throw new Error('前置：未点击返回配置重试');
-      const url = page.url();
-      if (/view=processing|demo_state=processing/.test(url)) {
-        throw new Error('点击后仍停在过程页 URL: ' + url);
-      }
-      if (await page.getByRole('button', { name: '返回配置重试' }).count()) {
-        const vis = await page.getByRole('button', { name: '返回配置重试' }).first().isVisible().catch(() => false);
-        if (vis) throw new Error('点击后仍可见「返回配置重试」');
-      }
-      const rec = page
-        .locator('[role=tab][data-tab-key="records"]')
-        .or(page.getByRole('tab', { name: '分析记录', exact: true }));
-      await expect(rec.first()).toBeVisible({ timeout: 8000 });
-      const aria = await rec.first().getAttribute('aria-selected');
-      const cls = (await rec.first().getAttribute('class')) || '';
-      const tabSelected = aria === 'true' || cls.includes('active');
+      await expect(page).toHaveURL(/tab=records/);
       const recordsPane = page.locator('[data-testid="svc-eco-analysis-records"]');
-      const paneVisible = await recordsPane.isVisible().catch(() => false);
-      if (!tabSelected && !/tab=records/.test(url)) {
-        if (globalThis.__func04412.path === 'synthetic_hydrate_deeplink' || globalThis.__func04412.path === 'records_deeplink_after_click') {
-          throw new Error(
-            '深链进过程后「返回配置重试」落分析配置非分析记录（须从记录区点「查看过程」进入） path=' +
-              globalThis.__func04412.path +
-              ' url=' +
-              url,
-          );
-        }
-        throw new Error('「分析记录」Tab 未选中且 URL 无 tab=records aria=' + aria);
-      }
-      if (!paneVisible) {
-        throw new Error('未见 data-testid=svc-eco-analysis-records 列表区 url=' + url);
-      }
-      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-      if (!/分析记录/.test(body)) {
-        throw new Error('主区未见「分析记录」文案: ' + body.slice(0, 200));
-      }
-      if (/本次分析生成失败/.test(body) && /可视化分析过程/.test(body)) {
-        throw new Error('仍在失败过程页正文');
-      }
-      if (!/SVC-\d{8}-\d+/.test(body)) {
-        throw new Error('分析记录列表无任务行');
-      }
-  - note: 2、列表仍含「创建时间」列（用例预期 2）
+      await expect(recordsPane).toBeVisible();
+      await expect(recordsPane.getByRole('heading', { name: '分析记录' })).toBeVisible();
+  - note: 2、列表仍含「创建时间」列
     assert: |-
       if (!globalThis.__func04412?.clickedBack) throw new Error('前置：未点击返回配置重试');
       const recordsPane = page.locator('[data-testid="svc-eco-analysis-records"]');
-      await expect(recordsPane).toBeVisible({ timeout: 8000 });
-      const tableText =
-        ((await recordsPane.locator('.arco-table').first().innerText().catch(() => '')) ||
-          (await recordsPane.innerText().catch(() => '')) ||
-          '').trim();
-      if (!/创建时间/.test(tableText)) {
-        throw new Error('分析记录表头缺「创建时间」列: ' + tableText.slice(0, 360));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  FUNC-04412=失败过程页「返回配置重试」→ 分析记录 Tab + svc-eco-analysis-records 表含「创建时间」。
-  前置对齐 FUNC-04411；深链进过程不记通过（落配置）。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04412。B 档零 allow_skip。
+      await expect(recordsPane.getByRole('columnheader', { name: '创建时间' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

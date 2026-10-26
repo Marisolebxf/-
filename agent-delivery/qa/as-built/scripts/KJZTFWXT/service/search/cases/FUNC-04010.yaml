@@ -3,37 +3,37 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04010
 priority: P0
 tier: B
 title: 主流程-核心专家条件（运算符与单位）
+story: US-SVC-ORG-07
 entry_id: svc-search
 preconditions:
   - 已进入「高级筛选」
 locators: {}
 steps:
   - action: goto
-    target: /service-center/search
-  - action: wait
-    for: 查机构 Tab 就绪
-    timeout_ms: 1500
+    target: /service-center/search?mode=advanced
+  - action: evaluate
+    note: 点「核心专家」并展开运算符（断言在 expect）
 expect:
   - note: 1、运算符为「≥」「≤」「范围」共 3 个
     assert: |-
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
-      await expect(advTab).toBeVisible({ timeout: 10000 });
-      if (!/[?&]mode=advanced/.test(page.url())) {
-        await advTab.click({ timeout: 8000 });
-        await expect(page).toHaveURL(/[?&]mode=advanced/, { timeout: 10000 });
-      }
-      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
+      await page.waitForURL(/[?&]mode=advanced/, { timeout: 15000 });
+      const fieldLib = page.getByRole('region', { name: /高级筛选.*字段库|服务机构高级筛选字段库/ });
       await expect(fieldLib).toBeVisible({ timeout: 10000 });
-      const expertTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '核心专家' }).first();
-      await expertTag.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
-      const condRow = page.locator('.condition-builder').filter({ hasText: '核心专家' }).first();
+      let condRow = page.locator('.condition-builder').filter({ hasText: '核心专家' }).first();
+      if (!(await condRow.isVisible().catch(() => false))) {
+        const expertTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: /^核心专家$/ }).first();
+        await expect(expertTag).toBeVisible({ timeout: 8000 });
+        await expertTag.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        condRow = page.locator('.condition-builder').filter({ hasText: '核心专家' }).first();
+      }
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opTrigger = condRow.locator('.condition-builder__op .arco-select-view');
-      await expect(opTrigger).toBeVisible({ timeout: 8000 });
+      const opWrap = condRow.locator('.condition-builder__op');
+      await expect(opWrap).toBeVisible({ timeout: 8000 });
+      const opTrigger = opWrap.locator('.arco-select-view').first();
       await opTrigger.click({ timeout: 8000 });
-      await page.waitForTimeout(200);
-      const pop = page.locator('.arco-select-dropdown:visible').last();
+      await page.waitForTimeout(300);
+      const pop = page.locator('.arco-trigger-popup:visible').last();
       await expect(pop).toBeVisible({ timeout: 8000 });
       const opts = pop.locator('.arco-select-option');
       const count = await opts.count();
@@ -41,11 +41,10 @@ expect:
       for (let i = 0; i < count; i++) {
         labels.push(((await opts.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
       }
-      const want = ['≥', '≤', '范围'];
       if (count !== 3) {
-        throw new Error('核心专家运算符应共 3 个选项，实际 count=' + count + ' labels=' + JSON.stringify(labels));
+        throw new Error('核心专家运算符应共 3 个，实际 count=' + count + ' labels=' + JSON.stringify(labels));
       }
-      for (const w of want) {
+      for (const w of ['≥', '≤', '范围']) {
         if (!labels.some((l) => l === w || l.includes(w))) {
           throw new Error('缺少运算符「' + w + '」，实际 labels=' + JSON.stringify(labels));
         }
@@ -55,10 +54,10 @@ expect:
     assert: |-
       const condRow = page.locator('.condition-builder').filter({ hasText: '核心专家' }).first();
       await expect(condRow).toBeVisible({ timeout: 8000 });
-      const unit = condRow.locator('.condition-builder__unit');
-      await expect(unit).toBeVisible({ timeout: 8000 });
-      const unitText = ((await unit.innerText()) || '').replace(/\s+/g, '').trim();
+      const unitEl = condRow.locator('.condition-builder__unit');
+      await expect(unitEl).toBeVisible({ timeout: 8000 });
+      const unitText = ((await unitEl.innerText()) || '').replace(/\s+/g, '').trim();
       if (unitText !== '人') {
-        throw new Error('核心专家单位应为「人」，实际=' + JSON.stringify(unitText));
+        throw new Error('核心专家单位应为「人」，实际 unit=' + JSON.stringify(unitText));
       }
 on_fail: 截图 + 抄 X-Trace-Id

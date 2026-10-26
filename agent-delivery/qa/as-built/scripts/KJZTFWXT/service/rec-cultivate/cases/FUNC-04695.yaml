@@ -10,12 +10,15 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
-  - action: fill
-    target: 现有规模权重
-    value: "26"
 expect:
   - note: 权重合计显示 101%（应为 100%，差 -1%）
     assert: |-
+      const main = page.locator('main');
+      const model = main.locator('[data-testid="svc-rec-cultivate-model"]');
+      await expect(model).toBeVisible();
+      await expect(model.getByText('现有规模 25%', { exact: true })).toBeVisible();
+      const scale = model.locator('.arco-input-number').first();
+      await scale.locator('.arco-input-number-step-button.up').click();
       await expect(page.getByText(/权重合计/)).toBeVisible();
       await expect(page.getByText(/101%/)).toBeVisible();
       await expect(page.getByText('（应为 100%，差 -1%）')).toBeVisible();

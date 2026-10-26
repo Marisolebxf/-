@@ -1,127 +1,83 @@
 id: FUNC-00455
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00455
-priority: P0
-title: 检索与字典请求经专题 Java 门面且断链可读
-story: US-E1-SCH-04
-entry_id: ent-search
+priority: P1
 tier: B
-preconditions:
-  - 浏览器网络面板可用
-  - 联调环境可用
-locators:
-  smart_input: textbox「输入企业名、产业、资质、区域或专利关键词」
-  search_btn: button「搜索」
-  adv_tab: tab「高级筛选」
-  region_chip: 字段库「注册区县推荐」
-  region_trigger: 「请填写注册区县」
+title: 检索与字典请求经专题 Java 门面且断链可读
+entry_id: ent-search
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /enterprise/enterprise-search
-  - action: evaluate
-    note: 1.智能搜索并展开高筛地区选择器；2.采集 xhr/fetch；3.断链再恢复——见 expect
 expect:
   - note: 存在经专题服务网关的检索与元数据请求
     assert: |-
-      const TOPIC_RE = /enterprise\/topic\/v1|api\/enterprise\/topic\/v1/i;
-      const apiUrls = [];
-      const onResp = (res) => {
-        const rt = res.request().resourceType();
-        if (rt !== 'xhr' && rt !== 'fetch') return;
-        const u = res.url();
-        if (TOPIC_RE.test(u)) apiUrls.push(u);
+      const topicHits = [];
+      const onReq = (req) => {
+        const u = req.url();
+        if (u.includes('/enterprise/topic/v1/')) topicHits.push(u);
       };
-      page.on('response', onResp);
-      await page.keyboard.press('Escape');
-      const closeB = page.locator('button[aria-label="关闭对比篮"]');
-      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
-        await closeB.first().click({ timeout: 2000 }).catch(() => {});
+      page.on('request', onReq);
+      try {
+        await page.keyboard.press('Escape');
+        const chip = page.locator('.enterprise-search-example-button').first();
+        await expect(chip).toBeVisible({ timeout: 8000 });
+        await chip.click();
         await page.waitForTimeout(300);
-      }
-      const kw = '人工智能';
-      const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ });
-      await input.fill(kw);
-      const searchPromise = page.waitForResponse(
-        (res) => TOPIC_RE.test(res.url()) && /search\/smart|search\/query|search\/advanced/i.test(res.url()),
-        { timeout: 25000 },
-      ).catch(() => null);
-      await page.getByRole('button', { name: '搜索', exact: true }).click();
-      await expect(page.getByText('智能搜索结果')).toBeVisible({ timeout: 25000 });
-      await searchPromise;
-      await page.waitForTimeout(800);
-      await page.getByRole('tab', { name: '高级筛选' }).click();
-      await page.waitForTimeout(800);
-      const main = page.locator('main');
-      const regionChip = main.getByText('注册区县推荐', { exact: true });
-      await regionChip.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const regionTrig = main.getByText('请填写注册区县', { exact: true });
-      await regionTrig.click({ timeout: 8000 });
-      const metaPromise = page.waitForResponse(
-        (res) => TOPIC_RE.test(res.url()) && /meta\/regions|meta\/region|meta\/filters|meta\/query-tree/i.test(res.url()),
-        { timeout: 20000 },
-      ).catch(() => null);
-      await page.waitForTimeout(1200);
-      await metaPromise;
-      const perf = await page.evaluate((reSrc) => {
-        const re = new RegExp(reSrc, 'i');
-        return performance.getEntriesByType('resource').map((e) => e.name).filter((u) => re.test(u));
-      }, 'enterprise\\/topic\\/v1|api\\/enterprise\\/topic\\/v1');
-      const topic = [...new Set([...apiUrls, ...perf])];
-      page.removeListener('response', onResp);
-      if (topic.length === 0) {
-        throw new Error('未见专题 Java 门面 xhr/fetch（/enterprise/topic/v1）；智能搜索+高筛「注册区县」展开后仍无网关请求');
-      }
-      const searchHit = topic.some((u) => /search\/(smart|query|advanced|aggregations)/i.test(u));
-      const metaHit = topic.some((u) => /search\/meta\//i.test(u))
-        || topic.some((u) => /meta\/(regions|region-scopes|filters|query-tree)/i.test(u));
-      if (!searchHit) {
-        throw new Error('未见检索类 topic 请求；样本：' + topic.slice(0, 8).join(' | '));
-      }
-      if (!metaHit) {
-        throw new Error('未见元数据/字典类 topic 请求（展开地区选择器后）；样本：' + topic.slice(0, 8).join(' | '));
+        const smartWait = page.waitForResponse((r) => r.url().includes('/enterprise/topic/v1/search/smart'), {
+          timeout: 30000,
+        });
+        await page.getByRole('button', { name: '搜索', exact: true }).click();
+        await smartWait;
+        await expect(page.getByText('智能搜索结果').first()).toBeVisible({ timeout: 20000 });
+        await page.getByRole('radio', { name: '高级筛选' }).click();
+        await page.waitForTimeout(800);
+        const metaOnAdvanced = page.waitForResponse((r) =>
+          /\/enterprise\/topic\/v1\/search\/meta\//.test(r.url()),
+        { timeout: 30000 });
+        await metaOnAdvanced.catch(() => null);
+        const libField = page.locator('main').getByText('企业所属地区', { exact: true }).first();
+        await expect(libField).toBeVisible({ timeout: 10000 });
+        await libField.click();
+        await page.waitForTimeout(600);
+        const regionTrigger = page.locator('main').getByText('请选择所属地区').first();
+        await expect(regionTrigger).toBeVisible({ timeout: 15000 });
+        const metaRegions = page.waitForResponse((r) =>
+          r.url().includes('/enterprise/topic/v1/search/meta/regions'),
+        { timeout: 30000 });
+        await regionTrigger.click();
+        await metaRegions;
+        await page.waitForTimeout(400);
+        const hasSearch = topicHits.some((u) => /\/enterprise\/topic\/v1\/search\/(smart|query|advanced)/.test(u));
+        const hasMeta = topicHits.some((u) => /\/enterprise\/topic\/v1\/search\/meta\//.test(u));
+        expect(hasSearch).toBe(true);
+        expect(hasMeta).toBe(true);
+        await page.evaluate((urls) => {
+          window.__qaTopicHits = urls;
+        }, topicHits);
+      } finally {
+        page.off('request', onReq);
       }
   - note: 请求目标不含演示环境服务域名
     assert: |-
-      const TOPIC_RE = /enterprise\/topic\/v1|api\/enterprise\/topic\/v1/i;
-      const all = await page.evaluate((reSrc) => {
-        const re = new RegExp(reSrc, 'i');
-        return performance.getEntriesByType('resource').map((e) => e.name).filter((u) => re.test(u));
-      }, 'enterprise\\/topic\\/v1|api\\/enterprise\\/topic\\/v1');
-      if (all.length === 0) {
-        throw new Error('无 enterprise/topic 请求可审计演示域名（与预期①同源：环境未走 Java 门面）');
-      }
-      const bad = all.filter((u) => /demo-svc|demo-algo|demo-platform|demo-ui|111\.198\.38\.90/i.test(u) || /\/internal\//i.test(u));
-      if (bad.length > 0) {
-        throw new Error('命中演示/越层域名或路径: ' + bad.slice(0, 5).join(', '));
-      }
+      const topicHits = await page.evaluate(() => window.__qaTopicHits || []);
+      const forbidden = ['30888', '50892', 'edu.itic-sci.com', 'demo-svc', 'demo-platform'];
+      const bad = topicHits.filter((u) => forbidden.some((f) => u.includes(f)));
+      expect(bad.length).toBe(0);
   - note: 断链时页面有可读提示且无白屏
     assert: |-
-      const FEEDBACK = /错误|失败|不可用|网络|重试|异常|加载失败|服务不可用|超时|无法|连接|Network Error|请求失败/i;
-      await page.context().setOffline(true);
-      let offlineErr = '';
+      const ctx = page.context();
+      await ctx.setOffline(true);
       try {
-        const input = page.getByRole('textbox', { name: /输入企业名、产业、资质、区域或专利关键词/ });
-        await input.fill('断链探测qa');
-        await page.getByRole('button', { name: '搜索', exact: true }).click({ timeout: 8000 });
-        await page.waitForTimeout(2500);
-      } catch (e) {
-        offlineErr = String(e.message || e);
+        await page.getByRole('radio', { name: '智能搜索' }).click();
+        await page.waitForTimeout(400);
+        await page.getByRole('button', { name: '搜索', exact: true }).click();
+        await expect(
+          page.getByText(/网络|失败|重试|请稍后再试|无法连接|异常|超时|offline/i).first(),
+        ).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('main')).toBeVisible();
+        await expect(page.getByText('智能搜索').first()).toBeVisible({ timeout: 8000 });
+      } finally {
+        await ctx.setOffline(false);
       }
-      const main = page.locator('main');
-      const mainVisible = await main.isVisible().catch(() => false);
-      const mainText = mainVisible ? await main.innerText().catch(() => '') : '';
-      const alertText = await page.locator('.arco-message, .arco-alert, .arco-notification').allInnerTexts().catch(() => []);
-      const bodyHead = (mainText + ' ' + alertText.join(' ') + ' ' + offlineErr).slice(0, 800);
-      const hasFeedback = FEEDBACK.test(bodyHead);
-      const shellOk = mainVisible && (mainText.includes('企业查询') || mainText.includes('智能搜索') || mainText.includes('高级筛选') || (await page.getByRole('tab', { name: '智能搜索' }).count()) > 0);
-      const whiteScreen = !shellOk && !hasFeedback && mainText.trim().length < 30;
-      await page.context().setOffline(false);
-      await page.waitForTimeout(800);
-      if (whiteScreen) {
-        throw new Error('断链后疑似白屏：main 无壳文案且无可读错误；bodyHead=' + bodyHead.slice(0, 200));
-      }
-      if (!hasFeedback && !offlineErr) {
-        throw new Error('断链后未见可读错误提示（Message/Alert 或导航异常）；bodyHead=' + bodyHead.slice(0, 200));
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D1·30888 侧栏路由 /enterprise/enterprise-search。D2·高筛地区=字段库「注册区县推荐」+ 触发「请填写注册区县」。D4·2026-10-19 无头复勘全程零 xhr/fetch（疑似 USE_MOCK 纯前端种子），预期①②应红；断链 context.setOffline 可读提示可绿。门面真源 lumen-ui-topic `/enterprise/topic/v1/**`。
+on_fail: 截图 + 抄 X-Trace-Id

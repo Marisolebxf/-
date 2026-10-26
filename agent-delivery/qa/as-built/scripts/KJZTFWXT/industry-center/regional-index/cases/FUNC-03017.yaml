@@ -2,21 +2,40 @@ id: FUNC-03017
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03017
 priority: P1
 tier: B
-title: 备选-导出报告
+title: 报告页「导出」得到报告文件
 entry_id: chain-regional-index
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
+  - action: evaluate
+    note: 打开报告后点「导出」（机检在 expect）
 expect:
   - note: 1、得到可打开的报告文件
     assert: |-
-      const reader = () => page.locator('.system-report-reader[data-report-readonly="true"]');
+      const main = () => page.locator('main').first();
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const gate404 = async () => {
+        await dismissBasket();
+        const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
+          throw new Error('ENV-ENTRY-UNREACHABLE: 区域产业指数评价 SPA 404 ' + page.url());
+        }
+      };
       const waitReportReader = async () => {
-        const r = reader();
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
         for (let i = 0; i < 36; i++) {
-          if (await r.isVisible().catch(() => false)) return r;
+          if (await reader.isVisible().catch(() => false)) return reader;
           await page.waitForTimeout(500);
         }
         throw new Error('未进入只读报告页，url=' + page.url());
@@ -27,79 +46,73 @@ expect:
         await expect(page).toHaveURL(/tab=records/, { timeout: 12000 });
         const rows = page.locator('tr').filter({ hasText: '已完成' });
         const n = await rows.count();
-        if (!n) throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-DONE-TASK');
+        if (!n) {
+          throw new Error('ENV-NO-DONE-TASK: 分析记录无已完成行');
+        }
         for (let i = 0; i < Math.min(n, 10); i++) {
           const row = rows.nth(i);
           const rt = (await row.innerText().catch(() => '')).replace(/\s+/g, ' ');
           if (!/区域产业指数评价/.test(rt)) continue;
           const reportBtn = row.getByRole('button', { name: '查看报告' }).first();
-          if (!(await reportBtn.count()) || (await reportBtn.isDisabled().catch(() => true))) continue;
+          if (!(await reportBtn.count())) continue;
+          if (await reportBtn.isDisabled().catch(() => true)) continue;
           await reportBtn.click({ timeout: 10000 });
-          for (let j = 0; j < 25; j++) {
+          await page.waitForTimeout(1200);
+          if (/view=report/.test(page.url())) return;
+          for (let j = 0; j < 20; j++) {
             await page.waitForTimeout(400);
             if (/view=report/.test(page.url())) return;
           }
         }
-        throw new Error('ENV-CHAIN-REGIONAL-INDEX-NO-REPORT');
+        throw new Error('ENV-NO-REPORT: 已完成行「查看报告」均不可用');
       };
-      const tryEnablePaidExport = async () => {
-        const reportUrl = page.url();
-        const r = reader();
-        if (await r.locator('[data-report-export-unlocked]').count()) return;
-        const menuBtn = page.locator('button.persona-switch').first();
-        if (!(await menuBtn.count())) return;
-        await menuBtn.click({ timeout: 8000, force: true });
-        await page.waitForTimeout(600);
-        const paidSw = page.getByRole('switch', { name: /付费权益/ }).first();
-        if (await paidSw.count()) {
-          if ((await paidSw.getAttribute('aria-checked')) !== 'true') {
-            await paidSw.click({ timeout: 5000 });
-            await page.waitForTimeout(1000);
-          }
-        }
-        await page.keyboard.press('Escape').catch(() => {});
-        for (let i = 0; i < 8; i++) {
-          const paid = await menuBtn.getAttribute('data-paid');
-          if (paid === '1') break;
-          await page.waitForTimeout(400);
-        }
-        if (!(await r.locator('[data-report-export-unlocked]').count())) {
-          await page.goto(reportUrl, { waitUntil: 'domcontentloaded' });
-          await page.waitForTimeout(2000);
-          await waitReportReader();
-        }
-      };
+      await gate404();
       await openReportFromRecords();
       await expect(page).toHaveURL(/view=report/, { timeout: 20000 });
-      const r = await waitReportReader();
-      await expect(r.locator('h1').filter({ hasText: '区域产业指数评价报告' }).first()).toBeVisible({ timeout: 15000 });
-      await tryEnablePaidExport();
-      const unlocked = r.locator('[data-report-export-unlocked]');
-      if (!(await unlocked.count())) {
-        throw new Error('报告导出仍为 locked，30892 人设付费权益未解锁导出');
+      const reader = await waitReportReader();
+      await expect(reader.locator('h1').filter({ hasText: '区域产业指数评价报告' }).first()).toBeVisible({ timeout: 15000 });
+      const ensureExportUnlocked = async () => {
+        let unlocked = reader.locator('[data-report-export-unlocked]');
+        if (await unlocked.isVisible().catch(() => false)) return;
+        const persona = page
+          .getByRole('button', { name: /未付费|已开通付费权益|付费权益/ })
+          .first();
+        if (await persona.isVisible().catch(() => false)) {
+          await persona.click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+          const paidSwitch = page.getByRole('switch', { name: '付费权益（报告导出）' });
+          if (await paidSwitch.isVisible().catch(() => false)) {
+            const checked = await paidSwitch.getAttribute('aria-checked');
+            if (checked !== 'true') {
+              await paidSwitch.click({ timeout: 5000 });
+              await page.waitForTimeout(500);
+            }
+          }
+          await page.keyboard.press('Escape').catch(() => {});
+        }
+        unlocked = reader.locator('[data-report-export-unlocked]');
+        if (!(await unlocked.isVisible().catch(() => false))) {
+          throw new Error('REPORT-EXPORT-LOCKED: 导出仍锁定（付费未开）');
+        }
+      };
+      await ensureExportUnlocked();
+      const exportBtn = reader.locator('[data-report-export-unlocked]').getByRole('button', { name: '导出' }).first();
+      await expect(exportBtn).toBeVisible({ timeout: 8000 });
+      const [download] = await Promise.all([
+        page.waitForEvent('download', { timeout: 20000 }),
+        exportBtn.click({ timeout: 10000 }),
+      ]);
+      const suggested = download.suggestedFilename();
+      if (!suggested || !/\.(pdf|html|docx?|zip)$/i.test(suggested)) {
+        throw new Error('下载文件名不可识别为报告：' + String(suggested));
       }
-      const exportBtn = unlocked
-        .locator('button[data-report-download], button')
-        .filter({ hasText: '导出' })
-        .first();
-      await expect(exportBtn).toBeVisible({ timeout: 12000 });
-      const btn = exportBtn;
-      const downloadPromise = page.waitForEvent('download', { timeout: 20000 }).catch(() => null);
-      await btn.click({ timeout: 10000 });
-      const dl = await downloadPromise;
-      let fileOk = false;
-      if (dl) {
-        const name = dl.suggestedFilename();
-        const path = await dl.path().catch(() => null);
-        if (name || path) fileOk = true;
+      const savePath = await download.path();
+      if (!savePath) {
+        throw new Error('下载未落盘');
       }
-      if (!fileOk) {
-        const msg = page.locator('.arco-message').filter({ hasText: /报告已导出|导出成功|已导出/ });
-        if (await msg.count() && (await msg.first().isVisible().catch(() => false))) fileOk = true;
+      const fs = require('node:fs');
+      const stat = fs.statSync(savePath);
+      if (!stat.size || stat.size < 32) {
+        throw new Error('下载文件过小或为空：' + savePath + ' size=' + stat.size);
       }
-      if (!fileOk) {
-        throw new Error('点「导出」后未得到 download 或已导出提示；url=' + page.url());
-      }
-      await expect(page).toHaveURL(/view=report/);
-      await expect(r.locator('h1').filter({ hasText: '区域产业指数评价报告' }).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

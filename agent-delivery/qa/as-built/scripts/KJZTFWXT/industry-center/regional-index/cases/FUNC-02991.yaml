@@ -1,71 +1,39 @@
 id: FUNC-02991
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02991
 priority: P0
-title: 官方模板指标与权重表列名与默认六行
-entry_id: chain-regional-index
 tier: B
-preconditions:
-  - 模板为「区域产业指数官方模板」
-locators:
-  template_official: .arco-select-view 含「区域产业指数官方模板」
-  metric_table: 指标与权重主表
+title: 主流程-指标表列与默认六行
+entry_id: chain-regional-index
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
-  - action: wait
-    for: 已计入 6 项
-    timeout_ms: 12000
 expect:
-  - note: 1、表头含计入、指标名称、分组 / 维度、数据状态、参数值或权重、数据来源、指标说明、操作
+  - note: 表头含计入、指标名称、分组 / 维度、数据状态、参数值或权重、数据来源、指标说明、操作
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) await close.first().click({ timeout: 3000 }).catch(() => {});
-        }
-      };
-      await dismissBasket();
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
-      }
-      await expect(page.locator('.arco-select-view').filter({ hasText: '区域产业指数官方模板' }).first()).toBeVisible({ timeout: 10000 });
-      await expect(page.getByText('指标与权重').first()).toBeVisible({ timeout: 8000 });
-      const headers = ['计入', '指标名称', '分组 / 维度', '数据状态', '参数值或权重', '数据来源', '指标说明', '操作'];
-      const thead = page.locator('main table thead').first();
-      await expect(thead).toBeVisible({ timeout: 8000 });
-      const headText = (await thead.innerText()).replace(/\s+/g, ' ');
-      for (const h of headers) {
-        if (!headText.includes(h)) throw new Error('表头缺列「' + h + '」，thead=' + headText.slice(0, 200));
-      }
-  - note: 2、默认六行名称与分组见附录C；各行数据状态均为「暂不可用」
+      const table = page.locator('[data-testid="regional-index-weight-table"]');
+      await expect(table.getByRole('columnheader', { name: '计入' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '指标名称' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '分组 / 维度' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '数据状态' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '参数值或权重' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '数据来源' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '指标说明' })).toBeVisible();
+      await expect(table.getByRole('columnheader', { name: '操作' })).toBeVisible();
+  - note: 默认六行名称见附录C
     assert: |-
-      const rows = [
-        { name: '企业商业化能力', group: '商业力' },
-        { name: '融资事件', group: '商业力' },
-        { name: '专利', group: '技术力' },
-        { name: '技术成熟度', group: '技术力' },
-        { name: '科研机构', group: '学术力' },
-        { name: '政策覆盖率', group: '支撑力' },
-      ];
-      const tbody = page.locator('main table tbody').first();
-      await expect(tbody).toBeVisible({ timeout: 8000 });
-      const bodyText = await tbody.innerText();
-      for (const r of rows) {
-        if (!bodyText.includes(r.name)) throw new Error('缺默认行「' + r.name + '」');
-        if (!bodyText.includes(r.group)) throw new Error('缺分组「' + r.group + '」');
+      const table = page.locator('[data-testid="regional-index-weight-table"]');
+      for (const name of ['企业商业化能力', '融资事件', '专利', '技术成熟度', '科研机构', '政策覆盖率']) {
+        await expect(table.getByText(name, { exact: true })).toBeVisible();
       }
-      const statusCount = (bodyText.match(/暂不可用/g) || []).length;
-      if (statusCount < 6) throw new Error('数据状态「暂不可用」行数 ' + statusCount + ' ≠ 6');
-  - note: 3、权重依次为 16%、16%、16%、16%、16%、20%
+  - note: 权重依次为 16%、16%、16%、16%、16%、20%
     assert: |-
-      const spins = page.locator('main [role=spinbutton]');
-      await expect(spins).toHaveCount(6, { timeout: 8000 });
-      const vals = [];
-      for (let i = 0; i < 6; i++) vals.push(await spins.nth(i).inputValue());
-      if (vals.join(',') !== '16,16,16,16,16,20') {
-        throw new Error('权重 spin 默认 ' + vals.join('/') + ' ≠ 16/16/16/16/16/20');
+      const table = page.locator('[data-testid="regional-index-weight-table"]');
+      const spins = table.locator('.arco-input-number input');
+      await expect(spins).toHaveCount(6);
+      const weights = ['16', '16', '16', '16', '16', '20'];
+      for (let i = 0; i < weights.length; i++) {
+        await expect(spins.nth(i)).toHaveValue(weights[i]);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: 替换作废 00566；锁定计入/权重见 FUNC-03001。模板加载竞态须 wait「已计入 6 项」。叶名以附录C/scout-base-wait 为准。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

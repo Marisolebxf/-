@@ -2,30 +2,120 @@ id: FUNC-04296
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04296
 priority: P1
 tier: B
-title: 备选-清空对比篮
+title: 备选-清空对比篮 · 取消后仍在
+story: US-SVC-ORG-08
 entry_id: svc-org-capability
-preconditions: []
-locators: {}
+preconditions:
+  - 已登录 admin（runner 会话前置）
+  - 已打开「返回对比篮」；篮内有服务机构
+locators:
+  import_btn: '[data-testid="svc-org-cap-import-basket"]'
+  return_basket: '[data-testid="svc-org-cap-open-basket"]'
+  basket_workspace: '[data-testid="service-org-compare-basket-workspace"]'
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=capability&tab=capability
-  - action: click
-    target: 从对比篮带入
-  - action: click
-    target: 返回对比篮
-  - action: click
-    target: 清空对比篮
-  - action: assert_visible
-    target: 清空篮内全部服务机构
   - action: evaluate
-    assert: |-
-      const dlg = page.locator('.arco-modal-wrapper').filter({ hasText: '清空篮内全部服务机构' });
-      await dlg.getByRole('button', { name: '取消' }).click();
+    note: 「从对比篮带入」→「返回对比篮」→「清空对比篮」→弹框「取消」（真实操作在 expect 内）
 expect:
   - note: 1、询问文案包含「清空篮内全部服务机构」
     assert: |-
-      await expect(page.getByText(/确认清空篮内全部服务机构|清空篮内全部服务机构/)).toBeHidden({ timeout: 8000 })
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/?$/, '') : 'http://10.50.69.111:30892';
+      const route = '/service/institution-judgment?workspace=capability&tab=capability';
+      const closeBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
+      const pickerScope = () =>
+        page.locator('[data-system-surface-id="compare-basket"]').filter({ hasText: '选择分析服务机构' });
+      const seedOneOrgIfEmpty = async () => {
+        const spaUrl = (p) => new URL(p.startsWith('/') ? p : '/' + p, origin + '/').toString();
+        await page.goto(spaUrl('/service-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        const join = page.getByRole('button', { name: '加入对比篮', exact: true }).first();
+        if (!(await join.count())) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：检索页无可入篮服务机构');
+        }
+        await join.click({ timeout: 15000 });
+        await page.waitForTimeout(700);
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+      };
+      const openPickerAfterImport = async () => {
+        await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(1200);
+        await closeBasket();
+        let tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        if (tagN < 1) {
+          await seedOneOrgIfEmpty();
+          tagN = await page.locator('.svc-org-cap-compare__tags .arco-tag').count();
+        }
+        if (tagN < 1) {
+          throw new Error('ENV-SVCCAP-BASKET-ORG-LT1-001：对比篮服务机构不足 1 家，当前 tags=' + tagN);
+        }
+        const imp = page.locator('[data-testid="svc-org-cap-import-basket"]').first();
+        if (await imp.isVisible().catch(() => false)) {
+          await imp.click({ timeout: 8000 });
+          await page.waitForTimeout(900);
+        }
+        const ret = page.locator('[data-testid="svc-org-cap-open-basket"]').or(page.getByRole('button', { name: '返回对比篮', exact: true })).first();
+        await expect(ret).toBeVisible({ timeout: 8000 });
+        await ret.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const scope = pickerScope();
+        await expect(scope).toBeVisible({ timeout: 10000 });
+        await expect(scope.getByText('篮内服务机构').first()).toBeVisible({ timeout: 8000 });
+        return scope;
+      };
+      const scope = await openPickerAfterImport();
+      const orgLabels = await scope.locator('[aria-label^="选择 "]').evaluateAll((els) =>
+        els.map((el) => (el.getAttribute('aria-label') || '').replace(/^选择\s*/, '').trim()).filter(Boolean),
+      );
+      if (!orgLabels.length) {
+        const cardText = ((await scope.locator('.service-org-compare-basket-panel, [data-testid="service-org-compare-basket-workspace"]').innerText().catch(() => '')) || '')
+          .split(/\n/)
+          .map((s) => s.trim())
+          .filter((s) => s && !/^(篮内服务机构|清空对比篮|新增|按机构名称搜索|重置|确定|取消)$/.test(s));
+        if (cardText.length) orgLabels.push(cardText[0]);
+      }
+      if (!orgLabels.length) {
+        throw new Error('前置：篮内服务机构未解析到机构名');
+      }
+      const clearBtn = scope.getByRole('button', { name: '清空对比篮', exact: true });
+      await expect(clearBtn.first()).toBeVisible({ timeout: 8000 });
+      await clearBtn.first().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '清空对比篮' }).last();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      const bodyText = (await modal.innerText()).replace(/\s+/g, '');
+      if (!bodyText.includes('清空篮内全部服务机构')) {
+        throw new Error('询问文案未含「清空篮内全部服务机构」：' + bodyText.slice(0, 160));
+      }
+      const cancelBtn = modal.getByRole('button', { name: '取消', exact: true });
+      await expect(cancelBtn).toBeVisible({ timeout: 8000 });
+      await cancelBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(modal).toBeHidden({ timeout: 8000 });
+      globalThis.__func04296 = { orgLabels, pickerOpen: true };
   - note: 2、「篮内服务机构」仍列出原机构
     assert: |-
-      await expect(page.getByText('篮内服务机构')).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText('东莞市同辉科创有限公司')).toBeVisible({ timeout: 8000 });
+      if (!globalThis.__func04296?.pickerOpen) throw new Error('前置：未完成清空取消流程');
+      const scope = page.locator('[data-system-surface-id="compare-basket"]').filter({ hasText: '选择分析服务机构' });
+      await expect(scope).toBeVisible({ timeout: 8000 });
+      await expect(scope.getByText('篮内服务机构').first()).toBeVisible({ timeout: 8000 });
+      await expect(scope.getByText('对比篮暂无服务机构', { exact: true })).toHaveCount(0);
+      for (const name of globalThis.__func04296.orgLabels.slice(0, 3)) {
+        await expect(scope.getByText(name, { exact: false }).first()).toBeVisible({ timeout: 8000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类；篮<1 家→ENV-SVCCAP-BASKET-ORG-LT1-001
+as_built_note: >-
+  对称 FUNC-04312：前置 tags≥1→「从对比篮带入」→「返回对比篮」→workspace「清空对比篮」→Modal 含「清空篮内全部服务机构」
+  →仅在 .arco-modal 内点「取消」（避免页内多处「取消」歧义）→篮内服务机构仍列出原机构。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04296。零 allow_skip。

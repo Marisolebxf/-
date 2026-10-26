@@ -1,6 +1,6 @@
 id: FUNC-05192
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05192
-priority: P0
+priority: P1
 tier: B
 title: 主流程-选定产业后榜单标题
 entry_id: svc-portal-capability
@@ -9,18 +9,24 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: click
-    target: ".arco-select-view:has-text('生物产业 / 生物医药')"
-  - action: click
-    target: "新一代信息技术"
+  - action: wait
+    timeout_ms: 1000
 expect:
   - note: 榜单标题为「新一代信息技术 · 技术力 Top30」
     assert: |-
-      await expect(page.getByText('新一代信息技术 · 技术力 Top30', { exact: true })).toBeVisible();
+      const main = page.locator('main');
+      const cascader = main.locator('.svc-portal-filter .arco-cascader-view').first();
+      await cascader.click({ timeout: 8000 });
+      const popup = page.locator('.arco-trigger-popup:visible, .arco-cascader-popup:visible').first();
+      await popup.locator('.arco-cascader-column').first().getByText('新一代信息技术', { exact: true }).click();
+      await page.waitForTimeout(2000);
+      await expect(main.getByText('新一代信息技术 · 技术力 Top30').first()).toBeVisible({ timeout: 10000 });
   - note: 上下文句子含「新一代信息技术」
     assert: |-
-      await expect(page.locator('main').first()).toContainText('新一代信息技术');
+      const main = page.locator('main');
+      await expect(main.getByText(/「新一代信息技术」/).first()).toBeVisible({ timeout: 8000 });
   - note: 上下文写明不按产业切片
     assert: |-
-      await expect(page.locator('main').first()).toContainText('不按产业切片');
+      const main = page.locator('main');
+      await expect(main.getByText(/不按产业切片/).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

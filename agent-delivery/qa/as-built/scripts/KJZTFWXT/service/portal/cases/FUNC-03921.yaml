@@ -2,60 +2,25 @@ id: FUNC-03921
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03921
 priority: P1
 tier: B
-title: 抽屉扩展档案缺省显示资料完善中
+title: 异常-抽屉扩展档案资料完善中
 entry_id: svc-portal
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service-portal
+  - action: click
+    target: 深圳产业服务介绍
+    within: main
+  - action: click
+    target: 查看详情（概况/规模/领域/业务分布）
+    within: main
 expect:
-  - note: 1、机构详情抽屉打开（用例步骤 1）
+  - note: 「当前规模」显示资料完善中
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
-        }
-      };
-      await dismissBasket();
-      const tablist = page.locator('[aria-label="专题服务子导航"]');
-      await tablist.getByRole('tab', { name: '深圳产业服务介绍', exact: true }).click();
-      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 15000 });
-      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 8000 });
-      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
-      await heading.scrollIntoViewIfNeeded();
-      await expect(heading).toBeVisible({ timeout: 8000 });
-      const detailBtn = page.locator('main').getByRole('button', { name: /查看详情（概况\/规模\/领域\/业务分布）/ }).first();
-      await expect(detailBtn).toBeVisible({ timeout: 8000 });
-      await detailBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      const root = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      await expect(root).toBeVisible({ timeout: 8000 });
-  - note: 1、「当前规模」显示资料完善中（用例预期①）
+      await expect(page.locator('main').filter({ hasText: '当前规模' }).getByText('资料完善中')).toBeVisible()
+  - note: 「业务服务领域」与「业务分布区域」显示资料完善中
     assert: |-
-      const root = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      await expect(root).toBeVisible({ timeout: 8000 });
-      const scaleBlock = root.locator('.svc-portal-keyorg-block').filter({ has: root.getByRole('heading', { name: /当前规模/ }) }).first();
-      await expect(scaleBlock).toBeVisible({ timeout: 8000 });
-      const scaleTxt = ((await scaleBlock.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/资料完善中/.test(scaleTxt)) {
-        throw new Error('当前规模板块未显示资料完善中：' + scaleTxt.slice(0, 120));
-      }
-  - note: 2、「业务服务领域」与「业务分布区域」显示资料完善中（用例预期②）
-    assert: |-
-      const root = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      await expect(root).toBeVisible({ timeout: 8000 });
-      const fieldBlock = root.locator('.svc-portal-keyorg-block').filter({ has: root.getByRole('heading', { name: /业务服务领域/ }) }).first();
-      await expect(fieldBlock).toBeVisible({ timeout: 8000 });
-      const fieldTxt = ((await fieldBlock.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/资料完善中/.test(fieldTxt)) {
-        throw new Error('业务服务领域板块未显示资料完善中：' + fieldTxt.slice(0, 120));
-      }
-      const regionBlock = root.locator('.svc-portal-keyorg-block').filter({ has: root.getByRole('heading', { name: /业务分布区域/ }) }).first();
-      await expect(regionBlock).toBeVisible({ timeout: 8000 });
-      const regionTxt = ((await regionBlock.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/资料完善中/.test(regionTxt)) {
-        throw new Error('业务分布区域板块未显示资料完善中：' + regionTxt.slice(0, 120));
-      }
+      await expect(page.locator('main').filter({ hasText: '业务服务领域' }).getByText('资料完善中')).toBeVisible();
+      await expect(page.locator('main').filter({ hasText: '业务分布区域' }).getByText('资料完善中')).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

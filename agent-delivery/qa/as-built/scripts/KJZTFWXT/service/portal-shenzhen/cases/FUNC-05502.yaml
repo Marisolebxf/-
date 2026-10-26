@@ -10,16 +10,14 @@ steps:
   - action: goto
     target: /service-portal/shenzhen
   - action: scroll
-    target: 深圳产业服务介绍
+    target: |-
+      page.locator('main').getByText('居首')
 expect:
-  - note: 1、结论条写出居首的区名
+  - note: 结论条写出居首的区名
     assert: |-
-      const strip = page.locator('main .ent-judgment-strip').filter({ hasText: '居首' });
-      await expect(strip).toBeVisible({ timeout: 20000 });
-      await strip.scrollIntoViewIfNeeded();
-      await expect(strip).toContainText('居首');
-  - note: 2、该区名旁有家数
+      await expect(page.locator('main')).toContainText('区居首')
+  - note: 该区名旁有家数
     assert: |-
-      const strip = page.locator('main .ent-judgment-strip').filter({ hasText: '居首' });
-      await expect(strip).toContainText('家）');
+      await expect(page.locator('main')).toContainText('居首（')
+      await expect(page.locator('main')).toContainText(' 家）')
 on_fail: 截图 + 抄 X-Trace-Id

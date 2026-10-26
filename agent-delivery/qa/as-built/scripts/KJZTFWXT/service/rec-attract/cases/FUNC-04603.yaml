@@ -12,23 +12,38 @@ steps:
 expect:
   - note: 1、进入新的过程页且状态为已完成
     assert: |-
-      await page.getByRole('button', { name: '生成招引名单' }).click();
-      await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 120000 });
-      const taskBefore = ((await page.locator('text=/SVC-\\d{8}-\\d+/').first().textContent()) || '').trim();
-      await page.evaluate((t) => sessionStorage.setItem('taskBefore', t), taskBefore);
-      await page.getByRole('button', { name: '查看结果' }).click();
-      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
-      await page.getByRole('button', { name: '重新分析' }).click();
-      await expect(page.getByText('招引推荐分析生成中').first()).toBeVisible({ timeout: 60000 });
-      await expect(page.getByText('已完成').first()).toBeVisible({ timeout: 120000 });
+      const main = page.locator('main');
+      async function taskIdFromPage() {
+        const url = new URL(page.url());
+        const fromUrl = url.searchParams.get('task_id') || url.searchParams.get('task');
+        if (fromUrl) return String(fromUrl).trim();
+        const text = await main.innerText();
+        const m = text.match(/任务编号[：:\s]*([^\s]+)/);
+        return m ? m[1].trim() : '';
+      }
+      globalThis.__func04603 = {};
+      if (!(await main.getByText('外部机构引进推荐名单').isVisible().catch(() => false))) {
+        const startBtn = main.getByRole('button', { name: /生成招引名单|开始分析/ });
+        await startBtn.click();
+        await main.getByRole('button', { name: '查看结果' }).click({ timeout: 60000 });
+        await expect(main.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+      }
+      globalThis.__func04603.taskBefore = await taskIdFromPage();
+      await main.getByRole('button', { name: '重新分析' }).click();
+      await expect(main.getByText('已完成')).toBeVisible({ timeout: 60000 });
+      globalThis.__func04603.taskAfter = await taskIdFromPage();
+      globalThis.__func04603.processDone = true;
   - note: 2、任务编号与点击前不同
     assert: |-
-      const taskBefore = await page.evaluate(() => sessionStorage.getItem('taskBefore') || '');
-      const taskAfter = ((await page.locator('text=/SVC-\\d{8}-\\d+/').first().textContent()) || '').trim();
-      await expect(taskAfter).not.toBe(taskBefore);
-      await expect(taskAfter).toMatch(/^SVC-\d{8}-\d+$/);
+      const ctx = globalThis.__func04603;
+      if (!ctx?.processDone) throw new Error('修订 未完成重新分析过程页');
+      const taskBefore = String(ctx.taskBefore || '').trim();
+      const taskAfter = String(ctx.taskAfter || '').trim();
+      if (!taskBefore || !taskAfter) throw new Error(`修订 未捕获任务编号 before=${taskBefore} after=${taskAfter}`);
+      if (taskBefore === taskAfter) throw new Error(`修订 任务编号未变化: ${taskBefore}`);
   - note: 3、结果页出现「外部机构引进推荐名单」
     assert: |-
-      await page.getByRole('button', { name: '查看结果' }).click();
-      await expect(page.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
+      const main = page.locator('main');
+      await main.getByRole('button', { name: '查看结果' }).click({ timeout: 60000 });
+      await expect(main.getByText('外部机构引进推荐名单')).toBeVisible({ timeout: 60000 });
 on_fail: 截图 + 抄 X-Trace-Id

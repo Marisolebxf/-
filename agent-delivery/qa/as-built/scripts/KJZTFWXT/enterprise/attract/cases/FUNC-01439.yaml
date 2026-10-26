@@ -1,101 +1,87 @@
 id: FUNC-01439
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01439
-priority: P0
-title: 主流程-报告条件筛选
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；最近分析中已有一条条件筛选且状态为已完成的记录
-locators:
-  recent_tab: Tab「最近分析」
-  html_report_button: button「查看 HTML 报告」或 data-recruit-history-open-html-report
-  report_title: 文案「招引推荐报告」
-  back_to_result: button「返回分析结果」或 data-report-back
+title: 主流程-报告条件筛选
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history
-  - action: wait
-    for: 招引页 SPA 渲染
-    timeout_ms: 2500
+    target: /enterprise/attraction
   - action: evaluate
-    note: 最近分析→已完成条件筛选行「查看 HTML 报告」；报告页在 expect 判定
+    note: 同册01408前置+最近分析点已完成条件筛选「查看 HTML 报告」；报告页在 expect 判定
 expect:
-  - note: 1、出现「招引推荐报告」 2、可见「返回分析结果」 3、目录含报告身份、执行摘要、对象与范围
+  - note: 1、出现「招引推荐报告」
     assert: |-
       const stack = () => page.getByTestId('recruit-tab-stack');
+      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          await close.first().click({ timeout: 3000 }).catch(() => {});
+          await page.waitForTimeout(300);
+        }
+      };
+      const reportReady = async () => {
+        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+        if (!(await reader.isVisible().catch(() => false))) return false;
+        return await reader.locator('h1').filter({ hasText: '招引推荐报告' }).first().isVisible().catch(() => false);
+      };
+      const waitReportBody = async (ms) => {
+        const t0 = Date.now();
+        while (Date.now() - t0 < ms) {
+          if (await reportReady()) return true;
+          await page.waitForTimeout(600);
+        }
+        return await reportReady();
+      };
+      const ensureFilterSuccess = async () => {
+        await expect(stack()).toBeVisible({ timeout: 15000 });
+        await page.keyboard.press('Escape').catch(() => {});
+        const tagInput = page.locator('input[placeholder="全部企业标签"]').first();
+        await tagInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const tagOpt = page.locator(optSel).filter({ hasText: '专精特新' }).first();
+        await expect(tagOpt).toBeVisible({ timeout: 8000 });
+        await tagOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const industryInput = page.locator('input[placeholder="全部行业领域"]').first();
+        await industryInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const industryOpt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
+        await expect(industryOpt).toBeVisible({ timeout: 8000 });
+        await industryOpt.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeEnabled({ timeout: 8000 });
+        await start.click();
+        const title = () => stack().getByText('招引推荐分析结果', { exact: true }).first();
+        let last = '';
+        for (let i = 0; i < 60; i++) {
+          await page.waitForTimeout(i === 0 ? 800 : 2500);
+          last = await stack().innerText().catch(() => '');
+          if (await stack().getByText('推荐分析失败').first().isVisible().catch(() => false) && !/可视化分析过程/.test(last)) {
+            throw new Error('条件筛选发起后进入推荐分析失败，无法构造前置已完成记录');
           }
+          const titleVis = await title().isVisible().catch(() => false);
+          if (titleVis && !/可视化分析过程/.test(last)) return;
+          if (/已打开今天相同条件的推荐分析结果/.test(last) && titleVis) return;
         }
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
-          await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染，url=' + page.url());
-      };
-      const historyDeepLink = async () => {
-        const origin = new URL(page.url()).origin;
-        await page.goto(
-          origin +
-            '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=history',
-          { waitUntil: 'domcontentloaded' },
-        );
-        await page.waitForTimeout(1200);
-      };
-      const hasHistoryTab = async () => {
-        const byKey = page.locator('button[data-tab-key="history"], [role=tab][data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        return (await byKey.count()) > 0 || (await byName.count()) > 0;
+        throw new Error('未在超时内到达招引推荐分析结果: ' + last.slice(0, 200));
       };
       const openRecentTab = async () => {
-        await waitFilterReady().catch(() => {});
-        if (await hasHistoryTab()) {
-          const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-          if ((await tab.count()) < 1) {
-            const legacy = page.locator('[role=tab][data-tab-key="history"]').first();
-            await expect(legacy).toBeVisible({ timeout: 12000 });
-            await legacy.click({ timeout: 8000 });
-          } else {
-            await expect(tab).toBeVisible({ timeout: 12000 });
-            await tab.click({ timeout: 8000 });
-          }
-          await page.waitForTimeout(900);
-          return;
-        }
-        await historyDeepLink();
-        if (!(await hasHistoryTab()) && !/招引推荐 · 最近分析/.test(await stack().innerText().catch(() => ''))) {
-          throw new Error(
-            '环境闸门 ENV-ATTRACT-NO-HISTORY-TAB-001：现场招引页无「最近分析」Tab/深链（仅条件筛选+候选工作台时不自动化本用例）',
-          );
-        }
-      };
-      const waitHistoryShell = async () => {
-        const st = stack();
-        for (let i = 0; i < 30; i++) {
-          const t = await st.innerText().catch(() => '');
-          if (/招引推荐 · 最近分析/.test(t) && (/REC-/.test(t) || /任务名称/.test(t) || /暂无|无历史|还没有/.test(t))) {
-            return;
-          }
-          await page.waitForTimeout(500);
-        }
-        throw new Error('最近分析未渲染（未见标题或任务表），url=' + page.url());
+        const tablist = page.getByRole('tablist', { name: '招引企业推荐分析页签' });
+        await expect(tablist).toBeVisible({ timeout: 12000 });
+        await tablist.getByRole('tab', { name: '最近分析' }).click({ timeout: 8000 });
+        await page.waitForTimeout(900);
+        await expect(page.getByText('招引推荐 · 最近分析').first()).toBeVisible({ timeout: 15000 });
       };
       const pickCompletedFilterHtmlReport = async () => {
         const st = stack();
-        const buttons = st.locator('[data-recruit-history-open-html-report], button:has-text("查看 HTML 报告")');
+        const buttons = st.locator('[data-recruit-history-open-html-report], button').filter({ hasText: '查看 HTML 报告' });
         const n = await buttons.count();
-        if (n < 1) throw new Error('最近分析无「查看 HTML 报告」按钮（缺已完成条件筛选任务）');
+        if (n < 1) return null;
         for (let i = 0; i < n; i++) {
           const btn = buttons.nth(i);
           if (await btn.isDisabled().catch(() => true)) continue;
@@ -106,28 +92,40 @@ expect:
           const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
           if (txt && /已完成/.test(txt) && /条件筛选/.test(txt) && !/候选工作台/.test(txt)) return btn;
         }
-        throw new Error('最近分析无「已完成」的条件筛选任务可「查看 HTML 报告」');
+        return null;
       };
-      const waitReportReader = async () => {
-        const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-        for (let i = 0; i < 36; i++) {
-          if (await reader.isVisible().catch(() => false)) return reader;
+      const openReportFromHistory = async () => {
+        await dismissBasket();
+        await openRecentTab();
+        let reportBtn = await pickCompletedFilterHtmlReport();
+        if (!reportBtn) {
+          await tablist().getByRole('tab', { name: '条件筛选推荐' }).click({ timeout: 8000 }).catch(() => {});
           await page.waitForTimeout(500);
+          await ensureFilterSuccess();
+          await openRecentTab();
+          reportBtn = await pickCompletedFilterHtmlReport();
         }
-        throw new Error('点击 HTML 报告后未进入只读报告页，url=' + page.url());
+        if (!reportBtn) {
+          throw new Error('最近分析无「已完成」的条件筛选任务可「查看 HTML 报告」');
+        }
+        await reportBtn.scrollIntoViewIfNeeded().catch(() => {});
+        await reportBtn.click({ timeout: 15000 });
+        if (!(await waitReportBody(60000))) {
+          throw new Error('点击 HTML 报告后未进入只读报告页，url=' + page.url());
+        }
       };
-      await dismissBasket();
-      await openRecentTab();
-      await waitHistoryShell();
-      const reportBtn = await pickCompletedFilterHtmlReport();
-      await reportBtn.scrollIntoViewIfNeeded();
-      await reportBtn.click({ timeout: 15000 });
-      const reader = await waitReportReader();
-      await expect(reader.locator('h1').filter({ hasText: '招引推荐报告' }).first()).toBeVisible({
-        timeout: 12000,
-      });
+      const tablist = () => page.getByRole('tablist', { name: '招引企业推荐分析页签' });
+      await openReportFromHistory();
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
+      await expect(reader.locator('h1').filter({ hasText: '招引推荐报告' }).first()).toBeVisible({ timeout: 12000 });
+  - note: 2、可见「返回分析结果」
+    assert: |-
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
       const back = reader.locator('[data-report-back], button').filter({ hasText: '返回分析结果' }).first();
       await expect(back).toBeVisible({ timeout: 8000 });
+  - note: 3、目录含报告身份、执行摘要、对象与范围
+    assert: |-
+      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
       const toc = reader.locator('nav.report-toc');
       await expect(toc).toBeVisible({ timeout: 8000 });
       const tocText = await toc.innerText();
@@ -136,5 +134,4 @@ expect:
           throw new Error('报告目录缺「' + label + '」；目录片段=' + tocText.slice(0, 200));
         }
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 entry=history；步骤=最近分析点已完成「条件筛选」行 data-recruit-history-open-html-report「查看 HTML 报告」（openHistoryReport→analysis_view=report）。机检=SystemReportReader h1「招引推荐报告」+data-report-back「返回分析结果」+目录含报告身份/执行摘要/对象与范围。D4·2026-10-20 机跑若仍为 demo 两 Tab 无最近分析→blocked·ENV-ATTRACT-NO-HISTORY-TAB-001（同 01435~01438）。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

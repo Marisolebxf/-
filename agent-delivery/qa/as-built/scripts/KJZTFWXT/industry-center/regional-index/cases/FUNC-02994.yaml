@@ -1,12 +1,10 @@
 id: FUNC-02994
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02994
-priority: P0
-title: 移除指标退出工作集并提示权重合计须100%
-story: US-CHAIN-REG-01
-entry_id: chain-regional-index
+priority: P1
 tier: B
-preconditions:
-  - 指标表至少两行（官方模板默认六行）
+title: 主流程-移除指标退出工作集并提示权重合计
+entry_id: chain-regional-index
+preconditions: []
 locators: {}
 steps:
   - action: goto
@@ -14,18 +12,36 @@ steps:
   - action: wait
     for: 已计入 6 项
     timeout_ms: 12000
+  - action: evaluate
+    note: 同册02988选产业后点移除；断言在 expect
 expect:
   - note: 1、该指标从工作集消失
     assert: |-
-      const metricRow = (name) =>
-        page.getByRole('row').filter({ hasText: name }).filter({ has: page.getByRole('button', { name: '移除' }) });
-      const target = '企业商业化能力';
-      const row = metricRow(target).first();
+      const objectRow = page.locator('.policy-analysis-filter-row').filter({ hasText: '分析对象' }).first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      await page.keyboard.press('Escape').catch(() => {});
+      await objectRow.locator('.arco-select-view').first().click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await page.locator(optSel).filter({ hasText: /^生物产业$/ }).first().click({ force: true, timeout: 8000 });
+      await page.waitForTimeout(800);
+      const industryView = objectRow.locator('.arco-select-view').nth(1);
+      await industryView.click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      const bio = page.locator(optSel).filter({ hasText: /^生物$/ });
+      if (await bio.count()) await bio.first().click({ force: true, timeout: 8000 });
+      else await page.locator(optSel).filter({ hasText: /^生物医药$/ }).first().click({ force: true, timeout: 8000 });
+      await page.waitForTimeout(1000);
+      await expect(page.getByText(/生物\s*·\s*深圳市/).first()).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('单产业模式请选择 1 个产业')).toHaveCount(0, { timeout: 8000 });
+      const table = page.locator('[data-testid="regional-index-weight-table"]');
+      const row = table.getByRole('row').filter({ hasText: '企业商业化能力' }).first();
       await expect(row).toBeVisible({ timeout: 8000 });
       await row.getByRole('button', { name: '移除' }).click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await expect(metricRow(target)).toHaveCount(0, { timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(table.getByRole('row').filter({ hasText: '企业商业化能力' })).toHaveCount(0, { timeout: 8000 });
   - note: 2、出现「计入权重合计须为 100%」提示
     assert: |-
-      await expect(page.getByText(/计入权重合计须为 100%/).first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
+      await expect(page.locator('main').locator('.diagnosis-weight-footer')).toContainText('计入权重合计须为 100%', {
+        timeout: 8000,
+      });
+on_fail: 截图 + 抄 X-Trace-Id

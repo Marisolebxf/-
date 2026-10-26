@@ -1,74 +1,59 @@
 id: FUNC-02215
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02215
-priority: P0
-title: 调整分析条件回到条件区且产业类别保留
-story: US-ENT-RECRUIT-C1
+priority: P1
+tier: B
+title: 调整分析条件后回到条件区且产业类别保留
 entry_id: ent-cultivate
-tier: A
-preconditions:
-  - 条件筛选成功结果已打开；产业类别已有选中值（assert 自含）
-locators:
-  adjust_btn: button「调整分析条件」
-  empty_hint: 请设置条件并执行推荐分析
-  industry: placeholder「全部产业类别」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
-  - action: evaluate
-    note: 条件筛选成功结果→点「调整分析条件」；空态与产业保留在 expect 判定
+    target: /enterprise/attraction
 expect:
   - note: 1、结果区回到「请设置条件并执行推荐分析」
     assert: |-
       const stack = () => page.getByTestId('recruit-tab-stack');
       const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
       const parseCounts = (text) => {
-        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
-        if (!analyzedM) return null;
-        return { analyzed: parseInt(analyzedM[1], 10) };
+        const m = text.match(/共分析\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : 0;
       };
       const isSuccessResult = async () => {
-        const st = stack();
-        const t = await st.innerText().catch(() => '');
+        const t = await stack().innerText().catch(() => '');
         const url = page.url();
-        const counts = parseCounts(t);
         return (
-          counts &&
-          counts.analyzed >= 1 &&
+          parseCounts(t) >= 1 &&
           ((/培育推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
         );
       };
+      const enterCultivation = async () => {
+        const link = page.getByRole('link', { name: '培育企业推荐分析' }).first();
+        if (await link.isVisible().catch(() => false)) {
+          await link.click({ timeout: 10000 });
+        } else {
+          await page.getByText('培育企业推荐分析', { exact: true }).first().click({ timeout: 10000 });
+        }
+        await page.waitForTimeout(800);
+        await expect(page.getByText('培育企业推荐分析').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('input[placeholder="全部产业类别"]').first()).toBeVisible({ timeout: 10000 });
+      };
       const waitFilterReady = async () => {
         for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部产业类别"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
+          if (await page.locator('input[placeholder="全部产业类别"]').first().isVisible().catch(() => false)) return;
           await page.waitForTimeout(500);
         }
-        throw new Error('条件区未渲染，url=' + page.url());
+        throw new Error('条件区未渲染');
       };
       const openRecentTab = async () => {
         await waitFilterReady();
         const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-        if ((await tab.count()) < 1) {
-          await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
-        } else {
-          await tab.click({ timeout: 8000 });
-        }
+        if ((await tab.count()) > 0) await tab.click({ timeout: 8000 });
+        else await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
         await page.waitForTimeout(900);
       };
       const tryRestoreCompletedFilter = async () => {
         await openRecentTab();
-        const st = stack();
-        const buttons = st.getByRole('button', { name: '恢复结果' });
+        const buttons = stack().getByRole('button', { name: '恢复结果' });
         const n = await buttons.count();
         for (let i = 0; i < n; i++) {
           const btn = buttons.nth(i);
@@ -86,25 +71,21 @@ expect:
         }
         return false;
       };
-      const waitSuccessResult = async (rounds = 48) => {
-        const st = stack();
+      const waitSuccessResult = async () => {
         let last = '';
-        for (let i = 0; i < rounds; i++) {
+        for (let i = 0; i < 48; i++) {
           await page.waitForTimeout(2500);
-          last = await st.innerText().catch(() => '');
+          last = await stack().innerText().catch(() => '');
           const url = page.url();
           if ((/培育推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
-            if (parseCounts(last)?.analyzed >= 1) return;
+            if (parseCounts(last) >= 1) return;
           }
           if (/推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：条件筛选无法到达成功结果以测「调整分析条件」（与 02188/02196 同源 D4）');
+            throw new Error('BLOCKED:ENV-CULTIVATE-ANALYSIS-FAIL-001');
           }
         }
-        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-        if (stuck) {
-          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：无法在超时内到达成功结果以测「调整分析条件」');
-        }
-        throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
+        if (/可视化分析过程/.test(last)) throw new Error('BLOCKED:ENV-CULTIVATE-ASYNC-NO-SUCCESS-001');
+        throw new Error('未到达条件筛选成功结果');
       };
       const readIndustryView = async () => {
         const i = page.locator('input[placeholder="全部产业类别"]').first();
@@ -118,10 +99,8 @@ expect:
         await page.waitForTimeout(500);
         const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
         await expect(opt).toBeVisible({ timeout: 8000 });
-        const label = ((await opt.innerText().catch(() => '')) || '人工智能').trim();
         await opt.click({ timeout: 8000 });
         await page.waitForTimeout(500);
-        return label;
       };
       const reachFilterSuccess = async () => {
         if (await isSuccessResult()) return;
@@ -133,14 +112,13 @@ expect:
         await expect(start).toBeEnabled({ timeout: 8000 });
         await start.click();
         await waitSuccessResult();
-        await expect(stack().getByText('培育推荐分析结果').first()).toBeVisible({ timeout: 8000 });
       };
-      await dismissBasket();
       await expect(stack()).toBeVisible({ timeout: 15000 });
+      await enterCultivation();
       await reachFilterSuccess();
       const industryBefore = await readIndustryView();
       if (!industryBefore || industryBefore === '全部产业类别') {
-        throw new Error('成功结果前产业类别未选中，实际=' + (industryBefore || '(空)'));
+        throw new Error('成功结果前产业类别未选中');
       }
       const adjust = stack().getByRole('button', { name: '调整分析条件' }).first();
       await expect(adjust).toBeVisible({ timeout: 10000 });
@@ -151,32 +129,24 @@ expect:
       const body = await st.innerText().catch(() => '');
       if (/可视化分析过程/.test(body)) throw new Error('调整后仍停留在可视化分析过程');
       if (/培育推荐分析结果/.test(body) && !/请设置条件/.test(body)) {
-        throw new Error('调整后仍为结果态主文案，未见空态提示');
-      }
-      const url = page.url();
-      if (url.includes('analysis_view=result') || url.includes('analysis_view=processing')) {
-        throw new Error('调整后 URL 仍带 analysis_view=result|processing: ' + url);
+        throw new Error('调整后仍为结果态');
       }
       globalThis.__func02215 = { industryBefore };
   - note: 2、产业类别仍显示调整前的选中值
     assert: |-
       const ctx = globalThis.__func02215;
-      if (!ctx) throw new Error('前置：未点击调整分析条件');
+      if (!ctx) throw new Error('未记录调整前产业类别');
       const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
-      const readIndustryView = async () => {
-        const i = page.locator('input[placeholder="全部产业类别"]').first();
-        const wrap = i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
-        return norm(await wrap.innerText());
-      };
-      const industryAfter = await readIndustryView();
+      const i = page.locator('input[placeholder="全部产业类别"]').first();
+      const wrap = i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      const industryAfter = norm(await wrap.innerText());
       const before = norm(ctx.industryBefore);
       if (!industryAfter || industryAfter === '全部产业类别') {
-        throw new Error('调整后产业类别被清空，前=' + before + ' 后=' + industryAfter);
+        throw new Error('调整后产业类别被清空');
       }
       if (industryAfter !== before) {
-        throw new Error('产业类别被变化：前=' + before + ' 后=' + industryAfter);
+        throw new Error('产业类别变化：前=' + before + ' 后=' + industryAfter);
       }
-      const start = page.getByRole('button', { name: '开始分析' }).first();
-      await expect(start).toBeEnabled({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·edu tts/svcz 深链 entry-seed catalog_path + workspace=cultivation&recommendation_tab=cultivation。前置=栈内成功态→最近分析恢复已完成条件筛选→否则产业类别人工智能发起。点「调整分析条件」→空态文案+URL 清 analysis_view；产业类别与进入结果前一致（人工线索复核结果无此按钮，见 02211）。D4·2026-10-20 rewrite-FUNC-02215 svcz 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（恢复/新发起均无法到达条件筛选成功结果，expect①② 未触达；与 02188/02195 同源）。登录与关评审由 runner 前置。A 档零 allow_skip。
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeEnabled({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id
+

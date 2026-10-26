@@ -2,76 +2,33 @@ id: FUNC-03993
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03993
 priority: P0
 tier: B
-title: 主流程-结果卡片构成（卡片信息）
-story: US-SVC-ORG-07
+title: 主流程-结果卡片构成
 entry_id: svc-search
-preconditions:
-  - 已进入有卡片的检索结果
-locators:
-  org_card: article.svc-org-search-card
-  org_name_link: button.svc-org-search-link
-  card_meta: .svc-org-search-card__meta
-  score_hint: .svc-org-search-card__score-hint
-  score_value: .svc-org-search-card__score-value
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service-center/search
-  - action: evaluate
-    note: 智能检索「深圳」出结果后浏览首张结果卡片（判定在 expect）
-expect:
-  - note: 前置：检索结果区至少一张机构卡片
+    target: /service-center/search?kw=深圳
+  - action: wait
     assert: |-
-      const main = page.locator('main').first();
-      const inp = main.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 15000 });
-      await inp.fill('深圳');
-      const searchBtn = main.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
-      await expect(searchBtn).toBeVisible({ timeout: 8000 });
-      await searchBtn.click({ timeout: 8000 });
-      await expect(main.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 25000 });
-      await expect(main.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 20000 });
-      const card = main.locator('article.svc-org-search-card').first();
-      await expect(card).toBeVisible({ timeout: 15000 });
-      globalThis.__func03993_card = card;
+      await expect(page.locator('main')).getByText('检索结果', { exact: false }).toBeVisible({ timeout: 60000 })
+expect:
   - note: 1、卡片首行是可点的名称或代码
     assert: |-
-      const card = globalThis.__func03993_card || page.locator('main article.svc-org-search-card').first();
-      const nameBtn = card.locator('button.svc-org-search-link').first();
-      await expect(nameBtn).toBeVisible({ timeout: 8000 });
-      const nameText = ((await nameBtn.innerText()) || '').trim();
-      if (!nameText) throw new Error('卡片首行名称为空');
-      await expect(nameBtn).toBeEnabled({ timeout: 5000 });
+      const card = page.locator('main article.svc-org-search-card').first();
+      await expect(card.locator('button.svc-org-search-link').first()).toBeVisible();
+      await expect(card.locator('button.svc-org-search-link').first()).toBeEnabled();
   - note: 2、卡片含服务类型、行业以及城市、省份、区域
     assert: |-
-      const card = globalThis.__func03993_card || page.locator('main article.svc-org-search-card').first();
-      const titleTags = card.locator('.svc-org-search-card__title .arco-tag');
-      if ((await titleTags.count()) < 1) throw new Error('卡片标题区未见服务类型或行业 Tag');
-      const meta = card.locator('.svc-org-search-card__meta');
-      await expect(meta).toBeVisible({ timeout: 8000 });
-      const metaText = ((await meta.innerText()) || '').replace(/\s+/g, ' ');
-      if (!/城市：/.test(metaText)) throw new Error('卡片 meta 缺少「城市：」');
-      if (!/省份：/.test(metaText)) throw new Error('卡片 meta 缺少「省份：」');
-      if (!/区域：/.test(metaText)) throw new Error('卡片 meta 缺少「区域：」');
+      const card = page.locator('main article.svc-org-search-card').first();
+      await expect(card.locator('.svc-org-search-card__meta')).toContainText('城市：');
+      await expect(card.locator('.svc-org-search-card__meta')).toContainText('省份：');
+      await expect(card.locator('.svc-org-search-card__meta')).toContainText('区域：');
+      const title = card.locator('.svc-org-search-card__title');
+      await expect(title.locator('.arco-tag').first()).toBeVisible();
   - note: 3、技术力分无值时显示「暂无」
     assert: |-
-      const main = page.locator('main').first();
-      const cards = main.locator('article.svc-org-search-card');
-      await expect(cards.first()).toBeVisible({ timeout: 8000 });
-      const scoreVals = cards.locator('.svc-org-search-card__score-value');
-      const n = await scoreVals.count();
-      let emptyIdx = -1;
-      for (let i = 0; i < n; i++) {
-        const t = ((await scoreVals.nth(i).innerText()) || '').trim();
-        if (t === '暂无') {
-          emptyIdx = i;
-          break;
-        }
-      }
-      if (emptyIdx >= 0) {
-        const c = cards.nth(emptyIdx);
-        await expect(c.locator('.svc-org-search-card__score-hint')).toContainText('技术力分');
-        await expect(c.locator('.svc-org-search-card__score-value')).toHaveText('暂无');
-        return;
-      }
-      throw new Error('30892 检索结果卡片均有技术力分值，无法验无值「暂无」空态');
+      const scoreBlock = page.locator('main article.svc-org-search-card').first().locator('.svc-org-search-card__score');
+      await expect(scoreBlock.locator('.svc-org-search-card__score-value')).toHaveText('暂无');
+      await expect(scoreBlock).toContainText('技术力分');
 on_fail: 截图 + 抄 X-Trace-Id

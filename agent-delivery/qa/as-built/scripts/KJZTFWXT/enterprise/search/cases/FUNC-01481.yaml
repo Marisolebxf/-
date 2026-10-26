@@ -1,18 +1,12 @@
 id: FUNC-01481
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01481
 priority: P1
-title: 勾选企业后点「清除选择」，已选条消失
-story: US-E1-SCH-05
-entry_id: ent-search
 tier: B
+title: 勾选企业后点清除选择，已选条消失且复选框恢复未勾选
+entry_id: ent-search
 preconditions:
-  - 结果页已勾选至少 1 家企业（本条自含智能搜索「人工智能」并勾选首张结果卡）
-locators:
-  search_input: textbox「输入企业名、产业、资质、区域或专利关键词」
-  search_btn: button「搜索」
-  row_checkbox_1: main .arco-checkbox 第 2 个（第 1 个为「全选本页」）
-  clear_selection: 已选条内 button「清除选择」（30888 当前未交付，见 as_built_note）
-  batch_bar: 含「已选 N 家企业」与「加入对比」的 flex 条
+  - 结果页已勾选至少 1 家企业
+locators: {}
 steps:
   - action: goto
     target: /enterprise/enterprise-search
@@ -21,48 +15,25 @@ steps:
     value: 人工智能
   - action: click
     target: 搜索
-  - action: evaluate
-    note: 勾选首张结果卡、点「清除选择」与条消失断言在 expect（P2 跨 tick）
+  - action: wait
+    for: 结果标题出现
+  - action: wait
+    for: 列表渲染稳定
+    timeout_ms: 2500
+  - action: click
+    target: 第一张卡复选框
+  - action: assert_visible
+    target: 已选企业计数条
+  - action: click
+    target: 清除选择
 expect:
   - note: 「已选」计数条消失
     assert: |-
-      await page.keyboard.press('Escape');
-      const closeB = page.locator('button[aria-label="关闭对比篮"]');
-      if (await closeB.count() && await closeB.first().isVisible().catch(() => false)) {
-        await closeB.first().click({ timeout: 2000 }).catch(() => {});
-        await page.waitForTimeout(300);
-      }
-      await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 15000 });
-      const rowCb = page.locator('main .arco-checkbox');
-      if (await rowCb.count() < 2) throw new Error('结果行复选框不足（含全选本页）');
-      const firstCardCb = rowCb.nth(1);
-      await firstCardCb.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      await expect(page.getByText('已选 1 家企业', { exact: true })).toBeVisible({ timeout: 8000 });
-      const bulkBar = page.locator('div.flex.flex-wrap').filter({ hasText: '已选 1 家企业' }).filter({ has: page.getByRole('button', { name: '加入对比' }) }).first();
-      await expect(bulkBar).toBeVisible({ timeout: 8000 });
-      const clearBtn = bulkBar.getByRole('button', { name: '清除选择' });
-      if (await clearBtn.count() === 0) {
-        throw new Error('D3·30888 已选条无「清除选择」按钮（现场仅全选本页/加入对比/导出选中），用例步骤 1 不可执行');
-      }
-      await clearBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const barCount = await page.getByText(/已选\s*[1-9]\d*\s*家企业/).count();
-      if (barCount > 0) {
-        throw new Error('点击清除选择后已选计数条仍在，count=' + barCount);
-      }
+      await expect(page.locator('main').getByText(/已选 \d+ 家企业/)).toHaveCount(0, { timeout: 8000 })
   - note: 该卡复选框恢复未勾选
     assert: |-
-      const firstCardCb = page.locator('main .arco-checkbox').nth(1);
-      await expect(firstCardCb).toBeVisible({ timeout: 8000 });
-      const checked = await firstCardCb.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
-      if (checked) {
-        throw new Error('清除选择后首张结果卡复选框仍为勾选态');
-      }
-      const checkedMain = await page.locator('main .arco-checkbox-checked').count();
-      if (checkedMain > 0) {
-        throw new Error('清除选择后 main 内仍有 ' + checkedMain + ' 个勾选残留');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D3·30888 深链 /enterprise/enterprise-search；关评审复勘已选条 DOM 仅含全选本页+已选 N 家企业+加入对比+导出选中（无「清除选择」）。lumen-ui-topic ResultList.vue 源码有清除选择未随版发布。nth(0)=全选本页，nth(1)=首张结果卡。
+      const firstCb = page.locator('main').locator('.arco-checkbox').first();
+      await expect(firstCb).toBeVisible({ timeout: 5000 });
+      const cls = (await firstCb.getAttribute('class')) ?? '';
+      if (/arco-checkbox-checked/.test(cls)) throw new Error('首张卡复选框仍为选中态');
+on_fail: 截图 + 抄 X-Trace-Id

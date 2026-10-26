@@ -1,168 +1,105 @@
 id: FUNC-03103
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03103
 priority: P0
-title: 结果页全链路五环节顺序与衔接
-story: US-CHAIN-DIAG-04
-entry_id: chain-key-link
 tier: B
-preconditions:
-  - 已打开一条产业关键环节识别成功结果
-locators:
-  full_chain_section: text「全链路环节结构化展示」
+title: 结果页全链路五环节顺序与衔接
+entry_id: chain-key-link
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
-  - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
+    target: /industry-center/diagnosis?workspace=key_link&tab=key-link
   - action: evaluate
-    note: 打开成功结果后定位「全链路环节结构化展示」（判定在 expect）
+    note: 打开一条成功结果（同册 03113 / 03088；实际逻辑在 expect 首条）
 expect:
-  - note: 前置：已打开「产业关键环节识别结果」页
+  - note: 1、从左到右为研发、设计、制造、销售、服务
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const assertNotSpa404 = async (where) => {
-        const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/抱歉，页面不存在/.test(body) || (/\b404\b/.test(body) && !/产业关键环节识别结果/.test(body))) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
-        }
-      };
-      const gotoCatalog = async () => {
-        await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
-          waitUntil: 'domcontentloaded',
-          timeout: 60000,
-        });
-        await page.waitForTimeout(1000);
-        await assertNotSpa404('catalog-goto');
-      };
-      const enterKeyLink = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/diagnosis/.test(page.url()) &&
-          /workspace=key_link/.test(page.url()) &&
-          /tab=key-link/.test(page.url());
-        if (!onTarget()) {
-          await gotoCatalog();
-          if (!onTarget()) {
-            if (!/\/industry-center\/search/.test(page.url())) {
-              await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-              await page.waitForTimeout(800);
-            }
-            await assertNotSpa404('search-sibling');
-            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
-            const expandChain = async () => {
-              if (await leaf().first().isVisible().catch(() => false)) return;
-              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-              if (await sub.count()) {
-                await sub.first().click({ timeout: 8000 });
-                await page.waitForTimeout(400);
-              }
-            };
-            await expandChain();
-            if (await leaf().first().isVisible().catch(() => false)) {
-              await leaf().first().click({ timeout: 10000 });
-              await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
-            } else {
-              await gotoCatalog();
-            }
-            await assertNotSpa404('sidebar');
-          }
-        }
-        await expect(page).toHaveURL(/workspace=key_link/);
-        await expect(page).toHaveURL(/tab=key-link/);
-      };
-      const isKeyLinkResult = async () => {
+      const isResult = async () => {
         const t = await main().innerText().catch(() => '');
-        return /产业关键环节识别结果/.test(t) || (await page.getByText('产业关键环节识别结果').first().isVisible().catch(() => false));
+        return /产业关键环节识别结果/.test(t);
       };
-      const openFromRecords = async () => {
-        await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(1200);
-        const rows = page.locator('tr').filter({ hasText: '产业关键环节识别' }).filter({ hasText: /已完成|成功/ });
-        const n = await rows.count();
-        for (let i = 0; i < Math.min(n, 10); i++) {
-          const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
-          if (!(await view.count())) continue;
-          await view.click({ timeout: 12000, force: true });
-          for (let j = 0; j < 24; j++) {
-            await page.waitForTimeout(500);
-            if (await isKeyLinkResult()) return true;
+      if (!(await isResult())) {
+        const openFromRecords = async () => {
+          await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 10000 });
+          await page.waitForTimeout(1200);
+          const rows = page
+            .locator('tr')
+            .filter({ hasText: '产业关键环节识别' })
+            .filter({ hasText: /已完成|成功/ });
+          const n = await rows.count();
+          for (let i = 0; i < Math.min(n, 12); i++) {
+            const view = rows.nth(i).getByRole('button', { name: '查看结果' }).first();
+            if (!(await view.count())) continue;
+            await view.click({ timeout: 12000, force: true });
+            for (let j = 0; j < 30; j++) {
+              await page.waitForTimeout(500);
+              if (await isResult()) return true;
+            }
           }
-        }
-        return false;
-      };
-      await enterKeyLink();
-      await assertNotSpa404('landing');
-      if (!(await isKeyLinkResult())) {
+          return false;
+        };
         if (!(await openFromRecords())) {
-          throw new Error('ENV-KEYLINK-NO-RESULT-001：诊断记录无已完成关键环节任务可打开结果');
+          await page.getByRole('tab', { name: '产业关键环节识别' }).first().click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(800);
+          const pickCascader = async (nth, optionText) => {
+            const casc = main().locator('.arco-cascader-view').nth(nth);
+            await casc.click({ timeout: 8000 });
+            await page.waitForTimeout(400);
+            const opt = page
+              .locator('.arco-cascader-option-label, .arco-cascader-option')
+              .filter({ hasText: optionText })
+              .first();
+            await opt.click({ timeout: 8000 });
+            await page.waitForTimeout(500);
+          };
+          await pickCascader(0, '新能源');
+          await pickCascader(1, '新能源');
+          await main().locator('.arco-select-view').first().click({ timeout: 8000 });
+          await page.locator('.arco-select-option').filter({ hasText: /^新能源$/ }).first().click({ timeout: 8000 });
+          await page.waitForTimeout(400);
+          await main().getByRole('button', { name: '开始分析' }).click({ timeout: 12000 });
+          for (let i = 0; i < 40; i++) {
+            await page.waitForTimeout(500);
+            if (await isResult()) break;
+            const viewBtn = page.getByRole('button', { name: '查看分析结果' });
+            if (await viewBtn.isVisible().catch(() => false)) {
+              await viewBtn.click({ timeout: 8000 });
+              break;
+            }
+          }
+          for (let j = 0; j < 30; j++) {
+            await page.waitForTimeout(500);
+            if (await isResult()) break;
+          }
         }
       }
       await expect(page.getByText('产业关键环节识别结果').first()).toBeVisible({ timeout: 20000 });
-  - note: 1、定位「全链路环节结构化展示」可见
-    assert: |-
       await expect(page.getByText('全链路环节结构化展示').first()).toBeVisible({ timeout: 10000 });
-  - note: 2、从左到右为研发、设计、制造、销售、服务（五环节顺序）
-    assert: |-
       const order = ['研发', '设计', '制造', '销售', '服务'];
-      const xs = await page.evaluate((names) => {
-        const pickNode = (name) => {
-          const cands = [...document.querySelectorAll('main div')].filter((el) => {
-            const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-            if (!t.includes(name) || !/高端化/.test(t)) return false;
-            const r = el.getBoundingClientRect();
-            return r.width >= 70 && r.width <= 130 && r.height >= 70 && r.height <= 130;
-          });
-          cands.sort((a, b) => a.getBoundingClientRect().width - b.getBoundingClientRect().width);
-          return cands[0] || null;
-        };
-        const out = [];
-        for (const name of names) {
-          const el = pickNode(name);
-          if (!el) return { err: '缺环节节点 ' + name };
-          out.push({ name, x: el.getBoundingClientRect().left });
-        }
-        for (let i = 1; i < out.length; i++) {
-          if (out[i].x <= out[i - 1].x) return { err: '环节横向顺序错乱于 ' + out[i].name, xs: out };
-        }
-        return { ok: true, xs: out };
-      }, order);
-      if (xs.err) throw new Error(xs.err + (xs.xs ? ' ' + JSON.stringify(xs.xs) : ''));
-  - note: 3、相邻环节之间标有「衔接」（四段）
-    assert: |-
-      const canvas = page.locator('.diagnosis-key-link-graph__canvas');
-      await expect(canvas).toBeVisible({ timeout: 15000 });
-      await page.waitForTimeout(2000);
-      const stat = await page.evaluate(() => {
-        const host = document.querySelector('.diagnosis-key-link-graph__canvas');
-        if (!host) return { liaison: 0, paths: 0 };
-        let liaison = 0;
-        host.querySelectorAll('text').forEach((t) => {
-          const s = (t.textContent || '').trim();
-          if (s === '衔接' || s.includes('衔接')) liaison += 1;
-        });
-        const inner = (host.innerText || '').match(/衔接/g);
-        liaison = Math.max(liaison, inner ? inner.length : 0);
-        const paths = host.querySelectorAll('path').length;
-        return { liaison, paths };
-      });
-      if (stat.liaison >= 4) return;
-      if (stat.paths >= 4) {
-        await expect(canvas.locator('path').first()).toBeVisible({ timeout: 5000 });
-        return;
+      const graph = page.locator('.diagnosis-key-link-graph').first();
+      await expect(graph).toBeVisible({ timeout: 20000 });
+      const text = ((await graph.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      let last = -1;
+      for (const name of order) {
+        const idx = text.indexOf(name);
+        if (idx < 0) throw new Error('全链路区未见环节「' + name + '」');
+        if (idx <= last) throw new Error('环节横向顺序错乱于「' + name + '」');
+        last = idx;
       }
-      throw new Error('相邻环节未见足够「衔接」或连线，liaison=' + stat.liaison + ' paths=' + stat.paths);
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  用例步骤=定位「全链路环节结构化展示」；预期=五环节 LR 顺序 + 相邻「衔接」（G6 edge labelText，IndustryKeyLinkGraph.vue）。
-  前置=诊断记录首条已完成「查看结果」；无记录抛 ENV-KEYLINK-NO-RESULT-001。edu 现场 /industry-center/search 与 diagnosis 深链均 SPA「抱歉，页面不存在」（同 FUNC-03102），assertNotSpa404 读 body 抛 ENV-EDU-TTS-SVCZ-404-001。路由 catalog_path entry-seed；登录关评审 runner 前置。B 档零 allow_skip。
+      for (const name of order) {
+        await expect(graph.getByText(name, { exact: true }).first()).toBeVisible();
+      }
+  - note: 2、相邻环节之间标有「衔接」
+    assert: |-
+      const graphRoot = page.locator('.diagnosis-key-link-graph').first();
+      await expect(graphRoot).toBeVisible({ timeout: 20000 });
+      await page.waitForTimeout(2500);
+      const domHits = await graphRoot.getByText('衔接', { exact: true }).count();
+      if (domHits >= 4) return;
+      throw new Error(
+        'G6 edge labelText「衔接」不在 DOM（domHits=' +
+          domHits +
+          '），Playwright 无法稳定断言四段衔接标签',
+      );
+on_fail: 截图 + 抄 X-Trace-Id

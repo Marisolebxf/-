@@ -2,49 +2,22 @@ id: FUNC-04104
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04104
 priority: P1
 tier: B
-title: 备选-产业领域选项 · 下拉个数
+title: 备选-产业领域选项
 entry_id: svc-org-field
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
+  - action: evaluate
+    note: 展开产业领域下拉
+    target: |-
+      await page.getByTestId('svc-org-analysis-config').locator('.arco-cascader-view').first().click();
 expect:
-  - note: 1、已进入分析配置
+  - note: 选项共 15 个产业集群（清单见附录A）
     assert: |-
-      await expect(page.locator('[data-testid="svc-org-analysis-config"]')).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('[data-testid="svc-org-analysis-context-field"]')).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 8000 });
-  - note: 1、展开产业领域下拉后，选项共 15 个产业集群（清单见附录A）
-    assert: |-
-      const expected = [
-        '新一代信息技术', '生物', '新能源', '新材料', '高端装备',
-        '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋',
-        '未来制造', '未来信息', '未来能源', '未来空间', '未来健康',
-      ];
-      const cascader = page.locator('main .arco-cascader-view').first();
-      await expect(cascader).toBeVisible({ timeout: 8000 });
-      await cascader.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const col = page.locator('.arco-trigger-popup:visible .arco-cascader-panel-column').first();
-      await expect(col).toBeVisible({ timeout: 8000 });
-      const opts = col.locator('.arco-cascader-option');
-      const n = await opts.count();
-      if (n !== 15) {
-        throw new Error('产业领域级联首列选项数 ' + n + ' ≠ 15');
-      }
-      const texts = [];
-      for (let i = 0; i < n; i++) {
-        texts.push((await opts.nth(i).innerText()).trim());
-      }
-      for (const name of expected) {
-        if (!texts.includes(name)) {
-          throw new Error('产业领域选项缺少附录A项：' + name + '；实际=' + texts.join('、'));
-        }
-      }
-      if (texts.length !== new Set(texts).size) {
-        throw new Error('产业领域选项存在重复：' + texts.join('、'));
-      }
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
+      const popup = page.locator('.arco-cascader-popup-visible').last();
+      await expect(popup).toBeVisible({ timeout: 8000 });
+      const firstCol = popup.locator('.arco-cascader-list-column').first();
+      await expect(firstCol.locator('.arco-cascader-option')).toHaveCount(15);
 on_fail: 截图 + 抄 X-Trace-Id

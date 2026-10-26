@@ -9,25 +9,35 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: click
+  - action: evaluate
     note: 选择产业「海洋」
     target: |-
       const main = page.locator('main');
-      await main.locator('.arco-cascader-view').click();
-      await page.locator('.arco-cascader-popup').getByText('海洋产业', { exact: true }).click();
+      const view = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await view.click({ timeout: 8000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu').last();
+      await menu.waitFor({ state: 'visible', timeout: 8000 });
+      const row = menu.locator('.arco-cascader-list-item').filter({ hasText: '海洋产业' }).first();
+      await row.locator('.arco-cascader-list-item-label').click({ timeout: 8000 });
+      await expect(main.locator('.svc-portal-section-title').filter({ hasText: /海洋/ }).first()).toBeVisible({ timeout: 15000 });
   - action: click
-    note: 点击「全球服务机构概况」页签
+    target: 全球服务机构概况
+  - action: evaluate
+    note: 等待概况页
     target: |-
-      await page.getByRole('tab', { name: '全球服务机构概况' }).click();
+      await page.waitForURL(/\\/service-portal\\/overview/, { timeout: 10000 });
   - action: click
-    note: 点击「服务机构技术能力」页签
+    target: 服务机构技术能力
+  - action: evaluate
+    note: 等待回到技术能力页
     target: |-
-      await page.getByRole('tab', { name: '服务机构技术能力' }).click();
+      await page.waitForURL(/\\/service-portal\\/capability-rank/, { timeout: 10000 });
 expect:
-  - note: 产业选择仍为「海洋」
+  - note: 1、产业选择仍为「海洋」
     assert: |-
-      await expect(page.locator('main').locator('.arco-cascader-view')).toContainText('海洋');
-  - note: 主标题为「服务机构技术能力」
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await expect(cascader).toContainText('海洋', { timeout: 15000 });
+  - note: 2、主标题为「服务机构技术能力」
     assert: |-
-      await expect(page.getByRole('heading', { level: 1, name: '服务机构技术能力' })).toBeVisible();
+      await expect(page.locator('main').getByRole('heading', { name: '服务机构技术能力' }).first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

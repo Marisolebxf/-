@@ -1,84 +1,34 @@
 id: FUNC-01410
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01410
-priority: P0
-title: 条件筛选推荐企业标签下拉共 8 项
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录，可从企业分析进入招引企业推荐分析
-locators:
-  stack: recruit-tab-stack
-  tag_label: 条件区文案「企业标签」
-  tag_ph: placeholder「全部企业标签」
+title: 条件筛选推荐展开企业标签下拉选项与附录 A 一致
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
+    target: /enterprise/attraction
   - action: wait
-    for: 条件区 SPA 渲染
-    timeout_ms: 2500
+    for: 条件筛选推荐与企业标签
+    timeout_ms: 8000
   - action: evaluate
-    note: 展开企业标签下拉；选项个数与附录 A 名称在 expect 判定
+    note: 展开企业标签下拉
 expect:
-  - note: 条件区含「企业标签」且标签下拉触发器可见
+  - note: 选项共 8 个，名称见附录 A
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
-          await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
-      };
-      await dismissBasket();
-      await waitFilterReady();
-      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
-      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      const panel = page.locator('#recruit-condition-panel');
-      const tagBlock = panel
-        .locator('.flex.flex-col')
-        .filter({ has: page.locator('span', { hasText: '企业标签' }) })
-        .first();
-      if ((await tagBlock.count()) < 1) {
-        throw new Error('条件区未见企业标签区块（#recruit-condition-panel），url=' + page.url());
-      }
-      const tagInput = page.locator('input[placeholder="全部企业标签"]').first();
+      const main = page.locator('main');
+      await expect(main.getByRole('tab', { name: '条件筛选推荐' })).toBeVisible({ timeout: 8000 });
+      const tagInput = main.locator('input[placeholder="全部企业标签"]').first();
       await expect(tagInput).toBeVisible({ timeout: 8000 });
-  - note: 展开企业标签下拉后选项共 8 个
-    assert: |-
-      await page.keyboard.press('Escape').catch(() => {});
-      const tagView = page
-        .locator('input[placeholder="全部企业标签"]')
-        .first()
-        .locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
+      const tagView = tagInput.locator(
+        'xpath=ancestor::*[contains(@class,"arco-select-view")][1]',
+      );
       await tagView.scrollIntoViewIfNeeded();
       await tagView.click({ timeout: 8000 });
-      await page.waitForTimeout(700);
+      await page.waitForTimeout(500);
       const popup = page.locator('.arco-trigger-popup:visible').last();
-      const opts = popup.locator('.arco-select-option, li');
       await expect(popup).toBeVisible({ timeout: 8000 });
-      const count = await opts.count();
-      if (count !== 8) {
-        const sample = (await opts.allTextContents()).map((t) => t.replace(/\s+/g, '').trim()).filter(Boolean);
-        throw new Error(`企业标签选项数为 ${count}，预期 8；样本=${sample.join('、')}`);
-      }
-  - note: 选项名称见附录 A（外资企业、瞪羚企业、高新技术企业、重点企业、上市企业、专精特新、科技型中小企业、独角兽企业）
-    assert: |-
-      const popup = page.locator('.arco-trigger-popup:visible').last();
-      if (!(await popup.isVisible().catch(() => false))) {
-        throw new Error('企业标签下拉未展开');
-      }
       const expected = [
         '外资企业',
         '瞪羚企业',
@@ -89,7 +39,9 @@ expect:
         '科技型中小企业',
         '独角兽企业',
       ];
-      const texts = (await popup.locator('.arco-select-option, li').allTextContents())
+      const opts = popup.locator('.arco-select-option');
+      await expect(opts).toHaveCount(8, { timeout: 5000 });
+      const texts = (await opts.allTextContents())
         .map((t) => t.replace(/\s+/g, '').trim())
         .filter(Boolean);
       for (const name of expected) {
@@ -97,8 +49,4 @@ expect:
           throw new Error(`下拉未见「${name}」，实际=${texts.join('、')}`);
         }
       }
-      if (texts.length !== 8) {
-        throw new Error(`去重后项数 ${texts.length}，预期 8；实际=${texts.join('、')}`);
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·catalog /enterprise/attraction?workspace=attraction&recommendation_tab=attraction；步骤=条件筛选推荐→点 placeholder「全部企业标签」的 .arco-select-view→.arco-trigger-popup 选项。附录 A 八项为用例册真源。点状复勘 2026-10-21 edu 30892 现场仅 7 项（缺「重点企业」），与 fixtures tag_options 一致、与附录 A 差 1。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

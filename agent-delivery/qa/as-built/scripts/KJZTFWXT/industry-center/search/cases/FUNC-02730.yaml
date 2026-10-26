@@ -1,25 +1,18 @@
 id: FUNC-02730
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02730
 priority: P1
-title: 保存筛选模板空名称点确定对话框不关闭
-entry_id: chain-search
 tier: B
-preconditions:
-  - 已打开「保存筛选模板」
-  - 名称框为空
-locators:
-  tab_advanced: '.enterprise-search-mode-tabs [role=tab] → 高级筛选'
-  save_plan: button 保存为查询方案
-  save_modal: dialog 保存筛选模板
-  name_input: placeholder 模板名称
-  btn_ok: button 确定
+title: 空名称点确定时保存筛选模板对话框保持打开
+entry_id: chain-search
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
   - action: evaluate
-    note: 高级筛选、加条件、打开保存弹层；空名称点确定在 expect 分步判定
+    note: 高级筛选已选 1 条件、打开保存筛选模板、名称框为空、点击确定（前置+步骤）
 expect:
-  - note: 前置：「保存筛选模板」已打开且名称框为空
+  - note: 1、对话框保持打开
     assert: |-
       const dismissBasket = async () => {
         const close = page.locator('[aria-label="关闭对比篮"]');
@@ -33,11 +26,7 @@ expect:
       };
       await dismissBasket();
       await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业查询入口 SPA 404 ' + page.url());
-      }
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
+      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').nth(2);
       await expect(advTab).toBeVisible({ timeout: 10000 });
       await advTab.click({ timeout: 8000 });
       await page.waitForTimeout(500);
@@ -48,30 +37,27 @@ expect:
       await expect(objTypeTag).toBeVisible({ timeout: 8000 });
       await objTypeTag.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      await expect(fieldLib.getByText(/已选 [1-9]\d* 个条件/)).toBeVisible({ timeout: 8000 });
+      await expect(fieldLib.getByText('已选 1 个条件', { exact: true })).toBeVisible({ timeout: 8000 });
       const saveBtn = page.getByRole('button', { name: '保存为查询方案' });
-      await expect(saveBtn).toBeEnabled({ timeout: 8000 });
+      await expect(saveBtn).toBeVisible({ timeout: 8000 });
       await saveBtn.click({ timeout: 8000 });
       await page.waitForTimeout(400);
-      const modal = page.locator('.arco-modal').filter({ has: page.locator('.arco-modal-title', { hasText: '保存筛选模板' }) }).first();
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存筛选模板' });
       await expect(modal).toBeVisible({ timeout: 8000 });
-      const nameInput = modal.getByPlaceholder('模板名称');
-      await expect(nameInput).toBeVisible({ timeout: 8000 });
-      await expect(nameInput).toHaveValue('');
-  - note: 1、点击「确定」后对话框保持打开
-    assert: |-
-      const modal = page.getByRole('dialog', { name: '保存筛选模板' });
-      await expect(modal).toBeVisible({ timeout: 8000 });
-      const okBtn = modal.locator('.arco-modal-footer .arco-btn-primary');
-      await expect(okBtn).toHaveText(/确定/);
+      await expect(modal.getByText('保存筛选模板')).toBeVisible({ timeout: 8000 });
+      const nameInput = modal.locator('input').first();
+      await expect(nameInput).toBeVisible({ timeout: 5000 });
+      const nameVal = await nameInput.inputValue().catch(() => '');
+      if (nameVal.trim()) {
+        await nameInput.fill('');
+        await page.waitForTimeout(200);
+      }
+      await expect(nameInput).toHaveValue('', { timeout: 3000 });
+      const okBtn = modal.locator('.arco-modal-footer .arco-btn-primary').filter({ hasText: '确定' });
+      await expect(okBtn).toBeVisible({ timeout: 5000 });
       await okBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(300);
-      await expect(modal).toBeVisible({ timeout: 8000 });
-      await expect(modal.getByPlaceholder('模板名称')).toBeVisible();
-      await expect(modal.getByPlaceholder('模板名称')).toHaveValue('');
+      await page.waitForTimeout(800);
+      const dlg = page.getByRole('dialog').filter({ hasText: '保存筛选模板' });
+      await expect(dlg).toBeVisible({ timeout: 8000 });
+      await expect(dlg.getByPlaceholder('模板名称')).toBeVisible({ timeout: 5000 });
 on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
-as_built_note: >-
-  路由 catalog_path /industry-center/search；高级筛选 Footer FilterTemplateManager compact：
-  「保存为查询方案」→ Modal title「保存筛选模板」、Input placeholder「模板名称」；空名 onSaveOk 内 saveTemplate(trim) 返回 null 不关 saveVisible（源码 useFilterTemplates）。
-  前置需至少 1 条叶子条件（本条点字段库「对象类型」）。2026-10-20 edu.itic-sci.com/tts/svcz 机跑 goto 深链 SPA 404，ENV-EDU-TTS-SVCZ-404-001 → ledger blocked；断言仍依 scout+FilterTemplateManager 源码。
-  登录与关内部评审由 runner 前置。B 档零 allow_skip。

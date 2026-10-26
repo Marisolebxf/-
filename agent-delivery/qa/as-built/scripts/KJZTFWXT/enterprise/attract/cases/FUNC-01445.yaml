@@ -1,104 +1,27 @@
 id: FUNC-01445
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01445
 priority: P1
-title: 地域来源选全国热门科创城市后第二列 19 项
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录，可从企业分析进入招引企业推荐分析
-locators:
-  stack: recruit-tab-stack
-  region_cascader: .sci-arco-cascader[aria-label="地域来源"]
+title: 备选-热门科创城市
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
-  - action: wait
-    for: 条件区 SPA 渲染
-    timeout_ms: 2500
-  - action: evaluate
-    note: 展开地域来源、点选全国热门科创城市；第二列项数与附录 E 在 expect 判定
+    target: /enterprise/attraction
+  - action: click
+    target: 全国 / 全部
+  - action: click
+    target: 第一层「全国热门科创城市」
 expect:
-  - note: 条件区地域来源级联可见
+  - note: 第二列共 19 项，名称见附录 E
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
-          const tag = page.locator('input[placeholder="全部企业标签"]').first();
-          if (await tag.isVisible().catch(() => false)) return;
-          await page.waitForTimeout(500);
-        }
-        throw new Error('条件区未渲染（未见全部企业标签），url=' + page.url());
-      };
-      await dismissBasket();
-      await waitFilterReady();
-      const tab = page.getByRole('tab', { name: '条件筛选推荐' });
-      if (await tab.count()) await tab.first().click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(400);
-      let region = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
-      if ((await region.count()) < 1) {
-        region = page.locator('[aria-label="选择区域"]').first();
+      const popup = page.locator('.arco-trigger-popup:visible, .arco-cascader-popup-visible').first();
+      await expect(popup).toBeVisible();
+      const secondCol = popup.locator('.arco-cascader-list-column').nth(1);
+      await expect(secondCol.locator('.arco-cascader-option')).toHaveCount(19);
+      const cities = ['北京','上海','广州','深圳','杭州','苏州','南京','武汉','成都','西安','合肥','长沙','青岛','厦门','天津','重庆','无锡','宁波','东莞'];
+      for (const name of cities) {
+        await expect(secondCol.getByText(name, { exact: true })).toBeVisible();
       }
-      if ((await region.count()) < 1) {
-        throw new Error('条件区未见地域来源级联，url=' + page.url());
-      }
-      await expect(region).toBeVisible({ timeout: 8000 });
-  - note: 点选全国热门科创城市后第二列共 19 项且名称同附录 E
-    assert: |-
-      const APPENDIX_E = [
-        '北京', '上海', '广州', '深圳', '杭州', '苏州', '南京', '武汉', '成都', '西安',
-        '合肥', '长沙', '青岛', '厦门', '天津', '重庆', '无锡', '宁波', '东莞',
-      ];
-      const HOT_LABEL = '全国热门科创城市';
-      await page.keyboard.press('Escape').catch(() => {});
-      let regionView = page.locator('.sci-arco-cascader[aria-label="地域来源"]').first();
-      if ((await regionView.count()) < 1) {
-        regionView = page.locator('[aria-label="选择区域"]').first();
-      }
-      await regionView.scrollIntoViewIfNeeded();
-      await regionView.click({ timeout: 8000 });
-      await page.waitForTimeout(700);
-      const firstCol = page.locator('.arco-cascader-list-column').first();
-      await expect(firstCol).toBeVisible({ timeout: 8000 });
-      const hotItem = firstCol.locator('.arco-cascader-list-item').filter({ hasText: HOT_LABEL });
-      const hotLoose = firstCol.locator('.arco-cascader-list-item').filter({ hasText: '热门科创城市' });
-      const pick = (await hotItem.count()) ? hotItem.first() : hotLoose.first();
-      if ((await pick.count()) < 1) {
-        const sample = await firstCol.locator('.arco-cascader-list-item').allTextContents();
-        throw new Error(`第一列未见「${HOT_LABEL}」，实际=` + sample.join('|'));
-      }
-      await pick.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const secondCol = page.locator('.arco-cascader-list-column').nth(1);
-      await expect(secondCol).toBeVisible({ timeout: 8000 });
-      const items = secondCol.locator('.arco-cascader-list-item');
-      const count = await items.count();
-      const texts = (await items.allTextContents())
-        .map((t) => t.replace(/\s+/g, '').trim())
-        .filter(Boolean);
-      if (count !== APPENDIX_E.length || texts.length !== APPENDIX_E.length) {
-        throw new Error(
-          `热门科创城市第二列项数为 ${count}（去重后 ${texts.length}），预期 ${APPENDIX_E.length}（附录 E）；实际=${texts.join('、') || '(空)'}`,
-        );
-      }
-      const missing = APPENDIX_E.filter((name) => !texts.some((t) => t === name || t.includes(name)));
-      if (missing.length) {
-        throw new Error('第二列缺少附录 E 项：' + missing.join('、') + '；实际=' + texts.join('、'));
-      }
-      const extra = texts.filter((t) => !APPENDIX_E.some((name) => t === name || t.includes(name)));
-      if (extra.length) {
-        throw new Error('第二列多出未在附录 E 的项：' + extra.join('、'));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；步骤=条件区展开地域来源→第一列点「全国热门科创城市」→第二列 19 项与附录 E 全量匹配。D4·2026-10-20 二轮机跑 rewrite-FUNC-01445（21:33Z+8）：第一列仍无「全国热门科创城市」（现场=全国|区域|深圳），连两次 fail 同因 D3（demo 旧地域树，非 region-scopes/附录 E）→交卷 blocked·C6 产品偏差（同 FUNC-01412/01442/01443）。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

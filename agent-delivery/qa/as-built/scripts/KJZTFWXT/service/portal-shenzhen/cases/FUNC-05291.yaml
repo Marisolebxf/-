@@ -2,30 +2,52 @@ id: FUNC-05291
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05291
 priority: P1
 tier: B
-title: 主流程-产业链下拉
+title: 主流程-产业链下拉 6 项
 entry_id: svc-portal-shenzhen
 preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/shenzhen?industry=CL-SEI-01
+    target: /service-portal/shenzhen
+  - action: wait
+    timeout_ms: 1200
+  - action: evaluate
+    note: 同册05290-选择「新一代信息技术」
+    assert: |-
+      const main = page.locator('main');
+      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const firstCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').first();
+      const cluster = firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').filter({ hasText: '新一代信息技术' }).first();
+      await cluster.click();
+      await expect(main).toContainText('新一代信息技术', { timeout: 15000 });
+      await page.keyboard.press('Escape');
   - action: evaluate
     note: 1.展开产业链下拉
-    run: |-
-      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
-      const menu = page.locator('.svc-portal-industry-cascader-menu');
-      await menu.waitFor({ state: 'visible', timeout: 15000 });
-      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().hover();
-      await menu.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option').first().waitFor({ state: 'visible', timeout: 15000 });
+    assert: |-
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const firstCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').first();
+      await firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').filter({ hasText: '新一代信息技术' }).first().hover();
+      const chainCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').nth(1);
+      await expect(chainCol).toBeVisible({ timeout: 15000 });
+      await page.keyboard.press('Escape');
 expect:
   - note: 1、选项共 6 个
     assert: |-
-      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
-      const menu = page.locator('.svc-portal-industry-cascader-menu');
-      await menu.waitFor({ state: 'visible', timeout: 15000 });
-      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().hover();
-      const chainCol = menu.locator('.arco-cascader-column').nth(1);
-      await expect(chainCol.locator('.arco-cascader-option')).toHaveCount(6, { timeout: 15000 });
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await cascader.click({ timeout: 15000 });
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const firstCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').first();
+      await firstCol.locator('.arco-cascader-option, .arco-cascader-list-item').filter({ hasText: '新一代信息技术' }).first().hover();
+      const chainCol = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').nth(1);
+      await expect(chainCol).toBeVisible({ timeout: 15000 });
+      await expect(chainCol.locator('.arco-cascader-option, .arco-cascader-list-item')).toHaveCount(6, { timeout: 15000 });
   - note: 2、名称与顺序见附录 B
     assert: |-
       const expected = [
@@ -36,9 +58,13 @@ expect:
         '智能终端',
         '软件与信息服务',
       ];
-      const menu = page.locator('.svc-portal-industry-cascader-menu');
-      const opts = menu.locator('.arco-cascader-column').nth(1).locator('.arco-cascader-option');
+      const menu = page.locator('.svc-portal-industry-cascader-menu:visible, .arco-cascader-popup:visible').last();
+      const opts = menu.locator('.arco-cascader-list-column, .arco-cascader-panel-column, .arco-cascader-column').nth(1).locator('.arco-cascader-option, .arco-cascader-list-item');
+      const norm = (t) => (t || '').replace(/\s+/g, ' ').trim();
       for (let i = 0; i < expected.length; i += 1) {
-        await expect(opts.nth(i)).toContainText(expected[i], { timeout: 15000 });
+        const text = norm(await opts.nth(i).innerText());
+        if (!text.includes(expected[i])) {
+          throw new Error('产业链顺序不符：第' + (i + 1) + '项期望「' + expected[i] + '」实际「' + text + '」');
+        }
       }
 on_fail: 截图 + 抄 X-Trace-Id

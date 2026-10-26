@@ -1,6 +1,6 @@
 id: FUNC-01268
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01268
-priority: P0
+priority: P1
 tier: B
 title: 主流程-权重调节与键入编辑
 entry_id: svc-rec-cultivate
@@ -12,21 +12,22 @@ steps:
 expect:
   - note: 调节钮每次增减 1（现有规模 25 上调一次变 26）
     assert: |-
-      const row = page.locator('.arco-form-item, .arco-row').filter({ hasText: '现有规模' }).first();
-      await expect(row).toBeVisible();
-      const spin = row.getByRole('spinbutton');
-      await expect(spin).toBeVisible();
-      await expect(spin).toHaveValue('25');
-      await row.locator('.arco-input-number-step-button.up, .arco-icon-up').first().click();
-      await expect(spin).toHaveValue('26');
-      await row.locator('.arco-input-number-step-button.down, .arco-icon-down').first().click();
-      await expect(spin).toHaveValue('25');
+      const main = page.locator('main');
+      const model = main.locator('[data-testid="svc-rec-cultivate-model"]');
+      await expect(model).toBeVisible();
+      await expect(model.getByText('现有规模 25%', { exact: true })).toBeVisible();
+      const spinners = model.locator('.arco-input-number');
+      await expect(spinners).toHaveCount(4);
+      const scale = spinners.first();
+      await scale.locator('.arco-input-number-step-button.up').click();
+      await expect(scale.locator('input')).toHaveValue('26');
+      await scale.locator('.arco-input-number-step-button.down').click();
+      await expect(scale.locator('input')).toHaveValue('25');
   - note: 权重值支持直接键入修改
     assert: |-
-      const row = page.locator('.arco-form-item, .arco-row').filter({ hasText: '现有规模' }).first();
-      const spin = row.getByRole('spinbutton');
-      await spin.click();
-      await spin.fill('33');
-      await spin.press('Enter');
-      await expect(spin).toHaveValue('33');
+      const main = page.locator('main');
+      const model = main.locator('[data-testid="svc-rec-cultivate-model"]');
+      const scale = model.locator('.arco-input-number').first();
+      await scale.locator('input').fill('40');
+      await expect(scale.locator('input')).toHaveValue('40');
 on_fail: 截图 + 抄 X-Trace-Id

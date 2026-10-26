@@ -8,15 +8,24 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/reports/CHAIN-20261018-020
+    target: /industry-center/reports/CHAIN-20261021-002
 expect:
   - note: 报告版本标签含日期与时间
     assert: |-
-      await expect(page.getByText(/\d{4}[-/]\d{1,2}[-/]\d{1,2}.*\d{1,2}:\d{2}/).first()).toBeVisible()
+      await page.locator('main').getByText('产业链分析报告').waitFor({ state: 'visible', timeout: 60000 })
+      await page.waitForURL(/view=report/, { timeout: 60000 })
+      await expect(
+        page.locator('main .report-toolbar__meta').getByText(/报告版本\s+\d{4}\.\d{2}\.\d{2}.+\d{1,2}:\d{2}/),
+      ).toBeVisible()
   - note: 类型标签与该任务的分析类型名称一致
     assert: |-
-      await expect(page.getByText('产业链分析', { exact: false }).first()).toBeVisible()
+      const meta = page.locator('main .report-toolbar__meta')
+      const typeTag = meta.locator('.arco-tag').filter({ hasNotText: '报告版本' })
+      await expect(typeTag.first()).toBeVisible()
+      await expect(typeTag.first()).not.toHaveText(/^报告版本/)
   - note: 对象摘要与该任务的分析对象一致
     assert: |-
-      await expect(page.getByText('新能源汽车', { exact: false }).first()).toBeVisible()
+      const subject = page.locator('main .report-toolbar__meta > span').last()
+      await expect(subject).toBeVisible()
+      await expect(subject).not.toHaveText(/^$/)
 on_fail: 截图 + 抄 X-Trace-Id

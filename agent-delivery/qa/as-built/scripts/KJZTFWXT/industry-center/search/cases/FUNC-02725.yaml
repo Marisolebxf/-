@@ -2,29 +2,27 @@ id: FUNC-02725
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02725
 priority: P1
 tier: B
-title: 备选-结果筛选
+title: 备选-结果筛选-产业标签下拉暂无数据
 entry_id: chain-search
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/search
-  - action: evaluate
-    note: 前置：已搜出检索结果
-    script: |-
-      const main = page.locator('main');
-      await main.getByText('智能检索', { exact: true }).click();
-      const smartInput = main.locator('textarea').first();
-      await smartInput.fill('光刻');
-      await main.getByRole('button', { name: '搜索' }).click();
-      await page.getByRole('region', { name: '产业查询结果' }).getByText(/共 \d+ 条/).waitFor({ timeout: 15000 });
-  - action: evaluate
-    note: 展开「产业标签」
-    script: |-
-      const tools = page.locator('main .industry-search-result-tools');
-      await tools.locator('.arco-select-view').filter({ hasText: '产业标签' }).click();
+  - action: fill
+    target: textbox 输入产业
+    value: 光刻
+  - action: click
+    target: 搜索
+  - action: wait
+    timeout_ms: 3500
+  - action: assert_visible
+    target: heading 检索结果
 expect:
-  - note: 1、下拉显示「暂无数据」
+  - note: 下拉显示「暂无数据」
     assert: |-
-      await expect(page.locator('main').getByText('暂无数据', { exact: true })).toBeVisible();
+      const main = page.locator('main');
+      const tagSel = main.locator('.arco-select-view').filter({ hasText: '产业标签' });
+      await tagSel.first().click({ timeout: 8000 });
+      await expect(page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').getByText('暂无数据').first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

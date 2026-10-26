@@ -10,7 +10,7 @@ preconditions:
 locators:
   search_input: textbox 含「输入企业名、产业、资质、区域或专利关键词」
   search_btn: button「搜索」
-  refine_qual_tag: 结果工具条 .arco-select-view 资质荣誉（用例写资质标签，D1 跟现场）
+  refine_qual_tag: 结果工具条 .arco-select-view 资质标签
 steps:
   - action: goto
     target: /enterprise/enterprise-search
@@ -36,11 +36,11 @@ expect:
       const main = page.locator('main');
       await expect(page.getByText('智能搜索结果', { exact: true })).toBeVisible({ timeout: 20000 });
       await expect(page.getByText(/命中\s*[1-9]\d*\s*家企业/)).toBeVisible({ timeout: 12000 });
-      const qualPh = main.locator('input[placeholder="资质荣誉"]');
+      const qualPh = main.locator('input[placeholder="资质标签"]');
       if ((await qualPh.count()) < 1) {
-        throw new Error('结果内未见资质荣誉再筛控件（用例称资质标签）');
+        throw new Error('结果内未见资质标签再筛控件');
       }
-      const qualSel = main.locator('.arco-select-view').filter({ hasText: '资质荣誉' }).first();
+      const qualSel = main.locator('.arco-select-view').filter({ hasText: '资质标签' }).first();
       await expect(qualSel).toBeVisible({ timeout: 8000 });
       await qualSel.click({ timeout: 8000 });
       await page.waitForTimeout(500);
@@ -60,7 +60,7 @@ expect:
       const popup = page.locator('.arco-trigger-popup:visible, [role=listbox]:visible').first();
       if (!(await popup.isVisible().catch(() => false))) {
         const main = page.locator('main');
-        const qualSel = main.locator('.arco-select-view').filter({ hasText: '资质荣誉' }).first();
+        const qualSel = main.locator('.arco-select-view').filter({ hasText: '资质标签' }).first();
         await qualSel.click({ timeout: 8000 });
         await page.waitForTimeout(500);
       }
@@ -83,4 +83,3 @@ expect:
         }
       }
 on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: D1·30888 深链 /enterprise/enterprise-search（用例册 /enterprise/enterprise-search）。用例写「资质标签」；现场再筛 placeholder/触发器为资质荣誉（同 FUNC-00458）。D3·30888 实勘资质荣誉下拉去重 7 项（多「上市」），与用例「全量即此 6 项」冲突，机跑预期红。

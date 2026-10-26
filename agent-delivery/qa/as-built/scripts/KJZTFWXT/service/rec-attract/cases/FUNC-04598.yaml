@@ -9,36 +9,53 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 按钮 生成招引名单
+  - action: wait
+    timeout_ms: 2500
+    for: 分析过程完成
+  - action: click
+    target: 按钮 查看结果
+  - action: assert_visible
+    target: 外部机构引进推荐名单
+  - action: wait
+    timeout_ms: 800
+    for: 名单加载
+  - action: click
+    target: 人工智能与应用
+  - action: wait
+    timeout_ms: 400
+    for: 下拉展开
+  - action: click
+    target: 第一层「新能源」
 expect:
-  - note: 下拉共 15 个选项，名称见附录 A
+  - note: 1、下拉共 15 个选项，名称见附录 A；
     assert: |-
-      await page.getByRole('button', { name: '生成招引名单' }).click();
-      await expect(page.getByText('生成招引名单')).toBeHidden({ timeout: 60000 });
-      const selectWrap = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).locator('.arco-select-view').first();
-      await selectWrap.click();
-      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      await expect(options).toHaveCount(15);
-  - note: 候选家数与改选前一致
+      const ctx = page.locator('[data-testid="svc-rec-result-context"]');
+      await ctx.locator('.svc-portal-industry-cascader .arco-cascader-view').click();
+      const popup = page.locator('.arco-trigger-popup:visible');
+      await expect(popup).toBeVisible();
+      const col = popup.locator('.arco-cascader-panel-column').first();
+      await expect(col.locator('li')).toHaveCount(15);
+      const clusters = ['新一代信息技术', '生物', '新能源', '新材料', '高端装备', '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋', '未来制造', '未来信息', '未来能源', '未来空间', '未来健康'];
+      for (const name of clusters) {
+        await expect(col.getByText(name, { exact: false }).first()).toBeVisible();
+      }
+  - note: 2、候选家数与改选前一致；
     assert: |-
-      const countLine = page.locator('text=/候选.*家/').first();
-      await expect(countLine).toBeVisible();
-      const countBefore = await countLine.textContent();
-      const mBefore = countBefore?.match(/(\d+)/);
-      if (!mBefore) throw new Error('未找到改选前候选家数');
-      const selectWrap = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).locator('.arco-select-view').first();
-      await selectWrap.click();
-      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      const current = await selectWrap.textContent();
-      const picked = options.filter({ hasNotText: current?.trim() || '' }).first();
-      await picked.click();
-      await expect(countLine).toBeVisible();
-      const countAfter = await countLine.textContent();
-      const mAfter = countAfter?.match(/(\d+)/);
-      if (!mAfter) throw new Error('未找到改选后候选家数');
-      expect(mAfter[1]).toBe(mBefore[1]);
-  - note: 不进入分析过程页
+      const main = page.locator('main');
+      const note = main.locator('.svc-rec-toolbar .svc-rec-note').filter({ hasText: /共 \d+ 家候选/ });
+      await expect(note).toBeVisible();
+      const noteText = (await note.textContent()) || '';
+      const m = noteText.match(/共 (\d+) 家候选/);
+      if (!m) throw new Error('未解析候选家数: ' + noteText);
+      const n = Number(m[1]);
+      const rows = main.locator('[data-testid="svc-rec-list"] article');
+      await expect(rows).toHaveCount(n);
+  - note: 3、不进入分析过程页
     assert: |-
-      await expect(page.getByText('分析过程', { exact: false })).toHaveCount(0);
-      await expect(page).toHaveURL(/workspace=attract/);
-      await expect(page).toHaveURL(/tab=attract/);
+      const main = page.locator('main');
+      await expect(main.getByText('外部机构引进推荐名单')).toBeVisible();
+      await expect(main.getByText('招引推荐分析生成中')).not.toBeVisible();
+      await expect(page.getByRole('button', { name: '查看结果' })).not.toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

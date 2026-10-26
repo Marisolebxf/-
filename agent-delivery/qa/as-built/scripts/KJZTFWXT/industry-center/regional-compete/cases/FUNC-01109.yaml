@@ -1,108 +1,74 @@
 id: FUNC-01109
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01109
-priority: P0
+priority: P1
+tier: B
 title: 「一键均分」将已计入维度权重平均分配且合计回到 100%
 entry_id: chain-regional-compete
-tier: B
-preconditions:
-  - 已进入工作区；三大维度已各选至少 1 项
-locators:
-  avg: button「一键均分」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
-  - action: evaluate
-    note: 手动设置不均权重后点击「一键均分」（用例步骤 1–2）
 expect:
   - note: 1、点按后已计入维度权重平均分配
     assert: |-
-      const EQUAL = ['33', '33', '34'];
-      const weightSpin = (label) =>
-        page.locator(`main [aria-label="${label}权重"] [role=spinbutton]`).first();
-      const pickFirstIndustry = async () => {
-        await page.keyboard.press('Escape').catch(() => {});
-        const sel = page.locator('main [aria-label="产业"]').first();
-        await expect(sel).toBeVisible({ timeout: 15000 });
-        for (let i = 0; i < 8; i++) {
-          await sel.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-          const pop = page.locator('.arco-trigger-popup:visible').last();
-          const opt = pop.locator('.arco-select-option:not(.arco-select-option-disabled)');
-          if (await opt.count()) {
-            await opt.first().click({ force: true, timeout: 8000 });
-            await page.waitForTimeout(700);
-            await page.keyboard.press('Escape').catch(() => {});
-            return;
-          }
-          await page.waitForTimeout(400);
-        }
-        throw new Error('无法选择分析对象产业');
+      const main = page.locator('main');
+      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      const weightTable = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      await expect(weightTable).toBeVisible({ timeout: 8000 });
+      const setWeight = async (label, val) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        const input = row.locator('input').first();
+        await input.click({ timeout: 8000 });
+        await input.fill(String(val));
+        await input.press('Tab');
+        await page.waitForTimeout(300);
       };
-      const readDimWeights = async () => {
-        const labels = ['企业能力', '学术生态', '配套生态力'];
-        const vals = [];
-        for (const lb of labels) {
-          const sp = weightSpin(lb);
-          await expect(sp).toBeVisible({ timeout: 8000 });
-          vals.push(String(await sp.inputValue()).trim());
-        }
-        return vals;
-      };
-      const assertEqualSplit = (vals) => {
-        const sorted = [...vals].sort((a, b) => Number(a) - Number(b));
-        const exp = [...EQUAL].sort((a, b) => Number(a) - Number(b));
-        if (sorted.join(',') !== exp.join(',')) {
-          throw new Error('均分后权重应为 33/33/34，得 ' + vals.join('/'));
-        }
-      };
-      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 12000 });
-      await pickFirstIndustry();
-      await expect(page.getByText('单产业模式请选择 1 个产业').first()).toBeHidden({ timeout: 8000 });
-      await weightSpin('企业能力').fill('20');
-      await weightSpin('学术生态').fill('30');
-      await weightSpin('配套生态力').fill('40');
+      await setWeight('企业能力', 50);
+      await setWeight('学术生态', 30);
+      await setWeight('配套生态力', 20);
+      await main.getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      await page.getByRole('button', { name: '一键均分' }).click();
-      await page.waitForTimeout(800);
-      const after1 = await readDimWeights();
-      assertEqualSplit(after1);
-      globalThis.__func01109 = { after1 };
+      const readW = async (label) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        return Number(await row.locator('input').first().inputValue());
+      };
+      const w1 = await readW('企业能力');
+      const w2 = await readW('学术生态');
+      const w3 = await readW('配套生态力');
+      if (w1 + w2 + w3 !== 100) throw new Error(`合计应为100，实际 ${w1}+${w2}+${w3}`);
+      if (w1 !== 33 || w2 !== 33 || w3 !== 34) throw new Error(`均分后应为33/33/34，实际 ${w1}/${w2}/${w3}`);
+      globalThis.__func01109 = { pass1: true };
   - note: 2、汇总「权重合计」回到 100%
     assert: |-
-      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
-      const labels = ['企业能力', '学术生态', '配套生态力'];
-      let sum = 0;
-      for (const lb of labels) {
-        sum += Number(await page.locator(`main [aria-label="${lb}权重"] [role=spinbutton]`).first().inputValue());
-      }
-      if (sum !== 100) throw new Error('权重合计应为 100%，得 ' + sum);
+      if (!globalThis.__func01109?.pass1) throw new Error('前置：首次均分未完成');
+      const main = page.locator('main');
+      await expect(main.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 8000 });
   - note: 3、重复点按仍回到均分态
     assert: |-
-      const EQUAL = ['33', '33', '34'];
-      const weightSpin = (label) =>
-        page.locator(`main [aria-label="${label}权重"] [role=spinbutton]`).first();
-      const assertEqualSplit = (vals) => {
-        const sorted = [...vals].sort((a, b) => Number(a) - Number(b));
-        const exp = [...EQUAL].sort((a, b) => Number(a) - Number(b));
-        if (sorted.join(',') !== exp.join(',')) {
-          throw new Error('重复均分后权重应为 33/33/34，得 ' + vals.join('/'));
-        }
+      const main = page.locator('main');
+      const weightTable = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      const setWeight = async (label, val) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        const input = row.locator('input').first();
+        await input.click({ timeout: 8000 });
+        await input.fill(String(val));
+        await input.press('Tab');
+        await page.waitForTimeout(300);
       };
-      const readDimWeights = async () => {
-        const labels = ['企业能力', '学术生态', '配套生态力'];
-        const vals = [];
-        for (const lb of labels) {
-          vals.push(String(await weightSpin(lb).inputValue()).trim());
-        }
-        return vals;
-      };
-      await weightSpin('企业能力').fill('10');
-      await weightSpin('学术生态').fill('20');
-      await weightSpin('配套生态力').fill('25');
+      await setWeight('企业能力', 60);
+      await setWeight('学术生态', 25);
+      await setWeight('配套生态力', 15);
+      await main.getByRole('button', { name: '一键均分' }).click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      await page.getByRole('button', { name: '一键均分' }).click();
-      await page.waitForTimeout(800);
-      const after2 = await readDimWeights();
-      assertEqualSplit(after2);
-      await expect(page.getByText(/权重合计：100%/).first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
+      const readW = async (label) => {
+        const row = weightTable.getByRole('row').filter({ hasText: label }).first();
+        return Number(await row.locator('input').first().inputValue());
+      };
+      const w1 = await readW('企业能力');
+      const w2 = await readW('学术生态');
+      const w3 = await readW('配套生态力');
+      if (w1 + w2 + w3 !== 100) throw new Error(`重复均分合计应为100，实际 ${w1}+${w2}+${w3}`);
+      if (w1 !== 33 || w2 !== 33 || w3 !== 34) throw new Error(`重复均分后应为33/33/34，实际 ${w1}/${w2}/${w3}`);
+      await expect(main.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

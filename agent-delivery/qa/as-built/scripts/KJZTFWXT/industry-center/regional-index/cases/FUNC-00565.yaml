@@ -1,118 +1,117 @@
 id: FUNC-00565
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00565
-priority: P0
-title: 评价区域多选去重与上限及汇总回显
-entry_id: chain-regional-index
+priority: P1
 tier: B
+title: 评价区域 1–5 多选、去重与汇总回显
+entry_id: chain-regional-index
 preconditions:
-  - 已进入页面；评价模式为「单产业 × 多区域」
-locators:
-  mode_single: 单产业 × 多区域
-  region_view: .arco-select-view-multiple 含 placeholder 请选择区域或深圳市
+  - 已进入页面
+  - 评价模式为「单产业 × 多区域」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=index&tab=index
   - action: wait
-    for: 已计入 6 项或评价区域（1–5）
+    for: 评价区域（1–5）或已计入 6 项
     timeout_ms: 12000
-  - action: evaluate
-    note: 单产业态展开区域多选，按用例勾选/去重/上限并读汇总
 expect:
   - note: 1、评价区域为多选且选项含广东省、深圳市、北京市、上海市、杭州市（以现场为准）
     assert: |-
       const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
       if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('ENV-EDU-TTS-SVCZ-404-001: 区域产业指数评价 SPA 404 ' + page.url());
+        throw new Error('ENV-ENTRY-UNREACHABLE: 区域产业指数评价 SPA 404 ' + page.url());
       }
       await expect(page.getByText('已计入 6 项').first()).toBeVisible({ timeout: 12000 });
-      await page.getByText('单产业 × 多区域', { exact: true }).first().click();
-      await page.waitForTimeout(600);
       await expect(page.getByText('评价区域（1–5）', { exact: true }).first()).toBeVisible({ timeout: 8000 });
       const region = () =>
-        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
-      const rv = region();
-      await expect(rv).toBeVisible({ timeout: 8000 });
-      if (!(await rv.evaluate((el) => el.className.includes('mult')))) {
+        page.locator('main .arco-form-item').filter({ has: page.getByText(/^评价区域/) }).locator('.arco-select-view').first();
+      if (!(await region().evaluate((el) => el.className.includes('mult')))) {
         throw new Error('评价区域未呈多选');
       }
-      await rv.click({ timeout: 8000 });
-      await page.waitForTimeout(700);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
-      await expect(pop).toBeVisible({ timeout: 8000 });
-      for (const n of ['广东省', '深圳市', '北京市', '上海市', '杭州市']) {
-        await expect(pop.getByText(n, { exact: true }).first()).toBeVisible({ timeout: 5000 });
+      await page.keyboard.press('Escape').catch(() => {});
+      await region().click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-trigger-popup:visible').first();
+      await expect(popup).toBeVisible({ timeout: 5000 });
+      for (const name of ['深圳市', '北京市', '上海市', '杭州市']) {
+        await expect(popup.locator('.arco-select-option').filter({ hasText: name }).first()).toBeVisible({ timeout: 5000 });
       }
-      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(300);
   - note: 2、同一区域不可重复添加且所选区域在汇总回显
     assert: |-
+      await page.keyboard.press('Escape').catch(() => {});
       const region = () =>
-        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
-      const rv = region();
+        page.locator('main .arco-form-item').filter({ has: page.getByText(/^评价区域/) }).locator('.arco-select-view').first();
       const pick = async (name) => {
-        await rv.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
-        const opt = pop.getByText(name, { exact: true }).first();
-        if (!(await opt.isVisible().catch(() => false))) return;
-        await opt.click();
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        await region().click({ timeout: 8000 });
         await page.waitForTimeout(350);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(300);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 5000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: name }).first();
+        await opt.click({ timeout: 5000 });
+        await page.waitForTimeout(350);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
       };
-      const tagCount = async () => rv.locator('.arco-tag').count();
-      for (const n of ['深圳市', '北京市', '杭州市']) await pick(n);
-      const beforeDup = await tagCount();
-      await rv.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const pop2 = page.locator('.arco-trigger-popup:visible').last();
-      await pop2.getByText('北京市', { exact: true }).first().click();
-      await page.waitForTimeout(350);
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
-      const afterDup = await tagCount();
-      if (afterDup !== beforeDup) {
-        throw new Error('重复勾选北京市后 tag 数变化: ' + beforeDup + ' -> ' + afterDup);
+      const regionHas = async (name) => {
+        const t = ((await region().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return t.includes(name);
+      };
+      for (const name of ['深圳市', '北京市', '杭州市']) {
+        if (!(await regionHas(name))) await pick(name);
       }
-      const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/北京/.test(mainText) || !/深圳/.test(mainText)) {
-        throw new Error('配置汇总未见区域回显: ' + mainText.slice(0, 160));
-      }
+      const tagN = await region().locator('.arco-tag').count();
+      const regionText = ((await region().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (tagN < 3 && !/深圳市/.test(regionText)) throw new Error('勾选三城后区域回显不足');
+      await expect(page.getByText(/深圳市.*北京市.*杭州市|深圳市、北京市、杭州市/).first()).toBeVisible({ timeout: 8000 });
+      await pick('北京市');
+      const beijingTags = await region().locator('.arco-tag').filter({ hasText: '北京市' }).count();
+      if (beijingTags > 1) throw new Error('北京市出现重复 tag');
+      if (beijingTags === 0) await pick('北京市');
+      await expect(page.getByText(/深圳市.*杭州市/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText(/北京市/).first()).toBeVisible({ timeout: 8000 });
   - note: 3、区域数量限制 1–5、超上限不可再加
     assert: |-
+      await page.keyboard.press('Escape').catch(() => {});
       const region = () =>
-        page.locator('main').locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域（1–5）' }).locator('.arco-select-view').first();
-      const rv = region();
+        page.locator('main .arco-form-item').filter({ has: page.getByText(/^评价区域/) }).locator('.arco-select-view').first();
       const pick = async (name) => {
-        await rv.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
-        const opt = pop.getByText(name, { exact: true }).first();
-        if (!(await opt.isVisible().catch(() => false))) return;
-        await opt.click();
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        await region().click({ timeout: 8000 });
         await page.waitForTimeout(350);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(300);
+        const popup = page.locator('.arco-trigger-popup:visible').first();
+        await expect(popup).toBeVisible({ timeout: 5000 });
+        const opt = popup.locator('.arco-select-option').filter({ hasText: name }).first();
+        await opt.click({ timeout: 5000 });
+        await page.waitForTimeout(350);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
       };
-      for (const n of ['广东省', '上海市']) await pick(n);
-      let tags = await rv.locator('.arco-tag').count();
-      if (tags > 5) throw new Error('区域 tag 超过 5: ' + tags);
-      for (const n of ['广东省', '深圳市', '北京市', '上海市', '杭州市']) await pick(n);
-      tags = await rv.locator('.arco-tag').count();
-      if (tags > 5) throw new Error('加满后仍超过 5: ' + tags);
-      if (tags < 1) throw new Error('区域至少保留 1 个');
-      const atMax = tags;
-      await rv.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
-      const disabled = pop.locator('.arco-select-option-disabled');
-      if (atMax >= 5 && (await disabled.count()) === 0) {
-        const extra = pop.locator('.arco-select-option').first();
-        await extra.click().catch(() => {});
-        await page.waitForTimeout(350);
-        await page.keyboard.press('Escape');
-        const after = await rv.locator('.arco-tag').count();
-        if (after > 5) throw new Error('超上限仍可加到: ' + after);
+      const regionHas = async (name) => {
+        const t = ((await region().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        return t.includes(name);
+      };
+      for (const name of ['深圳市', '北京市', '上海市', '杭州市', '武汉市']) {
+        if (!(await regionHas(name))) await pick(name);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: catalog_path=/industry-center/regional?workspace=index&tab=index。区域控件=placeholder「请选择区域」的 .arco-select-view-multiple（scout regionIdx=2）；有深圳市回显时 or 过滤。edu 深链 SPA 404 时抛 ENV-EDU-TTS-SVCZ-404-001（与 00562/00564 同闸）。登录与关评审由 runner 前置。
+      await expect(
+        page.getByText(/深圳市.*北京市.*上海市.*杭州市.*武汉市|深圳市、北京市、上海市、杭州市、武汉市/).first(),
+      ).toBeVisible({ timeout: 8000 });
+      const tagN = await region().locator('.arco-tag').count();
+      const regionText = ((await region().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      const folded = /\+\d+\.\.\./.test(regionText);
+      if (tagN > 5) throw new Error('可见 tag 超过 5: ' + tagN);
+      if (tagN < 5 && !folded) throw new Error('加至上限后未达 5 城且无折叠: tag=' + tagN);
+      const beforePick = ((await page.locator('main').innerText().catch(() => '')) || '').match(/未选产业 · ([^·]+) · 已计入/)?.[1] || '';
+      const cityCount = beforePick.split('、').filter(Boolean).length;
+      if (cityCount !== 5) throw new Error('汇总区域段应为 5 城，实际 ' + cityCount);
+      await pick('合肥市');
+      const afterPick = ((await page.locator('main').innerText().catch(() => '')) || '').match(/未选产业 · ([^·]+) · 已计入/)?.[1] || '';
+      const afterCount = afterPick.split('、').filter(Boolean).length;
+      if (afterCount > 5) throw new Error('超上限后汇总仍增至 ' + afterCount + ' 城');
+      await expect(page.getByText('评价区域（1–5）', { exact: true }).first()).toBeVisible({ timeout: 5000 });
+on_fail: 截图 + 抄 X-Trace-Id

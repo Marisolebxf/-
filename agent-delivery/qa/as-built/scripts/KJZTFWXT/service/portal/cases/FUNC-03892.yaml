@@ -1,51 +1,72 @@
 id: FUNC-03892
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03892
-priority: P0
+priority: P1
 tier: B
-title: 产业链下拉选项个数（新一代信息技术为 6）
-story: US-SVC-PT-02
+title: 主流程-产业链下拉选项个数
 entry_id: svc-portal
-preconditions:
-  - 已进入门户概况；env-gate G3 pass
-locators:
-  industry: select placeholder 全部产业
-  chain: select placeholder 全部产业链
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service-portal/overview
+    target: /service-portal
+  - action: wait
+    for: 概况默认视图
+    timeout_ms: 15000
   - action: evaluate
     note: 选择产业「新一代信息技术」；展开产业链下拉
 expect:
   - note: 1、产业链选项共 6 个，名称见附录 C
     assert: |-
+      await page.waitForURL(/\/service-portal\/overview/, { timeout: 20000 });
+      const main = page.locator('main').first();
+      await expect(main).toBeVisible({ timeout: 12000 });
       const close = page.locator('button[aria-label="关闭对比篮"]');
       if (await close.count()) {
         try { await close.first().click({ timeout: 2000 }); await page.waitForTimeout(300); } catch {}
       }
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
-      const ind = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业"]') }).first();
-      await ind.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await page.waitForTimeout(1000);
-      const chain = page.locator('.arco-select-view').filter({ has: page.locator('input[placeholder="全部产业链"]') }).first();
-      const dis = await chain.evaluate((el) => el.className.includes('disabled'));
-      if (dis) throw new Error('选产业后产业链仍禁用');
-      await chain.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
-      const n = await opts.count();
-      if (n !== 6) throw new Error('产业链选项数 ' + n + ' ≠6');
-      const expected = [
-        '半导体与集成电路', '人工智能与应用', '新型网络与通信',
-        '超高清视频与显示', '智能终端', '软件与信息服务',
+      const filter = main.locator('[aria-label="筛选条"], .svc-portal-filter').first();
+      await expect(filter).toBeVisible({ timeout: 15000 });
+      const chains = [
+        '半导体与集成电路',
+        '人工智能与应用',
+        '新型网络与通信',
+        '超高清视频与显示',
+        '智能终端',
+        '软件与信息服务',
       ];
+      let chainItems = null;
+      let chainCount = 0;
+      const cascader = filter.locator('.arco-cascader-view').first();
+      if (await cascader.count()) {
+        await cascader.scrollIntoViewIfNeeded();
+        await cascader.click({ timeout: 15000 });
+        await page.waitForTimeout(500);
+        const popup = page.locator('.arco-trigger-popup:visible').last();
+        await expect(popup).toBeVisible({ timeout: 10000 });
+        await popup.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: false }).first().click();
+        await page.waitForTimeout(700);
+        const chainCol = popup.locator('.arco-cascader-list-column').nth(1);
+        await expect(chainCol).toBeVisible({ timeout: 10000 });
+        chainItems = chainCol.locator('.arco-cascader-list-item');
+        chainCount = await chainItems.count();
+      } else {
+        const selects = filter.locator('.arco-select-view');
+        if ((await selects.count()) < 2) throw new Error('筛选区未见产业链下拉控件');
+        await selects.nth(0).click({ timeout: 15000 });
+        await page.waitForTimeout(400);
+        await page.locator('.arco-trigger-popup:visible').last().getByText('新一代信息技术', { exact: false }).first().click();
+        await page.waitForTimeout(500);
+        await selects.nth(1).click({ timeout: 15000 });
+        await page.waitForTimeout(400);
+        chainItems = page.locator('.arco-trigger-popup:visible').last().locator('.arco-select-option');
+        chainCount = await chainItems.count();
+      }
+      if (chainCount !== 6) throw new Error('产业链选项数 ' + chainCount + ' ≠ 6');
       const texts = [];
-      for (let i = 0; i < n; i++) {
-        texts.push((await opts.nth(i).innerText()).trim());
+      for (let i = 0; i < chainCount; i++) {
+        texts.push(((await chainItems.nth(i).innerText()) || '').replace(/\s+/g, ' ').trim());
       }
-      for (const name of expected) {
-        if (!texts.includes(name)) throw new Error('产业链选项缺少：' + name);
+      for (const name of chains) {
+        if (!texts.some((t) => t.includes(name))) throw new Error('产业链选项缺少：' + name);
       }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: P7 点 .arco-select-view；6 项与附录 C 对齐。goto /service-portal/overview。
+on_fail: 截图 + 抄 X-Trace-Id

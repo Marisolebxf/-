@@ -1,28 +1,20 @@
 id: FUNC-02712
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02712
-priority: P0
-title: 结果内对象类型选产业后只留产业行且条数减少
+priority: P1
+tier: B
+title: 主流程-结果筛选-对象类型选产业后收窄
 entry_id: chain-search
-tier: A
-preconditions:
-  - 已用「光刻」搜出产业和产业链两类结果
-locators:
-  result_region: '[role=region][aria-label="产业查询结果"]'
-  result_tools: .industry-search-result-tools
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
-  - action: evaluate
-    note: 智能检索「光刻」并展开对象类型选「产业」
 expect:
-  - note: 前置：光刻检索命中且同时含产业与产业链
+  - note: 前置与步骤：光刻检索、展开对象类型并选择「产业」
     assert: |-
       const parseTotal = (text) => {
-        const m1 = text.match(/共\s*(\d+)\s*条/);
-        const m2 = text.match(/产业查询返回\s*(\d+)\s*条/);
-        if (m1) return parseInt(m1[1], 10);
-        if (m2) return parseInt(m2[1], 10);
-        return null;
+        const m = text.match(/共\s*(\d+)\s*条/);
+        return m ? parseInt(m[1], 10) : null;
       };
       const listTypeTags = async (region) => {
         const cards = region.locator('.industry-search-result-card');
@@ -42,13 +34,13 @@ expect:
       await expect(input).toBeVisible({ timeout: 8000 });
       await input.fill('光刻');
       await page.getByRole('button', { name: '搜索', exact: true }).click();
-      await page.waitForTimeout(800);
-      const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      await expect(region).toBeVisible({ timeout: 15000 });
+      const region = page.getByRole('region', { name: '产业查询结果' });
+      await expect(region.getByRole('heading', { name: '检索结果' })).toBeVisible({ timeout: 20000 });
+      await expect(region.locator('.industry-search-result-tools')).toBeVisible({ timeout: 15000 });
       const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
       const beforeTotal = parseTotal(regionText);
       if (beforeTotal === null || beforeTotal < 2) {
-        throw new Error('前置：光刻结果条数应≥2；片段=' + regionText.slice(0, 160));
+        throw new Error('前置：光刻结果条数应≥2；片段=' + regionText.slice(0, 200));
       }
       const typesBefore = await listTypeTags(region);
       if (!typesBefore.includes('产业') || !typesBefore.includes('产业链')) {
@@ -56,21 +48,20 @@ expect:
       }
       globalThis.__func02712_beforeTotal = beforeTotal;
       const tools = region.locator('.industry-search-result-tools');
-      await expect(tools).toBeVisible({ timeout: 8000 });
-      const objSelect = tools.locator('.arco-select').first();
-      await objSelect.locator('.arco-select-view').click({ timeout: 8000 });
-      await page.waitForTimeout(300);
+      const objSelectView = tools.locator('.arco-select').first().locator('.arco-select-view');
+      await expect(objSelectView).toBeVisible({ timeout: 8000 });
+      await objSelectView.click({ timeout: 8000 });
       const dropdown = page.locator('.arco-select-dropdown:visible').last();
       await expect(dropdown).toBeVisible({ timeout: 8000 });
-      await dropdown.locator('.arco-select-option').filter({ hasText: /^产业$/ }).click({ timeout: 8000 });
-      await page.waitForTimeout(600);
+      await dropdown.locator('.arco-select-option-content').getByText('产业', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
       await page.keyboard.press('Escape').catch(() => {});
-      await page.waitForTimeout(400);
+      await expect(region.locator('.industry-search-result-card').first()).toBeVisible({ timeout: 8000 });
       globalThis.__func02712_ready = true;
   - note: 1、剩余行类型均为产业
     assert: |-
       if (!globalThis.__func02712_ready) throw new Error('前置：筛选未执行');
-      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const region = page.getByRole('region', { name: '产业查询结果' });
       const cards = region.locator('.industry-search-result-card');
       const n = await cards.count();
       const types = [];
@@ -90,11 +81,11 @@ expect:
     assert: |-
       if (!globalThis.__func02712_ready) throw new Error('前置：筛选未执行');
       const beforeTotal = globalThis.__func02712_beforeTotal;
-      const region = page.locator('[role=region][aria-label="产业查询结果"]');
+      const region = page.getByRole('region', { name: '产业查询结果' });
       const regionText = ((await region.innerText()) || '').replace(/\s+/g, ' ');
-      const m = regionText.match(/共\s*(\d+)\s*条/);
-      const afterTotal = m ? parseInt(m[1], 10) : null;
-      if (afterTotal === null || afterTotal >= beforeTotal) {
-        throw new Error('条数应少于选择前（前 ' + beforeTotal + ' 后 ' + afterTotal + '）');
+      const afterTotal = (regionText.match(/共\s*(\d+)\s*条/) || [])[1];
+      const afterNum = afterTotal ? parseInt(afterTotal, 10) : null;
+      if (afterNum === null || afterNum >= beforeTotal) {
+        throw new Error('条数应少于选择前（前 ' + beforeTotal + ' 后 ' + afterNum + '）');
       }
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+on_fail: 截图 + 抄 X-Trace-Id

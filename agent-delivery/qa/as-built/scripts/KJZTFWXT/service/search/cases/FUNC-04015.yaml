@@ -2,50 +2,44 @@ id: FUNC-04015
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04015
 priority: P1
 tier: B
-title: 备选-结果翻页（下一页）
+title: 备选-结果翻页
 entry_id: svc-search
-preconditions:
-  - 已用「深圳」完成智能检索
-  - 结果多于一页
+preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-center/search
-  - action: evaluate
-    note: 智能检索「深圳」出结果后点击分页下一页（判定在 expect）
+    target: /service-center/search?kw=深圳
+  - action: wait
+    ms: 1200
 expect:
+  - note: 前置：已用「深圳」完成智能检索；结果多于一页
+    assert: |-
+      const main = page.locator('main');
+      await expect(main.getByText('检索结果', { exact: true })).toBeVisible({ timeout: 25000 });
+      await expect(main.getByText(/所在城市：深圳/)).toBeVisible({ timeout: 15000 });
+      await expect(main.locator('[data-search-state="recommendation"]')).toHaveCount(0);
+      const pag = main.locator('.svc-org-search-pagination .arco-pagination');
+      await expect(pag).toBeVisible({ timeout: 10000 });
+      await expect(
+        pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)'),
+      ).toBeVisible();
+  - note: 1.点击分页的下一页
+    assert: |-
+      const main = page.locator('main');
+      const firstLink = main.locator('article.svc-org-search-card .svc-org-search-link').first();
+      await expect(firstLink).toBeVisible({ timeout: 10000 });
+      globalThis.__func04015_first = (await firstLink.innerText()).trim();
+      const pag = main.locator('.svc-org-search-pagination .arco-pagination');
+      await pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').click();
+      await expect(main.locator('.arco-spin')).toHaveCount(0, { timeout: 15000 });
   - note: 1、首条机构与翻页前不同
     assert: |-
-      const main = page.locator('main').first();
-      const inp = main.getByPlaceholder(/用一句话描述机构需求/);
-      await expect(inp).toBeVisible({ timeout: 15000 });
-      await inp.fill('深圳');
-      const searchBtn = main.locator('.arco-input-search-btn').filter({ hasText: /^搜索$/ }).first();
-      await expect(searchBtn).toBeVisible({ timeout: 8000 });
-      await searchBtn.click({ timeout: 8000 });
-      await expect(main.getByRole('heading', { name: '检索结果', exact: true })).toBeVisible({ timeout: 25000 });
-      await expect(main.getByText(/共 \d+ 家匹配机构/)).toBeVisible({ timeout: 15000 });
-      const pag = main.locator('.svc-org-search-pagination .arco-pagination').first();
-      await expect(pag).toBeVisible({ timeout: 10000 });
-      const next = pag.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
-      if (!(await next.count()) || !(await next.isVisible().catch(() => false))) {
-        throw new Error('ENV-SVC-ORG-PAGE2-001: 深圳检索分页下一页不可用');
-      }
-      const card = () => main.locator('article.svc-org-search-card').first();
-      await expect(card()).toBeVisible({ timeout: 10000 });
-      const nameBtn = () => card().locator('button.svc-org-search-link').first();
-      const nameBefore = ((await nameBtn().innerText()) || '').trim();
-      if (!nameBefore) throw new Error('翻页前首条机构名称为空');
-      await next.click({ timeout: 8000 });
-      await page.waitForTimeout(1500);
-      await expect(card()).toBeVisible({ timeout: 15000 });
-      const nameAfter = ((await nameBtn().innerText()) || '').trim();
-      if (!nameAfter) throw new Error('翻页后首条机构名称为空');
-      if (nameAfter === nameBefore) {
-        throw new Error('翻页后首条机构应与翻页前不同：before=' + nameBefore + ' after=' + nameAfter);
-      }
+      const main = page.locator('main');
+      const firstLink = main.locator('article.svc-org-search-card .svc-org-search-link').first();
+      await expect(firstLink).toBeVisible({ timeout: 10000 });
+      await expect(firstLink).not.toHaveText(globalThis.__func04015_first, { timeout: 5000 });
   - note: 2、已匹配条件仍为「所在城市：深圳」
     assert: |-
-      const main = page.locator('main').first();
+      const main = page.locator('main');
       await expect(main.getByText(/所在城市：深圳/)).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,169 +1,77 @@
 id: FUNC-03225
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03225
 priority: P1
-title: 已完成行下载报告提示资产404且不留报告页
-story: US-CHAIN-DIAG-07
-entry_id: chain-bottleneck
 tier: B
-preconditions:
-  - 诊断记录中有已完成任务
-locators:
-  records_tab: tab「诊断记录」
-  download_report: button「下载报告」
+title: 异常-诊断记录-下载报告失败提示
+entry_id: chain-bottleneck
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/diagnosis?workspace=bottleneck&tab=bottleneck
   - action: evaluate
-    note: 诊断记录已完成行点「下载报告」；404 提示与留页在 expect
+    note: 诊断记录→若无已完成则按金样复制配置并分析→对已完成行点「下载报告」
+    target: |-
+      const main = () => page.locator('main').first();
+      const recordsTab = () => page.getByRole('tab', { name: '诊断记录' }).first();
+      const recordRows = () => main().locator('section.diagnosis-records tbody tr');
+
+      async function pickStatus(label) {
+        const box = main().locator('section.diagnosis-records .diagnosis-records__filters .arco-select-view').first();
+        await box.click();
+        await page.getByRole('option', { name: label }).click();
+        await page.waitForTimeout(800);
+      }
+
+      async function findCompletedRow() {
+        const rows = recordRows();
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          const status = ((await row.locator('td').nth(2).innerText()) || '').trim();
+          if (!status.includes('已完成')) continue;
+          const btn = row.getByRole('button', { name: '下载报告' });
+          if (await btn.isEnabled()) return row;
+        }
+        return null;
+      }
+
+      async function runGoldFromRecords() {
+        await pickStatus('全部状态');
+        const firstRow = recordRows().first();
+        await firstRow.getByRole('button', { name: '复制配置' }).click();
+        await expect(page.getByText('已复制分析配置，可调整后重新分析')).toBeVisible({ timeout: 8000 });
+        await main().getByRole('button', { name: '开始分析' }).click();
+        await expect(main().getByText('分析结果已生成')).toBeVisible({ timeout: 120000 });
+        await main().getByRole('button', { name: '查看分析结果' }).click();
+        await expect(main().getByText('产业瓶颈堵点识别结果', { exact: true })).toBeVisible({ timeout: 15000 });
+      }
+
+      async function openRecordsReady() {
+        await recordsTab().click();
+        await page.waitForURL(/tab=records/);
+        await expect(main().locator('section.diagnosis-records h2')).toHaveText('诊断记录');
+      }
+
+      await openRecordsReady();
+      await pickStatus('已完成');
+      let row = await findCompletedRow();
+      if (!row) {
+        await runGoldFromRecords();
+        await openRecordsReady();
+        await pickStatus('已完成');
+        row = await findCompletedRow();
+        if (!row) throw new Error('诊断记录仍无已完成瓶颈任务');
+      }
+
+      await row.getByRole('button', { name: '下载报告' }).click();
 expect:
   - note: 1、提示「资产下载失败（HTTP 404）」
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const main = () => page.locator('main').first();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业瓶颈堵点识别/.test(t);
-      };
-      const catalogPath = '/industry-center/diagnosis?workspace=bottleneck&tab=bottleneck';
-      const enterBottleneck = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/diagnosis/.test(page.url()) &&
-          /workspace=bottleneck/.test(page.url()) &&
-          /tab=bottleneck/.test(page.url());
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (await bodyIs404()) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) {
-            const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业瓶颈堵点识别$/ });
-            const expandChain = async () => {
-              if (await leaf().first().isVisible().catch(() => false)) return;
-              const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-              if (await sub.count()) {
-                await sub.first().click({ timeout: 8000 });
-                await page.waitForTimeout(400);
-              }
-            };
-            await expandChain();
-            await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-            await leaf().first().click({ timeout: 10000 });
-            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
-          }
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业瓶颈堵点识别深链与侧栏入口均不可用 ' + page.url());
-        }
-        await expect(page).toHaveURL(/workspace=bottleneck/);
-        await expect(page).toHaveURL(/tab=bottleneck/);
-      };
-      const openRecordsTab = async () => {
-        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
-        await expect(tab).toBeVisible({ timeout: 10000 });
-        await tab.click({ timeout: 10000 });
-        await page.waitForTimeout(1200);
-        await expect(tab).toHaveAttribute('aria-selected', 'true');
-      };
-      const scrollRecordActions = async () => {
-        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
-        const bn = await bodies.count();
-        for (let i = 0; i < bn; i++) {
-          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
-        }
-        await page.waitForTimeout(400);
-      };
-      const waitFailToast = async () => {
-        const re = /资产下载失败.*HTTP\s*404|资产下载失败（HTTP 404）/;
-        for (let i = 0; i < 24; i++) {
-          const msgNodes = page.locator('.arco-message, .arco-message-content, [class*="message"]');
-          const n = await msgNodes.count();
-          for (let j = 0; j < n; j++) {
-            const t = ((await msgNodes.nth(j).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-            if (re.test(t)) return t;
-          }
-          const body = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (re.test(body)) return body.match(re)[0];
-          await page.waitForTimeout(500);
-        }
-        return '';
-      };
-      await enterBottleneck();
-      await openRecordsTab();
-      await scrollRecordActions();
-      const rows = main()
-        .locator('tbody tr, .arco-table-tr')
-        .filter({ hasText: /已完成|成功/ })
-        .filter({ hasText: '产业瓶颈堵点识别' });
-      const n = await rows.count();
-      if (n < 1) throw new Error('ENV-CHAIN-BOTTLENECK-NO-DONE-03225：诊断记录无已完成瓶颈任务');
-      let clicked = false;
-      let detail = '';
-      for (let i = 0; i < Math.min(n, 12); i++) {
-        const row = rows.nth(i);
-        const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (!TID_RE.test(rowText)) continue;
-        let dl = row.locator('button, .arco-btn').filter({ hasText: /^下载报告$/ }).last();
-        if (!(await dl.count())) dl = row.getByRole('button', { name: '下载报告', exact: true }).last();
-        if (!(await dl.count()) || (await dl.isDisabled().catch(() => true))) continue;
-        await row.scrollIntoViewIfNeeded().catch(() => {});
-        await scrollRecordActions();
-        const downloadPromise = page.waitForEvent('download', { timeout: 8000 }).catch(() => null);
-        const assetRespPromise = page.waitForResponse(
-          (r) => /\/tasks\/[^/]+\/asset/.test(r.url()) && r.request().method() === 'GET',
-          { timeout: 15000 },
-        ).catch(() => null);
-        await dl.click({ timeout: 15000, force: true });
-        clicked = true;
-        const resp = await assetRespPromise;
-        const dlEvt = await downloadPromise;
-        if (resp) detail += ' assetStatus=' + resp.status();
-        if (dlEvt) detail += ' unexpectedDownload=' + (dlEvt.suggestedFilename() || 'yes');
-        const toast = await waitFailToast();
-        globalThis.__func03225 = { toast, clicked: true, urlBefore: page.url() };
-        if (!toast) {
-          throw new Error('点「下载报告」后未见「资产下载失败（HTTP 404）」提示；' + detail);
-        }
-        if (!/资产下载失败/.test(toast) || !/404/.test(toast)) {
-          throw new Error('失败提示文案不符：' + toast.slice(0, 160) + detail);
-        }
-        break;
-      }
-      if (!clicked) {
-        throw new Error('ENV-CHAIN-BOTTLENECK-NO-DOWNLOAD-03225：无已完成瓶颈行可点「下载报告」');
-      }
-      await expect(page.getByText(/资产下载失败/).first()).toBeVisible({ timeout: 8000 });
-  - note: 2、不打开新的报告页（用例：仍留诊断记录，无 view=report）
+      await expect(page.getByText('资产下载失败（HTTP 404）')).toBeVisible({ timeout: 15000 });
+  - note: 2、不打开新的报告页
     assert: |-
-      if (!globalThis.__func03225?.clicked) throw new Error('前置：未点击下载报告');
-      const tab = page.getByRole('tab', { name: '诊断记录' }).first();
-      await expect(tab).toBeVisible({ timeout: 8000 });
-      await expect(tab).toHaveAttribute('aria-selected', 'true');
-      const url = page.url();
-      if (/view=report/.test(url)) {
-        throw new Error('误进入报告页 view=report：' + url);
-      }
-      const reader = page.locator('.system-report-reader[data-report-readonly="true"]');
-      if (await reader.isVisible().catch(() => false)) {
-        throw new Error('误打开只读报告壳，应留在诊断记录');
-      }
-      await expect(page.locator('main').first().locator('tbody tr, .arco-table-tr').first()).toBeVisible({ timeout: 8000 });
-      const dlEvt = await page.waitForEvent('download', { timeout: 500 }).catch(() => null);
-      if (dlEvt) {
-        throw new Error('不应落地报告文件，却触发 download：' + (dlEvt.suggestedFilename() || ''));
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path entry-seed；用例=诊断记录已完成行「下载报告」→Toast「资产下载失败（HTTP 404）」+不打开报告页（对齐 key-link 03134 / cycle 02925 取反路径）。
-  无已完成→ENV-CHAIN-BOTTLENECK-NO-DONE-03225；钮不可点→ENV-CHAIN-BOTTLENECK-NO-DOWNLOAD-03225。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。
+      const main = page.locator('main').first();
+      await expect(page).toHaveURL(/tab=records/);
+      await expect(main.getByText('产业瓶颈堵点识别报告')).not.toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

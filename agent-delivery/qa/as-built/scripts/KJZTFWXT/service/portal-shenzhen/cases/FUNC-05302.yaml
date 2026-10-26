@@ -8,17 +8,46 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service-portal/shenzhen
+    target: /service-portal/shenzhen?industry=CL-SEI-02
+  - action: evaluate
+    note: 选择产业链「生物医药与生命健康」（同册 05301 前置）
+    assert: |-
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
+      }
+      await expect(page.getByRole('heading', { name: '深圳产业服务介绍', level: 1 }).first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const chainRow = filter.filter({ hasText: '产业链' });
+      await expect(chainRow).toBeVisible({ timeout: 8000 });
+      const chainView = chainRow.locator('.arco-select-view').first();
+      await chainView.click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+      const option = page.locator('.arco-select-dropdown:visible .arco-select-option').filter({ hasText: '生物医药与生命健康' }).first();
+      await expect(option).toBeVisible({ timeout: 8000 });
+      await option.click();
+      await page.waitForTimeout(800);
+  - action: evaluate
+    note: 把产业改选为「海洋」
+    assert: |-
+      const main = page.locator('main');
+      const filter = main.locator('.svc-portal-filter');
+      const industryRow = filter.filter({ hasText: '产业集群' });
+      const industryView = industryRow.locator('.arco-cascader-view').first();
+      await expect(industryView).toBeVisible({ timeout: 8000 });
+      await industryView.click({ timeout: 8000 });
+      await expect(page.locator('.arco-cascader-panel:visible')).toBeVisible({ timeout: 8000 });
+      const ocean = page.locator('.arco-cascader-panel:visible .arco-cascader-option').filter({ hasText: '海洋产业' }).first();
+      await expect(ocean).toBeVisible({ timeout: 8000 });
+      await ocean.click();
+      await page.waitForTimeout(1200);
 expect:
   - note: 1、结论上下文为「海洋」
     assert: |-
-      const filter = page.locator('.svc-portal-filter');
-      await filter.locator('.arco-cascader-view').click();
-      await page.locator('.arco-cascader-panel').getByText('海洋', { exact: true }).first().click();
-      const main = page.locator('main');
-      await expect(main.getByText(/「[^」]*海洋[^」]*」为上下文/)).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('main')).toContainText(/「[^」]*海洋[^」]*」为上下文/, { timeout: 15000 });
   - note: 2、产业链占位回到「全部产业链」
     assert: |-
       const main = page.locator('main');
-      await expect(main.locator('.arco-select-view').filter({ hasText: '全部产业链' }).first()).toBeVisible();
+      const filter = main.locator('.svc-portal-filter');
+      await expect(filter).toContainText('全部产业链', { timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

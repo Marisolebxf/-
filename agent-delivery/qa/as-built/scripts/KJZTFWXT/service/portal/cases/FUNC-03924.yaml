@@ -1,38 +1,39 @@
 id: FUNC-03924
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03924
 priority: P0
-tier: A
-title: 概况三个分析区块标题
-story: US-SVC-PT-01
+tier: B
+title: 主流程-概况三个分析区块标题
 entry_id: svc-portal
-preconditions:
-  - 已进入门户概况；env-gate G2 pass
-locators:
-  tab_overview: tab「全球服务机构概况」
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /service-portal/overview
-  - action: evaluate
-    note: 打开「全球服务机构概况」页签
+    target: /service-portal
+  - action: click
+    target: |-
+      await page.waitForURL(/\/service-portal\/overview(?:\?|$)/);
+      await page.getByRole('tablist', { name: '专题服务子导航' }).getByRole('tab', { name: '全球服务机构概况' }).click();
 expect:
-  - note: 1、三区块标题依次为数量分析 · 历年总量趋势、类型分析 · 机构类型占比、规模分析 · 人员规模分布
+  - note: 三区块标题依次为数量分析 · 历年总量趋势、类型分析 · 机构类型占比、规模分析 · 人员规模分布
     assert: |-
-      await expect(page).toHaveURL(/service-portal\/overview/, { timeout: 15000 });
       const main = page.locator('main');
-      const titles = [
-        '数量分析 · 历年新增趋势',
-        '类型分析 · 机构类型占比',
-        '规模分析 · 人员规模分布',
-      ];
-      const tops = [];
-      for (const t of titles) {
-        const el = main.getByText(t, { exact: true }).first();
-        await expect(el).toBeVisible({ timeout: 8000 });
-        const box = await el.boundingBox();
-        if (!box) throw new Error('区块标题不可见: ' + t);
-        tops.push(box.y);
+      const qty = main.getByText('数量分析 · 历年新增趋势').first();
+      const type = main.getByText('类型分析 · 机构类型占比').first();
+      const scale = main.getByText('规模分析 · 人员规模分布').first();
+      await expect(qty).toBeVisible();
+      await expect(type).toBeVisible();
+      await expect(scale).toBeVisible();
+      const [bQty, bType, bScale] = await Promise.all([
+        qty.boundingBox(),
+        type.boundingBox(),
+        scale.boundingBox(),
+      ]);
+      if (!bQty || !bType || !bScale) throw new Error('区块标题未取到布局盒');
+      if (bQty.y >= bType.y + 2) throw new Error('数量区块应在类型区块之上');
+      const sameRow = Math.abs(bType.y - bScale.y) < 8;
+      if (sameRow) {
+        if (bType.x >= bScale.x) throw new Error('同排时类型区块应在规模区块左侧');
+      } else if (bType.y >= bScale.y + 2) {
+        throw new Error('类型区块应在规模区块之上');
       }
-      for (let i = 1; i < tops.length; i++) {
-        if (tops[i] <= tops[i - 1]) throw new Error('三区块标题自上而下顺序不符用例「依次为」');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

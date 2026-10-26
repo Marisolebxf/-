@@ -9,25 +9,91 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
-  - action: click
-    target: locator('.arco-select-view').first()
-  - action: click
-    target: getByText('新一代信息技术', { exact: true })
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
-  - action: click
-    target: 返回配置
-  - action: click
-    target: 开始分析
 expect:
-  - note: 打开当天已成功的结果
+  - note: 1、打开当天已成功的结果
     assert: |-
-      await expect(page.getByText('统一评价框架')).toBeVisible({ timeout: 15000 });
-      await expect(page).not.toHaveURL(/view=processing/);
-  - note: 不新增分析任务
+      const cfgUrl = '/service/chain-analysis?workspace=shenzhen&tab=shenzhen';
+      const main = page.locator('main');
+      if (/[?&]view=/.test(page.url())) {
+        await page.goto(cfgUrl, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      await expect(main.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
+
+      const pickIndustry = async () => {
+        const cascader = main.locator('.arco-cascader-view').first();
+        await expect(cascader).toBeVisible({ timeout: 12000 });
+        await cascader.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        const popup = page.locator('.arco-cascader-popup-wrapper:visible');
+        await expect(popup).toBeVisible({ timeout: 12000 });
+        const opt = popup.locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
+      };
+
+      const clickStart = async () => {
+        const start = main.locator('[data-testid="svc-eco-start-analysis"]').or(
+          main.getByRole('button', { name: '开始分析', exact: true }),
+        );
+        await expect(start.first()).toBeVisible({ timeout: 12000 });
+        await expect(start.first()).toBeEnabled({ timeout: 12000 });
+        await start.first().click({ timeout: 8000 });
+      };
+
+      const waitView = async (kind, ms) => {
+        const re = kind === 'result' ? /[?&]view=result/ : /[?&]view=processing/;
+        for (let i = 0; i < Math.ceil(ms / 500); i++) {
+          if (re.test(page.url())) return true;
+          await page.waitForTimeout(500);
+        }
+        return re.test(page.url());
+      };
+
+      const openResult = async () => {
+        if (/[?&]view=result/.test(page.url())) return;
+        const btn = main.getByRole('button', { name: '查看结果', exact: true }).first();
+        await expect(btn).toBeVisible({ timeout: 20000 });
+        await btn.click({ timeout: 8000 });
+        if (!(await waitView('result', 20000))) {
+          throw new Error('点击查看结果后未进入结果态: ' + page.url());
+        }
+      };
+
+      await pickIndustry();
+      await clickStart();
+      if (!(await waitView('processing', 12000)) && !(await waitView('result', 2000))) {
+        await clickStart();
+        await waitView('processing', 15000);
+      }
+      await openResult();
+      await expect(main.getByText('统一评价框架').first()).toBeVisible({ timeout: 20000 });
+
+      await main.getByRole('button', { name: '返回配置', exact: true }).first().click({ timeout: 8000 });
+      await expect(main.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
+
+      await pickIndustry();
+      await clickStart();
+      let landedResult = await waitView('result', 12000);
+      if (!landedResult) {
+        if (await waitView('processing', 8000)) {
+          await openResult();
+          landedResult = true;
+        }
+      }
+      if (!landedResult) throw new Error('再次开始分析后未打开结果: ' + page.url());
+      await expect(main.getByText('统一评价框架').first()).toBeVisible({ timeout: 20000 });
+  - note: 2、不新增分析任务
     assert: |-
-      await expect(page.getByText('分析中')).toHaveCount(0);
-      await expect(page.getByText(/深圳服务链现状分析生成中/)).toHaveCount(0);
+      const main = page.locator('main');
+      const u = page.url();
+      if (!/[?&]view=result/.test(u)) throw new Error('应在结果态，实际 URL: ' + u);
+      const gen = main.getByText('深圳服务链现状分析生成中');
+      if (await gen.isVisible().catch(() => false)) {
+        throw new Error('仍在过程页，可能新建了分析任务');
+      }
+      await expect(main.getByText('统一评价框架').first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

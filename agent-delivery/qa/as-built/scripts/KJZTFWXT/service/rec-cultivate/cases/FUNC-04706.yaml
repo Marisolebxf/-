@@ -9,17 +9,33 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: wait
+    ms: 800
   - action: click
-    target: 生成培育名单
+    target: 分析记录
+  - action: wait
+    ms: 800
+  - action: click
+    target: 查看结果
+    locator: |-
+      page.locator('main').getByRole('button', { name: '查看结果' }).first()
+  - action: wait
+    ms: 800
   - action: click
     target: 加入对比篮
+    locator: |-
+      page.locator('main [data-testid="svc-rec-cultivate-list"]').getByRole('button', { name: '加入对比篮' }).first()
+  - action: wait
+    ms: 500
   - action: click
     target: 已在对比篮
+    locator: |-
+      page.locator('main [data-testid="svc-rec-cultivate-list"]').getByRole('button', { name: '已在对比篮' }).first()
 expect:
   - note: 页面提示该机构已在对比篮中
     assert: |-
-      await expect(page.getByText(/该机构已在对比篮中/)).toBeVisible()
+      await expect(page.locator('.arco-message-content').filter({ hasText: /已在对比篮中/ }).first()).toBeVisible()
   - note: 按钮仍为「已在对比篮」
     assert: |-
-      await expect(page.getByRole('button', { name: '已在对比篮' }).first()).toBeVisible()
+      await expect(page.locator('main [data-testid="svc-rec-cultivate-list"]').getByRole('button', { name: '已在对比篮' }).first()).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

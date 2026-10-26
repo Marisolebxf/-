@@ -10,12 +10,19 @@ steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
 expect:
-  - note: 该行按钮变为「已在对比篮」
+  - note: 1、该行按钮变为「已在对比篮」
     assert: |-
-      const addBtn = page.getByText('加入对比篮', { exact: true }).first();
-      await addBtn.click();
-      await expect(page.getByText('已在对比篮', { exact: true }).first()).toBeVisible();
-  - note: 页面提示已将该机构加入对比篮
+      const ctx = page.locator('main [data-testid="svc-rec-cultivate-context"]');
+      await ctx.locator('.arco-select-view').first().click();
+      await page.locator('.arco-select-option').filter({ hasText: '生物' }).first().click();
+      await page.getByRole('button', { name: '生成培育名单' }).click();
+      await expect(page.locator('main').getByText('已完成').first()).toBeVisible({ timeout: 120000 });
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(page.locator('main').getByText('本土机构培育名单')).toBeVisible({ timeout: 120000 });
+      const list = page.locator('main [data-testid="svc-rec-cultivate-list"]');
+      await list.getByRole('button', { name: '加入对比篮' }).first().click();
+      await expect(list.getByRole('button', { name: '已在对比篮' }).first()).toBeVisible();
+  - note: 2、页面提示已将该机构加入对比篮
     assert: |-
-      await expect(page.getByText(/已将该机构加入对比篮/)).toBeVisible();
+      await expect(page.locator('.arco-message-content').filter({ hasText: /加入对比篮/ }).first()).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

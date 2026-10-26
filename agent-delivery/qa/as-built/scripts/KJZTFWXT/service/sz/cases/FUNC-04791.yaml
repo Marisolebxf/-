@@ -9,22 +9,38 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
-expect:
-  - note: 依次为服务机构数量、平均技术力得分、服务网络密度、服务链完整度
-    assert: |-
-      const labels = ['服务机构数量', '平均技术力得分', '服务网络密度', '服务链完整度'];
-      for (const label of labels) {
-        await expect(page.getByText(label, { exact: false }).first()).toBeVisible();
+  - action: evaluate
+    target: |-
+      await page.locator('main [data-testid="svc-eco-analysis-config"]').waitFor({ state: 'visible', timeout: 15000 });
+      const cfg = page.locator('main [data-testid="svc-eco-analysis-config"]');
+      await cfg.locator('.arco-cascader-view').first().click();
+      await page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true }).click({ timeout: 15000 });
+      const col2 = page.locator('.arco-cascader-list-column').nth(1);
+      if (await col2.isVisible().catch(() => false)) {
+        await col2.getByText('人工智能与应用', { exact: true }).click({ timeout: 8000 }).catch(() => {});
       }
-      const text = await page.locator('body').innerText();
+      await page.locator('main [data-testid="svc-eco-start-analysis"]').click({ timeout: 8000 });
+      for (let i = 0; i < 15; i++) {
+        await page.waitForTimeout(1000);
+        if (/[?&]view=processing/.test(page.url())) break;
+      }
+      if (!/[?&]view=processing/.test(page.url())) throw new Error('点击开始分析后未进入过程态: ' + page.url());
+      await page.getByText('分析结果已生成').waitFor({ state: 'visible', timeout: 90000 });
+      await page.locator('main').getByRole('button', { name: '查看结果', exact: true }).click({ timeout: 30000 });
+      if (!/[?&]view=result/.test(page.url())) throw new Error('点击「查看结果」后未进入结果态: ' + page.url());
+expect:
+  - note: 1、依次为服务机构数量、平均技术力得分、服务网络密度、服务链完整度
+    assert: |-
+      const main = page.locator('main');
+      const names = ['服务机构数量', '平均技术力得分', '服务网络密度', '服务链完整度'];
+      for (const n of names) {
+        await expect(main.getByText(n).first()).toBeVisible({ timeout: 60000 });
+      }
+      const text = (await main.innerText()) || '';
       let pos = -1;
-      for (const label of labels) {
-        const idx = text.indexOf(label, pos + 1);
-        expect(idx).toBeGreaterThan(pos);
-        pos = idx;
+      for (const n of names) {
+        const i = text.indexOf(n);
+        if (i < 0 || i <= pos) throw new Error('指标顺序不符: ' + n);
+        pos = i;
       }
 on_fail: 截图 + 抄 X-Trace-Id

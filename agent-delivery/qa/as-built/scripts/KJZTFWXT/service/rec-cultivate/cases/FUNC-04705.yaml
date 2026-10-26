@@ -9,23 +9,35 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
-  - action: click
-    target: 生成培育名单
-  - action: assert_visible
-    target: 本土机构培育名单
+  - action: wait
+    timeout_ms: 800
 expect:
   - note: 首行机构名与切换前相同
     assert: |-
-      const firstRow = page.locator('tbody tr').first();
-      await expect(firstRow).toBeVisible();
-      const nameCell = firstRow.locator('td').first();
-      const nameBefore = (await nameCell.innerText()).trim();
-      await expect(nameBefore.length).toBeGreaterThan(0);
-      const industryItem = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
-      await industryItem.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: '新能源' }).click();
-      await expect(nameCell).toHaveText(nameBefore);
+      const main = page.locator('main');
+      async function pickIndustry(scope, label) {
+        await scope.locator('.sci-arco-cascader .arco-cascader-view, .svc-portal-industry-cascader .arco-cascader-view').first().click();
+        const popup = page.locator('.arco-cascader-popup:visible, .svc-portal-industry-cascader-menu');
+        await popup.waitFor({ state: 'visible', timeout: 8000 });
+        const search = popup.locator('input').first();
+        if (await search.count()) {
+          await search.fill(label);
+          await page.waitForTimeout(300);
+        }
+        await popup.getByText(label, { exact: true }).last().click();
+        await page.waitForTimeout(500);
+      }
+      await main.getByTestId('svc-rec-cultivate-start').click();
+      await page.getByRole('button', { name: '查看结果' }).click({ timeout: 90000 });
+      await expect(main.getByTestId('svc-rec-cultivate-list')).toBeVisible({ timeout: 60000 });
+      const resultCtx = main.getByTestId('svc-rec-cultivate-result');
+      const firstLink = main.getByTestId('svc-rec-cultivate-list').locator('.svc-rec-org-link').first();
+      await expect(firstLink).toBeVisible();
+      const nameBefore = (await firstLink.innerText()).trim();
+      await pickIndustry(resultCtx, '新能源');
+      const nameAfter = (await firstLink.innerText()).trim();
+      await expect(nameAfter).toBe(nameBefore);
   - note: 标题仍为「本土机构培育名单」
     assert: |-
-      await expect(page.getByText('本土机构培育名单', { exact: true })).toBeVisible();
+      await expect(page.locator('main').getByText('本土机构培育名单', { exact: true })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,51 +1,41 @@
 id: FUNC-02807
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02807
 priority: P1
-title: 清空所属产业链后标题改到产业级并出现开始分析
-story: US-CHAIN-PANORAMA-01
+tier: B
+title: 备选-清空所属产业链
 entry_id: chain-panorama
-tier: A
-preconditions:
-  - 所属产业链为「半导体与集成电路」
-locators:
-  context: '[data-testid="panorama-analysis-context"]'
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/panorama
-  - action: evaluate
-    note: 清除「所属产业链」的已选值
-    assert: |-
-      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      const chainField = ctx.locator('.policy-analysis-filter-row__field').filter({ hasText: '所属产业链' });
-      const view = chainField.locator('.industry-catalog-select .arco-select-view').first();
-      await expect(view).toBeVisible({ timeout: 10000 });
-      await expect(view).toContainText('半导体与集成电路', { timeout: 8000 });
-      await view.scrollIntoViewIfNeeded();
-      await view.hover();
-      await page.waitForTimeout(300);
-      const clearIcon = chainField.locator(
-        '.arco-select-view-clear-icon, .arco-select-view-clear-btn, .arco-select-view-icon .arco-icon-close',
-      ).first();
-      await clearIcon.click({ force: true, timeout: 5000 });
-      await page.waitForTimeout(600);
 expect:
   - note: 1、所属产业链为空
     assert: |-
+      const read = async (loc) =>
+        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
+      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
+      await page.waitForTimeout(2500);
       const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      const view = ctx
-        .locator('.policy-analysis-filter-row__field')
-        .filter({ hasText: '所属产业链' })
-        .locator('.industry-catalog-select .arco-select-view')
-        .first();
-      await expect(view).toBeVisible({ timeout: 8000 });
-      const txt = ((await view.innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (/半导体与集成电路/.test(txt)) {
-        throw new Error('所属产业链仍显示细分链: ' + txt);
+      await expect(ctx).toBeVisible({ timeout: 15000 });
+      const chainField = ctx.locator('.arco-form-item').filter({ hasText: '所属产业链' }).first();
+      await expect(chainField).toBeVisible({ timeout: 10000 });
+      const chainView = chainField.locator('.arco-select-view').first();
+      await chainView.scrollIntoViewIfNeeded();
+      const chainBefore = await read(chainView);
+      if (!/半导体与集成电路/.test(chainBefore)) {
+        throw new Error('前置：所属产业链非「半导体与集成电路」: ' + chainBefore);
       }
-      const emptyOk = /请选择产业链/.test(txt) || txt === '';
-      if (!emptyOk) {
-        throw new Error('所属产业链非空态: ' + txt);
+      await chainView.hover();
+      const clearBtn = chainField.locator('.arco-select-clear-icon').first();
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(1000);
+      const chainAfter = await read(chainView);
+      if (/半导体与集成电路/.test(chainAfter)) {
+        throw new Error('清除后所属产业链仍有值: ' + chainAfter);
       }
+      await expect(chainField.locator('input[placeholder="请选择产业链"]')).toBeVisible({ timeout: 5000 });
   - note: 2、主标题变为「新一代信息技术全景图谱」
     assert: |-
       await expect(page.locator('#panorama-workspace-title')).toHaveText('新一代信息技术全景图谱', {
@@ -53,6 +43,5 @@ expect:
       });
   - note: 3、出现「开始分析」
     assert: |-
-      const start = page.getByRole('button', { name: '开始分析' });
-      await expect(start.first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 10000 });
+on_fail: 截图 + 抄 X-Trace-Id

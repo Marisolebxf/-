@@ -9,44 +9,47 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
+  - action: evaluate
+    note: 选择产业「生物」
+    assert: |-
+      const main = page.locator('main');
+      await main.locator('.svc-portal-kpi__value').first().waitFor({ state: 'visible', timeout: 20000 });
+      const readKpiCounts = async () => {
+        const kpis = main.locator('.svc-portal-kpi');
+        const card1 = (await kpis.nth(0).locator('.svc-portal-kpi__value').innerText()).trim();
+        const card2 = (await kpis.nth(1).locator('.svc-portal-kpi__value').innerText()).trim();
+        const card3 = (await kpis.nth(2).locator('.svc-portal-kpi__hint').innerText()).trim();
+        return [card1, card2, card3];
+      };
+      const before = await readKpiCounts();
+      await page.evaluate((json) => {
+        document.documentElement.dataset.func05098KpiBefore = json;
+      }, JSON.stringify(before));
+      const cascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view');
+      await cascader.click({ timeout: 15000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.waitFor({ timeout: 8000 });
+      await popup
+        .locator('.arco-cascader-column')
+        .first()
+        .locator('.arco-cascader-option')
+        .filter({ has: page.getByText('生物', { exact: true }) })
+        .click({ timeout: 8000 });
+      await expect(main).toContainText('「生物」为上下文', { timeout: 15000 });
+      await page.waitForTimeout(800);
 expect:
-  - note: 1、三张卡的家数与选择前相同
+  - note: 三张卡的家数与选择前相同
     assert: |-
-      const readCardCounts = () =>
-        page.evaluate(() => {
-          const labels = ['中国机构约数', '已出省级行政区合计', '首位区域'];
-          return labels.map((label) => {
-            const title = [...document.querySelectorAll('*')].find(
-              (n) => n.children.length === 0 && n.textContent?.trim() === label,
-            );
-            if (!title) return '';
-            let node = title.parentElement;
-            for (let i = 0; i < 6 && node; i += 1) {
-              const m = (node.textContent || '').match(/([\d,]+)\s*家/);
-              if (m) return m[1];
-              node = node.parentElement;
-            }
-            return '';
-          });
-        });
-      const industrySelect = page
-        .locator('.arco-select-view')
-        .filter({ hasText: /产业/ })
-        .first();
-      await industrySelect.click();
-      await page.getByRole('option', { name: '全部产业' }).click();
-      await page.waitForTimeout(500);
-      const before = await readCardCounts();
-      await expect(before[0]).not.toBe('');
-      await expect(before[1]).not.toBe('');
-      await expect(before[2]).not.toBe('');
-      await industrySelect.click();
-      await page.getByRole('option', { name: '生物产业 / 生物医药' }).click();
-      await page.waitForTimeout(500);
-      const after = await readCardCounts();
-      await expect(after[0]).toBe(before[0]);
-      await expect(after[1]).toBe(before[1]);
-      await expect(after[2]).toBe(before[2]);
-  - note: 2、结论条仍写明不按产业切片
+      const main = page.locator('main');
+      await expect(main).toContainText('「生物」为上下文', { timeout: 15000 });
+      const raw = await page.locator('html').getAttribute('data-func05098-kpi-before');
+      if (!raw) throw new Error('missing kpi before snapshot');
+      const before = JSON.parse(raw);
+      const kpis = main.locator('.svc-portal-kpi');
+      await expect(kpis.nth(0).locator('.svc-portal-kpi__value')).toHaveText(before[0]);
+      await expect(kpis.nth(1).locator('.svc-portal-kpi__value')).toHaveText(before[1]);
+      await expect(kpis.nth(2).locator('.svc-portal-kpi__hint')).toHaveText(before[2]);
+  - note: 结论条仍写明不按产业切片
     assert: |-
-      await expect(page.getByText(/不按产业切片/)).toBeVisible()
+      await expect(page.locator('main')).toContainText('不按产业切片', { timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

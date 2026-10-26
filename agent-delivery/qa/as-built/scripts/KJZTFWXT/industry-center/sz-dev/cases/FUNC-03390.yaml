@@ -12,13 +12,26 @@ steps:
   - action: evaluate
     note: 展开分析对象下拉
     assert: |-
+      await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+      await page
+        .waitForResponse((r) => r.url().includes('/catalog') && r.request().method() === 'GET' && r.ok(), {
+          timeout: 25000,
+        })
+        .catch(() => {});
       const devRow = page.locator('main [data-testid="shenzhen-development-context-row"]');
-      await expect(devRow).toBeVisible({ timeout: 15000 });
-      await expect(devRow.getByText('分析对象')).toBeVisible();
-      const view = devRow.locator('.industry-catalog-select .arco-select-view').first();
-      await expect(view).toBeVisible({ timeout: 10000 });
+      await expect(devRow).toBeVisible({ timeout: 20000 });
+      const select = devRow.locator('.industry-catalog-select.arco-select').first();
+      await expect(select).toBeVisible({ timeout: 10000 });
+      const view = select.locator('.arco-select-view');
+      await view.scrollIntoViewIfNeeded();
       await view.click({ timeout: 10000 });
-      await page.waitForTimeout(400);
+      const input = view.locator('input');
+      if (await input.count()) {
+        await input.click({ timeout: 5000 });
+        await input.press('ArrowDown');
+      }
+      const popup = page.locator('.arco-select-dropdown:not(.arco-select-dropdown-hidden), .arco-trigger-popup:visible').last();
+      await expect(popup).toBeVisible({ timeout: 10000 });
 expect:
   - note: 1、可选产业共 15 个，名称见附录A
     assert: |-
@@ -39,8 +52,20 @@ expect:
         '未来空间',
         '未来健康',
       ];
-      const popup = page.locator('.arco-trigger-popup:visible').last();
-      await expect(popup).toBeVisible({ timeout: 8000 });
+      const devRow = page.locator('main [data-testid="shenzhen-development-context-row"]');
+      const select = devRow.locator('.industry-catalog-select.arco-select').first();
+      const view = select.locator('.arco-select-view');
+      let popup = page.locator('.arco-select-dropdown:not(.arco-select-dropdown-hidden)').last();
+      if (!(await popup.isVisible().catch(() => false))) {
+        await view.click({ timeout: 10000 });
+        const input = view.locator('input');
+        if (await input.count()) {
+          await input.click();
+          await input.press('ArrowDown');
+        }
+        popup = page.locator('.arco-select-dropdown:not(.arco-select-dropdown-hidden), .arco-trigger-popup:visible').last();
+      }
+      await expect(popup).toBeVisible({ timeout: 10000 });
       const options = await popup.locator('.arco-select-option').allTextContents();
       const normalized = [...new Set(options.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
       if (normalized.length !== 15) {

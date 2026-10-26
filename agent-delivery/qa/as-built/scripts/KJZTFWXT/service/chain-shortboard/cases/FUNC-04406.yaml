@@ -2,26 +2,27 @@ id: FUNC-04406
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04406
 priority: P1
 tier: B
-title: 分析记录已完成任务可查看过程页
+title: 备选-分析记录-已完成查看过程
 entry_id: svc-chain-shortboard
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=chain&tab=chain
-  - action: click
-    target: 分析记录
-  - action: click
-    target: 查看过程
-    within_row_status: 已完成
 expect:
-  - note: 进入该任务的过程页
+  - note: 1、进入该任务的过程页
     assert: |-
-      await expect(page).toHaveURL(/view=processing/)
-  - note: 状态为「已完成」
+      const main = page.locator('main');
+      await page.getByRole('tab', { name: '分析记录' }).click();
+      await expect(page).toHaveURL(/tab=records/);
+      const row = main.locator('tr').filter({ hasText: '已完成' }).first();
+      await expect(row).toBeVisible();
+      await row.getByRole('button', { name: '查看过程' }).click();
+      await expect(page.getByRole('heading', { name: '服务链短板分析生成中' })).toBeVisible();
+  - note: 2、状态为「已完成」
     assert: |-
-      await expect(page.getByText('已完成', { exact: true }).first()).toBeVisible()
-  - note: 可见「查看结果」
+      await expect(page.locator('main').getByText('已完成', { exact: true })).toBeVisible();
+  - note: 3、可见「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible()
+      await expect(page.locator('main').getByRole('button', { name: '查看结果' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

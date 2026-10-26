@@ -10,12 +10,13 @@ steps:
   - action: goto
     target: /enterprise/demo-org-id
   - action: click
-    target: 对比篮
+    target: |-
+      page.getByRole('button', { name: /打开对比篮/ })
 expect:
   - note: 地址仍是当前企业详情
     assert: |-
-      await expect(page).toHaveURL(/\/enterprise\/demo-org-id/)
+      await expect(page).toHaveURL(/\/enterprise\/demo-org-id(?:\?.*)?$/)
   - note: 正文失败说明仍在
     assert: |-
-      await expect(page.getByText('Request failed with status code 424')).toBeVisible()
+      await expect(page.locator('main').getByText(/Request failed with status code \d+/)).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

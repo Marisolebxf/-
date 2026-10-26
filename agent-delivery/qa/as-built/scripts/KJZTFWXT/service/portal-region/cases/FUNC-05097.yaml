@@ -1,6 +1,6 @@
 id: FUNC-05097
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05097
-priority: P0
+priority: P1
 tier: B
 title: 主流程-生物的产业链选项
 entry_id: svc-portal-region
@@ -9,19 +9,34 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
-expect:
-  - note: 1、产业链选项共 2 个，名称见附录 B
+  - action: wait
+    timeout_ms: 800
+  - action: evaluate
+    note: 选择产业「生物」
     assert: |-
-      const regionPage = page.locator('div').filter({ has: page.getByRole('heading', { name: '服务机构区域分布', exact: true }) }).last();
-      await regionPage.locator('.arco-select-view').first().click();
-      await page.locator('.arco-select-popup').getByText('生物', { exact: true }).click();
-      const chainRow = regionPage
-        .locator('div')
-        .filter({ has: page.getByText('生物产业 / 生物医药', { exact: true }) })
-        .first();
-      await chainRow.locator('.arco-select-view').click();
-      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      await expect(options).toHaveCount(2);
-      await expect(options.getByText('生物医药与生命健康', { exact: true })).toBeVisible();
-      await expect(options.getByText('高端医疗器械', { exact: true })).toBeVisible();
+      await page.getByLabel('产业集群与产业筛选').click({ timeout: 15000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.waitFor({ timeout: 8000 });
+      const clusterCol = popup.locator('.arco-cascader-column').first();
+      await clusterCol.getByText('生物', { exact: true }).click({ timeout: 8000 });
+      const l0Col = popup.locator('.arco-cascader-column').nth(1);
+      await l0Col.waitFor({ state: 'visible', timeout: 8000 });
+      await l0Col.locator('.arco-cascader-option').first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+  - action: evaluate
+    note: 展开产业链下拉
+    assert: |-
+      await page.getByLabel('产业集群与产业筛选').click({ timeout: 15000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.waitFor({ timeout: 8000 });
+      const clusterCol = popup.locator('.arco-cascader-column').first();
+      await clusterCol.getByText('生物', { exact: true }).click({ timeout: 8000 });
+      await popup.locator('.arco-cascader-column').nth(1).waitFor({ state: 'visible', timeout: 8000 });
+expect:
+  - note: 产业链选项共 2 个，名称见附录 B
+    assert: |-
+      const l0Col = page.locator('.arco-cascader-popup:visible').locator('.arco-cascader-column').nth(1);
+      await expect(l0Col.locator('.arco-cascader-option')).toHaveCount(2, { timeout: 8000 });
+      await expect(l0Col.getByText('生物医药与生命健康', { exact: true })).toBeVisible();
+      await expect(l0Col.getByText('高端医疗器械', { exact: true })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id
