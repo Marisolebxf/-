@@ -32,6 +32,13 @@ description: >
 - Java / 编排层不调 LLM、不透传 Key；客户端放算法 Common；密钥仅集群 Secret。
 - **禁止**：编数字、因果乱推、把口径锁死字段（白名单短语/已闭合公式）交给模型。
 
+## Prompt 统一管理（多场景硬约束）
+
+- **存放**：`lumen-algo-py` Common 统一目录（建议 `lumen_common/prompts/`），版本化文件（`{domain}.{capability}.vN.txt`）；代码只引用 prompt_pack id+版本。
+- **禁止**：在各业务 `.py` 内联长 system/user 字符串（难维护；政策内联为历史债，新实现不跟抄）。
+- **质量**：按**数据科学家/产业分析顾问**口径撰写——只依事实包归纳，禁空话/营销腔/因果臆断/编数；改语义必须升版本 + 金标样例。
+- 真源细则：`05.3.1` §5.6。
+
 ## 产业链特判
 
 `lumen-algo-py` chain 域已有 narrate as-built（如 panorama / key_link / bottleneck 等）。默认产出是 **as-built ↔ 金样契约差距清单**，不是从零发明新链路。核对：是否只改 text、事实包边界、失败是否打 failed、无 Key 行为。
