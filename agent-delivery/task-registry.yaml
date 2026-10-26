@@ -40802,8 +40802,13 @@ tasks:
       - "强度 ponytail full"
     update_time: "2026-10-26T18:44:48+08:00"
   - id: POLICY-DDL-CHECK-L04
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-26T12:00:28.517Z"
+    last_seen_at: "2026-10-26T12:00:28.517Z"
+    lock_until: "2026-10-27T12:00:28.517Z"
+    claimed_by: "agent:data-agent"
     title: "核对政策建表文档与 demo、产线两库结构一致"
-    status: "backlog"
+    status: "in_progress"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -40814,8 +40819,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: |
-      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只核对，不改库。总控要求 ALIGN-L03 与 POLICY-DDL-BASE-ALIGN-L08 都到联调闸门才升本叶。核对范围含两库 policy_base_info 与 dwd.md 目标 CREATE 一致。registry 的 depends_on 仍只有 ALIGN-L03（工具不能追加依赖），以总控为准。
+    note: "对照 ads.md 与 dwd.md 的 CREATE。旧表 policy_base_info_pre_20261026 不是结构真源。DWD 没有 policy_text_parse 时只记录，不建表。"
     depends_on:
       - "POLICY-DDL-ALIGN-L03"
     design_refs:
@@ -40824,7 +40828,7 @@ tasks:
       - "逐表对照 ads.md、dwd.md 的 CREATE 与 demo_gkxlumenx_*、gkxlumenx_* 的 information_schema：列名、类型、空值、默认值、索引、注释、排序规则一致，只有库名不同"
       - "不一致的表在 handoff 逐条列出，不在本叶再改库"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md，含架构合规与 cost 四字段"
-    update_time: "2026-10-26T17:05:11+08:00"
+    update_time: "2026-10-26T20:00:32+08:00"
   - id: POLICY-DDL-CODE-L05
     model_used: "grok-4.7"
     evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-CODE-L05.md"
@@ -40959,10 +40963,19 @@ tasks:
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-BASE-CODE-L07.md，含 ponytail 行、架构合规与 cost 四字段；强度 ponytail full"
     update_time: "2026-10-26T19:12:53+08:00"
   - id: POLICY-DDL-BASE-ALIGN-L08
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-BASE-ALIGN-L08.md"
+    cost_warn: "green"
+    actual_cost: 0
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-26T11:55:10.458Z"
+    last_seen_at: "2026-10-26T11:55:10.458Z"
+    lock_until: "2026-10-27T11:55:10.458Z"
+    claimed_by: "agent:data-agent"
     blocked_by: |
       demo policy_base_info 现网 20000 行的 source_plane 没有可回填值。SPEC 禁止从 region、ext1、level 推导，也不指定 domestic 或 global。目标列 NOT NULL，未填不能改列。等 human:淮政玮 指定这 20000 行的 source_plane 后再开工。产线 0 行只缺 is_history，不挡。
     title: "demo policy_base_info 列集与排序规则一次对齐产线"
-    status: "blocked"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -40973,8 +40986,7 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 60000
-    note: |
-      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。SPEC 与 CODE 到联调闸门、ALIGN-L03 到联调闸门之后才开工。policy_base_info 改列集由 human:淮政玮 直接改，不再升级李伟；总控作业表为准。不把产线改回 37 列，不 DROP 表。口令不进 git 和 handoff。强度 ponytail full。
+    note: "联调通过。技术任务闸门为待签收，不标 done。"
     depends_on:
       - "POLICY-DDL-BASE-SPEC-L06"
       - "POLICY-DDL-BASE-CODE-L07"
@@ -40987,7 +40999,7 @@ tasks:
       - "产线不改回 37 列；产线已是目标列集则只核对。不 DROP 表。现网行按 SPEC 迁移"
       - "改主键、唯一键、列类型或删列之前，handoff 有 human:李伟 的确认"
       - "handoff 含改前改后行数、丢弃列、回填列、information_schema 快照，以及架构合规与 cost 四字段。强度 ponytail full"
-    update_time: "2026-10-26T19:13:00+08:00"
+    update_time: "2026-10-26T20:00:19+08:00"
   - id: POLICY-DDL-GDF-SYNC-L09
     title: "政策派单包从 dwd.md/ads.md 复制建表语句并通过签收自检"
     status: "backlog"

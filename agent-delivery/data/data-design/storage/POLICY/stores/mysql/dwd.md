@@ -26,7 +26,7 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 
 `content`、`policy_support`、`keywords`、`keypoints`、`pedigree` 清洗时不得截断。`is_deleted=0` 仍是下游过滤条件。`is_history` 为 NULL 时视为当前，取数不过滤。国内与国际同表，平面看 `source_plane`。
 
-2026-10-26 现网：`demo_gkxlumenx_dwd.policy_base_info` 仍是旧 37 列，表级 `utf8mb4_general_ci`，20,000 行。`gkxlumenx_dwd.policy_base_info` 已是本 CREATE 去掉 `is_history` 的列集，0 行，不要改回 37 列。改列集在 `POLICY-DDL-BASE-ALIGN-L08`，由 `human:淮政玮` 直接改。交叉表和行回填见 `POLICY-DDL-BASE-SPEC-L06`。
+2026-10-26 现网：`demo_gkxlumenx_dwd.policy_base_info` 与 `gkxlumenx_dwd.policy_base_info` 都已是上面这份 CREATE，表级 `utf8mb4_0900_ai_ci`。demo 20,000 行的 `source_plane` 整批为 `domestic`（human:淮政玮 选定，不从地区或旧列推导）。产线 0 行。旧 37 列留在 `demo_gkxlumenx_dwd.policy_base_info_pre_20261026`，不作为结构真源，也不写回产线。交叉表和行回填见 `POLICY-DDL-BASE-SPEC-L06`。
 
 ```sql
 CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_base_info` (
