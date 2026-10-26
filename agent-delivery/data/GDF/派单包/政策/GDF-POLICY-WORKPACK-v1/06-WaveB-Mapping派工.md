@@ -6,7 +6,7 @@
 
 ## 1. 触发条件
 
-1. Wave A 两张 P0 表贴源验收通过（行数对账 + `is_deleted`/`is_history` 过滤一致）  
+1. Wave A 两张 P0 表贴源验收通过（行数对账含已删除行和历史行；取数无行过滤。`is_deleted`、`is_history` 与源一致进入 ODS，再写入 DWD）  
 2. 可写 `gkxlumenx_dwd`  
 3. 现网/目标结构已对照 `10` 快照（缺列先 ALTER，禁止按 Demo as-built 灌假列）
 

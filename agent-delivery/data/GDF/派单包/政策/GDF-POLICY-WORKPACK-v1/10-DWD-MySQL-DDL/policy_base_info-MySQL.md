@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `policy_base_info` (
   `etl_batch_id` varchar(64) DEFAULT NULL,
   `ods_updated_time` datetime DEFAULT NULL,
   `is_deleted` smallint NOT NULL DEFAULT 0,
+  `is_history` int DEFAULT NULL COMMENT '0当前，1历史；NULL视为当前。取数不过滤',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -69,5 +70,6 @@ CREATE TABLE IF NOT EXISTS `policy_base_info` (
 | `gis_location` / `sci_tech_attribute` | **不要求**建；禁止假填 |
 | `related_entities` / `factors` / `elements` | 算法链燃料，**本包不写**（无 ODS 列） |
 | `ext1`–`ext5` | 本包不写正名数据 |
+| 无 `is_history` | **必有**。源列原样映射；`NULL` 视为当前 |
 
 `content` / `policy_support` / `keywords` / `keypoints` / `pedigree` 清洗时不得截断。
