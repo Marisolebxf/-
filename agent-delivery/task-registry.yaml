@@ -40732,6 +40732,8 @@ tasks:
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-IMPACT-L02.md，含架构合规与 cost 四字段"
     update_time: "2026-10-26T17:42:30+08:00"
   - id: PORTAL-ENT-DEV-SRS-API-L01
+    evidence: |
+      handoff: agent-handoffs/系统集成-SYSINT/SYSINT-03-01A-JAVA-L01.md（§8.1 列表接口文档/§8.2 bugbot 记录）| seed SQL: db/9y_portal_ent_dev_seed.sql 已推 origin/dev commit 79312d2（enterprise_distribution 四维度灌数/enterprise_year_stat 全国+深圳+13 链趋势/enterprise_chain_kpi 产业 KPI/enterprise_qualification_matrix 资质矩阵，幂等可重跑）| 编码规范（用户确认）：region_id 三分约定——国内国标码（dim.code_region）/海外 ISO 三字码（dim.code_country 19 国 G20）/城市群 CU 码；不下发 lat/lng（前端 REGION_CENTER 字典按 region_id 落点）；ADS region_code 中文脏值灌数时刷标准码 | 已验证: DDL 12/12 表（database-mcp）；页面轨 401 fail-closed 无/乱 token（sso check-token 链路通 UC）；机器轨 Api-Key 直连 200；OpenAPI 9 端点；search 免鉴权/cms-ops fail-closed 符合设计 | 待办: ①用户执行 db/9y_portal_ent_dev_seed.sql（跳板机 IP 不在 MySQL 白名单，agent 无法代跑）②新 token（昨日 token 已过期，UC 返回访问令牌已过期）后跑带 token 全链路（建→发→下架→审计）
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T10:56:07.774Z"
     last_seen_at: "2026-10-26T10:56:07.774Z"
@@ -40764,7 +40766,7 @@ tasks:
       - "明星 patent_count/rd_ratio 由门户相关接口返回，不依赖 #1 检索"
       - "与 SYSINT-04-04-L01 联调：USE_MOCK=false 核心区块非空或明确空态契约"
       - "handoff + 架构合规自检 + cost 四字段"
-    update_time: "2026-10-26T18:56:28+08:00"
+    update_time: "2026-10-26T19:56:16+08:00"
 
   - id: POLICY-DDL-ALIGN-L03
     model_used: "grok-4.7"
@@ -41149,13 +41151,19 @@ tasks:
       - "handoff + 观测补记指引（实现后回写 05.3.1 §5.0/§7 与 05.3.2 ENT-NARRATE-01）"
     update_time: "2026-10-26T19:25:09+08:00"
   - id: LUMEN-ENT-EVAL-REPORT-WIRE-L01
+    cost_warn: "green"
+    actual_tokens: 90000
+    actual_cost: 0.4
+    model_used: "glm-5.3-Flash"
+    evidence: |
+      handoff: agent-handoffs/LUMEN-ENT-EVAL-REPORT-WIRE-L01.md（含架构合规自检）；自检: repos/lumen-ui-topic/scripts/eval-report-findings.test.mts 5/5 pass（node --test + alias-loader 直测真源）；三绿: type-check/eslint+build/相邻自检 17/17；代码停 lumen-ui-topic 本地待人工验收（AGENTS.md 闸门）；观测补记: 05.3.1 v0.5（§5.0 报告行 ❌→✅）、05.3.2 v1.0（ENT-NARRATE-05 ✅ 关项）
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T10:40:36.170Z"
     last_seen_at: "2026-10-26T10:40:36.170Z"
     lock_until: "2026-10-26T14:40:36.170Z"
     claimed_by: "agent:frontend-agent"
     title: "企业评估报告 — 关键发现接 gapText/diagnosisText（ENT-NARRATE-05 路径 A）"
-    status: "in_progress"
+    status: "integration"
     agent: "frontend-agent"
     epic: "E-ENT-SCRUM-PDR"
     priority: "P0"
@@ -41165,7 +41173,7 @@ tasks:
     effort_points: "3"
     difficulty: "S"
     estimated_tokens: 60000
-    note: "监管人已拍板路径 A（2026-10-26）；路径 B summary.findings[] 不采纳。可与 narrate 并行开发（先接线规则稿亦可验）。"
+    note: "FE 编码完工：handoff + 观测补记（05.3.1 §5.0 报告行 ❌→✅ / 05.3.2 ENT-NARRATE-05 关项）已落本地，自检 5/5 + 三绿；代码与文档均停本地待 human:徐滕强 人工验收，验收通过后 push 触发 AV-0"
     depends_on: []
     touched_files:
       - "src/components/enterprise/evaluation/evalReportDocument.ts"
@@ -41177,7 +41185,7 @@ tasks:
       - "无后端稿或 narration skipped 时退 FE 规则两句（领先者/分差）；USE_MOCK=false 禁 fixture 填文案"
       - "与 LUMEN-ENT-EVAL-NARRATE-L01 同批可验：结果页润色稿与报告关键发现同源（竞争力弱行本已接，回归不破坏）"
       - "handoff + 观测补记：05.3.1 §5.0 报告行 ❌→✅；05.3.2 ENT-NARRATE-05 关项"
-    update_time: "2026-10-26T18:51:27+08:00"
+    update_time: "2026-10-26T20:06:03+08:00"
   - id: LUMEN-ENT-PAIN-NARRATE-L01
     title: "企业痛难点 — narrate_pain 共性问题四格润色"
     status: "backlog"
