@@ -12,19 +12,24 @@
 
 ## 0. 地图分布 `map_data` 与坐标
 
-**结论：接口不必传 `lat`/`lng`。**
+**结论：`map_data[]` 应提供 `lat` / `lng`（WGS84 或与地图底图一致的坐标系）；前端仅在字段缺失或为空时兜底。**
 
-门户 `DevelopmentOverviewPanel` 将 `#65` 的 `map_data[]` 转为地图点时使用前端字典 `regionCenter(region_id, region_name)`（见 `portalFormat.ts` 的 `REGION_CENTER`）。接口只需：
+| 优先级 | 来源 |
+|--------|------|
+| 1 | `map_data[].lat`、`map_data[].lng`（后端按区划质心或业务聚合中心计算，**推荐主路径**） |
+| 2 | `region_id` / `region_name` + 前端字典 `regionCenter()`（`portalFormat.ts` 的 `REGION_CENTER`，**仅兜底**） |
 
-- `region_id` 或 `region_name`（与字典/行政区划码表可对齐）
+每行仍需：
+
+- `region_id`、`region_name`
 - `enterprise_count`
-- （可选）`research_staff_count` — 列表列若保留「科研人员数」则需要；**不返回 `industry_coverage_count`**
+- （可选）`research_staff_count` — 列表若保留「科研人员数」；**不返回 `industry_coverage_count`**
 
-无法解析到中心的行：地图不画点，列表仍可展示；产品已接受。
+接口与字典均无法落点时：地图不画点，列表仍可展示。
 
-热力层与圆点共用同一 `mapPoints`，同样依赖地域中心，非接口经纬度。
+热力层与圆点共用同一套解析后的 `[lat, lng]`。
 
-**接口仍需补：** 入参 **`chain_code`（或等价产业维度）**，使分布为「各未来产业内」；`region_level` / 全球·全国·深圳等与现 `#65` 一致即可。
+**接口仍需补：** 入参 **`chain_code`（或等价产业维度）**；`region_level` / 全球·全国·深圳等与现 `#65` 一致。契约需在 catalog / DTO 中显式增加 `map_data[].lat`、`map_data[].lng`（`BigDecimal` 或 `Double`，可空）。
 
 ---
 
@@ -35,7 +40,7 @@
 | **#62** | 实包常为零；科研口径前端「不动」 | 保持字段；**产业内** `enterprise_total` / `research_staff_total` 由后端按门户产业筛选语义聚合（与级联 `chain_code` 或文档约定一致）。**不新增** `industry_coverage` 展示依赖。 |
 | **#63** | 产业对比 | `items[]`：`chain_code`、`chain_name`、`enterprise_count`；供排名与选中产业汇总。 |
 | **#64** | 需按产业多年趋势 | 入参 **`chain_code`（可多次请求或支持多 code）**；`items[]`：`year`、`enterprise_count`（或 `cumulative_count`，与前端约定其一）。**不限制**前端最多选 2 个产业。 |
-| **#65** | 无产业入参、`map_data` 常空 | 入参增加 **`chain_code`**（及现有 `region_level` 等）；`map_data[]`：`region_id`、`region_name`、`enterprise_count`、可选 `research_staff_count`；**不传** `industry_coverage_count`。 |
+| **#65** | 无产业入参、`map_data` 常空 | 入参增加 **`chain_code`**（及现有 `region_level` 等）；`map_data[]`：`region_id`、`region_name`、**`lat`、`lng`**、`enterprise_count`、可选 `research_staff_count`；**不传** `industry_coverage_count`。 |
 
 **Java：** `ENT-JAVA-OVERVIEW-STATS` 门面透传 + DTO 扩展。  
 **Python/ADS：** 聚合灌数（`INB17xx` 等与 `#138 meta/chains` 一致）。
