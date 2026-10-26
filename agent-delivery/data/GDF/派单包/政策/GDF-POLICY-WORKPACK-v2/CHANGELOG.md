@@ -1,5 +1,11 @@
 # CHANGELOG · GDF-POLICY-WORKPACK
 
+## v2.0.3 · 2026-10-26
+
+- 增加 `17` / `18` / `19` / `20`。MDC、Graph、MRC 分开写。口径未闭合的指标只列表，不建作业、不建表、不灌数。
+- 第一批 STAT 的落表名写在 `17`。`scripts/mdc/` 本版不带，生成任务 `GDF-POLICY-MDC-STAT-L01`。未进包前 GDF 不要建 MDC 作业。
+- 不复制 `metrics/repro/`。不改 `09`，不重开 MAP-01。C1 / C2 仍按 `12`。
+
 ## v2.0.2 · 2026-10-26
 
 - Wave C 改成 GDF 可配置的两份 Python：`scripts/policy_c1_industry.py`、`scripts/policy_c2_clauses.py`。`12` 写总流程、C1、C2 三张流程图和逐步说明。

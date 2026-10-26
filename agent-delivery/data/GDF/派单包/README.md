@@ -8,7 +8,7 @@
 | [企业/GDF-ENT-WORKPACK-v4](企业/GDF-ENT-WORKPACK-v4/) | 贴源 + Mapping + **写 ES**（`gkx_enterprise`）+ 图谱日批触发；**10-19 基线**（stock_base 移出 / 国外母子换源 `dwd_agg_subsidiary_info` / 专利侧表 +5 mirror_only） | **v4.0**（2026-10-20）· **现行企业包（可对外投递）** · Owner **徐滕强** · 含 `16-缺口分析回复工作包`（继承） |
 | [产业链/GDF-CHAIN-WORKPACK-v2](产业链/GDF-CHAIN-WORKPACK-v2/) | 产业链四表贴源+洗链树/`entity_rel`；分析六表只贴不洗；**10-19 基线对齐**（四表行数不变；链树 live 实证 `parent_name` 列） | **v2.0**（2026-10-20）· **现行产业链包（可对外投递）** |
 | [企业/GDF-ENT-WORKPACK-v3](企业/GDF-ENT-WORKPACK-v3/) | v3.1.6（2026-10-20 同日早间）：缺口分析回复 + ODS 建表 + 加工逻辑补遗 | **历史包**（加工逻辑被 v4 全继承；仅 stock_base/国外母子/专利侧表三项被覆盖） |
-| [政策/GDF-POLICY-WORKPACK-v2](政策/GDF-POLICY-WORKPACK-v2/) | 贴源 + Mapping → 一张 `policy_base_info`；B 成功后由 GDF Python 节点跑 `scripts/` 里的产业抽取与条款结构化。取数不过滤 `is_deleted` / `is_history`。不含 ES | **v2.0.2**（2026-10-26）· **现行政策包** · Owner **淮政玮** · 任务 `GDF-POLICY-WORKPACK-V2-L01` |
+| [政策/GDF-POLICY-WORKPACK-v2](政策/GDF-POLICY-WORKPACK-v2/) | 贴源 + Mapping → 一张 `policy_base_info`；B 成功后由 GDF Python 节点跑 `scripts/` 里的产业抽取与条款结构化。`17`–`20` 写 MDC / Graph / MRC / 灌数闸门，MDC 脚本未进包。取数不过滤 `is_deleted` / `is_history`。不含 ES | **v2.0.3**（2026-10-26）· **现行政策包** · Owner **淮政玮** · 任务 `GDF-POLICY-WORKPACK-V2-L01` |
 | [政策/GDF-POLICY-WORKPACK-v1](政策/GDF-POLICY-WORKPACK-v1/) | 历史包。v2 原样继承其 Wave A/B（含 v1.0.4 的删除/历史贯穿） | **v1.0.4** · **历史 / 禁止当现行施工包** · Owner **淮政玮** |
 | [企业/GDF-ENT-WORKPACK-v2](企业/GDF-ENT-WORKPACK-v2/) | 贴源 + MySQL DDL + Mapping 明细 | **v2.1**（2026-08-13）· **历史 / 禁止施工** |
 | [企业/GDF-ENT-WORKPACK-v1](企业/GDF-ENT-WORKPACK-v1/) | 历史包；DWD 指针误指旧 PG 稿 | v1.3 · **建表已作废** |
