@@ -40707,7 +40707,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。DOC 与 IMPACT 都到联调闸门，且拟 ALTER 未超出总控，才允许开工。口令不进 git 和 handoff。"
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。DOC、IMPACT、CODE-L05 都到联调闸门，且拟 ALTER 未超出总控，才允许开工。口令不进 git 和 handoff。policy_base_info 不改列集；demo 该表只 CONVERT 到 utf8mb4_0900_ai_ci，CODE-L05 未到联调闸门则跳过。registry DoD「不改 policy_base_info」按总控 §1.7 收窄为不改列集。
     depends_on:
       - "POLICY-DDL-DOC-L01"
       - "POLICY-DDL-IMPACT-L02"
@@ -40719,7 +40720,7 @@ tasks:
       - "先改 demo_gkxlumenx_*，再改 gkxlumenx_*"
       - "handoff 含改前改后 information_schema 快照，以及架构合规与 cost 四字段"
       - "强度 ponytail full"
-    update_time: "2026-10-26T16:35:39+08:00"
+    update_time: "2026-10-26T16:49:19+08:00"
   - id: POLICY-DDL-CHECK-L04
     title: "核对政策建表文档与 demo、产线两库结构一致"
     status: "backlog"
@@ -40743,3 +40744,41 @@ tasks:
       - "不一致的表在 handoff 逐条列出，不在本叶再改库"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md，含架构合规与 cost 四字段"
     update_time: "2026-10-26T16:35:45+08:00"
+  - id: POLICY-DDL-CODE-L05
+    title: "政策代码的排序规则改为 utf8mb4_0900_ai_ci"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 50000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。线上 demo 相关表排序规则严格 utf8mb4_0900_ai_ci。本叶只改代码，不 ALTER。ALIGN 对 demo policy_base_info 做 CONVERT 之前，本叶须到联调闸门。强度 ponytail full。"
+    depends_on:
+      - "POLICY-DDL-CONV-L00"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "repos/demo-algo-ent-analysis/polan/clause_job.py"
+      - "repos/demo-algo-ent-analysis/polan/industry_job.py"
+      - "repos/demo-algo-ent-analysis/polan/industry_enrich.py"
+      - "repos/demo-algo-ent-analysis/tests/test_policy_clause_job.py"
+      - "repos/demo-algo-ent-analysis/tests/test_policy_industry_rel.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/clause_job.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/industry_job.py"
+      - "repos/lumen-svc-platform/db/9x_gkxlumenx_cms.sql"
+      - "repos/lumen-svc-platform/gkxlumen-cms/src/main/java/com/topcomm/gkxlumen/cms/service/PolicyService.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "demo-algo-ent-analysis 的 polan/clause_job.py、polan/industry_job.py 里政策 policy_id 比较使用 utf8mb4_0900_ai_ci，不再写死 utf8mb4_unicode_ci 或 utf8mb4_general_ci；对应测试断言一起改"
+      - "polan/industry_enrich.py 运行时对齐 policy_id 排序规则时，只收到 utf8mb4_0900_ai_ci，不改 policy_id 的类型和长度"
+      - "lumen-algo-py/vendor/entan-py 里同名的 clause_job.py、industry_job.py 与上面一致"
+      - "lumen-svc-platform 的 v_cms_pol 与 PolicyService 中 source_id = policy_id 的等值，在 demo policy_base_info 改为 utf8mb4_0900_ai_ci 后不报 1267；不改 CMS 表自身的排序规则"
+      - "不改 policy_base_info 列集，不改企业域 org_id 的 general_ci，不改 schema_mysql.sql，不在本叶 ALTER 数据库"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CODE-L05.md，含 ponytail 行、架构合规与 cost 四字段；强度 ponytail full"
+    update_time: "2026-10-26T16:49:14+08:00"

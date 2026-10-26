@@ -5,7 +5,7 @@
 > **监管人（授权后）**：`human:淮政玮`  
 > **升级人**：改列集、改主键、DROP、写 ODS / 供应库 `gkx` → `human:李伟`。  
 > **锁**：`lock_hours=24`  
-> **目标**：`ads.md` 与 `dwd.md` 里每张在册表有一份带注释的 MySQL `CREATE`；`demo_gkxlumenx_*` 与 `gkxlumenx_*` 同表同结构，只换库名；字符集 `utf8mb4`、排序规则 `utf8mb4_0900_ai_ci` 写成规约并在本批表上落地。  
+> **目标**：`ads.md` 与 `dwd.md` 里每张在册表有一份带注释的 MySQL `CREATE`；`demo_gkxlumenx_*` 与 `gkxlumenx_*` 同表同结构，只换库名；字符集 `utf8mb4`、排序规则 `utf8mb4_0900_ai_ci` 写成规约并在本批表上落地。线上 demo 相关表（含 `policy_base_info`）的排序规则也是这一套，不留 `general_ci` / `unicode_ci`。  
 > **模式**：长任务。规约：[`长任务执行规约.md`](../../长任务执行规约.md)。不套前端 A–E，无段 E 金路径。同仓同时只派一张 coding 单。  
 > **厚包**：本文件。薄条 = 各叶 registry DoD。`/goal` 必抄本路径。强度：文档叶不压完整性；改库叶 `ponytail full`。
 
@@ -14,7 +14,8 @@
 | 规约 | `gkx-orchestration` | `origin/dev` | `POLICY-DDL-CONV-L00` | 授权句之后才 ready |
 | 文档 CREATE | 同上 | 同上 | `POLICY-DDL-DOC-L01` | CONV 联调闸门 |
 | 影响扫描 | 同上 | 同上 | `POLICY-DDL-IMPACT-L02` | 授权后可与 DOC 并行（只读代码和库） |
-| 两库对齐 | 同上（改的是 MySQL，不改算法仓） | 同上 | `POLICY-DDL-ALIGN-L03` | DOC 与 IMPACT 都到联调闸门，且 IMPACT 写明拟 ALTER 清单 |
+| 排序规则代码 | `demo-algo-ent-analysis` 为主；同步 `lumen-algo-py` vendor 与 CMS 连接 | `origin/dev` | `POLICY-DDL-CODE-L05` | 授权后可与 DOC 并行。ALIGN 对 demo `policy_base_info` 做 CONVERT 前，本叶须到联调闸门 |
+| 两库对齐 | 同上（改的是 MySQL，不改算法仓） | 同上 | `POLICY-DDL-ALIGN-L03` | DOC、IMPACT、CODE 都到联调闸门，且 IMPACT 写明拟 ALTER 清单 |
 | 核对 | 同上 | 同上 | `POLICY-DDL-CHECK-L04` | ALIGN 联调闸门 |
 
 废作、不建单、不派：把 `policy_base_info` 的 demo 37 列或产线 44 列互相覆盖；用 PostgreSQL `schema_policy_ads.sql` 或旧稿 v1 §3 的类型当结构；用 `schema_mysql.sql` 再执行一遍；DROP 有数据的表；写 `gkxlumenx_ods` / 供应库 `gkx`。
@@ -31,7 +32,7 @@
 4. **两库一致**：同一张表在 `demo_gkxlumenx_ads` 与 `gkxlumenx_ads`（关联表再加两个 DWD 库）列集、类型、空值、默认值、索引、注释、排序规则相同，只换库名。文档里的 CREATE 写 `demo_gkxlumenx_*`。  
 5. **注释写在 CREATE 里**。列注释取自现有中文用途（`ads.md` 用途列、旧稿里仍对得上的 COMMENT、`policy_industry_rel` 已有注释）。对不上的列不编口径，注释写「现网 demo 有此列，口径待补」，并在 handoff 列出。  
 6. **规约**：上述 2–4 写成 `agent-delivery/data/data-design/storage/mysql-ddl-convention.md`，并在 `architecture-baseline.md` 加一条指针。从本批表执行。其它域已有表不在本管线批量改。  
-7. **不改** `policy_base_info` 的列集。demo 是 37 列 `utf8mb4_general_ci`，产线是 44 列 `utf8mb4_0900_ai_ci`（旧 37 列空壳已改名 `policy_base_info_retired_20261026`）。上一轮已定 37 列不作产线依据。本轮「与 demo 一致」不套到这张主表，直到另一次人拍板。
+7. **不改** `policy_base_info` 的列集。demo 仍是 37 列，产线仍是 44 列（旧 37 列空壳已改名 `policy_base_info_retired_20261026`）。37 列不作产线依据，两套列集不对拷。**排序规则不例外**：线上 `demo_gkxlumenx_*` 里本批相关表，含 demo 的 `policy_base_info`，表和全部字符列严格 `utf8mb4` / `utf8mb4_0900_ai_ci`。只 CONVERT 排序规则，不补列、不删列、不改类型、不改主键。写死 `utf8mb4_unicode_ci` 或 `utf8mb4_general_ci` 的政策代码不在 ALIGN 里改，见 `POLICY-DDL-CODE-L05`。ALIGN 登记表里「不改 policy_base_info」按本条收窄为不改列集。
 
 ## 2. 干法
 
@@ -41,9 +42,10 @@ CONV-L00 规约落盘
     │         dwd.md 的 policy_industry_rel 只补注释/排序规则
     └─并行─► IMPACT-L02  只读：谁 INSERT/SELECT 这些表，拟 ALTER 清单
                 │
-DOC + IMPACT 都到联调闸门
+DOC + IMPACT + CODE 都到联调闸门
                 │
                 └─► ALIGN-L03  先 demo 后产线。只 CONVERT 排序规则、补缺列、补注释。
+                      demo `policy_base_info` 只 CONVERT，不动 37 列。CODE 未到闸门则不做这张表。
                       不 DROP，不改列类型，不改主键。
                       │
                       └─► CHECK-L04  information_schema 与两份 md 逐表对上
@@ -60,6 +62,7 @@ DOC + IMPACT 都到联调闸门
 | `gkxlumenx_ads` | `policy_text_parse` | 补 `metric_id`、`update_time`（demo 有、产线没有），再补注释 |
 | `gkxlumenx_ads` | `policy_match`、`policy_simulate` | 补 `metric_id`，再补注释 |
 | `demo_gkxlumenx_dwd` / `demo_gkxlumenx_ads` / 两个产线库 | `policy_industry_rel` | 列已齐、表级已是 `0900_ai_ci`。把 `policy_id` 列上的 `utf8mb4_general_ci` 收到表级排序规则；注释与 `dwd.md` 对齐 |
+| `demo_gkxlumenx_dwd` | `policy_base_info` | 只 `CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci`。37 列不动。CODE-L05 未到联调闸门则跳过本行 |
 
 `AUTO_INCREMENT` 当前值不是结构，不写进真源 CREATE。
 
@@ -70,14 +73,14 @@ DOC + IMPACT 都到联调闸门
 - Java 现网读的是 `demo_gkxlumenx_ads`。本管线不改 Java 契约。多出来的可空列，具名 SELECT 可以忽略。  
 - `repos/lumen-algo-py/vendor/entan-py/scripts/mysql/schema_mysql.sql` 贴近产线缺列后的样子，不是 demo，也不是真源。`schema_policy_ads.sql` 是 PostgreSQL。两份都禁止再执行。本管线不改这两个文件，只在规约里声明作废为结构依据。  
 - DWD 里其余 `policy_*`（`policy_favorite`、`policy_effect_eval` 等）列数两边已经相同，且已是 `utf8mb4_0900_ai_ci`。不写进 `dwd.md`，本管线不 ALTER。  
-- `policy_base_info` 见 §1.7。动它会碰到 CMS 读 demo 37 列、产线 UK `(source_plane, policy_id)` 和已改名的空壳表。
+- `policy_base_info` 见 §1.7。列集不动。demo 这张表的排序规则改到 `utf8mb4_0900_ai_ci`。CMS 视图 `v_cms_pol` 和 `PolicyService` 用 `source_id = policy_id` 等值，主表改排序规则后会撞 1267；`clause_job.py` / `industry_job.py` 把 `policy_id` 写死成 `utf8mb4_unicode_ci`。这些改代码，归 `POLICY-DDL-CODE-L05`，ALIGN 不改算法仓和 Java。产线 44 列和已改名空壳表仍不动。
 
 ## 4. 开工顺序
 
 1. 人写授权句。  
 2. coordinator 只升 `POLICY-DDL-CONV-L00`。  
-3. CONV 到联调闸门后，升 DOC 与 IMPACT。DOC 不改库。IMPACT 只读。  
-4. 两叶都到联调闸门，且 IMPACT 的拟 ALTER 没有超出 §2 的表，才升 ALIGN。  
+3. CONV 到联调闸门后，升 DOC、IMPACT、CODE。DOC 不改库。IMPACT 只读。CODE 只改代码，不 ALTER。  
+4. 三叶都到联调闸门，且 IMPACT 的拟 ALTER 没有超出 §2 的表，才升 ALIGN。CODE 未到闸门时，ALIGN 不得 CONVERT demo `policy_base_info`。  
 5. ALIGN 的 handoff 有改前改后 `information_schema` 后，升 CHECK。  
 6. 签收可积压。`ready_to_sign` 不标 `done`。
 
