@@ -11,12 +11,11 @@ steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 选产业后查看「三大一级维度权重」表（用例步骤 1）
+    note: 同册 03488 前置：集群与产业各选一项（已选好一个产业）
 expect:
   - note: 1、三行依次为企业能力、学术生态、配套生态力，数据状态均为「可用」
     assert: |-
       const main = page.locator('main');
-      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
       const pickSelectOption = async (view) => {
         await view.click({ timeout: 8000, force: true });
         await page.waitForTimeout(400);
@@ -40,24 +39,28 @@ expect:
         await pickSelectOption(industryView.first());
       }
       await page.keyboard.press('Escape').catch(() => {});
+      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
       const table = main.locator('[data-testid="regional-competitiveness-weight-table"] .arco-table');
       await expect(table).toBeVisible({ timeout: 10000 });
       const DIMS = ['企业能力', '学术生态', '配套生态力'];
       for (const dim of DIMS) {
         const row = table.locator('tr').filter({ hasText: dim }).first();
         await expect(row).toBeVisible({ timeout: 8000 });
-        await expect(row.getByText('可用')).toBeVisible({ timeout: 8000 });
+        await expect(row.getByText('可用', { exact: true })).toBeVisible({ timeout: 8000 });
       }
-      globalThis.__func03503 = { tableReady: true };
   - note: 2、默认权重为 40、35、25
     assert: |-
-      if (!globalThis.__func03503?.tableReady) throw new Error('前置：维度表未就绪');
-      const labels = ['企业能力', '学术生态', '配套生态力'];
-      const expectW = ['40', '35', '25'];
-      for (let i = 0; i < 3; i++) {
-        const spin = page.locator(`main [aria-label="${labels[i]}权重"]`);
-        await expect(spin).toBeVisible({ timeout: 8000 });
-        await expect(spin).toHaveValue(expectW[i], { timeout: 8000 });
+      const table = page.locator('main [data-testid="regional-competitiveness-weight-table"] .arco-table');
+      const pairs = [
+        ['企业能力', '40'],
+        ['学术生态', '35'],
+        ['配套生态力', '25'],
+      ];
+      for (const [dim, weight] of pairs) {
+        const row = table.locator('tr').filter({ hasText: dim }).first();
+        await expect(row).toBeVisible({ timeout: 8000 });
+        const input = row.locator('.arco-input-number input').first();
+        await expect(input).toHaveValue(weight, { timeout: 8000 });
       }
   - note: 3、文案为「权重合计：100% · 校验通过」
     assert: |-

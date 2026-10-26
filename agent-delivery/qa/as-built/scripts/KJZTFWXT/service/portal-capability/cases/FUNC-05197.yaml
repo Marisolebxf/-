@@ -9,20 +9,36 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
+  - action: wait
+    for: 榜单加载
+    timeout_ms: 1500
   - action: click
-    assert: |-
-      await page.getByText('分析画像', { exact: true }).first().click()
+    target: 按钮 分析画像
 expect:
   - note: 基本信息中有机构类型
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('机构类型')).toBeVisible()
+      const main = page.locator('main');
+      const meta = ((await main.locator('.svc-portal-org__meta').first().textContent()) ?? '').trim();
+      const typeLabel = meta.split('·')[0]?.trim() ?? '';
+      if (!typeLabel) throw new Error('无法读取榜单行机构类型');
+      const basic = page.locator('section.svc-drawer-section').first();
+      await expect(basic).toBeVisible({ timeout: 15000 });
+      await expect(basic).toContainText(typeLabel);
   - note: 基本信息中有所在地
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('所在地')).toBeVisible()
+      const main = page.locator('main');
+      const meta = ((await main.locator('.svc-portal-org__meta').first().textContent()) ?? '').trim();
+      const location = meta.split('·')[1]?.trim() ?? '';
+      if (!location) throw new Error('无法读取榜单行所在地');
+      const basic = page.locator('section.svc-drawer-section').first();
+      await expect(basic).toBeVisible({ timeout: 15000 });
+      await expect(basic).toContainText(location);
   - note: 基本信息中有行业
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('行业')).toBeVisible()
+      const basic = page.locator('section.svc-drawer-section').first();
+      await expect(basic).toBeVisible({ timeout: 15000 });
+      const text = ((await basic.textContent()) ?? '').replace(/\s+/g, ' ');
+      const m = text.match(/行业[:：]?\s*([\u4e00-\u9fa5A-Za-z0-9（）()·、\-]{2,})/);
+      if (!m?.[1]) throw new Error('基本信息区未见行业取值');
+      await expect(basic).toContainText(m[1]);
 on_fail: 截图 + 抄 X-Trace-Id

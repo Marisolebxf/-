@@ -2,20 +2,16 @@ id: FUNC-03306
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03306
 priority: P0
 title: 当天同条件再次开始分析不新增任务
-story: US-CHAIN-SZ-01
 entry_id: chain-sz-compare
 tier: B
 preconditions:
   - 当天已对「人工智能与应用」及上海市、北京市成功分析过
-locators:
-  tab_config: tab「深圳产业情况分析对比」
-  tab_records: tab「分析记录」
-  start: button「开始分析」
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=comparison&tab=comparison
   - action: evaluate
-    note: 分析记录记条数→回配置→同产业沪京标杆→开始分析
+    note: 前置03288→记条数→回配置→同条件开始分析
 expect:
   - note: 1、进入标题为「深圳产业情况分析对比结果」的页面
     assert: |-
@@ -39,44 +35,86 @@ expect:
         await opt.click({ timeout: 8000 });
         await page.waitForTimeout(700);
       };
-      const pickBenchmarkCascader = async (cityRe) => {
+      const pickBenchmarkCascader = async (cityLabel) => {
         const view = main().locator('[data-testid="shenzhen-benchmark-ready-check"] .arco-cascader-view').first();
         await expect(view).toBeVisible({ timeout: 12000 });
         const cur = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (cityRe.test(cur)) return;
+        if (cur.includes(cityLabel)) return;
         await view.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
+        await page.waitForTimeout(800);
         const pop = page.locator('.arco-trigger-popup:visible').last();
-        let found = false;
-        for (let i = 0; i < 20; i++) {
-          const opts = pop.locator('.arco-cascader-option, .arco-cascader-column-item');
-          if (await opts.count()) {
-            const hit = opts.filter({ hasText: cityRe }).first();
-            if (await hit.count()) {
-              await hit.click({ timeout: 8000 });
-              found = true;
-              await page.waitForTimeout(500);
-              break;
-            }
-          }
-          await page.waitForTimeout(400);
-        }
-        if (!found) {
-          const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        await expect(pop).toBeVisible({ timeout: 10000 });
+        const popText = ((await pop.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (/暂无|无数据/.test(popText) || !popText.trim()) {
           await page.keyboard.press('Escape').catch(() => {});
-          if (/暂无|无数据/.test(popText) || !popText.trim()) {
-            throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
-          }
-          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03306：标杆无「' + String(cityRe) + '」');
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：标杆清单空');
         }
+        const hit = pop.getByText(cityLabel, { exact: true }).first();
+        if (!(await hit.count())) {
+          await page.keyboard.press('Escape').catch(() => {});
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03306：标杆无「' + cityLabel + '」');
+        }
+        await hit.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(400);
+        const after = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!after.includes(cityLabel)) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03306：标杆未回显「' + cityLabel + '」');
+        }
+      };
+      const assertBenchmarksReady = async () => {
+        const view = main().locator('[data-testid="shenzhen-benchmark-ready-check"] .arco-cascader-view').first();
+        const t = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (!/上海市/.test(t) || !/北京市/.test(t)) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-03306：沪京标杆未选齐');
+        }
+        await expect(main().getByText('请选择 1～5 个标杆区域')).toHaveCount(0);
       };
       const selectSameConditions = async () => {
         await pickSelectOption('集群', /^新一代信息技术$/);
         await pickSelectOption('产业', /^人工智能与应用$/);
-        await pickBenchmarkCascader(/^上海市$/);
-        await pickBenchmarkCascader(/^北京市$/);
+        await pickBenchmarkCascader('上海市');
+        await pickBenchmarkCascader('北京市');
+        await assertBenchmarksReady();
+      };
+      const openViewResultIfShown = async () => {
+        for (const name of ['查看分析结果', '查看结果']) {
+          const btn = page.getByRole('button', { name }).first();
+          if (await btn.isVisible().catch(() => false)) {
+            await btn.click({ timeout: 10000 });
+            await page.waitForTimeout(1500);
+          }
+        }
+      };
+      const isResultPage = async () => {
+        const h = page.getByRole('heading', { name: RESULT_TITLE });
+        if (await h.first().isVisible().catch(() => false)) return true;
+        if (await page.getByText(RESULT_TITLE, { exact: true }).first().isVisible().catch(() => false)) return true;
+        return new RegExp(RESULT_TITLE).test(await main().innerText().catch(() => ''));
+      };
+      const waitForResult = async () => {
+        let last = '';
+        for (let i = 0; i < 60; i++) {
+          await openViewResultIfShown();
+          if (await isResultPage()) return;
+          await page.waitForTimeout(i < 8 ? 600 : 1200);
+          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (/不会自动跳转|今日已分析|当天已分析|分析结果已生成/.test(last)) {
+            await openViewResultIfShown();
+            if (await isResultPage()) return;
+          }
+        }
+        throw new Error('开始分析后未进入结果页标题：' + last.slice(0, 280));
+      };
+      const runStartAnalysisOnce = async () => {
+        const start = page.getByRole('button', { name: '开始分析' }).first();
+        await expect(start).toBeVisible({ timeout: 10000 });
+        if (await start.isDisabled()) {
+          throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：开始分析仍 disabled');
+        }
+        await start.click({ timeout: 15000 });
+        await waitForResult();
       };
       const readRecordCount = async () => {
         await page.getByRole('tab', { name: '分析记录' }).first().click({ timeout: 10000 });
@@ -88,6 +126,7 @@ expect:
         const rows = page.locator('.arco-table-body tr.arco-table-tr');
         const n = await rows.count();
         if (n > 0) return n;
+        if (/暂无数据/.test(t)) return 0;
         throw new Error('ENV-CHAIN-SZ-COMPARE-03306：分析记录无法读取条数');
       };
       const goConfigTab = async () => {
@@ -95,49 +134,24 @@ expect:
         await page.waitForTimeout(800);
         await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 12000 });
       };
-      const isResultPage = async () => {
-        if (await page.getByRole('heading', { name: RESULT_TITLE, level: 1 }).isVisible().catch(() => false)) return true;
-        if (await page.getByText(RESULT_TITLE).first().isVisible().catch(() => false)) return true;
-        return new RegExp(RESULT_TITLE).test(await main().innerText().catch(() => ''));
-      };
-      const openViewResultIfShown = async () => {
-        for (const name of ['查看分析结果', '查看结果']) {
-          const btn = page.getByRole('button', { name }).first();
-          if (await btn.isVisible().catch(() => false)) {
-            await btn.click({ timeout: 10000 });
-            await page.waitForTimeout(2000);
-          }
-        }
-      };
-      const waitForResult = async () => {
-        let last = '';
-        for (let i = 0; i < 90; i++) {
-          await page.waitForTimeout(i < 6 ? 800 : 1500);
-          if (await isResultPage()) return;
-          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (/分析结果已生成|已打开结果|今日已分析过相同条件|当天已分析|不会自动跳转/.test(last)) {
-            await openViewResultIfShown();
-            if (await isResultPage()) return;
-          }
-          await openViewResultIfShown();
-        }
-        throw new Error('开始分析后未在超时内到达结果页：' + last.slice(0, 240));
-      };
       await expect(page.getByRole('heading', { name: '深圳产业情况分析对比', level: 1 })).toBeVisible({ timeout: 20000 });
-      await page.waitForTimeout(1500);
-      const nBefore = await readRecordCount();
-      if (nBefore < 1) throw new Error('前置未满足：分析记录无任务条数');
+      await page.waitForTimeout(1200);
+      await goConfigTab();
+      await selectSameConditions();
+      let nBefore = await readRecordCount();
+      if (nBefore < 1) {
+        await goConfigTab();
+        await selectSameConditions();
+        await runStartAnalysisOnce();
+        await openViewResultIfShown();
+        nBefore = await readRecordCount();
+        if (nBefore < 1) throw new Error('前置未满足：03288 后分析记录仍无任务');
+      }
       globalThis.__szcmp03306_nBefore = nBefore;
       await goConfigTab();
       await selectSameConditions();
-      const start = page.getByRole('button', { name: '开始分析' }).first();
-      await expect(start).toBeVisible({ timeout: 10000 });
-      if (await start.isDisabled()) {
-        throw new Error('ENV-CHAIN-SZ-COMPARE-BENCHMARK-EMPTY-Q016：开始分析仍 disabled');
-      }
-      await start.click({ timeout: 15000 });
-      await waitForResult();
-      await expect(page.getByText(RESULT_TITLE).first()).toBeVisible({ timeout: 20000 });
+      await runStartAnalysisOnce();
+      await expect(page.getByRole('heading', { name: RESULT_TITLE })).toBeVisible({ timeout: 20000 });
   - note: 2、分析记录的任务条数与点击前相同
     assert: |-
       const nBefore = globalThis.__szcmp03306_nBefore;
@@ -157,5 +171,4 @@ expect:
       if (nAfter !== nBefore) {
         throw new Error('当天同条件再次开始分析后条数变化：前=' + nBefore + ' 后=' + nAfter);
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 03306 按用例步骤：记条数→同条件开始分析→结果页+条数不变；标杆用级联。
+on_fail: 截图 + 抄 X-Trace-Id

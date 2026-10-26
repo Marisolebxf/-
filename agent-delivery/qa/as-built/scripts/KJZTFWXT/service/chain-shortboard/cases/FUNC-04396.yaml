@@ -1,109 +1,33 @@
 id: FUNC-04396
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04396
 priority: P0
-tier: A
+tier: B
 title: 主流程-分析记录 · 列字段
-story: US-SVC-ECO-01
 entry_id: svc-chain-shortboard
-preconditions:
-  - 已进入服务链短板分析
-  - env-gate overall=pass（G5 分析记录 ≥1 条 shortboard 已完成）
-locators:
-  tab_records: tab「分析记录」（[data-tab-key=records]）
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=chain&tab=chain
+  - action: click
+    target: 分析记录
 expect:
-  - note: 1、表头为任务、类型、状态、创建时间、操作（步骤：点击「分析记录」）
+  - note: 1、表头为任务、类型、状态、创建时间、操作
     assert: |-
-      const route = '/service/chain-analysis?workspace=chain&tab=chain';
-      const closeBasket = async () => {
-        for (let i = 0; i < 3; i++) {
-          const close = page.locator('[aria-label="关闭对比篮"]');
-          if (
-            (await close.count()) &&
-            (await close.first().isVisible().catch(() => false)) &&
-            (await close.first().isEnabled().catch(() => false))
-          ) {
-            try {
-              await close.first().click({ timeout: 1500 });
-              await page.waitForTimeout(300);
-            } catch {}
-          } else break;
-        }
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-      };
-      if (!page.url().includes('/service/chain-analysis') || !/workspace=chain/.test(page.url())) {
-        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-      }
-      await closeBasket();
-      await expect(page.getByRole('tab', { name: /服务链短板分析/ }).first()).toBeVisible({ timeout: 8000 });
-      const rec = page
-        .locator('[role=tab][data-tab-key="records"]')
-        .or(page.getByRole('tab', { name: '分析记录', exact: true }));
-      await expect(rec.first()).toBeVisible({ timeout: 8000 });
-      await rec.first().click({ timeout: 8000 });
-      await page.waitForURL(/tab=records/, { timeout: 8000 }).catch(() => {});
-      if (!/tab=records/.test(page.url())) {
-        await page.goto(baseUrl + '/service/chain-analysis?workspace=chain&tab=records', {
-          waitUntil: 'domcontentloaded',
-        });
-        await page.waitForTimeout(1500);
-      }
-      const recordsPane = page.locator('[data-testid="svc-eco-analysis-records"]');
-      await expect(recordsPane).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('[data-testid="svc-eco-analysis-records"] .arco-table-td').first()).toBeVisible({
-        timeout: 20000,
-      });
-      const readRecordsText = async () => {
-        const table = ((await recordsPane.locator('.arco-table').first().innerText().catch(() => '')) || '').trim();
-        if (table.length > 40) return table;
-        const mains = await page.locator('main').allInnerTexts().catch(() => []);
-        const joined = (mains || []).join('\n').trim();
-        return joined.length > 40 ? joined : ((await page.locator('body').innerText().catch(() => '')) || '').trim();
-      };
-      let body = await readRecordsText();
-      if (/暂无符合条件的分析记录/.test(body) && !/SVC-\d{8}-\d+/.test(body)) {
-        throw new Error('分析记录为空（env-gate G5 应有已完成行）: ' + body.slice(0, 200));
-      }
-      if (!/SVC-\d{8}-\d+/.test(body)) {
-        throw new Error('记录列表未加载出任务行: ' + body.slice(0, 200));
-      }
-      await page.evaluate(() => {
-        window.__func04396Ready = true;
-      });
-      if (!/任务[\s\S]*?类型[\s\S]*?状态[\s\S]*?创建时间[\s\S]*?操作/.test(body)) {
-        throw new Error('记录列表表头缺失: ' + body.slice(0, 360));
+      await expect(page).toHaveURL(/tab=records/);
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      await expect(records).toBeVisible({ timeout: 15000 });
+      await expect(records.locator('.arco-table-td').first()).toBeVisible({ timeout: 20000 });
+      const main = page.locator('main');
+      for (const h of ['任务', '类型', '状态', '创建时间', '操作']) {
+        await expect(main.getByRole('columnheader', { name: h, exact: true })).toBeVisible({ timeout: 8000 });
       }
   - note: 2、类型列显示「shortboard」
     assert: |-
-      if (!(await page.evaluate(() => window.__func04396Ready).catch(() => false))) {
-        throw new Error('前置分析记录 Tab 未就绪');
-      }
-      const pane = page.locator('[data-testid="svc-eco-analysis-records"]');
-      const body =
-        ((await pane.locator('.arco-table').first().innerText().catch(() => '')) ||
-          (await pane.innerText().catch(() => '')) ||
-          '');
-      if (!/shortboard/.test(body)) {
-        throw new Error('类型列未见 shortboard: ' + body.slice(0, 360));
-      }
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      await expect(records.getByText('shortboard', { exact: true }).first()).toBeVisible({ timeout: 8000 });
   - note: 3、状态列能见到「已完成」
     assert: |-
-      if (!(await page.evaluate(() => window.__func04396Ready).catch(() => false))) {
-        throw new Error('前置分析记录 Tab 未就绪');
-      }
-      const pane2 = page.locator('[data-testid="svc-eco-analysis-records"]');
-      const body =
-        ((await pane2.locator('.arco-table').first().innerText().catch(() => '')) ||
-          (await pane2.innerText().catch(() => '')) ||
-          '');
-      if (!/已完成/.test(body)) {
-        throw new Error('状态列未见「已完成」: ' + body.slice(0, 360));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  入口 chain 配置态→点「分析记录」；断言锚 data-testid=svc-eco-analysis-records。现场为 diagnosis 表头（任务号/分析类型/…）非用例五列，分析类型列无 shortboard 文案。
-  fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04396。零 allow_skip。
+      const records = page.locator('[data-testid="svc-eco-analysis-records"]');
+      await expect(records.getByText('已完成', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

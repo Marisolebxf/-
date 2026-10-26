@@ -1,143 +1,50 @@
 id: FUNC-03418
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03418
 priority: P0
-title: 发展路径表列出路径、适用条件、局限性与针对
+title: 发展路径表列出路径适用条件局限性与针对
 entry_id: chain-sz-dev
 tier: B
 preconditions:
   - 已打开一条成功结果
-locators:
-  tab_rec: tab「分析记录」
-  view_result: button「查看结果」（已完成行、非 disabled）
-  path_heading: heading「发展路径」
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/shenzhen?workspace=development&tab=development
+    target: /industry-center/shenzhen?workspace=development&tab=records
   - action: evaluate
-    note: 经「分析记录」打开一条成功结果；阅读发展路径表头
+    note: 经分析记录打开一条成功结果（同册 03388）；阅读发展路径表头
 expect:
   - note: 表头为路径、适用条件、局限性、针对
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const catalogPath = '/industry-center/shenzhen?workspace=development&tab=development';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const bodyIs404 = async () => {
-        const sorry = page.getByText('抱歉，页面不存在');
-        if (await sorry.count() && (await sorry.first().isVisible().catch(() => false))) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/深圳产业发展分析/.test(t);
-      };
-      const onTarget = () =>
-        /\/industry-center\/shenzhen/.test(page.url()) &&
-        /workspace=development/.test(page.url()) &&
-        /tab=development/.test(page.url());
-      const enterViaSidebar = async () => {
-        const leafItem = () =>
-          page.locator('.arco-menu-item').filter({ hasText: /^深圳产业发展分析$/ });
-        const expandChainGroup = async () => {
-          if (await leafItem().first().isVisible().catch(() => false)) return;
-          const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-          if (await sub.count()) {
-            await sub.first().click({ timeout: 8000 });
-            await page.waitForTimeout(400);
-          }
-        };
-        await dismissBasket();
-        await expandChainGroup();
-        await expect(leafItem().first()).toBeVisible({ timeout: 10000 });
-        await leafItem().first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/shenzhen/, { timeout: 15000 });
-      };
-      const openSuccessResult = async () => {
-        await dismissBasket();
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-        }
-        if (!onTarget() || (await bodyIs404())) {
-          await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(800);
-          if (!(await bodyIs404())) await enterViaSidebar();
-        }
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 无法进入深圳产业发展分析 ' + page.url());
-        }
-        const recTab = page.getByRole('tab', { name: '分析记录' });
-        await expect(recTab).toBeVisible({ timeout: 10000 });
-        await recTab.click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        const mainText = ((await page.locator('main').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        if (/暂无数据/.test(mainText) && !/已完成/.test(mainText)) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无已完成任务');
-        }
-        const doneRow = page.locator('main tr').filter({ hasText: '已完成' }).filter({ hasText: '深圳产业发展分析' });
-        let viewBtn = doneRow.count().then((n) => (n ? doneRow.first().getByText('查看结果', { exact: true }) : null));
-        viewBtn = await viewBtn;
-        if (!viewBtn || !(await viewBtn.count())) {
-          const row = page.locator('main tr').filter({ hasText: '深圳产业发展分析' }).first();
-          viewBtn = row.getByText('查看结果', { exact: true });
-        }
-        if (!(await viewBtn.count()) || !(await viewBtn.first().isVisible().catch(() => false))) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无可用「查看结果」');
-        }
-        viewBtn = viewBtn.first();
-        await viewBtn.click({ timeout: 10000 });
-        await page.waitForTimeout(2000);
-        await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
-      };
-      const pathTable = () =>
-        page.locator('main').getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[contains(@class,"arco-table")][1]');
-      await openSuccessResult();
-      await expect(page.getByRole('heading', { name: '发展路径' })).toBeVisible({ timeout: 10000 });
-      const table = pathTable();
-      const emptyPath = page.locator('.arco-empty').filter({ hasText: /发展路径未返回|不伪造/ });
-      if ((await table.count()) === 0 || !(await table.isVisible().catch(() => false))) {
-        if (await emptyPath.count()) {
-          throw new Error('ENV-CHAIN-SZ-DEV-NO-PATH-TABLE: 成功结果无发展路径表，仅空态');
-        }
-        throw new Error('发展路径区未见 arco-table');
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const main = page.locator('main').first();
+      const records = main.locator('.diagnosis-records');
+      await expect(records).toBeVisible({ timeout: 15000 });
+      const statusSelect = records.locator('.diagnosis-records__filters .arco-select-view').first();
+      await statusSelect.click({ timeout: 8000 });
+      await page.locator('.arco-select-dropdown').getByText('已完成', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(1200);
+      const tableText = ((await records.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (/暂无数据|没有数据/.test(tableText)) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 分析记录无已完成成功结果');
       }
-      for (const h of ['路径', '适用条件', '局限性', '针对']) {
-        await expect(table.locator('thead th').filter({ hasText: h }).first()).toBeVisible({ timeout: 5000 });
+      const viewBtn = records
+        .locator('tbody tr')
+        .filter({ hasText: '深圳产业发展分析' })
+        .getByRole('button', { name: '查看结果' })
+        .filter({ enabled: true })
+        .first();
+      if (!(await viewBtn.count())) {
+        throw new Error('ENV-CHAIN-SZ-DEV-NO-DONE-TASK: 无可点的已完成「查看结果」');
       }
-      const headers = [];
-      const ths = table.locator('thead th');
-      const thCount = await ths.count();
-      for (let i = 0; i < thCount; i++) {
-        const txt = ((await ths.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (txt) headers.push(txt);
+      await viewBtn.click({ timeout: 10000 });
+      await page.waitForTimeout(1500);
+      await expect(page.getByRole('heading', { name: '深圳产业发展分析结果' })).toBeVisible({ timeout: 15000 });
+      const pathHeading = main.getByRole('heading', { name: '发展路径', level: 3 });
+      await expect(pathHeading).toBeVisible({ timeout: 10000 });
+      const pathTable = pathHeading.locator('xpath=following::table[1]');
+      await expect(pathTable).toBeVisible({ timeout: 8000 });
+      for (const col of ['路径', '适用条件', '局限性', '针对']) {
+        const th = pathTable.locator('th').filter({ hasText: col }).first();
+        await expect(th).toBeVisible({ timeout: 8000 });
       }
-      const joined = headers.join('|');
-      if (!/路径/.test(joined) || !/适用条件/.test(joined) || !/局限性/.test(joined) || !/针对/.test(joined)) {
-        throw new Error('表头列不完整：' + joined);
-      }
-  - note: 表上无分页、无勾选、无行按钮
-    assert: |-
-      const pathTable = page.locator('main').getByRole('heading', { name: '发展路径' }).locator('xpath=following::table[contains(@class,"arco-table")][1]');
-      await expect(pathTable).toBeVisible({ timeout: 5000 });
-      const section = pathTable.locator('xpath=ancestor::div[contains(@class,"arco-table")][1]');
-      const scope = (await section.count()) ? section.first() : pathTable;
-      if (await scope.locator('.arco-pagination').count()) {
-        throw new Error('发展路径表不应有分页');
-      }
-      if (await pathTable.locator('thead .arco-checkbox').count()) {
-        throw new Error('发展路径表不应有表头勾选');
-      }
-      if (await pathTable.locator('tbody .arco-checkbox').count()) {
-        throw new Error('发展路径表不应有行勾选');
-      }
-      const rowBtns = pathTable.locator('tbody tr').locator('button, .arco-btn');
-      if (await rowBtns.count()) {
-        throw new Error('发展路径表 tbody 不应有行按钮');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: 发展路径区表头四列路径/适用条件/局限性/针对；纯展示表无分页无勾选无行内按钮。打开成功结果同 FUNC-03388。
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,0 +1,74 @@
+# 15 — GDF 调度（产业抽取 / 条款结构化）
+
+> **读者**：GDF 产线调度。  
+> **当前投递**：把 `12` 的两份 Python 复制到 GDF 的 Python 节点，在两张平面当日 Wave B 都 `success` 之后各执行一次。  
+> **GDF 不配置 HTTP**。不要配国科信内部地址，也不要等一个对外任务接口。应用在线若另有入口，不是本作业。  
+> 读写、跳过、失败不写假结果：只认 `12`。流程图也在 `12`。
+
+---
+
+## 0. 一句话
+
+`policy_base_info` 当日两张平面都洗完且 `success` 之后，各跑一次 C1、一次 C2。模型可能很慢，不要堵在 Mapping 作业的线程里。C 失败不回滚已成功的 B。
+
+```text
+gkx → ODS → DWD policy_base_info（GDF，Wave A/B）
+        │
+        │ 国内、国际当日都 success
+        ▼
+GDF Python 节点
+   ├─ python policy_c1_industry.py --limit 100
+   └─ python policy_c2_clauses.py --limit 100
+        │
+        ▼
+退出码 0 = 该作业成功；非 0 = 只记该作业失败
+```
+
+只完成贴源、或任一平面 Wave B 不是 `success`：不跑。
+
+---
+
+## 1. 谁干什么
+
+| 角色 | 做 | 不做 |
+|------|----|------|
+| GDF | 贴源、洗 `policy_base_info`；把 `scripts/` 两份文件配上；B 成功后执行；看退出码 | 在 CDC / SeaTunnel 里另写切条或对码；B 未成功仍跑；用 HTTP 代替这两份脚本；把失败回滚成 B 失败 |
+| 脚本 | 按 `12` 写 `policy_industry_rel` 或合并条款 | 改主表；建表；写 ES / Nebula；检索失败时编造链码；模型失败时编造条款 |
+
+C1 与 C2 互不依赖。不要合成一个「政策后处理」大作业。
+
+---
+
+## 2. 何时跑
+
+| 条件 | 动作 |
+|------|------|
+| 当日国内平面与国际平面的 Wave B 都 `success` | 各跑一次 C1、一次 C2 |
+| 只有一张平面成功 | 不跑。两平面写同一张主表 |
+| `failed` / 未跑 / 只完成贴源 | 不跑 |
+| 重做 | 命令加 `--force`。单条加 `--policy-id`。默认日批是增量 |
+| C1 或 C2 失败 | 只记该作业。不回滚 B，不把另一作业标失败 |
+
+---
+
+## 3. 不要堵死调度
+
+`limit` 最大 100。向量和模型可能很慢。
+
+| 规则 | 说明 |
+|------|------|
+| 单独的 Python 作业 | 挂在两张 B 都成功之后，不放进 Mapping 作业自己的进程里死等 |
+| 退出码 | 0 才是写库结束。脚本打印的行数不是受理回执 |
+| 重入 | 同一作业还在跑时不要再开一份打同一张表 |
+| C 失败 | 不回滚 B |
+| 口令 | `POLICY_MYSQL_PASSWORD`、`EMBED_API_KEY`、`MILVUS_TOKEN`、`LLM_API_KEY` 只配在节点环境，不进本包 |
+
+---
+
+## 4. 不要这样配
+
+1. 不要配任何 `/internal/`、`/v1/policy/clauses/`、`/policy/v1/jobs/`。那些不是 GDF 的加工入口。  
+2. 不要把 `demo_gkxlumenx_*` 配成 `POLICY_DWD_DB` / `POLICY_ADS_DB`。  
+3. 不要在脚本外再写一套产业对码或条款切分。  
+4. 缺表不要让脚本建表。按 `10/` 与 `13` 先有空表。  
+5. 发现 `policy_id` 跨 `source_plane` 撞车：脚本会退出。先停，不要改 UK。

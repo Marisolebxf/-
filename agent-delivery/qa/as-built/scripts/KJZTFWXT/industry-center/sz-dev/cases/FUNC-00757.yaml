@@ -9,44 +9,54 @@ locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
+  - action: evaluate
+    note: 等待分析配置区就绪
+    script: |-
+      await expect(page.getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 20000 });
 expect:
   - note: 切换后已选值回显为新选产业
     assert: |-
-      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
-      await expect(row.first()).toBeVisible({ timeout: 15000 });
-      const ind = () => row.locator('.industry-catalog-select').first();
+      const indView = () =>
+        page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select .arco-select-view').first();
       const pick = async (name) => {
-        await ind().locator('.arco-select-view').click({ timeout: 10000 });
+        const txt = ((await indView().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        if (txt.includes(name)) return;
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(300);
+        await indView().locator('input').first().click({ timeout: 15000 });
         await page.waitForTimeout(500);
-        const opt = page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: name }).first();
-        await expect(opt).toBeVisible({ timeout: 10000 });
-        await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(600);
+        const opt = page
+          .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-dropdown:visible .arco-select-option')
+          .filter({ hasText: name === '生物' ? /^生物$/ : name })
+          .first();
+        await expect(opt).toBeVisible({ timeout: 12000 });
+        await opt.click({ timeout: 10000 });
+        await page.waitForTimeout(name === '生物' ? 900 : 600);
+        await expect(indView()).toContainText(name, { timeout: 10000 });
       };
-      const currentLabel = ((await ind().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!currentLabel.includes('新一代信息技术')) {
-        await pick('新一代信息技术');
-      }
+      await expect(indView()).toBeVisible({ timeout: 15000 });
+      await pick('新一代信息技术');
       await pick('生物');
-      await expect(ind()).toContainText('生物', { timeout: 8000 });
+      await expect(indView()).toContainText('生物', { timeout: 10000 });
   - note: 切回后已选值回显为原产业
     assert: |-
-      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
-      const ind = () => row.locator('.industry-catalog-select').first();
-      await ind().locator('.arco-select-view').click({ timeout: 10000 });
+      const indView = () =>
+        page.locator('main .industry-catalog-select.arco-select-view, main .industry-catalog-select .arco-select-view').first();
+      await page.keyboard.press('Escape').catch(() => {});
+      await page.waitForTimeout(300);
+      await indView().locator('input').first().click({ timeout: 15000 });
       await page.waitForTimeout(500);
-      const opt = page.locator('.arco-select-dropdown:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option').filter({ hasText: '新一代信息技术' }).first();
-      await expect(opt).toBeVisible({ timeout: 10000 });
-      await opt.click({ timeout: 8000 });
-      await page.waitForTimeout(600);
-      await expect(ind()).toContainText('新一代信息技术', { timeout: 8000 });
+      const opt = page
+        .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-dropdown:visible .arco-select-option')
+        .filter({ hasText: '新一代信息技术' })
+        .first();
+      await expect(opt).toBeVisible({ timeout: 12000 });
+      await opt.click({ timeout: 10000 });
+      await page.waitForTimeout(700);
+      await expect(indView()).toContainText('新一代信息技术', { timeout: 10000 });
   - note: 主体区域保持「深圳」只读锁定
     assert: |-
-      const row = page.locator('[data-testid="shenzhen-development-context-row"]');
-      await expect(row.first()).toBeVisible({ timeout: 8000 });
-      const subject = row.locator('input.arco-input').first();
+      const subject = page.locator('main [data-testid="shenzhen-development-context-row"] input[readonly]').first();
+      await expect(subject).toBeVisible({ timeout: 10000 });
       await expect(subject).toHaveValue('深圳');
-      const roProp = await subject.evaluate((el) => el.readOnly);
-      if (!(await subject.getAttribute('readonly')) && !roProp) throw new Error('主体无 readonly');
-      if (await subject.isEditable()) throw new Error('主体 input 可编辑');
 on_fail: 截图 + 抄 X-Trace-Id

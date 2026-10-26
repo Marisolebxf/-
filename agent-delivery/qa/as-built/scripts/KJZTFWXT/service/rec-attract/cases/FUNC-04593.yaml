@@ -9,21 +9,32 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: evaluate
+    note: 将产业匹配度改为 50
+    script: |-
+      const model = page.locator('main [data-testid="svc-rec-demo-model"]');
+      await expect(model).toBeVisible();
+      const row = model.locator('.svc-rec-weight-row').filter({ hasText: '产业匹配度' });
+      await expect(row).toBeVisible({ timeout: 5000 });
+      const spin = row.getByRole('spinbutton');
+      await spin.fill('50');
+      await spin.blur();
+      await expect(spin).toHaveValue('50');
 expect:
   - note: 权重合计不再显示「100% 已对齐」，并写出与 100% 的差额
     assert: |-
-      const matchSlider = page.locator('.arco-slider').first();
-      await matchSlider.locator('.arco-slider-button').focus();
-      await page.keyboard.press('Home');
-      for (let i = 0; i < 50; i++) {
-        await page.keyboard.press('ArrowRight');
-      }
-      await expect(page.getByText('100% 已对齐')).toHaveCount(0);
-      await expect(page.getByText(/差额|超出|\+15|115%/)).toBeVisible();
+      await expect(page.locator('main').getByText('100% 已对齐')).toHaveCount(0);
+      await expect(page.locator('main').getByText(/115%|超出|差额|\+15%/)).toBeVisible();
   - note: 「开始分析」不可点击
     assert: |-
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled();
+      const start = page.getByRole('button', { name: '开始分析' });
+      const gen = page.getByRole('button', { name: '生成招引名单' });
+      if (await start.count()) {
+        await expect(start).toBeDisabled();
+      } else {
+        await expect(gen).toBeDisabled();
+      }
   - note: 出现「按比例归一」
     assert: |-
-      await expect(page.getByText('按比例归一')).toBeVisible();
+      await expect(page.getByRole('button', { name: '按比例归一' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

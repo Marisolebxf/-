@@ -1,6 +1,6 @@
 id: FUNC-02496
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02496
-priority: P0
+priority: P1
 tier: B
 title: 主流程-总览来源面包屑
 entry_id: ent-detail
@@ -8,12 +8,12 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /enterprise/demo-org-id
+    target: /enterprise/:orgId?source=overview
 expect:
   - note: 面包屑为「企业分析 / 总览 / 企业画像」
     assert: |-
-      const crumb = page.locator('[class*="breadcrumb" i]').first();
-      await expect(crumb.getByText('企业分析')).toBeVisible();
-      await expect(crumb.getByText('总览')).toBeVisible();
-      await expect(crumb.getByText('企业画像')).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByText('企业分析', { exact: true })).toBeVisible();
+      await expect(main.getByText('总览', { exact: true })).toBeVisible();
+      await expect(main.getByText('企业画像', { exact: true })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

@@ -9,25 +9,43 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
-expect:
-  - note: 1、标题为「全部产业 · 深圳产业链环节分布」
-    assert: |-
+  - action: wait
+    target: "1500"
+  - action: evaluate
+    target: |-
       const main = page.locator('main');
-      const cascader = main.locator('.arco-cascader-view').first();
-      if (await cascader.isVisible()) {
-        const clear = cascader.locator('.arco-icon-close').first();
-        if (await clear.isVisible().catch(() => false)) {
-          await clear.click();
+      const industryCascader = main.locator('.svc-portal-industry-cascader .arco-cascader-view');
+      await industryCascader.waitFor({ state: 'visible', timeout: 15000 });
+      const clearIcon = main.locator('.svc-portal-industry-cascader .arco-icon-close, .svc-portal-industry-cascader .arco-cascader-clear-icon');
+      if (await clearIcon.count()) {
+        await clearIcon.first().click({ force: true });
+        await page.waitForTimeout(800);
+      }
+      const placeholder = main.locator('.svc-portal-industry-cascader').getByText('全部产业');
+      if (!(await placeholder.isVisible().catch(() => false))) {
+        await industryCascader.click({ force: true });
+        await page.waitForTimeout(400);
+        const clearInPanel = page.locator('.arco-cascader-panel').locator('.arco-icon-close');
+        if (await clearInPanel.count()) {
+          await clearInPanel.first().click({ force: true });
           await page.waitForTimeout(800);
         }
       }
-      const heading = main.getByText('深圳产业链环节分布', { exact: false }).first();
+  - action: evaluate
+    target: |-
+      const heading = page.locator('main').getByText('深圳产业链环节分布').first();
       await heading.scrollIntoViewIfNeeded();
-      await expect(main.getByText('全部产业 · 深圳产业链环节分布')).toBeVisible();
+      await page.waitForTimeout(500);
+expect:
+  - note: 1、标题为「全部产业 · 深圳产业链环节分布」
+    assert: |-
+      await expect(page.locator('main').getByText('全部产业 · 深圳产业链环节分布')).toBeVisible({ timeout: 15000 });
   - note: 2、文案含「无领域×环节矩阵」
     assert: |-
-      await expect(page.locator('main').getByText(/本包络无环节分布/)).toBeVisible();
+      const block = page.locator('main').locator('.section-panel, section').filter({ hasText: '深圳产业链环节分布' }).first();
+      await expect(block).toContainText('无领域×环节矩阵', { timeout: 15000 });
   - note: 3、文案含「不填演示环节条」
     assert: |-
-      await expect(page.locator('main').getByText(/不填演示环节条/)).toBeVisible();
+      const block = page.locator('main').locator('.section-panel, section').filter({ hasText: '深圳产业链环节分布' }).first();
+      await expect(block).toContainText('不填演示环节条', { timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

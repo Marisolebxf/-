@@ -1,24 +1,18 @@
 id: FUNC-02095
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02095
 priority: P1
-title: 环节下拉有四项并能回显所选项
-story: US-SZSTATUS-02
-entry_id: ent-sz-status
 tier: B
-preconditions:
-  - 已点选「人工智能」
-  - 清单已出现
-locators:
-  chain_select: main .arco-select-view（placeholder 请选择产业链 / 选择产业集群）
-  segment_select: 产业链定位卡 extra「产业链环节」旁 placeholder 全部环节
-  segment_options: .arco-trigger-popup:visible 附录 B 四环节
+title: 备选-环节下拉回显行业应用
+entry_id: ent-sz-status
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise-center/shenzhen-enterprise-status-analysis
+    target: /enterprise/shenzhen-enterprise-status-analysis
   - action: evaluate
-    note: 选链至清单出现后展开「全部环节」下拉并点选行业应用（判定在 expect）
+    note: 前置选「人工智能」至清单出现；展开「全部环节」并点选「行业应用」（环节选项数在 expect 判定）
 expect:
-  - note: 选项共 4 个，名称见附录 B（行业应用、算力芯片、数据标注、算法框架）
+  - note: 选项共 4 个，名称见附录B
     assert: |-
       const expectedSeg = ['行业应用', '算力芯片', '数据标注', '算法框架'];
       const dismissBasket = async () => {
@@ -28,72 +22,38 @@ expect:
           if (vis) { await close.first().click(); await page.waitForTimeout(300); }
         }
       };
-      const collectOptions = () =>
-        page.evaluate(() => {
-          const out = [];
-          for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
-            const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
-            const st = window.getComputedStyle(el);
-            if (!t || st.display === 'none' || st.visibility === 'hidden') continue;
-            if (el.offsetParent === null && !el.closest('.arco-select-dropdown')) continue;
-            out.push(t);
-          }
-          return [...new Set(out)];
-        });
       const collectPopupOptions = async () => {
         const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible').last();
         if (!(await popup.count())) return [];
         const texts = await popup.locator('.arco-select-option, li[role=option]').allInnerTexts();
         return [...new Set(texts.map((t) => t.trim().replace(/\s+/g, ' ')).filter(Boolean))];
       };
-      const selectAiChain = async () => {
-        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位|深圳企业产业链定位/ }).first();
+      const ensurePosTab = async () => {
+        const posTab = page.locator('main [role=tab]').filter({ hasText: /产业链定位/ }).first();
         if (await posTab.count()) {
           const sel = (await posTab.getAttribute('aria-selected')) || '';
           const cls = (await posTab.getAttribute('class')) || '';
           if (sel !== 'true' && !/active/.test(cls)) await posTab.click({ timeout: 8000 });
           await page.waitForTimeout(400);
         }
+      };
+      const selectAiChain = async () => {
+        await ensurePosTab();
         const chain = page.locator('main .arco-select-view').filter({
           has: page.locator('input[placeholder="请选择产业链"], input[placeholder="选择产业集群"]'),
         }).first();
         await expect(chain).toBeVisible({ timeout: 12000 });
-        const prefer = ['人工智能', '新一代信息技术'];
-        let needPick = true;
-        for (const name of prefer) {
-          const val = await chain.locator('.arco-select-view-value, .arco-select-view-value-mirror').first().innerText().catch(() => '');
-          if ((val || '').includes(name)) { needPick = false; break; }
-        }
-        if (needPick) {
+        const val = await chain.locator('.arco-select-view-value, .arco-select-view-value-mirror').first().innerText().catch(() => '');
+        if (!/人工智能/.test(val || '')) {
           await chain.click({ timeout: 8000 });
           await page.waitForTimeout(500);
-          let options = await collectOptions();
-          if (options.length === 0) {
-            await page.keyboard.press('ArrowDown');
-            await page.waitForTimeout(700);
-            options = await collectOptions();
-          }
-          if (options.length === 0) throw new Error('产业集群下拉展开后未读到任何选项');
-          const pick = prefer.find((n) => options.includes(n)) || options[0];
           const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
-          const opt = popup.getByText(pick, { exact: true }).first();
-          if (await opt.count()) await opt.click({ timeout: 8000 });
-          else {
-            await page.evaluate((name) => {
-              for (const el of document.querySelectorAll('.arco-select-option, li[role=option]')) {
-                const t = (el.innerText || '').trim().replace(/\s+/g, ' ');
-                if (t === name) { el.click(); return; }
-              }
-            }, pick);
-          }
+          await popup.locator('.arco-select-option, li[role=option]').filter({ hasText: /^人工智能$/ }).first().click({ timeout: 8000 });
           await page.waitForTimeout(800);
         }
+        await expect(page.locator('main .arco-select-view').filter({ hasText: '人工智能' }).first()).toBeVisible({ timeout: 12000 });
       };
-      const segmentSelectLocator = async () => {
-        const byTestId = page.locator('[data-testid="szstatus-chain-position"] .arco-select-view').filter({
-          has: page.locator('input[placeholder="全部环节"]'),
-        });
-        if (await byTestId.count()) return byTestId.first();
+      const segmentSelect = async () => {
         const byLabel = page.locator('main div').filter({ has: page.getByText('产业链环节', { exact: true }) }).locator('.arco-select-view').filter({
           has: page.locator('input[placeholder="全部环节"]'),
         });
@@ -101,24 +61,23 @@ expect:
         return page.locator('main .arco-select-view').filter({ has: page.locator('input[placeholder="全部环节"]') }).first();
       };
       const waitList = async () => {
-        let listOk = false;
+        let ok = false;
         for (let i = 0; i < 50; i++) {
-          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { listOk = true; break; }
-          if (await page.getByText('覆盖产业链环节', { exact: true }).count()) { listOk = true; break; }
-          if (await page.locator('main .arco-spin:visible, main .arco-skeleton:visible').count()) {
-            await page.waitForTimeout(150);
-            continue;
-          }
-          await page.waitForTimeout(120);
+          if (await page.getByText('深圳相关企业清单', { exact: true }).count()) { ok = true; break; }
+          await page.waitForTimeout(150);
         }
-        if (!listOk) throw new Error('选链后定位结果未出现（未见清单或「覆盖产业链环节」）');
+        if (!ok) throw new Error('选链后未出现「深圳相关企业清单」');
         await expect(page.getByText('深圳相关企业清单', { exact: true }).first()).toBeVisible({ timeout: 12000 });
       };
       await dismissBasket();
       await page.waitForLoadState('domcontentloaded');
+      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
+        throw new Error('修订 ENV-ENTRY-UNREACHABLE');
+      }
+      await expect(page.getByRole('heading', { name: '深圳企业现状分析', level: 1 })).toBeVisible({ timeout: 12000 });
       await selectAiChain();
       await waitList();
-      const seg = await segmentSelectLocator();
+      const seg = await segmentSelect();
       await expect(seg).toBeVisible({ timeout: 8000 });
       await page.keyboard.press('Escape').catch(() => {});
       await page.waitForTimeout(200);
@@ -130,9 +89,7 @@ expect:
         await page.waitForTimeout(600);
         segOpts = await collectPopupOptions();
       }
-      const segSet = new Set(segOpts);
-      const missing = expectedSeg.filter((n) => !segSet.has(n));
-      const extra = segOpts.filter((n) => !expectedSeg.includes(n));
+      const missing = expectedSeg.filter((n) => !segOpts.includes(n));
       if (segOpts.length !== 4 || missing.length) {
         let apiHint = '';
         try {
@@ -141,7 +98,7 @@ expect:
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({}),
+              body: JSON.stringify({ chain_code: '人工智能' }),
             });
             const j = await res.json().catch(() => ({}));
             const dist = j?.data?.stage_distribution ?? j?.stage_distribution ?? [];
@@ -149,14 +106,11 @@ expect:
           });
         } catch { apiHint = 'chain-stage-stats=fetch_fail'; }
         throw new Error(
-          '环节下拉选项不符：期望 4 项 ' + expectedSeg.join('、') +
-          '；读到 ' + segOpts.length + ' 项 [' + segOpts.join('、') + ']' +
-          (missing.length ? '；缺 ' + missing.join('、') : '') +
-          (extra.length ? '；多 ' + extra.join('、') : '') +
-          '；' + apiHint,
+          'D4·环节下拉无附录B四项；读到 ' + segOpts.length + ' 项 [' + segOpts.join('、') + ']' +
+          (missing.length ? '；缺 ' + missing.join('、') : '') + '；' + apiHint,
         );
       }
-  - note: 点选「行业应用」后下拉回显「行业应用」（不断言清单条数收窄）
+  - note: 下拉回显「行业应用」
     assert: |-
       const popup = page.locator('.arco-trigger-popup:visible, .arco-select-dropdown:visible');
       const pickOpt = popup.getByText('行业应用', { exact: true }).first();
@@ -170,24 +124,12 @@ expect:
         });
       }
       await page.waitForTimeout(400);
-      let seg = page.locator('[data-testid="szstatus-chain-position"] .arco-select-view').filter({
+      const seg = page.locator('main .arco-select-view').filter({
         has: page.locator('input[placeholder="全部环节"]'),
       }).first();
-      if (!(await seg.count())) {
-        seg = page.locator('main div').filter({ has: page.getByText('产业链环节', { exact: true }) }).locator('.arco-select-view').filter({
-          has: page.locator('input[placeholder="全部环节"]'),
-        }).first();
-      }
       const mirror = seg.locator('.arco-select-view-value, .arco-select-view-value-mirror').first();
       const shown = (await mirror.innerText().catch(() => '')).trim();
-      const inputVal = (await seg.locator('input').first().inputValue().catch(() => '')).trim();
-      const combined = shown || inputVal || (await seg.innerText()).trim();
-      if (!/行业应用/.test(combined)) {
-        throw new Error('环节下拉未回显「行业应用」；读到：' + combined.slice(0, 80));
+      if (!/行业应用/.test(shown)) {
+        throw new Error('环节下拉未回显「行业应用」；读到：' + (shown || '(空)'));
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  环节下拉在「产业链定位」卡 extra 区，placeholder「全部环节」（ChainLocatePanel.vue）；选项固定附录 B 四项。
-  用例明确不把点选后清单条数收窄写入预期。30888 深链 enterprise-center 前缀；产业集群 D1 优先「人工智能」无则「新一代信息技术」（与 FUNC-02089/02091 同）。
-  现场无 data-testid=szstatus-chain-position 时回退「产业链环节」标签旁 select。D4：chain-stage-stats 空则下拉无附录 B 四项（与 FUNC-02091 同闸门，非脚本口径问题）。
-  须先关对比篮。登录与关内部评审由 runner 会话前置。禁止 50892。B 档不进金样。
+on_fail: 截图 + 抄 X-Trace-Id

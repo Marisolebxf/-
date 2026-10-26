@@ -9,16 +9,23 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
+  - action: evaluate
+    note: 滚动到「产业机构区域分布」
+    assert: |-
+      const mapTitle = page.locator('main').getByText('产业机构区域分布', { exact: true }).first();
+      await expect(mapTitle).toBeVisible({ timeout: 20000 });
+      await mapTitle.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
 expect:
-  - note: 标题为「产业机构区域分布」
+  - note: 1、标题为「产业机构区域分布」
     assert: |-
-      const title = page.locator('main').getByText('产业机构区域分布').first();
-      await title.scrollIntoViewIfNeeded();
-      await expect(title).toBeVisible();
-  - note: 文案含「无坐标字段」
+      await expect(page.locator('main').getByText('产业机构区域分布', { exact: true }).first()).toBeVisible();
+  - note: 2、文案含「无坐标字段」
     assert: |-
-      await expect(page.locator('main').getByText(/无坐标字段/)).toBeVisible();
-  - note: 文案含「不填 Demo 区级假点」
+      const emptyDesc = page.locator('main .arco-empty-description').filter({ hasText: '无坐标字段' }).first();
+      await expect(emptyDesc).toBeVisible({ timeout: 10000 });
+  - note: 3、文案含「不填 Demo 区级假点」
     assert: |-
-      await expect(page.locator('main').getByText(/不填 Demo 区级假点/)).toBeVisible();
+      const emptyDesc = page.locator('main .arco-empty-description').filter({ hasText: '不填 Demo 区级假点' }).first();
+      await expect(emptyDesc).toBeVisible({ timeout: 10000 });
 on_fail: 截图 + 抄 X-Trace-Id

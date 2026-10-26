@@ -9,18 +9,40 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 分析记录
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 查看结果
+  - action: wait
+    ms: 3000
+  - action: assert_visible
+    target: 本土机构培育名单
+  - action: evaluate
+    target: |-
+      const root = page.locator('main [data-testid="svc-rec-cultivate-result"] .svc-portal-industry-cascader');
+      await expect(root).toBeVisible({ timeout: 15000 });
+      await root.locator('.arco-cascader-view').first().click();
+  - action: wait
+    ms: 1000
 expect:
-  - note: 选项共 15 个，与附录 A.1 一致
+  - note: 1、选项共 15 个，与附录 A.1 一致
     assert: |-
-      await page.getByText('分析记录', { exact: true }).click();
-      await page.locator('.arco-table-body .arco-table-tr').first().click();
-      await expect(page.getByText('本土机构培育名单')).toBeVisible();
-      const industrySelect = page
-        .locator('div')
-        .filter({ has: page.getByText('重点产业方向', { exact: true }) })
-        .locator('.arco-select-view')
-        .first();
-      await industrySelect.click();
-      const options = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      await expect(options).toHaveCount(15);
+      const menu = page.locator('.svc-portal-industry-cascader-menu');
+      await expect(menu).toBeVisible({ timeout: 15000 });
+      const col = menu.locator('.arco-cascader-panel-column').first();
+      await expect(col).toBeVisible();
+      const expected = [
+        '新一代信息技术', '生物', '新能源', '新材料', '高端装备',
+        '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋',
+        '未来制造', '未来信息', '未来能源', '未来空间', '未来健康',
+      ];
+      const labels = col.locator('.arco-cascader-option-label');
+      await expect(labels).toHaveCount(15);
+      for (const name of expected) {
+        await expect(col.locator('.arco-cascader-option-label').filter({ hasText: name })).toHaveCount(1);
+      }
 on_fail: 截图 + 抄 X-Trace-Id

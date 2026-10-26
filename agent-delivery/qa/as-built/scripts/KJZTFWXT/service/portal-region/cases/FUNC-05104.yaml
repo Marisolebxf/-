@@ -11,18 +11,33 @@ steps:
     target: /service-portal/region-map
   - action: evaluate
     assert: |-
-      const industry = page.locator('.arco-select').first();
-      await industry.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: /生物/ }).first().click();
-      await industry.locator('.arco-select-clear-icon').click();
+      const main = page.locator('main');
+      const cascader = main.locator('.svc-portal-industry-cascader').first();
+      await cascader.locator('.arco-cascader-view').click();
+      const panel = page.locator('.arco-cascader-panel').last();
+      await panel.locator('.arco-cascader-column').first().getByText('生物', { exact: true }).click();
+      await expect(main.getByText(/「生物」/)).toBeVisible({ timeout: 15000 });
+      const clearIcon = cascader.locator('.arco-cascader-view-icon-clear');
+      await clearIcon.click({ timeout: 10000 });
 expect:
   - note: 1、产业恢复为「全部产业」
     assert: |-
-      await expect(page.locator('.arco-select').first().locator('.arco-select-view')).toContainText('全部产业');
+      const main = page.locator('main');
+      const view = main.locator('.svc-portal-industry-cascader .arco-cascader-view').first();
+      const text = await view.innerText();
+      if (!text.includes('全部产业')) {
+        throw new Error(`产业未恢复为全部产业，当前：${text.replace(/\s+/g, ' ').trim()}`);
+      }
   - note: 2、产业链下拉恢复禁用
     assert: |-
-      const chainCls = await page.locator('.arco-select').nth(1).getAttribute('class');
-      if (!chainCls || !chainCls.includes('disabled')) {
+      const main = page.locator('main');
+      const chainLabel = main.getByText('全部产业链');
+      if ((await chainLabel.count()) === 0) {
+        throw new Error('页上无「全部产业链」下拉，无法判定禁用');
+      }
+      const chain = chainLabel.locator('xpath=ancestor::*[contains(@class,"svc-portal-filter")][1]').locator('.arco-select').first();
+      const cls = (await chain.getAttribute('class')) ?? '';
+      if (!cls.includes('disabled')) {
         throw new Error('产业链下拉未禁用');
       }
 on_fail: 截图 + 抄 X-Trace-Id

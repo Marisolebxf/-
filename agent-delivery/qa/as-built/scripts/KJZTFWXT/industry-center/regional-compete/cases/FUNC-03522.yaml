@@ -1,9 +1,9 @@
 id: FUNC-03522
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03522
 priority: P1
+tier: B
 title: 合计偏离 100% 的提示文案与开始分析禁用
 entry_id: chain-regional-compete
-tier: B
 preconditions:
   - 已选产业，默认权重合计为 100%
 locators: {}
@@ -11,42 +11,74 @@ steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 把企业能力权重改为 50（用例步骤 1）
+    note: 同册前置选产业与区域；用例步骤把企业能力权重改为 50
+    script: |-
+      const main = page.locator('main');
+      await expect(main.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
+      const industryView = () => main.locator('.arco-select-view[aria-label="产业"]').first();
+      const pickIndustryIfNeeded = async () => {
+        const view = industryView();
+        await expect(view).toBeVisible({ timeout: 12000 });
+        let shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (shown && !/请选择产业|请先选择/.test(shown)) return shown;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const opt = pop.locator('.arco-select-option').filter({ hasText: /半导体与集成电路/ }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(700);
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+        shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/请选择产业|请先选择/.test(shown)) {
+          throw new Error('前置：产业未选中，现场=' + shown);
+        }
+        return shown;
+      };
+      const regionView = () =>
+        main.locator('.arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
+      const ensureRegion = async () => {
+        const view = regionView();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        let txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (/深圳|上海|杭州|北京|广东/.test(txt)) return txt;
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        const opt = pop.locator('.arco-select-option').filter({ hasText: /^深圳市$/ }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ force: true, timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.keyboard.press('Escape').catch(() => {});
+        txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+        if (!/深圳|上海|杭州|北京|广东/.test(txt)) {
+          throw new Error('前置：评价区域至少选一城，现场=' + txt);
+        }
+        return txt;
+      };
+      await pickIndustryIfNeeded();
+      await ensureRegion();
+      const entSpin = main.getByRole('spinbutton', { name: '企业能力权重' });
+      await expect(entSpin).toBeVisible({ timeout: 8000 });
+      await expect(entSpin).toHaveValue('40', { timeout: 12000 });
+      await expect(main.locator('.diagnosis-weight-footer.is-ok')).toContainText('权重合计：100% · 校验通过', {
+        timeout: 8000,
+      });
+      await entSpin.click();
+      await entSpin.fill('50');
+      await main.getByRole('heading', { name: '分析配置' }).click();
+      await page.waitForTimeout(800);
+      if (String(await entSpin.inputValue()).trim() !== '50') {
+        throw new Error('企业能力权重未改为 50，当前=' + (await entSpin.inputValue()));
+      }
 expect:
   - note: 1、文案为「权重合计须为 100%，当前 110%」
     assert: |-
-      const main = page.locator('main');
-      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      const industryView = main.locator('.arco-select-view[aria-label="产业"]').first();
-      await expect(industryView).toBeVisible({ timeout: 12000 });
-      const shown = ((await industryView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-      if (!/半导体与集成电路|集成电路/.test(shown)) {
-        await industryView.click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        const pop = page.locator('.arco-trigger-popup:visible').last();
-        const opt = pop.locator('.arco-select-option').filter({ hasText: /半导体与集成电路|^集成电路$/ });
-        await expect(opt.first()).toBeVisible({ timeout: 8000 });
-        await opt.first().click({ force: true, timeout: 8000 });
-        await page.waitForTimeout(600);
-        await page.keyboard.press('Escape').catch(() => {});
-      }
-      const regionField = main.locator('.policy-analysis-filter-row__field').filter({ hasText: '评价区域' }).locator('.arco-select-view').first();
-      if (await regionField.count()) {
-        const regionShown = ((await regionField.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!regionShown || regionShown.includes('请选择')) {
-          await regionField.click({ timeout: 8000 });
-          await page.locator('.arco-trigger-popup:visible').last().getByText('深圳市').first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      }
-      await expect(page.getByText(/权重合计：100%\s*·\s*校验通过/).first()).toBeVisible({ timeout: 10000 });
-      const entWeight = main.getByRole('spinbutton', { name: '企业能力权重' });
-      await expect(entWeight).toBeVisible({ timeout: 8000 });
-      await entWeight.click();
-      await entWeight.fill('50');
-      await page.waitForTimeout(800);
-      await expect(page.getByText(/权重合计须为 100%，当前 110%/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('main .diagnosis-weight-footer.is-error')).toContainText('权重合计须为 100%，当前 110%', {
+        timeout: 8000,
+      });
   - note: 2、「开始分析」不可点
     assert: |-
       await expect(page.getByRole('button', { name: '开始分析' })).toBeDisabled({ timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

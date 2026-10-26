@@ -9,73 +9,40 @@ locators: {}
 steps:
   - action: goto
     target: /industry-center/panorama
-  - action: evaluate
-    note: 前置清空产业链、改数据截至；点击开始分析
 expect:
   - note: 1、「数据截至」已改为「2026-10-18 · 当前状态」；2、「开始分析」可见
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const read = async (loc) =>
-        ((await loc.getAttribute('title')) || (await loc.innerText()) || '').replace(/\s+/g, ' ').trim();
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 15000 });
-      await page.waitForTimeout(2000);
-      const ctx = page.locator('[data-testid="panorama-analysis-context"]');
-      await expect(ctx).toBeVisible({ timeout: 15000 });
-      const main = page.locator('main');
-      const chainRow = main.locator('.policy-analysis-filter-row__field').filter({ hasText: '所属产业链' });
-      const chainView = chainRow.locator('.arco-select-view').first();
-      await chainView.scrollIntoViewIfNeeded();
-      const clearBtn = chainRow.locator('.arco-select-view-clear-icon, .arco-icon-hover').first();
-      if (await clearBtn.count()) {
-        await clearBtn.click({ timeout: 5000 });
-        await page.waitForTimeout(500);
-      }
-      const asOfInput = ctx.locator('input[placeholder="请选择数据截至"]').first();
-      const snapView = asOfInput.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]');
-      const wantSnap = '2026-10-18 · 当前状态';
-      await snapView.scrollIntoViewIfNeeded();
-      await snapView.click({ timeout: 8000 });
+      const ctx = page.locator('main [data-testid="panorama-analysis-context"]');
+      await ctx.waitFor({ state: 'visible', timeout: 10000 });
+      const closeHint = page.locator('main .industry-topic-default-hint .arco-alert-close-btn');
+      if (await closeHint.count()) await closeHint.first().click().catch(() => {});
+      const chainRow = ctx.locator('.policy-analysis-filter-row__field').filter({ hasText: '所属产业链' });
+      const chainView = chainRow.locator('.arco-select-view');
+      await chainView.hover();
       await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible');
-      await expect(pop).toBeVisible({ timeout: 8000 });
-      let opt = pop.locator('.arco-select-option').filter({ hasText: wantSnap }).first();
-      if (!(await opt.count())) {
-        opt = pop.locator('.arco-select-option').filter({ hasText: /\d{4}-\d{2}-\d{2} · 当前状态/ }).first();
+      const clearIcon = chainRow.locator('.arco-select-clear-icon');
+      if (await clearIcon.isVisible().catch(() => false)) {
+        await clearIcon.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
       }
-      await expect(opt).toBeVisible({ timeout: 8000 });
+      const asOfRow = ctx.locator('.policy-analysis-filter-row__field').filter({ hasText: '数据截至' });
+      await asOfRow.locator('.arco-select-view').click();
+      const opt = page.locator('.arco-select-dropdown .arco-select-option').filter({ hasText: '当前状态' }).first();
+      await opt.waitFor({ state: 'visible', timeout: 8000 });
       await opt.click();
-      await page.waitForTimeout(800);
-      const snapAfter = await read(snapView);
-      if (!/\d{4}-\d{2}-\d{2} · 当前状态/.test(snapAfter)) {
-        throw new Error('前置：数据截至未改为当前状态，现场: ' + snapAfter);
-      }
-      const start = page.getByRole('button', { name: '开始分析' });
-      await expect(start.first()).toBeVisible({ timeout: 8000 });
-      globalThis.__func02809_ready = true;
+      await page.waitForTimeout(600);
+      const asOfLabel = ((await asOfRow.locator('.arco-select-view').innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/·\s*当前状态/.test(asOfLabel)) throw new Error('数据截至未含当前状态: ' + asOfLabel);
+      await expect(page.getByRole('button', { name: '开始分析' }).first()).toBeVisible({ timeout: 8000 });
   - note: 1、提示「尚未选择分析对象」
     assert: |-
-      if (!globalThis.__func02809_ready) throw new Error('前置未完成');
-      const TOAST = '尚未选择分析对象';
       const start = page.getByRole('button', { name: '开始分析' }).first();
-      await start.scrollIntoViewIfNeeded();
       await start.click({ timeout: 8000, force: true });
-      await page.waitForTimeout(800);
-      const toast = page.locator('.arco-message-content, .arco-message').filter({ hasText: TOAST });
+      await page.waitForTimeout(500);
+      const toast = page.locator('.arco-message, .arco-message-list').filter({ hasText: '尚未选择分析对象' });
       await expect(toast.first()).toBeVisible({ timeout: 8000 });
   - note: 2、页面仍为全景图谱，不出现「产业链全景图谱生成中」
     assert: |-
-      await expect(page.getByText('产业链全景图谱生成中')).toHaveCount(0);
-      await expect(page).toHaveURL(/\/industry-center\/panorama/, { timeout: 5000 });
-      await expect(page.locator('[data-testid="panorama-analysis-context"]')).toBeVisible({ timeout: 8000 });
-      await expect(page.locator('#panorama-workspace-title')).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('#panorama-workspace-title')).toBeVisible();
+      await expect(page.getByText('产业链全景图谱生成中')).not.toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

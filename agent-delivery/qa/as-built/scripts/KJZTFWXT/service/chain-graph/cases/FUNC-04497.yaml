@@ -9,22 +9,28 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
-  - action: click
-    target: 产业领域
-  - action: click
-    target: 新一代信息技术
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
+  - action: wait
+    ms: 1200
 expect:
-  - note: 出现「节点数 / 关系边数」
+  - note: 1、出现「节点数 / 关系边数」
     assert: |-
-      await expect(page.getByText('节点数')).toBeVisible({ timeout: 20000 });
-      await expect(page.getByText('关系边数')).toBeVisible({ timeout: 20000 });
-  - note: 取值为 0 / 0
+      await page.waitForURL(/workspace=graph/, { timeout: 15000 });
+      const main = page.locator('main');
+      const ctx = main.locator('[data-testid="svc-eco-analysis-context"]');
+      await ctx.locator('.arco-cascader-view').first().click();
+      await page
+        .locator('.arco-cascader-popup:visible')
+        .locator('.arco-cascader-option-label')
+        .filter({ hasText: /^新一代信息技术/ })
+        .first()
+        .click({ timeout: 15000 });
+      await main.locator('[data-testid="svc-eco-start-analysis"]').click();
+      await expect(main.getByText('分析结果已生成')).toBeVisible({ timeout: 90000 });
+      await page.getByRole('button', { name: '查看结果' }).click();
+      await expect(main.getByText('节点数 / 关系边数')).toBeVisible({ timeout: 20000 });
+  - note: 2、取值为 0 / 0
     assert: |-
-      const panel = page.locator('main').filter({ hasText: '节点数' });
-      await expect(panel.getByText(/^0$/).nth(0)).toBeVisible({ timeout: 20000 });
-      await expect(panel.getByText(/^0$/).nth(1)).toBeVisible({ timeout: 20000 });
+      await expect(page.locator('main [data-testid="svc-eco-visible-size"]')).toHaveText('0 / 0', {
+        timeout: 20000,
+      });
 on_fail: 截图 + 抄 X-Trace-Id

@@ -4,24 +4,25 @@ priority: P1
 tier: B
 title: 备选-记录查看过程
 entry_id: svc-sz
-preconditions:
-  - 分析记录中有已完成行
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
   - action: click
-    target: 分析记录
+    target: |-
+      await page.locator('.svc-eco-page').getByText('分析记录', { exact: true }).click()
   - action: click
-    target: 查看过程
+    target: |-
+      await page.locator('main').getByRole('button', { name: '查看过程' }).first().click()
 expect:
   - note: 进入该任务的过程页
     assert: |-
-      await expect(page).toHaveURL(/process|task|record/i)
+      await expect(page.locator('main').getByText('深圳服务链现状分析生成中')).toBeVisible()
   - note: 状态为「已完成」
     assert: |-
-      await expect(page.getByText('已完成', { exact: true }).first()).toBeVisible()
+      await expect(page.locator('main').getByText('已完成', { exact: true })).toBeVisible()
   - note: 过程页上有「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible()
+      await expect(page.locator('main').getByRole('button', { name: '查看结果' })).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

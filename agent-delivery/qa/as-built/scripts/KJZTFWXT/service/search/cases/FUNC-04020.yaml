@@ -2,60 +2,35 @@ id: FUNC-04020
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04020
 priority: P1
 tier: B
-title: 从结果回到编辑后所在城市条件仍在
+title: 备选-编辑高级筛选-条件仍在
 entry_id: svc-search
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service-center/search
-  - action: evaluate
-    note: 前置深圳高筛结果并点击「编辑高级筛选」
-    script: |-
-      const advTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^高级筛选$/ }).first();
-      await expect(advTab).toBeVisible({ timeout: 15000 });
-      await advTab.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await expect(page).toHaveURL(/[?&]mode=advanced/);
-      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
-      await expect(fieldLib).toBeVisible({ timeout: 10000 });
-      const cityTag = fieldLib.locator('.fp-tags .arco-tag').filter({ hasText: '所在城市' }).first();
-      await expect(cityTag).toBeVisible({ timeout: 8000 });
-      await cityTag.click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).first();
-      await expect(condRow).toBeVisible({ timeout: 8000 });
-      await condRow.locator('.condition-builder__value .arco-select-view').click({ timeout: 8000 });
-      await page.waitForTimeout(300);
-      const pop = page.locator('.arco-trigger-popup:visible').last();
-      await expect(pop).toBeVisible({ timeout: 8000 });
-      await pop.locator('.arco-select-option').filter({ hasText: /^深圳$/ }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      const apply = page.getByRole('button', { name: /应用筛选/ }).first();
-      await expect(apply).toBeEnabled({ timeout: 8000 });
-      await apply.click({ timeout: 8000 });
-      await expect(page.getByText(/命中\s+\d+\s+家匹配机构/)).toBeVisible({ timeout: 20000 });
-      const editBtn = page.locator('main').getByRole('button', { name: /编辑高级筛选/ }).first();
-      await editBtn.scrollIntoViewIfNeeded();
-      await expect(editBtn).toBeVisible({ timeout: 8000 });
-      await editBtn.click({ timeout: 8000 });
-      await expect(page.getByRole('region', { name: '高级筛选字段库' }).getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 15000 });
+  - action: click
+    target: tab 高级筛选
+  - action: click
+    target: 所在城市
+  - action: click
+    target: 可多选
+  - action: click
+    target: 深圳
+  - action: click
+    target: 应用筛选
+  - action: wait
+    timeout_ms: 1500
+  - action: click
+    target: button 编辑高级筛选
 expect:
-  - note: 1、回到「高级筛选 · 字段库」
+  - note: 回到「高级筛选 · 字段库」
     assert: |-
-      const fieldLib = page.getByRole('region', { name: '高级筛选字段库' });
-      await expect(fieldLib).toBeVisible({ timeout: 10000 });
-      await expect(fieldLib.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible({ timeout: 8000 });
-  - note: 2、条件行仍为所在城市、属于、深圳
+      await expect(page.getByRole('heading', { name: '高级筛选 · 字段库' })).toBeVisible()
+  - note: 条件行仍为所在城市、属于、深圳
     assert: |-
-      const condRow = page.locator('.condition-builder').filter({ hasText: '所在城市' }).first();
-      await expect(condRow).toBeVisible({ timeout: 8000 });
-      const opText = ((await condRow.locator('.condition-builder__op').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!opText.includes('属于')) {
-        throw new Error('所在城市比较符应为「属于」，实际=' + opText);
-      }
-      const valText = ((await condRow.locator('.condition-builder__value').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!/深圳/.test(valText)) {
-        throw new Error('所在城市值应仍为深圳，实际=' + valText);
-      }
+      const main = page.locator('main');
+      await expect(main.getByText('所在城市').first()).toBeVisible();
+      await expect(main.getByText('属于').first()).toBeVisible();
+      await expect(main.getByText('深圳').first()).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

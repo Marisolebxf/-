@@ -1,28 +1,40 @@
 id: FUNC-04703
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04703
-priority: P0
+priority: P1
 tier: B
 title: 主流程-导出名单
 entry_id: svc-rec-cultivate
-preconditions:
-  - 已打开本土机构培育名单
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: wait
+    ms: 1500
   - action: click
-    role: button
-    name: 生成培育名单
+    target: 分析记录
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 查看结果
+  - action: wait
+    ms: 3000
 expect:
-  - note: 浏览器下载 csv 文件
+  - note: 1、浏览器下载 csv 文件
     assert: |-
-      await expect(page.getByRole('button', { name: '导出名单' })).toBeVisible({ timeout: 120000 });
-      const [download] = await Promise.all([
-        page.waitForEvent('download'),
-        page.getByRole('button', { name: '导出名单' }).click(),
-      ]);
-      await expect(download.suggestedFilename()).toMatch(/\.csv$/i);
-  - note: 页面提示已导出
+      await expect(page.getByText('本土机构培育名单')).toBeVisible({ timeout: 60000 });
+      await expect(page.locator('main [data-testid="svc-rec-cultivate-export"]')).toBeEnabled({ timeout: 60000 });
+      const downloadPromise = page.waitForEvent('download');
+      await page.locator('main [data-testid="svc-rec-cultivate-export"]').click();
+      const download = await downloadPromise;
+      const path = await download.path();
+      const fs = require('fs');
+      await expect(fs.existsSync(path)).toBeTruthy();
+      const text = fs.readFileSync(path, 'utf8');
+      const headerLine = text.split(/\r?\n/).find((line) => line && !line.startsWith('#'))?.replace(/^\uFEFF/, '') ?? '';
+      await expect(headerLine.includes('名次')).toBeTruthy();
+      await expect(headerLine.includes(',')).toBeTruthy();
+  - note: 2、页面提示已导出
     assert: |-
       await expect(page.getByText(/已导出/)).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

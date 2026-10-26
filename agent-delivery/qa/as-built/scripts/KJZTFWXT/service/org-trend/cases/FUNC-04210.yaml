@@ -2,317 +2,80 @@ id: FUNC-04210
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04210
 priority: P1
 tier: B
-title: 异常-失败过程页返回配置重试回到分析记录
-story: US-SVC-ORG-04
+title: 异常-返回配置重试
 entry_id: svc-org-trend
-preconditions:
-  - 已打开一条失败任务的过程页（脚本自含：分析记录失败行深链或深链配置后发起后 hydrate 失败态）
-locators:
-  back_retry: button「返回配置重试」
-  fail_banner: 本次分析生成失败
-  records_tab: '[role=tab][data-tab-key="records"]'
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=trend&tab=trend
 expect:
-  - note: 前置：进入失败任务过程页并点击「返回配置重试」（用例步骤 1）
+  - note: 1、离开过程页
     assert: |-
       const catalogPath = '/service/institution-judgment?workspace=trend&tab=trend';
       const knownOrgId = '79bbcfc0e68027808f1f4caf1b6f0469';
-      const spaUrl = (p) =>
-        new URL(p.startsWith('/') ? p : '/' + p, (baseUrl || 'http://10.50.69.111:30892/').replace(/\/?$/, '/')).toString();
-      const processShell = () => page.locator('[data-testid="svc-org-analysis-process"]').first();
-      const mainLast = () => page.locator('main').last();
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
+      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
+      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
+      const main = page.locator('main');
+      globalThis.__p04210 = globalThis.__p04210 || { clickedBack: false };
+
+      const openRecords = async () => {
+        await page.getByRole('tab', { name: '分析记录' }).click({ timeout: 10000 });
+        await page.waitForTimeout(600);
       };
-      const bodyIs404 = async () => {
-        if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) return true;
-        const homeBtn = page.getByRole('button', { name: '返回首页' });
-        if (await homeBtn.count() && (await homeBtn.first().isVisible().catch(() => false))) return true;
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在/.test(t) && !/服务机构新增趋势分析/.test(t);
+
+      const openFailedFromRecords = async () => {
+        await openRecords();
+        const failRow = main.locator('tr').filter({ hasText: '失败' }).first();
+        const proc = failRow.getByRole('button', { name: '查看过程' });
+        if (!(await proc.count())) return false;
+        if (!(await proc.first().isVisible().catch(() => false))) return false;
+        await proc.first().click({ timeout: 10000 });
+        await page.waitForTimeout(1000);
+        return true;
       };
-      const onTrend = () =>
-        /\/service\/institution-judgment/.test(page.url()) &&
-        /workspace=trend/.test(page.url()) &&
-        /tab=trend|tab=records/.test(page.url());
-      const pickLeaf = () => page.locator('.arco-menu-item').filter({ hasText: /^服务机构新增趋势分析$/ });
-      const expandSvcMenu = async () => {
-        if (await pickLeaf().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业服务链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      const enterViaSidebar = async (siblingPath) => {
-        await dismissBasket();
-        await page.goto(spaUrl(siblingPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+      const hydrateFailedProcess = async () => {
+        const deep = `${catalogPath}&org_ids[]=${encodeURIComponent(knownOrgId)}`;
+        await page.goto(toUrl(deep), { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForTimeout(1200);
-        if (/sso\/user\/login|itic-sci\.com\/sso/i.test(page.url())) return false;
-        if (await bodyIs404()) return false;
-        await expandSvcMenu();
-        const leaf = pickLeaf();
-        if (!(await leaf.first().isVisible().catch(() => false))) return false;
-        await leaf.first().click({ timeout: 10000 });
-        await page.waitForURL(/\/service\/institution-judgment/, { timeout: 20000 });
-        return onTrend() && !(await bodyIs404());
-      };
-      const ensureTrendEntry = async () => {
-        await dismissBasket();
-        if (!onTrend() || (await bodyIs404())) {
-          await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(1200);
-        }
-        if (!onTrend() || (await bodyIs404())) {
-          const siblings = ['/service-portal/overview/overview', '/service-portal/overview'];
-          let ok = false;
-          for (const s of siblings) {
-            if (await enterViaSidebar(s)) {
-              ok = true;
-              break;
-            }
-          }
-          if (!ok) throw new Error('ENV-ENTRY-UNREACHABLE: 无法进入 trend 工作区 url=' + page.url());
-        }
-        if (await bodyIs404()) throw new Error('ENV-ENTRY-UNREACHABLE: 服务机构新增趋势分析入口不可用 ' + page.url());
-        await expect(page.getByText('服务机构新增趋势分析').first()).toBeVisible({ timeout: 12000 });
-      };
-      const findFailedTaskIdOnRecords = async () => {
-        const rec = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
-        await rec.click({ timeout: 8000 });
-        await page.waitForURL(/tab=records/, { timeout: 12000 }).catch(() => {});
-        await page.waitForTimeout(2000);
-        const statusSel = mainLast().locator('.arco-select').first();
-        if (await statusSel.count()) {
-          await statusSel.click({ timeout: 5000 }).catch(() => {});
-          await page.waitForTimeout(400);
-          const failOpt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /^失败$/ });
-          if (await failOpt.count()) {
-            await failOpt.first().click({ timeout: 5000 });
-            await page.waitForTimeout(2000);
-          }
-        }
-        const row = mainLast()
-          .locator('tr, [role="row"], .arco-table-tr')
-          .filter({ hasText: /SVC-\d{8}-\d+/ })
-          .filter({ hasText: /失败/ })
-          .first();
-        if (!(await row.count())) return null;
-        const txt = (await row.innerText().catch(() => '')) || '';
-        const m = txt.match(/SVC-\d{8}-\d+/);
-        return m ? m[0] : null;
-      };
-      const openProcessingDeepLink = async (taskId) => {
-        const dl = new URL(catalogPath, spaUrl('/'));
-        dl.searchParams.set('view', 'processing');
-        dl.searchParams.set('demo_state', 'processing');
-        dl.searchParams.set('task_id', taskId);
-        const cur = new URL(page.url());
-        const ind = cur.searchParams.get('industry');
-        if (ind) dl.searchParams.set('industry', ind);
-        await page.goto(dl.toString(), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(2000);
-      };
-      const waitFailedProcessShell = async () => {
-        let last = '';
-        for (let i = 0; i < 45; i++) {
-          await page.waitForTimeout(i < 5 ? 800 : 1200);
-          last = ((await mainLast().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          const back = page.getByRole('button', { name: '返回配置重试' }).first();
-          if (/本次分析生成失败/.test(last) && (await back.isVisible().catch(() => false))) {
-            return last;
-          }
-        }
-        throw new Error('前置：未进入失败过程页（无「本次分析生成失败」+「返回配置重试」）片段=' + last.slice(0, 280));
-      };
-      const ensureIndustryAndOrg = async () => {
-        await dismissBasket();
-        await page.goto(spaUrl(catalogPath), { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(1200);
-        const cfgTab = page.locator('[role=tab][data-tab-key="trend"]').or(page.getByRole('tab', { name: '服务机构新增趋势分析', exact: true })).first();
-        if (await cfgTab.count()) {
-          await cfgTab.click({ timeout: 5000 }).catch(() => {});
-          await page.waitForTimeout(600);
-        }
-        await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 10000 });
-        const deeplink =
-          catalogPath + '&industry=INB1701&org_ids[]=' + encodeURIComponent(knownOrgId);
-        if (!/[?&]industry=INB1701/.test(page.url()) || !/org_ids/.test(page.url())) {
-          await page.goto(spaUrl(deeplink), { waitUntil: 'domcontentloaded', timeout: 60000 });
-          await page.waitForTimeout(2500);
-        }
-        let main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-        if (!/已选机构（[1-9]/.test(main0)) {
-          const indSel = page.locator('.industry-catalog-select').first();
-          if (await indSel.count()) {
-            await indSel.click({ timeout: 5000 }).catch(() => {});
-            await page.waitForTimeout(400);
-            const opt = page.locator('.arco-trigger-popup:visible .arco-select-option').filter({ hasText: /新一代信息技术/ }).first();
-            if (await opt.count()) {
-              await opt.click({ timeout: 5000 });
-              await page.waitForTimeout(800);
-            }
-          }
-          main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-          if (!/已选机构（[1-9]/.test(main0)) {
-            const clr = page.locator('main').first().getByRole('button', { name: '清空' });
-            if (await clr.count()) await clr.first().click({ timeout: 3000 }).catch(() => {});
-            const pickOrg = page
-              .getByRole('button', { name: '选择机构' })
-              .or(page.locator('[data-testid="svc-org-pick-orgs"]'))
-              .first();
-            await expect(pickOrg).toBeVisible({ timeout: 12000 });
-            await pickOrg.click({ timeout: 15000 });
-            await page.waitForTimeout(800);
-            const dialog = page.locator('.arco-modal, [role="dialog"]').filter({ hasText: '选择服务机构' }).first();
-            await expect(dialog).toBeVisible({ timeout: 8000 });
-            const checks = dialog.locator(
-              '.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)',
-            );
-            for (let i = 0; i < 20 && !(await checks.count()); i++) {
-              const body = dialog.locator('.arco-modal-body, .arco-table-body, .arco-list').first();
-              if (await body.count()) {
-                try {
-                  await body.evaluate((el) => {
-                    el.scrollTop = (el.scrollTop || 0) + 240;
-                  });
-                } catch {}
-              }
-              await page.waitForTimeout(400);
-            }
-            if (!(await checks.count())) {
-              throw new Error('ENV-SVC-ORG-TREND-NO-ORG-04210：选择机构弹窗无可勾选机构');
-            }
-            await checks.first().click({ timeout: 5000 });
-            await page.waitForTimeout(300);
-            await dialog.getByRole('button', { name: '确定' }).click({ timeout: 8000 });
-            await page.waitForTimeout(1000);
-          }
-        }
-        main0 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-        if (!/已选机构（[1-9]/.test(main0) && !/[?&]industry=/.test(page.url())) {
-          throw new Error('ENV-SVC-ORG-TREND-NO-ORG-04210：配置区未就绪（缺产业/机构）');
-        }
-        if (!/已选机构（[1-9]/.test(main0)) {
-          throw new Error('ENV-SVC-ORG-TREND-NO-ORG-04210：深链与弹窗均未回显已选机构');
-        }
-      };
-      const syntheticFailedProcess = async () => {
-        await ensureIndustryAndOrg();
-        const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
-        await expect(start).toBeEnabled({ timeout: 12000 });
-        await start.click({ timeout: 10000 });
-        let taskId = null;
-        for (let i = 0; i < 25; i++) {
-          await page.waitForTimeout(1000);
-          const m = page.url().match(/task_id=(SVC-\d{8}-\d+)/);
-          if (m) {
-            taskId = m[1];
-            break;
-          }
-        }
-        if (!taskId) throw new Error('ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04210：无法取得 task_id 以打开过程页');
-        await page.unroute({ behavior: 'ignoreErrors' }).catch(() => {});
-        await page.route('**/topic/v1/analysis/tasks/' + taskId + '**', async (route) => {
-          const body = {
-            code: 0,
-            ok: true,
-            data: {
-              taskId,
-              status: 'failed',
-              taskName: taskId,
-              errorMsg: 'QA-04210 hydrate failed (no live failed record)',
-              createTime: new Date().toISOString(),
-            },
-          };
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-        });
-        await openProcessingDeepLink(taskId);
-        await waitFailedProcessShell();
-        globalThis.__p04210 = {
-          taskId,
-          path: 'synthetic_hydrate_failed',
-          ticket: 'ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04210',
+        const abortCreate = (route) => {
+          const u = route.request().url();
+          const m = route.request().method();
+          if (m === 'POST' && /analysis|task|jobs/i.test(u)) return route.abort('failed');
+          return route.continue();
         };
-      };
-      await ensureTrendEntry();
-      let taskId = await findFailedTaskIdOnRecords();
-      if (taskId) {
-        await openProcessingDeepLink(taskId);
+        await page.route('**/*', abortCreate);
         try {
-          await waitFailedProcessShell();
-          globalThis.__p04210 = { taskId, path: 'records_failed_row' };
-        } catch (e) {
-          await syntheticFailedProcess();
+          await main.getByRole('button', { name: '开始分析' }).click({ timeout: 10000 });
+          await page.waitForTimeout(2500);
+        } finally {
+          await page.unroute('**/*', abortCreate);
         }
-      } else {
-        await syntheticFailedProcess();
+        const retryBtn = main.getByRole('button', { name: '返回配置重试' });
+        if (await retryBtn.isVisible().catch(() => false)) return true;
+        return false;
+      };
+
+      if (!globalThis.__p04210.clickedBack) {
+        let onFailProcess = await openFailedFromRecords();
+        if (!onFailProcess) onFailProcess = await hydrateFailedProcess();
+        if (!onFailProcess) {
+          throw new Error('修订 无失败任务且 hydrate 未进入失败过程页');
+        }
+        await main.getByRole('button', { name: '返回配置重试' }).click({ timeout: 10000 });
+        globalThis.__p04210.clickedBack = true;
+        await page.waitForTimeout(800);
       }
-      const backBtn = page.getByRole('button', { name: '返回配置重试' }).first();
-      await expect(backBtn).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText('本次分析生成失败').first()).toBeVisible({ timeout: 8000 });
-      await backBtn.click({ timeout: 15000 });
-      await page.waitForTimeout(1500);
-      globalThis.__p04210.clickedBack = true;
-  - note: 1、离开过程页（用例预期 1）
+
+      await expect(main.getByRole('button', { name: '返回配置重试' })).toHaveCount(0);
+      await expect(main.getByText('本次分析生成失败')).toHaveCount(0);
+  - note: 2、能看到分析记录列表
     assert: |-
       if (!globalThis.__p04210?.clickedBack) throw new Error('前置：未点击返回配置重试');
-      const url = page.url();
-      if (/view=processing|demo_state=processing/.test(url)) {
-        throw new Error('点击后仍停在过程页 URL: ' + url);
-      }
-      if (await page.getByRole('button', { name: '返回配置重试' }).count()) {
-        const vis = await page.getByRole('button', { name: '返回配置重试' }).first().isVisible().catch(() => false);
-        if (vis) throw new Error('点击后仍可见「返回配置重试」按钮（未离开失败过程壳）');
-      }
-      const body = ((await page.locator('main').last().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/服务机构新增趋势分析生成中/.test(body) && /本次分析生成失败/.test(body)) {
-        throw new Error('仍停留在失败生成中过程壳');
-      }
-      await expect(page).toHaveURL(/workspace=trend/, { timeout: 8000 });
-      if (/view=result/.test(url)) {
-        throw new Error('点击后误入结果页（应落分析记录）: ' + url);
-      }
-  - note: 2、能看到分析记录列表（用例预期 2）
-    assert: |-
-      if (!globalThis.__p04210?.clickedBack) throw new Error('前置：未点击返回配置重试');
-      const recTab = page.locator('[role=tab][data-tab-key="records"]').or(page.getByRole('tab', { name: '分析记录', exact: true })).first();
-      await expect(recTab).toBeVisible({ timeout: 8000 });
-      const url = page.url();
-      if (!/tab=records/.test(url)) {
-        const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-        if (!/SVC-\d{8}-\d+/.test(mainRec) || !/任务/.test(mainRec)) {
-          throw new Error('未见分析记录列表（URL 无 tab=records 且主区无任务表） url=' + url);
-        }
-      }
-      const mainRec = ((await page.locator('main').first().innerText().catch(() => '')) || '').trim();
-      if (!/SVC-\d{8}-\d+/.test(mainRec)) {
-        throw new Error('分析记录列表无任务行');
-      }
-      for (const h of ['任务', '状态', '操作']) {
-        if (!mainRec.includes(h)) throw new Error('分析记录表头缺列「' + h + '」');
-      }
-      await expect(page.getByText('本次分析生成失败')).toHaveCount(0);
-      console.log(
-        '[FUNC-04210 observed] path=' +
-          String(globalThis.__p04210.path || '') +
-          ' task=' +
-          String(globalThis.__p04210.taskId || '') +
-          ' ticket=' +
-          String(globalThis.__p04210.ticket || 'none'),
-      );
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  04210=失败过程页 ServiceAnalysisProcessShell「返回配置重试」→ 落分析记录（不测进结果页）。
-  前置优先：分析记录筛「失败」取 task_id 深链 view=processing；现场无失败行 →
-  兜底深链 industry+org_ids 点「开始分析」取 task_id 后对 GET hydrate 置 status=failed（D4 ENV-SVC-ORG-TREND-NO-FAIL-RECORD-04210，不测断链）。
-  对齐 org-field FUNC-04121 / trend FUNC-04208 入口 helper。catalog_path=entry-seed。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04210。B 档零 allow_skip。
+      const main = page.locator('main');
+      await expect(page.getByTestId('svc-org-analysis-records')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole('tab', { name: '分析记录' })).toHaveAttribute('aria-selected', 'true');
+      await expect(main.getByRole('columnheader', { name: '任务号' })).toBeVisible();
+      await expect(main.getByRole('columnheader', { name: '操作' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

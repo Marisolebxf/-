@@ -1,6 +1,6 @@
 id: FUNC-01101
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01101
-priority: P0
+priority: P1
 tier: B
 title: 两种评价模式单选互斥且切换后不静默保留非法对象组合
 entry_id: chain-regional-compete
@@ -9,36 +9,82 @@ locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
-  - action: wait
-    target: 评价模式
   - action: evaluate
-    script: |-
-      const main = page.locator('main');
-      await main.getByText('单产业 × 多区域', { exact: true }).click();
-      const objectRow = main.locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
-      await objectRow.locator('.arco-select-view').first().click();
-      await page.locator('.arco-select-dropdown:visible .arco-select-option').first().click();
-      await objectRow.locator('.arco-select-view').last().click();
-      const dropdown = page.locator('.arco-select-dropdown:visible');
-      const options = dropdown.locator('.arco-select-option');
-      const count = await options.count();
-      for (let i = 0; i < Math.min(count, 2); i += 1) {
-        await options.nth(i).click();
-      }
-      await main.getByText('多产业 × 单区域', { exact: true }).click();
+    note: 读模式→单产业×多区域→1产业2区域→多产业×单区域→回读；断言在 expect
 expect:
   - note: 1、评价模式含「单产业 × 多区域」「多产业 × 单区域」两选项，同一时刻仅一态
     assert: |-
-      const main = page.locator('main');
-      await expect(main.getByText('单产业 × 多区域', { exact: true })).toBeVisible();
-      await expect(main.getByText('多产业 × 单区域', { exact: true })).toBeVisible();
-      await expect(main.locator('.analysis-rounded-radio .arco-radio-checked')).toHaveCount(1);
+      const main = () => page.locator('main').first();
+      const modeSingle = () => main().getByText('单产业 × 多区域', { exact: true });
+      const modeMulti = () => main().getByText('多产业 × 单区域', { exact: true });
+      const singleLayout = () => main().getByText('评价区域（1–5）');
+      const multiLayout = () => main().getByText('分析对象（1–5）');
+      await expect(modeSingle()).toBeVisible({ timeout: 15000 });
+      await expect(modeMulti()).toBeVisible({ timeout: 15000 });
+      await expect(singleLayout()).toBeVisible({ timeout: 8000 });
+      await expect(multiLayout()).toHaveCount(0);
+      await modeMulti().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(multiLayout()).toBeVisible({ timeout: 10000 });
+      await expect(singleLayout()).toHaveCount(0);
+      await modeSingle().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(singleLayout()).toBeVisible({ timeout: 10000 });
+      await expect(multiLayout()).toHaveCount(0);
   - note: 2、切换后已选对象收窄或清空至新模式合法范围，不静默保留多产业 × 多区域组合
     assert: |-
-      const main = page.locator('main');
-      await expect(main.locator('.analysis-rounded-radio .arco-radio-checked')).toContainText('多产业 × 单区域');
-      const objectRow = main.locator('[data-mount-host="CHAIN-REG-F01-OBJECT-CONTEXT"]');
-      await expect(objectRow.getByText('分析对象（1–5）')).toBeVisible();
-      await expect(objectRow.getByText('评价区域', { exact: true })).toBeVisible();
-      await expect(objectRow.locator('.arco-select-view-multiple')).toHaveCount(0);
+      const main = () => page.locator('main').first();
+      const pickSelectOption = async (ariaLabel, re) => {
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
+        const view = main().locator('.arco-select-view[aria-label="' + ariaLabel + '"]').first();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const opt = pop.locator('.arco-select-option').filter({ hasText: re }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
+        await page.waitForTimeout(700);
+      };
+      const regionMulti = () =>
+        main().locator('.arco-select-view-multiple').filter({ hasText: /深圳|上海|杭州|广东|北京|请选择区域/ }).first();
+      const ensureRegions = async (names) => {
+        const view = regionMulti();
+        await expect(view).toBeVisible({ timeout: 10000 });
+        await view.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const pop = page.locator('.arco-trigger-popup:visible').last();
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        for (const name of names) {
+          const opt = pop.locator('.arco-select-option').filter({ hasText: new RegExp('^\\s*' + name + '\\s*$') });
+          if (await opt.count()) {
+            const selected = await opt.first().evaluate((el) => (el.className || '').includes('selected'));
+            if (!selected) await opt.first().click({ force: true });
+            await page.waitForTimeout(300);
+          }
+        }
+        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(400);
+        const txt = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+        for (const name of names) {
+          if (!txt.includes(name)) throw new Error('评价区域未含「' + name + '」，现场=' + txt);
+        }
+      };
+      await main().getByText('单产业 × 多区域', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(500);
+      await pickSelectOption('集群', /生物产业/);
+      await pickSelectOption('产业', /^生物$/);
+      await ensureRegions(['深圳市', '上海市']);
+      await main().getByText('多产业 × 单区域', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      await expect(main().getByText('分析对象（1–5）')).toBeVisible({ timeout: 10000 });
+      await expect(main().getByText('评价区域（1–5）')).toHaveCount(0);
+      await expect(main().getByText('评价区域', { exact: true })).toBeVisible({ timeout: 8000 });
+      const regionSingle = main().locator('.arco-select-view').filter({ hasText: /深圳|上海|广东|北京|杭州|请选择区域/ }).first();
+      const regionTxt = ((await regionSingle.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (regionTxt.includes('深圳') && regionTxt.includes('上海')) {
+        throw new Error('切换多产业×单区域后仍保留深沪双区域：' + regionTxt);
+      }
 on_fail: 截图 + 抄 X-Trace-Id

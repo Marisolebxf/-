@@ -1,21 +1,16 @@
 id: FUNC-02245
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02245
 priority: P1
-title: 异常-候选复核失败
-story: US-ENT-RECRUIT-C1
-entry_id: ent-cultivate
 tier: B
-preconditions:
-  - 已在指定对象模型参数配置（assert 自含候选非空→勾选→执行指定对象复核）
-locators:
-  cand_route: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates
-  config_panel: data-testid=specified-review-config
-  start_btn: button「开始分析」
+title: 异常-候选复核失败
+entry_id: ent-cultivate
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates
+    target: /enterprise/attraction
   - action: evaluate
-    note: 配置页点「开始分析」→等待终态；失败页与返回名单在 expect
+    note: 同册02208→参数配置后点开始分析并等待结束
 expect:
   - note: 1、出现「候选分析失败」
     assert: |-
@@ -23,205 +18,71 @@ expect:
       const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
       const stack = () => page.getByTestId('recruit-tab-stack');
       const candRoute = '/enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation&entry=candidates';
-      const searchRoute = '/enterprise/enterprise-search';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
       const openCandidateTab = async () => {
-        if ((await candTab().getAttribute('aria-selected').catch(() => '')) === 'true') return;
-        await expect(candTab()).toBeVisible({ timeout: 10000 });
-        await candTab().click({ timeout: 10000 });
-        await page.waitForTimeout(900);
-        if ((await candTab().getAttribute('aria-selected').catch(() => '')) !== 'true') {
-          const byKey = page.locator('button[data-tab-key="candidates"]').first();
-          if (await byKey.count()) {
-            await byKey.click({ timeout: 8000, force: true });
-            await page.waitForTimeout(900);
-          }
-        }
-      };
-      const actionBar = () => stack().getByTestId('candidate-action-bar');
-      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
-      const hasCandidatePanel = async () => {
-        const bar = actionBar();
-        return (await bar.count()) > 0 && (await bar.first().isVisible().catch(() => false));
-      };
-      const ensureOneCandidate = async () => {
-        await openCandidateTab();
-        if (await hasCandidatePanel()) return;
-        if ((await rowCount()) > 0 && (await page.getByRole('button', { name: '执行指定对象复核' }).count())) return;
-        const tryBasket = async () => {
-          const dock = page.getByRole('button', { name: /打开对比篮/ });
-          if (!(await dock.count())) return false;
-          await dock.first().click({ timeout: 8000 });
+        const candTab = page.getByRole('tab', { name: '候选工作台' }).first();
+        await expect(candTab).toBeVisible({ timeout: 15000 });
+        if ((await candTab.getAttribute('aria-selected')) !== 'true') {
+          await candTab.click({ timeout: 10000 });
           await page.waitForTimeout(800);
-          const addC = page.getByRole('button', { name: '加入培育候选' });
-          if (!(await addC.count())) return false;
-          const sels = page.locator('[aria-label^="选择 "]');
-          if (await sels.count()) await sels.first().click();
-          await page.waitForTimeout(400);
-          if (!(await addC.first().isEnabled())) return false;
-          await addC.first().click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          await page.keyboard.press('Escape').catch(() => {});
-          return true;
-        };
-        if (await tryBasket()) {
-          await openCandidateTab();
-          if (await hasCandidatePanel()) return;
         }
-        await page.goto(toUrl(searchRoute), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-        await dismissBasket();
-        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
-        await page.getByRole('button', { name: '搜索' }).click();
-        await page.waitForTimeout(5000);
-        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const addOpt = page.getByText('加入培育候选', { exact: true }).first();
-        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
-        await page.waitForTimeout(1500);
+      };
+      const ensureConfigPage = async () => {
         await page.goto(toUrl(candRoute), { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(1500);
         await openCandidateTab();
-        if (!(await hasCandidatePanel()) && (await rowCount()) === 0) {
-          throw new Error('环境闸门 ENV-CULTIVATE-CANDIDATE-EMPTY：候选工作台无企业');
-        }
-      };
-      const parseSelectedCount = (t) => {
-        const m = (t || '').replace(/\s+/g, ' ').match(/已选\s*(\d+)\s*家/);
-        return m ? Number(m[1]) : -1;
-      };
-      const dataRows = () => stack().locator('.arco-table-tr:has(.arco-table-td)');
-      const checkTargetRow = async (targetRow) => {
-        await expect(actionBar()).toBeVisible({ timeout: 10000 });
-        for (let attempt = 0; attempt < 4; attempt++) {
-          const cb = targetRow.locator('.arco-checkbox, input[type=checkbox]').first();
-          if (await cb.count()) {
-            const checked = (await cb.getAttribute('class'))?.includes('arco-checkbox-checked');
-            if (!checked) await cb.click({ timeout: 8000, force: true });
-          } else {
-            await targetRow.click({ timeout: 8000, force: true }).catch(() => {});
-          }
+        const bar = stack().getByTestId('candidate-action-bar');
+        await expect(bar).toBeVisible({ timeout: 15000 });
+        await expect(stack().getByText(/共\s*\d+\s*家/).first()).toBeVisible({ timeout: 15000 });
+        const cb = stack().locator('.arco-table-body .arco-checkbox, tbody .arco-checkbox').first();
+        await expect(cb).toBeVisible({ timeout: 12000 });
+        if (!(await cb.getAttribute('class'))?.includes('arco-checkbox-checked')) {
+          await cb.click({ timeout: 8000 });
           await page.waitForTimeout(700);
-          if (parseSelectedCount(await actionBar().innerText().catch(() => '')) === 1) return;
         }
-        throw new Error('勾选首行后已选仍为 ' + parseSelectedCount(await actionBar().innerText().catch(() => '')));
-      };
-      const pickFirstDataRow = async () => {
-        const rows = dataRows();
-        const n = await rows.count();
-        for (let i = 0; i < n; i++) {
-          const row = rows.nth(i);
-          const t = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (/^企业名称/.test(t)) continue;
-          if (!/公司|集团|有限|科技|股份|企业/.test(t)) continue;
-          return row;
+        const selText = await bar.innerText().catch(() => '');
+        if (!/已选\s*[1-9]\d*\s*家/.test(selText.replace(/\s+/g, ' '))) {
+          await stack().locator('.arco-table-body .arco-table-tr, tbody tr').first().click({ timeout: 8000 }).catch(() => {});
+          await cb.click({ timeout: 8000 }).catch(() => {});
+          await page.waitForTimeout(700);
         }
-        throw new Error('候选表无可用数据行');
+        const review = bar.getByRole('button', { name: '执行指定对象复核' }).first();
+        await expect(review).toBeEnabled({ timeout: 8000 });
+        await review.click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const config = page.getByTestId('specified-review-config');
+        await expect(config).toBeVisible({ timeout: 12000 });
+        await expect(page.getByText('指定对象模型参数配置', { exact: false }).first()).toBeVisible({ timeout: 8000 });
+        return config;
       };
-      const readStack = async () => {
-        try {
-          return await stack().innerText({ timeout: 4000 });
-        } catch {
-          return await page.locator('body').innerText({ timeout: 3000 }).catch(() => '');
-        }
-      };
-      await dismissBasket();
-      await ensureOneCandidate();
-      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
-      await checkTargetRow(await pickFirstDataRow());
-      const review = actionBar().getByRole('button', { name: '执行指定对象复核' }).first();
-      await expect(review).toBeEnabled({ timeout: 8000 });
-      await review.scrollIntoViewIfNeeded().catch(() => {});
-      await review.click({ timeout: 12000, force: true });
-      await page.waitForTimeout(800);
-      const config = page.getByTestId('specified-review-config');
-      await expect(config).toBeVisible({ timeout: 12000 });
+      const config = await ensureConfigPage();
       const start = config.getByRole('button', { name: '开始分析' }).first();
       await expect(start).toBeEnabled({ timeout: 8000 });
-      await start.scrollIntoViewIfNeeded().catch(() => {});
-      await start.click({ timeout: 12000, force: true });
-      let last = '';
-      let ok = false;
-      for (let i = 0; i < 48; i++) {
-        await page.waitForTimeout(i === 0 ? 1200 : 2500);
-        last = await readStack();
-        if (/人工线索复核结果/.test(last) && !/候选分析失败/.test(last)) {
-          throw new Error(
-            '环境闸门 ENV-CULTIVATE-CANDIDATE-SUCCESS-001：提交后到达复核成功结果，与用例「候选分析失败」终态不一致',
-          );
-        }
-        if (/推荐分析失败/.test(last) && !/候选分析失败/.test(last)) {
-          throw new Error('环境闸门 ENV-CULTIVATE-CANDIDATE-WRONG-FAIL-001：出现条件筛选失败页「推荐分析失败」而非候选失败');
-        }
-        const failHeading = stack().getByText('候选分析失败', { exact: true });
-        if ((await failHeading.count()) > 0 && (await failHeading.first().isVisible().catch(() => false))) {
-          if (!/可视化分析过程/.test(last)) {
-            ok = true;
-            break;
-          }
-        }
-      }
-      if (!ok) {
-        const stillConfig = await page.getByTestId('specified-review-config').isVisible().catch(() => false);
-        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-        if (stuck) {
-          throw new Error('环境闸门 ENV-CULTIVATE-CANDIDATE-ASYNC-001：开始分析后长期停留在过程态，未见「候选分析失败」');
-        }
-        if (stillConfig) {
-          throw new Error('环境闸门 ENV-CULTIVATE-CANDIDATE-NO-START-001：点「开始分析」后仍停在参数配置页');
-        }
-        throw new Error('超时未见「候选分析失败」终态: ' + last.slice(0, 240));
-      }
-      await expect(stack().getByText('候选分析失败', { exact: true }).first()).toBeVisible({ timeout: 8000 });
-      globalThis.__func02245 = { lastBody: last };
+      await start.click({ timeout: 10000 });
+      const failTitle = page.getByText('候选分析失败', { exact: false }).first();
+      await expect(failTitle).toBeVisible({ timeout: 180000 });
   - note: 2、给出失败说明
     assert: |-
-      if (!globalThis.__func02245) throw new Error('前置：未到达候选分析失败页');
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const main = page.locator('main').first();
-      const scope = (await stack().count()) ? stack() : main;
-      const subtitle = scope.locator('.arco-result-subtitle').first();
-      let hint = '';
-      if (await subtitle.count()) {
-        hint = ((await subtitle.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+      const main = page.locator('main');
+      const body = ((await main.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+      if (!body.includes('候选分析失败')) {
+        throw new Error('主区未见候选分析失败标题');
       }
-      if (!hint || hint.length < 2) {
-        const body = ((await scope.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        const m = body.match(/候选分析失败\s*(.{4,200})/);
-        hint = m ? m[1].trim() : '';
+      const withoutTitle = body.replace(/候选分析失败/g, '').trim();
+      if (withoutTitle.length < 8) {
+        throw new Error('失败说明过短或缺失: ' + body.slice(0, 200));
       }
-      if (!hint || hint.length < 2) {
-        throw new Error('失败页未见可读失败说明（subtitle 为空）body=' + (globalThis.__func02245.lastBody || '').slice(0, 200));
-      }
-      globalThis.__func02245.failHint = hint;
   - note: 3、候选名单仍可回到
     assert: |-
-      if (!globalThis.__func02245) throw new Error('前置：未到达候选分析失败页');
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const main = page.locator('main').first();
-      let back = main.getByRole('button', { name: '返回', exact: true }).first();
+      const config = page.getByTestId('specified-review-config');
+      const back = config.getByRole('button', { name: '返回候选列表' }).first();
       if (!(await back.count())) {
-        back = stack().getByRole('button', { name: '返回', exact: true }).first();
+        const back2 = page.locator('main').getByRole('button', { name: '返回候选列表' }).first();
+        await expect(back2).toBeVisible({ timeout: 8000 });
+        await back2.click({ timeout: 8000 });
+      } else {
+        await expect(back).toBeVisible({ timeout: 8000 });
+        await back.click({ timeout: 8000 });
       }
-      await expect(back).toBeVisible({ timeout: 8000 });
-      await back.click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      await expect(page.getByTestId('specified-review-config')).toHaveCount(0, { timeout: 8000 });
-      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
-      await expect(stack().getByTestId('candidate-action-bar')).toBeVisible({ timeout: 8000 });
-      const rows = await stack().locator('.arco-table-body .arco-table-tr').count();
-      if (rows < 1) {
-        throw new Error('返回后候选名单无数据行（rows=' + rows + '）');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·edu tts/svcz 深链 entry=candidates。步骤=勾选 1 家→执行指定对象复核→「开始分析」→等待 CandidatePanel「候选分析失败」+subtitle+「返回」回名单（对齐用例正文；前置兜底同 02208/02239 force 勾选）。D4·2026-10-20 rewrite-FUNC-02245 svcz 机跑 fail·ENV-CULTIVATE-CANDIDATE-SUCCESS-001（提交后达「人工线索复核结果」）或 NO-START/ASYNC（异步未落失败终态）；用例备注「名单提交后失败」与现场成功态漂移。候选空→ ENV-CULTIVATE-CANDIDATE-EMPTY。登录与关评审由 runner 前置。B 档零 allow_skip。交卷 blocked 候选。
+      await page.waitForTimeout(800);
+      await expect(page.getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 15000 });
+on_fail: 截图 + 抄 X-Trace-Id

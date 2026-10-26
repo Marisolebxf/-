@@ -1,6 +1,6 @@
 id: FUNC-03788
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03788
-priority: P1
+priority: P0
 tier: B
 title: 主流程-打开报告
 entry_id: chain-report-deep
@@ -8,14 +8,15 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /industry-center/reports/CHAIN-20261018-020
+    target: /industry-center/reports/CHAIN-20261021-002
 expect:
   - note: 地址含 view=report
     assert: |-
       await expect(page).toHaveURL(/view=report/)
   - note: 页眉文案为「产业链分析报告」
     assert: |-
-      await expect(page.getByText('产业链分析报告').first()).toBeVisible()
+      await expect(page.locator('main').getByText('产业链分析报告').first()).toBeVisible()
   - note: 主标题以「报告」结尾
     assert: |-
-      await expect(page.locator('h1').first()).toHaveText(/报告$/)
+      await expect(page.locator('main').getByRole('heading', { name: /报告$/ }).first()).toBeVisible()
+on_fail: 截图 + 抄 X-Trace-Id

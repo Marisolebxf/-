@@ -1,6 +1,6 @@
 id: FUNC-04488
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04488
-priority: P0
+priority: P1
 tier: B
 title: 主流程-入口A到结果页
 entry_id: svc-chain-graph
@@ -9,20 +9,39 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: wait
+    ms: 1500
+  - action: click
+    target: 服务链图谱分析
+    locator: |-
+      page.getByText('服务链图谱分析', { exact: true }).last()
+  - action: wait
+    ms: 800
+  - action: click
+    target: 产业领域
+    locator: |-
+      page.locator('main [data-testid="svc-eco-analysis-context"] .arco-cascader-view').first()
+  - action: click
+    target: 新一代信息技术
+    locator: |-
+      page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true })
+  - action: click
+    target: ① 仅机构
+    locator: |-
+      page.locator('main').getByRole('radio', { name: '① 仅机构' })
+  - action: click
+    target: 开始分析
+    locator: |-
+      page.locator('main [data-testid="svc-eco-start-analysis"]')
 expect:
-  - note: 过程页出现「分析结果已生成」
+  - note: 1、过程页出现「分析结果已生成」
     assert: |-
-      const domainRow = page.locator('.arco-form-item').filter({ hasText: '产业领域' });
-      await domainRow.locator('.arco-cascader-view').click();
-      await page.getByText('新一代信息技术', { exact: true }).click();
-      await page.getByText('① 仅机构').click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 180000 });
-  - note: 过程页写明不会自动跳转
+      await expect(page.getByText('分析结果已生成')).toBeVisible({ timeout: 90000 });
+  - note: 2、过程页写明不会自动跳转
     assert: |-
       await expect(page.getByText(/不会自动跳转/)).toBeVisible();
-  - note: 结果页出现「服务生态关系图谱」
+  - note: 3、结果页出现「服务生态关系图谱」
     assert: |-
       await page.getByRole('button', { name: '查看结果' }).click();
-      await expect(page.getByText('服务生态关系图谱')).toBeVisible({ timeout: 60000 });
+      await expect(page.getByText('服务生态关系图谱').first()).toBeVisible({ timeout: 30000 });
 on_fail: 截图 + 抄 X-Trace-Id

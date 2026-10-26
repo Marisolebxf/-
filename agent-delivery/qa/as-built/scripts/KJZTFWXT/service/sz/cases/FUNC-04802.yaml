@@ -9,24 +9,54 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=shenzhen&tab=shenzhen
-  - action: click
-    target: locator('.arco-select-view').filter({ hasText: '生物产业' }).first()
-  - action: click
-    target: getByText('生物', { exact: true })
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
-  - action: click
-    target: 返回配置
+  - action: wait
+    timeout_ms: 800
 expect:
   - note: 1、回到「分析配置」
     assert: |-
-      await expect(page.getByText('分析配置')).toBeVisible({ timeout: 15000 })
+      const main = page.locator('main');
+      const ctx = main.getByTestId('svc-eco-analysis-context');
+      async function pickBioCluster() {
+        const industryBox = ctx.locator('.svc-eco-context__industry');
+        const cas = industryBox.locator('.arco-cascader-view, .sci-arco-cascader .arco-cascader-view, .arco-cascader').first();
+        await cas.click({ timeout: 8000 }).catch(async () => {
+          await industryBox.getByText(/新一代信息技术|人工智能与应用/).first().click();
+        });
+        const pop = page.locator('.arco-cascader-popup:visible, .arco-cascader-dropdown:visible, .arco-trigger-popup:visible').last();
+        await pop.waitFor({ state: 'visible', timeout: 10000 });
+        const col0 = pop.locator('.arco-cascader-panel-column').first();
+        await col0.waitFor({ state: 'visible', timeout: 8000 });
+        let picked = false;
+        for (const label of ['生物', '生物产业']) {
+          const opt = col0.getByText(label, { exact: true });
+          if ((await opt.count()) > 0) {
+            await opt.first().click();
+            picked = true;
+            break;
+          }
+        }
+        if (!picked) await col0.locator('.arco-cascader-option').nth(1).click();
+        const col1 = pop.locator('.arco-cascader-panel-column').nth(1);
+        if (await col1.isVisible().catch(() => false)) {
+          const opt = col1.locator('.arco-cascader-option').first();
+          if (await opt.isVisible().catch(() => false)) await opt.click();
+        }
+        await page.waitForTimeout(500);
+      }
+      await pickBioCluster();
+      await main.getByTestId('svc-eco-start-analysis').click();
+      await main.getByRole('button', { name: '查看结果' }).waitFor({ state: 'visible', timeout: 20000 });
+      await main.getByRole('button', { name: '查看结果' }).click();
+      await page.waitForTimeout(600);
+      await main.getByRole('button', { name: '返回配置' }).click();
+      await page.waitForTimeout(500);
+      await expect(main.getByRole('heading', { name: '分析配置' })).toBeVisible({ timeout: 10000 });
+      await expect(main.getByTestId('svc-eco-analysis-config')).toBeVisible();
   - note: 2、产业领域仍为「生物」
     assert: |-
-      await expect(page.locator('.arco-select-view').filter({ hasText: '生物' }).filter({ hasNotText: '生物医药' }).first()).toBeVisible({ timeout: 15000 })
+      const industry = page.locator('main [data-testid="svc-eco-analysis-context"] .svc-eco-context__industry');
+      await expect(industry).toContainText('生物');
   - note: 3、「开始分析」可见
     assert: |-
-      await expect(page.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 15000 })
+      await expect(page.locator('main [data-testid="svc-eco-start-analysis"]')).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

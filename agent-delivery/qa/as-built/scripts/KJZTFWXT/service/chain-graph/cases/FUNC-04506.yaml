@@ -9,13 +9,22 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: evaluate
+    target: |-
+      await page.evaluate(() => {
+        const u = new URL(window.location.href);
+        u.searchParams.delete('industry');
+        window.history.replaceState({}, '', u.pathname + u.search);
+      });
+      await page.reload({ waitUntil: 'networkidle' });
   - action: click
     target: 开始分析
 expect:
   - note: 进入过程页且状态为「已完成」
     assert: |-
+      await expect(page.getByText('可视化分析过程')).toBeVisible();
       await expect(page.getByText('分析结果已生成')).toBeVisible()
   - note: 分析对象为「产业领域：未选择（圈定 hang 全量）」
     assert: |-
-      await expect(page.getByText('产业领域：未选择（圈定 hang 全量）')).toBeVisible()
+      await expect(page.locator('main').getByText('产业领域：未选择（圈定 hang 全量）')).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

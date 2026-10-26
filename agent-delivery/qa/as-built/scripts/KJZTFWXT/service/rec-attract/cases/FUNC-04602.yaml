@@ -8,20 +8,34 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /service/institution-decision?workspace=attract&tab=attract
+    target: /service/institution-decision?workspace=attract&tab=attract&industry=CL-SEI-02.INB2503
+  - action: wait
+    timeout_ms: 800
   - action: click
-    target: 生成招引名单
+    target: 按钮 生成招引名单
+  - action: wait
+    for: 分析过程完成
+    timeout_ms: 8000
   - action: click
-    target: 返回配置
+    target: 按钮 查看结果
+  - action: wait
+    for: 名单加载
+    timeout_ms: 3000
+  - action: assert_visible
+    target: 外部机构引进推荐名单
+  - action: click
+    target: 按钮 返回配置
 expect:
-  - note: 回到「分析配置」
+  - note: 1、回到「分析配置」
     assert: |-
-      await expect(page.getByText('分析配置').first()).toBeVisible();
-  - note: 重点产业方向与返回前一致
+      await expect(page.locator('main [data-testid="svc-rec-analysis-config"]')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '分析配置' })).toBeVisible();
+  - note: 2、重点产业方向与返回前一致
     assert: |-
-      await expect(page.getByText('生物产业 / 生物医药')).toBeVisible();
-  - note: 不自动进入分析过程
+      await expect(page.locator('main [data-testid="svc-rec-analysis-context"]')).toContainText('生物产业');
+  - note: 3、不自动进入分析过程
     assert: |-
-      await expect(page.getByText('分析中')).toHaveCount(0);
+      await expect(page.getByText('招引推荐分析生成中')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '查看结果' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: '生成招引名单' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

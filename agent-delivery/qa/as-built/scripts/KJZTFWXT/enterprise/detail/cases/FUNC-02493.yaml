@@ -8,10 +8,12 @@ preconditions: []
 locators: {}
 steps:
   - action: goto
-    target: /enterprise/demo-org-id?from=compare
+    target: /enterprise/demo-org-id?source=compare
 expect:
   - note: 面包屑为「企业分析 / 对比篮 / 企业画像」
     assert: |-
-      await expect(page.getByText('企业分析').first()).toBeVisible();
-      await expect(page.getByText('对比篮')).toBeVisible();
-      await expect(page.getByText('企业画像').first()).toBeVisible();
+      const main = page.locator('main');
+      await expect(main.getByText('企业分析', { exact: true }).first()).toBeVisible();
+      await expect(main.getByText('对比篮', { exact: true }).first()).toBeVisible();
+      await expect(main.getByText('企业画像', { exact: true })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

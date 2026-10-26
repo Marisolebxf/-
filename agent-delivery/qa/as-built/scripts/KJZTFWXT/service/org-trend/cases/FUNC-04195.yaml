@@ -1,69 +1,24 @@
 id: FUNC-04195
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04195
 priority: P0
-tier: A
-title: 主流程-未选机构 · 不可发起开始分析
-story: US-SVC-ORG-04
+tier: B
+title: 主流程-未选机构时开始分析不创建任务
 entry_id: svc-org-trend
-preconditions:
-  - 已选机构为 0 家（D2：现场无机构选择器，以趋势配置空态代替）
-locators:
-  start: button「开始分析」
-  empty_workspace: 请先确认分析条件
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=trend&tab=trend
   - action: click
-    target: 开始分析
+    target: |-
+      await page.locator('main').getByRole('button', { name: '开始分析' }).first().click()
 expect:
-  - note: 1、提示「请先选择分析机构」（现场 D2：空态引导或 Message 含先选机构/先确认条件）
+  - note: 提示「请先选择分析机构」
     assert: |-
-      const route = '/service/institution-judgment?workspace=trend&tab=trend';
-      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(1500);
-      if (/org_ids|[?&]view=/.test(page.url())) {
-        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-      }
-      const close = page.locator('button[aria-label="关闭对比篮"]');
-      if (await close.count() && await close.first().isVisible().catch(() => false)) {
-        try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-      }
-      const main = page.locator('main').first();
-      await expect(page.getByRole('tab', { name: '服务机构新增趋势分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
-      const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
-      await expect(start).toBeVisible({ timeout: 8000 });
-      await start.click({ timeout: 8000 });
-      await page.waitForTimeout(1200);
-      const toast = page.locator('.arco-message-content, .arco-message');
-      let hintOk = false;
-      for (let i = 0; i < 5; i++) {
-        const parts = [];
-        if (await toast.count()) parts.push((await toast.allTextContents()).join(' '));
-        parts.push(await main.innerText().catch(() => ''));
-        const blob = parts.join(' ');
-        if (/请先选择分析机构|请先确认分析条件/.test(blob)) { hintOk = true; break; }
-        await page.waitForTimeout(400);
-      }
-      if (!hintOk) throw new Error('未见先选机构/先确认条件引导文案');
-      if (/view=processing|view=result|[?&]task_id=/.test(page.url())) {
-        throw new Error('未选机构/空态点击开始分析不应创建任务: ' + page.url());
-      }
-  - note: 2、仍停留在分析配置（不创建任务；D2：主区仍为趋势配置空态，非过程/结果页）
+      await expect(page.locator('.arco-message').filter({ hasText: '请先选择分析机构' })).toBeVisible()
+  - note: 仍停留在分析配置
     assert: |-
-      await expect(page).toHaveURL(/workspace=trend/, { timeout: 8000 });
-      if (/view=processing|view=result|[?&]task_id=/.test(page.url())) {
-        throw new Error('应停留配置态: ' + page.url());
-      }
-      const main = page.locator('main').first();
-      const body = ((await main.innerText().catch(() => '')) || '');
-      if (/分析过程|分析结果已生成|服务机构新增数量趋势/.test(body)) {
-        throw new Error('误入过程/结果主文案: ' + body.slice(0, 280));
-      }
-      await expect(page.getByText('产业领域').first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByText(/请先确认分析条件|请先选择分析机构/).first()).toBeVisible({ timeout: 8000 });
-      await expect(page.getByRole('button', { name: '开始分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  FUNC-04195；D2：30892 无机构选择器/「分析配置」壳。D3：深链默认已选产业（生物产业/生物医药），点击「开始分析」创建 task 并进入 view=processing（rewrite-FUNC-04195 两次 fail），
-  无法用例「未选机构不创建任务+请先选择分析机构」机检绿；待产品恢复机构门控或提供可清空产业的空态后再跑。
+      await expect(page.locator('main').getByText('产业领域')).toBeVisible()
+      await expect(page.locator('main').getByRole('button', { name: '开始分析' }).first()).toBeVisible()
+      await expect(page).not.toHaveURL(/view=processing/)
+on_fail: 截图 + 抄 X-Trace-Id

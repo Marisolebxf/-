@@ -9,15 +9,24 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/capability-rank
-  - action: click
-    target: .arco-cascader-view >> nth=0
-  - action: click
-    target: 海洋产业
-  - action: click
-    target: 海洋
+  - action: evaluate
+    note: 选择产业「海洋」
+    assert: |-
+      const filter = page.locator('.svc-portal-filter');
+      await filter.locator('.svc-portal-industry-cascader .arco-cascader-view').first().click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.locator('.arco-cascader-column').first().locator('.arco-cascader-option-label').filter({ hasText: /^海洋/ }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(800);
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await expect(cascader).toContainText('海洋', { timeout: 15000 });
+      await expect(page.locator('.svc-portal-section-title').filter({ hasText: '海洋 · 技术力 Top30' }).first()).toBeVisible({ timeout: 15000 });
   - action: reload
+  - action: wait
+    target: 1500ms
 expect:
   - note: 1、产业选择仍为「海洋」
     assert: |-
-      await expect(page.locator('main').getByText(/海洋.*· 技术力 Top30/)).toBeVisible();
+      const cascader = page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first();
+      await expect(cascader).toContainText('海洋', { timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

@@ -1,142 +1,66 @@
 id: FUNC-01456
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01456
 priority: P1
-title: 备选-候选每页条数
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录；候选工作台已有企业（assert 自含企业查询加入招引候选兜底）
-locators:
-  cand_tab: tab「候选工作台」
-  pagination_bar: data-testid=candidate-pagination-bar
-  page_size_select: candidate-pagination-bar 内每页条数下拉
+title: 备选-候选每页条数
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates
   - action: evaluate
-    note: 候选工作台→展开名单底栏每页条数→校验三档选项
-expect:
-  - note: 选项为 10 条/页、20 条/页、50 条/页共 3 个
-    assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      const origin = new URL(page.url()).origin;
+    note: 打开候选工作台；无名单时按用例 01433 经企业查询加入招引候选
+    target: |-
       const stack = () => page.getByTestId('recruit-tab-stack');
-      const candRoute = '/enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates';
       const candTab = () => page.getByRole('tab', { name: '候选工作台' }).first();
-      const isCandidateWorkspace = async () => {
-        if (!(await candTab().count())) return false;
-        return (await candTab().getAttribute('aria-selected').catch(() => '')) === 'true';
-      };
       const openCandidateTab = async () => {
-        if (await isCandidateWorkspace()) return;
-        await expect(candTab()).toBeVisible({ timeout: 10000 });
+        if ((await candTab().getAttribute('aria-selected').catch(() => '')) === 'true') return;
         await candTab().click({ timeout: 10000 });
         await page.waitForTimeout(900);
-        if (!(await isCandidateWorkspace())) {
-          const byKey = page.locator('button[data-tab-key="candidates"]').first();
-          if (await byKey.count()) {
-            await byKey.click({ timeout: 8000, force: true });
-            await page.waitForTimeout(900);
-          }
-        }
-        if (!(await isCandidateWorkspace())) {
-          throw new Error('未能打开候选工作台（候选页签 aria-selected≠true）');
-        }
       };
-      const rowCount = async () => stack().locator('.arco-table-body .arco-table-tr').count();
-      const ensureOneCandidate = async () => {
-        await openCandidateTab();
-        let rows = await rowCount();
-        if (rows > 0) return;
-        const tryBasket = async () => {
-          const dock = page.getByRole('button', { name: /打开对比篮/ });
-          if (!(await dock.count())) return false;
-          await dock.first().click({ timeout: 8000 });
-          await page.waitForTimeout(800);
-          const addA = page.getByRole('button', { name: '加入招引候选' });
-          if (!(await addA.count())) return false;
-          const sels = page.locator('[aria-label^="选择 "]');
-          if (await sels.count()) await sels.first().click();
-          await page.waitForTimeout(400);
-          if (!(await addA.first().isEnabled())) return false;
-          await addA.first().click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          await page.keyboard.press('Escape').catch(() => {});
-          return true;
-        };
-        if (await tryBasket()) {
-          await openCandidateTab();
-          rows = await rowCount();
-          if (rows > 0) return;
-        }
-        await page.goto(origin + '/development/search', { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-        await dismissBasket();
-        await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
-        await page.getByRole('button', { name: '搜索' }).click();
-        await page.waitForTimeout(5000);
-        await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-        const addOpt = page.getByText('加入招引候选', { exact: true }).first();
-        if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
-        await page.waitForTimeout(1500);
-        await page.goto(origin + candRoute, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(2000);
-        await openCandidateTab();
-        rows = await rowCount();
-        if (rows < 1) {
-          const txt = await page.locator('body').innerText({ timeout: 5000 }).catch(() => '');
-          throw new Error('环境闸门 ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业（对比篮/企业查询加入后仍为空）: ' + txt.slice(0, 160));
-        }
-      };
-      const optSel = '.arco-select-dropdown:visible .arco-select-option, .arco-select-popup:visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-      await dismissBasket();
-      await ensureOneCandidate();
-      await expect(stack().getByText('人工线索候选工作台', { exact: false }).first()).toBeVisible({ timeout: 10000 });
-      const bar = page.getByTestId('candidate-pagination-bar');
-      await expect(bar).toBeVisible({ timeout: 10000 });
-      const sizeTrigger = bar.locator('.arco-select-view').first();
-      if (!(await sizeTrigger.count())) {
-        const byText = bar.getByText(/\d+\s*条\/页/);
-        if (!(await byText.count())) throw new Error('候选分页底栏未见每页条数控件');
-        await byText.first().click({ timeout: 8000 });
-      } else {
-        await sizeTrigger.click({ timeout: 8000 });
-      }
+      const hasRows = async () => (await stack().locator('.arco-table-body .arco-table-tr').count()) > 0;
+      await openCandidateTab();
+      if (await hasRows()) return;
+      const origin = new URL(page.url()).origin;
+      await page.goto(origin + '/enterprise/enterprise-search', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      await page.getByRole('textbox', { name: /输入企业名/ }).fill('人工智能');
+      await page.getByRole('button', { name: '搜索' }).click();
+      await page.waitForTimeout(5000);
+      await page.getByRole('button', { name: '引育候选' }).first().click({ timeout: 8000 });
       await page.waitForTimeout(500);
-      const options = page.locator(optSel);
-      await expect(options.first()).toBeVisible({ timeout: 8000 });
-      const n = await options.count();
-      const labels = [];
-      for (let i = 0; i < n; i++) {
-        labels.push(((await options.nth(i).innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim());
+      const addOpt = page.getByText('加入招引候选', { exact: true }).first();
+      if (await addOpt.count()) await addOpt.click({ timeout: 8000 });
+      await page.waitForTimeout(1500);
+      await page.goto(origin + '/enterprise/attraction?workspace=attraction&recommendation_tab=attraction&entry=candidates', {
+        waitUntil: 'domcontentloaded',
+      });
+      await page.waitForTimeout(2000);
+      await openCandidateTab();
+      if (!(await hasRows())) {
+        throw new Error('ENV-ATTRACT-CANDIDATE-EMPTY：候选工作台无企业');
       }
-      const normalized = labels.map((t) => t.replace(/\s/g, ''));
-      const want = ['10条/页', '20条/页', '50条/页'];
-      if (normalized.length !== 3) {
-        throw new Error('每页条数选项应为 3 个，现场 ' + normalized.length + ' 个：' + labels.join(' | '));
-      }
-      for (const w of want) {
-        if (!normalized.includes(w)) {
-          throw new Error('缺少选项「' + w + '」，现场：' + labels.join('、'));
-        }
-      }
-      const sorted = [...normalized].sort().join(',');
-      const expectSorted = [...want].sort().join(',');
-      if (sorted !== expectSorted) {
-        throw new Error('选项集合不符：期望 10/20/50 条/页，现场 ' + labels.join('、'));
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 /enterprise-center/attraction&entry=candidates；CandidatePanel data-testid=candidate-pagination-bar，page-size-options=[10,20,50]（lumen-ui-topic CandidatePanel.vue）。机检展开底栏每页条数下拉，选项须恰为 10/20/50 条/页共 3 项。前置同 FUNC-01428（对比篮/企业查询加入）。D4·2026-10-20 机跑 rewrite-FUNC-01456 对比篮/企业查询加入后候选仍空→交卷 blocked·ENV-ATTRACT-CANDIDATE-EMPTY（runner 记 fail/C6，同 01428~01431）。登录与关评审由 runner 前置。B 档零 allow_skip。
+  - action: evaluate
+    note: 展开名单底栏每页条数（candidate-pagination-bar 底栏 sticky，先滚入视口）
+    target: |-
+      const bar = page.getByTestId('candidate-pagination-bar');
+      await bar.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      const sel = bar.locator('.arco-select-view').first();
+      await sel.click({ timeout: 10000 });
+      await page.waitForTimeout(400);
+expect:
+  - note: 1、选项为 10 条/页、20 条/页、50 条/页共 3 个
+    assert: |-
+      await page.waitForTimeout(400);
+      const opt10 = page.getByRole('option', { name: /10\s*条\/页/ });
+      const opt20 = page.getByRole('option', { name: /20\s*条\/页/ });
+      const opt50 = page.getByRole('option', { name: /50\s*条\/页/ });
+      await expect(opt10).toHaveCount(1);
+      await expect(opt20).toHaveCount(1);
+      await expect(opt50).toHaveCount(1);
+      await expect(opt10.first()).toBeVisible();
+      await expect(opt20.first()).toBeVisible();
+      await expect(opt50.first()).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

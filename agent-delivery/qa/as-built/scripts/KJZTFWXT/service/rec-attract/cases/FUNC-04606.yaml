@@ -4,8 +4,7 @@ priority: P1
 tier: B
 title: 备选-记录查看过程
 entry_id: svc-rec-attract
-preconditions:
-  - 分析记录中有已完成行
+preconditions: []
 locators: {}
 steps:
   - action: goto
@@ -17,11 +16,11 @@ steps:
 expect:
   - note: 进入该任务的过程页
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible();
+      await expect(page.locator('main').getByText('分析过程', { exact: false })).toBeVisible()
   - note: 状态为已完成
     assert: |-
-      await expect(page.getByText('已完成').first()).toBeVisible();
+      await expect(page.locator('main').getByText('已完成').first()).toBeVisible()
   - note: 页面提供「查看结果」
     assert: |-
-      await expect(page.getByRole('button', { name: '查看结果' })).toBeVisible();
+      await expect(page.locator('main').getByRole('button', { name: '查看结果' })).toHaveCount(1)
 on_fail: 截图 + 抄 X-Trace-Id

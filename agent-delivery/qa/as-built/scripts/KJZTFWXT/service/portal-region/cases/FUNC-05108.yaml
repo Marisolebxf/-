@@ -12,19 +12,32 @@ steps:
 expect:
   - note: 地图视野缩小
     assert: |-
-      const container = page.locator('.leaflet-container').first();
-      await expect(container).toBeVisible();
-      const zoomBefore = await container.evaluate((el) => {
-        const map = el._leaflet_map;
-        return map ? map.getZoom() : null;
-      });
-      await page.locator('a.leaflet-control-zoom-out').click();
+      const main = page.locator('main');
+      const section = main.locator('.svc-portal-map');
+      const readZoom = () =>
+        page.evaluate(() => {
+          const root = document.querySelector('main .svc-portal-map .leaflet-container');
+          if (!root) return NaN;
+          const w = window;
+          const L = w.L;
+          if (L?.Map?.get) {
+            const m = L.Map.get(root);
+            if (m && typeof m.getZoom === 'function') return m.getZoom();
+          }
+          for (const key of Object.getOwnPropertyNames(root)) {
+            const v = root[key];
+            if (v && typeof v.getZoom === 'function') return v.getZoom();
+          }
+          return NaN;
+        });
+      const zoomOut = section.locator('a.leaflet-control-zoom-out:not(.leaflet-disabled)');
+      await expect(zoomOut).toBeVisible();
+      await page.locator('main .leaflet-tile-loaded').first().waitFor({ state: 'attached', timeout: 15000 }).catch(() => {});
+      const before = await readZoom();
+      await zoomOut.click();
       await page.waitForTimeout(400);
-      const zoomAfter = await container.evaluate((el) => {
-        const map = el._leaflet_map;
-        return map ? map.getZoom() : null;
-      });
-      expect(zoomBefore).not.toBeNull();
-      expect(zoomAfter).not.toBeNull();
-      expect(zoomAfter).toBeLessThan(zoomBefore);
+      const after = await readZoom();
+      if (!(Number.isFinite(before) && Number.isFinite(after) && after < before)) {
+        throw new Error(`地图未缩小：zoom ${before} -> ${after}`);
+      }
 on_fail: 截图 + 抄 X-Trace-Id

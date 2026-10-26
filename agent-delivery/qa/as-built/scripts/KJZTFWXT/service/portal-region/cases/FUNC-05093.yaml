@@ -1,6 +1,6 @@
 id: FUNC-05093
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05093
-priority: P0
+priority: P1
 tier: B
 title: 主流程-默认结论条
 entry_id: svc-portal-region
@@ -9,18 +9,14 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
-  - action: click
-    target: 生物产业 / 生物医药
-  - action: click
-    target: 全部产业
 expect:
   - note: 结论条以「全部产业」为上下文
     assert: |-
-      await expect(page.getByText(/「全部产业」为上下文/)).toBeVisible()
+      await expect(page.locator('main .ent-judgment-strip')).toContainText('全部产业')
   - note: 结论条写明不按产业切片
     assert: |-
-      await expect(page.getByText(/不按产业切片/)).toBeVisible()
+      await expect(page.locator('main .ent-judgment-strip')).toContainText('不按产业切片')
   - note: 结论条含「待核验」
     assert: |-
-      await expect(page.getByText('待核验')).toBeVisible()
+      await expect(page.locator('main .ent-judgment-strip')).toContainText('待核验')
 on_fail: 截图 + 抄 X-Trace-Id

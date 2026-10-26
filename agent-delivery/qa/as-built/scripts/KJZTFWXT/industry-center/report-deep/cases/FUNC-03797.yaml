@@ -11,14 +11,18 @@ steps:
     target: /industry-center/reports/CHAIN-20261021-002
   - action: click
     assert: |-
-      await page.getByText('报告目录').locator('..').getByText('执行摘要', { exact: true }).click()
+      const toc = page.locator('nav.report-toc[aria-label="报告目录"]');
+      await expect(toc).toBeVisible({ timeout: 30000 });
+      const link = toc.locator('a[href="#report-section-executive-summary"]');
+      await expect(link).toBeVisible();
+      await link.evaluate((el) => (el as HTMLAnchorElement).click());
 expect:
   - note: 「执行摘要」标题进入可视区域
     assert: |-
-      const summaryHeading = page.getByRole('heading', { name: '执行摘要' }).last();
-      await summaryHeading.scrollIntoViewIfNeeded();
-      await expect(summaryHeading).toBeVisible();
+      const section = page.locator('#report-section-executive-summary');
+      await section.scrollIntoViewIfNeeded();
+      await expect(section.getByRole('heading', { name: '执行摘要' })).toBeVisible();
   - note: 地址带有该节的页内锚点
     assert: |-
-      await expect(page).toHaveURL(/#.+/)
+      await expect(page).toHaveURL(/#report-section-executive-summary/);
 on_fail: 截图 + 抄 X-Trace-Id

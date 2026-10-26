@@ -9,20 +9,16 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=attract&tab=attract
+  - action: click
+    target: 生成招引名单
 expect:
-  - note: 分析对象为「产业方向：未选择（名单不按产业切片）」
+  - note: 1、分析对象为「产业方向：未选择（名单不按产业切片）」
     assert: |-
-      const row = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' }).first();
-      const trigger = row.locator('.arco-select-view').first();
-      const clearIcon = trigger.locator('.arco-icon-close');
-      if (await clearIcon.count()) {
-        await clearIcon.click();
-      }
-      await expect(trigger).toContainText('选择产业集群');
-      await page.getByText('按比例归一').click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByText('产业方向：未选择（名单不按产业切片）')).toBeVisible({ timeout: 120000 });
-  - note: 状态为已完成
+      await expect(
+        page.locator('main').getByText('产业方向：未选择（名单不按产业切片）'),
+      ).toBeVisible({ timeout: 60000 })
+  - note: 2、状态为已完成
     assert: |-
-      await expect(page.getByText('已完成', { exact: true })).toBeVisible({ timeout: 120000 });
+      await expect(page.locator('main').getByText('分析结果已生成')).toBeVisible({ timeout: 60000 })
+      await expect(page.locator('main').getByText('已完成', { exact: true }).first()).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

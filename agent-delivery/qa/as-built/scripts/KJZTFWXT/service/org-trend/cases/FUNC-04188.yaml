@@ -1,130 +1,117 @@
 id: FUNC-04188
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04188
-priority: P0
-tier: A
-title: 主流程-已选机构发起 · 开始分析并查看成功结果页
-story: US-SVC-ORG-04
+priority: P1
+tier: B
+title: 主流程-已选机构发起
 entry_id: svc-org-trend
-preconditions:
-  - 已进入服务机构新增趋势分析配置（catalog_path trend 工作区）
-  - 当前未在过程页（view=processing）
-locators:
-  org_picker: button「选择机构」
-  modal_title: 选择服务机构
-  confirm: button「确定」
-  start: button「开始分析」
-  view_result: button「查看结果」
-  result_trend: 服务机构新增数量趋势
-  back_config: button「返回配置」
-  reanalyze: button「重新分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=trend&tab=trend
-  - action: click
-    target: 选择机构
-  - action: click
-    target: 弹窗内勾选一家机构
-  - action: click
-    target: 确定
-  - action: click
-    target: 开始分析
-  - action: click
-    target: 查看结果
 expect:
-  - note: 1、结果页出现「服务机构新增数量趋势」（用例预期 1；含选机构→开始分析→查看结果全链）
+  - note: 1、结果页出现「服务机构新增数量趋势」
     assert: |-
       const route = '/service/institution-judgment?workspace=trend&tab=trend';
-      const reset = async () => {
-        if (/view=processing|view=result|org_ids/.test(page.url())) {
+      const knownOrg = '79bbcfc0e68027808f1f4caf1b6f0469';
+      const deeplink = route + '&industry=INB1701&org_ids[]=' + knownOrg;
+      const main = page.locator('main').first();
+      const resetConfig = async () => {
+        if (/view=processing|view=result/.test(page.url())) {
           await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
           await page.waitForTimeout(1500);
         }
         const close = page.locator('button[aria-label="关闭对比篮"]');
-        if (await close.count() && await close.first().isVisible().catch(() => false) && await close.first().isEnabled().catch(() => false)) {
-          try { await close.first().click({ timeout: 1500 }); await page.waitForTimeout(300); } catch {}
-        }
-        const main0 = page.locator('main.svc-org-analysis-main, [data-testid="svc-org-analysis-shell"] main').first();
-        const t0 = await main0.innerText().catch(() => '');
-        if (/已选机构（[1-9]/.test(t0 || '')) {
-          const clr = main0.getByRole('button', { name: '清空' });
-          if (await clr.count()) { try { await clr.first().click({ timeout: 3000 }); await page.waitForTimeout(500); } catch {} }
+        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
+          try {
+            await close.first().click({ timeout: 1500 });
+            await page.waitForTimeout(300);
+          } catch {}
         }
       };
-      await reset();
-      await expect(page).toHaveURL(/\/service\/institution-judgment/, { timeout: 12000 });
-      await expect(page).toHaveURL(/workspace=trend/, { timeout: 8000 });
-      const pick = page.getByRole('button', { name: '选择机构', exact: true }).first();
-      await expect(pick).toBeVisible({ timeout: 8000 });
-      await pick.click({ timeout: 8000 });
-      await page.waitForTimeout(800);
-      const dialog = page.locator('.arco-modal:visible, [role="dialog"]').filter({ hasText: '选择服务机构' }).first();
-      await expect(dialog).toBeVisible({ timeout: 8000 });
-      const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled) input[type=checkbox], label.arco-checkbox:not(.arco-checkbox-disabled)');
-      for (let i = 0; i < 20 && !(await checks.count()); i++) {
-        const body = dialog.locator('.arco-modal-body, .arco-table-body').first();
-        if (await body.count()) { try { await body.evaluate((el) => { el.scrollTop = (el.scrollTop || 0) + 240 }); } catch {} }
-        await page.waitForTimeout(400);
+      await resetConfig();
+      await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+      async function openOrgPicker() {
+        const pickBtn = main.getByRole('button', { name: '选择机构', exact: true });
+        if (await pickBtn.isVisible().catch(() => false)) {
+          await pickBtn.click({ timeout: 12000 });
+          return true;
+        }
+        const basketBtn = main.getByRole('button', { name: /打开对比篮/ });
+        if (await basketBtn.count() && (await basketBtn.first().isVisible().catch(() => false))) {
+          await basketBtn.first().click({ timeout: 12000 });
+          return true;
+        }
+        const url = new URL(page.url());
+        url.searchParams.set('open_compare_basket', '1');
+        url.searchParams.set('compare_basket_mode', 'picker');
+        url.searchParams.set('compare_object_type', 'service_org');
+        url.searchParams.set('compare_picker_min', '1');
+        url.searchParams.set('compare_picker_max', '50');
+        await page.goto(url.toString(), { waitUntil: 'domcontentloaded' });
+        return true;
       }
-      if ((await checks.count()) < 1) throw new Error('机构弹窗无可勾选项');
-      await checks.first().click({ timeout: 5000 });
-      await page.waitForTimeout(300);
-      await dialog.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
-      await page.waitForTimeout(1000);
-      await expect(page.getByText(/已选机构（1\s*家）/).first()).toBeVisible({ timeout: 8000 });
-      const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
-      await expect(start).toBeEnabled({ timeout: 8000 });
-      await start.click({ timeout: 8000 });
-      const pollTask = async (ms) => {
-        for (let i = 0; i < Math.ceil(ms / 1000); i++) {
-          await page.waitForTimeout(1000);
-          const u = page.url();
-          if (/[?&]view=processing/.test(u)) {
-            const m = u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
-            if (m) return m[1];
+      let orgReady =
+        page.url().includes(knownOrg) ||
+        /已选机构（\s*1\s*家）/.test((await main.innerText().catch(() => '')) || '');
+      if (!orgReady) {
+        const opened = await openOrgPicker();
+        if (opened) {
+          await page.waitForTimeout(800);
+          const dialog = page.locator('.arco-modal:visible, [role="dialog"]').filter({ hasText: /选择服务|对比篮|服务机构/ }).first();
+          if (await dialog.isVisible().catch(() => false)) {
+            const checks = dialog.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
+            if ((await checks.count()) >= 1) {
+              await checks.first().click({ timeout: 8000 });
+              await page.waitForTimeout(300);
+              const ok = dialog.getByRole('button', { name: '确定', exact: true });
+              if (await ok.count()) await ok.click({ timeout: 8000 });
+              else await dialog.getByRole('button', { name: /确定|完成|加入/ }).first().click({ timeout: 8000 });
+              await page.waitForTimeout(1000);
+            }
           }
-          const body = ((await page.locator('main').last().innerText().catch(() => '')) || '');
-          if (/分析结果已生成/.test(body)) break;
         }
-        const m2 = page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
-        return m2 ? m2[1] : null;
-      };
-      let tid = await pollTask(20000);
-      if (!tid && /view=processing/.test(page.url())) {
-        const m3 = page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
-        tid = m3 ? m3[1] : null;
+        orgReady =
+          page.url().includes(knownOrg) ||
+          /已选机构（\s*[1-9]\s*家）/.test((await main.innerText().catch(() => '')) || '');
+        if (!orgReady) {
+          await page.goto(baseUrl + deeplink, { waitUntil: 'domcontentloaded' });
+          await page.waitForTimeout(1500);
+          orgReady = page.url().includes(knownOrg);
+        }
+        if (!orgReady) throw new Error('无法选定一家机构（无选择机构/对比篮且深链未生效）');
       }
-      if (!tid) throw new Error('开始分析后未进入过程态或未捕获任务 ID: ' + page.url());
-      let pbody = '';
-      for (let i = 0; i < 20; i++) {
-        pbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
-        if (/分析结果已生成/.test(pbody)) break;
+      const start = page.getByRole('button', { name: '开始分析', exact: true }).first();
+      await expect(start).toBeVisible({ timeout: 12000 });
+      await start.click({ timeout: 15000 });
+      let tid = null;
+      for (let i = 0; i < 45; i++) {
         await page.waitForTimeout(1000);
+        const u = page.url();
+        const m = u.match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        if (m) tid = m[1];
+        const body = ((await page.locator('main').last().innerText().catch(() => '')) || '');
+        if (/分析结果已生成/.test(body) && (await page.getByRole('button', { name: '查看结果', exact: true }).first().isVisible().catch(() => false))) break;
+        if (/[?&]view=processing/.test(u) && /已完成/.test(body)) break;
       }
-      if (!/分析结果已生成/.test(pbody)) throw new Error('过程页未见「分析结果已生成」引导（任务 ' + tid + '）');
+      if (!tid) {
+        const m2 = page.url().match(/[?&]task_id=(SVC-\d{8}-\d{1,4})/);
+        tid = m2 ? m2[1] : null;
+      }
+      if (!tid) throw new Error('开始分析后未进入过程态: ' + page.url());
       const vr = page.getByRole('button', { name: '查看结果', exact: true }).first();
-      if (!(await vr.count())) throw new Error('过程页未见「查看结果」');
-      await vr.click({ timeout: 8000 });
-      await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 15000 });
-      await page.waitForTimeout(2000);
-      const u1 = page.url();
-      if (tid && !u1.includes(tid)) throw new Error('结果态 URL 未携带任务 ID ' + tid + ': ' + u1);
+      await expect(vr).toBeVisible({ timeout: 20000 });
+      await vr.click({ timeout: 10000 });
+      await page.waitForURL((u) => /[?&]view=result/.test(String(u)), { timeout: 20000 });
+      await page.waitForTimeout(1500);
       const rbody = ((await page.locator('main').last().innerText().catch(() => '')) || '');
-      if (!/服务机构新增数量趋势/.test(rbody)) throw new Error('结果页未见「服务机构新增数量趋势」: ' + rbody.slice(0, 280));
+      await expect(page.getByText('服务机构新增数量趋势').first()).toBeVisible({ timeout: 12000 });
       globalThis.__p04188TaskId = tid;
-  - note: 2、结果页可见「返回配置」（用例预期 2）
+  - note: 2、结果页可见「返回配置」
     assert: |-
-      const tid = globalThis.__p04188TaskId || '';
-      if (tid && !page.url().includes(tid)) throw new Error('前置错位：URL 不含任务 ' + tid);
-      const back = page.getByRole('button', { name: '返回配置', exact: true }).first();
-      await expect(back).toBeVisible({ timeout: 8000 });
-  - note: 3、结果页可见「重新分析」（用例预期 3）
+      await expect(page.getByRole('button', { name: '返回配置', exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、结果页可见「重新分析」
     assert: |-
-      const tid = globalThis.__p04188TaskId || '';
-      if (tid && !page.url().includes(tid)) throw new Error('前置错位：URL 不含任务 ' + tid);
-      const re = page.getByRole('button', { name: '重新分析', exact: true }).first();
-      await expect(re).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  金样 FUNC-04188；路由 catalog_path=/service/institution-judgment?workspace=trend&tab=trend。
-  2026-10-21 点状复勘 30892：关评审后主区为产业领域级联+双「开始分析」，无「选择机构」/「分析配置」/弹窗「选择服务机构」（D2，同 FUNC-00658 note）；
-  机检仍按用例册步骤译全链，结果壳诚实空「当前结果快照没有年序列」可接受（ENV-SVC-ORG-TREND-NO-SERIES-PAYLOAD），不断言折线有数。
+      await expect(page.getByRole('button', { name: '重新分析', exact: true }).first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

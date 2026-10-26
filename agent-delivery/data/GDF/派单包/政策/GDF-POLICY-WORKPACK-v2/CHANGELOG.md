@@ -1,0 +1,52 @@
+# CHANGELOG · GDF-POLICY-WORKPACK
+
+## v2.0.2 · 2026-10-26
+
+- Wave C 改成 GDF 可配置的两份 Python：`scripts/policy_c1_industry.py`、`scripts/policy_c2_clauses.py`。`12` 写总流程、C1、C2 三张流程图和逐步说明。
+- 不再把内部 HTTP 或 Java 任务接口写成 GDF 要配的入口。`15` 改为两张平面 B 都成功后在 GDF 节点上跑脚本。
+- 不改 `09`，不重开 MAP-01。`16` 仍只核对字典。
+
+## v2.0.1 · 2026-10-26
+
+- 增 `16-Mapping过程与字典核对.md`。对照要素库值域与国内 20,000 行快照（2026-10-23）。
+- 不改 `09` 字段矩阵，不重开 MAP-01。`rank` / `type` 仍按原文拷贝，核对文件里的实值不是白名单。
+
+## v2.0 · 2026-10-26
+
+相对当时工作区里的政策 v1.0.4。任务原文写「继承 v1.0.3」，同日用户已把 `is_deleted` / `is_history` 改成取数不过滤，v2 继承这一版，不把历史行过滤加回去。
+
+- 新建本目录为现行施工包。v1 只留历史对照，09 字段矩阵不重开、UK 仍是 `(source_plane, policy_id)`。
+- 补 `05` 验收回签、`13` 现网差集、`15` 触发与回执。对标企业 v4 的这三件，不抄企业的 ES / 图谱表。
+- `12` 写明 C1 / C2 的读写、增量跳过、失败不写假结果、中台函数名，以及 GDF 只触发。
+- 不补 `07` / `08` / `14`。不并进国内政策、国外政策另叶。不出 CDC 预填。
+
+## v1.0.4 · 2026-10-26
+
+- 取数无行过滤。`is_deleted`、`is_history` 都原样进 ODS，Wave B 直接映射到 `policy_base_info` 同名列。`is_history` 的 `NULL` 不改写成 `0`。
+- DWD `policy_base_info` 增加 `is_history`（`10/policy_base_info-MySQL.md`）。
+- 应用读 DWD 时自行加 `is_deleted = 0` 与 `IFNULL(is_history, 0) = 0`。见 `04`、`02`、`09` §1.3 / §3。
+
+## v1.0.3 · 2026-10-23
+
+- 生产规约：抽取产业、条款结构化必须提供 Python 脚本，逻辑与算法 demo 中台同一模块（`industry_enrich` / `industry_job`、`clause_job`）。禁止 CDC / SeaTunnel 另写。见 `12` 脚本规约。
+- 目标库仍是 `gkxlumenx_dwd` / `gkxlumenx_ads`。本包不复制算法源码。
+
+## v1.0.2 · 2026-10-23
+
+- Wave B 成功后增加 Wave C：抽取产业、条款结构化（派单口语「条件结构化」）。说明见 `12`。  
+- 抽取只写 `policy_industry_rel`（DWD 写完同步 ADS），不改 `policy_base_info`。  
+- 条款只合并 ADS `policy_text_parse.structured_elements.clauses`，不 TRUNCATE、不写 ES。  
+- 两作业不进 09 字段矩阵，也不进 CDC 预填。
+
+## v1.0.1 · 2026-09-01
+
+- `human:淮政玮` 拍板 **OPEN-POLICY-MAP-01 = 方案 A 永远分 UK**。禁止 `gbl:` 改 `policy_id`。
+
+## v1.0 · 2026-09-01
+
+- 首包：Wave A 贴源两张 `gkx` 政策表 → `gkxlumenx_ods`。  
+- Wave B 洗入 **一张** `policy_base_info`（`source_plane` + `policy_id`）。  
+- 不含 ES / ADS / Nebula。  
+- 作废 `dwd_zck_*`、旧 v1 37 列贴源、Demo `ods_sync` 当产线。  
+- Mapping 已冻结可投递；尚未执行建表或灌数。CDC 预填不在本版本。  
+- 通用解析器尚未识别 `policy_base_info` 字段矩阵，自动预填前须补规则或按 09 人工配置。

@@ -1,6 +1,6 @@
-# 专题服务内容管理 · 前端联调接口文档（SYSINT-03-03A-JAVA-L01）
+# 专题服务 · 前端联调接口文档（SYSINT-03-03A-JAVA-L01）
 
-> **给谁**：运维内容管理页前端（Part A 写侧）+ 门户深圳页前端（Part B 展示侧）
+> **给谁**：运维内容管理页前端（Part A 写侧）+ 门户深圳页前端（Part B 展示合并）+ 专题服务五页前端（Part C 可视化展示全集）
 > **真源**：`agent-delivery/agent-handoffs/系统集成-SYSINT/SYSINT-03-03A-JAVA-L01.md` §5（本文为其前端摘录，两处不一致以真源为准）
 > **契约**：PORTAL-CMS-专题服务.md §2.1（已确认 2026-10-24，字段冻结）
 > **日期**：2026-10-26 · 执行 `agent:api-agent`
@@ -118,3 +118,52 @@ dev 已实测三态通过（含插入 published 正文后 `present:true` 原样�
 2. `body_html` 编辑器建议按 Arco 白名单渲染（段落/标题/列表/引用/加粗/链接/图片 URL），服务端黑名单是最后防线
 3. 列表页如需「机构维度聚合摘要」（enterprise-summary 类）暂未提供 svc 版，当前按 A4 列表 + 双键过滤使用；需要再说
 4. 完整 curl 清单与异常场景见真源 handoff §5/§7
+
+---
+
+## Part C · 可视化展示接口全集（专题服务五页 + 机构检索/画像/图谱）
+
+> 均为既有上线接口（非本单新增，本单只给 shenzhen 增加了 `cms` 块）。网关前缀 `/svc`（剥后转发服务内 `/topic/v1/service**`）。
+> **统一降级语义**：下游缺数/Feign 失败一律 **HTTP 200** + `empty:true` + `data_source:"unavailable:*"`，**不抛 5xx、不造假数据**；前端按 `empty` 判空态即可。
+
+### C1. 门户五页（`/svc/topic/v1/service-portal/*`）
+
+| 端点 | 页面/用途 | 请求 body 要点 | `data` 响应要点 |
+|---|---|---|---|
+| `POST /overview` | 全球服务机构概况 | 可选筛选，通常 `{}` | `kpi{}`、`new_org_series[]`、`invest_series[]`、`industry_layout[]`、`org_type_dist[]`、`region_province[]`；缺 KPI 省略该键 |
+| `POST /ranking` | 招引/培育/技术力榜单 | `list_type`: `ATTRACT`(默认)/`CULTIVATE`/`TECH`；`limit` | `items[]`（榜单条目）、`total` |
+| `POST /industry-distribution` | 服务机构产业分布 | 可选筛选 | `by_service_type[]`、`stages[]`（链上环节分布） |
+| `POST /region-map` | 区域分布（全国/全球） | `country` 传则出全球，缺省只出省 | `china[]`、`global[]`、`geo_level_used` |
+| `POST /shenzhen` | **深圳页统计 + 介绍区** | 页级：`year`；机构级：`org_id`+`industry_id`（触发 cms 合并，见 Part B） | `sz_total`、`sz_metric_id`、`districts[]`、`cms{}`（Part B）；无独立 series 不出 `trend` |
+| `POST /key-orgs` | 重点机构（技术力 Top） | 可选筛选 | `items[]`（按 org_id 去重，含 score/pending） |
+| `GET  /health` | 探活 | — | `java{}`/`python{}`/`degraded` |
+
+### C2. 检索/画像/图谱/字典（`/svc/topic/v1/service/*`）
+
+| 端点 | 用途 | 请求 body 要点 | `data` 响应要点 |
+|---|---|---|---|
+| `POST /search/orgs` | 服务机构检索列表 | `keyword` 或 `q`、`service_type`、`city`、`industry`、`page`、`size` | `items[]`、`total`、`gap[]`（黄灯） |
+| `POST /profile/get` | 机构画像卡 | `org_id`（兼容 orgId/service_org_code 别名） | 卡面原样；无卡/失败 `data:null`（不填样例机构） |
+| `POST /eco-graph` | 机构生态图谱 | 筛选域 | `nodes[]`、`edges[]`、`subnet_density`、`eco_density`（Java 不重算，原样透传） |
+| `POST /rec-list` | 招引/培育推荐名单 | `kind`: `attract`/`cultivate`（或 `list_type`）；`limit` | 同 C1 ranking；未知 kind 诚实空（**不会**回落 TECH 榜） |
+| `POST /meta` | 检索/分析字典 | `{}` | `service_types[]`、`org_kinds[]`、`cities[]`、`industries[]`、`links[]`、`analysis{}` |
+| `GET  /health` | 探活 | — | 同上 |
+
+### C3. 对比篮（`/svc/topic/v1/service/compare-basket`）
+
+| 端点 | 用途 |
+|---|---|
+| `GET /` | 查当前篮内机构 |
+| `POST /items` | 加入机构（body 带 org 维度） |
+| `DELETE /items/{org_id}` | 移出单个 |
+| `DELETE /items/batch` | 批量移出 |
+
+### C4. 页面 → 接口速查（专题服务五页）
+
+| 页面 | 调哪些 |
+|---|---|
+| 全球服务机构概况 | C1 overview |
+| 服务机构产业分布 | C1 industry-distribution |
+| 服务机构区域分布 | C1 region-map |
+| 服务机构技术能力 | C1 ranking(`TECH`) + key-orgs |
+| 深圳产业服务介绍 | C1 shenzhen（页级）+ 每机构卡：shenzhen（机构级，出 cms 介绍区）+ C2 profile/get + C1 key-orgs；检索/对比另用 C2 search/orgs、C3 |

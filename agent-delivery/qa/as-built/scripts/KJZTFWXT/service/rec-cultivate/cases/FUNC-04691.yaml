@@ -4,27 +4,28 @@ priority: P1
 tier: B
 title: 主流程-机构类型勾选
 entry_id: svc-rec-cultivate
-preconditions:
-  - 已打开分析配置
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
+  - action: assert_visible
+    target: 分析配置
 expect:
   - note: 取消后「企业」为未勾选
     assert: |-
-      const enterprise = page.locator('.arco-checkbox').filter({ hasText: /^企业$/ }).first();
-      await expect(enterprise).toBeVisible();
-      const checked = await enterprise.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
-      if (checked) await enterprise.click();
-      await expect(enterprise).not.toHaveClass(/arco-checkbox-checked/);
+      const group = page.locator('main [data-testid="svc-rec-cultivate-org-types"]');
+      const entChecked = group.locator('.arco-checkbox-checked').filter({ hasText: '企业' });
+      await group.locator('.arco-checkbox').filter({ hasText: '企业' }).click();
+      await expect(entChecked).toHaveCount(0);
   - note: 再次勾选后「企业」为已勾选
     assert: |-
-      const enterprise = page.locator('.arco-checkbox').filter({ hasText: /^企业$/ }).first();
-      const checked = await enterprise.evaluate((el) => el.classList.contains('arco-checkbox-checked'));
-      if (!checked) await enterprise.click();
-      await expect(enterprise).toHaveClass(/arco-checkbox-checked/);
+      const group = page.locator('main [data-testid="svc-rec-cultivate-org-types"]');
+      const entChecked = group.locator('.arco-checkbox-checked').filter({ hasText: '企业' });
+      await group.locator('.arco-checkbox').filter({ hasText: '企业' }).click();
+      await expect(entChecked).toHaveCount(1);
   - note: 页面仍在分析配置
     assert: |-
-      await expect(page.getByText('分析配置').first()).toBeVisible();
+      await expect(page.locator('main [data-testid="svc-rec-cultivate-config"]')).toBeVisible();
+      await expect(page.locator('main [data-testid="svc-rec-cultivate-config"]').getByRole('heading', { name: '分析配置' })).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

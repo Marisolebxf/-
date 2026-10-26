@@ -9,22 +9,37 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
-  - action: click
-    target: 生物产业 / 生物医药
-  - action: click
-    target: 新一代信息技术
+  - action: wait
+    ms: 1200
   - action: click
     target: 开始分析
+    locator: |-
+      page.locator('main [data-testid="svc-eco-start-analysis"]')
+  - action: wait
+    ms: 800
+  - action: wait
+    ms: 800
+  - action: click
+    target: 查看结果
+    locator: |-
+      page.getByRole('button', { name: '查看结果' })
+  - action: wait
+    ms: 800
   - action: click
     target: 返回配置
+    locator: |-
+      page.locator('main').getByRole('button', { name: '返回配置' })
 expect:
-  - note: 图谱滤镜变为「② 机构+关联主体」
+  - note: 1、回到分析配置并出现「开始分析」
     assert: |-
-      await expect(page.getByText('② 机构+关联主体', { exact: true })).toBeVisible()
-  - note: 不出现「生成中」
+      const main = page.locator('main');
+      await expect(main.locator('[data-testid="svc-eco-analysis-context"]')).toBeVisible({ timeout: 15000 });
+      await expect(main.getByRole('button', { name: '开始分析' })).toBeVisible();
+  - note: 2、产业领域仍为「新一代信息技术」
     assert: |-
-      await expect(page.getByText('生成中')).not.toBeVisible()
-  - note: 仍显示「服务生态关系图谱」
+      await expect(page.locator('main [data-testid="svc-eco-analysis-context"] .svc-eco-context__industry')).toContainText('新一代信息技术');
+  - note: 3、未进入过程页
     assert: |-
-      await expect(page.getByText('服务生态关系图谱')).toBeVisible()
+      await expect(page.locator('main').getByText('可视化分析过程')).toHaveCount(0);
+      await expect(page.locator('main').getByText('分析结果已生成')).toHaveCount(0);
 on_fail: 截图 + 抄 X-Trace-Id

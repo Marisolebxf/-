@@ -1,6 +1,6 @@
 id: FUNC-04492
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04492
-priority: P0
+priority: P1
 tier: B
 title: 主流程-可视化分析过程
 entry_id: svc-chain-graph
@@ -9,21 +9,30 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: wait
+    ms: 1200
 expect:
   - note: 1、出现「可视化分析过程」
     assert: |-
-      const domainRow = page.locator('.arco-form-item').filter({
-        has: page.locator('.arco-form-item-label', { hasText: '产业领域' }),
-      });
-      await domainRow.locator('.arco-select-view').click();
-      await page.getByRole('option', { name: /新一代信息技术/ }).first().click({ timeout: 10000 });
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await expect(page.getByText('可视化分析过程')).toBeVisible({ timeout: 60000 });
+      const main = page.locator('main');
+      await page.waitForURL(/workspace=graph/, { timeout: 15000 });
+      const ctx = main.locator('[data-testid="svc-eco-analysis-context"]');
+      const cascader = ctx.locator('.arco-cascader-view').first();
+      const cascText = (await cascader.textContent()) ?? '';
+      if (!cascText.includes('新一代信息技术')) {
+        await cascader.click();
+        await page
+          .locator('.arco-cascader-dropdown .arco-cascader-column')
+          .first()
+          .getByText('新一代信息技术', { exact: true })
+          .click({ timeout: 10000 });
+      }
+      await main.getByRole('button', { name: '开始分析' }).click();
+      await expect(main.getByText('可视化分析过程')).toBeVisible({ timeout: 90000 });
   - note: 2、说明须点「查看结果」后才请求生态图谱
     assert: |-
-      await expect(page.getByText(/查看结果/)).toBeVisible();
-      await expect(page.getByText(/生态图谱/)).toBeVisible();
+      await expect(page.locator('main').getByText(/须点「查看结果」后才请求生态图谱/)).toBeVisible({ timeout: 15000 });
   - note: 3、过程区为「暂无过程节点」
     assert: |-
-      await expect(page.getByText('暂无过程节点')).toBeVisible();
+      await expect(page.locator('main').getByText('暂无过程节点')).toBeVisible({ timeout: 15000 });
 on_fail: 截图 + 抄 X-Trace-Id

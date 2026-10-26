@@ -1,6 +1,6 @@
 id: FUNC-04499
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04499
-priority: P0
+priority: P1
 tier: B
 title: 主流程-度中心性TOP5
 entry_id: svc-chain-graph
@@ -9,15 +9,19 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
+  - action: click
+    target: 按钮 开始分析
+  - action: wait
+    timeout_ms: 1500
 expect:
   - note: 标题为「度中心性 TOP5」
     assert: |-
-      await page.locator('.arco-select-view').filter({ hasText: '生物产业' }).click();
-      await page.getByRole('option', { name: '新一代信息技术' }).click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await page.getByRole('button', { name: '查看结果' }).click();
-      await expect(page.getByText('度中心性 TOP5').first()).toBeVisible()
+      const viewResult = page.getByRole('button', { name: '查看结果' });
+      await viewResult.waitFor({ state: 'visible', timeout: 20000 });
+      await viewResult.click();
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+      await expect(page.getByRole('heading', { name: '度中心性 TOP5' })).toBeVisible({ timeout: 10000 });
   - note: 文案为「当前子网无服务机构」
     assert: |-
-      await expect(page.getByText('当前子网无服务机构')).toBeVisible()
+      await expect(page.getByText('当前子网无服务机构')).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

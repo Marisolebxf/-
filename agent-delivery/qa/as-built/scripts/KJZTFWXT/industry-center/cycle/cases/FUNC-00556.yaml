@@ -1,67 +1,25 @@
 id: FUNC-00556
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-00556
 priority: P1
-title: 双 Tab 互切保留配置草稿且不自动分析
-story: US-CHAIN-DIAG-01
-entry_id: chain-cycle
 tier: B
-preconditions:
-  - 已进入产业周期分析页
-  - 已形成配置草稿（对象 / 时间范围 / 周期参数）
-locators:
-  tab_cycle: tab「产业周期分析」
-  tab_records: tab「诊断记录」
-  cluster: .arco-select-view[aria-label="集群"]
-  time_block: text=分析时间范围
+title: 双 Tab 互切保留配置草稿且不自动分析
+entry_id: chain-cycle
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /industry-center/diagnosis?workspace=cycle&tab=cycle
   - action: evaluate
-    note: 侧栏进入→改草稿（近3年+技术成熟度77）→Tab 往返（判定在 expect）
+    note: 深链进入；草稿与 Tab 往返在 expect 中执行
 expect:
-  - note: 前置：产业周期分析页可见；采样诊断记录 CHAIN 基线；记录草稿各控件值
+  - note: 1、双页签均可见可互切
     assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
       const main = () => page.locator('main.content-shell-layout, main').first();
-      const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const countChainRows = async () => {
-        const body = await main().innerText().catch(() => '');
-        const ids = body.match(TID_RE) || [];
-        return new Set(ids).size;
-      };
-      const leafItem = () => page.locator('.arco-menu-item').filter({ hasText: /^产业周期分析$/ });
-      const expandChainGroup = async () => {
-        if (await leafItem().first().isVisible().catch(() => false)) return;
-        const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-        if (await sub.count()) {
-          await sub.first().click({ timeout: 8000 });
-          await page.waitForTimeout(400);
-        }
-      };
-      const enterCyclePage = async () => {
-        await dismissBasket();
-        await expandChainGroup();
-        const leaf = leafItem();
-        await expect(leaf.first()).toBeVisible({ timeout: 10000 });
-        await leaf.first().click({ timeout: 10000 });
-        await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 });
-        await expect(page).toHaveURL(/workspace=cycle/);
-        await expect(page).toHaveURL(/tab=cycle/);
-      };
       const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const pickSelect = async (aria, text) => {
         await page.keyboard.press('Escape').catch(() => {});
-        const view = page.locator('.arco-select-view[aria-label="' + aria + '"]').first();
-        await expect(view).toBeVisible({ timeout: 8000 });
+        const view = main().locator('.arco-select-view[aria-label="' + aria + '"]').first();
+        await expect(view).toBeVisible({ timeout: 12000 });
         const shown = ((await view.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
         if (shown.includes(text)) return;
         await view.click({ timeout: 8000 });
@@ -73,7 +31,7 @@ expect:
       };
       const pickTimeRange = async (label) => {
         await page.keyboard.press('Escape').catch(() => {});
-        const block = page.locator('text=分析时间范围').first();
+        const block = main().getByText('分析时间范围').first();
         await expect(block).toBeVisible({ timeout: 8000 });
         const trigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
         const cur = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
@@ -83,73 +41,48 @@ expect:
         await page.locator(optSel).filter({ hasText: label }).first().click({ timeout: 8000 });
         await page.waitForTimeout(500);
       };
-      await enterCyclePage();
-      const bodyGate = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (/404|页面不存在|抱歉，页面不存在/.test(bodyGate)) {
-        throw new Error('产业周期分析 SPA 404 ' + page.url());
-      }
-      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 12000 });
-      await expect(page.getByRole('tab', { name: '产业周期分析' }).first()).toBeVisible();
-      await expect(page.getByRole('tab', { name: '诊断记录' }).first()).toBeVisible();
-      const clusterView = page.locator('.arco-select-view[aria-label="集群"]').first();
-      if (await clusterView.isVisible().catch(() => false)) {
-        const clusterShown = ((await clusterView.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!clusterShown || clusterShown.includes('请选择')) {
-          await clusterView.click({ timeout: 8000 });
-          await page.waitForTimeout(450);
-          await page.locator(optSel).first().click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-        }
-      }
-      await pickSelect('产业', '生物产业');
+      await expect(page).toHaveURL(/workspace=cycle/);
+      await expect(page).toHaveURL(/tab=cycle/);
+      await expect(page.getByRole('heading', { name: '产业周期分析', level: 1 })).toBeVisible({ timeout: 15000 });
+      await pickSelect('集群', '新一代信息技术');
+      await pickSelect('产业', '半导体与集成电路');
       await pickTimeRange('近3年');
-      const spins = page.locator('[role=spinbutton]');
+      const spins = main().locator('[role=spinbutton]');
       await expect(spins).toHaveCount(4, { timeout: 8000 });
       await spins.nth(3).fill('77');
       await page.waitForTimeout(400);
-      const maturity = await spins.nth(3).inputValue();
-      if (maturity !== '77') {
-        throw new Error('前置：技术成熟度应改为 77，实际=' + maturity);
-      }
-      const industryText = ((await page.locator('.arco-select-view[aria-label="产业"]').first().innerText()) || '').replace(/\s+/g, ' ').trim();
-      const block = page.locator('text=分析时间范围').first();
-      const timeText = ((await block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]').innerText()) || '').replace(/\s+/g, ' ').trim();
-      if (!industryText.includes('生物产业')) {
-        throw new Error('前置：分析对象应为生物产业，实际=' + industryText);
-      }
-      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(900);
-      const nBefore = await countChainRows();
+      await expect(spins.nth(3)).toHaveValue('77');
+      const industryText = ((await main().locator('.arco-select-view[aria-label="产业"]').first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      const timeBlock = main().getByText('分析时间范围').first();
+      const timeText = ((await timeBlock.locator('xpath=following::*[contains(@class,"arco-select-view")][1]').innerText()) || '').replace(/\s+/g, ' ').trim();
       globalThis.__func00556 = {
-        nBefore,
         main,
-        countChainRows,
-        draft: { industryText, timeLabel: '近3年', maturity: '77' },
+        draft: { industryText, timeText, maturity: '77' },
       };
-  - note: 1、双页签均可见可互切
-    assert: |-
-      const ctx = globalThis.__func00556;
-      if (!ctx?.draft) throw new Error('前置：未记录草稿');
       await expect(page.getByRole('tab', { name: '产业周期分析' }).first()).toBeVisible();
       await expect(page.getByRole('tab', { name: '诊断记录' }).first()).toBeVisible();
+      await page.getByRole('tab', { name: '诊断记录' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(900);
       await expect(page.getByRole('tab', { name: '诊断记录' }).first()).toHaveAttribute('aria-selected', 'true');
-      await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 });
-      await page.waitForTimeout(700);
-      await expect(page.getByRole('tab', { name: '产业周期分析' }).first()).toHaveAttribute('aria-selected', 'true');
-      ctx.tabSwitched = true;
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const countChainRows = async () => {
+        const body = await main().innerText().catch(() => '');
+        return new Set(body.match(TID_RE) || []).size;
+      };
+      globalThis.__func00556.nBefore = await countChainRows();
+      globalThis.__func00556.countChainRows = countChainRows;
   - note: 2、切回后对象、时间范围与周期参数草稿保留不重置
     assert: |-
       const ctx = globalThis.__func00556;
-      if (!ctx?.tabSwitched) throw new Error('前置：未完成 Tab 往返');
-      const { draft } = ctx;
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
-      const industryView = page.locator('.arco-select-view[aria-label="产业"]').first();
-      await expect(industryView).toContainText('生物产业', { timeout: 8000 });
-      const block = page.locator('text=分析时间范围').first();
-      const timeTrigger = block.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
+      if (!ctx?.draft) throw new Error('前置：未记录草稿');
+      await page.getByRole('tab', { name: '产业周期分析' }).first().click({ timeout: 8000 });
+      await page.waitForTimeout(700);
+      await expect(page.getByRole('tab', { name: '产业周期分析' }).first()).toHaveAttribute('aria-selected', 'true');
+      await expect(ctx.main().getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(ctx.main().locator('.arco-select-view[aria-label="产业"]').first()).toContainText('半导体与集成电路', { timeout: 8000 });
+      const timeTrigger = ctx.main().getByText('分析时间范围').first().locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
       await expect(timeTrigger).toContainText('近3年', { timeout: 8000 });
-      const spins = page.locator('[role=spinbutton]');
-      await expect(spins.nth(3)).toHaveValue('77', { timeout: 8000 });
+      await expect(ctx.main().locator('[role=spinbutton]').nth(3)).toHaveValue('77', { timeout: 8000 });
       const url = page.url();
       if (/view=result/.test(url) || /view=processing/.test(url)) {
         throw new Error('Tab 往返进入结果/过程态: ' + url);
@@ -169,12 +102,5 @@ expect:
       if (nAfter > ctx.nBefore) {
         throw new Error('诊断记录 CHAIN 条数增加：' + ctx.nBefore + ' -> ' + nAfter);
       }
-      const body = await ctx.main().innerText().catch(() => '');
-      if (/任务状态|全部状态/.test(body)) {
-        await expect(page.getByText(/任务状态|全部状态/).first()).toBeVisible({ timeout: 5000 });
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  D1·catalog_path=/industry-center/diagnosis?workspace=cycle&tab=cycle；入口 entry-seed：goto sibling /industry-center/search 再侧栏「产业链分析」→「产业周期分析」（深链冷启动 SPA 404）。
-  用例步骤=记录草稿→诊断记录→产业周期分析→回读。现场草稿口径对齐用例备注：集群「生物产业」+分析时间范围「近3年」+技术成熟度 spin 改 77（四参数第4行，对齐 testdata params.rows）。
-  Tab 往返不自动起任务=URL 无 view=result|processing、主区无生成中文案、诊断记录 CHAIN 条数不增（02894/02926 同口径）。登录关评审 runner 前置。B 档零 allow_skip。保留旧号 P1-02 存量不删。
+      await expect(ctx.main().getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
+on_fail: 截图 + 抄 X-Trace-Id

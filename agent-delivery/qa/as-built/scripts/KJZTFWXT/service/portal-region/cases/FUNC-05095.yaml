@@ -1,6 +1,6 @@
 id: FUNC-05095
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05095
-priority: P0
+priority: P1
 tier: B
 title: 主流程-产业链初始禁用
 entry_id: svc-portal-region
@@ -9,14 +9,16 @@ locators: {}
 steps:
   - action: goto
     target: /service-portal/region-map
+  - action: wait
+    timeout_ms: 600
   - action: click
-    target: 产业集群
+    target: 「全部产业链」
 expect:
   - note: 产业链下拉呈禁用
     assert: |-
-      const chainWrap = page.locator('.arco-form-item, .filter-row, .arco-space').filter({ hasText: /产业链|产业集群/ }).first();
-      await expect(chainWrap.locator('.arco-select-disabled, .arco-select.arco-select-disabled')).toBeVisible();
+      const chainView = page.locator('main .svc-portal-filter').filter({ hasText: '产业链' }).locator('.arco-select-view').first()
+      await expect(chainView).toBeDisabled({ timeout: 8000 })
   - note: 不出现选项浮层
     assert: |-
-      await expect(page.locator('.arco-select-dropdown:visible')).toHaveCount(0);
+      await expect(page.locator('.arco-select-dropdown:visible')).toHaveCount(0)
 on_fail: 截图 + 抄 X-Trace-Id

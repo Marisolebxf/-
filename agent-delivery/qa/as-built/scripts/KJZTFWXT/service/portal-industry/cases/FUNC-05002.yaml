@@ -3,60 +3,70 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05002
 priority: P1
 tier: B
 title: 选定产业链后指标卡不变
-story: US-SVC-PT-02
 entry_id: svc-portal-industry
-preconditions:
-  - 已打开服务机构产业分布
-  - 产业为全部产业
-locators:
-  kpi_grid: .svc-portal-kpi-grid
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service-portal/industry-distribution
   - action: evaluate
-    note: 记下全部产业下六类合计；选择产业「生物」与产业链「生物医药与生命健康」
+    note: 记下全部产业下六类合计家次
+    assert: |-
+      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('main .svc-portal-kpi-grid')).toBeVisible({ timeout: 15000 });
+      const totalKpi = page.locator('main .svc-portal-kpi').filter({
+        has: page.locator('.svc-portal-kpi__label').filter({ hasText: '环节合计' }),
+      }).first();
+      await expect(totalKpi).toBeVisible({ timeout: 15000 });
+      const raw = ((await totalKpi.locator('.svc-portal-kpi__value').first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (raw.includes('暂无')) {
+        throw new Error('ENV-SVC-IND-KPI: 环节合计为暂无，无法记下基线');
+      }
+      const numMatch = raw.match(/[\d,]+/);
+      const recorded = numMatch ? numMatch[0].replace(/,/g, '') : raw;
+      globalThis.__func05002_segment_total = recorded;
+  - action: evaluate
+    note: 选择产业「生物」
+    assert: |-
+      const main = page.locator('main');
+      await main.locator('.svc-portal-industry-cascader .arco-cascader-view').first().click({ timeout: 15000 });
+      await page.waitForTimeout(400);
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.locator('.arco-cascader-column').first().getByText('生物', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(400);
+  - action: evaluate
+    note: 选择产业链「生物医药与生命健康」
+    assert: |-
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.locator('.arco-cascader-column').nth(1).getByText('生物医药与生命健康', { exact: true }).click({ timeout: 8000 });
+      await page.waitForTimeout(800);
 expect:
   - note: 1、六类合计家次与记下的相同
     assert: |-
-      const readSegmentTotal = async () => {
-        const totalKpi = page.locator('.svc-portal-kpi').filter({
-          has: page.locator('.svc-portal-kpi__label').filter({ hasText: '环节合计' }),
-        }).first();
-        await expect(totalKpi).toBeVisible({ timeout: 15000 });
-        const raw = ((await totalKpi.locator('.svc-portal-kpi__value').first().innerText()) || '').replace(/\s+/g, ' ').trim();
-        if (raw.includes('暂无')) {
-          throw new Error('ENV-SVC-IND-KPI: 环节合计为暂无，无法比对产业链筛选前后不变');
-        }
-        const numMatch = raw.match(/[\d,]+/);
-        return numMatch ? numMatch[0].replace(/,/g, '') : raw;
-      };
-      await expect(page).toHaveURL(/service-portal\/industry-distribution/, { timeout: 20000 });
-      await expect(page.getByRole('heading', { name: '服务机构产业分布', level: 1 }).first()).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('.svc-portal-kpi-grid')).toBeVisible({ timeout: 15000 });
-      const recordedTotal = await readSegmentTotal();
-      const cascader = page.locator('.svc-portal-filter .arco-cascader-view').first();
-      await expect(cascader).toBeVisible({ timeout: 8000 });
-      await cascader.click();
-      await page.waitForTimeout(400);
-      const popup = page.locator('.arco-trigger-popup:visible');
-      await popup.locator('.arco-cascader-list-column').first().locator('.arco-cascader-option').filter({ hasText: '生物' }).first().click();
-      await page.waitForTimeout(500);
-      await popup.locator('.arco-cascader-list-column').nth(1).locator('.arco-cascader-option').filter({ hasText: '生物医药' }).first().click();
-      await page.waitForTimeout(1000);
-      const afterTotal = await readSegmentTotal();
-      if (afterTotal !== recordedTotal) {
-        throw new Error('选定产业链后环节合计变化：记下「' + recordedTotal + '」现「' + afterTotal + '」');
+      const totalKpi = page.locator('main .svc-portal-kpi').filter({
+        has: page.locator('.svc-portal-kpi__label').filter({ hasText: '环节合计' }),
+      }).first();
+      await expect(totalKpi).toBeVisible({ timeout: 15000 });
+      const raw = ((await totalKpi.locator('.svc-portal-kpi__value').first().innerText()) || '').replace(/\s+/g, ' ').trim();
+      const numMatch = raw.match(/[\d,]+/);
+      const after = numMatch ? numMatch[0].replace(/,/g, '') : raw;
+      const recorded = globalThis.__func05002_segment_total;
+      if (recorded == null || recorded === '') {
+        throw new Error('未记下基线环节合计');
+      }
+      if (after !== recorded) {
+        throw new Error('选定产业链后环节合计变化：记下「' + recorded + '」现「' + after + '」');
       }
   - note: 2、最厚环节名称仍为「研发与科研合作」
     assert: |-
-      const thick = page.locator('.svc-portal-kpi').filter({
+      const thick = page.locator('main .svc-portal-kpi').filter({
         has: page.locator('.svc-portal-kpi__label').filter({ hasText: '最厚环节' }),
       }).first();
       await expect(thick).toBeVisible({ timeout: 8000 });
       const value = thick.locator('.svc-portal-kpi__value').first();
       const raw = (await value.innerText()).replace(/\s+/g, ' ').trim();
       if (raw.includes('暂无')) {
-        throw new Error('ENV-SVC-IND-KPI: 最厚环节为暂无，无法验「研发与科研合作」');
+        throw new Error('ENV-SVC-IND-KPI: 最厚环节为暂无');
       }
       await expect(value).toContainText('研发与科研合作', { timeout: 8000 });
-on_fail: 截图 + X-Trace-Id + C1~C6
+on_fail: 截图 + 抄 X-Trace-Id

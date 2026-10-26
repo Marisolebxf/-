@@ -1,6 +1,6 @@
 id: FUNC-05193
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05193
-priority: P0
+priority: P1
 tier: B
 title: 主流程-产业链选项随产业变化
 entry_id: svc-portal-capability
@@ -12,31 +12,14 @@ steps:
 expect:
   - note: 新一代信息技术下产业链为 6 个（附录B）
     assert: |-
-      await page.locator('.arco-select-view').first().click();
-      await page.locator('.arco-cascader-list-column').first().getByText('新一代信息技术', { exact: true }).click();
-      await page.getByText('全部产业链', { exact: true }).click();
-      await page.waitForTimeout(300);
-      const ok6 = await page.evaluate(() => {
-        const cols = document.querySelectorAll('.arco-cascader-list-column');
-        if (!cols.length) return false;
-        const last = cols[cols.length - 1];
-        const items = last.querySelectorAll('.arco-cascader-list-item');
-        return items.length === 6;
-      });
-      expect(ok6).toBeTruthy();
+      await page.getByLabel('产业集群与产业筛选').click();
+      await page.locator('.arco-cascader-list-column').nth(0).getByText('新一代信息技术').click();
+      const col2 = page.locator('.arco-cascader-list-column').nth(1);
+      await expect(col2.locator('.arco-cascader-option')).toHaveCount(6);
   - note: 生物下产业链为 2 个（附录C）
     assert: |-
-      const industrySelect2 = page.locator('.arco-select-view').filter({ hasText: '产业' }).first();
-      await industrySelect2.click();
-      await page.getByRole('option', { name: '生物', exact: true }).click();
-      await page.getByText('全部产业链', { exact: true }).click();
-      await page.waitForTimeout(500);
-      const ok2 = await page.evaluate(() => {
-        const panel = document.querySelector('.arco-tree') || document.querySelector('.arco-collapse');
-        if (!panel) return false;
-        const nodes = panel.querySelectorAll('.arco-tree-node-title, .arco-collapse-item-header');
-        const titles = Array.from(nodes).map((n) => (n.textContent || '').trim()).filter((t) => t && t !== '全部产业链');
-        return titles.length === 2;
-      });
-      expect(ok2).toBeTruthy();
+      await page.getByLabel('产业集群与产业筛选').click();
+      await page.locator('.arco-cascader-list-column').nth(0).getByText(/^生物/).first().click();
+      const col2 = page.locator('.arco-cascader-list-column').nth(1);
+      await expect(col2.locator('.arco-cascader-option')).toHaveCount(2);
 on_fail: 截图 + 抄 X-Trace-Id

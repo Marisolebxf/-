@@ -4,66 +4,36 @@ priority: P1
 tier: B
 title: 备选-配置区清空
 entry_id: svc-org-field
-preconditions:
-  - 配置区已回显至少 1 家（脚本：对比篮 picker 确定 1 家）
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-judgment?workspace=field&tab=coverage
 expect:
-  - note: 前置：配置区已确认至少 1 家机构
+  - note: 1、已选机构为 0 家
     assert: |-
-      const main = page.locator('main').first();
-      await expect(page).toHaveURL(/\/service\/institution-judgment/, { timeout: 15000 });
-      await expect(page).toHaveURL(/workspace=field/);
-      await expect(page).toHaveURL(/tab=coverage/);
-      let t = ((await main.innerText().catch(() => '')) || '');
-      let m = t.match(/已选机构（(\d+)\s*家）/);
+      await expect(page).toHaveURL(/workspace=field/, { timeout: 15000 });
+      const countLine = page.getByText(/已选机构（\d+\s*家）/).first();
+      await expect(countLine).toBeVisible({ timeout: 12000 });
+      let countText = await countLine.innerText();
+      let m = countText.match(/（(\d+)\s*家）/);
       let n = m ? parseInt(m[1], 10) : 0;
       if (n < 1) {
-        const openBtn = main.getByRole('button', { name: /打开对比篮/ }).first();
-        await expect(openBtn).toBeVisible({ timeout: 12000 });
-        await openBtn.click({ timeout: 8000 });
-        await page.waitForTimeout(1200);
-        const panel = page.locator('[data-system-surface-id="compare-basket"]');
-        await expect(panel).toBeVisible({ timeout: 15000 });
-        const checks = panel.locator('.arco-checkbox:not(.arco-checkbox-disabled)');
-        if ((await checks.count()) < 1) {
-          throw new Error('对比篮 picker 无可勾选服务机构');
-        }
-        await checks.first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        const ok = panel.getByRole('button', { name: '确定', exact: true }).first();
-        await expect(ok).toBeEnabled({ timeout: 8000 });
-        await ok.click({ timeout: 8000 });
-        await page.waitForTimeout(1200);
-        t = ((await main.innerText().catch(() => '')) || '');
-        m = t.match(/已选机构（(\d+)\s*家）/);
-        n = m ? parseInt(m[1], 10) : 0;
+        await page.getByRole('button', { name: /打开对比篮/ }).first().click({ timeout: 8000 });
+        const picker = page.locator('body').filter({ hasText: '选择分析服务机构' });
+        await expect(picker.getByText('选择分析服务机构').first()).toBeVisible({ timeout: 12000 });
+        await picker.locator('.arco-checkbox').first().click({ timeout: 8000 });
+        await expect(picker.getByText(/已选\s*1\s*家机构/)).toBeVisible({ timeout: 8000 });
+        await picker.getByRole('button', { name: '确定', exact: true }).click({ timeout: 8000 });
+        await expect(page.getByText('已选机构（1 家）').first()).toBeVisible({ timeout: 12000 });
       }
-      if (n < 1) throw new Error('前置：配置区已选仍 <1，text=' + t.slice(0, 280));
-      globalThis.__p04112 = { countBefore: n };
-  - note: 1、已选机构为 0 家；2、出现「未选择机构」
+      const configBar = page.locator('.svc-context-bar').filter({ hasText: '已选机构' }).first();
+      const clearBtn = configBar.getByRole('button', { name: '清空', exact: true });
+      await expect(clearBtn).toBeVisible({ timeout: 8000 });
+      await clearBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(600);
+      await expect(page.getByText('已选机构（0 家）').first()).toBeVisible({ timeout: 8000 });
+  - note: 2、出现「未选择机构」
     assert: |-
-      const snap = globalThis.__p04112;
-      if (!snap || snap.countBefore < 1) throw new Error('前置：配置区未回显机构');
-      const main = page.locator('main').first();
-      const configClear = main.getByRole('button', { name: '清空', exact: true }).first();
-      const clearVis = await configClear.isVisible().catch(() => false);
-      if (!clearVis) {
-        throw new Error('blocked：30892 配置区无「清空」按钮，对象集仅对比篮入口');
-      }
-      await configClear.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const confirm = page.locator('.arco-modal:visible').filter({ hasText: /确认|二次|确定要/ });
-      if (await confirm.count()) {
-        throw new Error('出现二次确认框（用例要求无确认）');
-      }
-      const t = ((await main.innerText().catch(() => '')) || '');
-      const m = t.match(/已选机构（(\d+)\s*家）/);
-      const countAfter = m ? parseInt(m[1], 10) : -1;
-      if (countAfter !== 0) {
-        throw new Error('配置区清空后已选应为 0 家：前=' + snap.countBefore + ' 后=' + countAfter);
-      }
-      await expect(main.getByText(/未选择机构|已选机构（0\s*家）/).first()).toBeVisible({ timeout: 8000 });
+      await expect(page.getByText('未选择机构').first()).toBeVisible({ timeout: 8000 });
 on_fail: 截图 + 抄 X-Trace-Id

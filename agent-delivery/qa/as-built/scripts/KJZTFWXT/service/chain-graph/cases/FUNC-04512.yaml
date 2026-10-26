@@ -9,22 +9,33 @@ locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=graph&tab=graph
-  - action: click
-    target: 生物产业 / 生物医药
-  - action: click
-    target: 新一代信息技术
-  - action: click
-    target: 分析记录
-  - action: click
-    target: 服务链图谱分析
+  - action: evaluate
+    target: |-
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await cfg.waitFor({ state: 'visible', timeout: 15000 });
+      await cfg.locator('.arco-cascader-view').click();
+      await page.locator('.arco-cascader-popup:visible').locator('.arco-cascader-option-label').filter({ hasText: /^新一代信息技术/ }).first().click({ timeout: 15000 });
+  - action: evaluate
+    target: |-
+      const shell = page.locator('[data-testid="svc-eco-analysis-shell"]');
+      await shell.getByRole('tab', { name: '分析记录' }).click({ timeout: 15000 });
+      await page.waitForURL(/tab=records/, { timeout: 15000 });
+  - action: evaluate
+    target: |-
+      const shell = page.locator('[data-testid="svc-eco-analysis-shell"]');
+      await shell.getByRole('tab', { name: '服务链图谱分析' }).click({ timeout: 15000 });
+      await page.waitForURL(/tab=graph/, { timeout: 15000 });
 expect:
-  - note: 图谱滤镜变为「② 机构+关联主体」
+  - note: 回到分析配置
     assert: |-
-      await expect(page.getByText('② 机构+关联主体')).toBeVisible();
-  - note: 不出现「生成中」
+      const cfg = page.locator('[data-testid="svc-eco-analysis-config"]');
+      await expect(cfg).toBeVisible({ timeout: 15000 });
+      await expect(cfg.getByRole('button', { name: '开始分析' })).toBeVisible({ timeout: 15000 });
+  - note: 产业领域仍为「新一代信息技术」
     assert: |-
-      await expect(page.getByText('生成中')).toHaveCount(0);
-  - note: 仍显示「服务生态关系图谱」
+      await expect(page.locator('main [data-testid="svc-eco-analysis-context"] .svc-eco-context__industry')).toContainText('新一代信息技术', { timeout: 15000 });
+  - note: 未进入过程页
     assert: |-
-      await expect(page.getByText('服务生态关系图谱')).toBeVisible();
+      await expect(page.locator('main').getByText('可视化分析过程')).toHaveCount(0);
+      await expect(page.locator('main').getByText('生成中')).toHaveCount(0);
 on_fail: 截图 + 抄 X-Trace-Id

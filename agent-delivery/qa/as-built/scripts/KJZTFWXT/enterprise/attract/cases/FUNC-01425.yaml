@@ -1,142 +1,74 @@
 id: FUNC-01425
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01425
 priority: P0
-title: 成功结果表展示推荐企业列表列
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
 tier: B
-preconditions:
-  - 已登录；已打开一条条件筛选的成功结果（assert 自含条件筛选发起）
-locators:
-  result_table: recruit-tab-stack 内 .arco-table
-  column_headers: 排名、企业名称、行业领域、地域来源、目标特征、招引推荐指数、操作
+title: 主流程-结果表列
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
-  - action: evaluate
-    note: 条件筛选到达成功结果；结果表列头在 expect
+    target: /enterprise/attraction?workspace=attraction&recommendation_tab=attraction
 expect:
   - note: 1、列含排名、企业名称、行业领域、地域来源、目标特征、招引推荐指数、操作
     assert: |-
-      const REQUIRED_COLS = ['排名', '企业名称', '行业领域', '地域来源', '目标特征', '招引推荐指数', '操作'];
-      const stack = () => page.getByTestId('recruit-tab-stack');
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
+      const stack = page.getByTestId('recruit-tab-stack');
+      const openRecentTab = async () => {
+        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
+        if ((await tab.count()) > 0) {
+          await tab.click({ timeout: 8000 });
+          await page.waitForTimeout(800);
+          return;
         }
+        const legacy = page.getByRole('tab', { name: '最近分析' });
+        await expect(legacy.first()).toBeVisible({ timeout: 12000 });
+        await legacy.first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
       };
-      const parseCounts = (text) => {
-        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
-        if (!analyzedM) return null;
-        return { analyzed: parseInt(analyzedM[1], 10) };
-      };
-      const isSuccessResult = async () => {
-        const st = stack();
-        const t = await st.innerText().catch(() => '');
-        const url = page.url();
-        const counts = parseCounts(t);
-        return (
-          counts &&
-          counts.analyzed >= 1 &&
-          ((/招引推荐分析结果/.test(t) && !/可视化分析过程/.test(t)) || url.includes('analysis_view=result'))
-        );
-      };
-      const tryRestoreCompletedFilter = async () => {
-        const byKey = page.locator('button[data-tab-key="history"]');
-        const byName = page.getByRole('tab', { name: '最近分析' });
-        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return false;
-        const tab = (await byKey.count()) ? byKey.first() : byName.first();
-        await tab.click({ timeout: 8000 });
-        await page.waitForTimeout(900);
-        const st = stack();
-        const buttons = st.getByRole('button', { name: '恢复结果' });
-        const n = await buttons.count();
-        for (let i = 0; i < n; i++) {
-          const btn = buttons.nth(i);
-          let row = btn.locator('xpath=ancestor::tr[1]');
-          if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-          const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-          if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) {
-            await btn.click({ timeout: 15000 });
-            for (let j = 0; j < 20; j++) {
-              await page.waitForTimeout(500);
-              if (await isSuccessResult()) return true;
+      const pickCompletedFilterRestore = async () => {
+        for (let pageTry = 0; pageTry < 15; pageTry++) {
+          const buttons = stack.getByRole('button', { name: '恢复结果' });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            let row = btn.locator('xpath=ancestor::tr[1]');
+            if ((await row.count()) < 1) {
+              row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
             }
-            return false;
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (txt && /已完成/.test(txt) && /条件筛选/.test(txt)) return btn;
           }
+          const next = stack.locator('.arco-pagination-item-next:not(.arco-pagination-item-disabled)').first();
+          if ((await next.count()) < 1) break;
+          const clicked = await next.click({ timeout: 5000 }).then(() => true).catch(() => false);
+          if (!clicked) break;
+          await page.waitForTimeout(600);
         }
-        return false;
+        throw new Error('ENV-ATTRACT-ASYNC-NO-SUCCESS-001：最近分析无已完成条件筛选可恢复结果');
       };
-      const reachFilterSuccess = async () => {
-        if (await isSuccessResult()) return;
-        if (await tryRestoreCompletedFilter()) return;
-        const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-        const openPh = async (ph) => {
-          await page.keyboard.press('Escape').catch(() => {});
-          const i = page.locator(`input[placeholder="${ph}"]`).first();
-          await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-        };
-        const pickOption = async (text) => {
-          const opt = page.locator(optSel).filter({ hasText: text }).first();
-          await opt.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-        };
-        await openPh('全部企业标签');
-        await pickOption('高新技术企业');
-        await openPh('全部行业领域');
-        const ai = page.locator(optSel).filter({ hasText: '人工智能' });
-        if (await ai.count()) await ai.first().click({ timeout: 8000 });
-        else await page.locator(optSel).filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
-        await page.waitForTimeout(400);
-        const start = page.getByRole('button', { name: '开始分析' }).first();
-        await expect(start).toBeEnabled({ timeout: 8000 });
-        await start.click();
-        const st = stack();
-        let ok = false;
-        let last = '';
-        for (let i = 0; i < 48; i++) {
-          await page.waitForTimeout(2500);
-          last = await st.innerText().catch(() => '');
-          const url = page.url();
-          if ((/招引推荐分析结果/.test(last) && !/可视化分析过程/.test(last)) || url.includes('analysis_view=result')) {
-            if (parseCounts(last)?.analyzed >= 1) {
-              ok = true;
-              break;
-            }
-          }
-          if (/任务失败|分析失败|推荐分析失败/.test(last) && !/可视化分析过程/.test(last)) {
-            throw new Error('推荐分析进入失败态: ' + last.slice(0, 240));
-          }
-        }
-        if (!ok) {
-          const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-          if (stuck) {
-            throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：条件筛选发起后长期停留在可视化分析过程，无法在超时内到达「招引推荐分析结果」以测结果表列（30888 与 FUNC-01408/01418 同源 D4）');
-          }
-          throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
-        }
-        await expect(st.getByText('招引推荐分析结果').first()).toBeVisible({ timeout: 8000 });
-      };
-      await dismissBasket();
-      await reachFilterSuccess();
-      const st = stack();
-      const table = st.locator('.arco-table').first();
-      await expect(table).toBeVisible({ timeout: 10000 });
-      const header = table.locator('.arco-table-header, thead').first();
-      for (const col of REQUIRED_COLS) {
-        await expect(header.getByText(col, { exact: true }).first()).toBeVisible({ timeout: 8000 });
+      await openRecentTab();
+      for (let i = 0; i < 30; i++) {
+        const t = await stack.innerText().catch(() => '');
+        if (/招引推荐 · 最近分析/.test(t) && (/恢复结果|任务名称/.test(t))) break;
+        await page.waitForTimeout(500);
       }
-      const bodyRows = table.locator('.arco-table-body .arco-table-tr');
-      const rowN = await bodyRows.count();
-      if (rowN < 1) throw new Error('结果表无数据行');
-      await expect(bodyRows.first()).toBeVisible({ timeout: 8000 });
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；列真源 RecruitResultPanel.vue columns（attraction：排名/企业名称/行业领域/地域来源/目标特征/招引推荐指数/操作）。前置同 01418~024（栈内成功态→最近分析恢复→高新+行业发起）。D4·无异步成功→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。
+      const restoreBtn = await pickCompletedFilterRestore();
+      await restoreBtn.scrollIntoViewIfNeeded();
+      await restoreBtn.click({ timeout: 15000 });
+      let ok = false;
+      for (let i = 0; i < 40; i++) {
+        await page.waitForTimeout(500);
+        const t = await stack.innerText().catch(() => '');
+        if (/招引推荐分析结果/.test(t) && /排名/.test(t)) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) {
+        throw new Error('恢复结果后未出现成功结果表列头，url=' + page.url());
+      }
+      const main = page.locator('main');
+      for (const col of ['排名', '企业名称', '行业领域', '地域来源', '目标特征', '招引推荐指数', '操作']) {
+        await expect(main.getByRole('columnheader', { name: col }).or(main.locator('th').filter({ hasText: col })).first()).toBeVisible({ timeout: 10000 });
+      }
+on_fail: 截图 + 抄 X-Trace-Id

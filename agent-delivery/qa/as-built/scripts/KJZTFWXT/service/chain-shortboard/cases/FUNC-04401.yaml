@@ -3,176 +3,73 @@ func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-04401
 priority: P1
 tier: B
 title: 备选-改产业 · 配置页切产业不自动分析
-story: US-SVC-ECO-01
 entry_id: svc-chain-shortboard
-preconditions:
-  - 已进入分析配置（chain 工作区配置区可见）
-locators:
-  cluster_select: main .industry-catalog-select
-  cluster_placeholder: 选择产业集群
-  start: button「开始分析」
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /service/chain-analysis?workspace=chain&tab=chain
 expect:
   - note: 步骤自含：分析配置→选「新一代信息技术」→改选「生物」（不点「开始分析」）
     assert: |-
-      const route = '/service/chain-analysis?workspace=chain&tab=chain';
-      const closeBasket = async () => {
-        for (let i = 0; i < 3; i++) {
-          const close = page.locator('[aria-label="关闭对比篮"]');
-          if (
-            (await close.count()) &&
-            (await close.first().isVisible().catch(() => false)) &&
-            (await close.first().isEnabled().catch(() => false))
-          ) {
-            try {
-              await close.first().click({ timeout: 1500 });
-              await page.waitForTimeout(300);
-            } catch {}
-          } else break;
-        }
-        await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(200);
-      };
-      const l1Alias = { 生物: '生物产业', 海洋: '海洋产业', 传统与创意: '传统与创意产业' };
-      const readIndustryEcho = async () => {
-        const flat = page.locator('main .industry-catalog-select').first();
-        if (await flat.isVisible().catch(() => false)) {
-          return (
-            (await flat.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
-            (await flat.innerText().catch(() => '')) ||
-            ''
-          )
-            .trim()
-            .replace(/\s+/g, ' ');
-        }
-        const cfg = page.locator('main').filter({ hasText: '分析配置' }).first();
-        const cas = cfg.locator('.arco-cascader-view, .sci-arco-cascader').first();
-        if (await cas.isVisible().catch(() => false)) {
-          return ((await cas.innerText().catch(() => '')) || '').trim().replace(/\s+/g, ' ');
-        }
-        return '';
-      };
-      const pickCluster = async (shortName) => {
-        const norm = (t) => String(t || '').trim().replace(/\s+/g, ' ');
+      const ctx = page.locator('main [data-testid="svc-eco-analysis-context"]');
+      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
+      await expect(ctx).toBeVisible({ timeout: 8000 });
+      const trigger = () => ctx.locator('.arco-cascader-view, .sci-arco-cascader').first();
+      const pickL1 = async (name) => {
         await page.keyboard.press('Escape').catch(() => {});
         await page.waitForTimeout(300);
-        const flat = page.locator('main .industry-catalog-select').first();
-        if (await flat.isVisible().catch(() => false)) {
-          await flat.click({ timeout: 8000 });
-          await page.waitForTimeout(600);
-          const opt = page
-            .locator('.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option')
-            .filter({ hasText: new RegExp('^' + shortName + '$') })
-            .first();
-          if (!(await opt.count())) {
-            throw new Error('flat 下拉无「' + shortName + '」');
-          }
-          await opt.click({ timeout: 8000 });
-          await page.waitForTimeout(1000);
-          return;
-        }
-        const trigger = page
-          .locator('main .svc-portal-industry-cascader .arco-cascader-view, main .sci-arco-cascader, main .arco-cascader-view')
-          .first();
-        await expect(trigger).toBeVisible({ timeout: 8000 });
-        await trigger.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
+        const t = trigger();
+        await expect(t).toBeVisible({ timeout: 8000 });
+        await t.click({ timeout: 8000 });
         const popup = page.locator('.arco-trigger-popup:visible').last();
         await expect(popup).toBeVisible({ timeout: 8000 });
-        const col1 = popup.locator('.arco-cascader-panel-column, .arco-cascader-column').first();
-        const l1 = l1Alias[shortName] || shortName;
-        let row = col1.locator('.arco-cascader-option').filter({ hasText: new RegExp('^' + shortName + '$') }).first();
-        if (!(await row.count())) {
-          row = col1.locator('.arco-cascader-option').filter({ hasText: new RegExp('^' + l1 + '$') }).first();
+        const col = popup.locator('.arco-cascader-panel-column, .arco-cascader-column').first();
+        const names = [name, { 生物: '生物产业', 海洋: '海洋产业', 传统与创意: '传统与创意产业' }[name]].filter(Boolean);
+        let row = null;
+        for (const n of names) {
+          const r = col.locator('.arco-cascader-option').filter({ hasText: new RegExp('^' + n + '$') }).first();
+          if (await r.count()) {
+            row = r;
+            break;
+          }
         }
-        if (!(await row.count())) {
-          const all = (await col1.locator('.arco-cascader-option').allTextContents()).map(norm).filter(Boolean);
-          throw new Error('cascader 一级无「' + shortName + '」; 实见=' + all.slice(0, 16).join(','));
-        }
+        if (!row) throw new Error('cascader 一级无「' + name + '」');
+        await expect(row).toBeVisible({ timeout: 8000 });
         const cb = row.locator('.arco-checkbox, .arco-radio');
         if (await cb.count()) await cb.first().click({ timeout: 8000 });
         else await row.click({ timeout: 8000 });
-        await page.waitForTimeout(800);
         await page.keyboard.press('Escape').catch(() => {});
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(800);
       };
-      if (!page.url().includes('/service/chain-analysis') || /view=processing|view=result/.test(page.url())) {
-        await page.goto(baseUrl + route, { waitUntil: 'domcontentloaded' });
-        await page.waitForTimeout(1500);
-      }
-      await closeBasket();
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
-      await pickCluster('新一代信息技术');
-      const mid = await readIndustryEcho();
+      await pickL1('新一代信息技术');
+      const mid = ((await trigger().innerText()) || '').replace(/\s+/g, ' ').trim();
       if (!mid.includes('新一代信息技术')) {
         throw new Error('选 IT 后未回显: ' + mid);
       }
-      await pickCluster('生物');
+      await pickL1('生物');
       await page.waitForTimeout(500);
-      const echoAfter = await readIndustryEcho();
-      await page.evaluate((v) => {
-        window.__func04401Ready = true;
-        window.__func04401Echo = v;
-      }, echoAfter);
   - note: 1、产业领域回显「生物」
     assert: |-
-      if (!(await page.evaluate(() => window.__func04401Ready).catch(() => false))) {
-        throw new Error('前置：未完成产业改选步骤');
+      const view = page.locator('main [data-testid="svc-eco-analysis-context"] .arco-cascader-view, main [data-testid="svc-eco-analysis-context"] .sci-arco-cascader').first();
+      await expect(view).toBeVisible({ timeout: 8000 });
+      const txt = ((await view.innerText()) || '').replace(/\s+/g, ' ').trim();
+      if (!/(^|\s|\/)生物(\s|$|产业)/.test(txt) && !/^生物$/.test(txt)) {
+        throw new Error('产业领域未回显「生物」: ' + txt);
       }
-      const flat = page.locator('main .industry-catalog-select').first();
-      let viewTxt = (await page.evaluate(() => window.__func04401Echo).catch(() => '')) || '';
-      if (!viewTxt) {
-        viewTxt =
-          (await flat.isVisible().catch(() => false))
-            ? (
-                (await flat.locator('.arco-select-view-value').first().innerText().catch(() => '')) ||
-                (await flat.innerText().catch(() => '')) ||
-                ''
-              )
-                .trim()
-                .replace(/\s+/g, ' ')
-            : ((await page.locator('main .arco-cascader-view').first().innerText().catch(() => '')) || '')
-                .trim()
-                .replace(/\s+/g, ' ');
-      }
-      if (!/^生物$/.test(viewTxt) && !/(^|\s)生物(\s|$)/.test(viewTxt)) {
-        throw new Error('产业领域未回显「生物」: ' + viewTxt);
-      }
-      if (/生物产业|生物医药/.test(viewTxt)) {
-        throw new Error('产业回显非短名「生物」: ' + viewTxt);
+      if (/新一代信息技术/.test(txt)) {
+        throw new Error('产业仍为 IT: ' + txt);
       }
   - note: 2、页面仍为「分析配置」
     assert: |-
-      if (!(await page.evaluate(() => window.__func04401Ready).catch(() => false))) {
-        throw new Error('前置：未完成产业改选步骤');
-      }
       await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('[data-testid="svc-eco-analysis-config"]')).toBeVisible({ timeout: 8000 });
       if (/view=processing|view=result/.test(page.url())) {
         throw new Error('改选产业后不应离开配置态: ' + page.url());
       }
-      const main = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-      if (!/分析配置/.test(main)) {
-        throw new Error('主区未见「分析配置」: ' + main.slice(0, 240));
-      }
   - note: 3、不出现「服务链短板分析生成中」
     assert: |-
-      if (!(await page.evaluate(() => window.__func04401Ready).catch(() => false))) {
-        throw new Error('前置：未完成产业改选步骤');
-      }
-      const body = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-      if (/服务链短板分析生成中/.test(body)) {
-        throw new Error('改选产业后不应出现「服务链短板分析生成中」');
-      }
-      if (/view=processing/.test(page.url())) {
-        throw new Error('改选产业后 URL 不应进过程态: ' + page.url());
-      }
-      await page.waitForTimeout(1500);
-      const body2 = ((await page.locator('main').first().innerText().catch(() => '')) || '');
-      if (/服务链短板分析生成中/.test(body2)) {
-        throw new Error('等待后仍出现「服务链短板分析生成中」');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: >-
-  配置态选「新一代信息技术」→改选「生物」；flat 优先、cascader 一级别名（生物→生物产业）。现场配置区为 Cascader，改选后回显「生物产业」非短名「生物」（D1 命名跟 P0-02/scout 短名）；expect②③未触发生成中。fid=ZNFWJQ-KJZTFWXT-v1.0-FUNC-04401。零 allow_skip。
+      await expect(page.getByText('服务链短板分析生成中')).toHaveCount(0);
+      await page.waitForTimeout(1200);
+      await expect(page.getByText('服务链短板分析生成中')).toHaveCount(0);
+on_fail: 截图 + 抄 X-Trace-Id

@@ -1,37 +1,23 @@
 id: FUNC-01421
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-01421
-priority: P0
-title: 结果目标特征下拉固定 4 项与附录 D 一致
-story: US-ENT-RECRUIT-A1
-entry_id: ent-attract
+priority: P1
 tier: B
-preconditions:
-  - 已登录；已打开一条条件筛选的成功结果（assert 自含条件筛选发起）
-locators:
-  result_target_feature_select: placeholder「目标特征」（结果筛选区）
+title: 主流程-目标特征
+entry_id: ent-attract
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /
-  - action: goto
-    target: /enterprise-center/attraction?workspace=attraction&recommendation_tab=attraction
+    target: /enterprise/attraction
   - action: evaluate
-    note: 到达成功结果→展开结果区「目标特征」下拉；固定四项在 expect 判定
+    note: 前置到达条件筛选成功结果（同册 01437）；展开结果区「目标特征」下拉
 expect:
-  - note: 1、选项共 4 个，名称见附录 D（高成长性、关键技术型、隐形冠军、专精特新）
+  - note: 1、选项共 4 个，名称见附录 D
     assert: |-
       const APPENDIX_D = ['高成长性', '关键技术型', '隐形冠军', '专精特新'];
       const stack = () => page.getByTestId('recruit-tab-stack');
-      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
       const parseCounts = (text) => {
         const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
         if (!analyzedM) return null;
@@ -74,9 +60,20 @@ expect:
         }
         return false;
       };
+      const goFilterTab = async () => {
+        const byKey = page.locator('button[data-tab-key="filter"]');
+        const byName = page.getByRole('tab', { name: '条件筛选推荐' });
+        if ((await byKey.count()) < 1 && (await byName.count()) < 1) return;
+        const tab = (await byKey.count()) ? byKey.first() : byName.first();
+        await tab.click({ timeout: 8000 });
+        await page.waitForTimeout(600);
+      };
       const reachFilterSuccess = async () => {
+        await goFilterTab();
         if (await isSuccessResult()) return;
         if (await tryRestoreCompletedFilter()) return;
+        await goFilterTab();
+        await page.keyboard.press('Escape').catch(() => {});
         const openPh = async (ph) => {
           await page.keyboard.press('Escape').catch(() => {});
           const i = page.locator(`input[placeholder="${ph}"]`).first();
@@ -93,7 +90,7 @@ expect:
         await openPh('全部行业领域');
         const ai = page.locator(optSel).filter({ hasText: '人工智能' });
         if (await ai.count()) await ai.first().click({ timeout: 8000 });
-        else await page.locator(optSel).filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        else await page.locator(optSel).filter({ hasText: '集成电路' }).first().click({ timeout: 8000 });
         await page.waitForTimeout(400);
         const start = page.getByRole('button', { name: '开始分析' }).first();
         await expect(start).toBeEnabled({ timeout: 8000 });
@@ -118,7 +115,7 @@ expect:
         if (!ok) {
           const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
           if (stuck) {
-            throw new Error('环境闸门 ENV-ATTRACT-ASYNC-NO-SUCCESS-001：条件筛选发起后长期停留在可视化分析过程，无法在超时内到达「招引推荐分析结果」以测结果目标特征下拉（30888 无最近分析恢复时与 FUNC-01408/01418 同源 D4）');
+            throw new Error('修订 blocked 已发起仍为空结果壳');
           }
           throw new Error('未在超时内到达条件筛选成功结果: ' + last.slice(0, 200));
         }
@@ -143,7 +140,6 @@ expect:
         await page.keyboard.press('Escape').catch(() => {});
         return labels;
       };
-      await dismissBasket();
       await reachFilterSuccess();
       const labels = await readTargetFeatureDropdownLabels();
       if (labels.length !== 4) {
@@ -158,5 +154,4 @@ expect:
       if (extra.length) {
         throw new Error('下拉含附录 D 外选项：' + extra.join('、') + '；全集=[' + labels.join('、') + ']');
       }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·30888 深链 /enterprise-center/attraction；结果筛选 placeholder「目标特征」，选项源=RECRUIT_TARGET_FEATURE_OPTIONS（recruitMeta.ts 四项）。前置同 FUNC-01419/01420（栈内成功态→最近分析恢复→高新+行业发起）。D4·无异步成功→ ENV-ATTRACT-ASYNC-NO-SUCCESS-001。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id

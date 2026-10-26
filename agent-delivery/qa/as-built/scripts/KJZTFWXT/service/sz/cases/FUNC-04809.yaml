@@ -12,20 +12,60 @@ steps:
 expect:
   - note: 1、过程页有「任务 ID」
     assert: |-
-      const close = page.locator('button[aria-label="关闭对比篮"]');
-      if (await close.count() && await close.first().isVisible().catch(() => false)) await close.first().click();
-      const selectView = page.locator('text=产业领域').locator('..').locator('.arco-select-view').first();
-      await selectView.click();
-      await page.getByText('新一代信息技术', { exact: true }).click();
-      await page.getByRole('button', { name: '开始分析' }).click();
-      await page.waitForURL(/view=processing/, { timeout: 60000 });
-      await expect(page.getByText('任务 ID')).toBeVisible();
-      await expect(page.getByText(/SVC-\d{8}-\d+/)).toBeVisible();
+      const cfgUrl = '/service/chain-analysis?workspace=shenzhen&tab=shenzhen';
+      if (/[?&]view=/.test(page.url())) {
+        await page.goto(cfgUrl, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(1500);
+      }
+      const main = page.locator('main');
+      await expect(main.getByText('分析配置').first()).toBeVisible({ timeout: 15000 });
+      const cfgText = ((await main.innerText().catch(() => '')) || '');
+      if (!/新一代信息技术/.test(cfgText)) {
+        const cascader = main.locator('.arco-cascader-view').first();
+        await expect(cascader).toBeVisible({ timeout: 8000 });
+        await cascader.click({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        const col1 = page.locator('.arco-cascader-popup-wrapper:visible .arco-cascader-column').first();
+        await expect(col1).toBeVisible({ timeout: 8000 });
+        await col1.locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(1000);
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(400);
+      }
+      const start = main.getByRole('button', { name: '开始分析', exact: true });
+      await expect(start).toBeVisible({ timeout: 8000 });
+      await expect(start).toBeEnabled({ timeout: 8000 });
+      const pollProcessing = async (ms) => {
+        for (let i = 0; i < Math.ceil(ms / 500); i++) {
+          if (/[?&]view=processing/.test(page.url())) return true;
+          await page.waitForTimeout(500);
+        }
+        return false;
+      };
+      await start.click({ timeout: 8000 });
+      let landed = await pollProcessing(8000);
+      if (!landed) {
+        const s2 = main.getByRole('button', { name: '开始分析', exact: true });
+        if (await s2.isVisible().catch(() => false) && (await s2.isEnabled().catch(() => false))) {
+          await s2.click({ timeout: 8000 });
+          landed = await pollProcessing(12000);
+        }
+      }
+      if (!landed) throw new Error('点击开始分析后未进入过程态: ' + page.url());
+      await expect(main.getByTestId('svc-org-analysis-process')).toBeVisible({ timeout: 15000 });
+      const row = main.locator('.arco-descriptions-item').filter({ hasText: '任务 ID' });
+      await expect(row).toBeVisible({ timeout: 8000 });
+      await expect(row.locator('.arco-descriptions-item-value')).not.toHaveText(/^\s*$/);
   - note: 2、过程页有「分析类型」
     assert: |-
-      await expect(page.getByText('分析类型')).toBeVisible();
+      const main = page.locator('main');
+      const row = main.locator('.arco-descriptions-item').filter({ hasText: '分析类型' });
+      await expect(row).toBeVisible({ timeout: 8000 });
+      await expect(row.locator('.arco-descriptions-item-value')).not.toHaveText(/^\s*$/);
   - note: 3、「已用时间」有读数
     assert: |-
-      await expect(page.getByText('已用时间')).toBeVisible();
-      await expect(page.getByText(/\d+\s*秒/)).toBeVisible();
+      const main = page.locator('main');
+      const row = main.locator('.arco-descriptions-item').filter({ hasText: '已用时间' });
+      await expect(row).toBeVisible({ timeout: 8000 });
+      await expect(row.locator('.arco-descriptions-item-value')).toHaveText(/\d+\s*秒/);
 on_fail: 截图 + 抄 X-Trace-Id

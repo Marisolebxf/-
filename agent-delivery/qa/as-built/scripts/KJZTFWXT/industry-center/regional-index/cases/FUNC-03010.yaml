@@ -4,97 +4,65 @@ priority: P1
 tier: B
 title: 保存个人模板确定后「我的模板」出现该项且带已计入指标数
 entry_id: chain-regional-index
-preconditions:
-  - 权重合计为 100%
-  - 已计入至少 1 项
-locators: {}
+preconditions: []
+locators:
+  save_tpl: button「保存为个人模板」
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /industry-center/regional?workspace=index&tab=index
   - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
-  - action: evaluate
-    note: 侧栏进入→选产业→保存为个人模板并命名确定
-    assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
-        }
-      };
-      const enterRegionalIndex = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/regional/.test(page.url()) &&
-          /workspace=index/.test(page.url()) &&
-          /tab=index/.test(page.url());
-        if (!onTarget()) {
-          const leaf = page.locator('.arco-menu-item').filter({ hasText: /^区域产业指数评价$/ });
-          const expandChain = async () => {
-            if (await leaf().first().isVisible().catch(() => false)) return;
-            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-            if (await sub.count()) {
-              await sub.first().click({ timeout: 8000 });
-              await page.waitForTimeout(400);
-            }
-          };
-          await expandChain();
-          await expect(leaf().first()).toBeVisible({ timeout: 10000 });
-          await leaf().first().click({ timeout: 10000 });
-          await page.waitForURL(/\/industry-center\/regional/, { timeout: 20000 });
-        }
-        await expect(page).toHaveURL(/workspace=index/);
-        await expect(page).toHaveURL(/tab=index/);
-      };
-      const pickIndustry = async () => {
-        const main = page.locator('main');
-        const row = main.locator('.policy-analysis-filter-row').filter({ hasText: '分析对象' });
-        const view = row.locator('.arco-select-view').first();
-        await expect(view).toBeVisible({ timeout: 10000 });
-        const label = ((await view.innerText()).trim().split('\n')[0] || '').trim();
-        if (/请选择|未选/.test(label)) {
-          await view.click({ timeout: 8000 });
-          await page.waitForTimeout(500);
-          const pop = page.locator('.arco-select-dropdown:visible, .arco-trigger-popup:visible').last();
-          await expect(pop).toBeVisible({ timeout: 8000 });
-          const opt = pop.locator('.arco-select-option').filter({ hasText: /^半导体与集成电路$/ }).first();
-          await expect(opt).toBeVisible({ timeout: 8000 });
-          await opt.click({ timeout: 8000 });
-          await page.keyboard.press('Escape').catch(() => {});
-          await page.waitForTimeout(500);
-        }
-      };
-      await enterRegionalIndex();
-      await expect(page.getByText('分析配置').first()).toBeVisible({ timeout: 12000 });
-      await pickIndustry();
-      await expect(page.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 15000 });
-      const tplName = 'QA-REGIDX-' + Date.now();
-      globalThis.__func03010_tpl = tplName;
-      await page.getByRole('button', { name: '保存为个人模板' }).click({ timeout: 8000 });
-      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' }).first();
-      await expect(modal).toBeVisible({ timeout: 8000 });
-      await modal.getByPlaceholder('请输入个人模板名称').fill(tplName);
-      await modal.getByRole('button', { name: /^确定$/ }).click({ timeout: 8000 });
-      await expect(modal).toBeHidden({ timeout: 15000 });
-      await expect(page.getByText('个人模板已保存').first()).toBeVisible({ timeout: 10000 });
+    for: 选择模板
+    timeout_ms: 4500
+  - action: click
+    target: 同册前置与保存流程见 expect
 expect:
   - note: 1、「我的模板」中出现刚输入的名称
     assert: |-
-      const tplName = globalThis.__func03010_tpl;
-      const tplView = page.locator('main').locator('.arco-form-item').filter({ hasText: '选择模板' }).locator('.arco-select-view').first();
-      await tplView.click({ timeout: 8000 });
-      await page.waitForTimeout(500);
-      const popup = page.locator('.arco-select-dropdown:visible, .arco-trigger-popup:visible').last();
-      await expect(popup.getByText('我的模板', { exact: true }).first()).toBeVisible({ timeout: 10000 });
-      await expect(popup.getByText(tplName, { exact: false }).first()).toBeVisible({ timeout: 10000 });
+      await page.goto('/industry-center/regional?workspace=index&tab=index', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(4500);
+      const closeB = page.locator('[aria-label="关闭对比篮"]');
+      if (await closeB.count() && (await closeB.first().isVisible().catch(() => false))) {
+        await closeB.first().click().catch(() => {});
+        await page.waitForTimeout(400);
+      }
+      await page.locator('.arco-select-view').filter({ hasText: /区域产业指数官方模板|当前未保存配置/ }).first().click();
+      await page.waitForTimeout(600);
+      await page.locator('.arco-trigger-popup').getByText('当前未保存配置', { exact: true }).last().click({ force: true });
+      await page.waitForTimeout(800);
+      await page.getByRole('button', { name: '一键均分' }).click();
+      await page.waitForTimeout(800);
+      await expect(page.getByText(/权重合计：100%.*校验通过/).first()).toBeVisible({ timeout: 12000 });
+      const tplName = 'QA-REGIDX-' + Date.now();
+      await page.evaluate((n) => sessionStorage.setItem('func03010_tpl', n), tplName);
+      await page.getByRole('button', { name: '保存为个人模板' }).click();
+      const modal = page.locator('.arco-modal:visible').filter({ hasText: '保存为个人模板' }).first();
+      await expect(modal).toBeVisible({ timeout: 10000 });
+      await modal.getByPlaceholder('请输入个人模板名称').fill(tplName);
+      await modal.getByRole('button', { name: /^确定$/ }).click();
+      await expect(modal).toBeHidden({ timeout: 15000 });
+      await expect(page.getByText('个人模板已保存').first()).toBeVisible({ timeout: 15000 });
+      const tplView = page.locator('main .arco-form-item').filter({ hasText: '选择模板' }).locator('.arco-select-view').first();
+      await expect(tplView).toContainText(tplName, { timeout: 12000 });
+      await tplView.click();
+      await page.waitForTimeout(600);
+      const pop = page.locator('.arco-trigger-popup').last();
+      await expect(pop.locator('.arco-select-group-title, .arco-select-option').filter({ hasText: /我的模板/ }).first()).toBeVisible({ timeout: 10000 });
+      await expect(pop.getByText(tplName, { exact: false }).first()).toBeVisible({ timeout: 10000 });
   - note: 2、该项带已计入指标数
     assert: |-
-      const tplName = globalThis.__func03010_tpl;
-      const popup = page.locator('.arco-select-dropdown:visible, .arco-trigger-popup:visible').last();
-      const row = popup.locator('.arco-select-option').filter({ hasText: tplName }).first();
-      await expect(row).toBeVisible({ timeout: 8000 });
+      const tplName = await page.evaluate(() => sessionStorage.getItem('func03010_tpl'));
+      if (!tplName) throw new Error('未找到刚保存的模板名');
+      const tplView = page.locator('main .arco-form-item').filter({ hasText: '选择模板' }).locator('.arco-select-view').first();
+      const closedText = ((await tplView.innerText()).trim() || '').replace(/\s+/g, ' ');
+      if (closedText.includes(tplName) && /\d+\s*项/.test(closedText)) return;
+      let pop = page.locator('.arco-trigger-popup:visible').last();
+      if (!(await pop.count()) || !(await pop.isVisible().catch(() => false))) {
+        await tplView.click();
+        await page.waitForTimeout(600);
+        pop = page.locator('.arco-trigger-popup').last();
+      }
+      const row = pop.locator('.arco-select-option').filter({ hasText: tplName }).first();
+      await expect(row).toBeVisible({ timeout: 10000 });
       const rowText = ((await row.innerText()).trim() || '').replace(/\s+/g, ' ');
       if (!/\d+\s*项/.test(rowText)) {
         throw new Error('我的模板项未展示已计入指标数，现场=' + rowText);

@@ -10,64 +10,25 @@ steps:
   - action: goto
     target: /service-portal/shenzhen
   - action: evaluate
-    note: 点击任一重点机构卡片
-    assert: |-
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
-      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
-      await heading.scrollIntoViewIfNeeded();
-      await expect(heading).toBeVisible({ timeout: 8000 });
-      const cards = page.locator('button.svc-portal-keyorg-card');
-      let n = await cards.count();
-      if (n === 0) {
-        const empty = await page.getByText(/暂无重点机构/).first().isVisible().catch(() => false);
-        if (empty) {
-          throw new Error('ENV-SVC-PORTAL-KEY-ORG-EMPTY：重点机构墙诚实空，无法点卡开抽屉（Q060）');
-        }
-        throw new Error('重点产业服务机构无卡片，无法打开机构详情抽屉');
-      }
-      const pick = cards.first();
-      await expect(pick).toBeVisible({ timeout: 8000 });
-      await pick.click({ timeout: 8000 });
-      const drawerQuick = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      if (!(await drawerQuick.isVisible().catch(() => false))) {
-        const detail = page.locator('main').getByRole('link', { name: /查看详情/ }).first();
-        await expect(detail).toBeVisible({ timeout: 8000 });
-        await detail.click({ timeout: 8000 });
-      }
-      await page.waitForTimeout(800);
+    target: 点击任一重点机构卡片
+  - action: click
+    target: 广州合一健康科技有限公司
 expect:
-  - note: 1、机构详情抽屉打开
+  - note: 机构详情抽屉打开
     assert: |-
-      if (await page.getByText('抱歉，页面不存在').isVisible().catch(() => false)) {
-        throw new Error('ENV-ENTRY-UNREACHABLE: /service-portal/shenzhen SPA404 url=' + page.url());
-      }
-      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
-      const heading = page.getByRole('heading', { name: '重点产业服务机构', exact: true });
-      await heading.scrollIntoViewIfNeeded();
-      await expect(heading).toBeVisible({ timeout: 8000 });
-      const drawer = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      await expect(drawer).toBeVisible({ timeout: 15000 });
-      await expect(page.locator('.arco-drawer').first()).toBeVisible({ timeout: 15000 });
-  - note: 2、板块依序为机构概况、当前规模、业务服务领域、业务分布区域
+      await expect(page.locator('.arco-drawer')).toBeVisible({ timeout: 15000 });
+  - note: 板块依序为机构概况、当前规模、业务服务领域、业务分布区域
     assert: |-
-      const root = page.locator('[data-testid="svc-portal-keyorg-drawer"]').first();
-      await expect(root).toBeVisible({ timeout: 8000 });
-      await expect(root.getByRole('heading', { name: /机构概况/ })).toBeVisible({ timeout: 8000 });
-      await expect(root.getByRole('heading', { name: /当前规模/ })).toBeVisible({ timeout: 8000 });
-      await expect(root.getByRole('heading', { name: /业务服务领域/ })).toBeVisible({ timeout: 8000 });
-      await expect(root.getByRole('heading', { name: /业务分布区域/ })).toBeVisible({ timeout: 8000 });
-      const dtxt = ((await root.innerText().catch(() => '')) || '');
-      const i1 = dtxt.indexOf('机构概况');
-      const i2 = dtxt.indexOf('当前规模');
-      const i3 = dtxt.indexOf('业务服务领域');
-      const i4 = dtxt.indexOf('业务分布区域');
+      const drawer = page.locator('.arco-drawer').last();
+      const text = await drawer.innerText();
+      const i1 = text.indexOf('机构概况');
+      const i2 = text.indexOf('当前规模');
+      const i3 = text.indexOf('业务服务领域');
+      const i4 = text.indexOf('业务分布区域');
       if (i1 < 0 || i2 < 0 || i3 < 0 || i4 < 0) {
-        throw new Error('抽屉内四板块标题不全');
+        throw new Error(`缺少板块标题: 概况@${i1} 规模@${i2} 领域@${i3} 区域@${i4}`);
       }
       if (!(i1 < i2 && i2 < i3 && i3 < i4)) {
-        throw new Error('四板块顺序不符：机构概况→当前规模→业务服务领域→业务分布区域');
+        throw new Error(`板块顺序不对: ${i1}, ${i2}, ${i3}, ${i4}`);
       }
 on_fail: 截图 + 抄 X-Trace-Id

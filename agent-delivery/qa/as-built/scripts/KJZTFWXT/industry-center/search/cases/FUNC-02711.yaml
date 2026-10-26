@@ -1,110 +1,115 @@
 id: FUNC-02711
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02711
 priority: P0
+tier: B
 title: 名称排序下切换方向后首条再变化
 entry_id: chain-search
-tier: A
 preconditions:
-  - 已搜出检索结果
   - 检索结果排序已是「名称」
-locators:
-  result_region: '[role=region][aria-label="产业查询结果"]'
+locators: {}
 steps:
   - action: goto
     target: /industry-center/search
   - action: evaluate
-    note: 出结果后排序选「名称」，记录切换前首条
+    note: 重点产业检索结果→排序为「名称」→记录首条→点击「切换排序方向」
 expect:
-  - note: 前置：检索结果且排序已为「名称」
+  - note: 1、首条与点击前不同
     assert: |-
+      const dismissBasket = async () => {
+        const close = page.locator('[aria-label="关闭对比篮"]');
+        if (await close.count()) {
+          const vis = await close.first().isVisible().catch(() => false);
+          if (vis) {
+            await close.first().click({ timeout: 3000 }).catch(() => {});
+            await page.waitForTimeout(300);
+          }
+        }
+      };
       const region = () => page.locator('[role=region][aria-label="产业查询结果"]');
-      const getSortView = () =>
-        region().locator('.industry-search-result-tools .arco-select .arco-select-view').first();
+      const getSortSelect = () => {
+        const tools = region().locator('.industry-search-result-tools');
+        const sortBar = tools.locator('.flex.shrink-0.items-center').filter({
+          has: page.getByRole('button', { name: '切换排序方向' }),
+        });
+        return sortBar.locator('.arco-select').first();
+      };
+      const firstResultCard = () =>
+        region().locator('.industry-search-result-list .industry-search-result-card').first();
       const getFirstCardName = async () => {
-        const first = region().locator('.industry-search-result-card').first();
-        await expect(first).toBeVisible({ timeout: 10000 });
-        const name = ((await first.locator('.industry-search-result-title h3').innerText()) || '')
+        const first = firstResultCard();
+        await expect(first).toBeVisible({ timeout: 15000 });
+        const name = ((await first.locator('h3').textContent({ timeout: 5000 })) || '')
           .replace(/\s+/g, ' ')
           .trim();
         if (!name) throw new Error('首条结果缺少名称 h3');
         return name;
       };
+      await dismissBasket();
+      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
+      if ((await page.getByText('抱歉，页面不存在').count()) > 0) {
+        throw new Error('ENV-ENTRY-UNREACHABLE：产业查询深链不可用');
+      }
+      const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
+      await expect(smartTab).toBeVisible({ timeout: 10000 });
+      const sAria = await smartTab.getAttribute('aria-selected');
+      const sCls = (await smartTab.getAttribute('class')) || '';
+      if (sAria !== 'true' && !sCls.includes('active')) {
+        await smartTab.click();
+        await page.waitForTimeout(400);
+      }
+      const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^重点产业$/ }).first();
+      await expect(chip).toBeVisible({ timeout: 8000 });
+      await chip.scrollIntoViewIfNeeded().catch(() => {});
+      await chip.click({ timeout: 8000 });
       const waitResult = async () => {
         const deadline = Date.now() + 25000;
         while (Date.now() < deadline) {
           await expect(region()).toBeVisible({ timeout: 5000 });
           const state = await region().getAttribute('data-search-state');
-          const regionText = ((await region().innerText()) || '').replace(/\s+/g, ' ');
-          if (state === 'result' || state === 'permission') return regionText;
-          if (/产业查询返回\s*\d+\s*条/.test(regionText) || /高级筛选结果/.test(regionText)) return regionText;
-          await page.waitForTimeout(400);
+          const cardCount = await region()
+            .locator('.industry-search-result-list .industry-search-result-card')
+            .count();
+          if ((state === 'result' || state === 'permission') && cardCount >= 2) return;
+          await page.waitForTimeout(500);
         }
-        throw new Error('未进入检索结果态');
+        throw new Error('点击「重点产业」后未进入检索结果态');
       };
-      await expect(page).toHaveURL(/\/industry-center\/search/, { timeout: 15000 });
-      let regionText = await waitResult();
-      let state = await region().getAttribute('data-search-state');
-      if (state !== 'result' && state !== 'permission' && !/产业查询返回|高级筛选结果/.test(regionText)) {
-        const smartTab = page.locator('.enterprise-search-mode-tabs [role=tab]').filter({ hasText: /^智能检索$/ }).first();
-        await expect(smartTab).toBeVisible({ timeout: 10000 });
-        const chip = page.locator('.enterprise-search-hot-button').filter({ hasText: /^重点产业$/ }).first();
-        await expect(chip).toBeVisible({ timeout: 8000 });
-        await chip.click({ timeout: 8000 });
-        regionText = await waitResult();
-        state = await region().getAttribute('data-search-state');
-      }
-      if (/产业查询无匹配结果/.test(regionText) && /共\s*0\s*条/.test(regionText)) {
-        throw new Error('前置：检索结果为空');
-      }
-      let n = null;
-      const m2 = regionText.match(/产业查询返回\s*(\d+)\s*条/);
-      const m1 = regionText.match(/检索结果[\s\S]{0,40}?共\s*(\d+)\s*条/);
-      if (m2) n = parseInt(m2[1], 10);
-      else if (m1) n = parseInt(m1[1], 10);
-      if (n === null || Number.isNaN(n) || n < 2) {
-        throw new Error('前置：至少 2 条结果才能验切换方向变首条');
-      }
-      const sortView = getSortView();
-      await expect(sortView).toBeVisible({ timeout: 8000 });
-      let triggerText = ((await sortView.innerText()) || '').replace(/\s+/g, ' ');
-      if (!triggerText.includes('名称')) {
-        await sortView.click({ timeout: 8000 });
-        await page.waitForTimeout(250);
-        const dropdown = page.locator('.arco-select-dropdown:visible').last();
-        await expect(dropdown).toBeVisible({ timeout: 8000 });
-        const nameOpt = dropdown.locator('.arco-select-option').filter({ hasText: /^名称$/ }).first();
-        const optVisible = await nameOpt.isVisible().catch(() => false);
-        if (optVisible) {
-          await nameOpt.click({ timeout: 8000 });
-        } else {
-          await page.keyboard.press('ArrowDown');
-          await page.keyboard.press('Enter');
-        }
+      await waitResult();
+      const sortSelect = getSortSelect();
+      await expect(sortSelect).toBeVisible({ timeout: 8000 });
+      let toolsText = ((await region().locator('.industry-search-result-tools').innerText()) || '').replace(
+        /\s+/g,
+        ' ',
+      );
+      if (!toolsText.includes('名称')) {
+        await sortSelect.click({ timeout: 8000 });
+        await page.waitForTimeout(300);
+        const pop = page.locator('.arco-trigger-popup:visible');
+        await expect(pop).toBeVisible({ timeout: 8000 });
+        const nameOpt = pop.locator('.arco-select-option').filter({ hasText: /^名称$/ }).first();
+        await expect(nameOpt).toBeVisible({ timeout: 8000 });
+        await nameOpt.click({ timeout: 8000 });
         await page.waitForTimeout(900);
-        triggerText = ((await sortView.innerText()) || '').replace(/\s+/g, ' ');
+        toolsText = ((await region().locator('.industry-search-result-tools').innerText()) || '').replace(
+          /\s+/g,
+          ' ',
+        );
+        if (!toolsText.includes('名称')) {
+          throw new Error('前置：排序应为「名称」，现场 tools=' + toolsText.slice(0, 120));
+        }
       }
-      if (!triggerText.includes('名称')) {
-        throw new Error('前置：排序应为「名称」，现场 trigger=' + triggerText);
+      const beforeToggle = await getFirstCardName();
+      const toggleBtn = page.getByRole('button', { name: '切换排序方向' });
+      await expect(toggleBtn).toBeVisible({ timeout: 8000 });
+      await toggleBtn.click({ timeout: 8000 });
+      await page.waitForTimeout(900);
+      const afterToggle = await getFirstCardName();
+      if (afterToggle === beforeToggle) {
+        throw new Error(
+          '首条应与点击前不同：点击前「' + beforeToggle + '」点击后仍为「' + afterToggle + '」',
+        );
       }
-      globalThis.__func02711_firstBeforeToggle = await getFirstCardName();
-      globalThis.__func02711_ready = true;
-  - note: 1、首条与点击前不同
-    assert: |-
-      if (!globalThis.__func02711_ready) throw new Error('前置：未完成名称排序准备');
-      const before = globalThis.__func02711_firstBeforeToggle;
-      if (!before) throw new Error('缺少切换方向前首条名称');
-      const sortDirBtn = page.getByRole('button', { name: '切换排序方向' });
-      await expect(sortDirBtn).toBeVisible({ timeout: 8000 });
-      await sortDirBtn.click({ timeout: 8000 });
-      await page.waitForTimeout(1200);
-      const region = page.locator('[role=region][aria-label="产业查询结果"]');
-      const first = region.locator('.industry-search-result-card').first();
-      await expect(first).toBeVisible({ timeout: 10000 });
-      const after = ((await first.locator('.industry-search-result-title h3').innerText()) || '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      if (!after) throw new Error('切换后首条缺少名称');
-      if (after === before) {
-        throw new Error('名称排序切换方向后首条应变化：切换前「' + before + '」切换后仍为「' + after + '」');
-      }
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
+on_fail: 截图 + 抄 X-Trace-Id
+as_built_note: >-
+  深链 /industry-center/search；前置同册 02691「重点产业」+ 02710 改排序「名称」；步骤点击 aria-label=切换排序方向；
+  首条=.industry-search-result-card 首卡 h3。登录与关评审由 runner。

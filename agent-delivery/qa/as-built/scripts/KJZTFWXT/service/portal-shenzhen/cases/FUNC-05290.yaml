@@ -2,31 +2,36 @@ id: FUNC-05290
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-05290
 priority: P1
 tier: B
-title: 主流程-选定产业
+title: 主流程-选定产业后结论与环节标题改写
 entry_id: svc-portal-shenzhen
 preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service-portal/shenzhen
-  - action: evaluate
-    note: 1.展开产业下拉
-    run: |-
-      await page.locator('main .svc-portal-industry-cascader .arco-cascader-view').first().click();
-      await page.locator('.svc-portal-industry-cascader-menu').waitFor({ state: 'visible' });
-  - action: evaluate
-    note: 2.选择「新一代信息技术」
-    run: |-
-      const menu = page.locator('.svc-portal-industry-cascader-menu');
-      await menu.locator('.arco-cascader-column').first().locator('.arco-cascader-option').filter({ hasText: '新一代信息技术' }).first().click();
-      await expect(page.locator('main')).toContainText('「新一代信息技术」为上下文', { timeout: 15000 });
+  - action: wait
+    timeout_ms: 1200
 expect:
   - note: 1、结论上下文为「新一代信息技术」
     assert: |-
-      await expect(page.locator('main')).toContainText('「新一代信息技术」为上下文');
+      const main = page.locator('main');
+      await page.keyboard.press('Escape');
+      const cascader = main.locator('.svc-portal-industry-cascader').first();
+      await cascader.locator('.arco-cascader-view').click({ timeout: 10000 });
+      const popup = page.locator('.arco-cascader-popup:visible');
+      await popup.waitFor({ state: 'visible', timeout: 10000 });
+      const clusterItem = popup.locator('.arco-cascader-column').first().locator('.arco-cascader-list-item').filter({ hasText: '新一代信息技术' }).first();
+      const strictTick = clusterItem.locator('.arco-checkbox, .arco-radio').first();
+      if (await strictTick.count()) {
+        await strictTick.click();
+      } else {
+        await clusterItem.locator('.arco-cascader-list-item-label').click();
+      }
+      await page.keyboard.press('Escape');
+      await expect(main).toContainText('「新一代信息技术」为上下文', { timeout: 15000 });
   - note: 2、环节分布标题含「新一代信息技术」
     assert: |-
-      await expect(page.locator('main')).toContainText('新一代信息技术 · 深圳产业链环节分布');
+      await expect(page.locator('main')).toContainText('新一代信息技术 · 深圳产业链环节分布', { timeout: 10000 });
   - note: 3、深圳机构约数仍展示家数
     assert: |-
       const block = page.locator('main .svc-portal-kpi').filter({ hasText: '深圳机构约数' });

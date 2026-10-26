@@ -1,80 +1,27 @@
 id: FUNC-02593
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02593
-priority: P0
-title: 默认产业链全景展示当前链的标题、下钻说明和环节数
+priority: P1
+tier: B
+title: 主流程-全景默认文案
 entry_id: chain-overview
-tier: A
-preconditions:
-  - 已进入专题全景
-  - 产业链为「半导体与集成电路」
-  - 当前为「产业链全景」Tab
-locators:
-  tab_panorama: '#industry-overview-tab-panorama'
-  panel: .industry-overview-panel
-  chain: .industry-overview-chain-select
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/overview
-  - action: evaluate
-    note: 确认产业链为半导体与集成电路并确保「产业链全景」Tab 选中
+  - action: wait
+    timeout_ms: 2000
+    for: 产业链全景 Tab 与快照加载
 expect:
-  - note: 前置：产业链选框为「半导体与集成电路」且「产业链全景」Tab 已打开
-    assert: |-
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
-      await dismissBasket();
-      await expect(page).toHaveURL(/\/industry-center\/overview/, { timeout: 15000 });
-      if (await page.getByText('抱歉，页面不存在').count()) {
-        throw new Error('C1：深链返回 404，检查 edu /tts/svcz 部署与 catalog_path');
-      }
-      const chain = page.locator('.industry-overview-chain-select');
-      await expect(chain).toBeVisible({ timeout: 15000 });
-      const chainTxt = await chain.innerText();
-      if (!/半导体与集成电路/.test(chainTxt)) {
-        throw new Error('前置：产业链应为「半导体与集成电路」，实际：' + chainTxt);
-      }
-      const mode = page.locator('[aria-label="专题全景视图"]');
-      await expect(mode).toBeVisible({ timeout: 10000 });
-      const panTab = mode.locator('#industry-overview-tab-panorama');
-      await expect(panTab).toBeVisible({ timeout: 8000 });
-      const selected =
-        (await panTab.getAttribute('aria-selected')) === 'true' ||
-        ((await panTab.getAttribute('class')) || '').includes('active');
-      if (!selected) {
-        await panTab.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
-      }
-      await expect(mode.locator('[role=tab][aria-selected="true"]')).toHaveText('产业链全景');
   - note: 标题为「半导体与集成电路产业链全景」
     assert: |-
-      const h2 = page.locator('h2').filter({ hasText: '半导体与集成电路产业链全景' });
-      await expect(h2.first()).toBeVisible({ timeout: 8000 });
-      const t = (await h2.first().innerText()).trim().replace(/\s+/g, ' ');
-      if (t !== '半导体与集成电路产业链全景') throw new Error('标题不符: ' + t);
+      await expect(page.locator('.industry-overview-page').getByRole('heading', { name: '半导体与集成电路产业链全景' })).toBeVisible()
   - note: 说明为「默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。」
     assert: |-
-      await expect(
-        page.getByText('默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。')
-      ).toBeVisible({ timeout: 8000 });
-  - note: 写明 8 个链位环节和 7 条关系（edu 半导体链 live；用例册预期列仍为 6/5）
+      await expect(page.locator('.industry-overview-page').getByText('默认展示 L1 子链；点击细分产业查看简介与企业列表，可继续结构下钻。')).toBeVisible()
+  - note: 写明 6 个链位环节和 5 条关系
     assert: |-
-      const panel = page.locator('.industry-overview-panel');
-      await expect(panel).toBeVisible({ timeout: 8000 });
-      const body = (await panel.innerText()).replace(/\s+/g, ' ');
-      if (!/8\s*个链位环节/.test(body) || !/7\s*条关系/.test(body)) {
-        throw new Error('环节/关系统计文案不符: ' + body.slice(0, 240));
-      }
-on_fail: 截图 + 抄 X-Trace-Id（网络面板可见时）+ C1~C6 分类
-as_built_note: >-
-  路由 catalog_path /industry-center/overview；深链进入。H2 为「{链名}产业链全景」。
-  IndustryPanoramaGraph：「当前产业链图谱包含 {nodes} 个链位环节和 {edges} 条关系」随 API 变化；
-  edu.itic-sci.com/tts/svcz 半导体与集成电路 2026-10-21 实勘 8/7（用例册 02593 预期列 6/5，脚本跟 live）。
-  Tab 交互同 02594/02596（#industry-overview-tab-panorama）。登录与关内部评审由 runner 会话前置。A 档零 allow_skip。
+      const panel = page.locator('.industry-overview-page');
+      await expect(panel).toContainText('6 个链位环节');
+      await expect(panel).toContainText('5 条关系');
+on_fail: 截图 + 抄 X-Trace-Id

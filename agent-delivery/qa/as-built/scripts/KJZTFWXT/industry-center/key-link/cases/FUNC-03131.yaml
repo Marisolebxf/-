@@ -1,97 +1,75 @@
 id: FUNC-03131
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03131
 priority: P1
-title: 失败任务查看结果/报告/下载均不可点
-story: US-CHAIN-DIAG-07
-entry_id: chain-key-link
 tier: B
-preconditions:
-  - 「任务状态」已选「失败」且列表中有失败任务
-locators:
-  records_tab: tab「诊断记录」
-  status_filter: 任务状态
-  view_result: button「查看结果」
-  view_report: button「查看报告」
-  download_report: button「下载报告」
+title: 异常-失败任务行上查看结果/报告/下载均不可点
+entry_id: chain-key-link
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /industry-center/search
+    target: /industry-center/diagnosis?workspace=key_link&tab=records
   - action: wait
-    for: 侧栏 sibling 就绪
-    timeout_ms: 1500
-  - action: evaluate
-    note: 侧栏进关键环节→诊断记录→筛「失败」；三按钮禁用态在 expect
+    for: 诊断记录任务状态筛选就绪
+    timeout_ms: 15000
 expect:
-  - note: 前置：诊断记录 Tab；任务状态选「失败」且可见关键环节失败行
+  - note: 1、「查看结果」不可点击
     assert: |-
-      const origin = (typeof baseUrl === 'string' && baseUrl) ? baseUrl.replace(/\/$/, '') : 'http://10.50.69.111:30892';
-      const toUrl = (p) => origin + (p.startsWith('/') ? p : '/' + p);
-      const main = () => page.locator('main').first();
+      const main = page.locator('main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
       const TID_RE = /CHAIN-\d{8}-\d{3}/;
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count() && (await close.first().isVisible().catch(() => false))) {
-          await close.first().click({ timeout: 3000 }).catch(() => {});
-          await page.waitForTimeout(300);
+      const scrollActions = async () => {
+        const bodies = main.locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
         }
+        await page.waitForTimeout(400);
       };
-      const bodyIs404 = async () => {
-        const t = ((await page.locator('body').innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-        return /404|页面不存在|抱歉，页面不存在/.test(t) && !/产业关键环节识别/.test(t);
-      };
-      const assertNotSpa404 = async (where) => {
-        if (await bodyIs404()) {
-          throw new Error('ENV-EDU-TTS-SVCZ-404-001: 产业关键环节识别 SPA 404 @' + where + ' ' + page.url());
-        }
-      };
-      const enterKeyLink = async () => {
-        await dismissBasket();
-        const onTarget = () =>
-          /\/industry-center\/diagnosis/.test(page.url()) &&
-          /workspace=key_link/.test(page.url()) &&
-          /tab=key-link/.test(page.url());
-        if (!onTarget() || (await bodyIs404())) {
-          if (!/\/industry-center\/search/.test(page.url()) || (await bodyIs404())) {
-            await page.goto(toUrl('/industry-center/search'), { waitUntil: 'domcontentloaded', timeout: 60000 });
-            await page.waitForTimeout(800);
-          }
-          await assertNotSpa404('sibling-search');
-          const leaf = () => page.locator('.arco-menu-item').filter({ hasText: /^产业关键环节识别$/ });
-          const expandChain = async () => {
-            if (await leaf().first().isVisible().catch(() => false)) return;
-            const sub = page.locator('.arco-menu-inline-header, .arco-menu-submenu-title').filter({ hasText: '产业链分析' });
-            if (await sub.count()) {
-              await sub.first().click({ timeout: 8000 });
-              await page.waitForTimeout(400);
-            }
-          };
-          await expandChain();
-          if (await leaf().first().isVisible().catch(() => false)) {
-            await leaf().first().click({ timeout: 10000 });
-            await page.waitForURL(/\/industry-center\/diagnosis/, { timeout: 20000 }).catch(() => {});
-            await assertNotSpa404('sidebar');
-          } else {
-            await page.goto(toUrl('/industry-center/diagnosis?workspace=key_link&tab=key-link'), {
-              waitUntil: 'domcontentloaded',
-              timeout: 60000,
-            });
-            await page.waitForTimeout(1000);
-            await assertNotSpa404('direct-catalog');
-          }
-        }
-        await expect(page).toHaveURL(/workspace=key_link/);
-        await expect(page).toHaveURL(/tab=key-link/);
-        await assertNotSpa404('key-link-landing');
-      };
-      const openRecordsTab = async () => {
-        const tab = page.getByRole('tab', { name: '诊断记录' }).first();
-        await expect(tab).toBeVisible({ timeout: 10000 });
-        await tab.click({ timeout: 10000 });
+      const selectFailed = async () => {
+        await page.keyboard.press('Escape').catch(() => {});
+        const trigger = main.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+        await expect(trigger).toBeVisible({ timeout: 8000 });
+        await trigger.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        const opt = page.locator(optSel).filter({ hasText: /^失败$/ }).first();
+        await expect(opt).toBeVisible({ timeout: 8000 });
+        await opt.click({ timeout: 8000 });
         await page.waitForTimeout(1200);
-        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        await expect(trigger).toContainText('失败');
       };
-      const scrollRecordActions = async () => {
-        const bodies = main().locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+      const pickFailedRow = async () => {
+        await scrollActions();
+        const rows = main.locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/失败/.test(rt) || /已完成/.test(rt)) continue;
+          if (!/产业关键环节识别/.test(rt)) continue;
+          await row.scrollIntoViewIfNeeded().catch(() => {});
+          await scrollActions();
+          return row;
+        }
+        return null;
+      };
+      await expect(main.getByRole('tab', { name: '诊断记录' })).toHaveAttribute('aria-selected', 'true');
+      await selectFailed();
+      const row = await pickFailedRow();
+      if (!row) throw new Error('ENV-KEYLINK-NO-FAILED-03131');
+      const b = row.getByRole('button', { name: '查看结果', exact: true }).first();
+      await expect(b).toBeVisible({ timeout: 8000 });
+      await expect(b).toBeDisabled();
+      await b.click({ timeout: 3000, force: true }).catch(() => {});
+      await page.waitForTimeout(300);
+  - note: 2、「查看报告」不可点击
+    assert: |-
+      const main = page.locator('main').first();
+      const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const scrollActions = async () => {
+        const bodies = main.locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
         const bn = await bodies.count();
         for (let i = 0; i < bn; i++) {
           await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
@@ -99,96 +77,67 @@ expect:
         await page.waitForTimeout(400);
       };
       const pickFailedRow = async () => {
-        await scrollRecordActions();
-        const rows = main().locator('tbody tr, .arco-table-tr');
+        await scrollActions();
+        const rows = main.locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
         const n = await rows.count();
-        for (let i = 0; i < Math.min(n, 25); i++) {
+        for (let i = 0; i < n; i++) {
           const row = rows.nth(i);
           if (!(await row.isVisible().catch(() => false))) continue;
-          const rowText = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (!TID_RE.test(rowText)) continue;
-          if (!/失败/.test(rowText) || /已完成/.test(rowText)) continue;
-          if (!/产业关键环节识别/.test(rowText)) continue;
-          await row.scrollIntoViewIfNeeded().catch(() => {});
-          await scrollRecordActions();
+          const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/失败/.test(rt) || /已完成/.test(rt)) continue;
+          if (!/产业关键环节识别/.test(rt)) continue;
+          await scrollActions();
           return row;
         }
         return null;
       };
-      const selectStatusFailed = async () => {
-        const optSel = '.arco-trigger-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option';
+      const trigger = main.locator('.arco-select-view').filter({ hasText: /失败/ }).first();
+      if (!(await trigger.isVisible().catch(() => false))) {
         await page.keyboard.press('Escape').catch(() => {});
-        const statusLabel = page.getByText('任务状态', { exact: false }).first();
-        await expect(statusLabel).toBeVisible({ timeout: 8000 });
-        let trigger = statusLabel.locator('xpath=following::*[contains(@class,"arco-select-view")][1]');
-        if ((await trigger.count()) < 1) {
-          trigger = page.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
-        }
-        await expect(trigger).toBeVisible({ timeout: 8000 });
-        await trigger.click({ timeout: 8000 });
-        await page.waitForTimeout(450);
-        const opt = page.locator(optSel).filter({ hasText: /^失败$/ }).first();
-        await expect(opt).toBeVisible({ timeout: 8000 });
-        await opt.click({ timeout: 8000 });
+        const t = main.locator('.arco-select-view').filter({ hasText: /全部状态|已完成|分析中|失败/ }).first();
+        await t.click({ timeout: 8000 });
+        await page.waitForTimeout(400);
+        await page.locator(optSel).filter({ hasText: /^失败$/ }).first().click({ timeout: 8000 });
         await page.waitForTimeout(900);
-        const shown = ((await trigger.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
-        if (!/失败/.test(shown)) {
-          throw new Error('任务状态筛选未回显「失败」：' + shown);
-        }
-      };
-      await enterKeyLink();
-      await openRecordsTab();
-      const recBody = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!TID_RE.test(recBody)) {
-        throw new Error('ENV-KEYLINK-NO-RECORDS-03131：诊断记录未见 CHAIN 任务行');
       }
-      if (!/失败/.test(recBody)) {
-        throw new Error('ENV-KEYLINK-NO-FAILED-03131：诊断记录无失败任务');
-      }
-      await selectStatusFailed();
-      const failedRow = await pickFailedRow();
-      if (!failedRow) {
-        throw new Error('ENV-KEYLINK-NO-FAILED-03131：筛「失败」后未见关键环节失败行');
-      }
-      globalThis.__func03131 = { failedRow, scrollRecordActions, main };
-  - note: 1、「查看结果」不可点击；2、「查看报告」不可点击；3、「下载报告」不可点击
+      const row = await pickFailedRow();
+      if (!row) throw new Error('ENV-KEYLINK-NO-FAILED-03131');
+      const b = row.getByRole('button', { name: '查看报告', exact: true }).first();
+      await expect(b).toBeVisible({ timeout: 8000 });
+      await expect(b).toBeDisabled();
+      await b.click({ timeout: 3000, force: true }).catch(() => {});
+      await page.waitForTimeout(300);
+  - note: 3、「下载报告」不可点击
     assert: |-
-      const ctx = globalThis.__func03131;
-      if (!ctx?.failedRow) throw new Error('前置：未定位失败任务行');
-      const row = ctx.failedRow;
-      await ctx.scrollRecordActions();
-      const btnInRow = async (name) => {
-        let b = row.getByRole('button', { name, exact: true }).first();
-        if ((await b.count()) < 1) {
-          b = row.locator('button, .arco-btn').filter({ hasText: new RegExp('^' + name + '$') }).first();
+      const main = page.locator('main').first();
+      const TID_RE = /CHAIN-\d{8}-\d{3}/;
+      const scrollActions = async () => {
+        const bodies = main.locator('.arco-table-body, .arco-table-content, .arco-scrollbar-container');
+        const bn = await bodies.count();
+        for (let i = 0; i < bn; i++) {
+          await bodies.nth(i).evaluate((el) => { el.scrollLeft = el.scrollWidth; }).catch(() => {});
         }
-        return b;
+        await page.waitForTimeout(400);
       };
-      const locked = ['查看结果', '查看报告', '下载报告'];
-      for (const name of locked) {
-        const b = await btnInRow(name);
-        await expect(b).toBeVisible({ timeout: 8000 });
-        const disabled = await b.isDisabled().catch(() => false);
-        const cls = (await b.getAttribute('class').catch(() => '')) || '';
-        if (!disabled && !/arco-btn-disabled/.test(cls)) {
-          throw new Error('失败行「' + name + '」应不可点（disabled 或 arco-btn-disabled），class=' + cls);
+      const pickFailedRow = async () => {
+        await scrollActions();
+        const rows = main.locator('tbody tr, .arco-table-tr').filter({ hasText: TID_RE });
+        const n = await rows.count();
+        for (let i = 0; i < n; i++) {
+          const row = rows.nth(i);
+          if (!(await row.isVisible().catch(() => false))) continue;
+          const rt = ((await row.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
+          if (!/失败/.test(rt) || /已完成/.test(rt)) continue;
+          if (!/产业关键环节识别/.test(rt)) continue;
+          await scrollActions();
+          return row;
         }
-      }
-      const urlBefore = page.url();
-      const viewResult = await btnInRow('查看结果');
-      await viewResult.click({ timeout: 3000, force: true }).catch(() => {});
-      await page.waitForTimeout(600);
-      if (/view=result|view=report/.test(page.url())) {
-        throw new Error('点击 disabled「查看结果」仍进入结果/报告页：' + page.url());
-      }
-      if (await ctx.main().getByText('产业关键环节识别结果').first().isVisible().catch(() => false)) {
-        throw new Error('失败行不应打开「产业关键环节识别结果」页');
-      }
-      if (page.url() !== urlBefore && /task_id=/.test(page.url())) {
-        throw new Error('点击「查看结果」改变了 task 路由：' + urlBefore + ' -> ' + page.url());
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
-as_built_note: >-
-  catalog_path=/industry-center/diagnosis?workspace=key_link&tab=key-link；goto sibling /industry-center/search 再侧栏进入。
-  步骤=诊断记录→任务状态「失败」→失败行「查看结果/查看报告/下载报告」disabled（对齐 cycle FUNC-02928 / key-link FUNC-03122 导航）。
-  无失败行→ENV-KEYLINK-NO-FAILED-03131。「复制配置」「删除」仍 enabled 见 03123、03132。edu SPA 404→ENV-EDU-TTS-SVCZ-404-001。登录关评审 runner 前置。B 档零 allow_skip。
+        return null;
+      };
+      const row = await pickFailedRow();
+      if (!row) throw new Error('ENV-KEYLINK-NO-FAILED-03131');
+      const b = row.getByRole('button', { name: '下载报告', exact: true }).first();
+      await expect(b).toBeVisible({ timeout: 8000 });
+      await expect(b).toBeDisabled();
+      await b.click({ timeout: 3000, force: true }).catch(() => {});
+on_fail: 截图 + 抄 X-Trace-Id

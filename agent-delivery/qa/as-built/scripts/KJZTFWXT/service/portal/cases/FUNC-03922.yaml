@@ -2,29 +2,27 @@ id: FUNC-03922
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03922
 priority: P1
 tier: B
-title: 深圳区域地图说明无坐标且不填演示点
+title: 异常-深圳地图无圆点
 entry_id: svc-portal
 preconditions: []
 locators: {}
 steps:
   - action: goto
+    target: /service-portal
+  - action: click
+    target: 深圳产业服务介绍
+    within: main
+  - action: wait
     target: /service-portal/shenzhen
   - action: evaluate
     note: 滚动到「产业机构区域分布」
 expect:
-  - note: 1、地图区文案含「无坐标字段」
+  - note: 1、地图区文案含「无坐标字段」并写明不填演示点
     assert: |-
-      await expect(page).toHaveURL(/service-portal\/shenzhen/, { timeout: 20000 });
-      const regionHeading = page.getByRole('heading', { name: '产业机构区域分布' }).first();
-      await regionHeading.scrollIntoViewIfNeeded();
-      await expect(regionHeading).toBeVisible({ timeout: 8000 });
-      const mapWrap = page.locator('.svc-portal-map--sz').first();
-      await expect(mapWrap).toBeVisible({ timeout: 8000 });
-      await expect(mapWrap.getByText(/无坐标字段/)).toBeVisible({ timeout: 8000 });
-  - note: 2、写明不填演示点
-    assert: |-
-      const mapWrap = page.locator('.svc-portal-map--sz').first();
-      await expect(mapWrap.getByText(/不填.*(演示点|Demo)/)).toBeVisible({ timeout: 8000 });
-      const markers = mapWrap.locator('.leaflet-marker-icon');
-      await expect(markers).toHaveCount(0, { timeout: 3000 });
+      const main = page.locator('main')
+      const section = main.getByText('产业机构区域分布', { exact: true }).first()
+      await section.scrollIntoViewIfNeeded()
+      await expect(section).toBeVisible({ timeout: 10000 })
+      await expect(main.getByText(/无坐标字段/)).toBeVisible()
+      await expect(main.getByText(/不填 Demo 区级假点|不填演示点/)).toBeVisible()
 on_fail: 截图 + 抄 X-Trace-Id

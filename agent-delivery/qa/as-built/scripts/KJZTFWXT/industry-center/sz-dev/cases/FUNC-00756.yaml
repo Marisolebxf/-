@@ -10,31 +10,28 @@ steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 展开分析对象产业下拉并浏览选项
+    note: 已选时先重置（同册03394）
     script: |-
+      await page.getByRole('button', { name: '重置参数' }).click();
       const row = page.locator('main [data-testid="shenzhen-development-context-row"]');
-      const sel = row.locator('.industry-catalog-select');
-      await sel.waitFor({ state: 'visible', timeout: 10000 });
-      await sel.locator('.arco-select-view-single, .arco-select-view').first().click({ timeout: 10000 });
-      await page.waitForTimeout(600);
-      const opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
-      await opts.first().waitFor({ state: 'visible', timeout: 10000 });
+      const industrySelect = row.locator('.arco-select').first();
+      const clear = industrySelect.locator('.arco-icon-hover, .arco-select-clear-icon');
+      if (await clear.count()) {
+        await clear.first().click();
+      }
 expect:
   - note: 未选产业时下拉呈引导占位提示「请选择产业」
     assert: |-
       const row = page.locator('main [data-testid="shenzhen-development-context-row"]');
-      const ph = row.locator('.industry-catalog-select .arco-select-view input, .industry-catalog-select input').first();
-      await expect(ph).toHaveAttribute('placeholder', /请选择产业/);
+      const industrySelect = row.locator('.arco-select').first();
+      await expect(industrySelect).toContainText('请选择产业', { timeout: 15000 });
   - note: 下拉选项正常加载，含可选产业集群
     assert: |-
       const row = page.locator('main [data-testid="shenzhen-development-context-row"]');
-      const sel = row.locator('.industry-catalog-select');
-      let opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
-      if ((await opts.count()) < 2) {
-        await sel.locator('.arco-select-view-single, .arco-select-view').first().click({ timeout: 10000 });
-        await page.waitForTimeout(600);
-        opts = page.locator('.arco-trigger-popup:visible .arco-select-option');
-      }
+      const industrySelect = row.locator('.arco-select').first();
+      await industrySelect.locator('.arco-select-view').click({ timeout: 15000 });
+      const opts = page.locator('.arco-select-dropdown:visible .arco-select-option');
+      await expect(opts.first()).toBeVisible({ timeout: 15000 });
       const n = await opts.count();
       if (n < 2) throw new Error('产业选项未加载或过少: ' + n);
       await expect(opts.filter({ hasText: '新一代信息技术' }).first()).toBeVisible({ timeout: 8000 });

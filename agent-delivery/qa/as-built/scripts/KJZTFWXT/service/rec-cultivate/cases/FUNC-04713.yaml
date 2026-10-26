@@ -9,30 +9,39 @@ locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
-  - action: click
+  - action: evaluate
     assert: |-
-      await page.getByRole('button', { name: '生成培育名单' }).click();
-      const firstRow = page.locator('.arco-table-body .arco-table-tr').first();
-      await firstRow.waitFor({ state: 'visible' });
-      const instLink = firstRow.getByRole('link').first();
-      await instLink.click();
+      await page.getByText('分析记录', { exact: true }).click();
+      await page.locator('[data-testid="svc-rec-cultivate-records"]').waitFor({ state: 'visible', timeout: 15000 });
+      const openResult = page.getByRole('button', { name: '查看结果' }).first();
+      await openResult.waitFor({ state: 'visible', timeout: 15000 });
+      await openResult.click();
+      await page.getByText('本土机构培育名单').waitFor({ state: 'visible' });
+      await page.locator('[data-testid="svc-rec-cultivate-list"]').waitFor({ state: 'visible', timeout: 60000 });
+  - action: evaluate
+    assert: |-
+      const firstOrg = page.locator('[data-testid="svc-rec-cultivate-list"] button.svc-rec-org-link').first();
+      await firstOrg.waitFor({ state: 'visible', timeout: 30000 });
+      await firstOrg.click();
+      await page.locator('[data-testid="svc-org-profile-drawer"]').waitFor({ state: 'visible', timeout: 30000 });
 expect:
   - note: 抽屉标题含「机构画像」与该机构名
     assert: |-
       const drawer = page.locator('.arco-drawer');
       await expect(drawer).toBeVisible();
-      await expect(drawer.getByText('机构画像')).toBeVisible();
-      const instName = await page.locator('.arco-table-body .arco-table-tr').first().getByRole('link').first().textContent();
-      await expect(drawer.getByText(instName.trim(), { exact: false })).toBeVisible();
+      const instName = ((await page.locator('[data-testid="svc-rec-cultivate-list"] button.svc-rec-org-link').first().textContent()) ?? '').trim();
+      await expect(drawer.getByText('机构画像', { exact: false })).toBeVisible();
+      await expect(drawer.getByText(instName, { exact: false })).toBeVisible();
   - note: 可见基本信息、领域覆盖细分、技术力五维、近三年新增服务记录
     assert: |-
-      const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByText('基本信息')).toBeVisible();
-      await expect(drawer.getByText('领域覆盖细分')).toBeVisible();
-      await expect(drawer.getByText('技术力五维')).toBeVisible();
-      await expect(drawer.getByText('近三年新增服务记录')).toBeVisible();
+      const drawer = page.locator('[data-testid="svc-org-profile-drawer"]');
+      await expect(drawer.getByRole('heading', { name: '基本信息' })).toBeVisible();
+      await expect(drawer.getByRole('heading', { name: '领域覆盖细分' })).toBeVisible();
+      await expect(drawer.getByRole('heading', { name: '技术力五维' })).toBeVisible();
+      await expect(drawer.getByRole('heading', { name: '近三年新增服务记录' })).toBeVisible();
   - note: 抽屉内有对比篮按钮
     assert: |-
       const drawer = page.locator('.arco-drawer');
-      await expect(drawer.getByRole('button', { name: '对比篮' })).toBeVisible();
+      const basketBtn = drawer.getByRole('button', { name: '加入对比篮' }).or(drawer.getByRole('button', { name: '已在对比篮' }));
+      await expect(basketBtn).toBeVisible();
 on_fail: 截图 + 抄 X-Trace-Id

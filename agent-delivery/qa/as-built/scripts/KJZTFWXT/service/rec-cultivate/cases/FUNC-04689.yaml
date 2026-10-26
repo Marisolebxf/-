@@ -4,25 +4,36 @@ priority: P1
 tier: B
 title: 主流程-重点产业方向下拉
 entry_id: svc-rec-cultivate
-preconditions:
-  - 已打开分析配置
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /service/institution-decision?workspace=cultivate&tab=cultivate
-  - action: click
+  - action: assert_visible
     target: 分析配置
   - action: click
     target: 重点产业方向
 expect:
   - note: 选项共 15 个，名称见附录 A.1
     assert: |-
-      const field = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
-      await field.locator('.arco-select-view').click();
-      const opts = page.locator('.arco-select-dropdown:visible .arco-select-option');
-      await expect(opts).toHaveCount(15);
+      const popup = page.locator('.arco-cascader-popup-visible');
+      await expect(popup).toBeVisible({ timeout: 15000 });
+      const col = popup.locator('.arco-cascader-panel-column').first();
+      await expect(col).toBeVisible();
+      const expected = [
+        '新一代信息技术', '生物', '新能源', '新材料', '高端装备',
+        '智能网联新能源汽车', '绿色环保', '低空经济与空天', '传统与创意', '海洋',
+        '未来制造', '未来信息', '未来能源', '未来空间', '未来健康',
+      ];
+      const labels = col.locator('.arco-cascader-option-label');
+      await expect(labels).toHaveCount(15);
+      for (const name of expected) {
+        await expect(col.getByText(name, { exact: false })).toBeVisible();
+      }
   - note: 未选时占位为「选择产业集群」
     assert: |-
-      const field = page.locator('.arco-form-item').filter({ hasText: '重点产业方向' });
-      await expect(field.locator('.arco-select-view')).toContainText('选择产业集群');
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.arco-cascader-popup-visible')).toHaveCount(0);
+      const cascader = page.locator('main [data-testid="svc-rec-cultivate-context"] .arco-cascader-view');
+      await expect(cascader).toContainText('选择产业集群');
 on_fail: 截图 + 抄 X-Trace-Id

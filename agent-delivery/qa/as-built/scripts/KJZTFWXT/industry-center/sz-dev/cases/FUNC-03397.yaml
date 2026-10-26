@@ -1,97 +1,42 @@
 id: FUNC-03397
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03397
 priority: P1
-title: 失败页查看分析记录后打开记录表
-entry_id: chain-sz-dev
 tier: B
-preconditions:
-  - 当前停在生成失败页（脚本自含：产业与绑定不一致触发失败）
-locators:
-  open_records: button「查看分析记录」
-  tab_rec: tab「分析记录」
-  records_frame: '[data-frame-id="F-SZ-04"]'
+title: 备选-生成失败-查看分析记录
+entry_id: chain-sz-dev
+preconditions: []
+locators: {}
 steps:
   - action: goto
     target: /industry-center/shenzhen?workspace=development&tab=development
   - action: evaluate
-    note: 构造生成失败页→点「查看分析记录」
-expect:
-  - note: 前置：进入生成失败页并点击「查看分析记录」
+    note: 同册03395构造失败页并立即点「查看分析记录」
     assert: |-
-      const main = () => page.locator('main').first();
-      const objectField = () =>
-        main().locator('.policy-analysis-filter-row__field').filter({ hasText: '分析对象' });
-      const sourceField = () =>
-        main()
-          .locator('.policy-analysis-filter-row__field')
-          .filter({ hasText: '有效的深圳产业情况分析对比结果' });
-      const pickSelectOption = async (field, optionText) => {
-        await field.locator('.arco-select-view').first().click({ timeout: 10000 });
-        await page.waitForTimeout(400);
-        await page
-          .locator('.arco-trigger-popup:visible .arco-select-option')
-          .filter({ hasText: optionText })
-          .first()
-          .click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      };
-      const bindFirstEnabled = async () => {
-        await sourceField().locator('.arco-select-view').first().click({ timeout: 10000 });
-        await page.waitForTimeout(500);
-        const en = page.locator('.arco-trigger-popup:visible .arco-select-option:not(.arco-select-option-disabled)');
-        if (!(await en.count())) throw new Error('ENV-CHAIN-SZ-DEV-NO-BIND-03397：无有效对比来源可选');
-        await en.first().click({ timeout: 8000 });
-        await page.waitForTimeout(600);
-      };
-      const waitFailWithRecordsBtn = async () => {
-        const openRec = () => page.getByRole('button', { name: '查看分析记录' }).first();
-        let last = '';
-        for (let i = 0; i < 150; i++) {
-          await page.waitForTimeout(i < 8 ? 800 : 1200);
-          last = ((await main().innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-          if (await openRec().isVisible().catch(() => false)) return openRec();
-          if (/深圳产业发展分析结果/.test(last) && !/生成中|生成失败/.test(last)) {
-            throw new Error('ENV-CHAIN-SZ-DEV-FAIL-03397：分析意外成功，无法构造失败页');
-          }
-        }
-        throw new Error('ENV-CHAIN-SZ-DEV-NO-FAIL-PAGE-03397：超时未见「查看分析记录」，片段=' + last.slice(0, 240));
-      };
-      await expect(page.getByRole('heading', { name: '分析配置', level: 2 })).toBeVisible({ timeout: 15000 });
-      await pickSelectOption(objectField(), '新一代信息技术');
-      await bindFirstEnabled();
-      await pickSelectOption(objectField(), '生物');
-      await page.waitForTimeout(500);
-      const start = page.getByRole('button', { name: '开始分析' }).first();
-      if (!(await start.isEnabled().catch(() => false))) {
-        await pickSelectOption(objectField(), '新能源');
-        await page.waitForTimeout(400);
-      }
-      await expect(start).toBeEnabled({ timeout: 8000 });
-      await start.click({ timeout: 15000 });
-      const openRec = await waitFailWithRecordsBtn();
-      await openRec.click({ timeout: 15000 });
-      await page.waitForTimeout(1000);
-      globalThis.__func03397 = { clickedRecords: true };
+      const main = page.locator('main').first();
+      const devRow = main.locator('[data-testid="shenzhen-development-context-row"]');
+      await devRow.waitFor({ state: 'visible', timeout: 15000 });
+      await devRow.locator('.arco-select-view').first().click();
+      await page.locator('.arco-select-dropdown:visible .arco-select-option').filter({ hasText: /^生物$/ }).click();
+      await expect(devRow.locator('.arco-select-view').first()).toContainText('生物', { timeout: 8000 });
+      const sourceSelect = devRow.locator('.arco-form-item').filter({ hasText: '有效的深圳产业情况分析对比结果' }).locator('.arco-select-view');
+      await sourceSelect.click();
+      const dropdown = page.locator('.arco-select-dropdown:visible').last();
+      const enabled = dropdown.locator('.arco-select-option:not(.arco-select-option-disabled)').filter({ hasNotText: 'PDF' });
+      if ((await enabled.count()) === 0) throw new Error('BLOCKED: 无有效可点对比来源，无法构造生成失败页');
+      await enabled.first().click();
+      await page.getByRole('button', { name: '开始分析' }).click();
+      const recordsBtn = main.getByRole('button', { name: '查看分析记录' });
+      await recordsBtn.waitFor({ state: 'visible', timeout: 120000 });
+      await recordsBtn.click();
+expect:
   - note: 1、打开「分析记录」
     assert: |-
-      if (!globalThis.__func03397?.clickedRecords) throw new Error('前置：未点击「查看分析记录」');
-      const recTab = page.getByRole('tab', { name: '分析记录' }).first();
-      await expect(recTab).toBeVisible({ timeout: 10000 });
-      await expect(recTab).toHaveAttribute('aria-selected', 'true', { timeout: 8000 });
-      const frame = page.locator('[data-frame-id="F-SZ-04"]');
-      await expect(frame).toBeVisible({ timeout: 10000 });
-      await expect(frame.getByRole('heading', { name: '分析记录', level: 2 })).toBeVisible({ timeout: 8000 });
+      await expect(page.getByRole('tab', { name: '分析记录', selected: true })).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('[data-frame-id="F-SZ-04"]').getByRole('heading', { name: '分析记录' })).toBeVisible();
   - note: 2、能看到任务状态与记录表
     assert: |-
-      if (!globalThis.__func03397?.clickedRecords) throw new Error('前置：未点击「查看分析记录」');
       const frame = page.locator('[data-frame-id="F-SZ-04"]');
-      await expect(frame.getByText('任务状态').first()).toBeVisible({ timeout: 8000 });
-      const statusRow = frame.locator('.diagnosis-records__filters > div').filter({ hasText: '任务状态' });
-      await expect(statusRow.locator('.arco-select-view').first()).toBeVisible({ timeout: 8000 });
-      const table = frame.locator('.arco-table, table').first();
-      await expect(table).toBeVisible({ timeout: 10000 });
-      const bodyTxt = ((await frame.innerText().catch(() => '')) || '').replace(/\s+/g, ' ');
-      if (!/任务|类型|状态/.test(bodyTxt)) {
-        throw new Error('记录表未见任务/类型/状态列文案');
-      }
-on_fail: 截图 + X-Trace-Id + C1~C6
+      await expect(frame.getByText('任务状态', { exact: true })).toBeVisible();
+      await expect(frame.getByRole('columnheader', { name: '任务' })).toBeVisible();
+      await expect(frame.getByRole('columnheader', { name: '状态' })).toBeVisible();
+on_fail: 截图 + 抄 X-Trace-Id

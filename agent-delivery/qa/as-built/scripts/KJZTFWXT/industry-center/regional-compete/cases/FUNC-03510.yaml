@@ -1,27 +1,28 @@
 id: FUNC-03510
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-03510
 priority: P1
-title: 权重不接受负数（企业能力权重 -5 失焦后变为 0）
-entry_id: chain-regional-compete
 tier: B
-preconditions:
-  - 维度表已展示
+title: 权重不接受负数
+entry_id: chain-regional-compete
+preconditions: []
 locators: {}
 steps:
   - action: goto
     target: /industry-center/regional?workspace=competitiveness&tab=competitiveness
   - action: evaluate
-    note: 企业能力权重输入 -5 后离开输入框（用例步骤 1–2）
+    note: 企业能力权重输入 -5 后离开该输入框（用例步骤 1–2）
+    script: |-
+      const main = page.locator('main');
+      const table = main.locator('[data-testid="regional-competitiveness-weight-table"]');
+      await expect(table).toBeVisible({ timeout: 15000 });
+      const input = table.locator('tr').filter({ hasText: '企业能力' }).locator('input').first();
+      await input.click();
+      await input.fill('');
+      await input.pressSequentially('-5', { delay: 50 });
+      await main.getByText('三大一级维度权重').click();
 expect:
   - note: 1、企业能力权重变为 0
     assert: |-
-      await expect(page.getByText('三大一级维度权重').first()).toBeVisible({ timeout: 15000 });
-      const weightInput = page.locator('[aria-label="企业能力权重"]').first();
-      await expect(weightInput).toBeVisible({ timeout: 8000 });
-      await weightInput.click({ timeout: 8000 });
-      await weightInput.fill('-5');
-      await page.waitForTimeout(200);
-      await page.getByText('三大一级维度权重').first().click({ timeout: 8000 });
-      await page.waitForTimeout(400);
-      await expect(weightInput).toHaveValue('0');
-on_fail: 截图 + X-Trace-Id
+      const input = page.locator('main [data-testid="regional-competitiveness-weight-table"] tr').filter({ hasText: '企业能力' }).locator('input').first();
+      await expect(input).toHaveValue('0');
+on_fail: 截图 + 抄 X-Trace-Id

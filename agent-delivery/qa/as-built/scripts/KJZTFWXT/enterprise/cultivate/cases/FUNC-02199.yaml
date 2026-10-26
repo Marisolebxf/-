@@ -1,77 +1,44 @@
 id: FUNC-02199
 func_id: ZNFWJQ-KJZTFWXT-v1.0-FUNC-02199
 priority: P0
-title: 点第二行详情后右侧展示指数、规模与三类综合维度
-story: US-ENT-RECRUIT-C1
-entry_id: ent-cultivate
 tier: B
-preconditions:
-  - 企业排名至少有两行（assert 自含到达成功结果）
-locators:
-  result_table: recruit-tab-stack 内 .arco-table
-  detail_button: 操作列「详情」
-  detail_panel: 右侧详情区 h3 + descriptions
+title: 主流程-详情上半
+entry_id: ent-cultivate
+preconditions: []
+locators: {}
 steps:
   - action: goto
-    target: /enterprise/attraction?workspace=cultivation&recommendation_tab=cultivation
-  - action: evaluate
-    note: 第二行点「详情」；右侧标题与指数/规模/三维在 expect
+    target: /enterprise/attraction
 expect:
-  - note: 1、右侧标题为该行企业名称；2、有培育推荐指数与企业规模；3、三类综合维度含技术壁垒、市场增速、团队背景
+  - note: 1、右侧标题为该行企业名称
     assert: |-
-      const DIMS = ['技术壁垒', '市场增速', '团队背景'];
       const stack = () => page.getByTestId('recruit-tab-stack');
-      const optSel = '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
-      const dismissBasket = async () => {
-        const close = page.locator('[aria-label="关闭对比篮"]');
-        if (await close.count()) {
-          const vis = await close.first().isVisible().catch(() => false);
-          if (vis) {
-            await close.first().click({ timeout: 3000 }).catch(() => {});
-            await page.waitForTimeout(300);
-          }
-        }
-      };
+      const optSel =
+        '.arco-select-popup:visible .arco-select-option, .arco-select-popup-visible .arco-select-option, .arco-trigger-popup:visible .arco-select-option';
       const parseCounts = (text) => {
-        const analyzedM = text.match(/共分析\s*(\d+)\s*家/);
-        if (!analyzedM) return null;
-        return { analyzed: parseInt(analyzedM[1], 10) };
+        const m = text.match(/共分析\s*(\d+)\s*家/);
+        return m ? parseInt(m[1], 10) : 0;
       };
-      const hasRankingTable = (text) => /培育推荐分析结果/.test(text) && /排名/.test(text) && /企业名称/.test(text) && (parseCounts(text)?.analyzed ?? 0) >= 1;
+      const hasRankingTable = (text) =>
+        /培育推荐分析结果/.test(text) &&
+        /排名/.test(text) &&
+        /企业名称/.test(text) &&
+        parseCounts(text) >= 2;
+      const enterCultivation = async () => {
+        const hdr = await page.locator('main').getByText('培育企业推荐分析').first().isVisible().catch(() => false);
+        if (hdr) return;
+        const aside = page.locator('aside, .arco-layout-sider, nav').first();
+        const link = aside.getByText('培育企业推荐分析', { exact: true }).first();
+        await link.click({ timeout: 12000 });
+        await page.waitForURL(/recommendation_tab=cultivation|workspace=cultivation/, { timeout: 15000 }).catch(() => {});
+        await expect(page.locator('main').getByText('培育企业推荐分析').first()).toBeVisible({ timeout: 12000 });
+      };
       const waitFilterReady = async () => {
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 30; i++) {
           if (await page.locator('input[placeholder="全部产业类别"]').first().isVisible().catch(() => false)) return;
           await page.waitForTimeout(500);
         }
         throw new Error('条件区未渲染，url=' + page.url());
-      };
-      const openRecentTab = async () => {
-        await waitFilterReady();
-        const tab = page.locator('.global-workbench-tabs button[data-tab-key="history"]').first();
-        if ((await tab.count()) < 1) {
-          await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
-        } else {
-          await tab.click({ timeout: 8000 });
-        }
-        await page.waitForTimeout(900);
-      };
-      const pickHistoryOpenButton = async () => {
-        await openRecentTab();
-        const st = stack();
-        for (const name of ['恢复结果', '继续查看', '查看结果']) {
-          const buttons = st.getByRole('button', { name });
-          const n = await buttons.count();
-          for (let i = 0; i < n; i++) {
-            const btn = buttons.nth(i);
-            let row = btn.locator('xpath=ancestor::tr[1]');
-            if ((await row.count()) < 1) row = btn.locator('xpath=ancestor::*[contains(@class,"arco-table-tr")][1]');
-            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
-            if (txt && /条件筛选/.test(txt) && (/已完成|成功/.test(txt) || name !== '恢复结果')) {
-              return btn;
-            }
-          }
-        }
-        return null;
       };
       const waitResultShell = async (timeoutMs = 120000) => {
         const title = () => stack().getByText('培育推荐分析结果').first();
@@ -80,99 +47,101 @@ expect:
         while (Date.now() - t0 < timeoutMs) {
           await page.waitForTimeout(500);
           last = await stack().innerText().catch(() => '');
-          const titleVis = await title().isVisible().catch(() => false);
-          if (titleVis && !/可视化分析过程/.test(last) && hasRankingTable(last)) return last;
+          if ((await title().isVisible().catch(() => false)) && !/可视化分析过程/.test(last) && hasRankingTable(last)) {
+            return last;
+          }
           if (/已打开今天相同条件的推荐分析结果/.test(last) && hasRankingTable(last)) return last;
           const failVis = await stack().getByText('推荐分析失败').first().isVisible().catch(() => false);
           if (failVis && !/可视化分析过程/.test(last)) {
-            throw new Error('环境闸门 ENV-CULTIVATE-ANALYSIS-FAIL-001：无法到达培育推荐分析成功结果以测详情（与 FUNC-02188/02197 同源 D4）');
+            throw new Error('修订 blocked ENV-CULTIVATE-ANALYSIS-FAIL-001 条件筛选无法到达成功结果');
           }
         }
-        const stuck = /可视化分析过程/.test(last) || page.url().includes('analysis_view=processing');
-        if (stuck) {
-          throw new Error('环境闸门 ENV-CULTIVATE-ASYNC-NO-SUCCESS-001：长期停留在可视化分析过程，无法到达企业排名表');
+        if (/可视化分析过程/.test(last)) {
+          throw new Error('修订 blocked ENV-CULTIVATE-ASYNC-NO-SUCCESS-001 长期停留在可视化分析过程');
         }
-        throw new Error('未在超时内到达含企业排名表的成功结果: ' + last.slice(0, 200));
+        throw new Error('未到达含至少两行的企业排名: ' + last.slice(0, 180));
       };
       const runFilterAnalysis = async () => {
         await page.keyboard.press('Escape').catch(() => {});
+        await waitFilterReady();
         const i = page.locator('input[placeholder="全部产业类别"]').first();
         await i.locator('xpath=ancestor::*[contains(@class,"arco-select-view")][1]').click({ timeout: 8000 });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(400);
         const opt = page.locator(optSel).filter({ hasText: '人工智能' }).first();
         await expect(opt).toBeVisible({ timeout: 8000 });
         await opt.click({ timeout: 8000 });
-        await page.waitForTimeout(500);
+        await page.waitForTimeout(400);
         const start = page.getByRole('button', { name: '开始分析' }).first();
         await expect(start).toBeEnabled({ timeout: 8000 });
         await start.click();
-        return await waitResultShell();
+        await waitResultShell();
       };
-      const ensureSuccessResult = async () => {
-        await dismissBasket();
-        await expect(stack()).toBeVisible({ timeout: 15000 });
-        let body = await stack().innerText().catch(() => '');
-        if (hasRankingTable(body)) return body;
-        const histBtn = await pickHistoryOpenButton().catch(() => null);
-        if (histBtn) {
-          await histBtn.scrollIntoViewIfNeeded();
-          await histBtn.click({ timeout: 15000 });
-          body = await waitResultShell(60000);
-          if (hasRankingTable(body)) return body;
+      const openFromHistory = async () => {
+        await waitFilterReady();
+        await page.getByRole('tab', { name: '最近分析' }).first().click({ timeout: 8000 });
+        await page.waitForTimeout(800);
+        const st = stack();
+        for (const name of ['恢复结果', '继续查看']) {
+          const buttons = st.getByRole('button', { name });
+          const n = await buttons.count();
+          for (let i = 0; i < n; i++) {
+            const btn = buttons.nth(i);
+            const row = btn.locator('xpath=ancestor::tr[1]');
+            const txt = (await row.count()) ? await row.innerText().catch(() => '') : '';
+            if (/条件筛选/.test(txt) && (/已完成|成功/.test(txt) || name === '继续查看')) {
+              await btn.click({ timeout: 15000 });
+              await waitResultShell(60000);
+              return true;
+            }
+          }
         }
-        await page.getByRole('tab', { name: '条件筛选推荐' }).first().click({ timeout: 8000 }).catch(() => {});
-        await page.waitForTimeout(600);
-        return await runFilterAnalysis();
+        return false;
       };
-      await ensureSuccessResult();
-      const st = stack();
-      const table = st.locator('.arco-table').first();
-      await expect(table).toBeVisible({ timeout: 10000 });
-      const bodyRows = table.locator('.arco-table-body .arco-table-tr');
-      const rowN = await bodyRows.count();
-      if (rowN < 2) {
-        throw new Error('前置不满足：企业排名表不足两行（当前 ' + rowN + ' 行）');
+      await enterCultivation();
+      await expect(stack()).toBeVisible({ timeout: 15000 });
+      let body = await stack().innerText().catch(() => '');
+      if (!hasRankingTable(body)) {
+        const ok = await openFromHistory().catch(() => false);
+        if (!ok) await runFilterAnalysis();
       }
+      body = await stack().innerText().catch(() => '');
+      if (!hasRankingTable(body)) {
+        throw new Error('修订 blocked ENV-CULTIVATE-ANALYSIS-FAIL-001 无法到达至少两行的企业排名');
+      }
+      const table = stack().locator('.arco-table').first();
+      const bodyRows = table.locator('.arco-table-body .arco-table-tr');
+      if ((await bodyRows.count()) < 2) throw new Error('前置：企业排名不足两行');
       const row2 = bodyRows.nth(1);
-      await expect(row2).toBeVisible({ timeout: 8000 });
       let entName = '';
       const nameLink = row2.locator('a').first();
-      if (await nameLink.count()) {
-        entName = (await nameLink.innerText()).trim();
-      }
+      if (await nameLink.count()) entName = (await nameLink.innerText()).trim();
       if (!entName) {
         const cells = row2.locator('.arco-table-td');
-        if ((await cells.count()) >= 2) {
-          entName = (await cells.nth(1).innerText()).trim();
-        }
+        if ((await cells.count()) >= 2) entName = (await cells.nth(1).innerText()).trim();
       }
       if (!entName) throw new Error('无法读取第二行企业名称');
-      const detailBtn = row2.getByRole('button', { name: '详情' });
-      await expect(detailBtn).toBeVisible({ timeout: 8000 });
-      await detailBtn.click({ timeout: 8000 });
+      await row2.getByRole('button', { name: '详情' }).click({ timeout: 8000 });
       await page.waitForTimeout(800);
-      const detailRoot = st.locator('.arco-descriptions').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+      const detailRoot = stack().locator('.arco-descriptions').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
       await expect(detailRoot).toBeVisible({ timeout: 10000 });
-      const detailText = await detailRoot.innerText().catch(() => '');
-      const titleEl = detailRoot.locator('h3').first();
-      await expect(titleEl).toBeVisible({ timeout: 8000 });
-      const titleText = (await titleEl.innerText()).trim();
-      if (!titleText.includes(entName) && entName.length > 4) {
-        const short = entName.slice(0, Math.min(6, entName.length));
+      const titleText = (await detailRoot.locator('h3').first().innerText()).trim();
+      if (titleText !== entName && !titleText.includes(entName) && !entName.includes(titleText)) {
+        const short = entName.slice(0, Math.min(8, entName.length));
         if (!titleText.includes(short)) {
-          throw new Error('详情标题与第二行企业名不一致：标题=' + titleText + ' 行名=' + entName);
+          throw new Error('详情标题与第二行企业名不一致：' + titleText + ' vs ' + entName);
         }
-      } else if (titleText !== entName && !titleText.includes(entName)) {
-        throw new Error('详情标题与第二行企业名不一致：标题=' + titleText + ' 行名=' + entName);
       }
+  - note: 2、有培育推荐指数与企业规模
+    assert: |-
+      const st = page.getByTestId('recruit-tab-stack');
+      const detailRoot = st.locator('.arco-descriptions').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
       await expect(detailRoot.getByText('培育推荐指数', { exact: true }).first()).toBeVisible({ timeout: 8000 });
       await expect(detailRoot.getByText('企业规模', { exact: true }).first()).toBeVisible({ timeout: 8000 });
+  - note: 3、三类综合维度含技术壁垒、市场增速、团队背景
+    assert: |-
+      const st = page.getByTestId('recruit-tab-stack');
       await expect(st.getByText('三类综合维度').first()).toBeVisible({ timeout: 8000 });
-      for (const dim of DIMS) {
+      for (const dim of ['技术壁垒', '市场增速', '团队背景']) {
         await expect(st.getByText(dim, { exact: true }).first()).toBeVisible({ timeout: 8000 });
       }
-      if (!/培育推荐指数/.test(detailText) || !/企业规模/.test(detailText)) {
-        throw new Error('详情 descriptions 未见指数或规模字段');
-      }
-on_fail: 截图 + 抄 X-Trace-Id + C1~C6 分类
-as_built_note: D1·edu svcz 深链 entry-seed catalog_path + recommendation_tab=cultivation。步骤=企业排名第二行「详情」。前置同 02197（成功态直读→最近分析恢复→产业类别人工智能发起）。标题=h3 企业名；指数/规模=descriptions 标签；三维=「三类综合维度」下列表项。D4·2026-10-20 rewrite-FUNC-02199 机跑 fail·ENV-CULTIVATE-ANALYSIS-FAIL-001（无法到达成功结果，详情断言未触达，与 02188/02197 同源）。登录与关评审由 runner 前置。B 档零 allow_skip。
+on_fail: 截图 + 抄 X-Trace-Id
