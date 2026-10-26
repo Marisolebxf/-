@@ -14,36 +14,72 @@ task_id: DATA-POLICY-STORAGE-S3-L01
 ```
 
 > **贴源结构**：[`../../sources/ods-ddl.md`](../../sources/ods-ddl.md)。  
-> **落库名**：`demo_gkxlumenx_dwd.policy_base_info`。主键 `policy_id` ← ODS `id`。  
-> 对照：[`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md)。本叶不 APPLY。  
-> 勿把 `gkx.dwd_policy_base` 当项目 DWD 表名。旧稿 v1 37 列 **过期**。
+> **落库名**：`demo_gkxlumenx_dwd.policy_base_info`。结构真源是下面的 CREATE。技术主键是 `id`。`policy_id` 是业务键，来自 ODS `id`，不是主键。  
+> 对照：[`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md)。本节不执行 DDL。  
+> 勿把 `gkx.dwd_policy_base` 当项目 DWD 表名。旧稿 v1 的 37 列，以及本节原先的 as-built 37 列清单，都不再是这张表的结构真源。
 
-项目 DWD 列以能承接贴源为准：`status` 用有效/失效文案；`rank`/`type`/`province|city|district`/`policy_support` JSON 必须能落到库，禁止再压成旧 smallint `level`。国际行同表 + 平面标记。
+## `policy_base_info`
 
-## as-built 列清单（回源 `polan/common/db.py`）
+本节是 `policy_base_info` 的结构真源。目标列集取派单包 [`policy_base_info-MySQL.md`](../../../../../GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/10-DWD-MySQL-DDL/policy_base_info-MySQL.md) 的 CREATE。库名写 `demo_gkxlumenx_dwd`；产线同表只换库名 `gkxlumenx_dwd`。表和全部字符列是 `utf8mb4` / `utf8mb4_0900_ai_ci`。列注释只沿用派单包里已有的注释。不写 `AUTO_INCREMENT` 当前值。
 
-单表 `policy_base_info`，国内与国际政策同表。按用途分群：
+原先 as-built 37 列清单不再是这张表的结构真源，也不写回产线。`gis_location`、`related_entities`、`factors`、`elements`、`ext1`–`ext5` 不在目标列里。禁止直接改名：`ext1` 不是 `policy_type`，`level` 不是 `rank`，`region` 拼串不是 `province` / `city` / `district`。
 
-| 群 | 列 |
-|---|---|
-| 主键与租户 | `id`(pk) · `tenant_id` · **`policy_id`**（业务主键 ← ODS `id`） |
-| 基本信息 | `title` · `issued_number` · `publish_organization` · `url` · `source` |
-| 时间 | `publish_date` · `implementation_date` · `expire_date` · `publish_year` |
-| 分类与状态 | `status` · `level` · `region` · `sci_tech_attribute` |
-| 正文与摘要 | `abstract` · `content` · `keywords` |
-| 深度文本字段 | `elements` · `keypoints` · `factors` · `pedigree` · `related_entities`(json) |
-| 执行口径 | `application_conditions` · `execution_cycle` · `execution_entity` |
-| 其他 | `gis_location` · `attachment` |
-| 审计 | `create_time` · `update_time` · `is_deleted` |
-| 扩展位 | `ext1`–`ext5` |
+`content`、`policy_support`、`keywords`、`keypoints`、`pedigree` 清洗时不得截断。`is_deleted=0` 仍是下游过滤条件。`is_history` 为 NULL 时视为当前，取数不过滤。国内与国际同表，平面看 `source_plane`。
 
-要点：
+2026-10-26 现网：`demo_gkxlumenx_dwd.policy_base_info` 仍是旧 37 列，表级 `utf8mb4_general_ci`，20,000 行。`gkxlumenx_dwd.policy_base_info` 已是本 CREATE 去掉 `is_history` 的列集，0 行，不要改回 37 列。改列集在 `POLICY-DDL-BASE-ALIGN-L08`，由 `human:淮政玮` 直接改。交叉表和行回填见 `POLICY-DDL-BASE-SPEC-L06`。
 
-1. **深度文本列仍是企业 / 人才 / 机关 / 服务与谱系的燃料**：`related_entities` 的 `enterprise` / `talent` / `org` / `service` 供对应边，`pedigree` 供 `cite`，`factors` 进 `support` 边 props，`keywords` / `keypoints` 供 NER。清洗时不得丢弃或截断。
-2. **`ext1` 当前承载政策类型**（`M_POLICY_TYPE_DIST` 读它），属 QPOL-01 临时口径；甲方确认类别体系后应迁至正名列，届时本表与 `policy_type_dist` 同步改。
-3. **`related_entities.industry` 贴源后弃用**（2026-10-23）。贴源只把 `theme` 写入 `ext5`，不写这个键。产业抽取完成后再写，也**不**更新这里。`ext5` 只保留主题原文，不再充当产业关联的回落位。
-4. `is_deleted=0` 是全部下游算法的统一过滤条件。
-5. 国际政策不另建表，靠 `source` + 平面标记切片；国际专有列（`organ` / `country` / `geo_region` / `language` / `doc_type` 等）进扩展位，映射见 [`../../etl/ods-to-dwd-mapping.md`](../../etl/ods-to-dwd-mapping.md)。
+```sql
+CREATE TABLE IF NOT EXISTS `demo_gkxlumenx_dwd`.`policy_base_info` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '技术主键',
+  `policy_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '业务主键 ← ODS id',
+  `source_plane` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'domestic | global',
+  `title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '政策标题',
+  `issued_number` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '文号',
+  `publish_organization` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '发文机构',
+  `publish_date` date DEFAULT NULL COMMENT '发文日期',
+  `publish_year` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '发布年原文',
+  `implementation_date` date DEFAULT NULL COMMENT '实施日期',
+  `expire_date` date DEFAULT NULL COMMENT '失效日期',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '有效/失效原文',
+  `rank` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '国家级/省级/市级/区县级原文',
+  `policy_type` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '国内 type / 国际 category 原文',
+  `topic` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '国际专题',
+  `province` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `district` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `region` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '国际实施区域',
+  `country` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '国际国家',
+  `geo_region` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '宏观地理区',
+  `disclosure_date` date DEFAULT NULL,
+  `abstract` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `keywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `pedigree` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT '引用政策原文',
+  `theme` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `keypoints` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `policy_support` json DEFAULT NULL,
+  `source` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `appendix_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `appendix_link` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `language` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `report_number` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `project_id` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `security_class` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `version_type` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `volume_no` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  `doc_type` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `etl_batch_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `ods_updated_time` datetime DEFAULT NULL,
+  `is_deleted` smallint NOT NULL DEFAULT 0,
+  `is_history` int DEFAULT NULL COMMENT '0当前，1历史；NULL视为当前。取数不过滤',
+  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_policy_plane_id` (`source_plane`, `policy_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  COMMENT='政策主表（国内+国际同表）';
+```
 
 ## 政策–产业关联：`policy_industry_rel`
 
