@@ -40750,7 +40750,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 200000
-    note: "监管人 human:徐腾强。需求真源 PORTAL-ENT-DEV-API-REQUIREMENTS.md。2026-10-26：#65 map_data 须带 lat/lng（主路径），仅缺失时前端 region 字典兜底；不补 industry_coverage_count。"
+    note: |
+      2026-10-26 20:19 续推：用户确认读 demo 库现成数据。方案修正——不灌静态表，改在线聚合（实测 enterprise_base 省级分布 419ms/趋势 289ms，性能达标）。开工顺序：①Python 在线聚合+chain_code 入参 ②Java 门面透传 ③star_profile 聚合接口
     depends_on:
       - "ENT-ARCH-API-CONTRACT"
     collaborators:
@@ -40766,7 +40767,7 @@ tasks:
       - "明星 patent_count/rd_ratio 由门户相关接口返回，不依赖 #1 检索"
       - "与 SYSINT-04-04-L01 联调：USE_MOCK=false 核心区块非空或明确空态契约"
       - "handoff + 架构合规自检 + cost 四字段"
-    update_time: "2026-10-26T19:56:16+08:00"
+    update_time: "2026-10-26T20:21:10+08:00"
 
   - id: POLICY-DDL-ALIGN-L03
     model_used: "grok-4.7"
@@ -41267,3 +41268,35 @@ tasks:
       - "demo_gkxlumenx_dwd 与 gkxlumenx_dwd 按 dwd.md 建成空的 policy_text_parse，0 行，不从 ADS 拷行"
       - "不改 policy_base_info，不 DROP。handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-GAP-L10.md，含改前改后快照、架构合规与 cost 四字段"
     update_time: "2026-10-26T20:26:07+08:00"
+  - id: DOC-CHAIN-CYCLE-ANALYSIS-CHAIN-L01
+    evidence: "[object Object]"
+    supervised_by: "human:徐滕强"
+    claimed_at: "2026-10-26T12:33:55.578Z"
+    last_seen_at: "2026-10-26T12:33:55.578Z"
+    lock_until: "2026-10-26T16:33:55.578Z"
+    claimed_by: "agent:architect-agent"
+    title: "产业周期分析 — 完整分析链路设计 + LLM 落点（05.2.1，对标 05.3.1/05.6.1 金样）"
+    status: "integration"
+    agent: "architect-agent"
+    epic: "DOC-CHAIN-CYCLE"
+    priority: "P1"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "会签材料齐备：05.2.1 设计文档 v0.1 + 05.2 总册指针 + handoff 已落盘并推送 origin/dev（1263bbeb/47f9e9b2）。联调确认（definition=会签）：监管人 human:徐滕强 本会话已逐步走查并五决策拍板，请复核签收。"
+    design_refs:
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.1-企业技术力评估对比分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.3.2-企业分析LLM落点表.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.6.1-政策时序分析.md"
+      - "agent-delivery/agent-handoffs/产品整体定义/科技专题服务系统-完整详细设计/05.2-产业链.md"
+      - ".cursor/skills/gkx-topic-analysis-chain-design/SKILL.md"
+    definition_of_done:
+      - "05.2.1-产业周期分析链路.md v0.1 落盘并 push origin/dev（含 A 现状对照/B 完整链路/C LLM 落点专章/D Prompt v2 草案/E as-built 契约五段/F 企业域差异/G 开放项 OPEN-CY-1~5）"
+      - "05.2-产业链.md 总册加 §8 指针指向 05.2.1"
+      - "监管人五决策（双落点结构/prompt 治理范围/as-built 契约化/命名冻结/QC03 正交先改造）写入文档与 note"
+      - "开放项不替甲方拍板：QC03/QC06/QC10 只引用客户决策清单 🟡，两套相位口径并存事实登记不调和"
+      - "架构合规自检：调用链 前端→Java→Python /internal、LLM 只在算法侧且 Key 不出集群 Secret、无 RustFS 新写路径、Design.md §7.4/D9 角标对齐"
+    update_time: "2026-10-26T20:35:34+08:00"
