@@ -79,6 +79,22 @@
 | D12 不调用 demo 服务 | 符合 |
 | 普通用户页，非 WBS-03-05 运维可视化 | 符合 |
 
+## 2026-10-26 走查：产业筛选与趋势
+
+监管人走查后的页面调整，仍在联调中，**不标联调通过**。
+
+- 页顶「选择产业」对齐 demo 横排卡片，控件仍用 `ServicePortalIndustryCascader`。无 `industry` 参数时默认第一个一级集群。
+- 明星企业、重点企业两个页签不显示页顶筛选。明星企业页产业级联与明星企业下拉同一行；重点企业页级联放在「重点企业 N 家」前。
+- 企业整体概况排名可多选对比，不再限制两个产业。
+- 深圳企业趋势按所选产业分线（`shenzhenIndustryTrend.ts`）。接口未返分产业序列时按当年企业数比例生成演示曲线，文件内有 ponytail 注释。
+- 四页签产业路径由 `enterpriseDevelopmentIndustry.ts` 写入 URL `industry`。
+
+本地未跑完整构建。`.env.development` 的 `VITE_ENABLE_MOCK_AUTH` 为个人环境，未纳入提交。
+
+- 分支：`lumen-ui-topic` `dev`
+- commit：`a9bf61d85bdd46a26b28cef16d66f1821f8da1b4`（`fix(portal): 企业发展四页签产业筛选与趋势走查 [agent:frontend-agent]`）
+- pipeline / K8s：未 push，待监管人确认后再推 `origin/dev`
+
 ## 涉及文件
 
 - `repos/lumen-ui-topic/src/views/enterprise/development/**`
