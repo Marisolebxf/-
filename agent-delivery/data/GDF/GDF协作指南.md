@@ -25,7 +25,7 @@
 承诺表 doc/*.xlsx
     → 供应方 gkx（只读，仅 dwd_*；禁止供应方内部 ods_*）
     → Wave A 贴源镜像 → gkxlumenx_ods
-    → Wave B Mapping  → gkxlumenx_dwd（DDL 认派单包 10/，字段认 Mapping 明细）
+    → Wave B Mapping  → gkxlumenx_dwd（建表语句从 dwd.md/ads.md 复制进派单包，字段认 Mapping 明细）
     → GDF DAG 编排 → 触发 ADS/ES（本项目 Python）/ 亿集建图 API
 Java 只读 ADS；在线查图走 Java → Python → 亿集。GDF 不直写图库、不改前端/Java。
 ```
@@ -45,6 +45,8 @@ Java 只读 ADS；在线查图走 Java → Python → 亿集。GDF 不直写图�
 | `2、明细数据_*.xlsx` | `DWD_CDC_TEMPLATE` | Wave B |
 
 本侧生成带 `预填-DRAFT`。GDF 导入跑通回传的才叫 `执行结果/`。填写规则见同目录 [`CDC模板填写规则与预填算法.md`](CDC模板填写规则与预填算法.md)。
+
+派单包签收前跑 skill `gkx-gdf-ddl-signoff`（按任务维度）。建表语句从该维 `stores/mysql` 的 `dwd.md` / `ads.md` 复制，不在派单包里另写一套。未通过不得签收。规约第 8 条：`data-design/storage/mysql-ddl-convention.md`。
 
 ---
 
