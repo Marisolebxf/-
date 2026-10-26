@@ -8,7 +8,7 @@
 | 七模块 | 态势 / 政策 / 人才 / 数据资源 / 知识图谱 / 成果 / 服务 |
 | DS-xx | `catalog-display-7modules.yaml` 叶子 |
 | PC | 政策对比核增四叶子（挂政策跟踪） |
-| 薄 BFF | `gkxlumen-display`；页拼装，不复制图适配 |
+| 聚合 BFF | `gkxlumen-display`；页面聚合 / 读缓存 / 分区降级 / 就绪度注入，不复制图适配 |
 | 嵌图 | 消费 A 面子图 JSON，自绘 G6，不嵌亿集 UI |
 | innov | 全球创新监测运行时 `gkxlumen-innov`（DS-04） |
 | 运营视窗 | DS-17～20；默认不扫全图 |
