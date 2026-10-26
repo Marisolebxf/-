@@ -40612,3 +40612,134 @@ tasks:
       - "汇总 GAP 差集清单，按优先级排序，标注建议补建方向（算法中台补上图 / 燕大扩接口 / 我方新建）"
       - "handoff 落盘并 git push origin/dev，经 human:淮政玮 签收"
     update_time: "2026-10-26T23:00:00+08:00"
+  - id: POLICY-DDL-CONV-L00
+    title: "政策 MySQL 建表规约：唯一 CREATE、两库同结构、utf8mb4_0900_ai_ci"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "长任务总控 agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md。未授权，禁止升 ready。不改库。"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/mysql-ddl-convention.md"
+      - "agent-delivery/architecture-baseline.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/architecture-baseline.md"
+    definition_of_done:
+      - "新增 storage/mysql-ddl-convention.md：结构真源在 storage 下该表 md 的带注释 CREATE；文档库名用 demo_gkxlumenx_*；产线只换库名；字符集 utf8mb4、排序规则 utf8mb4_0900_ai_ci 写到表和字符列"
+      - "architecture-baseline.md 有指向该规约的一条，不把规约正文复制进基线"
+      - "写明 schema_policy_ads.sql、旧稿 v1 §3 类型、schema_mysql.sql 不再作政策 ADS 结构依据"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CONV-L00.md，含架构合规与 cost 四字段"
+    update_time: "2026-10-26T16:25:26+08:00"
+  - id: POLICY-DDL-DOC-L01
+    title: "把现网 demo 列结构写成带注释的 CREATE，收进 ads.md 与 dwd.md"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "5"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只改文档，不改库。强度 ponytail full，但不得用 YAGNI 删掉建表注释。"
+    depends_on:
+      - "POLICY-DDL-CONV-L00"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/POLICY/stores/mysql/ads.md"
+      - "agent-delivery/data/data-design/storage/POLICY/stores/mysql/dwd.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/data/data-design/storage/mysql-ddl-convention.md"
+    definition_of_done:
+      - "ads.md 的 15 张在册表各有一份带注释的 CREATE，库名 demo_gkxlumenx_ads，字符集 utf8mb4，排序规则 utf8mb4_0900_ai_ci"
+      - "列、类型、空值、默认值、索引与 2026-10-26 现网 demo_gkxlumenx_ads 一致；不写 AUTO_INCREMENT 当前值"
+      - "policy_industry_rel 仍只指向 dwd.md 那一节；该节补齐注释，并写明 policy_id 列排序规则收到 utf8mb4_0900_ai_ci"
+      - "不改 policy_base_info 的 37 列清单，不改库，不把旧稿 v1 的类型写回去"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-DOC-L01.md，含架构合规与 cost 四字段"
+    update_time: "2026-10-26T16:35:03+08:00"
+  - id: POLICY-DDL-IMPACT-L02
+    title: "扫描政策 ADS 表的写入方式，收窄两库对齐的 ALTER 清单"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "spike"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 60000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只读。发现按位置 INSERT 则 ALIGN 不得开工，升级 human:李伟。"
+    depends_on:
+      - "POLICY-DDL-CONV-L00"
+    touched_files:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-IMPACT-L02.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "handoff 列出拟 ALTER 清单，且不超出总控第 2 节的表和动作"
+      - "在 lumen-algo-py、demo-algo-ent-analysis、lumen-svc-platform 中检索这 16 张表的 INSERT；按位置写入的语句逐条列出，没有则写明未发现"
+      - "记录两库相关表改前的行数、列数、排序规则"
+      - "不改库、不改算法、不改 Java"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-IMPACT-L02.md，含架构合规与 cost 四字段"
+    update_time: "2026-10-26T16:35:31+08:00"
+  - id: POLICY-DDL-ALIGN-L03
+    title: "按文档把 demo 与产线政策 ADS 表对齐到 utf8mb4_0900_ai_ci"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。DOC 与 IMPACT 都到联调闸门，且拟 ALTER 未超出总控，才允许开工。口令不进 git 和 handoff。"
+    depends_on:
+      - "POLICY-DDL-DOC-L01"
+      - "POLICY-DDL-IMPACT-L02"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "只执行 IMPACT handoff 里的拟 ALTER，且不超出总控第 2 节：demo 15 张表转到 utf8mb4_0900_ai_ci，产线三张文本表补齐 demo 有而产线没有的列，policy_industry_rel 的 policy_id 列排序规则收到 utf8mb4_0900_ai_ci，并补注释"
+      - "不 DROP、不改列类型、不改主键、不改 policy_base_info、不写 ODS 和供应库 gkx"
+      - "先改 demo_gkxlumenx_*，再改 gkxlumenx_*"
+      - "handoff 含改前改后 information_schema 快照，以及架构合规与 cost 四字段"
+      - "强度 ponytail full"
+    update_time: "2026-10-26T16:35:39+08:00"
+  - id: POLICY-DDL-CHECK-L04
+    title: "核对政策建表文档与 demo、产线两库结构一致"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "3"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只核对，不改库。"
+    depends_on:
+      - "POLICY-DDL-ALIGN-L03"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+    definition_of_done:
+      - "逐表对照 ads.md、dwd.md 的 CREATE 与 demo_gkxlumenx_*、gkxlumenx_* 的 information_schema：列名、类型、空值、默认值、索引、注释、排序规则一致，只有库名不同"
+      - "不一致的表在 handoff 逐条列出，不在本叶再改库"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md，含架构合规与 cost 四字段"
+    update_time: "2026-10-26T16:35:45+08:00"
