@@ -1,7 +1,7 @@
 # 17 — Wave D：POLICY-MDC 指标离线加工
 
 > **读者**：GDF。本章说明哪些指标要配成 T+1 之后的 Python 作业，哪些只列表、不配作业。  
-> **脚本**：第一批的 `scripts/mdc/` **本版还没有**。落表名已在下面写死。脚本由 `GDF-POLICY-MDC-STAT-L01` 生成后再配节点。脚本未进包之前，不要在 GDF 上建 MDC 作业。  
+> **脚本**：第一批放在本包 `scripts/mdc/`，即本文件所在目录下的 `GDF-POLICY-WORKPACK-v2/scripts/mdc/`，与 `scripts/policy_c1_industry.py` 同在 `scripts/`。**本版还没有这个目录**。落表名已在下面写死。`GDF-POLICY-MDC-STAT-L01` 写入该目录后，GDF 再复制到自己的 Python 节点。目录未出现之前，不要在 GDF 上建 MDC 作业。  
 > **不复制** `metrics/repro/M_*.py`。那些文件读冻结快照或供应方库，写出 JSON，不是本节点的作业。  
 > **口径真源**：`agent-delivery/metrics/calc-logic/POLICY/`。本章不新发明公式。  
 > **讨论收口**：`工程过程/04-系统集成/06-GDF数据治理集成/对接文档/我方/2026-10-26-要素指标加工与图谱拆解思路.md`。
@@ -33,7 +33,7 @@ Wave A / B 只洗主表。Wave C（`12`）只做产业抽取和条款结构化�
 
 ## 2. 第一批可调度（脚本未配）
 
-目标库 `gkxlumenx_ads`（环境变量 `POLICY_ADS_DB`）。表结构认本包 `14-ADS-MySQL-DDL/ads-creates.md`。不新建结果表，不建表。
+目标库 `gkxlumenx_ads`（环境变量 `POLICY_ADS_DB`）。列结构对照本包 `14-ADS-MySQL-DDL/ads-creates.md`。该文件里的 `CREATE` 仍写 `demo_gkxlumenx_ads`，产线执行时换成 `gkxlumenx_ads`，不要按 demo 库名建表。本版不新建结果表，不建表。
 
 同一张 `policy_level_dist` 上有两个 `metric_id`。替换时只删本指标的行，不要把另一指标清掉。`calc_batch_id` 用 `gdf_` 前缀，不要用 `mock_`。
 
@@ -79,7 +79,7 @@ Wave A / B 只洗主表。Wave C（`12`）只做产业抽取和条款结构化�
 
 生成任务完成前，本节只是约定，节点上还没有文件。
 
-- 目录 `scripts/mdc/`，一条指标一个文件。文件头注释写 `metric_id`、口径文档路径、对应 repro 路径（节点不执行 repro）、源表、目标表、全量刷新。
+- 目录是本包内 `scripts/mdc/`：本文件所在的 `GDF-POLICY-WORKPACK-v2/scripts/mdc/`，与 `scripts/policy_c1_industry.py` 同在 `scripts/`。一条指标一个 `.py`。`metrics/repro/` 只写在文件头注释里作对照，节点不执行那些文件。脚本先写入本包该目录，再由 GDF 复制到 Python 节点；节点上的存放路径本章不规定。文件头注释写 `metric_id`、口径文档路径、对应 repro 路径、源表、目标表、全量刷新。
 - 连接与 C1 相同：`POLICY_MYSQL_*`，`POLICY_DWD_DB` 默认 `gkxlumenx_dwd`，`POLICY_ADS_DB` 默认 `gkxlumenx_ads`。禁止 `demo_gkxlumenx_*`。不配 HTTP。脚本不建表。
 - `--self-check` 不连库。退出码 0 才算成功。
 - 挂在当日国内、国际两张平面 Wave B 都 `success` 之后，并且在 C1/C2 之外单独跑。失败不回滚 B，也不把 C 标失败。

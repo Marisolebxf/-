@@ -33,6 +33,8 @@
 ## 修改内容
 
 - 核对现行包 `GDF-POLICY-WORKPACK-v2` 包头 v2.0.3（commit `00d6e42c` 落盘 `17` / `18` / `19` / `20`、`15` 文末、CHANGELOG、README）。
+- `17` 第 2 节补换库：列对照 `14`，`CREATE` 里的 `demo_gkxlumenx_ads` 产线换成 `gkxlumenx_ads`。指标表未改。
+- `17` 文首与第 4 节把脚本目录写死为本包 `GDF-POLICY-WORKPACK-v2/scripts/mdc/`，与 `scripts/policy_c1_industry.py` 同在 `scripts/`。
 - 技术方案 WBS-06-03D 可对端由「三章」改为「`17`–`20` 四章」，并写明不代替 WBS-06-03。
 - 未改 `09`。`09` 最后提交仍是 `944ef4a3`，v2.0.3 提交的文件列表里没有它。
 - 未生成 `scripts/mdc/`。包内 `scripts/` 仍只有 C1 / C2 两份。
