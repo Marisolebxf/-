@@ -40082,7 +40082,7 @@ tasks:
     difficulty: "M"
     estimated_tokens: 60000
     note: |
-      2026-10-24 久新联调首轮反馈 6 类问题，逐条真库复现定位：②为设计符合（status 治理只读，报错文案误导）③④⑤为字段口径（关联字段要 id 不是名称——服务端做名称兼容解析最省联调成本）⑥实测父挂载正常待久新给复现 ⑦为 OpenAPI 误导（规格书 4.2 定稿无层级，文档有 parent 字段）。方案：服务端兼容+文案细化+契约对齐，一并修复
+      2026-10-26 二轮补充修复（久新截图反馈『个别字段新增填写了但加不进去』）：根因=政策 overlay 存储键与 v_cms_pol 视图读取键错位（写 $.pub_date/doc_no/source_url，视图读 $.pubDate/docNo/sourceUrl）——POL-CRUD 交付以来即存在，此前冒烟只验 title/publisher 未覆盖。修复：a) 486ac36 写入键对齐视图；b) 554dfa8 输出层加 snake→契约 camel 映射（pub_date→pubDate 等六键），list/detail 统一；c) 存量 6 行旧键数据 JSON_SET 迁移。部署 554dfa8（pipeline 3003 image+deploy 绿），真库冒烟：新增全字段→list 契约键回显全对；存量行 detail 正常。注：actuator/info 401 系 CMS_API_KEY filter 覆盖面（正常）
     depends_on: []
     definition_of_done:
       - "① product/create：orgId 校验报错文案带「请先调 enterprise/list 获取 id」指引"
@@ -40095,7 +40095,7 @@ tasks:
       - "全部改动 mvn 编译绿 + 真库冒烟验证（每类至少一个成功案例）"
       - "OpenAPI/久新 MD 同步（⑦契约删字段；①-⑤ 补字段说明）"
       - "handoff 写入平台基建-PLATFORM/CMS-JX-JXFE-FIX-L01.md"
-    update_time: "2026-10-24T12:02:50+08:00"
+    update_time: "2026-10-26T16:52:44+08:00"
   - id: SYSINT-03-02A-JAVA-L01
     sprint_id: "2026-W43"
     model_used: "glm-5.3-flash"
