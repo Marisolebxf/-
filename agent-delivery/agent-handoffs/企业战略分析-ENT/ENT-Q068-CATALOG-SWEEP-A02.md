@@ -48,12 +48,15 @@
   - `test_legacy_chain_codes_no_special_mapping`：7 老码 + 5 别名不在码表（断言零残留），老码 fallback 原码 0 命中属预期；
   - `test_industry_code_catalog_invariants`：42 码 / 码格式 / L1 父码必在表（INB180501 例外，L0 未登记）等码表不变量，防 DIM 快照漂移；
   - 原 IC001 用例改 INB170101（语义不变：归一名命中链归属「集成电路」短链名）。
+
+**走查修正（2026-10-26 16:30，Bugbot medium 真阳）**：`test_industry_code_catalog_invariants` 的 L1 父码分支原为死代码（`len(code) == 6` 永假——整码实为 7/9 字符，切片 `code[:4]` 亦错），父码一致性断言从未执行、测试空转通过；且原 `table[parent][0] in names` 严格断言与双名父码（INB1801=未来制造/未来健康，L1 按集群挂其一）矛盾。修复：`len(code) == 9` + `parent = code[:7]`，断言改「父码任一名 ∈ L1 名单」。已反证验证三场景（L1 丢父名 / 幽灵父码 / 数量漂移）坏表均被正确拦截，防线真实生效。
 - `tests/test_e2e_failure_combos_selfcheck.py`：5 组线上失败组合的产业码 IC001/AI001 → INB170101/INB170102（业务语义不变），mock 链码 INB1309 → INB170102。
 
 ## 测试结果
 
-- 定向：`python3 tests/test_resolve_filter_candidates_fallback.py` → **15 项自检全部通过 ✓**；`python3 tests/test_e2e_failure_combos_selfcheck.py` → 5 组合全部可解析 ✓
-- 全量：`python3 -m pytest tests/ -q` → **545 passed, 6 skipped, 0 failed**（171.83s；6 skip 为既有环境相关跳过，非本次引入）
+- 定向：`python3 tests/test_resolve_filter_candidates_fallback.py` → **15 项自检全部通过 ✓**；`python3 tests/test_e2e_failure_combos_selfcheck.py` → 5 组合全部可解析 ✓（Bugbot 修正后复跑同绿）
+- 不变量反证（走查修正新增）：三场景坏码表（L1 丢父名 / 幽灵父码 / 数量漂移）均被正确拦截，L1↔L0 父码防线真实生效
+- 全量：`python3 -m pytest tests/ -q` → **545 passed, 6 skipped, 0 failed**（171.83s；6 skip 为既有环境相关跳过，非本次引入）；Bugbot 修正后全量复跑 **545 passed, 6 skipped, 0 failed**（170.24s，2026-10-26 16:36）
 - 老码残留扫描：`rg "IC001|AI001|BIO01|NEW_ENERGY|LOW_ALTITUDE|QUANTUM|OCEAN\b|ROBOT|ROB01|COM01|INB1309|INB1204|_FUTURE_CHAIN_CODE_TO_NAMES" lumen_common/ tests/ gkx_ai_service/` → `lumen_common/` 与 `gkx_ai_service/` **零命中**；`tests/` 仅两类预期命中：① fallback 测试自身的负向断言（老码失效验证，任务要求）；② 其他模块既有 mock fixture（chain_shenzhen/policy/svcan 等，非本单范围）
 
 ## 遗留风险
