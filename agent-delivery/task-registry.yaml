@@ -35341,7 +35341,8 @@ tasks:
     effort_points: "8"
     difficulty: "L"
     estimated_tokens: 120000
-    note: "2026-10-26 进入联调中：门户企业发展四页签初版已推 lumen-ui-topic origin/dev 4a4977d。接口字段对齐与联调优化待续，本阶段不标联调通过。"
+    note: |
+      2026-10-26 产品确认整改范围（需规 75–78）：见 agent-handoffs/系统集成-SYSINT/PORTAL-ENT-DEV-API-REQUIREMENTS.md §7。前端：E-32 去覆盖产业 KPI/列表列、趋势不限 2 产业；E-33 规模/领域换需规 UI+mock；E-34 去页顶 KPI/口碑；E-35 去上市国有 KPI/重点分页。Mock 仅 USE_MOCK=true 补字段；联调依赖 PORTAL-ENT-DEV-SRS-API-L01（徐腾强监管）。接口字段对齐与联调优化待续。
     depends_on:
       - "SYSINT-SCHEME-04-L01"
     collaborators:
@@ -35351,7 +35352,7 @@ tasks:
     definition_of_done:
       - "普通用户页。门户菜单按相对路径打开即智树页面。缺数为空态"
       - "地址为相对路径，不写主机名。不是 WBS-03-05"
-    update_time: "2026-10-26T12:16:57+08:00"
+    update_time: "2026-10-26T16:48:53+08:00"
   - id: SYSINT-04-05-L01
     supervised_by: "human:淮政玮"
     claimed_at: "2026-10-23T04:06:40.003Z"
@@ -40651,7 +40652,7 @@ tasks:
     effort_points: "5"
     difficulty: "L"
     estimated_tokens: 80000
-    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只改文档，不改库。强度 ponytail full，但不得用 YAGNI 删掉建表注释。"
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只改文档，不改库。强度 ponytail full，但不得用 YAGNI 删掉建表注释。dwd.md 的 policy_base_info 节本叶不改，改列归 POLICY-DDL-BASE-SPEC-L06，避免两人同时改这个文件。"
     depends_on:
       - "POLICY-DDL-CONV-L00"
     touched_files:
@@ -40666,7 +40667,7 @@ tasks:
       - "policy_industry_rel 仍只指向 dwd.md 那一节；该节补齐注释，并写明 policy_id 列排序规则收到 utf8mb4_0900_ai_ci"
       - "不改 policy_base_info 的 37 列清单，不改库，不把旧稿 v1 的类型写回去"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-DOC-L01.md，含架构合规与 cost 四字段"
-    update_time: "2026-10-26T16:35:03+08:00"
+    update_time: "2026-10-26T17:04:59+08:00"
   - id: POLICY-DDL-IMPACT-L02
     title: "扫描政策 ADS 表的写入方式，收窄两库对齐的 ALTER 清单"
     status: "backlog"
@@ -40680,7 +40681,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 60000
-    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只读。发现按位置 INSERT 则 ALIGN 不得开工，升级 human:李伟。"
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只读。发现按位置 INSERT 则 ALIGN 不得开工，升级 human:李伟。policy_base_info 的旧列读者不在本叶扩大扫描，归 POLICY-DDL-BASE-SPEC-L06 与 POLICY-DDL-BASE-CODE-L07。
     depends_on:
       - "POLICY-DDL-CONV-L00"
     touched_files:
@@ -40693,7 +40695,37 @@ tasks:
       - "记录两库相关表改前的行数、列数、排序规则"
       - "不改库、不改算法、不改 Java"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-IMPACT-L02.md，含架构合规与 cost 四字段"
-    update_time: "2026-10-26T16:35:31+08:00"
+    update_time: "2026-10-26T17:05:01+08:00"
+  - id: PORTAL-ENT-DEV-SRS-API-L01
+    title: "门户企业发展四页签 · 需规对齐读接口与字段扩展（#58–#76）"
+    status: "backlog"
+    agent: "api-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    repo: "lumen-svc-platform"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 200000
+    note: "监管人 human:徐腾强。需求真源 PORTAL-ENT-DEV-API-REQUIREMENTS.md。2026-10-26：#65 map_data 须带 lat/lng（主路径），仅缺失时前端 region 字典兜底；不补 industry_coverage_count。"
+    depends_on:
+      - "ENT-ARCH-API-CONTRACT"
+    collaborators:
+      - "data-agent"
+      - "algorithm-agent"
+    design_refs:
+      - "agent-delivery/agent-handoffs/系统集成-SYSINT/PORTAL-ENT-DEV-API-REQUIREMENTS.md"
+      - "agent-handoffs/企业战略分析-ENT/API-ENT-full-catalog.md"
+      - "bid-reference/srs/01-智慧服务门户系统/集群服务/科技专题服务.md"
+    definition_of_done:
+      - "需求真源 PORTAL-ENT-DEV-API-REQUIREMENTS.md §1–§4 字段与入参在 catalog/handoff 落盘"
+      - "Java 门面透传 OTel 合规；搜索/ADS 或灌数使 dev 网关至少 1 个 chain_code 下四 Tab 可读"
+      - "明星 patent_count/rd_ratio 由门户相关接口返回，不依赖 #1 检索"
+      - "与 SYSINT-04-04-L01 联调：USE_MOCK=false 核心区块非空或明确空态契约"
+      - "handoff + 架构合规自检 + cost 四字段"
+    update_time: "2026-10-26T16:56:19+08:00"
+
   - id: POLICY-DDL-ALIGN-L03
     title: "按文档把 demo 与产线政策 ADS 表对齐到 utf8mb4_0900_ai_ci"
     status: "backlog"
@@ -40708,7 +40740,7 @@ tasks:
     difficulty: "L"
     estimated_tokens: 80000
     note: |
-      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。DOC、IMPACT、CODE-L05 都到联调闸门，且拟 ALTER 未超出总控，才允许开工。口令不进 git 和 handoff。policy_base_info 不改列集；demo 该表只 CONVERT 到 utf8mb4_0900_ai_ci，CODE-L05 未到联调闸门则跳过。registry DoD「不改 policy_base_info」按总控 §1.7 收窄为不改列集。
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。DOC、IMPACT、CODE-L05 都到联调闸门，且拟 ALTER 未超出总控，才允许开工。口令不进 git 和 handoff。本叶不碰 policy_base_info，不 CONVERT、不改列集。该表列集与排序规则一次改完，见 POLICY-DDL-BASE-ALIGN-L08。
     depends_on:
       - "POLICY-DDL-DOC-L01"
       - "POLICY-DDL-IMPACT-L02"
@@ -40720,7 +40752,7 @@ tasks:
       - "先改 demo_gkxlumenx_*，再改 gkxlumenx_*"
       - "handoff 含改前改后 information_schema 快照，以及架构合规与 cost 四字段"
       - "强度 ponytail full"
-    update_time: "2026-10-26T16:49:19+08:00"
+    update_time: "2026-10-26T17:05:08+08:00"
   - id: POLICY-DDL-CHECK-L04
     title: "核对政策建表文档与 demo、产线两库结构一致"
     status: "backlog"
@@ -40734,7 +40766,8 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只核对，不改库。"
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只核对，不改库。总控要求 ALIGN-L03 与 POLICY-DDL-BASE-ALIGN-L08 都到联调闸门才升本叶。核对范围含两库 policy_base_info 与 dwd.md 目标 CREATE 一致。registry 的 depends_on 仍只有 ALIGN-L03（工具不能追加依赖），以总控为准。
     depends_on:
       - "POLICY-DDL-ALIGN-L03"
     design_refs:
@@ -40743,7 +40776,7 @@ tasks:
       - "逐表对照 ads.md、dwd.md 的 CREATE 与 demo_gkxlumenx_*、gkxlumenx_* 的 information_schema：列名、类型、空值、默认值、索引、注释、排序规则一致，只有库名不同"
       - "不一致的表在 handoff 逐条列出，不在本叶再改库"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md，含架构合规与 cost 四字段"
-    update_time: "2026-10-26T16:35:45+08:00"
+    update_time: "2026-10-26T17:05:11+08:00"
   - id: POLICY-DDL-CODE-L05
     title: "政策代码的排序规则改为 utf8mb4_0900_ai_ci"
     status: "backlog"
@@ -40757,7 +40790,8 @@ tasks:
     effort_points: "5"
     difficulty: "M"
     estimated_tokens: 50000
-    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。线上 demo 相关表排序规则严格 utf8mb4_0900_ai_ci。本叶只改代码，不 ALTER。ALIGN 对 demo policy_base_info 做 CONVERT 之前，本叶须到联调闸门。强度 ponytail full。"
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。线上 demo 相关表排序规则严格 utf8mb4_0900_ai_ci。本叶只改排序规则字面量，不 ALTER，不改列集。ALIGN-L03 不再 CONVERT demo policy_base_info。这张表的列集与排序规则一次改完，见 POLICY-DDL-BASE-ALIGN-L08；本叶须在那之前到联调闸门。读旧列的代码归 POLICY-DDL-BASE-CODE-L07，且须在本叶之后。强度 ponytail full。
     depends_on:
       - "POLICY-DDL-CONV-L00"
     collaborators:
@@ -40781,4 +40815,101 @@ tasks:
       - "lumen-svc-platform 的 v_cms_pol 与 PolicyService 中 source_id = policy_id 的等值，在 demo policy_base_info 改为 utf8mb4_0900_ai_ci 后不报 1267；不改 CMS 表自身的排序规则"
       - "不改 policy_base_info 列集，不改企业域 org_id 的 general_ci，不改 schema_mysql.sql，不在本叶 ALTER 数据库"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CODE-L05.md，含 ponytail 行、架构合规与 cost 四字段；强度 ponytail full"
-    update_time: "2026-10-26T16:49:14+08:00"
+    update_time: "2026-10-26T17:05:05+08:00"
+  - id: POLICY-DDL-BASE-SPEC-L06
+    title: "政策主表列集交叉表：demo 对齐产线 policy_base_info"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 40000
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只写文档，不 ALTER。目标列是派单包 10 的 CREATE，不是 demo 现网 37 列。禁止把 ext1 改名为 policy_type、把 level 改名为 rank、把 region 拼串拆成省市区。改主键、唯一键、列类型或删列的执行在 BASE-ALIGN，且须先升级 human:李伟。与 DOC-L01 串行：本叶在其联调闸门之后才改 dwd.md 的 policy_base_info 节。
+    depends_on:
+      - "POLICY-DDL-CONV-L00"
+      - "POLICY-DDL-DOC-L01"
+    touched_files:
+      - "agent-delivery/data/data-design/storage/POLICY/stores/mysql/dwd.md"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/10-DWD-MySQL-DDL/policy_base_info-MySQL.md"
+      - "agent-delivery/data/data-design/storage/POLICY/stores/mysql/dwd.md"
+    definition_of_done:
+      - "dwd.md 的 policy_base_info 节改为派单包 10 的目标 CREATE，库名写 demo_gkxlumenx_dwd，表和字符列为 utf8mb4 / utf8mb4_0900_ai_ci，并写明旧 37 列不再是这张表的结构真源"
+      - "handoff 交叉表分列新增、删除、类型变化、主键或唯一键变化；写明 ext1 不是 policy_type、level 不是 rank、region 拼串不是 province/city/district，禁止这三组直接改名"
+      - "写明现网行哪些列丢弃、哪些列能回填；不 DROP 表；不把 37 列加到产线；不把 gis_location、related_entities、factors、elements、ext1–ext5 写进产线目标列"
+      - "不 ALTER 数据库。handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-BASE-SPEC-L06.md，含架构合规与 cost 四字段"
+    update_time: "2026-10-26T17:04:32+08:00"
+  - id: POLICY-DDL-BASE-CODE-L07
+    title: "政策主表改列后的 demo 与 lumen 读列代码"
+    status: "backlog"
+    agent: "algorithm-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "demo-algo-ent-analysis"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: "长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。只改代码，不 ALTER。同仓串行：CODE-L05 到联调闸门之后才开工。列名只能来自 BASE-SPEC 交叉表。强度 ponytail full。"
+    depends_on:
+      - "POLICY-DDL-BASE-SPEC-L06"
+      - "POLICY-DDL-CODE-L05"
+    collaborators:
+      - "api-agent"
+    touched_files:
+      - "repos/demo-algo-ent-analysis/polan/basic/indicators.py"
+      - "repos/demo-algo-ent-analysis/polan/graph/ops.py"
+      - "repos/demo-algo-ent-analysis/polan/industry_enrich.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/basic/indicators.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/search.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/timeseries_board.py"
+      - "repos/lumen-algo-py/vendor/entan-py/polan/shenzhen_board.py"
+      - "repos/lumen-svc-platform/db/9x_gkxlumenx_cms.sql"
+      - "repos/lumen-svc-platform/gkxlumen-cms/src/main/java/com/topcomm/gkxlumen/cms/service/PolicyService.java"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/10-DWD-MySQL-DDL/policy_base_info-MySQL.md"
+    definition_of_done:
+      - "demo-algo-ent-analysis 与 lumen-algo-py/vendor/entan-py 中读 policy_base_info 的代码，按 BASE-SPEC 交叉表改到目标列；不再读交叉表标为删除的列（含 level、ext1–ext5、related_entities、factors、elements）。覆盖 indicators、graph/ops、industry_enrich、search、timeseries_board、shenzhen_board 及仍引用这些列的测试"
+      - "lumen-svc-platform 的 v_cms_pol 与 PolicyService 不再引用交叉表标为删除的列（含 t.level）；不改 CMS 表自身的排序规则"
+      - "不把 ext1 改名为 policy_type，不把 level 改名为 rank；不在交叉表之外发明列名"
+      - "不 ALTER 数据库，不改 schema_mysql.sql，不改企业域 org_id 的 general_ci"
+      - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-BASE-CODE-L07.md，含 ponytail 行、架构合规与 cost 四字段；强度 ponytail full"
+    update_time: "2026-10-26T17:04:43+08:00"
+  - id: POLICY-DDL-BASE-ALIGN-L08
+    title: "demo policy_base_info 列集与排序规则一次对齐产线"
+    status: "backlog"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 60000
+    note: |
+      长任务总控 POLICY-DDL-ALIGN。未授权，禁止升 ready。SPEC 与 CODE 到联调闸门、ALIGN-L03 到联调闸门之后才开工。改列集、改类型、改主键或唯一键、删列之前升级 human:李伟，确认留在 handoff。不把产线改回 37 列，不 DROP 表。口令不进 git 和 handoff。强度 ponytail full。
+    depends_on:
+      - "POLICY-DDL-BASE-SPEC-L06"
+      - "POLICY-DDL-BASE-CODE-L07"
+      - "POLICY-DDL-ALIGN-L03"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/10-DWD-MySQL-DDL/policy_base_info-MySQL.md"
+    definition_of_done:
+      - "只改 demo_gkxlumenx_dwd.policy_base_info：列集、类型、空值、默认值、索引、注释、排序规则与 BASE-SPEC 写入 dwd.md 的目标 CREATE 一致，排序规则为 utf8mb4_0900_ai_ci。同一次改完，ALIGN-L03 不另 CONVERT 这张表"
+      - "产线不改回 37 列；产线已是目标列集则只核对。不 DROP 表。现网行按 SPEC 迁移"
+      - "改主键、唯一键、列类型或删列之前，handoff 有 human:李伟 的确认"
+      - "handoff 含改前改后行数、丢弃列、回填列、information_schema 快照，以及架构合规与 cost 四字段。强度 ponytail full"
+    update_time: "2026-10-26T17:04:53+08:00"
