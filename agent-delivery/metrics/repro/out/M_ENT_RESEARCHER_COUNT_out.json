@@ -1,0 +1,129 @@
+{
+ "metric_id": "M_ENT_RESEARCHER_COUNT",
+ "metric_name": "企业科研人数",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "judgment_reason": "口径所需的两个字段在 gkx 内均为整列空值：国内 dwd_org_annual_financial_info.development_employee 在 90,926 行中非空 0 行、>0 0 行；国外 dwd_foreign_org_annual_financial_info.rd_staff 在 51 行中非空 0 行、>0 0 行。第三候选 dwd_org_annual_report_asset.yfrysl 在 527,034 行中非空 0 行。三张表覆盖了国内工商年报、上市财务、海外机构三个来源，全部无值，且库内不存在其它研发人员字段，故不是覆盖率不足，而是结构+数据双缺。",
+ "generated_at": "2026-10-22 17:40:20",
+ "sources": {
+  "primary": "gkx @ 183.240.141.251:3318 (readonly gkx_reader_zp)",
+  "tables": [
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_foreign_org_annual_financial_info",
+   "gkx.dwd_org_annual_report_asset",
+   "gkx.dwd_org_stock_finance_info",
+   "information_schema.columns"
+  ],
+  "sql": [
+   "SELECT table_name, column_name, data_type, column_comment FROM information_schema.columns WHERE table_schema='gkx' AND (column_name LIKE '%employee%' OR column_name LIKE '%staff%' OR column_name LIKE '%person%' OR column_name LIKE '%research%' OR column_name LIKE '%develop%' OR column_comment LIKE '%研发人员%' OR column_comment LIKE '%科研人员%' OR column_comment LIKE '%从业人数%') ORDER BY table_name, ordinal_position",
+   "SELECT COUNT(*) n, COUNT(DISTINCT org_id) orgs, SUM(development_employee IS NOT NULL) dev_nn, SUM(development_employee > 0) dev_pos, SUM(employees_number > 0) emp_pos, MIN(`year`) y0, MAX(`year`) y1 FROM gkx.dwd_org_annual_financial_info",
+   "SELECT COUNT(*) n, COUNT(DISTINCT org_id) orgs, SUM(rd_staff IS NOT NULL) rd_nn, SUM(rd_staff > 0) rd_pos, SUM(research_development_amount IS NOT NULL) rda_nn FROM gkx.dwd_foreign_org_annual_financial_info",
+   "SELECT COUNT(*) n, COUNT(DISTINCT jgid) orgs, SUM(yfrysl IS NOT NULL AND TRIM(yfrysl) <> '') yfr_ok, SUM(yftrje IS NOT NULL AND TRIM(yftrje) <> '') yft_ok FROM gkx.dwd_org_annual_report_asset",
+   "SELECT COUNT(*) n FROM information_schema.columns WHERE table_schema='gkx' AND table_name='dwd_org_stock_finance_info' AND (column_comment LIKE '%研发人员%' OR column_name LIKE '%rd_staff%')"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_RESEARCHER_COUNT.md"
+ },
+ "compute": {
+  "n_scored": 0,
+  "sum_researcher": null,
+  "domestic": {
+   "table": "dwd_org_annual_financial_info",
+   "rows": 90926,
+   "orgs": 8127,
+   "year_min": 2007.0,
+   "year_max": 2025.0,
+   "development_employee_non_null": 0,
+   "development_employee_positive": 0,
+   "employees_number_positive": 3170,
+   "fill_rate_pct": 0.0
+  },
+  "foreign": {
+   "table": "dwd_foreign_org_annual_financial_info",
+   "rows": 51,
+   "orgs": 12,
+   "rd_staff_non_null": 0,
+   "rd_staff_positive": 0,
+   "research_development_amount_non_null": 51,
+   "fill_rate_pct": 0.0
+  },
+  "annual_report_asset": {
+   "table": "dwd_org_annual_report_asset",
+   "rows": 527034,
+   "orgs": 49997,
+   "yfrysl_non_empty": 0,
+   "yftrje_non_empty": 0,
+   "fill_rate_pct": 0.0
+  },
+  "stock_finance_rd_staff_columns": 0,
+  "requirement_headcount_alternative": {
+   "column": "dwd_org_annual_financial_info.employees_number",
+   "positive_rows": 3170,
+   "rows": 90926,
+   "fill_rate_pct": 3.4864,
+   "note": "需求原句口径（从业总人数）同样不可用：仅 3,170 行正值，且 calc-logic 明令禁止用它顶替研发人员。"
+  },
+  "candidate_columns": [
+   {
+    "table": "dwd_foreign_org_annual_financial_info",
+    "column": "rd_staff",
+    "type": "double",
+    "comment": "研发人员数"
+   },
+   {
+    "table": "dwd_foreign_org_annual_financial_info_bak_20260911",
+    "column": "rd_staff",
+    "type": "double",
+    "comment": "研发人员数"
+   },
+   {
+    "table": "dwd_org_annual_financial_info",
+    "column": "development_employee",
+    "type": "double",
+    "comment": "研发人员数量"
+   },
+   {
+    "table": "dwd_org_annual_financial_info_bak_20260911",
+    "column": "development_employee",
+    "type": "double",
+    "comment": "研发人员数量"
+   },
+   {
+    "table": "dwd_org_annual_report_asset",
+    "column": "yfrysl",
+    "type": "varchar",
+    "comment": "研发人员数量"
+   }
+  ],
+  "candidate_column_count_scanned": 32
+ },
+ "probes": {
+  "scan_patterns": [
+   "%employee%",
+   "%staff%",
+   "%person%",
+   "%research%",
+   "%develop%",
+   "comment:%研发人员%",
+   "comment:%科研人员%",
+   "comment:%从业人数%"
+  ],
+  "scan_hits": 32,
+  "rd_staff_candidates": 5,
+  "empty_columns": [
+   "dwd_org_annual_financial_info.development_employee",
+   "dwd_foreign_org_annual_financial_info.rd_staff",
+   "dwd_org_annual_report_asset.yfrysl"
+  ],
+  "max_execution_time_ms": 900000,
+  "retry_policy": "5 次指数退避"
+ },
+ "proxy_deviation": "不采用任何代理：calc-logic 明令禁止用从业人数（employees_number）或研发投入金额（arch_development_am / research_development_amount）反推研发人员。用专利发明人反推会系统性偏向专利密集行业，且无法校正行业间系数，本件不采用。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "无基期：口径要求「每企取最新一个有值自然年」，但没有一个有值年份（development_employee 全表 0 行非空），故不声明基期。国内表实测年份区间 2007—2025，仅作字段存在性证据，不构成可用序列。",
+ "notes": [
+  "本件是负结论，产物只证明「为什么不可算」，不产出 0 值合计。",
+  "按 calc-logic「无值不进合计」规则，n_scored=0 时不得输出 sum_researcher=0（0 会被误读成调研结论）。",
+  "如果甲方要的是「从业总人数」，应另立指标并用 employees_number，覆盖率同样只有 3.49%。"
+ ]
+}

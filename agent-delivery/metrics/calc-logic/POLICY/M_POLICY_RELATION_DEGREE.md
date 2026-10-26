@@ -1,7 +1,11 @@
 # 政策关联度（M_POLICY_RELATION_DEGREE）
 
 > 指标最终唯一解释口径（真源）。20261021 改源工程批（gkx 实测复算版）覆盖/迁入，对齐 `metrics/registry/cfg_metric-POLICY-seed.yaml`。
-> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_RELATION_DEGREE.md`；复现脚本 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_RELATION_DEGREE.py` → `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_RELATION_DEGREE_out.json`。
+> 学术级调研正本（四判定 / 权威方法谱系 / 参考文献 / 附录）：`M_POLICY_RELATION_DEGREE.md`；复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py` → `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`。（**正本全文已并入本件下方「详细计算过程」节**；复现脚本与产物已入仓 `metrics/repro/`，见「溯源与复现」表）
+
+> **路径说明（2026-10-24）**：本件所述 `code/…` 相对路径已实物化入仓——复现脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py`、产物 `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`（见「溯源与复现」表）；`第三方库指标计算过程/` 正本全文已并入本件「详细计算过程」节。local-workspace 本地目录不再是对外路径，验收以本仓为准。
+
+---
 
 ## 基础信息
 
@@ -24,7 +28,7 @@
 
 ## 计算逻辑说明
 
-完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_RELATION_DEGREE.md` §二（M_POLICY_RELATION_DEGREE.py 零改语义复算）。
+完整计算过程（方法选择、分步推导、复现代码结果展示、逐链/逐项结果解读）见源件 `M_POLICY_RELATION_DEGREE.md` §二（M_POLICY_RELATION_DEGREE.py 零改语义复算）。
 
 ## 源表字段
 
@@ -47,10 +51,467 @@ gkx（183.240.141.251:3318，只读）源件点名表：
 | 项 | 值 |
 |---|---|
 | 入库批次 | 20261021_指标整体开发进度调研（第三方库 gkx 改源版） |
-| 正本 MD | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/第三方库指标计算过程/M_POLICY_RELATION_DEGREE.md` |
-| 复现脚本 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_RELATION_DEGREE.py` |
-| 复现产物 | `local-workspace/docs/tasks/investiage/20261021_指标整体开发进度调研/code/M_POLICY_RELATION_DEGREE_out.json` |
+| 正本 MD | `M_POLICY_RELATION_DEGREE.md` |
+| 复现脚本 | `metrics/repro/M_POLICY_RELATION_DEGREE.py` |
+| 复现产物 | `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json` |
 | 算法服务挂载 | 见 seed `algo_server_location`（阶段 2 上线时回填实测路径） |
+
+---
+
+# 详细计算过程（正本全文并入 · 2026-10-24，源：local-workspace 20261021 调研正本）
+
+> 注：本节为 20261021 改源工程正本全文（自包含、口径与数值以本节为准）。节内 `code/…` 相对路径的实物已入仓：脚本 `metrics/repro/M_POLICY_RELATION_DEGREE.py`、产物 `metrics/repro/out/M_POLICY_RELATION_DEGREE_out.json`；`_snapshots21/…` 为本地重跑缓存（不入仓，可按复现脚本重建），不影响本节结论与数值的完整性。
+
+> **类型**：GRAPH（政策节点 × 度中心性）｜ **域**：政策（POLICY）｜ **UI 挂载**：政策图谱页「关联度」节点大小映射（设计位）、政策详情页「相关政策」排序（设计位）
+> **数据支持度**：**完全不支持**｜ **公式定义人**：**无同 ID 正本**——注册表 `cfg_metric-POLICY-seed.yaml` 的 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；本件口径取自注册表 `source_tables`（`policy_entity` / `policy_focus` / `policy_graph_edge` / `policy_graph_node`）与图论度中心性标准定义。
+> **复现脚本**：`code/M_POLICY_RELATION_DEGREE.py`（否定性证据探针）｜ **产物**：`code/M_POLICY_RELATION_DEGREE_out.json`｜ **共用底数**：`code/_snapshots21/policy_base_20261021.json`、`policy_struct_20261023.json`、`chain_tree_20261021.json`
+> **判定类型**：`verdict_kind = negative_evidence`。本件不出关联度（`registered_metric_value = null`），产物逐项证明「度的载体（边）不存在」。
+> **基期声明**：`base_years_used=[]`、`base_years_missing=[]`。截面指标：关联度按当前政策集合的图结构一次性计算，不按年出值；发布年只作节点属性，不进入度数的分母。
+> **同域边界**：与 `M_POLICY_GRAPH_106_1`（实体识别构建）是上下游——那件建节点，本件要边。那件判「完全转换支持」（节点可从文本抽出），本件判「完全不支持」（边不能从文本抽出：四类边里三类两库无表，第四类的字段真值只有 2 行）。
+> **一句话结论**：关联度的载体是边，gkx 280 表里**边表 0 张、实体表 0 张**；live 侧 `policy_graph_edge`（3,726 行）/ `policy_graph_node`（806 行）/ `policy_entity`（7,517 行）属造数面。唯一能凑的代理边（标题命中链树节点）只覆盖 **1,269 / 20,000 = 6.345%** 的政策，其余 **93.655%** 恒为 0，Gini **0.943592** → 度中心性对绝大多数节点无定义，判**完全不支持**。
+
+---
+
+## 〇、数据支持度与四判定口径（本文件沿用，勿忘）
+
+> 口径源自《总览说明-20261019》「表字段口径」；**完全转换支持**以用户澄清为准：**结构 + 当前数据量都已足够，现在就能通过转换/加工得到该指标**；数据量不够则不得归入此类。
+
+### 0.1 数据支持度四档
+
+| 档位 | 定义 |
+|---|---|
+| **完全直接支持** | **开发库+三方库（gkx）**中直接就有该指标（或 100% 语义一致指标/结果面）可用，且数据量完全支持直查/直算 |
+| **完全转换支持** | 两库均无现成结果面，但依赖侧的表结构与当前数据量均已足够，现在即可通过转换与加工生成该指标；数据量不足不得入本档 |
+| **部分支持** | 无论如何构建，始终有部分依赖维度无法从**开发库+三方库（gkx）**得到足够数据 |
+| **完全不支持** | 该指标及其关键依赖维度，在**开发库与三方库（gkx）**均无法构建（结构与数据均不具备可算闭环） |
+
+> **数据源口径**：本件支持度按「开发库 + 三方库（gkx，183.240.141.251:3318 只读）」评估，仅排除 `demo_*`；本机开发库事实面为空壳（`gkxlumenx_dwd/ods/ads` 逐表实测非空 0 张），实际取数面为 gkx。
+
+### 0.2 四判定（拆分证据）
+
+| 判定项 | 定义 |
+|---|---|
+| **表结构直接支持（开发库+三方库）** | 表结构直接有该指标对应字段，或 100% 语义一致字段。 |
+| **表数据直接支持（开发库+三方库）** | 不但有结构，字段当日还有**足够数据**支撑直算（非空壳）。 |
+| **依赖表结构支持（开发库/三方库）** | 间接依赖源表的结构：有 / 仅三方库有（需转换）/ 均无。 |
+| **依赖表数据支持（开发库/三方库）** | 依赖源表当日数据：是（量足）/ 部分（行数受限或字段缺失）/ 需先入湖但源侧量足 / 否。 |
+
+### 0.3 本指标套用（一句话）
+
+关联度是**一个数**，这个数由**边**决定。两类边源都核过：结构化的边表在 gkx 与 live 都没有（live 那张是造数面），文本里的引用边 `quote_policy` 真值只有 2 行、标签边 `theme` 2 行、`keywords`/`keypoints` 0 行。没有边，度数只能是 0；对 99% 以上的节点都给 0，不是「关联度低」，是「没有定义」。
+
+---
+
+## 摘要
+
+「政策关联度」在图谱里的标准定义是**节点的度中心性**：一条政策与多少条其他政策相连，连得越多越「核心」。这个定义要求两样东西——节点集合与边集合。节点有（20,000 条政策），边没有。
+
+边应该从哪来？正本给了四类关系：`support`（扶持）、`apply_to`（适用）、`regulate`（监管）、`cite`（引用）。本件逐类去找：`support` 边需要「政策—受益对象」关系表，`policy_support` 是 20,000 行 JSON null，对象取不出来，边无从生成；`apply_to` 边需要「政策—产业/技术」关系表，gkx 没有 `policy_entity` 也没有 `policy_graph_edge`；`regulate` 边需要监管关系表，两库都没有；`cite` 边是唯一有字段的——`quote_policy` 列，但真值只有 **2 行**，另 **19,998 行是字面字符串 `'NULL'`**。
+
+那个字面 `'NULL'` 是本批最阴的一个坑。它不是 SQL NULL，是四个字符组成的字符串。用 `IS NOT NULL` 判，19,998 行全部「有值」；用 `NULLIF(TRIM(col),'') IS NOT NULL` 判，还是 20,000 行「有值」（实测返回 20,000）。必须先显式排除字面 `'NULL'` 再判，才能得到真值 2 行。任何没处理这一步的统计，都会把引用边源算成「满覆盖」。
+
+结构化的边表也不是完全不存在——它在 live 侧有：`gkxlumenx_ads.policy_graph_edge` 3,726 行、`policy_graph_node` 806 行、`policy_entity` 7,517 行。但这三张表在注册表里登记为 `Mock @ batch=mock_20260623`、`is_mock: true`，`MOCK_TABLE_REGISTRY.md` 记录的指纹是 `weight` 恒 1、`model_version` 带演示后缀。这是造数面，不能当证据。而 `policy_entity_relation` 与 `policy_entity_type` 两张更关键的表，live 侧都是 **0 行**——连造数都没造。
+
+gkx 侧更干净：280 张表里含 policy 的只有 4 张，全是 `dwd_policy_base` 及其备份，一张边表、一张实体表都没有。
+
+于是只剩最后一条路：用文本做代理边。做法是拿标题去匹配链树节点名（1,150 个 ≥2 字的名字），命中即记一条「政策—产业」边。跑出来的结果是 **1,454 条边、1,269 条政策有边（6.345%）**，剩下 **18,731 条（93.655%）度数为 0**。度数分布是：0 度 18,731、1 度 1,096、2 度 167、3 度 4、5 度 1、7 度 1。Gini 系数 **0.943592**——极度集中，前五个节点的度数合计 21，占全部 1,454 条边命中次数的极少数，说明边几乎全部分布在长尾的 1—2 度节点上。
+
+这个分布本身就否定了代理边的可用性：一个指标的 93.655% 取同一个值（0），它没有区分度。更关键的是，这 93.655% 的 0 不是「真的没有关联」，而是「标题里没出现产业链名词」——一条综合性产业政策可能关联十几个环节，但标题只写「关于促进经济高质量发展的若干意见」，代理边就给它 0。
+
+所以结论不是「关联度偏低」，是「关联度对绝大多数节点无定义」。这也解释了为什么不能判「部分支持」：部分支持要求主口径成立、只有个别维缺数据；本件的主口径是单一标量，标量的载体是边，边一张表都没有，代理边又只覆盖 6.345%。对 93.655% 的主体没有定义，是主口径不成立。
+
+一句话收口：这是一件「要图、没图」的活。节点能从文本抽（`M_POLICY_GRAPH_106_1` 已证），边抽不出来——因为边不是文本属性，是关系事实。
+
+| 口径要点 | 取值 |
+|---|---|
+| 政策节点 | 20,000 |
+| gkx 边表 / 实体表 | 0 / 0 |
+| live 边表（造数） | `policy_graph_edge` 3,726 |
+| live 节点表（造数） | `policy_graph_node` 806 |
+| live 实体表（造数） | `policy_entity` 7,517 |
+| `quote_policy` 真值 | 2（另 19,998 字面 `'NULL'`） |
+| `theme` 真值 | 2 |
+| `keywords` / `keypoints` 真值 | 0 / 0 |
+| 代理边数 | 1,454 |
+| 有边政策 | 1,269（6.345%） |
+| 零度政策 | 18,731（93.655%） |
+| 最大度 | 7 |
+| 平均度 | 0.0727 |
+| Gini | 0.943592 |
+| 判档 | 完全不支持 |
+
+---
+
+## 一、需求定义概述
+
+### 1.1 所属功能模块（要开发什么）
+
+功能模块是**政策分析 → 政策图谱 → 政策关联度**。设计上应在图谱页用节点大小映射关联度（度中心性），并在政策详情页按关联度排序「相关政策」。本件判定该映射**无法计算**：节点大小只能全部相同，或按一个 6.345% 覆盖的代理值分层，两者都会误导。
+
+### 1.2 为什么需要这个指标
+
+第一，政策不是孤立的。一条「专精特新培育办法」会引用认定标准、会关联奖励政策、会被申报通知引用。关联度是把这些关系量化成「核心—边缘」结构的唯一手段。
+
+第二，它是图谱产品的核心卖点。用户打开图谱页，最想看到的就是「哪条政策在最中间」。没有关联度，图谱只是一堆散点。
+
+第三，它是最容易被「标题共现」糊弄的一件。两条政策标题里都有「人工智能」，就算一条边——这种做法能跑出图，但图的结构是文风决定的，不是政策关系决定的。本件把这条路的覆盖率与集中度都算出来，让「能不能用」有数可依。
+
+### 1.3 需求文档是否给出定义方法
+
+**没有同 ID 正本。** 注册表 `calc_logic_ref` 为空、`formula` 为 `pending_cosign: human:唐绍祖（未签）`；`REM_QUEUE_20261023.json` 里本件的 `calc_logic` 与 `wanghui` 均为 `null`。按 v6 §八，本件不造正本路径。
+
+注册表给的是**依赖表**：`dwd_policy_base`、`policy_entity`、`policy_focus`、`policy_graph_edge`、`policy_graph_node`，`blocking` 标了 `policy_focus` 与 `policy_graph_node`。这五张表名说明设计意图——关联度要建在实体图谱上。注册表没有给边类型、没有给权重、没有给归一化方式。本件的四类边（support / apply_to / regulate / cite）取自图谱常识与 `policy_support` 的语义，度中心性用标准无权定义，权重归一化留待 QPOL-03。
+
+### 1.4 类似指标权威机构构建方法可行性分析概要
+
+| 方法族 | 代表机构/文献 | 口径要点 | 与本指标的差 | 贴合度 |
+|---|---|---|---|---|
+| A 度中心性 | Freeman（1978） | 节点度数 / (n−1) | 本件采用，需边 | 高（定义） |
+| B 加权度 | 图谱常用 | 边权求和后归一 | 需边权，QPOL-03 未签 | 中 |
+| C 特征向量/PageRank | Brin & Page（1998） | 迭代传播重要性 | 需完整图，边缺则不收敛 | 中 |
+| D 共被引/文献耦合 | 文献计量学 | 两条政策引用同一文件则相连 | 需引用字段真值 | 低（引用 2 行） |
+| E 文本相似度边 | 主题模型/嵌入 | 相似度阈值连边 | 可造边，但语义是「像」不是「有关」 | 中（可作代理） |
+
+**三句结论**：① A 族是定义本身，不需要额外数据，但需要边；② C 族对图的完整性要求更高，边缺时连迭代都无法收敛；③ E 族是唯一能在无关系表时造出全图边的方法，但它造的是「文本相似」不是「政策关联」，且阈值无客观标准，本件不采用。
+
+### 1.5 引用来源（可核验）
+
+| # | 来源 | 位置 | 用途 |
+|---|---|---|---|
+| 1 | `gkx.dwd_policy_base` | 183.240.141.251:3318 | 节点集合与 33 列字段 |
+| 2 | `gkx.information_schema.tables` | 同上 | 证明 280 表无边表/实体表 |
+| 3 | `code/_snapshots21/policy_field_fill_20261022.json` | 本任务目录 | `quote_policy` 真值 2 行 |
+| 4 | `code/_snapshots21/chain_tree_20261021.json` | 本任务目录 | 1,273 节点，代理边词典 |
+| 5 | `_work_gkx21/MOCK_TABLE_REGISTRY.md` | 本任务目录 | live 边表造数指纹 |
+| 6 | Freeman L. C. Centrality in social networks | https://doi.org/10.1016/0378-8733(78)90021-7 | 度中心性定义 |
+
+### 1.6 本报告的口径与边界（须与甲方会签）
+
+**推测定义**：政策图 $G=(V,E)$，$|V|=20{,}000$。无权度中心性
+
+$$C_D(v)=\frac{\deg(v)}{|V|-1},\qquad \deg(v)=|\{u:(v,u)\in E\}|$$
+
+加权形式（待 QPOL-03 签认边权）为 $C_D^w(v)=\sum_{u:(v,u)\in E}w_{vu}\big/(|V|-1)$。关联度取百分位排名 $\text{PR}(v)=100\times\frac{|\{u:C_D(u)<C_D(v)\}|}{|V|}$。
+
+**边界**：① 本件 $E=\varnothing$（结构化边），故 $C_D(v)=0$ 对所有 $v$ 成立，与「无关联」不可区分；② 代理边只作**可行性论证**，不作为发布值；③ 不用 live 造数边表；④ 不用文本相似度造边；⑤ 不把「引用 2 行」外推为「引用关系稀疏但可用」。
+
+---
+
+## 二、计算过程（从缺：为什么不出度）
+
+按派单书 F4，「完全不支持」档不写长计算过程，只留判定链条。本件的链条五步。
+
+第一步，确认节点：`dwd_policy_base` 20,000 行、20,000 个不同 id，节点集合成立。第二步，找边表：gkx 280 表内 `policy_graph_edge` / `policy_entity` / `policy_entity_relation` 均不存在；live 侧存在但为造数面，且 `policy_entity_relation` 与 `policy_entity_type` 为 0 行。第三步，找字段级边源：`quote_policy` 真值 2、`theme` 真值 2、`keywords` 0、`keypoints` 0、`policy_support` 全 null。第四步，用文本造代理边并量化覆盖率：1,269 / 20,000 = 6.345%，零度 93.655%。第五步，按度中心性公式判断：$|E|$ 不可得，$C_D$ 对 93.655% 的节点无定义，主口径不成立。
+
+五步的原始数字全部在产物 `edge_source_audit`、`field_truth`、`tables`、`proxy_degree` 四段里。代理边这一段尤其重要：它不是「另一个方案」，而是「证明连替代方案也撑不起来」的证据。
+
+---
+
+## 三、数据支撑情况
+
+### 3.1 四判定落表
+
+| 判定项 | 结论 | 证据 |
+|---|---|---|
+| 表结构直接支持（开发库+三方库） | **否** | 两库均无可用边表；live 边表为造数面 |
+| 表数据直接支持（开发库+三方库） | **否** | 边 0 条（结构化） |
+| 依赖表结构支持（开发库/三方库） | **否** | `policy_entity` / `policy_graph_edge` / `policy_entity_relation` 在 gkx 均无 |
+| 依赖表数据支持（开发库/三方库） | **否** | 字段级边源真值 0—2 行 |
+
+### 3.2 四类边逐项审计
+
+| 边类型 | 语义 | gkx 表 | 可用性 | 说明 |
+|---|---|---|---|---|
+| `support` | 政策扶持某对象 | 无 | 不可用 | `policy_support` 全 null，对象取不出 |
+| `apply_to` | 政策适用于某产业/技术 | 无 | 不可用 | 无政策—产业关系表 |
+| `regulate` | 政策监管某领域 | 无 | 不可用 | 两库均无 |
+| `cite` | 政策引用另一政策 | 无 | 不可用 | `quote_policy` 真值 2 行，可解析 0 条 |
+
+`cite` 这一行值得展开：19,998 行字面 `'NULL'`、2 行真值，这 2 行里能解析到库内政策标题的 **0 条**（`quote_edges_resolved_to_local_policy = 0`）。也就是说，即便把这 2 行当边，也连不到任何本地节点——引用目标可能是上级文件或已下架文件，库内没有对应节点。
+
+### 3.3 字段真值表
+
+| 字段 | 有值行 | 字面 `'NULL'` 行 | 结论 |
+|---|---|---|---|
+| `quote_policy` | 2 | 19,998 | 引用边源近乎空 |
+| `theme` | 2 | — | 主题边源近乎空 |
+| `keywords` | 0 | — | 全空 |
+| `keypoints` | 0 | — | 全空 |
+| `policy_support` | 0（JSON null 20,000） | — | 扶持边源为空 |
+| `pedigree` | 列不存在 | — | 33 列内无此列 |
+
+`pedigree` 这一行要单独说：注册表的临时口径提到「pedigree 引用」，但实测 `dwd_policy_base` 33 列里**没有** pedigree 列。这不是「列空」，是「列不存在」。任何按该口径写的 SQL 都会直接报错。
+
+### 3.4 代理边的分布与集中度
+
+| 度数 | 政策数 | 占比 |
+|---|---|---|
+| 0 | 18,731 | 93.655% |
+| 1 | 1,096 | 5.48% |
+| 2 | 167 | 0.835% |
+| 3 | 4 | 0.02% |
+| 5 | 1 | 0.005% |
+| 7 | 1 | 0.005% |
+
+平均度 0.0727、最大度 7、Gini 0.943592。度最高的五个节点是：操作系统/数据库/中间件研讨会通知（度 7）、核心电子器件与基础软件重大专项（度 5）、河北省工程实验室称号通知（度 3）、上海 2008 生物医药项目指南（度 3）、上海 2008 生物医药攻关指南（度 3）。
+
+看这五个标题就能明白代理边在测什么：它测的是「标题里出现了几个产业链名词」。度 7 那条标题里有「操作系统、数据库、中间件、办公软件、嵌入式软件」——六个软件类名词，于是度 7。这不是「这条政策最核心」，是「这条标题最长、列的名词最多」。
+
+### 3.5 节点侧交叉校验
+
+`policy_industry_20261023.json` 从「节点→政策数」的方向统计同一批边：1,261 个节点里 77 个有政策命中（6.1063%），排除 2 字节点后 67 个。这个 6.1063% 与本件政策侧的 6.345% 同量级，互为印证——两个投影都说明边源极稀。
+
+两个投影的差异（6.345% vs 6.1063%）来自分母不同：前者分母是政策数 20,000，后者分母是节点数 1,261。它们不是同一个比例，但同量级这件事本身有信息量：如果代理边是充分覆盖的，两个投影都应该在 50% 以上。
+
+### 3.6 与开发库 live 的差异
+
+| 表 | 侧 | 行数 | 可用性 |
+|---|---|---|---|
+| `policy_graph_edge` | gkx | 不存在 | — |
+| `policy_graph_edge` | live | 3,726 | 造数面 |
+| `policy_graph_node` | live | 806 | 造数面 |
+| `policy_entity` | live | 7,517 | 造数面 |
+| `policy_entity_relation` | live | 0 | 空表 |
+| `policy_entity_type` | live | 0 | 空表 |
+| `policy_base_info` | live | 0 | 空表 |
+
+live 侧有 806 个节点，而政策有 20,000 条——即使这些节点是真的，也只覆盖 4.03% 的政策。边 3,726 条是节点数 806 的 4.62 倍，与代理边的平均度 0.0727 差两个数量级。这组数只能说明造数时按「小图」造的，与真实政策规模不匹配。
+
+### 3.7 四类边补齐所需的源表与字段
+
+| 边类型 | 需要什么 | 现有替代 | 差距 |
+|---|---|---|---|
+| `support` | 政策—受益对象关系（对象 id 或名称） | `policy_support` JSON 子键 | 内容为空，需补数据 |
+| `apply_to` | 政策—产业环节关系 | 标题/正文命中链树节点 | 只有文本，需消歧 |
+| `regulate` | 政策—监管领域关系 | 无 | 需新建 |
+| `cite` | 政策—被引文件关系 | `quote_policy` | 真值 2 行，需回填 + 消歧 |
+
+这张表说明四类边的补齐成本不在同一量级：`cite` 只需回填一个已有字段并建消歧表，`support` 只需把 JSON 内容补进去，`apply_to` 需要实体消歧，`regulate` 要从零设计。因此最经济的路径是「先 `cite`、再 `support`」，前两步都不需要新建表结构。
+
+但即便四类边全部补齐，还差一步归一化：无权度数只能出排名，出不了 0—100 的「关联度分」。正本要求的是「加权度中心性」，权重待 QPOL-03 签认，本件不预设。
+
+---
+
+## 四、数据缺失情况
+
+### 4.1 缺口的后果归因
+
+后果一：**图谱页无法用节点大小表达重要性**。全部节点同样大小，图谱退化成散点图。
+
+后果二：**「相关政策」排序无法按关联度做**。只能退到「同城市」「同类型」「同一年」这类硬分组。
+
+后果三：**下游图算法连带失效**。PageRank、社区发现、中心性排行都需要边，边缺则全部不成立。
+
+### 4.2 数据陷阱（本批实测，须写入下游复用说明）
+
+1. **字面 `'NULL'` 不是 SQL NULL**：`quote_policy` 19,998 行、`district` 872 行、`city` 9,706 行都是字符串。`IS NOT NULL` 判不出来。
+2. **`NULLIF(TRIM(col),'')` 也判不出来**：实测 `quote_policy` 返回 20,000 行「有值」。
+3. **`pedigree` 列不存在**：33 列清单里没有，按该口径写 SQL 会报错。
+4. **`policy_support` 全 JSON null**：`JSON_LENGTH` 返回 1，别用它判空。
+5. **live 边表是造数面**：`weight` 恒 1、`model_version` 带演示后缀。
+6. **`policy_entity_relation` 与 `policy_entity_type` 为 0 行**：连造数都没造。
+
+### 4.3 为什么不用文本相似度造边
+
+唯一能造出全图边的方法是文本相似度（TF-IDF、主题模型、句向量）。本件**不采用**，理由有三：第一，相似不等于关联——两份不同领域的政策可以因为都用「高质量发展」而高相似；第二，阈值无客观标准，0.7 与 0.8 会给出完全不同的图，且无法验证哪个对；第三，一旦用相似度造边，关联度就变成了「文本风格中心性」，与政策关系无关，且无法与将来的真实边表兼容。
+
+### 4.4 若甲方补齐后的口径升级路径
+
+第一步建 `policy_entity` 表（`M_POLICY_GRAPH_106_1` 已给出字段与抽取规则），节点层成立；第二步建 `policy_graph_edge`，`edge_type` 取 support / apply_to / regulate / cite，带 `weight` 与 `source_span`；第三步回填 `quote_policy` 并建标题—id 消歧表，`cite` 边才有意义；第四步补 `policy_support.support_object`，`support` 边才能生成；第五步 QPOL-03 签认边权后，从无权度数升级为加权度中心性。
+
+这五步里只有第一、二步会产生新表，其余三步都是补数或签认。因此工程上最快的路径是「先建两张表、边先只入 cite」，这样四周内就能出一版可解释的度数；把四类边一次性做齐反而会拖长周期。
+
+### 4.5 与实体识别件的交接边界
+
+本件与 `M_POLICY_GRAPH_106_1` 共用一张源表、同一批 20,000 条政策，但交付物不同：那件交**节点**（六类实体），本件要**边**。交接时有两条约定必须写清。
+
+第一，节点表建好后本件不自动获得边。实体之间存在共现不等于存在关系——两条政策都提到「深圳市」，不构成一条边。边必须带类型与来源句，否则图会退化成「同词即连」的稠密网。
+
+第二，节点表的主键必须能被边表引用。若节点表按 `(policy_id, entity_type, entity_value)` 建键，边表就应存 `from_policy_id` / `to_entity_type` / `to_entity_value`，而不是存自增 id——否则每次重建节点表，边表的引用都会失效。
+
+这两条写在交接说明里，比写在两份文档的「边界」段更有约束力，因为它们是建表时的物理决策。
+
+---
+
+## 五、复现与出处
+
+### 5.1 复现步骤（本件是探针，不是出度脚本）
+
+```bash
+cd agent-delivery/metrics/repro
+python3 code/M_POLICY_RELATION_DEGREE.py    # 产出 code/M_POLICY_RELATION_DEGREE_out.json
+python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check
+```
+
+脚本零 SQL，只读五份快照与两份逐表清单。产物里没有关联度，只有四类边的审计、字段真值、代理边分布与集中度。
+
+### 5.2 产物键位与正文数字的对应
+
+| 正文数字 | 产物键 |
+|---|---|
+| 20,000 | `headline.policy_nodes` |
+| 0 / 0 | `headline.edge_tables_in_gkx`、`tables.gkx_edge_or_entity_tables` |
+| 2 / 19,998 | `field_truth.quote_policy_rows_real` / `quote_policy_rows_literal_null` |
+| 2 / 0 / 0 | `headline.real_label_rows.theme` / `keywords` / `keypoints` |
+| 3,726 / 806 / 7,517 | `tables.live_edge_or_entity_tables.*` |
+| 0 / 0 / 0 | `tables.live_edge_or_entity_tables.policy_entity_relation` / `policy_entity_type` / `live_policy_base_info_rows` |
+| 1,454 | `proxy_degree.edges` |
+| 1,269 / 6.345% | `proxy_degree.docs_with_edge` / `docs_with_edge_pct` |
+| 18,731 / 93.655% | `proxy_degree.zero_degree_docs` / `zero_degree_pct` |
+| 7 / 0.0727 / 0.943592 | `proxy_degree.max_degree` / `mean_degree` / `gini` |
+| 1,096 / 167 / 4 / 1 / 1 | `proxy_degree.degree_dist` |
+| 1,261 / 77 / 6.1063% / 67 | `proxy_degree.cross_check.policy_industry_snapshot.*` |
+| 33 | `field_truth.policy_base_columns` |
+| `pedigree` 不存在 | `field_truth.pedigree_column_present`（false） |
+
+### 5.3 出处与责任
+
+本件无同 ID 正本，口径为自拟（四类边 + 标准度中心性），已在正文 §1.3 标注。判档「完全不支持」与 `support_judgment` 逐字一致。边类型清单若甲方另有定义，以甲方为准。
+
+---
+
+## 参考文献
+
+1. Freeman L. C. Centrality in social networks: Conceptual clarification[J]. Social Networks, 1978, 1(3): 215-239. https://doi.org/10.1016/0378-8733(78)90021-7
+2. Brin S., Page L. The anatomy of a large-scale hypertextual web search engine[J]. Computer Networks, 1998, 30(1-7): 107-117. https://doi.org/10.1016/S0169-7552(98)00110-X
+3. 国务院. 优化营商环境条例（国令第722号）. https://www.gov.cn/zhengce/content/2019-10/23/content_5443963.htm
+4. 工业和信息化部. 关于加快培育发展制造业优质企业的指导意见. https://www.gov.cn/zhengce/zhengceku/2021-07/02/content_5622154.htm
+5. Neo4j Documentation — Graph Data Modeling. https://neo4j.com/docs/getting-started/appendix/graph-modeling/
+6. MySQL 8.0 Reference Manual — Problems with NULL Values. https://dev.mysql.com/doc/refman/8.0/en/problems-with-null.html
+7. 国务院办公厅. 党政机关公文格式（GB/T 9704-2012）. https://openstd.samr.gov.cn/bzgk/gb/newGbInfo?hcno=9A31A0F0B0E1B1A1B0A0
+
+---
+
+# 附件
+
+## 附录 A　原始需求原文摘录
+
+### A.1 指标定位（注册表）
+
+> `M_POLICY_RELATION_DEGREE`（政策关联度）：基于政策实体图谱计算节点加权度中心性，衡量政策在政策网络中的关联广度与核心程度。
+
+### A.2 注册表依赖与 blocking
+
+| 字段 | 取值 |
+|---|---|
+| `source_tables` | `dwd_policy_base`、`policy_entity`、`policy_focus`、`policy_graph_edge`、`policy_graph_node` |
+| `blocking` | `policy_focus`、`policy_graph_node` |
+| `calc_logic_ref` | null |
+| `formula` | `pending_cosign: human:唐绍祖（未签）` |
+
+`blocking` 标的两张表都在 live 侧存在但在 gkx 侧不存在，且 live 侧为造数面——这就是本件判完全不支持的直接依据。
+
+### A.3 四类边（本件定义）
+
+| 边类型 | 语义 | 本件判定 |
+|---|---|---|
+| `support` | 政策扶持某对象 | 无表，对象 JSON null |
+| `apply_to` | 政策适用某产业/技术 | 无表 |
+| `regulate` | 政策监管某领域 | 无表 |
+| `cite` | 政策引用另一政策 | 字段真值 2 行，可解析 0 条 |
+
+## 附录 B　探测证据（计数表）
+
+| 探针 | 结果 | 判定含义 |
+|---|---|---|
+| `COUNT(*)` | 20,000 | 节点集合 |
+| gkx 含 policy 表 | 4（含 2 张 `_bak`） | 无边表 |
+| gkx 边/实体表 | 0 | 主口径无载体 |
+| live `policy_graph_edge` | 3,726 | 造数面 |
+| live `policy_graph_node` | 806 | 造数面，仅覆盖 4.03% 政策 |
+| live `policy_entity` | 7,517 | 造数面 |
+| live `policy_entity_relation` | 0 | 空表 |
+| live `policy_entity_type` | 0 | 空表 |
+| `quote_policy` 真值 | 2 | 引用边源近乎空 |
+| `quote_policy` 字面 `'NULL'` | 19,998 | 字符串假值 |
+| `theme` 真值 | 2 | 主题边源近乎空 |
+| `keywords` / `keypoints` | 0 / 0 | 全空 |
+| `policy_support` JSON null | 20,000 | 扶持边无对象 |
+| `pedigree` 列 | 不存在 | 临时口径不成立 |
+| 代理边 | 1,454 | 标题命中 |
+| 有边政策 | 1,269（6.345%） | 覆盖不足 |
+| 零度政策 | 18,731（93.655%） | 绝大部分无定义 |
+| 最大度 / 平均度 | 7 / 0.0727 | 极稀 |
+| Gini | 0.943592 | 极度集中 |
+| 节点侧覆盖 | 77 / 1,261 = 6.1063% | 交叉印证 |
+
+## 附录 C　可行性完整版
+
+### C.1 报告目的与范围
+
+回答：政策关联度这套度中心性，在 gkx 上能不能算；如果不能，缺的是边还是节点，补什么能算。
+
+### C.2 需求语义锚定
+
+「关联度」在图谱语境里指**结构重要性**，不是「内容相关性」。内容相关可以用文本相似度算，结构重要必须用边。两者混用是这类指标最常见的错误：算出一个「相似度中心性」，却叫它关联度。
+
+### C.3 权威与学术构建方法谱系
+
+#### C.3.1 族 A：度中心性
+
+Freeman 的经典定义，度数是「直接相连的邻居数」。它简单、可解释，但要求图完整。
+
+#### C.3.2 族 B：加权度
+
+边带权时用权重和。权重从哪来是难点——引用次数、扶持金额、语义强度都可以，但都需要额外数据。QPOL-03 未签。
+
+#### C.3.3 族 C：PageRank / 特征向量
+
+迭代算法，对图的连通性要求更高。边缺时迭代无法收敛，或收敛到均匀分布，失去意义。
+
+#### C.3.4 族 D：文献耦合
+
+两条政策引用同一文件则相连。需要引用字段，本库引用真值 2 行。
+
+#### C.3.5 族 E：文本相似度
+
+可造全图边，但语义是「像」不是「有关」。本件不采用，理由见 §4.3。
+
+### C.4 数据可行性详细分析
+
+| 依赖 | 结构 | 数据 | 结论 |
+|---|---|---|---|
+| 节点 | 有 | 20,000 | 成立 |
+| 边表 | **无** | — | 不成立 |
+| 引用字段 | 有 | 2 行 | 不成立 |
+| 主题字段 | 有 | 2 行 | 不成立 |
+| 扶持对象 | 有（JSON） | 0 | 不成立 |
+| 边权 | **无** | — | 不成立 |
+
+### C.5 推荐构建方案（工程可执行）
+
+1. 先建节点表（复用 `M_POLICY_GRAPH_106_1` 的六类实体）；
+2. 再建边表，四类边分批入库，优先 `cite`（只需回填引用）；
+3. 边表落库后跑无权度中心性，出第一版关联度；
+4. QPOL-03 签认边权后再升级加权版；
+5. 代理边只作内部调试，不进产品。
+
+### C.6 风险与残余不确定性
+
+最大风险是「用标题共现顶替边」——会得到一个由标题长度决定的中心性。第二个风险是「用 live 造数边表出图」——图会看起来正常，但节点只有 806 个，与 20,000 条政策对不上。第三个风险是字面 `'NULL'` 被当成有效引用，导致「引用边满覆盖」的假象。
+
+### C.7 可行性总判（完整版结论）
+
+节点成立、边不成立、代理边覆盖 6.345%、零度 93.655%。主口径（单一标量）对绝大多数节点无定义，判**完全不支持**。
+
+### C.8 对甲方四问的逐条回答
+
+| 问 | 答 |
+|---|---|
+| 能不能算每条政策的关联度 | 不能，边表 0 张 |
+| 能不能用现有引用字段 | 不能，真值 2 行、可解析 0 条 |
+| 能不能用标题共现代理 | 只能覆盖 6.345%，其余恒 0，不可发布 |
+| 补什么能算 | `policy_entity` + `policy_graph_edge` + 引用回填 |
+
+## 附录 D　实测脚本与结果摘要
+
+| 步骤 | 命令 | 输出 |
+|---|---|---|
+| 探针 | `python3 code/M_POLICY_RELATION_DEGREE.py` | `code/M_POLICY_RELATION_DEGREE_out.json` |
+| 重跑校验 | `python3 _work_gkx21/rebuild_metric.py M_POLICY_RELATION_DEGREE --check` | 内容未变 |
+| 结构闸 | `python3 _work_gkx21/gate_check.py _staging21/M_POLICY_RELATION_DEGREE.md` | PASS |
+| 基期闸 | `python3 _work_gkx21/check_base_years.py _staging21/M_POLICY_RELATION_DEGREE.md` | OK |
+
 
 ## 更新记录
 

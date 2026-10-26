@@ -1,0 +1,170 @@
+{
+ "metric_id": "M_SYNTH_COLLAB_OUTPUT_CORR",
+ "X": "COLLAB_INDEX×年",
+ "Y": "联合发明授权×年",
+ "样本": "≈20 格",
+ "support_judgment": "部分支持",
+ "probe_date": "2026-10-20",
+ "metric_name_zh": "协同—创新产出关联结果",
+ "grain": "区域（城市）× 统计年度（交付口径）；本批复用数据仅有单窗，无法展开年度序列",
+ "formula": "r_k = Pearson(X_{k,t}, Y_t)，n>=3、双侧方差>0；X∈{Index, Density, Centrality_avg}，Y=联合发明专利授权去重数",
+ "compute": {
+  "cities": {
+   "深圳": {
+    "X_index": 0.0195,
+    "X_density": 2.7774099009344442e-09,
+    "X_centrality_avg": 0.0002687227401451103,
+    "Y_joint_invention_grant_all": 203246
+   },
+   "北京": {
+    "X_index": 45.0493,
+    "X_density": 0.00036450056133086446,
+    "X_centrality_avg": 0.2336448598130841,
+    "Y_joint_invention_grant_all": 4928
+   },
+   "上海": {
+    "X_index": 100.0,
+    "X_density": 0.0013678999478895259,
+    "X_centrality_avg": 0.4144736842105263,
+    "Y_joint_invention_grant_all": 2262
+   },
+   "广州": {
+    "X_index": 0.0682,
+    "X_density": 2.2003487024609713e-08,
+    "X_centrality_avg": 0.0011100319134175107,
+    "Y_joint_invention_grant_all": 73904
+   }
+  },
+  "delivery_status": "insufficient",
+  "delivery_reason": "王惠口径要求同一区域窗口内按年展开（区域×年序列，n>=3 年）；本批复用的 191 网络事实为单统计窗快照，无年度 X_{k,t} 序列，dwd_patent 的 pbdt_year 年度侧面亦未在缓存中落盘。按口径不得以 4 城截面替代时间序列，故不交付 r。",
+  "diagnostic_cross_section_only": {
+   "warning": "仅 4 城截面，n=4；口径明确禁止多区域截面相关，下列 r 不作交付值、不得解释为因果",
+   "n": 4,
+   "r_index_vs_grant": -0.7353,
+   "r_density_vs_grant": -0.6477,
+   "r_centrality_vs_grant": -0.775,
+   "rho_index_vs_grant": -1.0,
+   "rho_density_vs_grant": -1.0,
+   "rho_centrality_vs_grant": -1.0,
+   "perm_p_index_two_sided": 0.2917,
+   "perm_p_density_two_sided": 0.2917,
+   "perm_p_centrality_two_sided": 0.125,
+   "min_achievable_p": 0.08333333333333333,
+   "note": "n=4 时双侧精确置换 p 的下限为 2/4!=0.0833，即使秩完全单调也无法达到 0.05，故截面 r 不具统计显著性"
+  },
+  "self_test": {
+   "cases": [
+    {
+     "case": "完全正线性",
+     "r": 1.0,
+     "pass": true
+    },
+    {
+     "case": "完全负线性",
+     "r": -1.0,
+     "pass": true
+    },
+    {
+     "case": "X 恒值（零方差）",
+     "r": null,
+     "pass": true
+    },
+    {
+     "case": "X、Y 双恒值",
+     "r": null,
+     "pass": true
+    },
+    {
+     "case": "n=2（不可判显著）",
+     "r": 1.0,
+     "pass": true
+    },
+    {
+     "case": "长度不等",
+     "r": null,
+     "pass": true
+    }
+   ],
+   "all_pass": true,
+   "note": "演示面造数双恒值时 r 必须返回 None（无定义），不得返回 1.0/0.0；n=2 虽可算出 ±1 但不构成统计证据"
+  }
+ },
+ "interpretation": {
+  "sign": "截面 r 为负",
+  "cause": "上海节点分母仅 304（企业主档 16 家）、北京 642（163 家），指数被小分母抬高，而两地发明专利授权存量分别仅 2,262/4,928 件；深圳节点分母 96,754、指数垫底，但授权存量 203,246 件。负相关由分母采集缺口与专利归属采集差异共同驱动，不能读作『协同越低产出越高』。",
+  "same_source_note": "密度/中心度的边含联合专利，与 Y 部分同源；r 偏高只说明结构相关，不构成因果"
+ },
+ "reuse_evidence": {
+  "patent_grant_all": {
+   "深圳市": 203246,
+   "北京市": 4928,
+   "上海市": 2262,
+   "广州市": 73904
+  },
+  "m191_index": {
+   "深圳市": 0.0,
+   "北京市": 45.0,
+   "上海市": 100.0,
+   "广州市": 0.1
+  },
+  "m191_raw_measures": {
+   "深圳市": {
+    "deg_avg_raw": 0.0002687227401451103,
+    "density_raw": 2.7774099009344442e-09,
+    "completeness_raw": 0.0013229427207143891
+   },
+   "北京市": {
+    "deg_avg_raw": 0.2336448598130841,
+    "density_raw": 0.00036450056133086446,
+    "completeness_raw": 0.367601246105919
+   },
+   "上海市": {
+    "deg_avg_raw": 0.4144736842105263,
+    "density_raw": 0.0013678999478895259,
+    "completeness_raw": 0.7039473684210527
+   },
+   "广州市": {
+    "deg_avg_raw": 0.0011100319134175107,
+    "density_raw": 2.2003487024609713e-08,
+    "completeness_raw": 0.0009118119288786695
+   }
+  }
+ },
+ "baseline": {
+  "metric": "M_ORG_COLLAB_CHAIN（ORG 域，论文合著+专利共申双源）",
+  "merged_edges": null,
+  "total_edge_weight": null,
+  "inst_inst_edges": null,
+  "inst_nodes_V": null,
+  "inst_edges_E": null,
+  "inst_density": null,
+  "weighted_degree_sum": null,
+  "note": "边域与 SYNTH 协同网不同（论文合著边在本族不入网），仅作量级与密度基线对比"
+ },
+ "support_reason": "协同侧 X 三件套可由 191 单窗事实算出，产出侧 Y（发明专利授权存量）按城可得；但①缺区域×年序列，无法按王惠口径组 n>=3 的年样本，交付状态 insufficient；②合作项目边 0 条使 X 的结构维不完整；③X 与 Y 均受分母/归属采集缺口影响，4 城截面 r 为负且不可解释。按四档口径判部分支持（有结构、有部分量，但关键年度序列与边维始终不足）。",
+ "provenance": {
+  "probe_date": "2026-10-21",
+  "db_probe": "skipped（按任务纪律：已有 out.json 先读复用，禁重跑探针）",
+  "inputs": [
+   "code/M_SYNTH_191_1_out.json（2026-10-21 王惠口径实测）",
+   "code/_synthb_cache.json（demo ods 行数与城市主档）",
+   "code/M_SYNTH_COLLAB_RELATION_INPUT_out.json（三类边分城统计）",
+   "code/M_ORG_COLLAB_CHAIN_out.json（ORG 域基线）"
+  ],
+  "source_tables": {
+   "dwd_patent_applicants": 28964,
+   "dwd_patent": 2939895,
+   "dwd_scholar_work_experience": 57117,
+   "dwd_zh_project": 58453,
+   "dwd_org_base_info": 189116,
+   "dwd_research_institute_base_info": 2074,
+   "dwd_scholar": 21316
+  },
+  "known_gap": "dwd_zh_project.funded_institution 非空 0 行 → 合作项目边 0",
+  "m191_support": "部分支持"
+ },
+ "note": "同源提醒：密度/中心度的联合专利边与 Y 同出 dwd_patent_applicants，二者非独立变量。",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本指标为截面计算，产物与参数中均无年度键、无年份窗口，不存在时序分母，故 used/missing 均为空；不是「缺年按 0 摊入」的情形。"
+}

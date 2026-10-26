@@ -1,0 +1,1000 @@
+{
+ "metric_id": "M_ENT_TECH_RANK",
+ "metric_name": "技术力排名",
+ "generated_at": "2026-10-23",
+ "db": "gkx @ 183.240.141.251:3318 / gkx_reader_zp（只读）；专利量读 2026-10-22 落盘快照",
+ "formula_owner": "王惠（calc-logic/ENT/M_ENT_TECH_RANK.md，排序键随 M_ENT_TECH_POWER_SCORE）",
+ "unit": "名次（1 = 盘内技术力代理分最高）",
+ "formula_intended": "RANK() OVER (ORDER BY tech_power.tech_power_index DESC)，PARTITION = 当前筛选可比集；无分不进榜；同分并列（下一名跳号）",
+ "formula_actual": "RANK() OVER (ORDER BY proxy_tech_score DESC)，proxy_tech_score = 100×(0.45×授权量分 + 0.35×申请量分 + 0.20×授权率分)，各分在盘内 P99 截尾后 min-max",
+ "weights_declared": {
+  "main": {
+   "grant": 0.6,
+   "pub": 0.4,
+   "grant_rate": 0.0
+  },
+  "note": "自定义权重，非官方、非 AHP 标定；注册表 Q014 的官方权重仍为「待甲方确认」。换权重后名次变化见 sensitivity。"
+ },
+ "universe": {
+  "star_board": 4561,
+  "threshold_grant": 50,
+  "note": "母体是明星企业盘（累计授权≥50 的 4,561 家），不是全国企业盘。名次只在同盘内可比，不得读成「全国第 N」。"
+ },
+ "patent_window": "dwd_patent 仅有 2021—2026 年数据（§3.13），pub_cnt/grant_cnt 是 2021—2026 累计，不是企业全生命周期累计。",
+ "sub_indicator_audit": [
+  {
+   "dim": "技术人才(20%)",
+   "item": "研发人员占职工总数比重",
+   "source": "dwd_org_annual_financial_info.development_employee",
+   "status": "无源",
+   "evidence": "development_employee 非空 0/90926 行"
+  },
+  {
+   "dim": "技术人才(20%)",
+   "item": "高级研发人才数量",
+   "source": "库内无学历/职称结构字段",
+   "status": "无源",
+   "evidence": "information_schema 无对应列，calc-logic 自注「待建」"
+  },
+  {
+   "dim": "技术创新(25%)",
+   "item": "有效发明专利数量",
+   "source": "dwd_org_rd_achiev_info.inv_pat_auth_num",
+   "status": "无源",
+   "evidence": "gkx 无 dwd_org_rd_achiev_info 表（information_schema 实测不存在）"
+  },
+  {
+   "dim": "技术创新(25%)",
+   "item": "发明专利占比",
+   "source": "dwd_org_rd_achiev_info",
+   "status": "无源",
+   "evidence": "同上，三分类授权数列不存在"
+  },
+  {
+   "dim": "技术创新(25%)",
+   "item": "当年新增发明专利申请数",
+   "source": "dwd_patent + dwd_patent_legal",
+   "status": "代理",
+   "evidence": "dwd_patent 有 first_applicant_name 与 apdt_year，但无专利类型列；dwd_patent_legal 仅 20000 行（抽样），无法只取发明"
+  },
+  {
+   "dim": "技术转化(20%)",
+   "item": "新产品销售收入占比",
+   "source": "库内无新产品销售收入字段",
+   "status": "无源",
+   "evidence": "calc-logic 自注「待建」；annual 表无该列"
+  },
+  {
+   "dim": "技术转化(20%)",
+   "item": "技术合同成交额",
+   "source": "库内无技术合同表",
+   "status": "无源",
+   "evidence": "information_schema 无 contract/tech_deal 类表"
+  },
+  {
+   "dim": "技术合作(15%)",
+   "item": "产学研合作项目数量",
+   "source": "dwd_zh_project + dwd_en_project",
+   "status": "无源(覆盖不足)",
+   "evidence": "zh 58453 行命中 2 家明星企业；en 20000 行（恰为 20000，疑似截断）"
+  },
+  {
+   "dim": "技术合作(15%)",
+   "item": "外部专家参与研发人月数",
+   "source": "库内无该字段",
+   "status": "无源",
+   "evidence": "calc-logic 自注「待建」"
+  },
+  {
+   "dim": "技术投入(20%)",
+   "item": "研发经费支出占营收比重",
+   "source": "dwd_org_annual_financial_info.arch_development_am",
+   "status": "无源",
+   "evidence": "arch_development_am 非空 0/90926 行（全空）"
+  },
+  {
+   "dim": "技术投入(20%)",
+   "item": "研发人员人均研发经费",
+   "source": "同上两列",
+   "status": "无源",
+   "evidence": "分子分母两列均全空"
+  }
+ ],
+ "sub_indicator_summary": {
+  "total": 11,
+  "direct": 0,
+  "proxy": 1,
+  "absent": 10
+ },
+ "probe": {
+  "tables_present": {
+   "dwd_org_annual_financial_info": 90926,
+   "dwd_org_stock_finance_info": 40239,
+   "dwd_zh_project": 58453,
+   "dwd_en_project": 20000,
+   "dwd_patent_legal": 20000
+  },
+  "tables_absent": [
+   "tech_power",
+   "svc_tech_power_score",
+   "enterprise_score",
+   "dwd_org_rd_achiev_info",
+   "dwd_org_tech_score",
+   "enterprise_tech_power",
+   "enterprise_centrality"
+  ],
+  "annual_null": {
+   "rows": 90926,
+   "development_employee_nonnull": 0,
+   "arch_development_am_nonnull": 0,
+   "employees_number_nonnull": 3184,
+   "operating_revenue_nonnull": 2193
+  },
+  "zh_project_rows": 58453,
+  "zh_project_matched_firms": 2,
+  "en_project_rows": 20000
+ },
+ "boards": {
+  "national": {
+   "n": 4561,
+   "top20": [
+    {
+     "rank": 1,
+     "name": "华为技术有限公司",
+     "city": "深圳市",
+     "score": 97.4697,
+     "grant": 13360,
+     "pub": 81376
+    },
+    {
+     "rank": 2,
+     "name": "比亚迪股份有限公司",
+     "city": "深圳市",
+     "score": 94.4085,
+     "grant": 17072,
+     "pub": 29024
+    },
+    {
+     "rank": 3,
+     "name": "维沃移动通信有限公司",
+     "city": "东莞市",
+     "score": 89.9489,
+     "grant": 11145,
+     "pub": 28712
+    },
+    {
+     "rank": 4,
+     "name": "OPPO广东移动通信有限公司",
+     "city": "东莞市",
+     "score": 86.6225,
+     "grant": 8547,
+     "pub": 25765
+    },
+    {
+     "rank": 5,
+     "name": "广东电网有限责任公司",
+     "city": "广州市",
+     "score": 84.9712,
+     "grant": 8566,
+     "pub": 18922
+    },
+    {
+     "rank": 6,
+     "name": "广州汽车集团股份有限公司",
+     "city": "广州市",
+     "score": 77.671,
+     "grant": 5955,
+     "pub": 9836
+    },
+    {
+     "rank": 7,
+     "name": "惠科股份有限公司",
+     "city": "深圳市",
+     "score": 74.2718,
+     "grant": 5202,
+     "pub": 6797
+    },
+    {
+     "rank": 8,
+     "name": "广州视源电子科技股份有限公司",
+     "city": "广州市",
+     "score": 71.1008,
+     "grant": 3903,
+     "pub": 6543
+    },
+    {
+     "rank": 9,
+     "name": "深圳市合元科技有限公司",
+     "city": "深圳市",
+     "score": 67.9098,
+     "grant": 3459,
+     "pub": 4571
+    },
+    {
+     "rank": 10,
+     "name": "荣耀终端股份有限公司",
+     "city": "深圳市",
+     "score": 67.5851,
+     "grant": 2335,
+     "pub": 9093
+    },
+    {
+     "rank": 11,
+     "name": "中兴通讯股份有限公司",
+     "city": "深圳市",
+     "score": 66.8417,
+     "grant": 1634,
+     "pub": 15634
+    },
+    {
+     "rank": 12,
+     "name": "广东电网有限责任公司广州供电局",
+     "city": "广州市",
+     "score": 66.7231,
+     "grant": 2505,
+     "pub": 6786
+    },
+    {
+     "rank": 13,
+     "name": "惠州亿纬锂能股份有限公司",
+     "city": "惠州市",
+     "score": 66.4723,
+     "grant": 2891,
+     "pub": 4933
+    },
+    {
+     "rank": 14,
+     "name": "深圳供电局有限公司",
+     "city": "深圳市",
+     "score": 65.7778,
+     "grant": 2318,
+     "pub": 6607
+    },
+    {
+     "rank": 15,
+     "name": "TCL华星光电技术有限公司",
+     "city": "深圳市",
+     "score": 64.4261,
+     "grant": 2573,
+     "pub": 4222
+    },
+    {
+     "rank": 16,
+     "name": "深圳市华星光电半导体显示技术有限公司",
+     "city": "深圳市",
+     "score": 62.9584,
+     "grant": 2368,
+     "pub": 3772
+    },
+    {
+     "rank": 17,
+     "name": "平安银行股份有限公司",
+     "city": "深圳市",
+     "score": 62.6266,
+     "grant": 1984,
+     "pub": 4968
+    },
+    {
+     "rank": 18,
+     "name": "华为数字能源技术有限公司",
+     "city": "深圳市",
+     "score": 62.2386,
+     "grant": 1964,
+     "pub": 4715
+    },
+    {
+     "rank": 19,
+     "name": "广州小鹏汽车科技有限公司",
+     "city": "广州市",
+     "score": 61.3399,
+     "grant": 2142,
+     "pub": 3387
+    },
+    {
+     "rank": 20,
+     "name": "深圳市倍思科技有限公司",
+     "city": "深圳市",
+     "score": 60.528,
+     "grant": 2321,
+     "pub": 2503
+    }
+   ]
+  },
+  "city": {
+   "深圳市": {
+    "n": 2590,
+    "top3": [
+     {
+      "rank": 1,
+      "name": "华为技术有限公司",
+      "score": 97.4697
+     },
+     {
+      "rank": 2,
+      "name": "比亚迪股份有限公司",
+      "score": 94.4085
+     },
+     {
+      "rank": 3,
+      "name": "惠科股份有限公司",
+      "score": 74.2718
+     }
+    ]
+   },
+   "广州市": {
+    "n": 1020,
+    "top3": [
+     {
+      "rank": 1,
+      "name": "广东电网有限责任公司",
+      "score": 100.0
+     },
+     {
+      "rank": 2,
+      "name": "广州汽车集团股份有限公司",
+      "score": 91.32
+     },
+     {
+      "rank": 3,
+      "name": "广州视源电子科技股份有限公司",
+      "score": 83.618
+     }
+    ]
+   },
+   "东莞市": {
+    "n": 775,
+    "top3": [
+     {
+      "rank": 1,
+      "name": "维沃移动通信有限公司",
+      "score": 100.0
+     },
+     {
+      "rank": 2,
+      "name": "OPPO广东移动通信有限公司",
+      "score": 96.3602
+     },
+     {
+      "rank": 3,
+      "name": "慕思健康睡眠股份有限公司",
+      "score": 61.164
+     }
+    ]
+   },
+   "惠州市": {
+    "n": 176,
+    "top3": [
+     {
+      "rank": 1,
+      "name": "惠州亿纬锂能股份有限公司",
+      "score": 100.0
+     },
+     {
+      "rank": 2,
+      "name": "广东利元亨智能装备股份有限公司",
+      "score": 84.8469
+     },
+     {
+      "rank": 3,
+      "name": "惠州锂威新能源科技有限公司",
+      "score": 69.4513
+     }
+    ]
+   }
+  },
+  "industry_l2": {
+   "计算机、通信和其他电子设备制造业": {
+    "n": 744,
+    "top1": [
+     {
+      "name": "华为技术有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "批发业": {
+    "n": 646,
+    "top1": [
+     {
+      "name": "维沃移动通信有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "软件和信息技术服务业": {
+    "n": 403,
+    "top1": [
+     {
+      "name": "深圳市吉迩科技有限公司",
+      "score": 99.4348
+     }
+    ]
+   },
+   "科技推广和应用服务业": {
+    "n": 328,
+    "top1": [
+     {
+      "name": "华为数字能源技术有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "零售业": {
+    "n": 266,
+    "top1": [
+     {
+      "name": "荣耀终端股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "研究和试验发展": {
+    "n": 252,
+    "top1": [
+     {
+      "name": "广州视源电子科技股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "电气机械和器材制造业": {
+    "n": 247,
+    "top1": [
+     {
+      "name": "比亚迪股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "专业技术服务业": {
+    "n": 200,
+    "top1": [
+     {
+      "name": "深圳市合元科技有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "专用设备制造业": {
+    "n": 189,
+    "top1": [
+     {
+      "name": "深圳市科曼医疗设备有限公司",
+      "score": 97.8248
+     }
+    ]
+   },
+   "其他制造业": {
+    "n": 118,
+    "top1": [
+     {
+      "name": "深圳市维仕声学有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "通用设备制造业": {
+    "n": 103,
+    "top1": [
+     {
+      "name": "广东利元亨智能装备股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "商务服务业": {
+    "n": 98,
+    "top1": [
+     {
+      "name": "广州汽车集团股份有限公司",
+      "score": 100.0
+     }
+    ]
+   }
+  },
+  "chain": {
+   "人工智能": {
+    "n": 576,
+    "top1": [
+     {
+      "name": "比亚迪股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "智能终端": {
+    "n": 430,
+    "top1": [
+     {
+      "name": "华为技术有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "软件与信息服务": {
+    "n": 371,
+    "top1": [
+     {
+      "name": "中兴通讯股份有限公司",
+      "score": 96.979
+     }
+    ]
+   },
+   "集成电路": {
+    "n": 136,
+    "top1": [
+     {
+      "name": "广东品胜电子股份有限公司",
+      "score": 99.9109
+     }
+    ]
+   },
+   "具身智能": {
+    "n": 127,
+    "top1": [
+     {
+      "name": "广东电网有限责任公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "机器人": {
+    "n": 121,
+    "top1": [
+     {
+      "name": "中建科工集团有限公司",
+      "score": 99.6823
+     }
+    ]
+   },
+   "数字创意": {
+    "n": 109,
+    "top1": [
+     {
+      "name": "周大生珠宝股份有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "传感器": {
+    "n": 102,
+    "top1": [
+     {
+      "name": "广东利元亨智能装备股份有限公司",
+      "score": 99.7224
+     }
+    ]
+   },
+   "智能网联汽车": {
+    "n": 47,
+    "top1": [
+     {
+      "name": "TCL华星光电技术有限公司",
+      "score": 100.0
+     }
+    ]
+   },
+   "合成生物": {
+    "n": 36,
+    "top1": [
+     {
+      "name": "深圳市帝迈生物技术有限公司",
+      "score": 100.0
+     }
+    ]
+   }
+  },
+  "board_counts": {
+   "national": 1,
+   "city": 4,
+   "industry_l2": 23,
+   "chain": 10
+  }
+ },
+ "chain_coverage": {
+  "roster_mapped": 2097,
+  "roster_total": 4561,
+  "name_chain_entries": 23756
+ },
+ "board_stats": {
+  "national_distinct_scores": 2828,
+  "national_n": 4561,
+  "ties_note": "4,561 家只有上述个数的不同分值——log 归一把尾部压得很密，同分并列主要出现在低分区。",
+  "city_p50_p90": {
+   "深圳市": {
+    "p50": 8.41,
+    "p90": 27.26
+   },
+   "广州市": {
+    "p50": 11.12,
+    "p90": 31.12
+   },
+   "东莞市": {
+    "p50": 7.36,
+    "p90": 23.98
+   },
+   "惠州市": {
+    "p50": 10.85,
+    "p90": 42.13
+   }
+  },
+  "industry_top": [
+   {
+    "industry": "计算机、通信和其他电子设备制造业",
+    "n": 744,
+    "top1": "华为技术有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "批发业",
+    "n": 646,
+    "top1": "维沃移动通信有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "软件和信息技术服务业",
+    "n": 403,
+    "top1": "深圳市吉迩科技有限公司",
+    "top1_score": 99.4348
+   },
+   {
+    "industry": "科技推广和应用服务业",
+    "n": 328,
+    "top1": "华为数字能源技术有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "零售业",
+    "n": 266,
+    "top1": "荣耀终端股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "研究和试验发展",
+    "n": 252,
+    "top1": "广州视源电子科技股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "电气机械和器材制造业",
+    "n": 247,
+    "top1": "比亚迪股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "专业技术服务业",
+    "n": 200,
+    "top1": "深圳市合元科技有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "专用设备制造业",
+    "n": 189,
+    "top1": "深圳市科曼医疗设备有限公司",
+    "top1_score": 97.8248
+   },
+   {
+    "industry": "其他制造业",
+    "n": 118,
+    "top1": "深圳市维仕声学有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "通用设备制造业",
+    "n": 103,
+    "top1": "广东利元亨智能装备股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "商务服务业",
+    "n": 98,
+    "top1": "广州汽车集团股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "橡胶和塑料制品业",
+    "n": 97,
+    "top1": "金发科技股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "金属制品业",
+    "n": 76,
+    "top1": "深圳好博窗控技术股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "家具制造业",
+    "n": 58,
+    "top1": "东莞市艾慕寝室用品有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "房屋建筑业",
+    "n": 56,
+    "top1": "中国建筑第四工程局有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "文教、工美、体育和娱乐用品制造业",
+    "n": 55,
+    "top1": "周六福珠宝股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "土木工程建筑业",
+    "n": 52,
+    "top1": "中交第四航务工程局有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "仪器仪表制造业",
+    "n": 52,
+    "top1": "深圳中科飞测科技股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "皮革、毛皮、羽毛及其制品和制鞋业",
+    "n": 44,
+    "top1": "广州市罗丹实业有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "汽车制造业",
+    "n": 35,
+    "top1": "广汽本田汽车有限公司",
+    "top1_score": 99.7645
+   },
+   {
+    "industry": "互联网和相关服务",
+    "n": 35,
+    "top1": "平安国际智慧城市科技股份有限公司",
+    "top1_score": 100.0
+   },
+   {
+    "industry": "化学原料和化学制品制造业",
+    "n": 34,
+    "top1": "广州立白企业集团有限公司",
+    "top1_score": 97.5641
+   }
+  ]
+ },
+ "sensitivity": {
+  "S1_加授权率0.20(反例)": {
+   "weights": {
+    "grant": 0.45,
+    "pub": 0.35,
+    "grant_rate": 0.2
+   },
+   "top100_overlap": 82,
+   "max_rank_shift": 3317,
+   "mean_rank_shift": 561.32,
+   "spearman_vs_main": 0.8375,
+   "top10": [
+    "比亚迪股份有限公司",
+    "华为技术有限公司",
+    "维沃移动通信有限公司",
+    "广东电网有限责任公司",
+    "OPPO广东移动通信有限公司",
+    "惠科股份有限公司",
+    "广州汽车集团股份有限公司",
+    "深圳市合元科技有限公司",
+    "广州视源电子科技股份有限公司",
+    "深圳市倍思科技有限公司"
+   ]
+  },
+  "S2_授权量独大": {
+   "weights": {
+    "grant": 0.7,
+    "pub": 0.3,
+    "grant_rate": 0.0
+   },
+   "top100_overlap": 99,
+   "max_rank_shift": 405,
+   "mean_rank_shift": 38.0,
+   "spearman_vs_main": 0.9991,
+   "top10": [
+    "华为技术有限公司",
+    "比亚迪股份有限公司",
+    "维沃移动通信有限公司",
+    "OPPO广东移动通信有限公司",
+    "广东电网有限责任公司",
+    "广州汽车集团股份有限公司",
+    "惠科股份有限公司",
+    "广州视源电子科技股份有限公司",
+    "深圳市合元科技有限公司",
+    "惠州亿纬锂能股份有限公司"
+   ]
+  },
+  "S3_双量等权": {
+   "weights": {
+    "grant": 0.5,
+    "pub": 0.5,
+    "grant_rate": 0.0
+   },
+   "top100_overlap": 97,
+   "max_rank_shift": 337,
+   "mean_rank_shift": 38.0,
+   "spearman_vs_main": 0.9991,
+   "top10": [
+    "华为技术有限公司",
+    "比亚迪股份有限公司",
+    "维沃移动通信有限公司",
+    "OPPO广东移动通信有限公司",
+    "广东电网有限责任公司",
+    "广州汽车集团股份有限公司",
+    "惠科股份有限公司",
+    "广州视源电子科技股份有限公司",
+    "中兴通讯股份有限公司",
+    "荣耀终端股份有限公司"
+   ]
+  },
+  "S4_申请量独大": {
+   "weights": {
+    "grant": 0.3,
+    "pub": 0.7,
+    "grant_rate": 0.0
+   },
+   "top100_overlap": 93,
+   "max_rank_shift": 902,
+   "mean_rank_shift": 111.64,
+   "spearman_vs_main": 0.9929,
+   "top10": [
+    "华为技术有限公司",
+    "比亚迪股份有限公司",
+    "维沃移动通信有限公司",
+    "OPPO广东移动通信有限公司",
+    "广东电网有限责任公司",
+    "广州汽车集团股份有限公司",
+    "中兴通讯股份有限公司",
+    "惠科股份有限公司",
+    "荣耀终端股份有限公司",
+    "广州视源电子科技股份有限公司"
+   ]
+  }
+ },
+ "sensitivity_top_shift_firms": [
+  {
+   "name": "广东明创软件科技有限公司",
+   "rank_main": 2277,
+   "rank_S4": 1375,
+   "delta": 902
+  },
+  {
+   "name": "东莞宜安科技股份有限公司",
+   "rank_main": 2598,
+   "rank_S4": 1710,
+   "delta": 888
+  },
+  {
+   "name": "深圳市闪至科技有限公司",
+   "rank_main": 2800,
+   "rank_S4": 1918,
+   "delta": 882
+  },
+  {
+   "name": "广东博华超高清创新中心有限公司",
+   "rank_main": 3047,
+   "rank_S4": 2200,
+   "delta": 847
+  },
+  {
+   "name": "广东高域科技有限公司",
+   "rank_main": 3107,
+   "rank_S4": 2265,
+   "delta": 842
+  }
+ ],
+ "reconciliation": {
+  "method": "按名次相关（Spearman）与 Top3 重合度对账；两件 CHAIN 榜是「链×城市」盘，本件是「企业」盘，只能比链序不能比分值。",
+  "sz_advantage_rank": {
+   "chains_compared": 10,
+   "spearman": 0.103,
+   "mine_top3": [
+    "合成生物",
+    "集成电路",
+    "传感器"
+   ],
+   "theirs_top3": [
+    "数字创意",
+    "集成电路",
+    "智能终端"
+   ],
+   "pairs": {
+    "人工智能": {
+     "mine": 17.09,
+     "theirs": 67.44
+    },
+    "智能终端": {
+     "mine": 12.59,
+     "theirs": 81.89
+    },
+    "具身智能": {
+     "mine": 17.76,
+     "theirs": 70.09
+    },
+    "智能网联汽车": {
+     "mine": 18.84,
+     "theirs": 68.31
+    },
+    "软件与信息服务": {
+     "mine": 18.61,
+     "theirs": 74.53
+    },
+    "机器人": {
+     "mine": 23.89,
+     "theirs": 67.89
+    },
+    "传感器": {
+     "mine": 24.74,
+     "theirs": 74.41
+    },
+    "集成电路": {
+     "mine": 25.26,
+     "theirs": 90.85
+    },
+    "数字创意": {
+     "mine": 22.56,
+     "theirs": 100.0
+    },
+    "合成生物": {
+     "mine": 27.68,
+     "theirs": 68.66
+    }
+   }
+  },
+  "deep_126_1": {
+   "chains_declared": 12,
+   "sz_rank_dist_declared": {
+    "1": 12
+   },
+   "note": "126 是以链内四城企业数为主判据的区域指数；本件是明星企业专利分均值，二者母体不同（126 用全库 1,714,457 家，本件 4,561 家），差异见 §四 归因表。"
+  },
+  "available": true
+ },
+ "support_judgment": "部分支持",
+ "support_reason": "RANK 的算法面完全可实现（降序、同分并列、无分不进榜、盘内重算），四个盘也都能出；但排序键 tech_power_index 的 11 个子指标里 10 个结构性无源（表不存在、列全空、项目表只命中 2/4561 家），只剩专利量与授权率可代理，故本件交付的是「可观测代理键」的名次，不是 tech_power_index 的名次，不得以 M_ENT_TECH_RANK 名义发布。",
+ "note": "分数只是盘内相对位置（0—100 = 盘内最小—P99），跨盘不可比；名次同分并列且下一名跳号。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/star_roster_gkx_20261021.json",
+   "kind": "snapshot",
+   "note": "4,561 家明星企业（累计授权≥50），含 pub_cnt/grant_cnt/行业/城市"
+  },
+  {
+   "path": "code/_snapshots21/chain_firm_index_20261023.json",
+   "kind": "snapshot",
+   "note": "name_chain 名称→12 链映射（23,756 条）"
+  },
+  {
+   "path": "code/M_CHAIN_SZ_ADVANTAGE_RANK_out.json",
+   "kind": "upstream",
+   "note": "对账用：深圳在 12 链的优势名次"
+  },
+  {
+   "path": "code/M_CHAIN_DEEP_126_1_out.json",
+   "kind": "upstream",
+   "note": "对账用：区域产业指数的深圳名次分布"
+  },
+  {
+   "path": "gkx.dwd_patent",
+   "kind": "table",
+   "note": "2021—2026 年 2,939,895 件；专利量经 2026-10-22 全表扫描快照落盘"
+  },
+  {
+   "path": "gkx.dwd_org_annual_financial_info",
+   "kind": "table",
+   "note": "研发两列全空（实测）"
+  }
+ ],
+ "base_years_used": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "专利量是 2021—2026 六年累计（库内专利表只有这六年，§3.13），不做年度切分；名次是时点截面，没有跨年分母，故 used 列六年、missing 为空。2026 年未过完，其件数已计入累计（企业间同口径，不影响盘内相对位置）。"
+}

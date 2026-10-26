@@ -137,3 +137,9 @@ build (npm run build) → package (frontend:image) → deploy (deploy:k8s → de
 - 禁止 force push `main`/`dev`
 - 禁止把 Harbor 密码、kubeconfig 写入代码库
 - 禁止「本地验证通过」但不 push 就关 task
+
+---
+
+## 9. 环境、发布注意事项、Secret
+
+流水线阶段以本文为准。环境地址、发布时怎么改密钥、集群 Secret 写在 [工程过程/部署.md](工程过程/部署.md)，不在本文再抄一份。

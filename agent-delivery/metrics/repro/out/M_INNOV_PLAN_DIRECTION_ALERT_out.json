@@ -1,0 +1,5115 @@
+{
+ "metric_id": "M_INNOV_PLAN_DIRECTION_ALERT",
+ "generated_at": "2026-10-23 23:55:58",
+ "db": {
+  "host": "183.240.141.251:3318",
+  "schema": "gkx",
+  "tables": [
+   "dwd_zh_paper",
+   "dwd_zh_project",
+   "dwd_policy_base",
+   "dwd_scholar_paper_relation",
+   "dwd_zh_paper（id 形态）",
+   "dwd_scholar_research_direction"
+  ],
+  "patent_source": "_snapshots21/patent_ipc4_year_20261021.json（零专利 SQL）"
+ },
+ "support_judgment": "部分支持",
+ "judgment_reason": "六源中仅专利与产业可用且同出 dwd_patent（不独立）；论文单日回填、项目与政策 2022 起停录、人才无映射。A 套字面执行可跑但 F 的方差被论文维垄断，B 套收缩为两源后仍只能算「原型」",
+ "formula": {
+  "wanghui": "F=mean(g_s)；g_s=(近窗年均值-基期年均值)/max(基期年均值,1)；level=2 if F>=1 且两源g>0, 1 if F>=0.5, else 0",
+  "windows": {
+   "patent": {
+    "base": [
+     2021,
+     2022
+    ],
+    "recent": [
+     2023,
+     2024
+    ]
+   },
+   "paper": {
+    "base": [
+     2021,
+     2022
+    ],
+    "recent": [
+     2023,
+     2024
+    ]
+   },
+   "project": {
+    "base": [
+     2019,
+     2020
+    ],
+    "recent": [
+     2022,
+     2023
+    ]
+   },
+   "industry": {
+    "base": [
+     2021,
+     2022
+    ],
+    "recent": [
+     2023,
+     2024
+    ]
+   },
+   "policy": {
+    "base": [
+     2019,
+     2020
+    ],
+    "recent": [
+     2021,
+     2022
+    ]
+   }
+  },
+  "weights_assumed": "A 套五源等权（王惠未给权重）；B 套两源等权"
+ },
+ "base_years": {
+  "base_years_used": [
+   2019,
+   2020,
+   2021,
+   2022
+  ],
+  "base_years_missing": [
+   2016,
+   2017,
+   2018
+  ],
+  "note": "各源窗口不同，基线年按源显式列出；专利/论文/产业基线为 2021—2022（2016—2020 在 dwd_patent 无行），项目/政策因停录前移至 2019—2020。缺失年不得按 0 摊入分母。"
+ },
+ "panel": {
+  "n_ipc4": 258,
+  "rule": "2021 与 2024 年专利量均 ≥200 件",
+  "source_rows": {
+   "rows": 2939895,
+   "chunks": 10,
+   "complete": true
+  }
+ },
+ "talent": {
+  "status": "不可得",
+  "rel_paper_id_sample": "19291301",
+  "zh_paper_id_sample": "00002EGCK59G7JP167DO8JP1MNR",
+  "relation_id_type": "bigint（19,291,301 形态）",
+  "zh_paper_id_type": "varchar（27 位 00002EG… 形态）",
+  "research_direction_sample": "Aminomutase Engineering;Chemoenzymatic Peptide Synthesis;Peptide Amidase Engineering;Biocatalysis;Chiral Amino Acid Kine",
+  "reason": "既无「学者→IPC4」映射表，两套论文 ID 宇宙也不互通（bigint vs 27 位字符串），且 research_direction 为英文自由文本、与中文 IPC4 词典不同源；按两跳停记缺口，不做代理。"
+ },
+ "source_diagnostics": {
+  "patent": {
+   "n": 258,
+   "min": -0.8008,
+   "max": 1.3029,
+   "mean": -0.0081,
+   "median": -0.032,
+   "p10": -0.2163,
+   "p90": 0.2154,
+   "iqr": 0.1823,
+   "pos_share": 0.3953,
+   "informative": true
+  },
+  "paper": {
+   "n": 258,
+   "min": -0.5,
+   "max": 9.6,
+   "mean": 2.1749,
+   "median": 2.0131,
+   "p10": 0.5,
+   "p90": 3.81,
+   "iqr": 1.4738,
+   "pos_share": 0.9186,
+   "informative": false
+  },
+  "project": {
+   "n": 258,
+   "min": -1.0,
+   "max": 0.0,
+   "mean": -0.7543,
+   "median": -1.0,
+   "p10": -1.0,
+   "p90": 0.0,
+   "iqr": 0.5,
+   "pos_share": 0.0,
+   "informative": false
+  },
+  "industry": {
+   "n": 258,
+   "min": -0.7039,
+   "max": 1.2264,
+   "mean": 0.0651,
+   "median": 0.0456,
+   "p10": -0.1281,
+   "p90": 0.2635,
+   "iqr": 0.186,
+   "pos_share": 0.6434,
+   "informative": true
+  },
+  "policy": {
+   "n": 258,
+   "min": -1.0,
+   "max": 2.0,
+   "mean": -0.1301,
+   "median": 0.0,
+   "p10": -0.6667,
+   "p90": 0.0,
+   "iqr": 0.5,
+   "pos_share": 0.0853,
+   "informative": false
+  },
+  "talent": {
+   "status": "不可得"
+  }
+ },
+ "f_correlation": {
+  "patent": 0.3151,
+  "paper": 0.8682,
+  "project": -0.015,
+  "industry": 0.3239,
+  "policy": 0.271
+ },
+ "result_A_literal": {
+  "level_counts": {
+   "0": 207,
+   "1": 45,
+   "2": 6
+  },
+  "F_distribution": {
+   "n": 258,
+   "min": -0.2775,
+   "max": 1.5681,
+   "mean": 0.2695,
+   "median": 0.2175,
+   "p10": -0.0588,
+   "p90": 0.6989
+  },
+  "n_warned": 51,
+  "n_warned_patent_negative": 19,
+  "share_warned_patent_negative": 0.3725,
+  "top10_by_F": [
+   {
+    "ipc4": "H01G",
+    "F": 1.5681,
+    "level": 1,
+    "patent": -0.2066,
+    "paper": 9.6,
+    "project": -1.0,
+    "industry": -0.0527,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "D21H",
+    "F": 1.4503,
+    "level": 2,
+    "patent": 0.3438,
+    "paper": 6.5,
+    "project": 0.0,
+    "industry": 0.4079,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C03C",
+    "F": 1.4158,
+    "level": 1,
+    "patent": -0.0813,
+    "paper": 8.6667,
+    "project": -1.0,
+    "industry": -0.0063,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B65H",
+    "F": 1.2087,
+    "level": 2,
+    "patent": 0.0,
+    "paper": 6.5,
+    "project": -0.5,
+    "industry": 0.0437,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60L",
+    "F": 1.1936,
+    "level": 2,
+    "patent": 0.3208,
+    "paper": 6.8,
+    "project": -1.0,
+    "industry": 0.3162,
+    "policy": -0.4688
+   },
+   {
+    "ipc4": "H01B",
+    "F": 1.0339,
+    "level": 2,
+    "patent": -0.0888,
+    "paper": 6.25,
+    "project": -1.0,
+    "industry": 0.0083,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60H",
+    "F": 1.0285,
+    "level": 2,
+    "patent": 0.455,
+    "paper": 5.6667,
+    "project": -1.0,
+    "industry": 0.0209,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F25D",
+    "F": 1.0129,
+    "level": 2,
+    "patent": 0.0377,
+    "paper": 6.0,
+    "project": -0.5,
+    "industry": 0.0269,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "G16C",
+    "F": 0.9137,
+    "level": 1,
+    "patent": 1.0449,
+    "paper": 3.2973,
+    "project": -1.0,
+    "industry": 1.2264,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H10K",
+    "F": 0.8774,
+    "level": 1,
+    "patent": 0.9203,
+    "paper": 3.6,
+    "project": -0.9828,
+    "industry": 0.8497,
+    "policy": 0.0
+   }
+  ],
+  "all": [
+   {
+    "ipc4": "H01G",
+    "F": 1.5681,
+    "level": 1,
+    "patent": -0.2066,
+    "paper": 9.6,
+    "project": -1.0,
+    "industry": -0.0527,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "D21H",
+    "F": 1.4503,
+    "level": 2,
+    "patent": 0.3438,
+    "paper": 6.5,
+    "project": 0.0,
+    "industry": 0.4079,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C03C",
+    "F": 1.4158,
+    "level": 1,
+    "patent": -0.0813,
+    "paper": 8.6667,
+    "project": -1.0,
+    "industry": -0.0063,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B65H",
+    "F": 1.2087,
+    "level": 2,
+    "patent": 0.0,
+    "paper": 6.5,
+    "project": -0.5,
+    "industry": 0.0437,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60L",
+    "F": 1.1936,
+    "level": 2,
+    "patent": 0.3208,
+    "paper": 6.8,
+    "project": -1.0,
+    "industry": 0.3162,
+    "policy": -0.4688
+   },
+   {
+    "ipc4": "H01B",
+    "F": 1.0339,
+    "level": 2,
+    "patent": -0.0888,
+    "paper": 6.25,
+    "project": -1.0,
+    "industry": 0.0083,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60H",
+    "F": 1.0285,
+    "level": 2,
+    "patent": 0.455,
+    "paper": 5.6667,
+    "project": -1.0,
+    "industry": 0.0209,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F25D",
+    "F": 1.0129,
+    "level": 2,
+    "patent": 0.0377,
+    "paper": 6.0,
+    "project": -0.5,
+    "industry": 0.0269,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "G16C",
+    "F": 0.9137,
+    "level": 1,
+    "patent": 1.0449,
+    "paper": 3.2973,
+    "project": -1.0,
+    "industry": 1.2264,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H10K",
+    "F": 0.8774,
+    "level": 1,
+    "patent": 0.9203,
+    "paper": 3.6,
+    "project": -0.9828,
+    "industry": 0.8497,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G05F",
+    "F": 0.8532,
+    "level": 1,
+    "patent": 0.0935,
+    "paper": 5.0,
+    "project": -1.0,
+    "industry": 0.1727,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F21V",
+    "F": 0.8477,
+    "level": 1,
+    "patent": 1.3029,
+    "paper": 3.1667,
+    "project": -1.0,
+    "industry": 0.769,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G11C",
+    "F": 0.8465,
+    "level": 1,
+    "patent": 0.0481,
+    "paper": 5.0,
+    "project": -1.0,
+    "industry": 0.1842,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A44C",
+    "F": 0.8296,
+    "level": 1,
+    "patent": -0.1885,
+    "paper": 4.3333,
+    "project": 0.0,
+    "industry": 0.003,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B21F",
+    "F": 0.8205,
+    "level": 1,
+    "patent": -0.0008,
+    "paper": 4.0,
+    "project": 0.0,
+    "industry": 0.1032,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60T",
+    "F": 0.8075,
+    "level": 1,
+    "patent": 0.2719,
+    "paper": 3.5,
+    "project": 0.0,
+    "industry": 0.2655,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B29C",
+    "F": 0.7937,
+    "level": 1,
+    "patent": -0.0764,
+    "paper": 5.0,
+    "project": -1.0,
+    "industry": 0.0447,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F04D",
+    "F": 0.7675,
+    "level": 1,
+    "patent": 0.088,
+    "paper": 3.6667,
+    "project": 0.0,
+    "industry": 0.0828,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G09G",
+    "F": 0.7577,
+    "level": 1,
+    "patent": 0.022,
+    "paper": 4.9167,
+    "project": -1.0,
+    "industry": 0.5341,
+    "policy": -0.6842
+   },
+   {
+    "ipc4": "B05D",
+    "F": 0.7401,
+    "level": 1,
+    "patent": 0.2131,
+    "paper": 3.8,
+    "project": -0.5,
+    "industry": 0.1873,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F24D",
+    "F": 0.7271,
+    "level": 1,
+    "patent": 0.0158,
+    "paper": 3.1667,
+    "project": 0.0,
+    "industry": -0.0471,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "C08L",
+    "F": 0.7269,
+    "level": 1,
+    "patent": -0.0054,
+    "paper": 4.3824,
+    "project": -1.0,
+    "industry": 0.2573,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C08G",
+    "F": 0.7193,
+    "level": 1,
+    "patent": 0.1604,
+    "paper": 3.0,
+    "project": 0.0,
+    "industry": 0.4359,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C30B",
+    "F": 0.7068,
+    "level": 1,
+    "patent": 0.1341,
+    "paper": 4.0909,
+    "project": -1.0,
+    "industry": 0.309,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G03B",
+    "F": 0.705,
+    "level": 1,
+    "patent": -0.222,
+    "paper": 5.0,
+    "project": -0.5,
+    "industry": -0.2528,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "D06M",
+    "F": 0.7041,
+    "level": 1,
+    "patent": -0.0619,
+    "paper": 3.5,
+    "project": 0.0,
+    "industry": 0.0825,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B65B",
+    "F": 0.6967,
+    "level": 1,
+    "patent": -0.051,
+    "paper": 3.5,
+    "project": 0.0,
+    "industry": 0.0346,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F17C",
+    "F": 0.6946,
+    "level": 1,
+    "patent": 0.3842,
+    "paper": 3.6667,
+    "project": -0.5,
+    "industry": 0.4222,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B09B",
+    "F": 0.6929,
+    "level": 1,
+    "patent": -0.2154,
+    "paper": 4.8333,
+    "project": -1.0,
+    "industry": -0.1534,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H01H",
+    "F": 0.6866,
+    "level": 1,
+    "patent": -0.0631,
+    "paper": 3.5,
+    "project": 0.0,
+    "industry": -0.0041,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B05B",
+    "F": 0.6803,
+    "level": 1,
+    "patent": -0.1017,
+    "paper": 4.5,
+    "project": -1.0,
+    "industry": 0.0032,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01C",
+    "F": 0.654,
+    "level": 1,
+    "patent": 0.0325,
+    "paper": 2.1127,
+    "project": -1.0,
+    "industry": 0.1246,
+    "policy": 2.0
+   },
+   {
+    "ipc4": "A45D",
+    "F": 0.6401,
+    "level": 1,
+    "patent": 0.2572,
+    "paper": 3.7333,
+    "project": -1.0,
+    "industry": 0.2098,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F04B",
+    "F": 0.6284,
+    "level": 1,
+    "patent": 0.0559,
+    "paper": 4.0,
+    "project": -1.0,
+    "industry": 0.0859,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04W",
+    "F": 0.6268,
+    "level": 1,
+    "patent": 0.0058,
+    "paper": 4.0,
+    "project": -1.0,
+    "industry": 0.1284,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B25J",
+    "F": 0.6134,
+    "level": 1,
+    "patent": 0.0109,
+    "paper": 4.0,
+    "project": -1.0,
+    "industry": 0.0559,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C25D",
+    "F": 0.6057,
+    "level": 1,
+    "patent": 0.0887,
+    "paper": 3.7857,
+    "project": -1.0,
+    "industry": 0.154,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A41D",
+    "F": 0.5988,
+    "level": 1,
+    "patent": -0.3835,
+    "paper": 4.6667,
+    "project": -1.0,
+    "industry": -0.2891,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H01L",
+    "F": 0.5972,
+    "level": 1,
+    "patent": -0.259,
+    "paper": 3.8,
+    "project": -0.5,
+    "industry": -0.0548,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C25B",
+    "F": 0.5955,
+    "level": 1,
+    "patent": 0.1252,
+    "paper": 3.6667,
+    "project": -0.9813,
+    "industry": 0.1671,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B66C",
+    "F": 0.5823,
+    "level": 1,
+    "patent": 0.1302,
+    "paper": 3.1667,
+    "project": -0.5,
+    "industry": 0.1144,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F16L",
+    "F": 0.5802,
+    "level": 1,
+    "patent": 0.0495,
+    "paper": 4.3333,
+    "project": -1.0,
+    "industry": 0.0565,
+    "policy": -0.5385
+   },
+   {
+    "ipc4": "B29B",
+    "F": 0.5769,
+    "level": 1,
+    "patent": 0.0599,
+    "paper": 3.6667,
+    "project": -1.0,
+    "industry": 0.158,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A44B",
+    "F": 0.5699,
+    "level": 1,
+    "patent": 0.1607,
+    "paper": 2.5,
+    "project": 0.0,
+    "industry": 0.1888,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B63C",
+    "F": 0.5619,
+    "level": 1,
+    "patent": -0.1367,
+    "paper": 3.8333,
+    "project": -0.9091,
+    "industry": 0.022,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G21C",
+    "F": 0.5569,
+    "level": 1,
+    "patent": 0.0448,
+    "paper": 3.9,
+    "project": -1.0,
+    "industry": 0.3396,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F26B",
+    "F": 0.5565,
+    "level": 1,
+    "patent": -0.1311,
+    "paper": 3.5,
+    "project": -0.5,
+    "industry": -0.0863,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H03M",
+    "F": 0.5332,
+    "level": 1,
+    "patent": 0.2514,
+    "paper": 3.0,
+    "project": -1.0,
+    "industry": 0.4145,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02K",
+    "F": 0.5234,
+    "level": 1,
+    "patent": 0.2225,
+    "paper": 3.7576,
+    "project": -0.9375,
+    "industry": 0.0745,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "G01H",
+    "F": 0.5182,
+    "level": 1,
+    "patent": -0.0436,
+    "paper": 2.6562,
+    "project": -1.0,
+    "industry": -0.0216,
+    "policy": 1.0
+   },
+   {
+    "ipc4": "B22D",
+    "F": 0.5018,
+    "level": 1,
+    "patent": -0.0362,
+    "paper": 3.0,
+    "project": -0.5,
+    "industry": 0.0452,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B05C",
+    "F": 0.4956,
+    "level": 0,
+    "patent": 0.0172,
+    "paper": 2.3333,
+    "project": 0.0,
+    "industry": 0.1276,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C08J",
+    "F": 0.4921,
+    "level": 0,
+    "patent": -0.067,
+    "paper": 2.828,
+    "project": -0.9924,
+    "industry": 0.192,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "A01M",
+    "F": 0.4891,
+    "level": 0,
+    "patent": -0.1721,
+    "paper": 3.6364,
+    "project": -1.0,
+    "industry": -0.0188,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E02D",
+    "F": 0.4891,
+    "level": 0,
+    "patent": -0.0163,
+    "paper": 3.3333,
+    "project": -1.0,
+    "industry": 0.1284,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G16B",
+    "F": 0.47,
+    "level": 0,
+    "patent": 0.685,
+    "paper": 2.4754,
+    "project": -0.9926,
+    "industry": 0.6822,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B28B",
+    "F": 0.4603,
+    "level": 0,
+    "patent": -0.0642,
+    "paper": 2.3125,
+    "project": 0.0,
+    "industry": 0.0533,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A43B",
+    "F": 0.4458,
+    "level": 0,
+    "patent": -0.1185,
+    "paper": 2.8,
+    "project": -0.5,
+    "industry": 0.0473,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C22B",
+    "F": 0.4397,
+    "level": 0,
+    "patent": 0.2366,
+    "paper": 2.7941,
+    "project": -1.0,
+    "industry": 0.1677,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B66B",
+    "F": 0.4395,
+    "level": 0,
+    "patent": -0.0202,
+    "paper": 3.2,
+    "project": -1.0,
+    "industry": 0.0176,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H03H",
+    "F": 0.4373,
+    "level": 0,
+    "patent": 0.0827,
+    "paper": 2.875,
+    "project": -0.9474,
+    "industry": 0.1762,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60Q",
+    "F": 0.4315,
+    "level": 0,
+    "patent": -0.1494,
+    "paper": 3.0,
+    "project": -0.5,
+    "industry": -0.1929,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E05F",
+    "F": 0.4247,
+    "level": 0,
+    "patent": 0.0392,
+    "paper": 2.0,
+    "project": 0.0,
+    "industry": 0.0845,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E04C",
+    "F": 0.4164,
+    "level": 0,
+    "patent": -0.151,
+    "paper": 2.7692,
+    "project": -1.0,
+    "industry": -0.0362,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "F17D",
+    "F": 0.4117,
+    "level": 0,
+    "patent": 0.3037,
+    "paper": 2.9062,
+    "project": -1.0,
+    "industry": 0.3488,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F24F",
+    "F": 0.3971,
+    "level": 0,
+    "patent": -0.0878,
+    "paper": 2.1579,
+    "project": -1.0,
+    "industry": -0.0846,
+    "policy": 1.0
+   },
+   {
+    "ipc4": "H05K",
+    "F": 0.3901,
+    "level": 0,
+    "patent": -0.0483,
+    "paper": 2.0,
+    "project": -0.5,
+    "industry": -0.0011,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "G06V",
+    "F": 0.386,
+    "level": 0,
+    "patent": 0.3414,
+    "paper": 2.5446,
+    "project": -0.99,
+    "industry": 0.5338,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F28D",
+    "F": 0.3671,
+    "level": 0,
+    "patent": -0.0354,
+    "paper": 2.2222,
+    "project": -1.0,
+    "industry": 0.1486,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "B21D",
+    "F": 0.3664,
+    "level": 0,
+    "patent": -0.0334,
+    "paper": 2.3333,
+    "project": -0.5,
+    "industry": 0.032,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F16D",
+    "F": 0.3647,
+    "level": 0,
+    "patent": -0.0707,
+    "paper": 2.0,
+    "project": 0.0,
+    "industry": -0.1056,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H01C",
+    "F": 0.3642,
+    "level": 0,
+    "patent": -0.0068,
+    "paper": 2.75,
+    "project": -1.0,
+    "industry": 0.0779,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H05B",
+    "F": 0.3624,
+    "level": 0,
+    "patent": 0.0782,
+    "paper": 3.1429,
+    "project": -0.5,
+    "industry": 0.091,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "F16M",
+    "F": 0.3538,
+    "level": 0,
+    "patent": -0.102,
+    "paper": 2.4444,
+    "project": -1.0,
+    "industry": -0.0732,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "H02H",
+    "F": 0.3517,
+    "level": 0,
+    "patent": 0.027,
+    "paper": 2.5172,
+    "project": -1.0,
+    "industry": 0.2144,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02P",
+    "F": 0.3511,
+    "level": 0,
+    "patent": 0.0375,
+    "paper": 2.5,
+    "project": -1.0,
+    "industry": 0.2182,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04L",
+    "F": 0.3511,
+    "level": 0,
+    "patent": -0.0443,
+    "paper": 2.0488,
+    "project": -1.0,
+    "industry": 0.2509,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "G10K",
+    "F": 0.3473,
+    "level": 0,
+    "patent": -0.1253,
+    "paper": 2.8571,
+    "project": -1.0,
+    "industry": 0.0047,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F16C",
+    "F": 0.347,
+    "level": 0,
+    "patent": 0.0385,
+    "paper": 2.8,
+    "project": -1.0,
+    "industry": -0.1033,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G05D",
+    "F": 0.3434,
+    "level": 0,
+    "patent": -0.0899,
+    "paper": 2.6762,
+    "project": -0.9667,
+    "industry": 0.0974,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E04B",
+    "F": 0.3428,
+    "level": 0,
+    "patent": -0.047,
+    "paper": 2.726,
+    "project": -1.0,
+    "industry": 0.0352,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E21D",
+    "F": 0.342,
+    "level": 0,
+    "patent": -0.0289,
+    "paper": 2.5581,
+    "project": -1.0,
+    "industry": 0.1808,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02J",
+    "F": 0.3417,
+    "level": 0,
+    "patent": 0.2208,
+    "paper": 2.4188,
+    "project": -1.0,
+    "industry": 0.1355,
+    "policy": -0.0667
+   },
+   {
+    "ipc4": "H01P",
+    "F": 0.3403,
+    "level": 0,
+    "patent": 0.1306,
+    "paper": 3.0,
+    "project": -1.0,
+    "industry": 0.0711,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "E21F",
+    "F": 0.3374,
+    "level": 0,
+    "patent": -0.0357,
+    "paper": 2.6667,
+    "project": -1.0,
+    "industry": 0.0558,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60K",
+    "F": 0.3354,
+    "level": 0,
+    "patent": 0.2807,
+    "paper": 2.375,
+    "project": -1.0,
+    "industry": 0.0211,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B22F",
+    "F": 0.3311,
+    "level": 0,
+    "patent": -0.0006,
+    "paper": 2.5938,
+    "project": -1.0,
+    "industry": 0.0625,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F03D",
+    "F": 0.3283,
+    "level": 0,
+    "patent": 0.1752,
+    "paper": 2.6522,
+    "project": -1.0,
+    "industry": 0.3141,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F15B",
+    "F": 0.3276,
+    "level": 0,
+    "patent": -0.0597,
+    "paper": 2.6667,
+    "project": -1.0,
+    "industry": 0.031,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G05B",
+    "F": 0.3254,
+    "level": 0,
+    "patent": 0.024,
+    "paper": 3.2088,
+    "project": -0.9792,
+    "industry": 0.0403,
+    "policy": -0.6667
+   },
+   {
+    "ipc4": "A45C",
+    "F": 0.3225,
+    "level": 0,
+    "patent": 0.0107,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": 0.1016,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C07D",
+    "F": 0.3182,
+    "level": 0,
+    "patent": -0.061,
+    "paper": 2.0135,
+    "project": -0.9942,
+    "industry": 0.1328,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "H01Q",
+    "F": 0.3159,
+    "level": 0,
+    "patent": -0.0843,
+    "paper": 2.9693,
+    "project": -0.9919,
+    "industry": 0.0107,
+    "policy": -0.3243
+   },
+   {
+    "ipc4": "F16K",
+    "F": 0.3144,
+    "level": 0,
+    "patent": 0.1902,
+    "paper": 1.25,
+    "project": 0.0,
+    "industry": 0.1317,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60R",
+    "F": 0.3111,
+    "level": 0,
+    "patent": 0.0672,
+    "paper": 1.5455,
+    "project": -1.0,
+    "industry": -0.0572,
+    "policy": 1.0
+   },
+   {
+    "ipc4": "F16H",
+    "F": 0.309,
+    "level": 0,
+    "patent": -0.0205,
+    "paper": 2.5385,
+    "project": -1.0,
+    "industry": 0.0271,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C09J",
+    "F": 0.3059,
+    "level": 0,
+    "patent": 0.0843,
+    "paper": 1.3333,
+    "project": 0.0,
+    "industry": 0.1121,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B25H",
+    "F": 0.3055,
+    "level": 0,
+    "patent": -0.0095,
+    "paper": 2.4783,
+    "project": -1.0,
+    "industry": 0.0589,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C22C",
+    "F": 0.3037,
+    "level": 0,
+    "patent": 0.0237,
+    "paper": 2.9174,
+    "project": -1.0,
+    "industry": 0.2439,
+    "policy": -0.6667
+   },
+   {
+    "ipc4": "C07K",
+    "F": 0.3028,
+    "level": 0,
+    "patent": 0.1568,
+    "paper": 1.3333,
+    "project": -1.0,
+    "industry": 0.3571,
+    "policy": 0.6667
+   },
+   {
+    "ipc4": "B25B",
+    "F": 0.3008,
+    "level": 0,
+    "patent": -0.0268,
+    "paper": 2.5,
+    "project": -1.0,
+    "industry": 0.0307,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E04F",
+    "F": 0.3007,
+    "level": 0,
+    "patent": -0.1993,
+    "paper": 2.8095,
+    "project": -1.0,
+    "industry": -0.1065,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E21B",
+    "F": 0.3001,
+    "level": 0,
+    "patent": -0.0941,
+    "paper": 2.9444,
+    "project": -1.0,
+    "industry": 0.1504,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "A63B",
+    "F": 0.2908,
+    "level": 0,
+    "patent": -0.1158,
+    "paper": 0.8333,
+    "project": -0.75,
+    "industry": -0.0133,
+    "policy": 1.5
+   },
+   {
+    "ipc4": "G02C",
+    "F": 0.2829,
+    "level": 0,
+    "patent": -0.228,
+    "paper": 2.25,
+    "project": -0.5,
+    "industry": -0.1076,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B41J",
+    "F": 0.2804,
+    "level": 0,
+    "patent": -0.0644,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": -0.0337,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B02C",
+    "F": 0.2738,
+    "level": 0,
+    "patent": -0.0929,
+    "paper": 2.5,
+    "project": -1.0,
+    "industry": -0.038,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02M",
+    "F": 0.2649,
+    "level": 0,
+    "patent": -0.0117,
+    "paper": 2.25,
+    "project": -1.0,
+    "industry": 0.0864,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E06B",
+    "F": 0.2647,
+    "level": 0,
+    "patent": -0.1804,
+    "paper": 2.6316,
+    "project": -1.0,
+    "industry": -0.1275,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B01F",
+    "F": 0.2644,
+    "level": 0,
+    "patent": -0.1144,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": -0.0635,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B60W",
+    "F": 0.2606,
+    "level": 0,
+    "patent": 0.174,
+    "paper": 2.3571,
+    "project": -1.0,
+    "industry": 0.272,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B26F",
+    "F": 0.2512,
+    "level": 0,
+    "patent": -0.2405,
+    "paper": 2.6667,
+    "project": -1.0,
+    "industry": -0.17,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A62C",
+    "F": 0.2477,
+    "level": 0,
+    "patent": 0.0951,
+    "paper": 1.9412,
+    "project": -1.0,
+    "industry": 0.2023,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C09D",
+    "F": 0.2468,
+    "level": 0,
+    "patent": 0.1029,
+    "paper": 3.0,
+    "project": -1.0,
+    "industry": 0.1313,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "G01M",
+    "F": 0.2436,
+    "level": 0,
+    "patent": -0.0327,
+    "paper": 2.1538,
+    "project": -1.0,
+    "industry": 0.097,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C03B",
+    "F": 0.2416,
+    "level": 0,
+    "patent": -0.2075,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": -0.0846,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A01D",
+    "F": 0.2407,
+    "level": 0,
+    "patent": 0.1223,
+    "paper": 2.0714,
+    "project": -1.0,
+    "industry": 0.0099,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H01F",
+    "F": 0.2399,
+    "level": 0,
+    "patent": -0.027,
+    "paper": 2.1538,
+    "project": -1.0,
+    "industry": 0.0725,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01S",
+    "F": 0.2381,
+    "level": 0,
+    "patent": -0.071,
+    "paper": 1.6916,
+    "project": -1.0,
+    "industry": 0.0697,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "G06F",
+    "F": 0.2365,
+    "level": 0,
+    "patent": 0.032,
+    "paper": 2.3511,
+    "project": -1.0,
+    "industry": 0.228,
+    "policy": -0.4286
+   },
+   {
+    "ipc4": "C09K",
+    "F": 0.2332,
+    "level": 0,
+    "patent": -0.0994,
+    "paper": 2.1316,
+    "project": -1.0,
+    "industry": 0.1337,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02S",
+    "F": 0.231,
+    "level": 0,
+    "patent": 0.5212,
+    "paper": 2.0,
+    "project": -1.0,
+    "industry": 0.5229,
+    "policy": -0.8889
+   },
+   {
+    "ipc4": "C02F",
+    "F": 0.2261,
+    "level": 0,
+    "patent": -0.0737,
+    "paper": 2.6981,
+    "project": -1.0,
+    "industry": -0.0823,
+    "policy": -0.4118
+   },
+   {
+    "ipc4": "B01J",
+    "F": 0.2253,
+    "level": 0,
+    "patent": -0.045,
+    "paper": 2.0385,
+    "project": -1.0,
+    "industry": 0.1328,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F16F",
+    "F": 0.2248,
+    "level": 0,
+    "patent": 0.2046,
+    "paper": 2.0,
+    "project": -1.0,
+    "industry": -0.0804,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A01K",
+    "F": 0.2219,
+    "level": 0,
+    "patent": 0.0631,
+    "paper": 2.8,
+    "project": -1.0,
+    "industry": 0.1353,
+    "policy": -0.8889
+   },
+   {
+    "ipc4": "G06N",
+    "F": 0.2212,
+    "level": 0,
+    "patent": 0.2876,
+    "paper": 1.7299,
+    "project": -0.991,
+    "industry": 0.6533,
+    "policy": -0.5738
+   },
+   {
+    "ipc4": "H03F",
+    "F": 0.22,
+    "level": 0,
+    "patent": -0.1486,
+    "paper": 2.1429,
+    "project": -1.0,
+    "industry": 0.1055,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E01C",
+    "F": 0.2192,
+    "level": 0,
+    "patent": -0.0545,
+    "paper": 1.5926,
+    "project": -1.0,
+    "industry": 0.0578,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "H01M",
+    "F": 0.2157,
+    "level": 0,
+    "patent": 0.5055,
+    "paper": 2.0128,
+    "project": -1.0,
+    "industry": 0.2268,
+    "policy": -0.6667
+   },
+   {
+    "ipc4": "B21J",
+    "F": 0.2127,
+    "level": 0,
+    "patent": 0.0366,
+    "paper": 1.0,
+    "project": 0.0,
+    "industry": 0.027,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E05B",
+    "F": 0.2101,
+    "level": 0,
+    "patent": -0.0978,
+    "paper": 2.1818,
+    "project": -1.0,
+    "industry": -0.0335,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A23L",
+    "F": 0.2088,
+    "level": 0,
+    "patent": -0.1606,
+    "paper": 2.8,
+    "project": -1.0,
+    "industry": -0.0956,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B24B",
+    "F": 0.2011,
+    "level": 0,
+    "patent": -0.0437,
+    "paper": 2.0,
+    "project": -1.0,
+    "industry": 0.0494,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B23B",
+    "F": 0.1986,
+    "level": 0,
+    "patent": -0.1842,
+    "paper": 1.8182,
+    "project": -0.5,
+    "industry": -0.1408,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B26D",
+    "F": 0.198,
+    "level": 0,
+    "patent": -0.0287,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": 0.0187,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B23K",
+    "F": 0.1961,
+    "level": 0,
+    "patent": 0.099,
+    "paper": 2.2188,
+    "project": -1.0,
+    "industry": 0.1627,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "A61N",
+    "F": 0.1919,
+    "level": 0,
+    "patent": 0.4483,
+    "paper": 1.3939,
+    "project": -1.0,
+    "industry": 0.1171,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B62D",
+    "F": 0.1906,
+    "level": 0,
+    "patent": 0.0849,
+    "paper": 2.2222,
+    "project": -1.0,
+    "industry": -0.0206,
+    "policy": -0.3333
+   },
+   {
+    "ipc4": "C23C",
+    "F": 0.1904,
+    "level": 0,
+    "patent": 0.1298,
+    "paper": 1.6809,
+    "project": -0.9808,
+    "industry": 0.122,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B26B",
+    "F": 0.1886,
+    "level": 0,
+    "patent": 0.2256,
+    "paper": 0.5,
+    "project": 0.0,
+    "industry": 0.2174,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B01D",
+    "F": 0.1875,
+    "level": 0,
+    "patent": -0.0642,
+    "paper": 2.415,
+    "project": -0.9892,
+    "industry": -0.0073,
+    "policy": -0.4167
+   },
+   {
+    "ipc4": "C07F",
+    "F": 0.1866,
+    "level": 0,
+    "patent": -0.0677,
+    "paper": 1.6875,
+    "project": -0.9891,
+    "industry": 0.3021,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G09F",
+    "F": 0.1857,
+    "level": 0,
+    "patent": -0.3735,
+    "paper": 1.5,
+    "project": 0.0,
+    "industry": -0.1978,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G06T",
+    "F": 0.1806,
+    "level": 0,
+    "patent": -0.0576,
+    "paper": 1.5361,
+    "project": -0.988,
+    "industry": 0.4124,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F24H",
+    "F": 0.1805,
+    "level": 0,
+    "patent": 0.0014,
+    "paper": 1.3,
+    "project": -1.0,
+    "industry": 0.1013,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "C12P",
+    "F": 0.1797,
+    "level": 0,
+    "patent": -0.0627,
+    "paper": 1.625,
+    "project": -1.0,
+    "industry": 0.3364,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C12N",
+    "F": 0.1791,
+    "level": 0,
+    "patent": 0.1264,
+    "paper": 1.502,
+    "project": -0.9956,
+    "industry": 0.2627,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A01N",
+    "F": 0.1779,
+    "level": 0,
+    "patent": -0.0083,
+    "paper": 2.4035,
+    "project": -1.0,
+    "industry": -0.0055,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "H04R",
+    "F": 0.1742,
+    "level": 0,
+    "patent": -0.0784,
+    "paper": 1.0,
+    "project": 0.0,
+    "industry": -0.0506,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B63B",
+    "F": 0.1665,
+    "level": 0,
+    "patent": 0.0566,
+    "paper": 2.5833,
+    "project": -1.0,
+    "industry": 0.1924,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "H01S",
+    "F": 0.165,
+    "level": 0,
+    "patent": 0.0755,
+    "paper": 1.1923,
+    "project": -1.0,
+    "industry": 0.0572,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "A61M",
+    "F": 0.1545,
+    "level": 0,
+    "patent": 0.1718,
+    "paper": 2.0294,
+    "project": -1.0,
+    "industry": 0.0712,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B08B",
+    "F": 0.154,
+    "level": 0,
+    "patent": -0.0828,
+    "paper": 1.9,
+    "project": -1.0,
+    "industry": -0.0473,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01J",
+    "F": 0.1506,
+    "level": 0,
+    "patent": -0.3305,
+    "paper": 2.8571,
+    "project": -0.9855,
+    "industry": -0.2882,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "C07C",
+    "F": 0.1443,
+    "level": 0,
+    "patent": -0.0101,
+    "paper": 2.0185,
+    "project": -1.0,
+    "industry": 0.2132,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "E04H",
+    "F": 0.1441,
+    "level": 0,
+    "patent": -0.0862,
+    "paper": 0.881,
+    "project": -1.0,
+    "industry": -0.0744,
+    "policy": 1.0
+   },
+   {
+    "ipc4": "G02F",
+    "F": 0.1402,
+    "level": 0,
+    "patent": -0.2519,
+    "paper": 1.5,
+    "project": -0.5,
+    "industry": -0.0472,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A24F",
+    "F": 0.1362,
+    "level": 0,
+    "patent": -0.0639,
+    "paper": 1.2143,
+    "project": -1.0,
+    "industry": 0.0304,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "G03F",
+    "F": 0.1358,
+    "level": 0,
+    "patent": 0.0792,
+    "paper": 2.3,
+    "project": -1.0,
+    "industry": 0.0496,
+    "policy": -0.75
+   },
+   {
+    "ipc4": "B23P",
+    "F": 0.1357,
+    "level": 0,
+    "patent": -0.005,
+    "paper": 2.2672,
+    "project": -0.9817,
+    "industry": 0.0978,
+    "policy": -0.7
+   },
+   {
+    "ipc4": "A61H",
+    "F": 0.1326,
+    "level": 0,
+    "patent": 0.0618,
+    "paper": 1.5714,
+    "project": -1.0,
+    "industry": 0.0296,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A63H",
+    "F": 0.1186,
+    "level": 0,
+    "patent": -0.0313,
+    "paper": 1.5,
+    "project": -1.0,
+    "industry": 0.1244,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E05D",
+    "F": 0.112,
+    "level": 0,
+    "patent": 0.1089,
+    "paper": 0.5,
+    "project": 0.0,
+    "industry": -0.0488,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G02B",
+    "F": 0.1076,
+    "level": 0,
+    "patent": -0.1064,
+    "paper": 1.625,
+    "project": -0.9474,
+    "industry": -0.0334,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A01C",
+    "F": 0.1057,
+    "level": 0,
+    "patent": 0.1232,
+    "paper": 1.3636,
+    "project": -1.0,
+    "industry": 0.0415,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C04B",
+    "F": 0.1048,
+    "level": 0,
+    "patent": -0.0123,
+    "paper": 1.5,
+    "project": -1.0,
+    "industry": 0.0361,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A47B",
+    "F": 0.099,
+    "level": 0,
+    "patent": -0.2442,
+    "paper": 2.4,
+    "project": -1.0,
+    "industry": -0.1606,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "C01G",
+    "F": 0.0956,
+    "level": 0,
+    "patent": 0.3341,
+    "paper": 0.9,
+    "project": -1.0,
+    "industry": 0.2437,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E02B",
+    "F": 0.0952,
+    "level": 0,
+    "patent": -0.0074,
+    "paper": 2.1649,
+    "project": -1.0,
+    "industry": 0.046,
+    "policy": -0.7273
+   },
+   {
+    "ipc4": "B65G",
+    "F": 0.0898,
+    "level": 0,
+    "patent": -0.0609,
+    "paper": 1.5,
+    "project": -1.0,
+    "industry": 0.0097,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04J",
+    "F": 0.0887,
+    "level": 0,
+    "patent": -0.1097,
+    "paper": 1.5,
+    "project": -1.0,
+    "industry": 0.0533,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G08B",
+    "F": 0.0859,
+    "level": 0,
+    "patent": -0.0587,
+    "paper": 2.0484,
+    "project": -1.0,
+    "industry": -0.0602,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "C21D",
+    "F": 0.0856,
+    "level": 0,
+    "patent": -0.2718,
+    "paper": 1.7,
+    "project": -1.0,
+    "industry": 0.0,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F16B",
+    "F": 0.0831,
+    "level": 0,
+    "patent": -0.0515,
+    "paper": 1.0,
+    "project": -0.5,
+    "industry": -0.033,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A61B",
+    "F": 0.0772,
+    "level": 0,
+    "patent": -0.0287,
+    "paper": 1.3772,
+    "project": -1.0,
+    "industry": 0.0374,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04B",
+    "F": 0.0741,
+    "level": 0,
+    "patent": -0.0962,
+    "paper": 2.1961,
+    "project": -1.0,
+    "industry": 0.0208,
+    "policy": -0.75
+   },
+   {
+    "ipc4": "H01J",
+    "F": 0.0735,
+    "level": 0,
+    "patent": -0.0087,
+    "paper": 1.3869,
+    "project": -1.0,
+    "industry": 0.1739,
+    "policy": -0.1846
+   },
+   {
+    "ipc4": "B62B",
+    "F": 0.0709,
+    "level": 0,
+    "patent": -0.0499,
+    "paper": 1.0,
+    "project": -0.5,
+    "industry": -0.0954,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C12M",
+    "F": 0.0703,
+    "level": 0,
+    "patent": -0.1326,
+    "paper": 1.8175,
+    "project": -0.9826,
+    "industry": -0.0069,
+    "policy": -0.3438
+   },
+   {
+    "ipc4": "G16H",
+    "F": 0.0686,
+    "level": 0,
+    "patent": 0.3077,
+    "paper": 1.5448,
+    "project": -1.0,
+    "industry": 0.3069,
+    "policy": -0.8163
+   },
+   {
+    "ipc4": "G08G",
+    "F": 0.064,
+    "level": 0,
+    "patent": -0.0567,
+    "paper": 1.8261,
+    "project": -1.0,
+    "industry": 0.0507,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F25B",
+    "F": 0.0617,
+    "level": 0,
+    "patent": 0.283,
+    "paper": 1.6471,
+    "project": -1.0,
+    "industry": 0.1498,
+    "policy": -0.7714
+   },
+   {
+    "ipc4": "G01N",
+    "F": 0.0617,
+    "level": 0,
+    "patent": -0.0424,
+    "paper": 0.75,
+    "project": -0.5,
+    "industry": 0.1009,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01D",
+    "F": 0.0611,
+    "level": 0,
+    "patent": -0.1024,
+    "paper": 2.0,
+    "project": -1.0,
+    "industry": -0.092,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "G01L",
+    "F": 0.054,
+    "level": 0,
+    "patent": -0.1401,
+    "paper": 1.4,
+    "project": -1.0,
+    "industry": 0.01,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C01B",
+    "F": 0.0538,
+    "level": 0,
+    "patent": 0.1598,
+    "paper": 1.4,
+    "project": -0.9667,
+    "industry": 0.1757,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "A61K",
+    "F": 0.0532,
+    "level": 0,
+    "patent": 0.0892,
+    "paper": 1.3208,
+    "project": -0.9861,
+    "industry": 0.1756,
+    "policy": -0.3333
+   },
+   {
+    "ipc4": "G01F",
+    "F": 0.0524,
+    "level": 0,
+    "patent": -0.142,
+    "paper": 1.4146,
+    "project": -1.0,
+    "industry": -0.0105,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04Q",
+    "F": 0.0519,
+    "level": 0,
+    "patent": -0.1321,
+    "paper": 1.6,
+    "project": -1.0,
+    "industry": -0.2086,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "D06F",
+    "F": 0.0487,
+    "level": 0,
+    "patent": -0.2108,
+    "paper": 0.5,
+    "project": 0.0,
+    "industry": -0.0459,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B41F",
+    "F": 0.0482,
+    "level": 0,
+    "patent": -0.1868,
+    "paper": 0.5,
+    "project": 0.0,
+    "industry": -0.0724,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G06Q",
+    "F": 0.0439,
+    "level": 0,
+    "patent": 0.2085,
+    "paper": 1.0302,
+    "project": -1.0,
+    "industry": 0.4787,
+    "policy": -0.498
+   },
+   {
+    "ipc4": "B30B",
+    "F": 0.0409,
+    "level": 0,
+    "patent": -0.1425,
+    "paper": 1.0,
+    "project": -0.5,
+    "industry": -0.1531,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "D05B",
+    "F": 0.0396,
+    "level": 0,
+    "patent": 0.0807,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.1174,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E04D",
+    "F": 0.0375,
+    "level": 0,
+    "patent": -0.0189,
+    "paper": 1.5429,
+    "project": -1.0,
+    "industry": -0.003,
+    "policy": -0.3333
+   },
+   {
+    "ipc4": "H02G",
+    "F": 0.0375,
+    "level": 0,
+    "patent": -0.0048,
+    "paper": 1.037,
+    "project": -0.5,
+    "industry": 0.1553,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "E03F",
+    "F": 0.0355,
+    "level": 0,
+    "patent": -0.216,
+    "paper": 1.9412,
+    "project": -0.5,
+    "industry": -0.0476,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "F04C",
+    "F": 0.0323,
+    "level": 0,
+    "patent": 0.0215,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.1402,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A01G",
+    "F": 0.0314,
+    "level": 0,
+    "patent": -0.2592,
+    "paper": 1.8571,
+    "project": -1.0,
+    "industry": -0.1466,
+    "policy": -0.2941
+   },
+   {
+    "ipc4": "F16J",
+    "F": 0.0301,
+    "level": 0,
+    "patent": 0.0503,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.1003,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A45F",
+    "F": 0.0267,
+    "level": 0,
+    "patent": 0.0302,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.1031,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C12Q",
+    "F": 0.0233,
+    "level": 0,
+    "patent": -0.0066,
+    "paper": 1.8632,
+    "project": -0.9964,
+    "industry": 0.1561,
+    "policy": -0.9
+   },
+   {
+    "ipc4": "A47F",
+    "F": 0.0202,
+    "level": 0,
+    "patent": -0.279,
+    "paper": 0.5,
+    "project": 0.0,
+    "industry": -0.1199,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E01D",
+    "F": 0.0143,
+    "level": 0,
+    "patent": -0.0674,
+    "paper": 1.4906,
+    "project": -1.0,
+    "industry": 0.1481,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B31B",
+    "F": 0.012,
+    "level": 0,
+    "patent": -0.0824,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.1426,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A47J",
+    "F": 0.0091,
+    "level": 0,
+    "patent": -0.0191,
+    "paper": 1.0833,
+    "project": -1.0,
+    "industry": -0.0186,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G10L",
+    "F": 0.0062,
+    "level": 0,
+    "patent": -0.0891,
+    "paper": 1.3548,
+    "project": -1.0,
+    "industry": 0.2654,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B32B",
+    "F": 0.006,
+    "level": 0,
+    "patent": -0.298,
+    "paper": 2.0571,
+    "project": -1.0,
+    "industry": -0.2289,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B60S",
+    "F": 0.0053,
+    "level": 0,
+    "patent": 0.0616,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0352,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01V",
+    "F": -0.0009,
+    "level": 0,
+    "patent": -0.0479,
+    "paper": 2.0503,
+    "project": -0.9813,
+    "industry": -0.0257,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "B65D",
+    "F": -0.012,
+    "level": 0,
+    "patent": -0.0648,
+    "paper": 1.0,
+    "project": -0.5,
+    "industry": 0.0049,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "E01F",
+    "F": -0.0138,
+    "level": 0,
+    "patent": -0.292,
+    "paper": 1.3636,
+    "project": -1.0,
+    "industry": -0.1406,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A63F",
+    "F": -0.019,
+    "level": 0,
+    "patent": 0.0085,
+    "paper": 0.8,
+    "project": -1.0,
+    "industry": 0.0967,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A23K",
+    "F": -0.021,
+    "level": 0,
+    "patent": 0.0617,
+    "paper": 1.6414,
+    "project": -0.997,
+    "industry": 0.0222,
+    "policy": -0.8333
+   },
+   {
+    "ipc4": "G01K",
+    "F": -0.0224,
+    "level": 0,
+    "patent": -0.069,
+    "paper": 1.0,
+    "project": -1.0,
+    "industry": -0.043,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A47C",
+    "F": -0.0244,
+    "level": 0,
+    "patent": -0.0921,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.03,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G04G",
+    "F": -0.0263,
+    "level": 0,
+    "patent": -0.1713,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.0397,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "F24C",
+    "F": -0.0267,
+    "level": 0,
+    "patent": -0.0579,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0756,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A61L",
+    "F": -0.0294,
+    "level": 0,
+    "patent": -0.1289,
+    "paper": 1.6027,
+    "project": -0.9885,
+    "industry": -0.1325,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B65C",
+    "F": -0.0323,
+    "level": 0,
+    "patent": -0.142,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0196,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "C08F",
+    "F": -0.0331,
+    "level": 0,
+    "patent": -0.048,
+    "paper": 0.6667,
+    "project": -1.0,
+    "industry": 0.2158,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "E04G",
+    "F": -0.0335,
+    "level": 0,
+    "patent": 0.1149,
+    "paper": 1.0645,
+    "project": -1.0,
+    "industry": 0.1531,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B67C",
+    "F": -0.0348,
+    "level": 0,
+    "patent": -0.1341,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0397,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A61F",
+    "F": -0.0367,
+    "level": 0,
+    "patent": 0.0668,
+    "paper": 1.1575,
+    "project": -1.0,
+    "industry": 0.092,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B07B",
+    "F": -0.0369,
+    "level": 0,
+    "patent": -0.1056,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.079,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B62K",
+    "F": -0.0386,
+    "level": 0,
+    "patent": -0.116,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0769,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A61J",
+    "F": -0.0419,
+    "level": 0,
+    "patent": 0.1081,
+    "paper": 1.3333,
+    "project": -1.0,
+    "industry": 0.0993,
+    "policy": -0.75
+   },
+   {
+    "ipc4": "B23D",
+    "F": -0.0474,
+    "level": 0,
+    "patent": -0.1395,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.0973,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H02B",
+    "F": -0.055,
+    "level": 0,
+    "patent": -0.1674,
+    "paper": 1.8889,
+    "project": -1.0,
+    "industry": 0.0034,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "G01B",
+    "F": -0.0559,
+    "level": 0,
+    "patent": -0.104,
+    "paper": 1.64,
+    "project": -1.0,
+    "industry": -0.0155,
+    "policy": -0.8
+   },
+   {
+    "ipc4": "B65F",
+    "F": -0.057,
+    "level": 0,
+    "patent": -0.3958,
+    "paper": 0.8,
+    "project": -1.0,
+    "industry": -0.189,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "B66F",
+    "F": -0.0629,
+    "level": 0,
+    "patent": 0.0451,
+    "paper": -0.5,
+    "project": 0.0,
+    "industry": 0.1402,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B01L",
+    "F": -0.063,
+    "level": 0,
+    "patent": -0.0503,
+    "paper": 1.2414,
+    "project": -1.0,
+    "industry": 0.0271,
+    "policy": -0.5333
+   },
+   {
+    "ipc4": "A61G",
+    "F": -0.0665,
+    "level": 0,
+    "patent": -0.0195,
+    "paper": 1.313,
+    "project": -1.0,
+    "industry": 0.0057,
+    "policy": -0.6316
+   },
+   {
+    "ipc4": "B60N",
+    "F": -0.0674,
+    "level": 0,
+    "patent": 0.4621,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": 0.2008,
+    "policy": -1.0
+   },
+   {
+    "ipc4": "A47G",
+    "F": -0.0678,
+    "level": 0,
+    "patent": -0.2093,
+    "paper": 1.0,
+    "project": -1.0,
+    "industry": -0.1295,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G06K",
+    "F": -0.076,
+    "level": 0,
+    "patent": -0.8008,
+    "paper": 2.0,
+    "project": -0.9583,
+    "industry": -0.6209,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G09B",
+    "F": -0.0772,
+    "level": 0,
+    "patent": -0.2613,
+    "paper": 1.6647,
+    "project": -1.0,
+    "industry": -0.1228,
+    "policy": -0.6667
+   },
+   {
+    "ipc4": "B62J",
+    "F": -0.0824,
+    "level": 0,
+    "patent": 0.0151,
+    "paper": 0.0,
+    "project": -1.0,
+    "industry": 0.0728,
+    "policy": 0.5
+   },
+   {
+    "ipc4": "G07C",
+    "F": -0.0828,
+    "level": 0,
+    "patent": -0.2994,
+    "paper": 1.6296,
+    "project": -1.0,
+    "industry": -0.244,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "B23Q",
+    "F": -0.084,
+    "level": 0,
+    "patent": 0.0175,
+    "paper": 1.0,
+    "project": -1.0,
+    "industry": 0.0623,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "G01R",
+    "F": -0.0861,
+    "level": 0,
+    "patent": 0.1007,
+    "paper": 0.3846,
+    "project": -1.0,
+    "industry": 0.084,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G07F",
+    "F": -0.0987,
+    "level": 0,
+    "patent": -0.2574,
+    "paper": 1.1667,
+    "project": -1.0,
+    "industry": -0.1859,
+    "policy": -0.2167
+   },
+   {
+    "ipc4": "B28D",
+    "F": -0.0988,
+    "level": 0,
+    "patent": -0.1208,
+    "paper": 0.6667,
+    "project": -0.5,
+    "industry": -0.0397,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "H03K",
+    "F": -0.1032,
+    "level": 0,
+    "patent": 0.0886,
+    "paper": 0.2,
+    "project": -1.0,
+    "industry": 0.1956,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "A47L",
+    "F": -0.105,
+    "level": 0,
+    "patent": -0.3691,
+    "paper": 1.75,
+    "project": -1.0,
+    "industry": -0.1561,
+    "policy": -0.75
+   },
+   {
+    "ipc4": "B07C",
+    "F": -0.1124,
+    "level": 0,
+    "patent": -0.1455,
+    "paper": 0.8529,
+    "project": -1.0,
+    "industry": -0.0342,
+    "policy": -0.2353
+   },
+   {
+    "ipc4": "A61C",
+    "F": -0.1126,
+    "level": 0,
+    "patent": -0.1322,
+    "paper": 1.1266,
+    "project": -0.9833,
+    "industry": -0.0741,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "A47K",
+    "F": -0.1214,
+    "level": 0,
+    "patent": -0.3534,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.2535,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H01R",
+    "F": -0.1274,
+    "level": 0,
+    "patent": 0.0606,
+    "paper": 0.2,
+    "project": -1.0,
+    "industry": 0.1026,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "G01G",
+    "F": -0.1456,
+    "level": 0,
+    "patent": -0.2873,
+    "paper": 0.4545,
+    "project": 0.0,
+    "industry": -0.1807,
+    "policy": -0.7143
+   },
+   {
+    "ipc4": "G11B",
+    "F": -0.1542,
+    "level": 0,
+    "patent": 0.1761,
+    "paper": 0.5,
+    "project": -1.0,
+    "industry": 0.0531,
+    "policy": -0.5
+   },
+   {
+    "ipc4": "F21S",
+    "F": -0.1602,
+    "level": 0,
+    "patent": -0.764,
+    "paper": 1.6667,
+    "project": -1.0,
+    "industry": -0.7039,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "B23C",
+    "F": -0.1788,
+    "level": 0,
+    "patent": -0.2336,
+    "paper": 0.0,
+    "project": -0.5,
+    "industry": -0.1602,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04N",
+    "F": -0.1938,
+    "level": 0,
+    "patent": -0.217,
+    "paper": 0.95,
+    "project": -1.0,
+    "industry": -0.0353,
+    "policy": -0.6667
+   },
+   {
+    "ipc4": "B64D",
+    "F": -0.197,
+    "level": 0,
+    "patent": -0.533,
+    "paper": 0.0,
+    "project": 0.0,
+    "industry": -0.4519,
+    "policy": 0.0
+   },
+   {
+    "ipc4": "H04M",
+    "F": -0.2775,
+    "level": 0,
+    "patent": -0.2029,
+    "paper": -0.1429,
+    "project": -0.5,
+    "industry": -0.0418,
+    "policy": -0.5
+   }
+  ]
+ },
+ "result_B_recommended": {
+  "sources_kept": [
+   "patent",
+   "industry"
+  ],
+  "sources_dropped": [
+   "paper",
+   "project",
+   "policy",
+   "talent"
+  ],
+  "thresholds": {
+   "p90": 86.364,
+   "p75": 70.5225,
+   "min_patent_2024_for_level2": 1000
+  },
+  "level_counts": {
+   "0": 193,
+   "1": 51,
+   "2": 14
+  },
+  "F_distribution": {
+   "n": 258,
+   "min": 0.2,
+   "max": 99.81,
+   "mean": 50.0001,
+   "median": 52.04,
+   "p10": 11.962,
+   "p90": 86.364
+  },
+  "patent_vs_industry_spearman": 0.7605,
+  "top15": [
+   {
+    "ipc4": "G16C",
+    "F": 99.81,
+    "level": 2,
+    "patent_g": 1.0449,
+    "industry_g": 1.2264,
+    "patent_2024": 1027
+   },
+   {
+    "ipc4": "F21V",
+    "F": 99.61,
+    "level": 2,
+    "patent_g": 1.3029,
+    "industry_g": 0.769,
+    "patent_2024": 5243
+   },
+   {
+    "ipc4": "H10K",
+    "F": 99.41,
+    "level": 2,
+    "patent_g": 0.9203,
+    "industry_g": 0.8497,
+    "patent_2024": 1311
+   },
+   {
+    "ipc4": "G16B",
+    "F": 98.83,
+    "level": 1,
+    "patent_g": 0.685,
+    "industry_g": 0.6822,
+    "patent_2024": 846
+   },
+   {
+    "ipc4": "H02S",
+    "F": 97.86,
+    "level": 1,
+    "patent_g": 0.5212,
+    "industry_g": 0.5229,
+    "patent_2024": 972
+   },
+   {
+    "ipc4": "G06V",
+    "F": 96.69,
+    "level": 2,
+    "patent_g": 0.3414,
+    "industry_g": 0.5338,
+    "patent_2024": 9107
+   },
+   {
+    "ipc4": "F17C",
+    "F": 96.31,
+    "level": 1,
+    "patent_g": 0.3842,
+    "industry_g": 0.4222,
+    "patent_2024": 351
+   },
+   {
+    "ipc4": "G06N",
+    "F": 96.1,
+    "level": 2,
+    "patent_g": 0.2876,
+    "industry_g": 0.6533,
+    "patent_2024": 2366
+   },
+   {
+    "ipc4": "D21H",
+    "F": 95.53,
+    "level": 1,
+    "patent_g": 0.3438,
+    "industry_g": 0.4079,
+    "patent_2024": 323
+   },
+   {
+    "ipc4": "F17D",
+    "F": 94.16,
+    "level": 1,
+    "patent_g": 0.3037,
+    "industry_g": 0.3488,
+    "patent_2024": 301
+   },
+   {
+    "ipc4": "B60L",
+    "F": 93.97,
+    "level": 2,
+    "patent_g": 0.3208,
+    "industry_g": 0.3162,
+    "patent_2024": 2314
+   },
+   {
+    "ipc4": "H03M",
+    "F": 93.78,
+    "level": 1,
+    "patent_g": 0.2514,
+    "industry_g": 0.4145,
+    "patent_2024": 471
+   },
+   {
+    "ipc4": "G06Q",
+    "F": 93.19,
+    "level": 2,
+    "patent_g": 0.2085,
+    "industry_g": 0.4787,
+    "patent_2024": 11799
+   },
+   {
+    "ipc4": "G16H",
+    "F": 93.19,
+    "level": 2,
+    "patent_g": 0.3077,
+    "industry_g": 0.3069,
+    "patent_2024": 2028
+   },
+   {
+    "ipc4": "H01M",
+    "F": 92.8,
+    "level": 2,
+    "patent_g": 0.5055,
+    "industry_g": 0.2268,
+    "patent_2024": 14973
+   }
+  ],
+  "all": [
+   {
+    "ipc4": "G16C",
+    "F": 99.81,
+    "level": 2,
+    "patent_g": 1.0449,
+    "industry_g": 1.2264,
+    "patent_2024": 1027
+   },
+   {
+    "ipc4": "F21V",
+    "F": 99.61,
+    "level": 2,
+    "patent_g": 1.3029,
+    "industry_g": 0.769,
+    "patent_2024": 5243
+   },
+   {
+    "ipc4": "H10K",
+    "F": 99.41,
+    "level": 2,
+    "patent_g": 0.9203,
+    "industry_g": 0.8497,
+    "patent_2024": 1311
+   },
+   {
+    "ipc4": "G16B",
+    "F": 98.83,
+    "level": 1,
+    "patent_g": 0.685,
+    "industry_g": 0.6822,
+    "patent_2024": 846
+   },
+   {
+    "ipc4": "H02S",
+    "F": 97.86,
+    "level": 1,
+    "patent_g": 0.5212,
+    "industry_g": 0.5229,
+    "patent_2024": 972
+   },
+   {
+    "ipc4": "G06V",
+    "F": 96.69,
+    "level": 2,
+    "patent_g": 0.3414,
+    "industry_g": 0.5338,
+    "patent_2024": 9107
+   },
+   {
+    "ipc4": "F17C",
+    "F": 96.31,
+    "level": 1,
+    "patent_g": 0.3842,
+    "industry_g": 0.4222,
+    "patent_2024": 351
+   },
+   {
+    "ipc4": "G06N",
+    "F": 96.1,
+    "level": 2,
+    "patent_g": 0.2876,
+    "industry_g": 0.6533,
+    "patent_2024": 2366
+   },
+   {
+    "ipc4": "D21H",
+    "F": 95.53,
+    "level": 1,
+    "patent_g": 0.3438,
+    "industry_g": 0.4079,
+    "patent_2024": 323
+   },
+   {
+    "ipc4": "F17D",
+    "F": 94.16,
+    "level": 1,
+    "patent_g": 0.3037,
+    "industry_g": 0.3488,
+    "patent_2024": 301
+   },
+   {
+    "ipc4": "B60L",
+    "F": 93.97,
+    "level": 2,
+    "patent_g": 0.3208,
+    "industry_g": 0.3162,
+    "patent_2024": 2314
+   },
+   {
+    "ipc4": "H03M",
+    "F": 93.78,
+    "level": 1,
+    "patent_g": 0.2514,
+    "industry_g": 0.4145,
+    "patent_2024": 471
+   },
+   {
+    "ipc4": "G06Q",
+    "F": 93.19,
+    "level": 2,
+    "patent_g": 0.2085,
+    "industry_g": 0.4787,
+    "patent_2024": 11799
+   },
+   {
+    "ipc4": "G16H",
+    "F": 93.19,
+    "level": 2,
+    "patent_g": 0.3077,
+    "industry_g": 0.3069,
+    "patent_2024": 2028
+   },
+   {
+    "ipc4": "H01M",
+    "F": 92.8,
+    "level": 2,
+    "patent_g": 0.5055,
+    "industry_g": 0.2268,
+    "patent_2024": 14973
+   },
+   {
+    "ipc4": "C01G",
+    "F": 91.83,
+    "level": 1,
+    "patent_g": 0.3341,
+    "industry_g": 0.2437,
+    "patent_2024": 541
+   },
+   {
+    "ipc4": "B60T",
+    "F": 91.63,
+    "level": 1,
+    "patent_g": 0.2719,
+    "industry_g": 0.2655,
+    "patent_2024": 293
+   },
+   {
+    "ipc4": "C08G",
+    "F": 91.44,
+    "level": 2,
+    "patent_g": 0.1604,
+    "industry_g": 0.4359,
+    "patent_2024": 1628
+   },
+   {
+    "ipc4": "B60N",
+    "F": 91.06,
+    "level": 1,
+    "patent_g": 0.4621,
+    "industry_g": 0.2008,
+    "patent_2024": 511
+   },
+   {
+    "ipc4": "F03D",
+    "F": 90.28,
+    "level": 1,
+    "patent_g": 0.1752,
+    "industry_g": 0.3141,
+    "patent_2024": 361
+   },
+   {
+    "ipc4": "C07K",
+    "F": 90.07,
+    "level": 2,
+    "patent_g": 0.1568,
+    "industry_g": 0.3571,
+    "patent_2024": 1784
+   },
+   {
+    "ipc4": "B60W",
+    "F": 89.3,
+    "level": 2,
+    "patent_g": 0.174,
+    "industry_g": 0.272,
+    "patent_2024": 1301
+   },
+   {
+    "ipc4": "B26B",
+    "F": 88.91,
+    "level": 1,
+    "patent_g": 0.2256,
+    "industry_g": 0.2174,
+    "patent_2024": 227
+   },
+   {
+    "ipc4": "A45D",
+    "F": 88.72,
+    "level": 2,
+    "patent_g": 0.2572,
+    "industry_g": 0.2098,
+    "patent_2024": 1036
+   },
+   {
+    "ipc4": "C30B",
+    "F": 88.72,
+    "level": 1,
+    "patent_g": 0.1341,
+    "industry_g": 0.309,
+    "patent_2024": 331
+   },
+   {
+    "ipc4": "C12N",
+    "F": 86.77,
+    "level": 2,
+    "patent_g": 0.1264,
+    "industry_g": 0.2627,
+    "patent_2024": 4475
+   },
+   {
+    "ipc4": "B05D",
+    "F": 86.19,
+    "level": 1,
+    "patent_g": 0.2131,
+    "industry_g": 0.1873,
+    "patent_2024": 471
+   },
+   {
+    "ipc4": "C22B",
+    "F": 85.41,
+    "level": 1,
+    "patent_g": 0.2366,
+    "industry_g": 0.1677,
+    "patent_2024": 360
+   },
+   {
+    "ipc4": "A44B",
+    "F": 84.82,
+    "level": 1,
+    "patent_g": 0.1607,
+    "industry_g": 0.1888,
+    "patent_2024": 225
+   },
+   {
+    "ipc4": "F25B",
+    "F": 84.63,
+    "level": 1,
+    "patent_g": 0.283,
+    "industry_g": 0.1498,
+    "patent_2024": 879
+   },
+   {
+    "ipc4": "C01B",
+    "F": 83.46,
+    "level": 1,
+    "patent_g": 0.1598,
+    "industry_g": 0.1757,
+    "patent_2024": 1284
+   },
+   {
+    "ipc4": "A61N",
+    "F": 82.49,
+    "level": 1,
+    "patent_g": 0.4483,
+    "industry_g": 0.1171,
+    "patent_2024": 1231
+   },
+   {
+    "ipc4": "A62C",
+    "F": 82.29,
+    "level": 1,
+    "patent_g": 0.0951,
+    "industry_g": 0.2023,
+    "patent_2024": 504
+   },
+   {
+    "ipc4": "H02J",
+    "F": 81.91,
+    "level": 1,
+    "patent_g": 0.2208,
+    "industry_g": 0.1355,
+    "patent_2024": 9318
+   },
+   {
+    "ipc4": "G21C",
+    "F": 81.52,
+    "level": 1,
+    "patent_g": 0.0448,
+    "industry_g": 0.3396,
+    "patent_2024": 296
+   },
+   {
+    "ipc4": "G09G",
+    "F": 81.32,
+    "level": 1,
+    "patent_g": 0.022,
+    "industry_g": 0.5341,
+    "patent_2024": 2138
+   },
+   {
+    "ipc4": "C25B",
+    "F": 81.13,
+    "level": 1,
+    "patent_g": 0.1252,
+    "industry_g": 0.1671,
+    "patent_2024": 933
+   },
+   {
+    "ipc4": "H03K",
+    "F": 81.13,
+    "level": 1,
+    "patent_g": 0.0886,
+    "industry_g": 0.1956,
+    "patent_2024": 748
+   },
+   {
+    "ipc4": "F16K",
+    "F": 80.16,
+    "level": 1,
+    "patent_g": 0.1902,
+    "industry_g": 0.1317,
+    "patent_2024": 1140
+   },
+   {
+    "ipc4": "A61K",
+    "F": 79.77,
+    "level": 1,
+    "patent_g": 0.0892,
+    "industry_g": 0.1756,
+    "patent_2024": 5289
+   },
+   {
+    "ipc4": "G05F",
+    "F": 79.57,
+    "level": 1,
+    "patent_g": 0.0935,
+    "industry_g": 0.1727,
+    "patent_2024": 299
+   },
+   {
+    "ipc4": "B23K",
+    "F": 79.38,
+    "level": 1,
+    "patent_g": 0.099,
+    "industry_g": 0.1627,
+    "patent_2024": 6013
+   },
+   {
+    "ipc4": "E04G",
+    "F": 79.38,
+    "level": 1,
+    "patent_g": 0.1149,
+    "industry_g": 0.1531,
+    "patent_2024": 2056
+   },
+   {
+    "ipc4": "H03H",
+    "F": 78.98,
+    "level": 1,
+    "patent_g": 0.0827,
+    "industry_g": 0.1762,
+    "patent_2024": 450
+   },
+   {
+    "ipc4": "C25D",
+    "F": 77.82,
+    "level": 1,
+    "patent_g": 0.0887,
+    "industry_g": 0.154,
+    "patent_2024": 939
+   },
+   {
+    "ipc4": "B63B",
+    "F": 77.63,
+    "level": 1,
+    "patent_g": 0.0566,
+    "industry_g": 0.1924,
+    "patent_2024": 966
+   },
+   {
+    "ipc4": "H02P",
+    "F": 77.43,
+    "level": 1,
+    "patent_g": 0.0375,
+    "industry_g": 0.2182,
+    "patent_2024": 955
+   },
+   {
+    "ipc4": "G06F",
+    "F": 77.24,
+    "level": 1,
+    "patent_g": 0.032,
+    "industry_g": 0.228,
+    "patent_2024": 38944
+   },
+   {
+    "ipc4": "C22C",
+    "F": 76.85,
+    "level": 1,
+    "patent_g": 0.0237,
+    "industry_g": 0.2439,
+    "patent_2024": 817
+   },
+   {
+    "ipc4": "C23C",
+    "F": 76.46,
+    "level": 1,
+    "patent_g": 0.1298,
+    "industry_g": 0.122,
+    "patent_2024": 1495
+   },
+   {
+    "ipc4": "B66C",
+    "F": 76.07,
+    "level": 1,
+    "patent_g": 0.1302,
+    "industry_g": 0.1144,
+    "patent_2024": 994
+   },
+   {
+    "ipc4": "C09D",
+    "F": 76.07,
+    "level": 1,
+    "patent_g": 0.1029,
+    "industry_g": 0.1313,
+    "patent_2024": 1375
+   },
+   {
+    "ipc4": "G11C",
+    "F": 76.07,
+    "level": 1,
+    "patent_g": 0.0481,
+    "industry_g": 0.1842,
+    "patent_2024": 517
+   },
+   {
+    "ipc4": "H02H",
+    "F": 75.88,
+    "level": 1,
+    "patent_g": 0.027,
+    "industry_g": 0.2144,
+    "patent_2024": 1207
+   },
+   {
+    "ipc4": "B29B",
+    "F": 75.09,
+    "level": 1,
+    "patent_g": 0.0599,
+    "industry_g": 0.158,
+    "patent_2024": 871
+   },
+   {
+    "ipc4": "H02K",
+    "F": 74.52,
+    "level": 1,
+    "patent_g": 0.2225,
+    "industry_g": 0.0745,
+    "patent_2024": 3026
+   },
+   {
+    "ipc4": "C08L",
+    "F": 73.93,
+    "level": 1,
+    "patent_g": -0.0054,
+    "industry_g": 0.2573,
+    "patent_2024": 2649
+   },
+   {
+    "ipc4": "A01K",
+    "F": 73.54,
+    "level": 1,
+    "patent_g": 0.0631,
+    "industry_g": 0.1353,
+    "patent_2024": 1726
+   },
+   {
+    "ipc4": "A61J",
+    "F": 72.56,
+    "level": 1,
+    "patent_g": 0.1081,
+    "industry_g": 0.0993,
+    "patent_2024": 240
+   },
+   {
+    "ipc4": "D05B",
+    "F": 72.37,
+    "level": 1,
+    "patent_g": 0.0807,
+    "industry_g": 0.1174,
+    "patent_2024": 343
+   },
+   {
+    "ipc4": "A61M",
+    "F": 72.18,
+    "level": 1,
+    "patent_g": 0.1718,
+    "industry_g": 0.0712,
+    "patent_2024": 2569
+   },
+   {
+    "ipc4": "C09J",
+    "F": 72.18,
+    "level": 1,
+    "patent_g": 0.0843,
+    "industry_g": 0.1121,
+    "patent_2024": 1507
+   },
+   {
+    "ipc4": "B66F",
+    "F": 71.89,
+    "level": 1,
+    "patent_g": 0.0451,
+    "industry_g": 0.1402,
+    "patent_2024": 679
+   },
+   {
+    "ipc4": "H01P",
+    "F": 70.81,
+    "level": 1,
+    "patent_g": 0.1306,
+    "industry_g": 0.0711,
+    "patent_2024": 464
+   },
+   {
+    "ipc4": "C07C",
+    "F": 70.62,
+    "level": 1,
+    "patent_g": -0.0101,
+    "industry_g": 0.2132,
+    "patent_2024": 963
+   },
+   {
+    "ipc4": "G01R",
+    "F": 70.23,
+    "level": 0,
+    "patent_g": 0.1007,
+    "industry_g": 0.084,
+    "patent_2024": 8666
+   },
+   {
+    "ipc4": "G11B",
+    "F": 70.23,
+    "level": 0,
+    "patent_g": 0.1761,
+    "industry_g": 0.0531,
+    "patent_2024": 439
+   },
+   {
+    "ipc4": "B60H",
+    "F": 69.27,
+    "level": 0,
+    "patent_g": 0.455,
+    "industry_g": 0.0209,
+    "patent_2024": 591
+   },
+   {
+    "ipc4": "F04C",
+    "F": 69.16,
+    "level": 0,
+    "patent_g": 0.0215,
+    "industry_g": 0.1402,
+    "patent_2024": 217
+   },
+   {
+    "ipc4": "H01R",
+    "F": 69.06,
+    "level": 0,
+    "patent_g": 0.0606,
+    "industry_g": 0.1026,
+    "patent_2024": 8389
+   },
+   {
+    "ipc4": "F04D",
+    "F": 68.67,
+    "level": 0,
+    "patent_g": 0.088,
+    "industry_g": 0.0828,
+    "patent_2024": 1690
+   },
+   {
+    "ipc4": "G06T",
+    "F": 68.67,
+    "level": 0,
+    "patent_g": -0.0576,
+    "industry_g": 0.4124,
+    "patent_2024": 8676
+   },
+   {
+    "ipc4": "H05B",
+    "F": 68.48,
+    "level": 0,
+    "patent_g": 0.0782,
+    "industry_g": 0.091,
+    "patent_2024": 1847
+   },
+   {
+    "ipc4": "G01C",
+    "F": 68.29,
+    "level": 0,
+    "patent_g": 0.0325,
+    "industry_g": 0.1246,
+    "patent_2024": 1903
+   },
+   {
+    "ipc4": "H01J",
+    "F": 68.29,
+    "level": 0,
+    "patent_g": -0.0087,
+    "industry_g": 0.1739,
+    "patent_2024": 304
+   },
+   {
+    "ipc4": "H02G",
+    "F": 68.28,
+    "level": 0,
+    "patent_g": -0.0048,
+    "industry_g": 0.1553,
+    "patent_2024": 1454
+   },
+   {
+    "ipc4": "A61F",
+    "F": 68.09,
+    "level": 0,
+    "patent_g": 0.0668,
+    "industry_g": 0.092,
+    "patent_2024": 1157
+   },
+   {
+    "ipc4": "C12Q",
+    "F": 67.9,
+    "level": 0,
+    "patent_g": -0.0066,
+    "industry_g": 0.1561,
+    "patent_2024": 1734
+   },
+   {
+    "ipc4": "H04L",
+    "F": 67.9,
+    "level": 0,
+    "patent_g": -0.0443,
+    "industry_g": 0.2509,
+    "patent_2024": 11972
+   },
+   {
+    "ipc4": "F16J",
+    "F": 67.51,
+    "level": 0,
+    "patent_g": 0.0503,
+    "industry_g": 0.1003,
+    "patent_2024": 226
+   },
+   {
+    "ipc4": "B60K",
+    "F": 67.31,
+    "level": 0,
+    "patent_g": 0.2807,
+    "industry_g": 0.0211,
+    "patent_2024": 671
+   },
+   {
+    "ipc4": "B05C",
+    "F": 66.73,
+    "level": 0,
+    "patent_g": 0.0172,
+    "industry_g": 0.1276,
+    "patent_2024": 2037
+   },
+   {
+    "ipc4": "C12P",
+    "F": 66.34,
+    "level": 0,
+    "patent_g": -0.0627,
+    "industry_g": 0.3364,
+    "patent_2024": 379
+   },
+   {
+    "ipc4": "A45F",
+    "F": 66.15,
+    "level": 0,
+    "patent_g": 0.0302,
+    "industry_g": 0.1031,
+    "patent_2024": 221
+   },
+   {
+    "ipc4": "E21D",
+    "F": 66.14,
+    "level": 0,
+    "patent_g": -0.0289,
+    "industry_g": 0.1808,
+    "patent_2024": 950
+   },
+   {
+    "ipc4": "F04B",
+    "F": 65.95,
+    "level": 0,
+    "patent_g": 0.0559,
+    "industry_g": 0.0859,
+    "patent_2024": 933
+   },
+   {
+    "ipc4": "H04W",
+    "F": 65.86,
+    "level": 0,
+    "patent_g": 0.0058,
+    "industry_g": 0.1284,
+    "patent_2024": 13418
+   },
+   {
+    "ipc4": "A01C",
+    "F": 65.76,
+    "level": 0,
+    "patent_g": 0.1232,
+    "industry_g": 0.0415,
+    "patent_2024": 361
+   },
+   {
+    "ipc4": "C08F",
+    "F": 65.76,
+    "level": 0,
+    "patent_g": -0.048,
+    "industry_g": 0.2158,
+    "patent_2024": 726
+   },
+   {
+    "ipc4": "H01S",
+    "F": 64.78,
+    "level": 0,
+    "patent_g": 0.0755,
+    "industry_g": 0.0572,
+    "patent_2024": 746
+   },
+   {
+    "ipc4": "E05F",
+    "F": 64.59,
+    "level": 0,
+    "patent_g": 0.0392,
+    "industry_g": 0.0845,
+    "patent_2024": 284
+   },
+   {
+    "ipc4": "A45C",
+    "F": 63.62,
+    "level": 0,
+    "patent_g": 0.0107,
+    "industry_g": 0.1016,
+    "patent_2024": 549
+   },
+   {
+    "ipc4": "C07F",
+    "F": 63.62,
+    "level": 0,
+    "patent_g": -0.0677,
+    "industry_g": 0.3021,
+    "patent_2024": 530
+   },
+   {
+    "ipc4": "G03F",
+    "F": 63.62,
+    "level": 0,
+    "patent_g": 0.0792,
+    "industry_g": 0.0496,
+    "patent_2024": 376
+   },
+   {
+    "ipc4": "B21F",
+    "F": 63.04,
+    "level": 0,
+    "patent_g": -0.0008,
+    "industry_g": 0.1032,
+    "patent_2024": 599
+   },
+   {
+    "ipc4": "F24H",
+    "F": 62.84,
+    "level": 0,
+    "patent_g": 0.0014,
+    "industry_g": 0.1013,
+    "patent_2024": 346
+   },
+   {
+    "ipc4": "E02D",
+    "F": 62.55,
+    "level": 0,
+    "patent_g": -0.0163,
+    "industry_g": 0.1284,
+    "patent_2024": 2376
+   },
+   {
+    "ipc4": "F16L",
+    "F": 62.26,
+    "level": 0,
+    "patent_g": 0.0495,
+    "industry_g": 0.0565,
+    "patent_2024": 1368
+   },
+   {
+    "ipc4": "F28D",
+    "F": 62.26,
+    "level": 0,
+    "patent_g": -0.0354,
+    "industry_g": 0.1486,
+    "patent_2024": 503
+   },
+   {
+    "ipc4": "A63F",
+    "F": 61.87,
+    "level": 0,
+    "patent_g": 0.0085,
+    "industry_g": 0.0967,
+    "patent_2024": 960
+   },
+   {
+    "ipc4": "B23P",
+    "F": 61.09,
+    "level": 0,
+    "patent_g": -0.005,
+    "industry_g": 0.0978,
+    "patent_2024": 2441
+   },
+   {
+    "ipc4": "A01D",
+    "F": 60.7,
+    "level": 0,
+    "patent_g": 0.1223,
+    "industry_g": 0.0099,
+    "patent_2024": 415
+   },
+   {
+    "ipc4": "B62J",
+    "F": 60.31,
+    "level": 0,
+    "patent_g": 0.0151,
+    "industry_g": 0.0728,
+    "patent_2024": 408
+   },
+   {
+    "ipc4": "G10L",
+    "F": 60.31,
+    "level": 0,
+    "patent_g": -0.0891,
+    "industry_g": 0.2654,
+    "patent_2024": 1505
+   },
+   {
+    "ipc4": "C08J",
+    "F": 59.92,
+    "level": 0,
+    "patent_g": -0.067,
+    "industry_g": 0.192,
+    "patent_2024": 794
+   },
+   {
+    "ipc4": "A63H",
+    "F": 59.73,
+    "level": 0,
+    "patent_g": -0.0313,
+    "industry_g": 0.1244,
+    "patent_2024": 517
+   },
+   {
+    "ipc4": "B23Q",
+    "F": 59.73,
+    "level": 0,
+    "patent_g": 0.0175,
+    "industry_g": 0.0623,
+    "patent_2024": 2540
+   },
+   {
+    "ipc4": "B01J",
+    "F": 59.24,
+    "level": 0,
+    "patent_g": -0.045,
+    "industry_g": 0.1328,
+    "patent_2024": 2725
+   },
+   {
+    "ipc4": "A61H",
+    "F": 58.95,
+    "level": 0,
+    "patent_g": 0.0618,
+    "industry_g": 0.0296,
+    "patent_2024": 1671
+   },
+   {
+    "ipc4": "H01C",
+    "F": 58.17,
+    "level": 0,
+    "patent_g": -0.0068,
+    "industry_g": 0.0779,
+    "patent_2024": 290
+   },
+   {
+    "ipc4": "H02M",
+    "F": 58.17,
+    "level": 0,
+    "patent_g": -0.0117,
+    "industry_g": 0.0864,
+    "patent_2024": 2993
+   },
+   {
+    "ipc4": "B22F",
+    "F": 57.98,
+    "level": 0,
+    "patent_g": -0.0006,
+    "industry_g": 0.0625,
+    "patent_2024": 795
+   },
+   {
+    "ipc4": "B25J",
+    "F": 57.98,
+    "level": 0,
+    "patent_g": 0.0109,
+    "industry_g": 0.0559,
+    "patent_2024": 2932
+   },
+   {
+    "ipc4": "A23K",
+    "F": 57.78,
+    "level": 0,
+    "patent_g": 0.0617,
+    "industry_g": 0.0222,
+    "patent_2024": 227
+   },
+   {
+    "ipc4": "G05B",
+    "F": 56.81,
+    "level": 0,
+    "patent_g": 0.024,
+    "industry_g": 0.0403,
+    "patent_2024": 3492
+   },
+   {
+    "ipc4": "G01M",
+    "F": 56.23,
+    "level": 0,
+    "patent_g": -0.0327,
+    "industry_g": 0.097,
+    "patent_2024": 2914
+   },
+   {
+    "ipc4": "G01N",
+    "F": 56.23,
+    "level": 0,
+    "patent_g": -0.0424,
+    "industry_g": 0.1009,
+    "patent_2024": 13093
+   },
+   {
+    "ipc4": "C07D",
+    "F": 56.13,
+    "level": 0,
+    "patent_g": -0.061,
+    "industry_g": 0.1328,
+    "patent_2024": 1808
+   },
+   {
+    "ipc4": "B25H",
+    "F": 55.64,
+    "level": 0,
+    "patent_g": -0.0095,
+    "industry_g": 0.0589,
+    "patent_2024": 575
+   },
+   {
+    "ipc4": "E01D",
+    "F": 55.64,
+    "level": 0,
+    "patent_g": -0.0674,
+    "industry_g": 0.1481,
+    "patent_2024": 808
+   },
+   {
+    "ipc4": "F25D",
+    "F": 55.45,
+    "level": 0,
+    "patent_g": 0.0377,
+    "industry_g": 0.0269,
+    "patent_2024": 547
+   },
+   {
+    "ipc4": "B21J",
+    "F": 55.25,
+    "level": 0,
+    "patent_g": 0.0366,
+    "industry_g": 0.027,
+    "patent_2024": 287
+   },
+   {
+    "ipc4": "B65H",
+    "F": 54.67,
+    "level": 0,
+    "patent_g": 0.0,
+    "industry_g": 0.0437,
+    "patent_2024": 2651
+   },
+   {
+    "ipc4": "H01F",
+    "F": 54.67,
+    "level": 0,
+    "patent_g": -0.027,
+    "industry_g": 0.0725,
+    "patent_2024": 2118
+   },
+   {
+    "ipc4": "B62D",
+    "F": 53.7,
+    "level": 0,
+    "patent_g": 0.0849,
+    "industry_g": -0.0206,
+    "patent_2024": 1160
+   },
+   {
+    "ipc4": "E02B",
+    "F": 53.7,
+    "level": 0,
+    "patent_g": -0.0074,
+    "industry_g": 0.046,
+    "patent_2024": 539
+   },
+   {
+    "ipc4": "B31B",
+    "F": 53.69,
+    "level": 0,
+    "patent_g": -0.0824,
+    "industry_g": 0.1426,
+    "patent_2024": 630
+   },
+   {
+    "ipc4": "E21B",
+    "F": 52.53,
+    "level": 0,
+    "patent_g": -0.0941,
+    "industry_g": 0.1504,
+    "patent_2024": 730
+   },
+   {
+    "ipc4": "F16F",
+    "F": 52.53,
+    "level": 0,
+    "patent_g": 0.2046,
+    "industry_g": -0.0804,
+    "patent_2024": 738
+   },
+   {
+    "ipc4": "E05D",
+    "F": 51.55,
+    "level": 0,
+    "patent_g": 0.1089,
+    "industry_g": -0.0488,
+    "patent_2024": 254
+   },
+   {
+    "ipc4": "E21F",
+    "F": 50.98,
+    "level": 0,
+    "patent_g": -0.0357,
+    "industry_g": 0.0558,
+    "patent_2024": 328
+   },
+   {
+    "ipc4": "C04B",
+    "F": 50.97,
+    "level": 0,
+    "patent_g": -0.0123,
+    "industry_g": 0.0361,
+    "patent_2024": 1524
+   },
+   {
+    "ipc4": "C09K",
+    "F": 50.2,
+    "level": 0,
+    "patent_g": -0.0994,
+    "industry_g": 0.1337,
+    "patent_2024": 797
+   },
+   {
+    "ipc4": "B60S",
+    "F": 49.61,
+    "level": 0,
+    "patent_g": 0.0616,
+    "industry_g": -0.0352,
+    "patent_2024": 286
+   },
+   {
+    "ipc4": "D06M",
+    "F": 49.41,
+    "level": 0,
+    "patent_g": -0.0619,
+    "industry_g": 0.0825,
+    "patent_2024": 262
+   },
+   {
+    "ipc4": "A61B",
+    "F": 49.32,
+    "level": 0,
+    "patent_g": -0.0287,
+    "industry_g": 0.0374,
+    "patent_2024": 5725
+   },
+   {
+    "ipc4": "B22D",
+    "F": 49.03,
+    "level": 0,
+    "patent_g": -0.0362,
+    "industry_g": 0.0452,
+    "patent_2024": 579
+   },
+   {
+    "ipc4": "B24B",
+    "F": 49.02,
+    "level": 0,
+    "patent_g": -0.0437,
+    "industry_g": 0.0494,
+    "patent_2024": 2707
+   },
+   {
+    "ipc4": "E01C",
+    "F": 48.83,
+    "level": 0,
+    "patent_g": -0.0545,
+    "industry_g": 0.0578,
+    "patent_2024": 677
+   },
+   {
+    "ipc4": "B25B",
+    "F": 48.64,
+    "level": 0,
+    "patent_g": -0.0268,
+    "industry_g": 0.0307,
+    "patent_2024": 1915
+   },
+   {
+    "ipc4": "F16H",
+    "F": 48.15,
+    "level": 0,
+    "patent_g": -0.0205,
+    "industry_g": 0.0271,
+    "patent_2024": 914
+   },
+   {
+    "ipc4": "B21D",
+    "F": 47.66,
+    "level": 0,
+    "patent_g": -0.0334,
+    "industry_g": 0.032,
+    "patent_2024": 2804
+   },
+   {
+    "ipc4": "B60R",
+    "F": 47.27,
+    "level": 0,
+    "patent_g": 0.0672,
+    "industry_g": -0.0572,
+    "patent_2024": 1676
+   },
+   {
+    "ipc4": "G08G",
+    "F": 47.08,
+    "level": 0,
+    "patent_g": -0.0567,
+    "industry_g": 0.0507,
+    "patent_2024": 1266
+   },
+   {
+    "ipc4": "B66B",
+    "F": 46.5,
+    "level": 0,
+    "patent_g": -0.0202,
+    "industry_g": 0.0176,
+    "patent_2024": 476
+   },
+   {
+    "ipc4": "G05D",
+    "F": 46.5,
+    "level": 0,
+    "patent_g": -0.0899,
+    "industry_g": 0.0974,
+    "patent_2024": 2121
+   },
+   {
+    "ipc4": "E04B",
+    "F": 46.3,
+    "level": 0,
+    "patent_g": -0.047,
+    "industry_g": 0.0352,
+    "patent_2024": 2538
+   },
+   {
+    "ipc4": "B26D",
+    "F": 45.82,
+    "level": 0,
+    "patent_g": -0.0287,
+    "industry_g": 0.0187,
+    "patent_2024": 1707
+   },
+   {
+    "ipc4": "A61G",
+    "F": 45.53,
+    "level": 0,
+    "patent_g": -0.0195,
+    "industry_g": 0.0057,
+    "patent_2024": 708
+   },
+   {
+    "ipc4": "G01S",
+    "F": 45.53,
+    "level": 0,
+    "patent_g": -0.071,
+    "industry_g": 0.0697,
+    "patent_2024": 2944
+   },
+   {
+    "ipc4": "A01N",
+    "F": 45.33,
+    "level": 0,
+    "patent_g": -0.0083,
+    "industry_g": -0.0055,
+    "patent_2024": 510
+   },
+   {
+    "ipc4": "B28B",
+    "F": 45.33,
+    "level": 0,
+    "patent_g": -0.0642,
+    "industry_g": 0.0533,
+    "patent_2024": 500
+   },
+   {
+    "ipc4": "B65B",
+    "F": 44.94,
+    "level": 0,
+    "patent_g": -0.051,
+    "industry_g": 0.0346,
+    "patent_2024": 2960
+   },
+   {
+    "ipc4": "E04D",
+    "F": 44.36,
+    "level": 0,
+    "patent_g": -0.0189,
+    "industry_g": -0.003,
+    "patent_2024": 286
+   },
+   {
+    "ipc4": "B01L",
+    "F": 43.87,
+    "level": 0,
+    "patent_g": -0.0503,
+    "industry_g": 0.0271,
+    "patent_2024": 660
+   },
+   {
+    "ipc4": "F15B",
+    "F": 43.2,
+    "level": 0,
+    "patent_g": -0.0597,
+    "industry_g": 0.031,
+    "patent_2024": 324
+   },
+   {
+    "ipc4": "F24D",
+    "F": 43.0,
+    "level": 0,
+    "patent_g": 0.0158,
+    "industry_g": -0.0471,
+    "patent_2024": 226
+   },
+   {
+    "ipc4": "A47J",
+    "F": 42.41,
+    "level": 0,
+    "patent_g": -0.0191,
+    "industry_g": -0.0186,
+    "patent_2024": 1534
+   },
+   {
+    "ipc4": "H03F",
+    "F": 42.03,
+    "level": 0,
+    "patent_g": -0.1486,
+    "industry_g": 0.1055,
+    "patent_2024": 363
+   },
+   {
+    "ipc4": "A24F",
+    "F": 41.64,
+    "level": 0,
+    "patent_g": -0.0639,
+    "industry_g": 0.0304,
+    "patent_2024": 4993
+   },
+   {
+    "ipc4": "B29C",
+    "F": 41.64,
+    "level": 0,
+    "patent_g": -0.0764,
+    "industry_g": 0.0447,
+    "patent_2024": 7369
+   },
+   {
+    "ipc4": "F16C",
+    "F": 40.47,
+    "level": 0,
+    "patent_g": 0.0385,
+    "industry_g": -0.1033,
+    "patent_2024": 869
+   },
+   {
+    "ipc4": "H05K",
+    "F": 39.89,
+    "level": 0,
+    "patent_g": -0.0483,
+    "industry_g": -0.0011,
+    "patent_2024": 8909
+   },
+   {
+    "ipc4": "B65G",
+    "F": 39.5,
+    "level": 0,
+    "patent_g": -0.0609,
+    "industry_g": 0.0097,
+    "patent_2024": 6712
+   },
+   {
+    "ipc4": "H04J",
+    "F": 38.81,
+    "level": 0,
+    "patent_g": -0.1097,
+    "industry_g": 0.0533,
+    "patent_2024": 221
+   },
+   {
+    "ipc4": "G01H",
+    "F": 38.52,
+    "level": 0,
+    "patent_g": -0.0436,
+    "industry_g": -0.0216,
+    "patent_2024": 248
+   },
+   {
+    "ipc4": "G01V",
+    "F": 37.36,
+    "level": 0,
+    "patent_g": -0.0479,
+    "industry_g": -0.0257,
+    "patent_2024": 709
+   },
+   {
+    "ipc4": "B65D",
+    "F": 37.16,
+    "level": 0,
+    "patent_g": -0.0648,
+    "industry_g": 0.0049,
+    "patent_2024": 4277
+   },
+   {
+    "ipc4": "A43B",
+    "F": 36.97,
+    "level": 0,
+    "patent_g": -0.1185,
+    "industry_g": 0.0473,
+    "patent_2024": 353
+   },
+   {
+    "ipc4": "H01H",
+    "F": 36.58,
+    "level": 0,
+    "patent_g": -0.0631,
+    "industry_g": -0.0041,
+    "patent_2024": 2098
+   },
+   {
+    "ipc4": "F16B",
+    "F": 35.8,
+    "level": 0,
+    "patent_g": -0.0515,
+    "industry_g": -0.033,
+    "patent_2024": 968
+   },
+   {
+    "ipc4": "H01Q",
+    "F": 35.8,
+    "level": 0,
+    "patent_g": -0.0843,
+    "industry_g": 0.0107,
+    "patent_2024": 2627
+   },
+   {
+    "ipc4": "B01D",
+    "F": 35.31,
+    "level": 0,
+    "patent_g": -0.0642,
+    "industry_g": -0.0073,
+    "patent_2024": 4130
+   },
+   {
+    "ipc4": "H04B",
+    "F": 34.63,
+    "level": 0,
+    "patent_g": -0.0962,
+    "industry_g": 0.0208,
+    "patent_2024": 3633
+   },
+   {
+    "ipc4": "H01B",
+    "F": 34.44,
+    "level": 0,
+    "patent_g": -0.0888,
+    "industry_g": 0.0083,
+    "patent_2024": 1651
+   },
+   {
+    "ipc4": "C03C",
+    "F": 33.27,
+    "level": 0,
+    "patent_g": -0.0813,
+    "industry_g": -0.0063,
+    "patent_2024": 380
+   },
+   {
+    "ipc4": "B41J",
+    "F": 32.3,
+    "level": 0,
+    "patent_g": -0.0644,
+    "industry_g": -0.0337,
+    "patent_2024": 1026
+   },
+   {
+    "ipc4": "B05B",
+    "F": 31.71,
+    "level": 0,
+    "patent_g": -0.1017,
+    "industry_g": 0.0032,
+    "patent_2024": 1413
+   },
+   {
+    "ipc4": "G04G",
+    "F": 31.52,
+    "level": 0,
+    "patent_g": -0.1713,
+    "industry_g": 0.0397,
+    "patent_2024": 280
+   },
+   {
+    "ipc4": "B63C",
+    "F": 30.93,
+    "level": 0,
+    "patent_g": -0.1367,
+    "industry_g": 0.022,
+    "patent_2024": 247
+   },
+   {
+    "ipc4": "G08B",
+    "F": 30.36,
+    "level": 0,
+    "patent_g": -0.0587,
+    "industry_g": -0.0602,
+    "patent_2024": 1248
+   },
+   {
+    "ipc4": "G10K",
+    "F": 29.77,
+    "level": 0,
+    "patent_g": -0.1253,
+    "industry_g": 0.0047,
+    "patent_2024": 201
+   },
+   {
+    "ipc4": "G01K",
+    "F": 29.57,
+    "level": 0,
+    "patent_g": -0.069,
+    "industry_g": -0.043,
+    "patent_2024": 671
+   },
+   {
+    "ipc4": "F24C",
+    "F": 29.38,
+    "level": 0,
+    "patent_g": -0.0579,
+    "industry_g": -0.0756,
+    "patent_2024": 285
+   },
+   {
+    "ipc4": "A47C",
+    "F": 29.18,
+    "level": 0,
+    "patent_g": -0.0921,
+    "industry_g": -0.03,
+    "patent_2024": 932
+   },
+   {
+    "ipc4": "G01L",
+    "F": 29.18,
+    "level": 0,
+    "patent_g": -0.1401,
+    "industry_g": 0.01,
+    "patent_2024": 793
+   },
+   {
+    "ipc4": "B62B",
+    "F": 28.99,
+    "level": 0,
+    "patent_g": -0.0499,
+    "industry_g": -0.0954,
+    "patent_2024": 531
+   },
+   {
+    "ipc4": "G01B",
+    "F": 28.8,
+    "level": 0,
+    "patent_g": -0.104,
+    "industry_g": -0.0155,
+    "patent_2024": 2590
+   },
+   {
+    "ipc4": "A63B",
+    "F": 28.02,
+    "level": 0,
+    "patent_g": -0.1158,
+    "industry_g": -0.0133,
+    "patent_2024": 835
+   },
+   {
+    "ipc4": "E05B",
+    "F": 27.82,
+    "level": 0,
+    "patent_g": -0.0978,
+    "industry_g": -0.0335,
+    "patent_2024": 959
+   },
+   {
+    "ipc4": "B08B",
+    "F": 27.24,
+    "level": 0,
+    "patent_g": -0.0828,
+    "industry_g": -0.0473,
+    "patent_2024": 2512
+   },
+   {
+    "ipc4": "B02C",
+    "F": 27.23,
+    "level": 0,
+    "patent_g": -0.0929,
+    "industry_g": -0.038,
+    "patent_2024": 914
+   },
+   {
+    "ipc4": "H04R",
+    "F": 27.23,
+    "level": 0,
+    "patent_g": -0.0784,
+    "industry_g": -0.0506,
+    "patent_2024": 5338
+   },
+   {
+    "ipc4": "C12M",
+    "F": 26.84,
+    "level": 0,
+    "patent_g": -0.1326,
+    "industry_g": -0.0069,
+    "patent_2024": 830
+   },
+   {
+    "ipc4": "G02B",
+    "F": 26.66,
+    "level": 0,
+    "patent_g": -0.1064,
+    "industry_g": -0.0334,
+    "patent_2024": 3993
+   },
+   {
+    "ipc4": "H02B",
+    "F": 26.07,
+    "level": 0,
+    "patent_g": -0.1674,
+    "industry_g": 0.0034,
+    "patent_2024": 1030
+   },
+   {
+    "ipc4": "G01F",
+    "F": 25.39,
+    "level": 0,
+    "patent_g": -0.142,
+    "industry_g": -0.0105,
+    "patent_2024": 516
+   },
+   {
+    "ipc4": "C02F",
+    "F": 24.9,
+    "level": 0,
+    "patent_g": -0.0737,
+    "industry_g": -0.0823,
+    "patent_2024": 3330
+   },
+   {
+    "ipc4": "A44C",
+    "F": 24.52,
+    "level": 0,
+    "patent_g": -0.1885,
+    "industry_g": 0.003,
+    "patent_2024": 645
+   },
+   {
+    "ipc4": "E04H",
+    "F": 24.52,
+    "level": 0,
+    "patent_g": -0.0862,
+    "industry_g": -0.0744,
+    "patent_2024": 1043
+   },
+   {
+    "ipc4": "B65C",
+    "F": 24.41,
+    "level": 0,
+    "patent_g": -0.142,
+    "industry_g": -0.0196,
+    "patent_2024": 412
+   },
+   {
+    "ipc4": "B28D",
+    "F": 23.84,
+    "level": 0,
+    "patent_g": -0.1208,
+    "industry_g": -0.0397,
+    "patent_2024": 290
+   },
+   {
+    "ipc4": "F16D",
+    "F": 23.54,
+    "level": 0,
+    "patent_g": -0.0707,
+    "industry_g": -0.1056,
+    "patent_2024": 266
+   },
+   {
+    "ipc4": "F24F",
+    "F": 23.05,
+    "level": 0,
+    "patent_g": -0.0878,
+    "industry_g": -0.0846,
+    "patent_2024": 2265
+   },
+   {
+    "ipc4": "A01M",
+    "F": 22.77,
+    "level": 0,
+    "patent_g": -0.1721,
+    "industry_g": -0.0188,
+    "patent_2024": 453
+   },
+   {
+    "ipc4": "F16M",
+    "F": 22.57,
+    "level": 0,
+    "patent_g": -0.102,
+    "industry_g": -0.0732,
+    "patent_2024": 3518
+   },
+   {
+    "ipc4": "B67C",
+    "F": 22.47,
+    "level": 0,
+    "patent_g": -0.1341,
+    "industry_g": -0.0397,
+    "patent_2024": 281
+   },
+   {
+    "ipc4": "B07C",
+    "F": 22.18,
+    "level": 0,
+    "patent_g": -0.1455,
+    "industry_g": -0.0342,
+    "patent_2024": 1032
+   },
+   {
+    "ipc4": "B01F",
+    "F": 21.79,
+    "level": 0,
+    "patent_g": -0.1144,
+    "industry_g": -0.0635,
+    "patent_2024": 1657
+   },
+   {
+    "ipc4": "B07B",
+    "F": 21.01,
+    "level": 0,
+    "patent_g": -0.1056,
+    "industry_g": -0.079,
+    "patent_2024": 501
+   },
+   {
+    "ipc4": "E04C",
+    "F": 21.01,
+    "level": 0,
+    "patent_g": -0.151,
+    "industry_g": -0.0362,
+    "patent_2024": 360
+   },
+   {
+    "ipc4": "C21D",
+    "F": 20.43,
+    "level": 0,
+    "patent_g": -0.2718,
+    "industry_g": 0.0,
+    "patent_2024": 216
+   },
+   {
+    "ipc4": "B62K",
+    "F": 20.23,
+    "level": 0,
+    "patent_g": -0.116,
+    "industry_g": -0.0769,
+    "patent_2024": 323
+   },
+   {
+    "ipc4": "G01D",
+    "F": 20.23,
+    "level": 0,
+    "patent_g": -0.1024,
+    "industry_g": -0.092,
+    "patent_2024": 1055
+   },
+   {
+    "ipc4": "A61C",
+    "F": 19.45,
+    "level": 0,
+    "patent_g": -0.1322,
+    "industry_g": -0.0741,
+    "patent_2024": 1023
+   },
+   {
+    "ipc4": "H04M",
+    "F": 18.29,
+    "level": 0,
+    "patent_g": -0.2029,
+    "industry_g": -0.0418,
+    "patent_2024": 2517
+   },
+   {
+    "ipc4": "F26B",
+    "F": 18.09,
+    "level": 0,
+    "patent_g": -0.1311,
+    "industry_g": -0.0863,
+    "patent_2024": 856
+   },
+   {
+    "ipc4": "H04N",
+    "F": 17.9,
+    "level": 0,
+    "patent_g": -0.217,
+    "industry_g": -0.0353,
+    "patent_2024": 7229
+   },
+   {
+    "ipc4": "D06F",
+    "F": 17.12,
+    "level": 0,
+    "patent_g": -0.2108,
+    "industry_g": -0.0459,
+    "patent_2024": 445
+   },
+   {
+    "ipc4": "H01G",
+    "F": 16.34,
+    "level": 0,
+    "patent_g": -0.2066,
+    "industry_g": -0.0527,
+    "patent_2024": 582
+   },
+   {
+    "ipc4": "B23D",
+    "F": 16.15,
+    "level": 0,
+    "patent_g": -0.1395,
+    "industry_g": -0.0973,
+    "patent_2024": 624
+   },
+   {
+    "ipc4": "B41F",
+    "F": 16.15,
+    "level": 0,
+    "patent_g": -0.1868,
+    "industry_g": -0.0724,
+    "patent_2024": 908
+   },
+   {
+    "ipc4": "E03F",
+    "F": 15.95,
+    "level": 0,
+    "patent_g": -0.216,
+    "industry_g": -0.0476,
+    "patent_2024": 394
+   },
+   {
+    "ipc4": "A61L",
+    "F": 15.76,
+    "level": 0,
+    "patent_g": -0.1289,
+    "industry_g": -0.1325,
+    "patent_2024": 1060
+   },
+   {
+    "ipc4": "G02F",
+    "F": 14.98,
+    "level": 0,
+    "patent_g": -0.2519,
+    "industry_g": -0.0472,
+    "patent_2024": 2011
+   },
+   {
+    "ipc4": "A23L",
+    "F": 14.59,
+    "level": 0,
+    "patent_g": -0.1606,
+    "industry_g": -0.0956,
+    "patent_2024": 660
+   },
+   {
+    "ipc4": "H01L",
+    "F": 13.42,
+    "level": 0,
+    "patent_g": -0.259,
+    "industry_g": -0.0548,
+    "patent_2024": 4097
+   },
+   {
+    "ipc4": "C03B",
+    "F": 13.32,
+    "level": 0,
+    "patent_g": -0.2075,
+    "industry_g": -0.0846,
+    "patent_2024": 282
+   },
+   {
+    "ipc4": "B30B",
+    "F": 12.84,
+    "level": 0,
+    "patent_g": -0.1425,
+    "industry_g": -0.1531,
+    "patent_2024": 342
+   },
+   {
+    "ipc4": "H04Q",
+    "F": 12.45,
+    "level": 0,
+    "patent_g": -0.1321,
+    "industry_g": -0.2086,
+    "patent_2024": 662
+   },
+   {
+    "ipc4": "E06B",
+    "F": 12.26,
+    "level": 0,
+    "patent_g": -0.1804,
+    "industry_g": -0.1275,
+    "patent_2024": 891
+   },
+   {
+    "ipc4": "E04F",
+    "F": 12.25,
+    "level": 0,
+    "patent_g": -0.1993,
+    "industry_g": -0.1065,
+    "patent_2024": 905
+   },
+   {
+    "ipc4": "B23B",
+    "F": 11.29,
+    "level": 0,
+    "patent_g": -0.1842,
+    "industry_g": -0.1408,
+    "patent_2024": 746
+   },
+   {
+    "ipc4": "B60Q",
+    "F": 10.51,
+    "level": 0,
+    "patent_g": -0.1494,
+    "industry_g": -0.1929,
+    "patent_2024": 235
+   },
+   {
+    "ipc4": "A47G",
+    "F": 10.5,
+    "level": 0,
+    "patent_g": -0.2093,
+    "industry_g": -0.1295,
+    "patent_2024": 632
+   },
+   {
+    "ipc4": "G02C",
+    "F": 10.11,
+    "level": 0,
+    "patent_g": -0.228,
+    "industry_g": -0.1076,
+    "patent_2024": 305
+   },
+   {
+    "ipc4": "B09B",
+    "F": 8.95,
+    "level": 0,
+    "patent_g": -0.2154,
+    "industry_g": -0.1534,
+    "patent_2024": 315
+   },
+   {
+    "ipc4": "G09B",
+    "F": 8.18,
+    "level": 0,
+    "patent_g": -0.2613,
+    "industry_g": -0.1228,
+    "patent_2024": 778
+   },
+   {
+    "ipc4": "A47F",
+    "F": 7.97,
+    "level": 0,
+    "patent_g": -0.279,
+    "industry_g": -0.1199,
+    "patent_2024": 292
+   },
+   {
+    "ipc4": "B23C",
+    "F": 7.59,
+    "level": 0,
+    "patent_g": -0.2336,
+    "industry_g": -0.1602,
+    "patent_2024": 274
+   },
+   {
+    "ipc4": "A01G",
+    "F": 7.2,
+    "level": 0,
+    "patent_g": -0.2592,
+    "industry_g": -0.1466,
+    "patent_2024": 1113
+   },
+   {
+    "ipc4": "A47B",
+    "F": 7.01,
+    "level": 0,
+    "patent_g": -0.2442,
+    "industry_g": -0.1606,
+    "patent_2024": 1001
+   },
+   {
+    "ipc4": "B26F",
+    "F": 7.0,
+    "level": 0,
+    "patent_g": -0.2405,
+    "industry_g": -0.17,
+    "patent_2024": 497
+   },
+   {
+    "ipc4": "E01F",
+    "F": 6.62,
+    "level": 0,
+    "patent_g": -0.292,
+    "industry_g": -0.1406,
+    "patent_2024": 461
+   },
+   {
+    "ipc4": "G07F",
+    "F": 6.03,
+    "level": 0,
+    "patent_g": -0.2574,
+    "industry_g": -0.1859,
+    "patent_2024": 662
+   },
+   {
+    "ipc4": "G03B",
+    "F": 5.83,
+    "level": 0,
+    "patent_g": -0.222,
+    "industry_g": -0.2528,
+    "patent_2024": 1150
+   },
+   {
+    "ipc4": "G01G",
+    "F": 5.06,
+    "level": 0,
+    "patent_g": -0.2873,
+    "industry_g": -0.1807,
+    "patent_2024": 310
+   },
+   {
+    "ipc4": "A47L",
+    "F": 4.67,
+    "level": 0,
+    "patent_g": -0.3691,
+    "industry_g": -0.1561,
+    "patent_2024": 1357
+   },
+   {
+    "ipc4": "B32B",
+    "F": 3.5,
+    "level": 0,
+    "patent_g": -0.298,
+    "industry_g": -0.2289,
+    "patent_2024": 1067
+   },
+   {
+    "ipc4": "G07C",
+    "F": 3.11,
+    "level": 0,
+    "patent_g": -0.2994,
+    "industry_g": -0.244,
+    "patent_2024": 844
+   },
+   {
+    "ipc4": "B65F",
+    "F": 2.92,
+    "level": 0,
+    "patent_g": -0.3958,
+    "industry_g": -0.189,
+    "patent_2024": 297
+   },
+   {
+    "ipc4": "G09F",
+    "F": 2.92,
+    "level": 0,
+    "patent_g": -0.3735,
+    "industry_g": -0.1978,
+    "patent_2024": 2091
+   },
+   {
+    "ipc4": "A47K",
+    "F": 2.33,
+    "level": 0,
+    "patent_g": -0.3534,
+    "industry_g": -0.2535,
+    "patent_2024": 297
+   },
+   {
+    "ipc4": "G01J",
+    "F": 2.33,
+    "level": 0,
+    "patent_g": -0.3305,
+    "industry_g": -0.2882,
+    "patent_2024": 492
+   },
+   {
+    "ipc4": "A41D",
+    "F": 1.36,
+    "level": 0,
+    "patent_g": -0.3835,
+    "industry_g": -0.2891,
+    "patent_2024": 346
+   },
+   {
+    "ipc4": "B64D",
+    "F": 0.78,
+    "level": 0,
+    "patent_g": -0.533,
+    "industry_g": -0.4519,
+    "patent_2024": 228
+   },
+   {
+    "ipc4": "F21S",
+    "F": 0.2,
+    "level": 0,
+    "patent_g": -0.764,
+    "industry_g": -0.7039,
+    "patent_2024": 711
+   },
+   {
+    "ipc4": "G06K",
+    "F": 0.2,
+    "level": 0,
+    "patent_g": -0.8008,
+    "industry_g": -0.6209,
+    "patent_2024": 748
+   }
+  ]
+ },
+ "sql_count": 4,
+ "elapsed_sec": 7.3,
+ "base_years_used": [
+  2019,
+  2020,
+  2021,
+  2022
+ ],
+ "base_years_missing": [
+  2016,
+  2017,
+  2018
+ ]
+}

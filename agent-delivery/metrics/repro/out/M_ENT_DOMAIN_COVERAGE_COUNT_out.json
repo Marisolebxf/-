@@ -1,0 +1,254 @@
+{
+ "metric_id": "M_ENT_DOMAIN_COVERAGE_COUNT",
+ "metric_name": "覆盖领域数",
+ "script": "M_ENT_DOMAIN_COVERAGE_COUNT.py",
+ "as_of": "2026-10-23",
+ "source": {
+  "db": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）",
+  "snapshots": [
+   "code/_snapshots21/chain_firm_index_20261023.json",
+   "code/_snapshots21/chain_tree_20261021.json",
+   "code/_snapshots21/base_20261021.json",
+   "code/_snapshots21/star_roster_gkx_20261021.json",
+   "code/_snapshots21/w13e3_probe_20261023.json"
+  ]
+ },
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/ENT/M_ENT_DOMAIN_COVERAGE_COUNT.md",
+ "wanghui_ref": "local-workspace/docs/metrics/王惠阶段性成果/20260817/指标计算逻辑-V3-2/M_ENT_DOMAIN_COVERAGE_COUNT.md",
+ "support_judgment": "部分支持",
+ "verdict_kind": "proxy_constructed",
+ "four_judgment": {
+  "表结构直接支持（开发库+三方库）": "否：两库均无「覆盖领域数」结果面；gkx 无 cluster/结果表，live 无结果表",
+  "表数据直接支持（开发库+三方库）": "否：15 集群目录无数据载体",
+  "依赖表结构支持（开发库/三方库）": "部分：企业↔链结构在 gkx（dwd_org_industry_tags），15 集群 dim 与 map 两库均无",
+  "依赖表数据支持（开发库/三方库）": "是（降维后）：链属企业 1,714,457 家可算 12 链覆盖；集群维不可算"
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面计数：链归属表无 stat_year 字段，输出的是当日快照上的集合覆盖数，不存在年度分母，故 used/missing 为空；不是把缺年按 0 摊入。",
+ "result": {
+  "declared_domain_catalog": {
+   "name": "industry_cluster（10 战新 + 5 未来）",
+   "n_declared": 15,
+   "catalog_available_in_gkx": false,
+   "catalog_available_in_live": false,
+   "evidence": {
+    "gkx_tables_matching_cluster": [],
+    "gkx_n_tables": 280,
+    "gkx_cluster_id_columns": {
+     "found": false,
+     "tables": []
+    },
+    "gkx_cluster_name_columns": {
+     "found": false,
+     "tables": []
+    },
+    "gkx_n_cluster_columns": 0,
+    "live_tables_matching_cluster": [],
+    "live_industry_cluster": "TABLE_ABSENT",
+    "live_industry_cluster_map": "TABLE_ABSENT"
+   }
+  },
+  "proxy_domain_catalog": {
+   "name": "dwd_industry_chain_info 产业链根码 12 条",
+   "n_chains": 12,
+   "roots": [
+    "INB1204",
+    "INB1209",
+    "INB1236",
+    "INB1303",
+    "INB1306",
+    "INB1309",
+    "INB1323",
+    "INB1333",
+    "INB1354",
+    "INB1502",
+    "INB2503",
+    "INB2505"
+   ],
+   "chain_names": {
+    "INB1204": "机器人",
+    "INB1209": "智能网联汽车",
+    "INB1236": "低空经济",
+    "INB1303": "集成电路",
+    "INB1306": "软件与信息服务",
+    "INB1309": "人工智能",
+    "INB1323": "传感器",
+    "INB1333": "智能终端",
+    "INB1354": "具身智能",
+    "INB1502": "数字创意",
+    "INB2503": "生物医药",
+    "INB2505": "合成生物"
+   },
+   "tree_rows": 1273,
+   "tree_has_inb17_or_inb18": [],
+   "tag_distinct_industry_code": 12,
+   "tag_has_inb17_or_inb18": []
+  },
+  "nominal_chain_vs_declared_pct": 80.0,
+  "nominal_ratio_comparable": false,
+  "nominal_ratio_note": "12 条链与 15 个集群没有码级映射，12/15 只表示两个目录的规模比，不是覆盖率。",
+  "universe": {
+   "tag_rows": 2283762,
+   "bad_credit_rows": 2,
+   "empty_link_rows": 569303,
+   "linked_firms_clean": 1714457,
+   "multi_code_rows": 131978,
+   "multi_code_row_share_pct": 5.78
+  },
+  "coverage_by_set": {
+   "全国链属企业": {
+    "n_firms": 1714457,
+    "coverage": 12
+   },
+   "明星名单可对齐子集": {
+    "n_firms": 2097,
+    "coverage": 12,
+    "match_share_pct": 45.9768
+   },
+   "底册专利名可对齐子集": {
+    "n_firms": 21994,
+    "coverage": 12,
+    "match_share_pct": 11.6329
+   },
+   "深圳市": {
+    "n_firms": 92930,
+    "coverage": 12
+   },
+   "广州市": {
+    "n_firms": 50117,
+    "coverage": 12
+   },
+   "东莞市": {
+    "n_firms": 15149,
+    "coverage": 12
+   },
+   "惠州市": {
+    "n_firms": 5420,
+    "coverage": 12
+   }
+  },
+  "city_coverage_examples": {
+   "深圳市": 12,
+   "广州市": 12,
+   "东莞市": 12,
+   "惠州市": 12,
+   "北京市": 12,
+   "上海市": 12,
+   "杭州市": 12,
+   "成都市": 12
+  },
+  "low_coverage_cities": {
+   "大兴安岭地区": {
+    "coverage": 6,
+    "firms": 107
+   },
+   "玉树藏族自治州": {
+    "coverage": 5,
+    "firms": 89
+   },
+   "昌都市": {
+    "coverage": 5,
+    "firms": 202
+   },
+   "阿里地区": {
+    "coverage": 6,
+    "firms": 51
+   },
+   "果洛藏族自治州": {
+    "coverage": 4,
+    "firms": 59
+   },
+   "黄南藏族自治州": {
+    "coverage": 6,
+    "firms": 57
+   }
+  },
+  "city_coverage_dist": {
+   "4": 1,
+   "5": 2,
+   "6": 3,
+   "7": 16,
+   "8": 15,
+   "9": 24,
+   "10": 29,
+   "11": 43,
+   "12": 205
+  },
+  "n_cities_evaluated": 338,
+  "n_cities_full_12": 205,
+  "city_full_12_share_pct": 60.65,
+  "chain_firms": {
+   "INB1306": 917842,
+   "INB1333": 143389,
+   "INB1309": 131843,
+   "INB1204": 8549,
+   "INB2505": 52329,
+   "INB1502": 261837,
+   "INB2503": 138742,
+   "INB1323": 29708,
+   "INB1303": 12028,
+   "INB1354": 8140,
+   "INB1209": 6016,
+   "INB1236": 4034
+  },
+  "chain_share_pct": {
+   "INB1306": 53.5354,
+   "INB1333": 8.3635,
+   "INB1309": 7.6901,
+   "INB1204": 0.4986,
+   "INB2505": 3.0522,
+   "INB1502": 15.2723,
+   "INB2503": 8.0925,
+   "INB1323": 1.7328,
+   "INB1303": 0.7016,
+   "INB1354": 0.4748,
+   "INB1209": 0.3509,
+   "INB1236": 0.2353
+  },
+  "hhi": 0.330732,
+  "top1_chain_pct": 53.5354,
+  "top3_chain_pct": 77.1713,
+  "per_firm": {
+   "rule": "industry_code 首个 INB 链根；一家企业一个链根",
+   "n_firms": 1714457,
+   "coverage_value": 1,
+   "distribution": {
+    "1": 1714457
+   },
+   "multi_code_rows_dropped": 131978
+  },
+  "base": {
+   "n_rows": 189116,
+   "n_province": 29,
+   "n_city": 65
+  },
+  "five_cluster_names_with_chain_homonym": [
+   "人工智能",
+   "智能终端",
+   "软件与信息服务",
+   "生物医药",
+   "合成生物"
+  ],
+  "cluster_to_chain_mapping": {
+   "mapped_by_code": 0,
+   "mapped_by_exact_name": 0,
+   "homonym_only": 5,
+   "note": "同名词不能当映射：无 cluster_id、无 map 表，同名词的成员范围也未核。"
+  }
+ },
+ "extra_probes": {
+  "tags_created_time_distinct": "单一批次（2026-08-27），无年度键",
+  "chain_info_level_dist": {
+   "0": 1273
+  },
+  "chain_info_root_count": 12,
+  "live_nonempty_tables": 2,
+  "live_enterprise_industry_chain_rows": 0
+ },
+ "notes": [
+  "15 集群目录（10 战新 + 5 未来）在 gkx 280 表中 0 命中，live 侧 industry_cluster / industry_cluster_map 直接不存在。",
+  "gkx 的 industry_code 只出现 12 个链根码，没有 INB1701—1710 / INB1801—1805，因此无法用链码反推集群。",
+  "代理口径只回答「这批企业覆盖了几条产业链」，不能回答「覆盖了几个 15 集群」。"
+ ]
+}

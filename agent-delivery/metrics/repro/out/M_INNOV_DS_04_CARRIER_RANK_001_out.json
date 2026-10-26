@@ -1,0 +1,179 @@
+{
+ "metric_id": "M_INNOV_DS_04_CARRIER_RANK_001",
+ "metric_name": "创新能力指数",
+ "also_known_as": "M_INNOV_CARRIER_INDEX_GLOBAL（王惠 calc-logic：同口径，步骤完全一致）",
+ "method": "按王惠 V1.5 资源/产出/能力三维、批内极值归一、缺维重归一、等权×100 在 gkx 上现算，并派生 competition rank 名次与并列结构（旧版复用上游 out.json，本版改为单脚本自洽复现）",
+ "reuse_policy": "本版不依赖旧目录上游 out.json：载体批与专利/论文对齐全部在 gkx 上现算，口径逐字照抄 V1.5",
+ "derived_from": null,
+ "probes_today": {
+  "gkx.dwd_org_base_info": 189116,
+  "gkx.dwd_research_institute_base_info": 2074,
+  "gkx.dwd_forg_base_info": 20000,
+  "gkx.dwd_org_tech_tag": 202424,
+  "gkx.dwd_org_annual_financial_info": 90926,
+  "gkx.dwd_org_stock_finance_info": 40239,
+  "gkx.dwd_patent": 2939895,
+  "gkx.dwd_zh_paper": 100900,
+  "gkx.dwd_zh_author": 62002,
+  "gkx.dwd_en_paper": 1387,
+  "gkx.dwd_org_annual_financial_info.detail": {
+   "rows": 90926,
+   "development_employee_null": 90926,
+   "employees_number_null": 87742,
+   "operating_revenue_null": 88733,
+   "dev_null_pct": 100.0
+  }
+ },
+ "compute": {
+  "n_carriers": 3000,
+  "stats": {
+   "n": 3000,
+   "positive": 815,
+   "min": 0.0,
+   "max": 100.0,
+   "mean": 3.07,
+   "median": 0.0
+  },
+  "dim_coverage": {
+   "annual_dev_or_emp": 2,
+   "revenue": 12,
+   "patents_or_papers": 628,
+   "granted": 550,
+   "hightech_tag_cn": 350
+  },
+  "effective_dims": 2,
+  "head_gap_top1_top2": 46.64,
+  "top10_mean": 40.19,
+  "top1_over_top10mean": 2.49,
+  "top10": [
+   {
+    "name": "深圳市科曼医疗设备有限公司",
+    "src": "cn",
+    "patents": 741,
+    "papers": 0,
+    "granted": 463,
+    "score": 100.0,
+    "rank": 1
+   },
+   {
+    "name": "大族激光科技产业集团股份有限公司",
+    "src": "cn",
+    "patents": 296,
+    "papers": 0,
+    "granted": 242,
+    "score": 53.36,
+    "rank": 2
+   },
+   {
+    "name": "深圳市铁头科技有限公司",
+    "src": "cn",
+    "patents": 90,
+    "papers": 0,
+    "granted": 82,
+    "score": 35.5,
+    "rank": 3
+   },
+   {
+    "name": "深圳市新威尔电子有限公司",
+    "src": "cn",
+    "patents": 82,
+    "papers": 0,
+    "granted": 67,
+    "score": 34.15,
+    "rank": 4
+   },
+   {
+    "name": "深圳麦格米特电气股份有限公司",
+    "src": "cn",
+    "patents": 122,
+    "papers": 0,
+    "granted": 103,
+    "score": 33.71,
+    "rank": 5
+   },
+   {
+    "name": "广州市安装集团有限公司",
+    "src": "cn",
+    "patents": 50,
+    "papers": 0,
+    "granted": 37,
+    "score": 30.37,
+    "rank": 6
+   },
+   {
+    "name": "广东瑞讯电子科技有限公司",
+    "src": "cn",
+    "patents": 45,
+    "papers": 0,
+    "granted": 31,
+    "score": 29.71,
+    "rank": 7
+   },
+   {
+    "name": "广东沃德精密科技股份有限公司",
+    "src": "cn",
+    "patents": 35,
+    "papers": 0,
+    "granted": 20,
+    "score": 28.44,
+    "rank": 8
+   },
+   {
+    "name": "深圳威尔视觉科技有限公司",
+    "src": "cn",
+    "patents": 30,
+    "papers": 0,
+    "granted": 25,
+    "score": 28.37,
+    "rank": 9
+   },
+   {
+    "name": "东莞市雷宇激光设备有限公司",
+    "src": "cn",
+    "patents": 28,
+    "papers": 0,
+    "granted": 25,
+    "score": 28.24,
+    "rank": 10
+   }
+  ],
+  "rank_tie_structure": {
+   "n_ranked": 3000,
+   "n_distinct_score": 143,
+   "largest_tie_group": 2185,
+   "largest_tie_score": 0.0,
+   "rank_rule": "competition rank（同分同名次、后续跳号）；排序键=index_score(2dp) 降序，次键 org_id 升序",
+   "dense_rank_counterfactual": 143
+  },
+  "weight_source": {
+   "dims": "资源/产出/能力 三维等权；缺维在剩余维上重新等权（不补 0）",
+   "provenance": "王惠 V1.5 原文写「等权」；资源维三条退路当日全空，实际入算维数 2/3，故对外须标「两维等效」，权重属**代理权重**（维度权重未经甲方签认）"
+  }
+ },
+ "support_judgment": "部分支持",
+ "support_note": "指数可产出且非退化（n=3000，positive=815，区间 0.0-100.0，mean=3.07/median=0.0）；但三维中资源维当日 gkx 年报 development_employee 90926/90926（100.0%）为空、营收空 88733 行，有效维数仅 2/3 → 部分支持",
+ "support_consistent_with_upstream": true,
+ "elapsed_s": 32.8,
+ "data_source": {
+  "schema": "gkx",
+  "host": "183.240.141.251:3318",
+  "tables": [
+   "gkx.dwd_org_base_info",
+   "gkx.dwd_research_institute_base_info",
+   "gkx.dwd_forg_base_info",
+   "gkx.dwd_org_tech_tag",
+   "gkx.dwd_org_annual_financial_info",
+   "gkx.dwd_org_stock_finance_info",
+   "gkx.dwd_patent",
+   "gkx.dwd_zh_paper",
+   "gkx.dwd_zh_author"
+  ],
+  "row_counts_from": "_work_gkx21/GKX_INVENTORY.json"
+ },
+ "disclosures": [
+  "载体入集为三源各取前 2,000/500/500 行（旧版同规模），本版显式 ORDER BY org_id 固定批次；旧版无 ORDER BY，批次成员取决于引擎返回顺序。",
+  "名称对齐：专利申请人/论文机构与载体 name_cn 精确同名，未命中者产出维计 0（非「无产出」，是「无记录」）。",
+  "资源维三条退路（development_employee / employees_number / operating_revenue）当日全空或近乎全空，指数实为「产出 + 能力」两维。",
+  "gkx.dwd_forg_base_info 为海外机构名录，名称以 name_en 记录，与专利中文申请人名几乎不可能精确同名，其产出维系统性为 0（不构成「海外载体创新能力低」的结论）。"
+ ]
+}

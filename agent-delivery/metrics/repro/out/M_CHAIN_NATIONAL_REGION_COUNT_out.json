@@ -1,0 +1,364 @@
+{
+ "metric_id": "M_CHAIN_NATIONAL_REGION_COUNT",
+ "metric_name": "全国分布区域数",
+ "date": "2026-10-21",
+ "calc_logic_ref": "gkx-orchestration/agent-delivery/metrics/calc-logic/CHAIN/M_CHAIN_NATIONAL_REGION_COUNT.md (0.2.0)",
+ "formula": "COUNT(DISTINCT province) over chain members with non-empty province",
+ "data_source": {
+  "engine": "三方库 gkx（183.240.141.251:3318），唯一连库入口 code/_gkxdb.py",
+  "tables": [
+   "gkx.dwd_org_industry_tags",
+   "gkx.dwd_org_base_info",
+   "gkx.dwd_industry_chain_info"
+  ],
+  "join": "tags STRAIGHT_JOIN base ON base.external_id = tags.credit_code COLLATE utf8mb4_0900_ai_ci",
+  "join_note": "两列排序规则不同（0900_ai_ci vs general_ci），且 tags.credit_code 无索引，必须标签表驱动 + 哈希，否则退化为 2.28M×189K 嵌套循环"
+ },
+ "hard_constraint": {
+  "headline": "本库不存在可支撑「全国分布」的属地样本：链上 2,283,762 条标签中仅 52,906 条（35,046 家，1.53%）可落属地，其中 35,022 家在广东（99.93%），省外合计 24 家",
+  "base_info_gd_share_pct": 99.82,
+  "base_info_out_of_gd": 339,
+  "base_info_n": 189115,
+  "tags_universe": 2283762,
+  "tags_distinct_credit": 2283762,
+  "geo_joinable": 35046,
+  "geo_join_rows": 52906,
+  "geo_join_pct": 1.53,
+  "chain_tagged_out_of_gd": 24,
+  "note": "省外 24 家的口径是「既有产业链标签、又能落到主档属地」的企业；全底册省外 339 家是另一个更大的集合，两者都远不足以代表全国。"
+ },
+ "per_chain": [
+  {
+   "chain": "INB1204",
+   "name": "机器人",
+   "tag_enterprises": 38032,
+   "geo_matched": 3627,
+   "geo_match_pct": 9.54,
+   "region_count": 2,
+   "province_dist": {
+    "广东省": 3623,
+    "北京市": 4
+   },
+   "city_count": 5,
+   "city_dist": {
+    "深圳市": 2284,
+    "广州市": 770,
+    "东莞市": 498,
+    "惠州市": 71,
+    "北京市": 4
+   }
+  },
+  {
+   "chain": "INB1209",
+   "name": "智能网联汽车",
+   "tag_enterprises": 11950,
+   "geo_matched": 1471,
+   "geo_match_pct": 12.31,
+   "region_count": 2,
+   "province_dist": {
+    "广东省": 1468,
+    "北京市": 3
+   },
+   "city_count": 5,
+   "city_dist": {
+    "深圳市": 1074,
+    "广州市": 254,
+    "东莞市": 107,
+    "惠州市": 33,
+    "北京市": 3
+   }
+  },
+  {
+   "chain": "INB1236",
+   "name": "低空经济",
+   "tag_enterprises": 5450,
+   "geo_matched": 160,
+   "geo_match_pct": 2.94,
+   "region_count": 2,
+   "province_dist": {
+    "广东省": 159,
+    "北京市": 1
+   },
+   "city_count": 5,
+   "city_dist": {
+    "深圳市": 100,
+    "广州市": 39,
+    "东莞市": 12,
+    "惠州市": 8,
+    "北京市": 1
+   }
+  },
+  {
+   "chain": "INB1303",
+   "name": "集成电路",
+   "tag_enterprises": 39493,
+   "geo_matched": 3562,
+   "geo_match_pct": 9.02,
+   "region_count": 5,
+   "province_dist": {
+    "广东省": 3555,
+    "北京市": 3,
+    "陕西省": 2,
+    "内蒙古": 1,
+    "云南省": 1
+   },
+   "city_count": 8,
+   "city_dist": {
+    "深圳市": 2344,
+    "广州市": 578,
+    "东莞市": 491,
+    "惠州市": 142,
+    "北京市": 3,
+    "西安市": 2
+   }
+  },
+  {
+   "chain": "INB1306",
+   "name": "软件与信息服务",
+   "tag_enterprises": 1014992,
+   "geo_matched": 13895,
+   "geo_match_pct": 1.37,
+   "region_count": 8,
+   "province_dist": {
+    "广东省": 13882,
+    "北京市": 7,
+    "上海市": 1,
+    "陕西省": 1,
+    "天津市": 1,
+    "山东省": 1,
+    "浙江省": 1,
+    "辽宁省": 1
+   },
+   "city_count": 11,
+   "city_dist": {
+    "深圳市": 8402,
+    "广州市": 4731,
+    "东莞市": 587,
+    "惠州市": 162,
+    "北京市": 7,
+    "上海市": 1
+   }
+  },
+  {
+   "chain": "INB1309",
+   "name": "人工智能",
+   "tag_enterprises": 140666,
+   "geo_matched": 5051,
+   "geo_match_pct": 3.59,
+   "region_count": 3,
+   "province_dist": {
+    "广东省": 5046,
+    "北京市": 4,
+    "陕西省": 1
+   },
+   "city_count": 6,
+   "city_dist": {
+    "深圳市": 3012,
+    "广州市": 1535,
+    "东莞市": 362,
+    "惠州市": 137,
+    "北京市": 4,
+    "西安市": 1
+   }
+  },
+  {
+   "chain": "INB1323",
+   "name": "传感器",
+   "tag_enterprises": 40976,
+   "geo_matched": 2669,
+   "geo_match_pct": 6.51,
+   "region_count": 5,
+   "province_dist": {
+    "广东省": 2662,
+    "北京市": 4,
+    "陕西省": 1,
+    "云南省": 1,
+    "辽宁省": 1
+   },
+   "city_count": 8,
+   "city_dist": {
+    "深圳市": 1804,
+    "广州市": 460,
+    "东莞市": 327,
+    "惠州市": 71,
+    "北京市": 4,
+    "西安市": 1
+   }
+  },
+  {
+   "chain": "INB1333",
+   "name": "智能终端",
+   "tag_enterprises": 228837,
+   "geo_matched": 10180,
+   "geo_match_pct": 4.45,
+   "region_count": 4,
+   "province_dist": {
+    "广东省": 10175,
+    "北京市": 3,
+    "浙江省": 1,
+    "辽宁省": 1
+   },
+   "city_count": 7,
+   "city_dist": {
+    "深圳市": 6851,
+    "广州市": 2089,
+    "东莞市": 916,
+    "惠州市": 319,
+    "北京市": 3,
+    "杭州市": 1
+   }
+  },
+  {
+   "chain": "INB1354",
+   "name": "具身智能",
+   "tag_enterprises": 35460,
+   "geo_matched": 3846,
+   "geo_match_pct": 10.85,
+   "region_count": 2,
+   "province_dist": {
+    "广东省": 3843,
+    "北京市": 3
+   },
+   "city_count": 5,
+   "city_dist": {
+    "深圳市": 2649,
+    "广州市": 777,
+    "东莞市": 339,
+    "惠州市": 78,
+    "北京市": 3
+   }
+  },
+  {
+   "chain": "INB1502",
+   "name": "数字创意",
+   "tag_enterprises": 280571,
+   "geo_matched": 3337,
+   "geo_match_pct": 1.19,
+   "region_count": 1,
+   "province_dist": {
+    "广东省": 3337
+   },
+   "city_count": 4,
+   "city_dist": {
+    "深圳市": 1859,
+    "广州市": 807,
+    "东莞市": 510,
+    "惠州市": 161
+   }
+  },
+  {
+   "chain": "INB2503",
+   "name": "生物医药",
+   "tag_enterprises": 147881,
+   "geo_matched": 875,
+   "geo_match_pct": 0.59,
+   "region_count": 1,
+   "province_dist": {
+    "广东省": 875
+   },
+   "city_count": 4,
+   "city_dist": {
+    "广州市": 453,
+    "深圳市": 331,
+    "东莞市": 52,
+    "惠州市": 39
+   }
+  },
+  {
+   "chain": "INB2505",
+   "name": "合成生物",
+   "tag_enterprises": 480351,
+   "geo_matched": 4233,
+   "geo_match_pct": 0.88,
+   "region_count": 2,
+   "province_dist": {
+    "广东省": 4232,
+    "北京市": 1
+   },
+   "city_count": 5,
+   "city_dist": {
+    "广州市": 2646,
+    "深圳市": 1180,
+    "东莞市": 309,
+    "惠州市": 97,
+    "北京市": 1
+   }
+  }
+ ],
+ "distribution": {
+  "region_count_values": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   8
+  ],
+  "chains_with_1_province": [
+   "INB1502",
+   "INB2503"
+  ],
+  "chains_with_le2_provinces": [
+   "INB1204",
+   "INB1209",
+   "INB1236",
+   "INB1354",
+   "INB1502",
+   "INB2503",
+   "INB2505"
+  ],
+  "max_region_count": 8,
+  "median_region_count": 2,
+  "out_of_guangdong_detail": {
+   "北京市": 13,
+   "内蒙古": 1,
+   "上海市": 1,
+   "陕西省": 3,
+   "天津市": 1,
+   "云南省": 1,
+   "山东省": 1,
+   "浙江省": 2,
+   "辽宁省": 1
+  }
+ },
+ "base_info_distribution": {
+  "source": "gkx.dwd_org_base_info GROUP BY province/city（现查）",
+  "n_pairs": 66,
+  "total": 189115,
+  "guangdong_pct": 99.82,
+  "province_top": {
+   "广东省": 188776,
+   "北京市": 163,
+   "浙江省": 19,
+   "上海市": 16,
+   "四川省": 16,
+   "天津市": 13,
+   "陕西省": 12,
+   "云南省": 8
+  },
+  "city_top": {
+   "深圳市": 95600,
+   "广州市": 49605,
+   "东莞市": 33590,
+   "惠州市": 9979,
+   "北京市": 163,
+   "上海市": 16,
+   "天津市": 13,
+   "成都市": 13
+  }
+ },
+ "naive_trap": {
+  "what_if_use_tag_universe": "若把 2,283,762 条链标签当分母，会得出「每链覆盖全国」的错觉；实际这 2.28M 条标签里 97.7% 没有任何属地字段可查，剩下 2.3% 几乎全部落在深圳都市圈"
+ },
+ "support_judgment": {
+  "data_support_level": "部分支持",
+  "reason": "省级行政区轴与链—企桥结构齐全，公式可执行、数值可复算；但链上主体 97.7% 无属地、可落属地的 99.93% 在广东，省外仅 24 家，「全国分布」这一关键依赖维在本库无样本 → 按 §〇 判部分支持。不得把 24 家（或底册省外 339 家）冒充全国覆盖。",
+  "criteria": {
+   "structure": true,
+   "province_axis": true,
+   "national_sample": false,
+   "computable": true
+  }
+ },
+ "elapsed_sec": 0.4
+}

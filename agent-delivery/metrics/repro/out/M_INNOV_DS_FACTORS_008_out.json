@@ -1,0 +1,118 @@
+{
+ "metric_id": "M_INNOV_DS_FACTORS_008",
+ "run_at": "2026-10-23 23:52:51",
+ "data_source": "gkx（三方库 183.240.141.251:3318）",
+ "probes": {
+  "conference_like_tables": [
+   {
+    "t": "dwd_en_journal",
+    "n": 605
+   },
+   {
+    "t": "dwd_event",
+    "n": 20
+   },
+   {
+    "t": "dwd_merger_acquisition_events_party_info",
+    "n": 19779
+   },
+   {
+    "t": "dwd_zh_journal",
+    "n": 2326
+   }
+  ],
+  "zh_journal_total": [
+   {
+    "n": 2796
+   }
+  ],
+  "zh_journal_publication_type": [
+   {
+    "t": "期刊",
+    "n": 2796
+   }
+  ],
+  "en_journal_publication_type": [
+   {
+    "t": "Journal",
+    "n": 578
+   },
+   {
+    "t": "Book in series",
+    "n": 21
+   },
+   {
+    "t": "Book",
+    "n": 6
+   }
+  ],
+  "zh_paper_publication_type": [
+   {
+    "t": "期刊",
+    "n": 100900
+   }
+  ],
+  "zh_paper_paper_type": [
+   {
+    "t": "期刊论文",
+    "n": 100900
+   }
+  ],
+  "zh_journal_name_like_conference": [
+   {
+    "n": 0
+   }
+  ],
+  "en_journal_name_like_proceedings": [
+   {
+    "n": 21
+   }
+  ],
+  "conference_entities": 0,
+  "impact_score_filled_zh_journal": [
+   {
+    "n": 2796,
+    "f": "0"
+   }
+  ],
+  "impact_score_filled_en_journal": [
+   {
+    "n": 605,
+    "f": "0"
+   }
+  ],
+  "cite_nums_filled_zh_journal": [
+   {
+    "n": 2796,
+    "f": "2796"
+   }
+  ],
+  "download_num_filled": [
+   {
+    "n": 100900,
+    "f": "0"
+   }
+  ],
+  "conference_publication_types_found": [],
+  "zh_paper_all_journal_articles": true,
+  "event_table_probe": [
+   {
+    "n": 20
+   }
+  ],
+  "gkx_schema_conference_table_hits": [
+   {
+    "n": 0
+   }
+  ]
+ },
+ "support_judgment": "完全不支持",
+ "support_reason": "会议实体的唯一可能落点是期刊/会议录表：gkx.dwd_zh_journal 仅 publication_type='期刊'（2,796 种），gkx.dwd_en_journal 仅 Journal/Book in series/Book（605 种，无 Conference/Proceedings 类型），gkx.dwd_zh_paper 全表 publication_type='期刊'、paper_type='期刊论文'（100,900 篇），名称含 Conference/Proceedings 的英文刊 21 种经核为丛书（Book in series）而非会议录。gkx 280 表中亦无 conference/meeting 专表（information_schema LIKE 检索 0 张；dwd_event 20 行为事件流水，非学术会议）。会议实体数 = 0 → 会议热度、投稿数、参与人数三维全部无分母，指标无法构建。",
+ "notes": [
+  "20261021 换源核对：gkx 280 表清单与 20261020 开发库 ODS 同源，均无会议（conference/meeting）专表；本批 probe 用 information_schema 对 gkx 复核，conference/meeting 命中 0 张。",
+  "王惠 calc-logic 备注已写明「会议实体评价表数据源标准缺失，需郭经理与数据采购方沟通」，本次实测确认该缺口仍存在。",
+  "gkx.dwd_zh_journal / dwd_en_journal 的 impact_score 全表为空（0/2,796 与 0/605）；王惠口径「热度优先读 impact_score，没有则用论文 download_num」的备选也失效：download_num>0 为 0/100,900。即便补入会议实体，热度维仍无源（只有 cite_nums 2,796/2,796 可用，但作用于期刊）。",
+  "若甲方补充会议主档（会议名称/届次/举办地/官网）+ 会议论文集映射，本指标可转为「完全转换支持」。",
+  "行数口径说明：probes 中 conference_like_tables 的 n 来自 information_schema.TABLE_ROWS（估算），如 dwd_merger_acquisition_events_party_info 估算 19,779（旧版 19,843），库存 json 的 COUNT(*) 为 20,000；正文引用行数一律以 _work_gkx21/GKX_INVENTORY.json 的 COUNT(*) 为准。"
+ ]
+}

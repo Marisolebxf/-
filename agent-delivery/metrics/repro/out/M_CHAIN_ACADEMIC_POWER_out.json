@@ -1,0 +1,248 @@
+{
+ "metric_id": "M_CHAIN_ACADEMIC_POWER",
+ "metric_name": "学术生态",
+ "support_judgment": "部分支持",
+ "judgment_reason": "三维源齐且本件实测出数（机构 2189 家去重、学者 21316 人、窗口论文 52119 行），但「指定链 × 区域」限定的入集键不存在：链成员 credit_code 与学研机构 external_id 两个键域不相交（5 万行样本 0 命中），链级学术生态无法闭合；学者维还叠加 scholar_org_id 整列为空（0 行），只能用机构名含城市名的名称代理。按「始终有部分依赖维度拿不到足够数据」判部分支持，不抬档。",
+ "verdict_kind": "computed_with_declared_gap",
+ "base_years_used": [
+  "2021",
+  "2022",
+  "2023",
+  "2024"
+ ],
+ "base_years_missing": [
+  "2025",
+  "2026"
+ ],
+ "base_years_note": "论文维按 cover_year_start 2021—2024 截断，窗口内 52,119 行（占全库 100,900 行的 51.65%）；2025—2026 库内有值但收录不全（6,548 / 2,989 行），不摊进正式值、也不按 0 补；机构与学者为存量截面，无统计期，不参与年度窗口。",
+ "sources": [
+  "gkx @ 183.240.141.251:3318: gkx.dwd_org_heis_info（3,501 行）",
+  "gkx @ 183.240.141.251:3318: gkx.dwd_research_institute_base_info（2,074 行）",
+  "gkx @ 183.240.141.251:3318: gkx.dwd_scholar（21,316 行）",
+  "gkx @ 183.240.141.251:3318: gkx.dwd_zh_paper（100,900 行，窗口 52,119 行）",
+  "gkx @ 183.240.141.251:3318: gkx.dwd_org_industry_tags（2,283,762 行，仅取 5 万行样本做键域比对）",
+  "code/_snapshots21/base_20261021.json（机构名 → 城市字典，189,116 行底册）"
+ ],
+ "rule": {
+  "D1_institutions": "heis.city + research_institute.city 按市等值汇总，两池 name_cn 交集见 pool_overlap",
+  "D2_scholars": "dwd_scholar.scholar_org_name_zh 含城市名（广州/深圳/东莞/惠州）计数；id 轨不可用",
+  "D3_papers": "dwd_zh_paper.author_info_list[].institution 精确匹配底册 name_cn → 机构 city；一篇论文可计入多市",
+  "window": "cover_year_start ∈ [2021, 2024]",
+  "normalize": "每个维在四市之间做 min-max ×100（最小值 0、最大值 100）",
+  "weights": {
+   "papers": 0.4,
+   "institutions": 0.3,
+   "scholars": 0.3
+  },
+  "weight_status": "本件自定义、待甲方确认（旧稿与甲方口径表均未给权重）",
+  "chain_axis": "不产出链级读数：键域不相交，任何链级值都是伪造"
+ },
+ "pool_overlap": {
+  "heis_rows": 3501,
+  "ri_rows": 2074,
+  "heis_dup_rows": 568,
+  "ri_dup_rows": 0,
+  "cross_pool_dup": 1,
+  "name_intersection": 1,
+  "note": "高校表 3,501 行只有 2,933 个不同 external_id，568 行是同校重复录入；科研院所表无重复。院所与高校按 external_id 去重后再相加，实测跨池重复 1 例（广州中医药大学 / 广州中医药大学（广州中医药研究院））"
+ },
+ "panel": [
+  {
+   "city": "广州市",
+   "papers": 12083,
+   "institutions": 913,
+   "heis": 92,
+   "research_institutes": 821,
+   "scholars": 86,
+   "dim_norm": {
+    "papers": 100.0,
+    "institutions": 87.6788,
+    "scholars": 44.3299
+   },
+   "score": 79.6,
+   "paper_per_inst": 13.23,
+   "rank": 1
+  },
+  {
+   "city": "深圳市",
+   "papers": 5457,
+   "institutions": 1025,
+   "heis": 11,
+   "research_institutes": 1014,
+   "scholars": 194,
+   "dim_norm": {
+    "papers": 41.8721,
+    "institutions": 100.0,
+    "scholars": 100.0
+   },
+   "score": 76.75,
+   "paper_per_inst": 5.32,
+   "rank": 2
+  },
+  {
+   "city": "东莞市",
+   "papers": 1052,
+   "institutions": 135,
+   "heis": 8,
+   "research_institutes": 127,
+   "scholars": 7,
+   "dim_norm": {
+    "papers": 3.2284,
+    "institutions": 2.0902,
+    "scholars": 3.6082
+   },
+   "score": 3.0,
+   "paper_per_inst": 7.79,
+   "rank": 3
+  },
+  {
+   "city": "惠州市",
+   "papers": 684,
+   "institutions": 116,
+   "heis": 5,
+   "research_institutes": 111,
+   "scholars": 0,
+   "dim_norm": {
+    "papers": 0.0,
+    "institutions": 0.0,
+    "scholars": 0.0
+   },
+   "score": 0.0,
+   "paper_per_inst": 5.9,
+   "rank": 4
+  }
+ ],
+ "paper_detail": {
+  "paper_rows_all": 100900,
+  "window_rows": 52119,
+  "window_share_pct": 51.65,
+  "papers_with_city": 19223,
+  "paper_city_pairs": 19502,
+  "inst_instances": 237461,
+  "inst_name_hits": 39430,
+  "inst_hit_rate_pct": 16.6,
+  "cities_outside_study": [
+   "上海市",
+   "中山市",
+   "佛山市",
+   "兰州市",
+   "包头市",
+   "北京市",
+   "南京市",
+   "喀什地区",
+   "大连市",
+   "天津市",
+   "成都市",
+   "抚顺市",
+   "杭州市",
+   "柳州市",
+   "武汉市",
+   "济南市",
+   "石家庄市",
+   "西宁市",
+   "西安市",
+   "长沙市"
+  ]
+ },
+ "scholar_detail": {
+  "rows": 21316,
+  "org_id_nonempty": 0,
+  "org_name_empty": 487,
+  "alias_hits": {
+   "广州市": 86,
+   "深圳市": 194,
+   "东莞市": 7,
+   "惠州市": 0
+  },
+  "alias_total": 287
+ },
+ "chain_axis_block": {
+  "tags_rows": 2283762,
+  "sample_rows": 50000,
+  "sample_hit": 0,
+  "sample_public_prefix12": 0,
+  "sample_malformed_not18": 1,
+  "institution_ids": 5006,
+  "test": "链成员 credit_code ∈ 学研机构 external_id 集合（5 万行等距样本，非全表）",
+  "reason": "链成员表装的是企业统一社会信用代码（前缀 91…），学研侧是事业单位代码（前缀 12…）；样本内 0 条以 12 开头、0 条命中机构 id，说明不是覆盖率低而是键域不同",
+  "consequence": "「链 × 区域」双限定无法闭合；用区域值顶替会伪造链间差异，故本件不输出链级分数"
+ },
+ "result_face_absent": {
+  "matched_tables": [],
+  "note": "gkx 内无 academic/metric 结果面；旧稿读的汇总层表属演示库应用层，库内没有属正常（见 TABLE_ABSENCE_EVIDENCE.md）"
+ },
+ "difference_vs_old_draft": {
+  "old_scope": "深圳单点：机构 5,003（全国池去重）、学者 16,120（名称匹配 75.6%）、论文 186,428，单点 min-max 退化触发 0.5 兜底，输出 50.0",
+  "old_source": "演示库汇总/关系面 + 开发库旧机读数（表名前缀 demo_，演示库年代主机）",
+  "now_scope": "四市截面（广州/深圳/东莞/惠州），min-max 有真实分布；深圳机构 1025（高校 11 + 院所 1014）",
+  "moved_numbers": [
+   "机构 5,003 → 2189：旧稿是「全国高校 + 院所名称去重池（5,003）」，本件只把落在四市的部分纳入面板（全国池不作分母），深圳 1025（高校 11 + 院所 1014）",
+   "学者 16,120（75.6%）→ 四市名称轨 287 人：旧稿用「机构名与机构池前缀/包含匹配」，本件只认「机构名含城市名」，口径更窄，区域数大幅下降（口径换轨，不是数据减少）",
+   "论文 186,428 → 窗口 52119 行：旧稿是全库学者-关系表命中数，本件叠加了年度窗口与机构名精确匹配两道收窄",
+   "单点 50.0 → 四市 79.60 / 76.75 / 3.00 / 0.00：从兜底演示值换成有分布意义的相对指数"
+  ],
+  "not_comparable": "旧稿 186,428 与 5,003 的分母是「全库/全国」，本件是「四市窗口」，两者不能相除比较"
+ },
+ "gaps": [
+  "链轴不可闭合（决定性缺口）：链成员 credit_code 与学研机构 external_id 键域不同，需甲方/三方提供「机构 → 链」映射表，否则任何链级学术生态都是伪造",
+  "学者 id 轨整列为空：scholar_org_id 非空 0 / 21,316，只能用机构名含城市名代理；改名机构（如「鹏城实验室」不含「深圳」）与异地校区会漏计，回填 org_id 后必须重算",
+  "论文城市归属靠底册 name_cn 精确匹配，命中率仅 16.6%；英文论文（1,387 行）未并入，医学/医院类机构在底册缺失，主题偏斜未校正",
+  "机构维自身有重复行：高校表 3,501 行只有 2,933 个不同 external_id（568 行同校重复录入），本件已按 external_id 去重、并与院所表去重（1 例跨池重复）；不去重会把广州等高校密集市抬高",
+  "高校池是全国名单（深圳仅 16 所），与「科研院所池以广东为主」混加，会把院所多的市抬成学术强市",
+  "权重 0.4/0.3/0.3 与 min-max 归一为本件自定义，未会签；四市样本下极值敏感，惠州学者 0 直接锁死该维下限"
+ ],
+ "probes": [
+  {
+   "label": "heis_name_ext_city",
+   "sql": "SELECT name_cn, external_id, city FROM gkx.dwd_org_heis_info",
+   "rows": 3501
+  },
+  {
+   "label": "ri_name_ext_city",
+   "sql": "SELECT name_cn, external_id, city FROM gkx.dwd_research_institute_base_info",
+   "rows": 2074
+  },
+  {
+   "label": "scholar_profile",
+   "sql": "SELECT COUNT(*), SUM(scholar_org_id IS NOT NULL AND TRIM(scholar_org_id) NOT IN ('','NULL')), SUM(scholar_org_name_zh IS NULL OR UPPER(TRIM(scholar_org_name_zh)) IN ('NULL','')), SUM(scholar_org_name_zh LIKE '%广州%'), SUM(scholar_org_name_zh LIKE '%深圳%'), SUM(scholar_org_name_zh LIKE '%东莞%'), SUM(scholar_org_name_zh LIKE '%惠州%') FROM gkx.dwd_scholar",
+   "rows": 1
+  },
+  {
+   "label": "paper_rows",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_zh_paper",
+   "rows": 1
+  },
+  {
+   "label": "paper_window",
+   "sql": "SELECT id, cover_year_start, author_info_list FROM gkx.dwd_zh_paper WHERE cover_year_start BETWEEN 2021 AND 2024",
+   "rows": 52119
+  },
+  {
+   "label": "heis_ext",
+   "sql": "SELECT external_id FROM gkx.dwd_org_heis_info",
+   "rows": 3501
+  },
+  {
+   "label": "ri_ext",
+   "sql": "SELECT external_id FROM gkx.dwd_research_institute_base_info",
+   "rows": 2074
+  },
+  {
+   "label": "tags_sample",
+   "sql": "SELECT credit_code FROM gkx.dwd_org_industry_tags LIMIT 50000",
+   "rows": 50000
+  },
+  {
+   "label": "tags_rows",
+   "sql": "SELECT COUNT(*) FROM gkx.dwd_org_industry_tags",
+   "rows": 1
+  },
+  {
+   "label": "absent_tables",
+   "sql": "SELECT table_name FROM information_schema.tables WHERE table_schema='gkx' AND (table_name LIKE '%metric%' OR table_name LIKE '%academic%' OR table_name LIKE '%scholar_stat%')",
+   "rows": 0
+  }
+ ],
+ "generated_at": "2026-10-22T16:44:32",
+ "elapsed_sec": 37.25
+}

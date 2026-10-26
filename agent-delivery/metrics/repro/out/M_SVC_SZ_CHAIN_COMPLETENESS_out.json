@@ -1,0 +1,846 @@
+{
+ "metric_id": "M_SVC_SZ_CHAIN_COMPLETENESS",
+ "metric_name": "服务链完整度",
+ "support_judgment": "完全不支持",
+ "judgment_reason": "完整度公式未签（Q-SVCCHAIN-04 / 唐绍祖），calc-logic 0.2.0 明确「本件不做真数、不写可执行公式」；计算所需的「机构×服务链六环节服务记录」（SVC-P0-3）在 gkx 与 live 均不存在（gkx 280 表 0 张 svc_*；live 13 张 svc_* 表 0 行）。分子（某机构在某环节提供过服务）与分母（关键环节全集）两端都无结构承载，属结构与数据双缺。经营范围词表派生的六站代理在城市级恒满 6/6、在 12 个产业上恒为 5/6（distinct=1、零方差），既无区分度，又被 calc-logic 明令禁止冒充完整度，不能把档位抬到部分支持。故判完全不支持，官方值置 null。",
+ "verdict_kind": "negative_evidence",
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面（当期环节覆盖），无年度序列，不使用基期年份；future 若要出「完整度时间序列」，需要机构×环节成员表带生效期，当前两库均无此字段。",
+ "sources": {
+  "library": "gkx",
+  "host": "183.240.141.251:3318",
+  "user": "gkx_reader_zp",
+  "mode": "read-only",
+  "tables": [
+   "gkx.dwd_org_org_product_info（main_activities 词表 → 六站代理）",
+   "gkx.dwd_org_industry_tags（产业标签，经 pool_tags 快照）",
+   "gkx.information_schema（表名/列名否定性证据）"
+  ],
+  "snapshots": [
+   "code/_snapshots21/svcsz21_facts_20261023.json",
+   "code/_snapshots21/svc21_facts_20261022.json",
+   "code/_snapshots21/svc21_pt_axis_20261022.json"
+  ],
+  "inventory": [
+   "_work_gkx21/GKX_INVENTORY.json",
+   "_work_gkx21/LIVE_INVENTORY.json"
+  ],
+  "calc_logic": "gkx-orchestration/agent-delivery/metrics/calc-logic/SVC/M_SVC_SZ_CHAIN_COMPLETENESS.md"
+ },
+ "params": {
+  "formula": "已覆盖的服务链关键环节数 ÷ 全部关键环节数 × 100%",
+  "formula_status": "未签（Q-SVCCHAIN-04 / 唐绍祖）",
+  "axis": "CT-SVC-PT-01 服务链六环节（research/ip/transfer/pilot/testing/market）",
+  "forbidden_substitutes": [
+   "产业链 industry_link_code",
+   "服务六类",
+   "国标 industry",
+   "六站有机构占比",
+   "六类覆盖率"
+  ],
+  "sz_total": 25597,
+  "stage_rule": "经营范围 main_activities 词表命中（_build_svc21_facts.py STAGES）"
+ },
+ "value": {
+  "completeness": null,
+  "completeness_4_stage": null,
+  "completeness_6_stage_proxy": null,
+  "reason": "官方公式未签 + 环节成员记录缺失；代理无区分度且被禁止冒充"
+ },
+ "stage_rows": [
+  {
+   "stage": "stage-research",
+   "name_cn": "研发与科研合作",
+   "orgs": 18987,
+   "share_pct": 74.18,
+   "hit": true
+  },
+  {
+   "stage": "stage-ip",
+   "name_cn": "知识产权与标准",
+   "orgs": 422,
+   "share_pct": 1.65,
+   "hit": true
+  },
+  {
+   "stage": "stage-transfer",
+   "name_cn": "技术转移与孵化",
+   "orgs": 6834,
+   "share_pct": 26.7,
+   "hit": true
+  },
+  {
+   "stage": "stage-pilot",
+   "name_cn": "中试熟化",
+   "orgs": 2,
+   "share_pct": 0.01,
+   "hit": true
+  },
+  {
+   "stage": "stage-testing",
+   "name_cn": "检验检测认证",
+   "orgs": 2360,
+   "share_pct": 9.22,
+   "hit": true
+  },
+  {
+   "stage": "stage-market",
+   "name_cn": "市场与金融咨询",
+   "orgs": 6599,
+   "share_pct": 25.78,
+   "hit": true
+  }
+ ],
+ "stage_summary": {
+  "hit_orgs": 21080,
+  "hit_rate_pct": 82.35,
+  "hits_total": 35204,
+  "orgs_by_stage_count": [
+   [
+    "0",
+    4517
+   ],
+   [
+    "1",
+    10747
+   ],
+   [
+    "2",
+    6984
+   ],
+   [
+    "3",
+    2927
+   ],
+   [
+    "4",
+    402
+   ],
+   [
+    "5",
+    20
+   ],
+   [
+    "6",
+    0
+   ]
+  ],
+  "covered_stations": 6
+ },
+ "proxy": {
+  "purpose": "代理探针：证明「有代理」不等于「部分支持」，代理值零方差、无区分度",
+  "city_level": {
+   "covered": 6,
+   "total": 6,
+   "ratio_pct": 100.0,
+   "verdict": "恒满（100%），零信息量",
+   "why": "「有 ≥1 家机构」这一判定在城市级必然为真：深圳 25,597 家里六站都有命中"
+  },
+  "industry_level": {
+   "industries": 12,
+   "covered_values": [
+    5
+   ],
+   "distinct_values": 1,
+   "ratio_uniform_pct": 83.33,
+   "verdict": "无方差（12 个产业全部 5/6）",
+   "why": "唯一缺的恒为「中试熟化」；代理无法区分产业，等于把常数当指标"
+  },
+  "proxy_value": null,
+  "proxy_disclaimer": "六站供给面代理（经营范围词表命中）不是「机构在某环节提供过服务」的事实记录；calc-logic 明确禁止用它冒充完整度。本件只将其作为缺口证据与展示层参考，禁止写入 ADS 的 svc_metric_* 本 ID，禁止作为验收值。"
+ },
+ "negative_probe": {
+  "probe_1_algorithm": {
+   "question": "完整度的分子/分母定义是否已在项目内签定？",
+   "method": "读 calc-logic 正本 M_SVC_SZ_CHAIN_COMPLETENESS.md（0.2.0，2026-10-13）",
+   "result": "未签（Q-SVCCHAIN-04 / 唐绍祖）；原文「公式：未签」「本件不做真数」「不写可执行公式」",
+   "conclusion": "算法层不可构建"
+  },
+  "probe_2_structure": {
+   "question": "gkx 是否存在机构×服务链环节的成员表或等价结构？",
+   "method": "grep 全库列字典 gkx_columns_20261023.json（280 表 / 6,312 列）+ information_schema 表名匹配",
+   "result": "0 张 svc_* 表；%stage% 列仅命中 6 列，全部落在 dwd_bid_base_out 及两张备份表的 bidding_stage / bidding_stage_code（招投标阶段，与服务机构无关）",
+   "conclusion": "结构层不可构建"
+  },
+  "probe_3_data": {
+   "question": "live 库 13 张 svc_* 表是否有行？",
+   "method": "LIVE_INVENTORY.json 逐表 COUNT",
+   "result": "13 张全部 0 行；svc_metric_fact / svc_metric_series 亦 0 行",
+   "conclusion": "数据层不可构建"
+  },
+  "probe_4_proxy_variance": {
+   "question": "六站供给面代理能否充当「部分可算」的取值？",
+   "method": "按 12 个产业分组算覆盖站数",
+   "result": "城市级 6/6（恒满）；产业级 12 个全部 5/6（distinct=1，唯一缺项恒为 stage-pilot）",
+   "conclusion": "代理为零方差常数，不构成可用取值"
+  }
+ },
+ "by_industry": [
+  {
+   "industry": "软件与信息服务",
+   "orgs": 5311,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 4754,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 114,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 2001,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 654,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 1688,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "智能终端",
+   "orgs": 3929,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 3579,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 43,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 1173,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 419,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 659,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "人工智能",
+   "orgs": 2071,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 1879,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 29,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 813,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 236,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 485,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "具身智能",
+   "orgs": 1682,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 1560,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 20,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 626,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 198,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 334,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "机器人",
+   "orgs": 1402,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 1307,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 12,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 506,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 205,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 204,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "集成电路",
+   "orgs": 1396,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 1224,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 22,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 485,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 233,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 140,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "传感器",
+   "orgs": 1158,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 1015,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 9,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 363,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 207,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 122,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "数字创意",
+   "orgs": 1043,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 926,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 19,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 304,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 77,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 246,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "智能网联汽车",
+   "orgs": 691,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 646,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 6,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 233,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 94,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 107,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "合成生物",
+   "orgs": 531,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 509,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 9,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 295,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 102,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 108,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "生物医药",
+   "orgs": 225,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 188,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 4,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 103,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 30,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 58,
+     "hit": true
+    }
+   ]
+  },
+  {
+   "industry": "低空经济",
+   "orgs": 83,
+   "covered_stages": 5,
+   "total_stages": 6,
+   "ratio_pct": 83.33,
+   "missing_stages": [
+    "stage-pilot"
+   ],
+   "stage_rows": [
+    {
+     "stage": "stage-research",
+     "name_cn": "研发与科研合作",
+     "orgs": 71,
+     "hit": true
+    },
+    {
+     "stage": "stage-ip",
+     "name_cn": "知识产权与标准",
+     "orgs": 2,
+     "hit": true
+    },
+    {
+     "stage": "stage-transfer",
+     "name_cn": "技术转移与孵化",
+     "orgs": 33,
+     "hit": true
+    },
+    {
+     "stage": "stage-pilot",
+     "name_cn": "中试熟化",
+     "orgs": 0,
+     "hit": false
+    },
+    {
+     "stage": "stage-testing",
+     "name_cn": "检验检测认证",
+     "orgs": 18,
+     "hit": true
+    },
+    {
+     "stage": "stage-market",
+     "name_cn": "市场与金融咨询",
+     "orgs": 13,
+     "hit": true
+    }
+   ]
+  }
+ ],
+ "four_stage_mapping": [
+  {
+   "four": "研发创新",
+   "stations": [
+    "stage-research"
+   ],
+   "status": "可映射"
+  },
+  {
+   "four": "成果转化",
+   "stations": [
+    "stage-transfer",
+    "stage-testing"
+   ],
+   "status": "映射不唯一（含两站，且「中试」在 calc-logic 里属成果转化）"
+  },
+  {
+   "four": "企业孵化",
+   "stations": [],
+   "status": "无独立站（「孵化」关键词被并入 stage-transfer 词表）"
+  },
+  {
+   "four": "产业加速",
+   "stations": [
+    "stage-market"
+   ],
+   "status": "可映射，但「产业基金/上市辅导」无独立字段，只能由「科技金融/投融资服务」词命中"
+  }
+ ],
+ "negative_evidence": {
+  "gkx_tables_total": 280,
+  "gkx_svc_like_tables": 0,
+  "gkx_patterns": [
+   "%svc%",
+   "%service%",
+   "%stage%",
+   "%circle%",
+   "%card%"
+  ],
+  "gkx_stage_column_hits": 6,
+  "gkx_stage_column_scope": "仅 dwd_bid_base_out 及其两张备份表的 bidding_stage / bidding_stage_code，与服务机构无关",
+  "live_svc_tables": 13,
+  "live_svc_tables_nonempty": 0,
+  "live_svc_table_rows": 0
+ },
+ "gaps": [
+  {
+   "gap": "完整度公式未签",
+   "detail": "Q-SVCCHAIN-04 / 唐绍祖；calc-logic 明写「不写可执行公式」",
+   "impact": "分子分母定义未定，任何数值都不具备验收资格",
+   "fix": "唐绍祖出完整度定义卡"
+  },
+  {
+   "gap": "机构×服务链环节服务记录缺失",
+   "detail": "SVC-P0-3 待供方交付；gkx 280 表 0 张 svc_*，live 13 张 svc_* 表 0 行",
+   "impact": "「某机构在某环节提供过服务」不可知，只能用经营范围词表代理",
+   "fix": "供方交付机构×六环节成员表（含生效期）"
+  },
+  {
+   "gap": "代理无区分度",
+   "detail": "城市级 6/6 恒满；12 个产业全部 5/6，唯一缺项恒为「中试熟化」",
+   "impact": "代理值等于常数，不能用于排名、分档或对外披露",
+   "fix": "无需修代理；等真成员表"
+  },
+  {
+   "gap": "中试熟化仅 2 家",
+   "detail": "stage-pilot 在深圳切片命中 2 家（全池 10 家），词表为「中试/概念验证/熟化/试制/小试」",
+   "impact": "该站事实上是空白站；即便将来用代理，也会把 5/6 变成所有产业的共同值",
+   "fix": "补中试平台/概念验证中心名录（科技部/工信部口径）"
+  },
+  {
+   "gap": "四环节与六站不是一一映射",
+   "detail": "「企业孵化」无独立站，「成果转化」横跨 transfer+testing+pilot",
+   "impact": "按 calc-logic 的四环节算完整度会引入映射假设，本件不做",
+   "fix": "定义卡明确四环节与六站的对应关系，或统一改用六站轴"
+  }
+ ],
+ "cross_refs": {
+  "M_SVC_SZ_TIER": {
+   "completeness_dimension": "共享同一代理轴，Tier 亦置 null"
+  },
+  "M_SVC_PT_CHAIN_NODE_ORG": {
+   "same_stage_axis": true,
+   "note": "同族已交付件用同一六站词表，判部分支持"
+  },
+  "M_SVC_SZ_COMPARE_METRIC": {
+   "completeness_excluded": true
+  }
+ }
+}

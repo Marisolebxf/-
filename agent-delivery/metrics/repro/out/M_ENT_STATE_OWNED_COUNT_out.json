@@ -1,0 +1,218 @@
+{
+ "metric_id": "M_ENT_STATE_OWNED_COUNT",
+ "metric_name": "国有企业数量",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）+ code/_snapshots21/ 落盘快照",
+ "formula": "COUNT(DISTINCT org) WHERE ent_type ∈ {国有独资, 国有控股, 全民所有制, 国有经营单位}，排除「非国有」前缀",
+ "blocking_tables": {
+  "enterprise_type_dist": {
+   "triage": "source_absent",
+   "evidence": "_work_gkx21/TABLE_ABSENCE_EVIDENCE.md §enterprise_type_dist"
+  }
+ },
+ "conversion_path": "dwd_org_base_info.ent_type（189,116 行全量有值）→ 关键词确定性分类",
+ "rule": {
+  "counted": [
+   "国有独资",
+   "国有控股",
+   "全民所有制",
+   "全民(内联)",
+   "国有经营单位"
+  ],
+  "excluded": [
+   "非国有*",
+   "集体所有制/集体经济组织",
+   "全民与私营联营",
+   "事业单位/机关/社会团体"
+  ],
+  "dedup_key": "org_id"
+ },
+ "totals": {
+  "base_orgs": 189116,
+  "soe": 550,
+  "soe_share": 0.0029,
+  "collective_excluded": 29,
+  "buckets": {
+   "其他(不计入)": 186046,
+   "非企业(不计入)": 2462,
+   "国有独资/控股": 455,
+   "全民所有制": 94,
+   "集体(不计入)": 29,
+   "国有经营单位": 1,
+   "非国有(排除)": 4,
+   "空类型": 24,
+   "混合(排除)": 1
+  }
+ },
+ "by_city": [
+  {
+   "city": "广州市",
+   "soe": 310,
+   "share": 0.5636
+  },
+  {
+   "city": "深圳市",
+   "soe": 156,
+   "share": 0.2836
+  },
+  {
+   "city": "惠州市",
+   "soe": 45,
+   "share": 0.0818
+  },
+  {
+   "city": "东莞市",
+   "soe": 22,
+   "share": 0.04
+  },
+  {
+   "city": "北京市",
+   "soe": 14,
+   "share": 0.0255
+  },
+  {
+   "city": "昆明市",
+   "soe": 1,
+   "share": 0.0018
+  },
+  {
+   "city": "洛阳市",
+   "soe": 1,
+   "share": 0.0018
+  },
+  {
+   "city": "新乡市",
+   "soe": 1,
+   "share": 0.0018
+  }
+ ],
+ "by_industry_l1": [
+  {
+   "industry_l1": "租赁和商务服务业",
+   "soe": 110,
+   "share": 0.2
+  },
+  {
+   "industry_l1": "科学研究和技术服务业",
+   "soe": 64,
+   "share": 0.1164
+  },
+  {
+   "industry_l1": "批发和零售业",
+   "soe": 62,
+   "share": 0.1127
+  },
+  {
+   "industry_l1": "制造业",
+   "soe": 57,
+   "share": 0.1036
+  },
+  {
+   "industry_l1": "交通运输、仓储和邮政业",
+   "soe": 42,
+   "share": 0.0764
+  },
+  {
+   "industry_l1": "金融业",
+   "soe": 40,
+   "share": 0.0727
+  },
+  {
+   "industry_l1": "建筑业",
+   "soe": 36,
+   "share": 0.0655
+  },
+  {
+   "industry_l1": "电力、热力、燃气及水生产和供应业",
+   "soe": 30,
+   "share": 0.0545
+  },
+  {
+   "industry_l1": "信息传输、软件和信息技术服务业",
+   "soe": 24,
+   "share": 0.0436
+  },
+  {
+   "industry_l1": "房地产业",
+   "soe": 23,
+   "share": 0.0418
+  }
+ ],
+ "by_ent_type": [
+  {
+   "ent_type": "有限责任公司(国有独资)",
+   "n": 150
+  },
+  {
+   "ent_type": "有限责任公司(国有控股)",
+   "n": 123
+  },
+  {
+   "ent_type": "全民所有制",
+   "n": 65
+  },
+  {
+   "ent_type": "股份有限公司(非上市、国有控股)",
+   "n": 43
+  },
+  {
+   "ent_type": "有限责任公司分公司(国有独资)",
+   "n": 36
+  },
+  {
+   "ent_type": "股份有限公司分公司(上市、国有控股)",
+   "n": 34
+  },
+  {
+   "ent_type": "股份有限公司(上市、国有控股)",
+   "n": 27
+  },
+  {
+   "ent_type": "有限责任公司分公司(国有控股)",
+   "n": 24
+  },
+  {
+   "ent_type": "全民",
+   "n": 15
+  },
+  {
+   "ent_type": "全民(内联-独资)",
+   "n": 10
+  },
+  {
+   "ent_type": "股份有限公司分公司(国有控股)",
+   "n": 10
+  },
+  {
+   "ent_type": "有限责任公司（国有独资）",
+   "n": 6
+  }
+ ],
+ "cross_check": {
+  "shareholder_soe_rows": 522,
+  "shareholder_soe_orgs": 358,
+  "note": "股东名含国资/财政/政府的记录，属参股口径；与控股口径不并入，仅作量级交叉校验（358 < 550，方向合理）"
+ },
+ "support_judgment": {
+  "data_support_level": "完全转换支持",
+  "reason": "本指标不需要任何缺失结果面：ent_type 是登记类型的枚举值，189,116 家企业 100% 有值，国有属性由登记类型确定性判定，规则无阈值、无歧义、可逐行复核；去重键 org_id 唯一。城市、行业门类、登记类型三个下钻维齐全，计数即真值，故判完全转换支持。",
+  "criteria": {
+   "result_table_needed": false,
+   "source_field_exists": true,
+   "field_fill_rate": 1.0,
+   "rule_ambiguous": false,
+   "soe": 550,
+   "proxy_used": false
+  }
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "本件是截面计数（底册当前时点），不做年度序列，故无基期年份。底册不带历史登记类型快照，无法回溯往年国企数；若要做年增量，只能用成立年份近似，且需声明「成立年 ≠ 当前国有属性」。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/star_base_rows_gkx.json",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "role": "企业底册含登记类型（唯一输入）"
+  }
+ ]
+}

@@ -1,0 +1,306 @@
+{
+ "metric_id": "M_SVC_GRAPH_112_1",
+ "metric_name": "服务机构实体识别构建",
+ "generated_at": "2026-10-24T21:16:10+08:00",
+ "support_judgment": "部分支持",
+ "judgment_reason": "实体域 44153 家（主档对齐 44132，99.95%）与七类类型轴、四项主档属性可现转；但原文点名的「人数」属性仅 1582 家（3.58%）有观测——年报人数字段在池内覆盖率过低，且 gkx 无图谱挂载表（节点号只能确定性派生、无物化），故落部分支持，不抬到完全转换。",
+ "sources": [
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "user": "gkx_reader_zp",
+   "table": "gkx.dwd_org_org_product_info",
+   "rows": 45011,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_base_info",
+   "rows": 189116,
+   "snapshot": "code/_snapshots21/base_20261021.json"
+  },
+  {
+   "library": "gkx",
+   "host": "183.240.141.251:3318",
+   "table": "gkx.dwd_org_annual_financial_info",
+   "rows": 90926,
+   "snapshot": "code/_snapshots21/svc21_facts_20261022.json"
+  }
+ ],
+ "base_years_used": [
+  2026
+ ],
+ "base_years_missing": [],
+ "base_years_note": "实体识别是截面件（以采集时点 2026-10 的池为口径），不涉及跨年比较；人数属性取各机构最近一个有值的财务年份，未把缺年按 0 摊入。",
+ "population": {
+  "base_all": 189116,
+  "product_info_all": 45011,
+  "service_any_hit": 41478,
+  "pool_orgs": 44153,
+  "aligned_to_base": 44132,
+  "align_rate_pct": 99.95,
+  "pool_distinct_names": 44153,
+  "base_dup_name_groups": 47,
+  "base_dup_name_rows": 94
+ },
+ "type_axis": {
+  "dist": [
+   {
+    "type": "INNOV",
+    "name_cn": "科技创新服务",
+    "orgs": 32294,
+    "share_pct": 73.14
+   },
+   {
+    "type": "FINANCE",
+    "name_cn": "金融服务",
+    "orgs": 3211,
+    "share_pct": 7.27
+   },
+   {
+    "type": "CONSULT",
+    "name_cn": "咨询服务",
+    "orgs": 3132,
+    "share_pct": 7.09
+   },
+   {
+    "type": "MKT",
+    "name_cn": "市场营销服务",
+    "orgs": 1146,
+    "share_pct": 2.6
+   },
+   {
+    "type": "HR",
+    "name_cn": "人力资源服务",
+    "orgs": 582,
+    "share_pct": 1.32
+   },
+   {
+    "type": "IP",
+    "name_cn": "知识产权服务",
+    "orgs": 108,
+    "share_pct": 0.24
+   },
+   {
+    "type": "UNCLASSIFIED",
+    "name_cn": "未分类",
+    "orgs": 3680,
+    "share_pct": 8.33
+   }
+  ],
+  "multi_hit_dist": {
+   "0": 3680,
+   "1": 7529,
+   "2": 12822,
+   "3": 13700,
+   "4": 5135,
+   "5": 1200,
+   "6": 87
+  }
+ },
+ "stage_axis": {
+  "dist": {
+   "stage-research": 30776,
+   "stage-transfer": 13878,
+   "stage-market": 10702,
+   "stage-testing": 4533,
+   "stage-ip": 776,
+   "stage-pilot": 8
+  }
+ },
+ "attribute_coverage": {
+  "name": {
+   "nonnull": 44153,
+   "rate_pct": 100.0,
+   "source": "dwd_org_org_product_info.name_cn / dwd_org_base_info.name_cn"
+  },
+  "service_type": {
+   "nonnull": 40473,
+   "rate_pct": 91.67,
+   "source": "main_activities 词表判态（本件自算）"
+  },
+  "geo_city": {
+   "nonnull": 44132,
+   "rate_pct": 99.95,
+   "source": "dwd_org_base_info.city"
+  },
+  "geo_area": {
+   "nonnull": 39811,
+   "rate_pct": 90.17,
+   "source": "dwd_org_base_info.area（区县）"
+  },
+  "org_size": {
+   "nonnull": 44132,
+   "rate_pct": 99.95,
+   "source": "dwd_org_base_info.org_size"
+  },
+  "reg_capital": {
+   "nonnull": 44083,
+   "rate_pct": 99.84,
+   "source": "dwd_org_base_info.reg_capital"
+  },
+  "industry": {
+   "nonnull": 44102,
+   "rate_pct": 99.88,
+   "source": "dwd_org_base_info.industry_category"
+  },
+  "employees": {
+   "nonnull": 1582,
+   "rate_pct": 3.58,
+   "source": "dwd_org_annual_financial_info.employees_number"
+  }
+ },
+ "nodes": {
+  "assigned": 44153,
+  "distinct_node_id": 44153,
+  "rule": "node_id = 'SVC-' + sha1(org_id)[:16]（确定性、无物化表）",
+  "sample": [
+   {
+    "org_id": "efae1115c7192b55334c4cc383bdf5bc",
+    "node_id": "SVC-af6eed7cf869c7d9",
+    "name": "广州车行易科技股份有限公司"
+   },
+   {
+    "org_id": "6522d511678aab879a99e7badca25447",
+    "node_id": "SVC-346b7a5176582b2c",
+    "name": "深圳市云智数据服务有限公司"
+   },
+   {
+    "org_id": "182ca57763f7a38790ea01ad60add0aa",
+    "node_id": "SVC-bf798192842ac831",
+    "name": "广州得令信息科技有限公司"
+   },
+   {
+    "org_id": "b097567f4bd0824237713269ccdd0359",
+    "node_id": "SVC-850608df67e5399d",
+    "name": "广州砺锋信息科技有限公司"
+   },
+   {
+    "org_id": "83652080ad33ae51eb9891847b3405e2",
+    "node_id": "SVC-80b3c625818bf7e3",
+    "name": "深圳市云传智联技术有限公司"
+   }
+  ]
+ },
+ "verify_channels": {
+  "tech_tag": {
+   "orgs": 32077,
+   "rate_pct": 72.65
+  },
+  "news": {
+   "orgs": 24639,
+   "rate_pct": 55.8
+  },
+  "recruit": {
+   "orgs": 2165,
+   "scope": "HR 子池（type_primary=HR）分块查询口径，非全池"
+  }
+ },
+ "city_dist": [
+  [
+   "深圳市",
+   25597
+  ],
+  [
+   "广州市",
+   12641
+  ],
+  [
+   "东莞市",
+   4300
+  ],
+  [
+   "惠州市",
+   1594
+  ],
+  [
+   "未标注",
+   21
+  ]
+ ],
+ "size_dist": [
+  [
+   "小型",
+   22750
+  ],
+  [
+   "中型",
+   8545
+  ],
+  [
+   "微型",
+   6632
+  ],
+  [
+   "未知",
+   4320
+  ],
+  [
+   "大型",
+   1906
+  ]
+ ],
+ "industry_dist": [
+  [
+   "制造业",
+   13129
+  ],
+  [
+   "科学研究和技术服务业",
+   7396
+  ],
+  [
+   "批发和零售业",
+   7036
+  ],
+  [
+   "信息传输、软件和信息技术服务业",
+   6696
+  ],
+  [
+   "租赁和商务服务业",
+   3426
+  ],
+  [
+   "建筑业",
+   1569
+  ],
+  [
+   "房地产业",
+   1457
+  ],
+  [
+   "交通运输、仓储和邮政业",
+   703
+  ],
+  [
+   "金融业",
+   576
+  ],
+  [
+   "居民服务、修理和其他服务业",
+   556
+  ],
+  [
+   "文化、体育和娱乐业",
+   520
+  ],
+  [
+   "水利、环境和公共设施管理业",
+   236
+  ],
+  [
+   "住宿和餐饮业",
+   212
+  ],
+  [
+   "电力、热力、燃气及水生产和供应业",
+   167
+  ]
+ ],
+ "compute": {
+  "elapsed_sec": 0.745,
+  "sql_count": 0
+ }
+}

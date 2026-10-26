@@ -1,0 +1,138 @@
+{
+ "metric_id": "M_INNOV_GBA_ENV_INDEX",
+ "formula_owner": "王惠",
+ "generated_at": "2026-10-23",
+ "source_db": "gkx",
+ "source_detail": {
+  "机构/高企": "base_20261021.json + cityfam_hightech_20261021.json",
+  "政策": "gkx.dwd_policy_base（20,000 行小表，按 city/type 聚合）",
+  "科研院所": "gkx.dwd_research_institute_base_info（2,074 行）"
+ },
+ "method": "三维等权×100：政策供给 min-max + 政策覆盖(type 广度代理) min-max + 高企密度 min-max",
+ "asof": "2026-10-23",
+ "probes": {
+  "org_base_info_total": 189116,
+  "policy_total": 20000,
+  "policy_status": {
+   "有效": 20000
+  },
+  "policy_theme_null": 19998,
+  "policy_city_null_rows": 9706,
+  "forg_total": 20000,
+  "patent_apdt_year_range": [
+   2021,
+   2026
+  ]
+ },
+ "gba_11_city_org_counts": {
+  "广州市": 49605,
+  "深圳市": 95600,
+  "珠海市": 0,
+  "佛山市": 1,
+  "惠州市": 9979,
+  "东莞市": 33590,
+  "中山市": 1,
+  "江门市": 0,
+  "肇庆市": 0,
+  "香港": 0,
+  "澳门": 0
+ },
+ "computable_cities": [
+  "广州市",
+  "深圳市",
+  "惠州市",
+  "东莞市"
+ ],
+ "missing_cities": [
+  "珠海市",
+  "佛山市",
+  "中山市",
+  "江门市",
+  "肇庆市",
+  "香港",
+  "澳门"
+ ],
+ "policy_only_cities": [
+  {
+   "city": "珠海市",
+   "policy_cnt": 118,
+   "orgs": 0,
+   "policy_type_breadth": 8,
+   "note": "有市级政策、机构底册 <100 家 → 高企密度维不可算，不入 env_index"
+  },
+  {
+   "city": "佛山市",
+   "policy_cnt": 51,
+   "orgs": 1,
+   "policy_type_breadth": 4,
+   "note": "有市级政策、机构底册 <100 家 → 高企密度维不可算，不入 env_index"
+  }
+ ],
+ "rows": [
+  {
+   "city": "广州市",
+   "orgs": 49605,
+   "policy_cnt": 325,
+   "policy_type_breadth": 9,
+   "hightech_cnt": 7556,
+   "hightech_density": 0.15232,
+   "research_inst_cnt": 822,
+   "n_supply": 0.3697,
+   "n_coverage_proxy": 0.9,
+   "n_density": 0.793,
+   "env_index": 68.8,
+   "env_index_2dim_sensitivity": 58.1
+  },
+  {
+   "city": "深圳市",
+   "orgs": 95600,
+   "policy_cnt": 879,
+   "policy_type_breadth": 10,
+   "hightech_cnt": 15683,
+   "hightech_density": 0.16405,
+   "research_inst_cnt": 1014,
+   "n_supply": 1.0,
+   "n_coverage_proxy": 1.0,
+   "n_density": 1.0,
+   "env_index": 100.0,
+   "env_index_2dim_sensitivity": 100.0
+  },
+  {
+   "city": "惠州市",
+   "orgs": 9979,
+   "policy_cnt": 0,
+   "policy_type_breadth": 0,
+   "hightech_cnt": 1090,
+   "hightech_density": 0.10923,
+   "research_inst_cnt": 111,
+   "n_supply": 0.0,
+   "n_coverage_proxy": 0.0,
+   "n_density": 0.0326,
+   "env_index": 1.1,
+   "env_index_2dim_sensitivity": 1.6
+  },
+  {
+   "city": "东莞市",
+   "orgs": 33590,
+   "policy_cnt": 8,
+   "policy_type_breadth": 4,
+   "hightech_cnt": 3607,
+   "hightech_density": 0.10738,
+   "research_inst_cnt": 127,
+   "n_supply": 0.0091,
+   "n_coverage_proxy": 0.4,
+   "n_density": 0.0,
+   "env_index": 13.6,
+   "env_index_2dim_sensitivity": 0.5
+  }
+ ],
+ "support_judgment": "部分支持",
+ "support_reason": "11 城中仅 4 城有机构底册（深圳/广州/东莞/惠州，合计 188,774 家）；珠海 0 家、佛山 1 家、中山 1 家、江门/肇庆/香港/澳门 0 家，港澳 forg 有效命中 0；政策覆盖维 theme 字面 NULL 19,998/20,000，只能用 type 广度为代理 → 不得超过部分支持",
+ "notes": [
+  "政策供给按 city 命中且 status='有效'（全库 20,000 行 status 均为有效，故 status 过滤无区分度）；",
+  "国家级政策 city 为 'NULL'（9,706 行）未按 11 城共享计入，避免把同一政策重复摊到各城；",
+  "高企口径 = cityfam_hightech 名单（27,936 个 org_id），按 org_id 关联底册城市；",
+  "政策 type 广度 = COUNT(DISTINCT type)，type 取值形如「政策文件-管理办法/实施方案」「申报通知」，不是产业主题；它只能代理「政策工具箱宽度」，不能代理「政策覆盖的产业范围」。"
+ ],
+ "elapsed_sec": 0.0
+}

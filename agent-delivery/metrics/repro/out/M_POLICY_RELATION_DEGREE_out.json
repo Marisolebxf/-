@@ -1,0 +1,154 @@
+{
+ "metric_id": "M_POLICY_RELATION_DEGREE",
+ "metric_name_zh": "政策关联度",
+ "support_judgment": "完全不支持",
+ "verdict_kind": "negative_evidence",
+ "judgment_reason": "关联度=图谱节点加权度中心性，依赖政策实体关系图谱的四类边。gkx 280 表里没有任何边表或实体表；注册表给的临时口径（pedigree 引用 + 标签共现）同样不成立：引用字段真值 2 行、标签字段 0—2 行、pedigree 列不存在。结构与数据两端都不具备可算闭环 → 完全不支持。",
+ "publishable": false,
+ "registered_metric_value": null,
+ "headline": {
+  "policy_nodes": 20000,
+  "edge_tables_in_gkx": 0,
+  "real_citation_rows": 2,
+  "real_label_rows": {
+   "theme": 2,
+   "keywords": 0,
+   "keypoints": 0
+  },
+  "proxy_policies_with_edge": 1269,
+  "proxy_zero_degree_pct": 93.655,
+  "proxy_gini": 0.943592,
+  "verdict": "度中心性对 99% 以上节点无定义，不构成可发布的关联度"
+ },
+ "edge_source_audit": [
+  {
+   "edge": "support（扶持）",
+   "table_in_gkx": null,
+   "note": "support 边需要政策—企业/对象关系表；policy_support 全表 JSON null，无对象可取，边无从生成"
+  },
+  {
+   "edge": "apply_to（适用）",
+   "table_in_gkx": null,
+   "note": "apply_to 边需要政策—产业/技术关系表；gkx 无 policy_entity / policy_graph_edge"
+  },
+  {
+   "edge": "regulate（监管）",
+   "table_in_gkx": null,
+   "note": "regulate 边需要监管关系表；两库均无"
+  },
+  {
+   "edge": "cite（引用）",
+   "table_in_gkx": null,
+   "note": "cite 边的唯一候选字段 quote_policy 真值只有 2 行，另 19,998 行是字面 'NULL'；可解析到库内政策标题的引用 0 条"
+  }
+ ],
+ "field_truth": {
+  "quote_policy_rows_real": 2,
+  "quote_policy_rows_literal_null": 19998,
+  "theme_rows_real": 2,
+  "keywords_rows_real": 0,
+  "keypoints_rows_real": 0,
+  "policy_support_json_null_rows": 20000,
+  "pedigree_column_present": false,
+  "policy_base_columns": 33,
+  "note": "字面 'NULL' 是字符串而不是 SQL NULL：`NULLIF(TRIM(col),'') IS NOT NULL` 会把19,998 行全部算成「有值」（实测返回 20,000）。必须先排除字面 'NULL' 再判。"
+ },
+ "tables": {
+  "gkx_policy_tables": [
+   "dwd_global_policy_base",
+   "dwd_global_policy_base_bak_20260923",
+   "dwd_policy_base",
+   "dwd_policy_base_bak_20260923"
+  ],
+  "gkx_edge_or_entity_tables": [],
+  "live_edge_or_entity_tables": {
+   "policy_graph_edge": 3726,
+   "policy_graph_node": 806,
+   "policy_entity": 7517,
+   "policy_entity_relation": 0,
+   "policy_entity_type": 0,
+   "policy_focus": 631
+  },
+  "live_policy_tables_zero_rows": 37,
+  "live_policy_base_info_rows": 0,
+  "mock_caveat": "live 的 policy_graph_node(806)/policy_graph_edge(3,726)/policy_entity(7,517) 登记在 Mock @ batch=mock_20260623，属造数面；同批 MOCK_TABLE_REGISTRY.md 记录 weight 恒 1、model_version 带 demo 后缀，不得作证据。"
+ },
+ "proxy_degree": {
+  "method": "以标题命中链树节点名（≥2 字，1,150 个名字）作为政策—产业边，叠加 quote_policy 的引用边，算无权度数",
+  "edges": 1454,
+  "quote_edges_parsed": 1,
+  "quote_edges_resolved_to_local_policy": 0,
+  "docs_with_edge": 1269,
+  "docs_with_edge_pct": 6.345,
+  "docs_with_edge_after_quote": 1270,
+  "zero_degree_docs": 18731,
+  "zero_degree_pct": 93.655,
+  "max_degree": 7,
+  "mean_degree": 0.0727,
+  "gini": 0.943592,
+  "degree_dist": {
+   "0": 18731,
+   "1": 1096,
+   "2": 167,
+   "3": 4,
+   "5": 1,
+   "7": 1
+  },
+  "top_nodes": [
+   {
+    "id": "18403390",
+    "title": "关于召开操作系统、数据库、中间件、办公软件和嵌入式软件等基础软件技术与产业发展研讨会的通知",
+    "degree": 7
+   },
+   {
+    "id": "18377453",
+    "title": "关于“核心电子器件、高端通用芯片及基础软件产品”国家科技重大专项2012年“移动智能终端操作系统研发",
+    "degree": 5
+   },
+   {
+    "id": "18342772",
+    "title": "关于授予射频集成电路与系统、高精密多线切割技术等16家河北省工程实验室称号的通知",
+    "degree": 3
+   },
+   {
+    "id": "18352405",
+    "title": "上海市“科技创新行动计划”2008年度生物医药和农业科技领域重点科技项目指南",
+    "degree": 3
+   },
+   {
+    "id": "18378518",
+    "title": "上海市“科技创新行动计划”2008年度生物医药与农业领域重大科技攻关项目指南",
+    "degree": 3
+   }
+  ],
+  "cross_check": {
+   "policy_industry_snapshot": {
+    "nodes_total": 1261,
+    "nodes_hit": 77,
+    "node_coverage_pct": 6.1063,
+    "nodes_hit_excl_2char": 67
+   },
+   "note": "该快照按「节点→政策数」统计，本件按「政策→节点数」统计，两者是同一批边的两个投影；节点侧 6.1063% 的环节覆盖与本件政策侧 6.345% 的有边率同量级，互相印证边源极稀。"
+  }
+ },
+ "why_not_partial": "「部分支持」要求主口径成立、只有个别维缺数据。本件的主口径是单一标量（每条政策的度），度的载体是边；四类边一张表都没有，代理边只覆盖 6.345% 的政策、其余 93.655% 恒为 0。对 93.655% 的主体没有定义，不是「部分维缺失」，是「主口径不成立」。",
+ "repair_path": [
+  "建 policy_entity / policy_graph_edge（edge_type 取 support/apply_to/regulate/cite，带权重与来源句）",
+  "回填 quote_policy（现真值 2 行），并建政策标题—id 的引用消歧表",
+  "补 policy_support.support_object，才能生成 support 边",
+  "QPOL-03 签认边权与匹配规则后，才可把无权度数升级为加权度中心性"
+ ],
+ "sources": [
+  "code/_snapshots21/policy_base_20261021.json（20,000 条）",
+  "code/_snapshots21/policy_struct_20261023.json（theme/keywords/keypoints/policy_support 真值）",
+  "code/_snapshots21/policy_field_fill_20261022.json（quote_policy=2）",
+  "code/_snapshots21/policy_fields_a23_20261021.json（33 列清单，无 pedigree）",
+  "code/_snapshots21/policy_aux_20261022.json（两条 quote_policy 原文）",
+  "code/_snapshots21/chain_tree_20261021.json（1,273 节点）",
+  "code/_snapshots21/policy_industry_20261023.json（节点侧覆盖交叉校验）",
+  "_work_gkx21/GKX_INVENTORY.json / LIVE_INVENTORY.json（逐表 COUNT(*)）"
+ ],
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "截面指标：关联度按当前政策集合的图结构一次性计算，不按年出值；故无基期年。发布年只作节点属性，不进入度数的分母。"
+}

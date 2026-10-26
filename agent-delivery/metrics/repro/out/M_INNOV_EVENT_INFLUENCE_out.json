@@ -1,0 +1,282 @@
+{
+ "metric_id": "M_INNOV_EVENT_INFLUENCE",
+ "metric_name": "事件影响力",
+ "date": "2026-10-22",
+ "data_source": "gkx @ 183.240.141.251:3318（只读 gkx_reader_zp）：dwd_event 20 行 + dwd_industry_chain_news_info 108,052 行",
+ "formula": "0.45×媒体层级 + 0.35×央媒报道量 + 0.20×周内报道跨度；本件因事件簇缺失不执行",
+ "verdict": "完全不支持",
+ "event_table": {
+  "rows": 20,
+  "columns": [
+   "dwd_id",
+   "id",
+   "event_name",
+   "organizer",
+   "start_date",
+   "end_date",
+   "event_url",
+   "created_time",
+   "updated_time",
+   "creater",
+   "updater",
+   "table_data_source",
+   "operator_remarks",
+   "is_deleted",
+   "insert_remark"
+  ],
+  "dates": [
+   "2026-05-13",
+   "2026-05-14"
+  ]
+ },
+ "news_table": {
+  "rows": 108052,
+  "columns": [
+   "pk_id",
+   "industry_code",
+   "industry_name",
+   "title",
+   "publish_date",
+   "source"
+  ],
+  "date_min": "2025-02-01",
+  "date_max": "2026-07-27",
+  "distinct_sources": 206,
+  "top_sources": [
+   [
+    "IT之家",
+    14307
+   ],
+   [
+    "第一财经",
+    10846
+   ],
+   [
+    "证券之星",
+    9742
+   ],
+   [
+    "盖世汽车资讯",
+    6469
+   ],
+   [
+    "中国新闻网",
+    6302
+   ],
+   [
+    "动脉橙",
+    4974
+   ],
+   [
+    "投资界",
+    4251
+   ],
+   [
+    "36氪",
+    2380
+   ],
+   [
+    "界面新闻",
+    2209
+   ],
+   [
+    "全景网（IPO黄金眼）",
+    2144
+   ]
+  ],
+  "has_event_id": false,
+  "has_cluster_id": false
+ },
+ "field_audit": {
+  "required": [
+   {
+    "field": "event_id",
+    "purpose": "事件簇主键（跨源聚类后）",
+    "exists_in_news": false
+   },
+   {
+    "field": "report_id",
+    "purpose": "单条报道主键",
+    "exists_in_news": false
+   },
+   {
+    "field": "source_name",
+    "purpose": "媒体源名称",
+    "exists_in_news": false
+   },
+   {
+    "field": "source_tier",
+    "purpose": "媒体层级（央媒/全国/行业/地方）",
+    "exists_in_news": false
+   },
+   {
+    "field": "publish_time",
+    "purpose": "报道发布时间（精确到小时）",
+    "exists_in_news": false
+   },
+   {
+    "field": "is_central",
+    "purpose": "是否央媒（0/1，可由 source_tier 派生）",
+    "exists_in_news": false
+   },
+   {
+    "field": "event_time",
+    "purpose": "事件首发时间（算周内跨度）",
+    "exists_in_news": false
+   },
+   {
+    "field": "dedup_key",
+    "purpose": "同源转载去重键（标题指纹/URL 规范）",
+    "exists_in_news": false
+   }
+  ],
+  "n_required": 8,
+  "n_present_in_news": 0,
+  "available_proxies": {
+   "source_name": "有（206 个，仅名称）",
+   "publish_time": "有（日期，无小时）",
+   "title": "有（可做聚类输入，但聚类未验收）",
+   "source_tier": "无",
+   "event_id": "无",
+   "report_id": "有 pk_id 行号，不是报道业务 id"
+  },
+  "blocking_gaps": [
+   "event_id",
+   "source_tier",
+   "is_central",
+   "dedup_key",
+   "event_time"
+  ]
+ },
+ "clustering_boundary": {
+  "old_approach": "标题归一 + 相似度阈值，把 108,072 条聚成 6,406 簇",
+  "why_rejected": "聚类是模型产物，不是库内事件真值；阈值一变簇数与影响力全变，且没有人工标注集做准召评估。用未验收的簇冒充事件，会把「同题转载」与「同一事件」混为一谈。",
+  "would_need": [
+   "人工标注 500 对报道",
+   "准召 ≥0.9",
+   "簇 id 落表并版本化"
+  ]
+ },
+ "requirements": {
+  "grain": "一行 = 一个事件簇；报道明细单独一张表",
+  "tables": [
+   {
+    "name": "dwd_event_cluster",
+    "fields": [
+     "event_id",
+     "event_time",
+     "title",
+     "chain_id",
+     "event_type",
+     "status",
+     "updated_at"
+    ]
+   },
+   {
+    "name": "dwd_event_report",
+    "fields": [
+     "report_id",
+     "event_id",
+     "source_name",
+     "source_tier",
+     "publish_time",
+     "url",
+     "title"
+    ]
+   },
+   {
+    "name": "dim_media_tier",
+    "fields": [
+     "source_name",
+     "tier",
+     "is_central",
+     "weight"
+    ]
+   }
+  ],
+  "derived": [
+   {
+    "field": "media_tier_score",
+    "formula": "Σ(报道 tier 权重)/报道数，归一到 0—1"
+   },
+   {
+    "field": "central_count_norm",
+    "formula": "央媒报道数 / 该事件报道数"
+   },
+   {
+    "field": "span_days_norm",
+    "formula": "min(1, (末次报道−首次报道)/7 天)"
+   },
+   {
+    "field": "influence",
+    "formula": "100×(0.45×tier + 0.35×central + 0.20×span)"
+   }
+  ],
+  "acceptance": [
+   "每个事件至少 2 条报道、至少 1 个可回溯 URL",
+   "媒体层级表覆盖率 ≥90% 的报道量",
+   "跨源转载去重后，单事件重复率 <5%",
+   "影响力分布不得 90% 集中在同一档"
+  ]
+ },
+ "remediation": [
+  {
+   "step": 1,
+   "action": "先做事件聚类并人工验收（准召≥0.9），落 event_cluster",
+   "owner": "算法",
+   "blocking": true
+  },
+  {
+   "step": 2,
+   "action": "建媒体层级维表（206 源全量标注 tier/is_central）",
+   "owner": "数据治理",
+   "blocking": true
+  },
+  {
+   "step": 3,
+   "action": "把报道明细落 event_report，保留 publish_time 到小时",
+   "owner": "数据接入",
+   "blocking": true
+  },
+  {
+   "step": 4,
+   "action": "按 0.45/0.35/0.20 合成 influence 并版本化",
+   "owner": "算法",
+   "blocking": false
+  }
+ ],
+ "support_judgment": {
+  "data_support_level": "完全不支持",
+  "reason": "事件表只有 20 行会议公告，无报道明细；资讯表虽有 108,052 条、206 个源，但没有 event_id/簇 id/媒体层级，8 个必需字段里资讯表原样只有 0 个；要算影响力必须先聚类并建媒体层级表，两者都不存在或未验收。旧稿用新闻聚类 + 称谓规则硬分级，属于模型/人工假设，不是库内事件数据；本批规则禁止用新闻串伪事件，故判完全不支持。",
+  "criteria": {
+   "event_table_rows": 20,
+   "news_rows": 108052,
+   "distinct_sources": 206,
+   "event_id_in_news": false,
+   "media_tier_table": false,
+   "clustering_validated": false,
+   "policy_proxy_used": false
+  }
+ },
+ "base_years_used": [],
+ "base_years_missing": [],
+ "base_years_note": "事件表只有 2026-05-13/14 两天；资讯表覆盖 2025-02—2026-07，但没有事件簇，不能形成年度事件序列。used/missing 为空表示无年度基期，不是缺年补 0。",
+ "sources": [
+  {
+   "path": "code/_snapshots21/event21_probe_20261022.json",
+   "table": "gkx.dwd_event",
+   "rows": 20,
+   "role": "事件表全量取证"
+  },
+  {
+   "path": "code/_snapshots21/news21_chain_items_20261022.json",
+   "table": "gkx.dwd_industry_chain_news_info",
+   "rows": 108052,
+   "role": "报道明细（无事件簇）"
+  },
+  {
+   "path": "_work_gkx21/GKX_INVENTORY.json",
+   "role": "280 张表清单"
+  }
+ ]
+}
