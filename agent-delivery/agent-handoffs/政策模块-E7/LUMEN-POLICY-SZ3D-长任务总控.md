@@ -4,7 +4,7 @@
 > **授权人**：待监管人落款（E7 既有管线监管人为 `human:淮政玮`）。**本文件尚未写入「后续认领不必再问」**。补上该句之前，coordinator 不得无人值守认领。  
 > **目标**：`/policy/recommendation` 从「自由勾选二级指标 + 34/33/33」改为三张固定指标卡，结果与 `M_POLICY_SUPPORT_STRENGTH` 口径一致。  
 > **模式**：长任务。规约：[`长任务执行规约.md`](../../长任务执行规约.md)。  
-> **设计真源**：[`FUNC-DESIGN-E7-政策分析.md`](../产品整体定义/E7-政策分析/FUNC-DESIGN-E7-政策分析.md) §3.6 / §4.3 **v0.5**。故事：USM v1.4.9 `US-E7-POL-04`。线框：Wireframe §6 v1.4.6。  
+> **设计真源**：[`FUNC-DESIGN-E7-政策分析.md`](../产品整体定义/E7-政策分析/FUNC-DESIGN-E7-政策分析.md) §3.6 / §4.3 **v0.7**。实现方案：[`05.6.2-深圳政策现状分析.md`](../产品整体定义/科技专题服务系统-完整详细设计/05.6.2-深圳政策现状分析.md)。故事：USM v1.4.9 `US-E7-POL-04`。线框：Wireframe §6 v1.4.6。  
 > **派单**：[`LUMEN-POLICY-SZ3D-总派单.md`](./LUMEN-POLICY-SZ3D-总派单.md)  
 > **不替代**：[`LUMEN-POLICY-ABCDE-长任务总控.md`](./LUMEN-POLICY-ABCDE-长任务总控.md) 的时序 / 区域对比 / 门户。本管线只改深圳三维。
 
@@ -35,6 +35,7 @@ Epic：`E-POLICY-PDR`。Sprint：`2026-W43`。五叶初始状态全部 `backlog`
 | 8 | 调用链不变：前端 → Java → Python `/internal/policy/jobs/execute`。Java 不写算法 |
 | 9 | `USE_MOCK=false` 禁止用 Demo `POLICY_SZ_CORE_INDICATORS` 填卡片 |
 | 10 | 监管与认领：授权句落款前全部 `backlog`。落款后 `supervised_by` 用落款人，`claim_type=coordinator_dispatch` |
+| 11 | 优化建议复用时序解读润色：规则定卡，模型只改 `conclusion`。落地实效与综合分不出建议卡。合同见详设 `05.6.2` §5 |
 
 ## 1. 废作（不得当依赖、不得再派成「把勾选接上」）
 

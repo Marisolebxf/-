@@ -7,14 +7,14 @@ element: POLICY
 role: data-flow
 status: approved
 version: "2026-09-11"
-updated: 2026-10-23
+updated: 2026-10-24
 engine: multi
 signoff_owner: human:淮政玮
 signoff_status: approved
 signoff_by: human:淮政玮
 signoff_at: 2026-08-21
 task_id: LUMEN-POLICY-E-DEVOPS-L01
-amendment_note: "E0 只补发布边：helm 装出 gkxlumen-platform-topic-policy:7097；网关 /policy/** → 30899；政策 HTTP 现网 gkxlumen-platform-entan-py:8000；Nacos FORCE_NACOS_REPUBLISH 灌 async.policy.algo-base-url。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。2026-09-11 增 §2.4 产业向量消费切面 + L0 theme 只进 ext5（CROSS-VEC；不改 §1 工厂边、不翻签）。2026-10-23：related_entities.industry 贴源后弃用；产业抽取只写 DWD policy_industry_rel，并按政策同步到 ADS 同名表，不回写主表 JSON。"
+amendment_note: "E0 只补发布边：helm 装出 gkxlumen-platform-topic-policy:7097；网关 /policy/** → 30899；政策 HTTP 现网 gkxlumen-platform-entan-py:8000；Nacos FORCE_NACOS_REPUBLISH 灌 async.policy.algo-base-url。工厂 ODS→GDF→DWD→ADS→demo_gkx_chain 拓扑不改、不翻签。2026-09-11 增 §2.4 产业向量消费切面 + L0 theme 只进 ext5（CROSS-VEC；不改 §1 工厂边、不翻签）。2026-10-23：related_entities.industry 贴源后弃用；产业抽取只写 DWD policy_industry_rel，并按政策同步到 ADS 同名表，不回写主表 JSON。2026-10-24：§2.2.1 补时序 Job 同步执行（样例 POLICY-20261024-014）。时序/区域走结果板读 DWD，不把 Job 写成一律 harness.dispatch，不翻签。"
 ---
 ```
 
@@ -98,13 +98,15 @@ flowchart TB
   JAVA3 -->|"Feign GET /internal/policy/search and /docs/id"| PY3["lumen-algo-py 现网 gkxlumen-platform-entan-py"]
   JAVA3 -->|"Feign GET /internal/policy/graph 只读"| PY3
   JAVA3 -->|"Feign GET /internal/policy/metrics and /indicators"| PY3
-  ASYNC -->|"Feign POST /internal/policy/jobs/execute"| PY3
+  ASYNC -->|"Feign POST /internal/policy/jobs/execute 同步"| PY3
   ASYNC -->|"Java 签发 result_snapshot_id"| SNAP["task snapshot 表"]
   PY3 -->|"search/详情 读 DWD"| DWD3["demo_gkxlumenx_dwd.policy_base_info"]
+  PY3 -->|"时序/区域结果板"| DWD3
+  PY3 -->|"单产业或集群全部才读 rel"| REL["demo_gkxlumenx_ads.policy_industry_rel"]
   PY3 -->|"图谱优先 Nebula"| NEB3["demo_gkx_chain"]
   PY3 -->|"图谱兜底 ADS source 诚实"| ADS3["demo_gkxlumenx_ads.policy_graph_*"]
   PY3 -->|"metrics/indicators 读 ADS"| ADSM["demo_gkxlumenx_ads.policy_*"]
-  PY3 -->|"Job 只调 harness.dispatch"| ADSM
+  PY3 -->|"深圳等其余子类"| HARNESS["harness.dispatch"]
 ```
 
 | 生产者 | 消费者 | 触发 | 失败语义 | 禁止事项 |
@@ -112,10 +114,27 @@ flowchart TB
 | Java `gkxlumen-topic-policy` | `lumen-ui-topic` | 网关 `/policy/topic/v1/policy/search` · `/docs/{id}` · `/graph` · `/metrics` · `/indicators` | 下游挂 HTTP 200 + honesty.empty + degraded，不 5xx 填假数 | Feign `demo-platform-entan-py`；暴露 Python `/v1` 给前端；`/v1/policy/mock`；暴露 `POST .../graph/hang`；Java 自填 8 件套 / 改绿 D1 |
 | polan `GET /internal/policy/search` | Java | 用户检索 | DWD 空/异常 → `honesty.empty`，不造名 | Java 写 nGQL；专题调 `/v1`；查询入对比篮 / 发起分析 |
 | polan `GET /internal/policy/graph` | Java | 用户打开政策关联子图 | Nebula 失败 `source≠nebula`（mysql/ads/unavailable）；Java 原样透传 | Java 把失败 source 改成 nebula；专题前端调 hang/ner/intra |
-| polan `GET /internal/policy/metrics` | Java | 三项结果 KPI 总览 | ADS 空/Feign 挂 → 空 headline + `fabricated=false`；数字原样透传 | Java 自造 metric_id 口径；把 D1 改绿；fixture 填 KPI |
+| polan `GET /internal/policy/metrics` | Java | 全库指标总览。时序结果四张卡不读此接口 | ADS 空/Feign 挂 → 空 headline + `fabricated=false`；数字原样透传 | Java 自造 metric_id 口径；把 D1 改绿；fixture 填 KPI；用峰值年发布量填时序「最近一年发布量」 |
 | polan `GET /internal/policy/indicators` | Java | 分布 indicators（kind 透传） | ADS 空/Feign 挂 → 空列表 + `fabricated=false` | Java 填假分布行；暴露 `/v1/mock` |
 | Java `gkxlumen-topic-async-service` | `lumen-ui-topic` | `POST/GET /topic/v1/analysis/tasks` 政策 types + result | Job failed 诚实 failed，不签发 snapshot；I2-12 同指纹 running 复用、当天 success 复用、force 重跑 | 第二套任务中心；Feign `demo-*`；Python 自签 `result_snapshot_id`；直调 `eval.*.run()`；一次 load 4 万+；暴露 hang |
-| polan `POST /internal/policy/jobs/execute` | Java async-service | 开始分析（非切条件自动 create） | 400 VID/灌入上限；Java 不把 Python id 当 snapshot | 万级另起第二套算子；industry_vid 用 ODS 树码/中文名 |
+| polan `POST /internal/policy/jobs/execute` | Java async-service | 开始分析（非切条件自动 create）。时序/区域在创建请求内同步返回结果板 | 400 VID/灌入上限；Java 不把 Python id 当 snapshot | 一次灌入 40000+；industry_vid 用 ODS 树码/中文名；时序/区域改走 harness 空 items；把过程页四段文案写成 `totalNodes=4` |
+
+### 2.2.1 时序 Job（as-built · 样例 `POLICY-20261024-014`）
+
+不改 §1 工厂。时序与区域不读 ADS `policy_timeseries` 填在线卡。单产业用 ADS `policy_industry_rel` 等值筛 DWD；`industry_scope=all` 不筛产业；`industry_scope=cluster` 用该集群多个 INB。
+
+```mermaid
+flowchart TD
+  A["页内选全部"] --> B["POST /topic/v1/analysis/tasks"]
+  B --> C["落库 running · totalNodes=1"]
+  C --> D["execute · industry_scope=all"]
+  D --> E["DWD policy_base_info is_deleted=0 · 20000 条"]
+  E --> F["按 publish_year 汇总 1981–2026"]
+  F --> G["success · res-POLICY-20261024-014"]
+  G --> H["过程页 · viewed=false · 再 GET result"]
+```
+
+本单 2026-10-24 22:03:13–22:03:14，用户 `guest`。请求粒度是月，结果序列按年。2026 年发布 3 条，2025 年为 0，年度增长率留空。有效占比 100%。峰值年 2020 的 2402 条是切片内最大年发布量。交互说明见 FUNC-DESIGN §4.1.1。调用链见详设 `05.6.1-政策时序分析.md`。
 
 ## 2.3 发布边（E0 · K8s `dev` · 不改 §1 工厂）
 
@@ -197,7 +216,7 @@ CHAIN 现网 schema（`chainan.graph.nebula_schema`，禁止另起第二套本�
 - [x] ADS 仍为 Java 契约面；图失败 ADS 可兜底  
 - [x] **2026-09-11 增量（不翻签）**：政策重灌不同步调 Milvus；`theme` 只进 `ext5`；定码不采向量 top1  
 
-> 已由 `human:淮政玮` 于 2026-08-21 会签：`signoff_status=approved`。2026-09-11 向量消费切面为同 owner 增量，**不改签日期**。
+> 已由 `human:淮政玮` 于 2026-08-21 会签：`signoff_status=approved`。2026-09-11 向量消费切面、2026-10-24 时序 Job 执行边为同 owner 增量，**不改签日期**。
 
 ## 5. 开放项
 
