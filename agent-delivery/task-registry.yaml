@@ -40457,3 +40457,37 @@ tasks:
       - "只写 gkxlumenx_ods / gkxlumenx_dwd / gkxlumenx_ads。禁止写 demo_gkxlumenx_*，禁止写供应库 gkx。只建空表，不贴源、不洗数、不写 ES、不写 Nebula"
       - "handoff 附 information_schema 核对（库、表、缺表）。缺表未交代不得宣称完成。不代替 SYSINT-06-03-L01 的执行结果回传"
     update_time: "2026-10-26T14:56:09+08:00"
+  - id: ENT-Q068-CATALOG-SWEEP-L01
+    title: "Q068 产业目录对齐 — 清除全站老 20+8 产业字典（重点企业分析/深圳现状/引育推荐）"
+    status: "ready"
+    agent: "frontend-agent"
+    epic: "E-ENT-SCRUM-PDR"
+    priority: "P1"
+    repo: "lumen-ui-topic"
+    delivery_phase: "implementation"
+    task_type: "feature"
+    effort_points: "5"
+    difficulty: "M"
+    estimated_tokens: 300000
+    note: |
+      2026-10-26 用户全局清扫指令。背景：重点企业分析页产业下拉出现老 20+8 枚举（缺未来空间等）。根因：ent.chains(scope=future) 老字典 + 双层硬编码兜底；DWD chain 表空。统一真源 Q068 15集群（demo_gkxlumenx_dim.industry_cluster + /topic/v1/meta/industry-clusters 已验证 15集群+L0）。ES industry_chains_flat 当前全空 → chain 筛选命中 0 属数据侧待灌，UI 不造假数。
+    collaborators:
+      - "python-agent"
+      - "api-agent"
+    touched_files:
+      - "lumen-ui-topic: src/components/enterprise/keyAnalysis/TypeRegionPanel.vue"
+      - "lumen-ui-topic: src/views/enterprise/EnterpriseSzStatus.vue"
+      - "lumen-ui-topic: src/components/enterprise/recruit/RecruitFilterPanel.vue"
+      - "lumen-ui-topic: src/components/enterprise/recruit/RecruitHistoryTable.vue"
+      - "lumen-ui-topic: src/stores/entMetaChains.ts"
+      - "lumen-ui-topic: src/utils/keyAnalysisParams.ts"
+      - "lumen-topic-py: gkx_search_service/views/key_analysis.py"
+      - "lumen-topic-py: gkx_ai_service/views/recommend.py"
+      - "lumen-algo-py: lumen_common/algorithms/science/__init__.py"
+    definition_of_done:
+      - "前端 lumen-ui-topic：TypeRegionPanel（重点企业分析）、EnterpriseSzStatus（深圳现状）、RecruitFilterPanel/RecruitHistoryTable（引育推荐两模式）改挂 Q068 统一目录（IndustryClusterSelect/useIndustryClusters），删除 KEY_ANALYSIS_CHAIN_OPTIONS/SZ_STATUS_CHAIN_OPTIONS 硬编码与 entMetaChains 老回退"
+      - "后端 lumen-topic-py：key-analysis 的 chain_codes 过滤对齐 Q068 industry_id(INB L0)；引荐 filters industryDomains/industryCategories 接收新码；meta/chains 数据源链修复或废弃"
+      - "lumen-algo-py：science._FUTURE_CHAIN_CODE_TO_NAMES 老码映射（IC001/AI001/NEW_ENERGY/LOW_ALTITUDE/QUANTUM/OCEAN/ROBOT）扩至兼容 INB 新码（向后兼容旧任务快照重放）"
+      - "UI 保留 Q068 🟡 角标（待甲方确认），全部改动停在本地工作区等人工验收（2026-10-20 闸门）"
+      - "type-check 三绿 + 手工走查三页下拉均为 15 集群树 + handoff 含全局扫描清单（使用点×处理方式×页面）"
+    update_time: "2026-10-26T14:55:54+08:00"
