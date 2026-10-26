@@ -40802,13 +40802,17 @@ tasks:
       - "强度 ponytail full"
     update_time: "2026-10-26T18:44:48+08:00"
   - id: POLICY-DDL-CHECK-L04
+    model_used: "grok-4.7"
+    evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md"
+    cost_warn: "green"
+    actual_cost: 0
     supervised_by: "human:淮政玮"
     claimed_at: "2026-10-26T12:00:28.517Z"
     last_seen_at: "2026-10-26T12:00:28.517Z"
     lock_until: "2026-10-27T12:00:28.517Z"
     claimed_by: "agent:data-agent"
     title: "核对政策建表文档与 demo、产线两库结构一致"
-    status: "in_progress"
+    status: "ready_to_sign"
     agent: "data-agent"
     epic: "E-PM-DELIVERY"
     priority: "P1"
@@ -40819,7 +40823,7 @@ tasks:
     effort_points: "3"
     difficulty: "M"
     estimated_tokens: 40000
-    note: "对照 ads.md 与 dwd.md 的 CREATE。旧表 policy_base_info_pre_20261026 不是结构真源。DWD 没有 policy_text_parse 时只记录，不建表。"
+    note: "核对叶完成。结构未齐，不写联调通过。技术任务到待签收，不标 done。"
     depends_on:
       - "POLICY-DDL-ALIGN-L03"
     design_refs:
@@ -40828,7 +40832,7 @@ tasks:
       - "逐表对照 ads.md、dwd.md 的 CREATE 与 demo_gkxlumenx_*、gkxlumenx_* 的 information_schema：列名、类型、空值、默认值、索引、注释、排序规则一致，只有库名不同"
       - "不一致的表在 handoff 逐条列出，不在本叶再改库"
       - "handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md，含架构合规与 cost 四字段"
-    update_time: "2026-10-26T20:00:32+08:00"
+    update_time: "2026-10-26T20:22:26+08:00"
   - id: POLICY-DDL-CODE-L05
     model_used: "grok-4.7"
     evidence: "agent-handoffs/政策模块-E7/POLICY-DDL-CODE-L05.md"
@@ -41212,3 +41216,33 @@ tasks:
       - "硬约束：标题禁润色、诚实句必留、成因禁因果外推、solution 禁具体政策工具；narration 三态；失败退规则稿任务仍 success"
       - "单测可注入 client；handoff + 05.3.2 观测补记"
     update_time: "2026-10-26T18:38:39+08:00"
+  - id: POLICY-DDL-GAP-L10
+    supervised_by: "human:淮政玮"
+    claimed_at: "2026-10-26T12:23:05.149Z"
+    last_seen_at: "2026-10-26T12:23:05.149Z"
+    lock_until: "2026-10-27T12:23:05.149Z"
+    claimed_by: "agent:data-agent"
+    title: "补政策表注释并按文档建空的 DWD policy_text_parse"
+    status: "in_progress"
+    agent: "data-agent"
+    epic: "E-PM-DELIVERY"
+    priority: "P1"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "implementation"
+    task_type: "tech_task"
+    effort_points: "2"
+    difficulty: "S"
+    estimated_tokens: 20000
+    note: "只补 CHECK 列出的注释，并按 dwd.md 建空的 DWD policy_text_parse。"
+    depends_on:
+      - "POLICY-DDL-CHECK-L04"
+    design_refs:
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-ALIGN-长任务总控.md"
+      - "agent-delivery/agent-handoffs/政策模块-E7/POLICY-DDL-CHECK-L04.md"
+    definition_of_done:
+      - "demo 与产线 ADS 的 15 张表，表注释与 ads.md 的 CREATE 一致，列和索引不动"
+      - "四个库的 policy_industry_rel 上 id、create_time、update_time 列注释与 dwd.md 一致，类型、空值、默认值、索引不动"
+      - "demo_gkxlumenx_dwd 与 gkxlumenx_dwd 按 dwd.md 建成空的 policy_text_parse，0 行，不从 ADS 拷行"
+      - "不改 policy_base_info，不 DROP。handoff 在 agent-handoffs/政策模块-E7/POLICY-DDL-GAP-L10.md，含改前改后快照、架构合规与 cost 四字段"
+    update_time: "2026-10-26T20:23:21+08:00"
