@@ -2,6 +2,7 @@
 
 > **日期**：2026-10-26
 > **授权**：2026-10-26 用户写明「开始执行，中间不要打扰我」。本文件为此次授权。监管人 `human:淮政玮`。后续认领按本总控顺序推进，不再逐叶询问。
+> **签收**：2026-10-26 用户签收。`POLICY-DDL-CONV-L00` 至 `POLICY-DDL-GAP-L10` 共 11 叶为 `done`。签收前 `gkx-gdf-ddl-signoff` 对 `GDF-POLICY-WORKPACK-V2-L01` 退出码 0。
 > **监管人（授权后）**：`human:淮政玮`
 > **升级人**：DROP、写 ODS / 供应库 `gkx` → `human:李伟`。`policy_base_info` 改列集由 `human:淮政玮` 直接改。
 > **锁**：`lock_hours=24`
