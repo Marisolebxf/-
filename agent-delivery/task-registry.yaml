@@ -40374,3 +40374,45 @@ tasks:
       - "单测覆盖：无 Key 文案不变；客户端抛错时 headline 原样且任务成功；多写数字或丢掉连续性口径只退该卡；增长率为空时不出现最近环比"
       - "handoff 含 ponytail: full，并回填 cost 四字段"
     update_time: "2026-10-25T01:23:22+08:00"
+  - id: GDF-POLICY-WORKPACK-V2-L01
+    title: "政策维 GDF 派单包 v2 — 对标企业包，补齐产业抽取与条款结构化加工"
+    status: "ready"
+    agent: "data-agent"
+    epic: "E-PLATFORM-P1"
+    priority: "P0"
+    sprint_id: "2026-W44"
+    repo: "gkx-orchestration"
+    delivery_phase: "definition"
+    task_type: "definition"
+    subcoord: "data-algo-subcoord"
+    graph_role: "leaf"
+    ods_dependency_phase: "phase2_mapped"
+    effort_points: "8"
+    difficulty: "L"
+    estimated_tokens: 80000
+    note: |
+      2026-10-26 按企业 v4 结构建政策维派单包。v1（GDF-POLICY-WORKPACK-V1-L01，integration）只覆盖 Wave A/B，Mapping 已冻结；Wave C 产业抽取与条款结构化写在 v1.0.3 的 12，但不在原任务 DoD，也未对标企业的验收/现网差集/触发回执。本叶只新建 v2 目录，不改 v1 正文。认领时监管人用 human:淮政玮（政策 GDF Owner / WBS-06-03），不用 data-agent 默认监管徐滕强。定义叶，禁止 ponytail 强度行。图：不改 POLICY-STORAGE-FLOW；若发现新写库边，先停下来改流图会签。
+    collaborators:
+      - "human:辜少彬"
+      - "human:胡森泉"
+    touched_files:
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v2/"
+      - "agent-delivery/data/GDF/派单包/README.md"
+      - "agent-delivery/agent-handoffs/政策模块-E7/GDF-POLICY-WORKPACK-V2-L01.md"
+    design_refs:
+      - "agent-delivery/data/GDF/派单包/企业/GDF-ENT-WORKPACK-v4/README.md"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v1/"
+      - "agent-delivery/data/GDF/派单包/政策/GDF-POLICY-WORKPACK-v1/12-DWD后加工-抽取产业与条款结构化.md"
+      - "agent-delivery/data/GDF/GDF协作指南.md"
+      - "agent-delivery/data/data-design/storage/POLICY/01-data-flow.md"
+      - "agent-delivery/data/data-design/storage/POLICY/stores/mysql/dwd.md"
+    definition_of_done:
+      - "新建 派单包/政策/GDF-POLICY-WORKPACK-v2，目录对标企业 v4：00/01/02/03/04/05/06/09明细/10/11/13/15/CHANGELOG/README；v1 降为历史"
+      - "Wave A/B 原样继承 v1.0.3 已冻结内容：两源贴源后洗入一张 policy_base_info，UK 仍为 (source_plane, policy_id)；禁止重开 MAP-01、禁止改 09 字段矩阵"
+      - "加工卷与企业「写 ES / 触发图谱」同级，不进 CDC 字段矩阵：POLICY-C1 产业抽取只写 policy_industry_rel（DWD 再同步 ADS），不改主表、不回写 related_entities.industry"
+      - "POLICY-C2 条款结构化只合并 ADS policy_text_parse.structured_elements.clauses；禁止 TRUNCATE、禁止写 ES、禁止回写 DWD"
+      - "两作业交付物是 Python 脚本，逻辑与算法 demo 中台 industry_enrich/industry_job、clause_job 同一模块；禁止 CDC/SeaTunnel 另写；调用链为 GDF→Java→Python /internal/*"
+      - "15 写明 GDF 只触发与回执，不直连 Python、模型、向量库；Wave B 未 success 不触发 C；Java 门面未落地前不得写成产线已接通"
+      - "回写 data/GDF/派单包/README.md：v2 为现行政策包，v1 标历史"
+      - "本叶不出 CDC 预填 xlsx，不改 lumen 业务仓，不改 POLICY-STORAGE-FLOW 拓扑；handoff：agent-handoffs/政策模块-E7/GDF-POLICY-WORKPACK-V2-L01.md"
+    update_time: "2026-10-26T11:53:49+08:00"
