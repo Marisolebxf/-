@@ -32,10 +32,18 @@
 - 客户端对齐 Common `llm_client`（`OpenAICompatibleClient`），Key 只在集群 Secret `gkx-zhipu-llm`，Java / `gkx_ai_service` 不感知、不透传。
 - 编排仓文档 as-built：`05.3.1` §5 状态→「算法侧已实现」+ §5.7 as-built 锚点 + §7 快照同源现状 + 修订 v0.4；`05.3.2` ENT-NARRATE-01 关闭（算法侧）+ 修订行。
 
-## 测试结果
+## 代码审查（2026-10-26 第二轮，general-purpose 审查子代理）
 
-- 新增 `tests/test_ent_eval_narrate.py` **10 例全绿**：无 Key skipped、空行 skipped、客户端异常 fallback 且规则稿原样、ok 只换文案、白名单外数字/未知企业/重复卡 fallback、因果句+超长 fallback、事实包断面（无原始明细、阈值在包）、三模式字段接线、8s/0 重试/0.1 构造参数、prompt 文件即 system 唯一真源。
-- 全仓回归 `pytest tests/`：**555 passed, 6 skipped**（约 170s），存量零破坏。
+- 结论：首轮 Needs fixes（1 Critical + 4 Important + 若干 Minor）→ **全部修复并复验**。
+- Critical：competitiveness 每企业 3 行但卡片协议无 dimension、`by_name` 撞键——逐维度润色结构性不可达（单测 1 行 fixture 掩盖）。修复：卡定位键改 `(enterprise, code, dimension?)` 复合键，事实包 drafts 带 `code`/`dimension`，prompt 协议同步；补 3 行真实形态测试。
+- Important：① 重名企业静默丢卡 → 复合键含 `code` 消解；② 空/漏卡误报 ok → `applied < len(rows)` 即 `fallback(missing:N)` 如实上报；③ `missing_metric_ids` ID 数字污染白名单 → 白名单提取时剔除该字段，prompt 明示缺失只能讲「数据缺口」禁数字；④ 开发机残留 `OPENAI_API_KEY` 触发每任务 8s 外呼 → `_default_client` 只认显式 `GKX_LLM_/ENTAN_LLM_/LLM_` 前缀。
+- Minor：skipped 路径零拷贝（拷贝推迟到确认要改）；`narration.reason`/日志只记 `card{i}`/`row{j}` 序号不泄企业名；`_narrate_client` 注明测试注入通道；prompt 明示数字用阿拉伯数字不带千分位（千分位/负数会被白名单拒绝属预期保守行为）。
+- 测试缺口清零：补 competitiveness 3 行、重名按 code 区分、空卡 fallback、executor 接线（评估类生效/非评估不触碰/崩溃不改终态）、围栏变体、ok 路径 summary/radar 不动断言。测试 10 → **17 例**。
+
+## 测试结果（修复后复验）
+
+- 新增 `tests/test_ent_eval_narrate.py` **17 例全绿**（含审查后补的 7 例）：三态（含空卡/漏卡如实 fallback）、只改文案且 summary/radar/结构化字段不动、白名单外数字/未知企业/重复卡/因果句/超长逐行退规则稿、missing_metric_ids 不污染白名单、重名企业按 code 区分、competitiveness 三行逐维度、事实包断面（无原始明细、阈值在包）、8s/0 重试/0.1、executor 接线（评估类生效/非评估不触碰/崩溃不改终态）、prompt 围栏变体、prompt 文件即 system 唯一真源。
+- 全仓回归 `pytest tests/`：**558 passed, 6 skipped**（约 170s；另 `test_e2e_failure_combos_selfcheck.py` 为 assert 脚本直跑通过），存量零破坏。
 - executor 接线自检脚本：business 润色生效、`pain_points` 不触碰、narration 写回正确。
 - 契约对照 05.3.1 §5 逐条：§5.1 边界（只改三字段）✅ / §5.2 事实包 ✅ / §5.3 校验+三态+8s ✅ / §5.6 prompt 统一 ✅；ADVICE/suggestions 未润色 ✅（ENT-NARRATE-02 暂缓）。
 
