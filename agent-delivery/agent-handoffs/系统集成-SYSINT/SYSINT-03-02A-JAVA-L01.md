@@ -31,7 +31,7 @@
 | 2 | 契约信封含 `publish_status=draft/archived` 三态，实现只有 DRAFT/PUBLISHED 两态 | 完全继承 ent/svc 族已评审的 MVP 状态机（draft↔published，无 archived），契约 §3.1 读侧只消费 published，三态语义不受影响 | DRAFT\|PUBLISHED；下架=published→draft |
 | 3 | `publishedBlocks` 的 locale 过滤是 `=` 精确匹配而非语言族回退（zh→zh-CN） | 契约 §3.1 只说「locale 否，默认 zh-CN」，未定义回退规则；DDL 默认 zh-CN，运营不传 locale 时自然命中；ponytail：够用，加回退规则等甲方提出 | `AND locale=?`（仅显式传参才过滤） |
 | 4 | published 详情端点按 pano 5 表逐一探测（最多 5 次点查） | content_id 是 cms 库自增主键，无跨表目录表；5 次索引点查在内容块量级（<<企业级）可忽略；ponytail：不为此建 content 目录表，量级上来再合并 | `publishedBlock()` 顺序探测 |
-| 5 | Api-Key 机器轨扩展到 `/api/published/*`（原只挂 `/api/open/*`） | 契约 §3.1 调用方是「智树 Java」集群内服务间调用，浏览器不直连（§0.3）；不挂 Api-Key 则落到资源服务器链需 OAuth2，服务间无用户态；沿用同一 fail-closed Key（未配置=拒绝全部） | `CmsApiKeyFilterConfig.addUrlPatterns("/api/open/*","/api/published/*")` + `application.yml` ignore-urls 增 `/api/published/**` |
+| 5 | ~~Api-Key 机器轨扩展到 `/api/published/*`~~ **2026-10-26 已回退** | 原理由（契约 §3.1 调用方是智树 Java 服务间调用）被 human:徐滕强 裁决推翻：门户前后端均为自研，统一标准 Bearer 轨（服务间走 `GkxlumenOAuthRequestInterceptor` 转发用户 token）；Api-Key 历史成因是久新前端/智树后端跨团队供数（/api/open/**），自研链路不沿用。**as-built**：`CmsApiKeyFilterConfig` 收回 `/api/published/*`（commit 5146ffc）；`application.yml` ignore-urls 同步收回；消费方（智树门户装配，未开发）届时带用户 Bearer 调用即可 | Api-Key 仅剩 /api/open/*；published 端点无 token=401 fail-closed（同页面轨） |
 | 6 | events 子级只拷贝 5 个契约键落库（多余键剔除），不报 40001 | 同 ent 族结构字段「不深校验内部键」惯例的收敛版：pano_dev_history 因契约显式给了子字段表，写侧剔除多余键防未预期字段经 published 端点渗到门户（code review 2026-10-24 Minor） | `validateAndSortPanoEvents()` 只落 event_date/title/body_html/source_name/source_url |
 | 7 | 派单 §3.6 写「枚举总数=17」，实测断言为 18 | 派单撰写时未计入 SYSINT-03-03A 的 svc_business_domain（前叶已合入，改前基线=13）；12 ent+1 svc+5 pano=18 | `OpsContentMetaTest.eighteenContentTypesOneTableEach` |
 | 8 | pano 族 content_id 用共享序列 `cms_pano_content_seq` 取号（显式 insert id），非各表自增 | code review 2026-10-24 Critical：契约 §3.1 详情端点只有 content_id 无 content_type 语境，5 表各自 AUTO_INCREMENT 必然跨表撞号（每表首行都是 1），首个命中表遮蔽其余表同号行 → 详情解析错块；共享序列保证 5 表 id 全局唯一 | `OpsContentService.create()` pano 分支原子 `UPDATE ... LAST_INSERT_ID(next_id+1)` 取号；DDL 增序列表+seed 行；seed 缺失快速失败提示执行 DDL；测试 3 例覆盖 |
@@ -174,7 +174,7 @@ curl "$CMS/api/published/topic-panorama/blocks?industry_id=INB1701&content_type=
 | D9 指标血缘 | ✅ | CMS 正文不含计算数字（契约 §0.2/§1.3：企业数/机构数/区域分布全走指标服务）；本叶零 metric 交互、零编造数字；pano 页指标缺口（深圳各区计数无 metric_id）已在契约 §1.3 记录，非本叶范围 |
 | D12 demo 隔离 | ✅ | 只写 lumen-svc-platform 与 gkxlumenx_cms；零 demo-* 依赖、零 merge |
 | 真源 DWD 零写入 | ✅ | 全部 SQL 打 cms_pano_*（gkxlumenx_cms）+ cms_op_audit；测试 `publishedBlocksEmptyYields200WithEmptyArray` 断言绝不查 cms_ent_/cms_svc_（更无 dwd） |
-| 鉴权双轨隔离 | ✅ | 写侧 /cms-ops/** OAuth2（fail-closed）；读侧 /api/published/** Api-Key（fail-closed，未配置 Key=全拒）；互不复用路径 |
+| 鉴权双轨隔离 | ✅ | 写侧 /cms-ops/** OAuth2（fail-closed）；读侧 /api/published/** 已裁决回归页面轨 Bearer（2026-10-26，commit 5146ffc）；Api-Key 仅剩 /api/open/* |
 | 审计 | ✅ | 六动词全部落 cms_op_audit（op_type 大写动作、entity_type=PANO_*、snapshot_before 整行镜像、operator=SSO 用户） |
 | 禁改配置铁律 | ✅ | 未动 .gitignore/pom/CI（`-pl` 已含 gkxlumen-cms）；application.yml 仅按任务要求加 ignore-urls 一行 |
 
