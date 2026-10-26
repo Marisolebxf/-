@@ -68,11 +68,14 @@
 
 ## CI/CD（必填）
 
-- 分支：`dev`（工作区，**未 commit/push**，按验收闸门等监管人走查）
-- commit：无（人工验收后统一提交）
-- pipeline：无
-- 部署：无
-- dev 测试 URL / 命令与结果：本地 `python3 -m pytest tests/ -q` → 545 passed, 6 skipped
+- 分支：`dev`（lumen-algo-py）
+- commit：`729bc10b`（feat(science): INB 全量码表归一替换老八大小表 [agent:python-agent]，2026-10-26 16:40 监管人 human:徐滕强 放行后提交）
+- pipeline：https://aminer-edu-gitlab.jyzhang.cn/sz-gkx/gkx-lumen/lumen-algo-py/-/pipelines/3002
+- 部署 namespace / 镜像 tag：`zhipu-tts` / `729bc10b`（api+worker 自动档）
+- K8s rollout：**成功**（py:test 绿 193s → 5 镜像打包绿 → deploy:api / deploy:worker / deploy:entan-api 自动 rollout + healthz 通过）
+- dev 测试 URL / 命令与结果：本地 `pytest tests/ -q` → 545 passed, 6 skipped；CI `py:test` 同绿
+- 说明：`deploy:entan-worker` / `deploy:innov` 停 manual 属设计（`.deploy-set-image` 模板 dev 默认 manual，`FULL_PIPELINE=true` 才自动）；二者镜像只含 `vendor/entan-py|innov-py`，不含 `lumen_common`，与本次 science 改动无关
+- e2e：`e2e:chain-gold` 金路径由 deploy:api+worker 成功自动触发（规约 §段 E）
 
 ## 可观测性（建议）
 
