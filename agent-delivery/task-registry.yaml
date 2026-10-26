@@ -1,4 +1,4 @@
-# 多智能体任务队列（机器可读）
+﻿# 多智能体任务队列（机器可读）
 # coordinator-agent 每轮选取 status=ready（或 legacy pending）且 depends_on 均已 done 的 leaf 派单
 # 认领字段名词与流程：agent-delivery/task-claiming-guide.md
 # 监管人真名花名册：agent-delivery/team-roster.yaml
@@ -35132,7 +35132,7 @@ tasks:
       - "菜单以相对路径进统一用户中心"
     update_time: "2026-10-23T14:29:00+08:00"
   - id: SYSINT-03-06-L01
-    supervised_by: "human:李伟"
+    supervised_by: "human:孔东"
     title: "产业全景可视化"
     status: "ready"
     agent: "frontend-agent"
@@ -35155,7 +35155,7 @@ tasks:
       - "可视化菜单主路径可点，缺数为空态"
       - "不复用基础数据写侧，也不复用 WBS-03-02 的运营页"
       - "菜单以相对路径进统一用户中心"
-    update_time: "2026-10-23T15:38:53+08:00"
+    update_time: "2026-10-26T15:28:00+08:00"
   - id: SYSINT-03-07-L01
     supervised_by: "human:黄敬洲"
     claimed_at: "2026-10-23T04:06:39.726Z"
@@ -35268,7 +35268,10 @@ tasks:
       - "菜单相对路径由统一用户中心配置。地址不写主机名"
     update_time: "2026-10-23T15:38:47+08:00"
   - id: SYSINT-04-02-L01
-    supervised_by: "human:李伟"
+    claimed_at: "2026-10-26T07:28:00.210Z"
+    last_seen_at: "2026-10-26T07:28:00.210Z"
+    lock_until: "2026-10-26T11:28:00.210Z"
+    supervised_by: "human:孔东"
     title: "门户产业全景展示页"
     status: "ready"
     agent: "frontend-agent"
@@ -35291,11 +35294,9 @@ tasks:
       - "普通用户页。门户菜单按相对路径打开即智树页面。缺数为空态"
       - "地址为相对路径，不写主机名。不是 WBS-03-06"
       - "名称产业全景 / 专题全景对照还没有，本叶不另做已签收对照表"
-    update_time: "2026-10-23T15:38:54+08:00"
+    update_time: "2026-10-26T15:28:00+08:00"
   - id: SYSINT-04-03-L01
     supervised_by: "human:徐滕强"
-    claimed_at: "2026-10-23T06:29:21.468Z"
-    last_seen_at: "2026-10-23T06:29:21.468Z"
     lock_until: "2026-10-23T14:29:21.468Z"
     claimed_by: "human:徐滕强"
     title: "门户专题服务展示页"
@@ -40517,6 +40518,11 @@ tasks:
       - "type-check 三绿 + 手工走查三页下拉均为 15 集群树 + handoff 含全局扫描清单（使用点×处理方式×页面）"
     update_time: "2026-10-26T15:17:13+08:00"
   - id: ENT-Q068-CATALOG-SWEEP-A02
+    cost_warn: "false"
+    actual_cost: 1.9
+    model_used: "glm-4.7"
+    actual_tokens: 190000
+    evidence: "[object Object]"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T07:17:13.158Z"
     last_seen_at: "2026-10-26T07:17:13.158Z"
@@ -40534,7 +40540,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 80000
     note: |
-      ⚠️ DoD 二次修订（2026-10-26 用户指正：不能只换8项）：此前『8 项 INB 新码』是老 scope=future（八大未来产业）的残留切片。前端切 Q068 后下拉为 15 集群全量（10+5，含未来空间/未来制造/未来信息/未来健康），industryDomains/industryCategories 会传入任意集群的 INB 码。修订：删除『八大』概念，_FUTURE_CHAIN_CODE_TO_NAMES 重构为全量 INB 码表归一（真源=demo_gkxlumenx_dim.industry_cluster_map 实表 50 行，cluster_id+industry_id+industry_name），覆盖 15 集群全部 INB* L0/L1 码；未登记码走诚实 fallback（直传原码不猜名）；自检覆盖未来空间(INB180401/INB170802)等非八大集群码。主单 L01 前端下拉与 Python 过滤同口径全量 15 集群。
+      python-agent 完工（2026-10-26）：_FUTURE_CHAIN_CODE_TO_NAMES → 模块级 _INDUSTRY_CODE_TO_NAMES 全量 INB 码表（DIM 50 行快照 42 唯一码，L1 附 L0 父名，未登记码诚实 fallback）；老码键+别名零残留；自检新增 4 项（未来空间命中/fallback/老码失效/42 码不变量）；改动停本地工作区未 commit（验收闸门）；数据缺口：L0 INB1805 未登记 DIM，走 fallback。待 coordinator 走查后推状态。
     touched_files:
       - "lumen-algo-py: lumen_common/algorithms/science/__init__.py"
       - "lumen-algo-py: tests/test_resolve_filter_candidates_fallback.py"
@@ -40542,7 +40548,7 @@ tasks:
       - "lumen-algo-py：science/__init__.py 的 _FUTURE_CHAIN_CODE_TO_NAMES 扩至兼容 Q068 INB 新码（INB170101 集成电路/INB170201 生物医药/INB170102 人工智能/INB170301 新能源/INB170801 低空经济/INB180203 量子信息/INB171001 海洋经济/INB170503 智能机器人），保留 IC001/AI001 等老码映射以兼容旧任务快照重放"
       - "新增/更新最小自检（老码+新码双命中断言，参照 tests/test_resolve_filter_candidates_fallback.py 形式）"
       - "改动停在本地工作区等人工验收，handoff 含 ponytail/cost 行，回填主单 ENT-Q068-CATALOG-SWEEP-L01 evidence"
-    update_time: "2026-10-26T15:17:13+08:00"
+    update_time: "2026-10-26T16:00:31+08:00"
     update_time: "2026-10-26T14:55:54+08:00"
   - id: QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01
     evidence: "agent-handoffs/QA/QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01.md"
@@ -40575,3 +40581,30 @@ tasks:
       - "试跑环境 http://10.50.69.111:30892/，无头，每条最多两次。已发起仍为空结果壳的保持 blocked"
       - "handoff 列出重写后的 pass、blocked、fail 条数。不要求 blocked 与 fail 清零。不改交付 Excel"
     update_time: "2026-10-26T14:58:56+08:00"
+
+  - id: KG-YANDA-GAP-L01
+    title: "展示系统图谱需求 GAP 差集分析：算法中台已有 + 燕大已有 vs 致燕大接口需求清单"
+    status: "in_progress"
+    note: |
+      来源：淮政玮 2026-10-26 分派。WBS 细化要求：展示系统图谱接口需求（致燕大清单）减去已有能力，得到 GAP 差集。
+      公式：GAP = 需求 - 已有（算法中台已支持的上图过程 + 燕大已有图谱能力）。
+      需求侧：致燕大接口需求清单 v1.0（第二至六章，14 实体 / 17 关系 / 99 属性 / 31 计算能力 / 10 写入接口）。
+      已有侧 ①：GKX 算法中台已有的能力——全部算法库（产业链、企业、人才、政策、成果等），覆盖"上图写入"流水线 + "读取查询"能力，图谱五档过程 A 实体识别→B 链内边→C 产业六主体→D 产业自身浏览→E 全景浏览，op_id 含 CHAIN_NER_INDUSTRY 等。
+      已有侧 ②：燕大已有图谱能力——唐绍祖 KG-YANDA-SCHEMA-COMPARE-L01 调研报告（17 实体 / 33 关系，推理服务 9 个）。
+      输出：逐项比对需求侧每一条，标注"算法中台已有 / 燕大已有 / 两者均无（GAP）"，GAP 项说明差集具体缺什么。
+      粒度：实体/关系/属性/计算能力/写入接口五级，属性/字段级全量比对；每条标注数据源（如有）。
+      签收人：human:淮政玮。
+    depends_on:
+      - "KG-YANDA-SCHEMA-REQ-L01"
+      - "KG-YANDA-SCHEMA-COMPARE-L01"
+    design_refs:
+      - "agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/KG-YANDA-SCHEMA-REQ/科技信息展示系统-知识图谱实体、实体关系属性需求清单.md"
+      - "agent-delivery/designs/亿集知识图谱/燕大图谱平台schema对比调研报告.md"
+      - "agent-delivery/agent-handoffs/KG-YANDA-SCHEMA-COMPARE-L01.md"
+    definition_of_done:
+      - "GAP 差集分析文档落盘 agent-delivery/工程过程/02-策划与监控/01-总集大项目整体计划/外部接口依赖/KG-YANDA-SCHEMA-REQ/，文件名含 GAP 关键字"
+      - "五大类逐项比对完成：14 实体 / 17 关系 / 99 属性（含字段级） / 31 计算能力 / 10 写入接口；每条标注数据源"
+      - "每行标注：需求项 \| 数据源 \| 算法中台已有（op_id/查询接口） \| 燕大已有（对应关系/接口名） \| GAP 状态（OK已覆盖 / 部分覆盖 / 完全空白） | GAP 说明"
+      - "汇总 GAP 差集清单，按优先级排序，标注建议补建方向（算法中台补上图 / 燕大扩接口 / 我方新建）"
+      - "handoff 落盘并 git push origin/dev，经 human:淮政玮 签收"
+    update_time: "2026-10-26T23:00:00+08:00"
