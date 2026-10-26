@@ -457,7 +457,7 @@ mysql:
 
 elasticsearch:
   hosts:
-    - http://192.168.88.43:9200
+    - http://10.50.11.76:9200
   username: elastic
   password: "<线下，禁止写入派单包/文档>"
   verify_certs: false
