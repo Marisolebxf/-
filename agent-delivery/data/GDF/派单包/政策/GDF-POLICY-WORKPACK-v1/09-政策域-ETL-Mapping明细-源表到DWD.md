@@ -50,8 +50,8 @@
 
 ### 1.3 过滤
 
-读 ODS：`is_deleted = 0 AND IFNULL(is_history, 0) = 0`。  
-写 DWD：`is_deleted = 0`。
+读 ODS：**无行过滤**。不要加 `is_deleted = 0`，也不要加 `IFNULL(is_history, 0) = 0`。  
+写 DWD：`is_deleted`、`is_history` 都取源列原值，禁止写成常量 `0`。`is_history` 的 `NULL` 原样写入，表示当前。应用读 `policy_base_info` 时自行加 `is_deleted = 0` 与 `IFNULL(is_history, 0) = 0`。
 
 ### 1.4 年份 / 状态 / 级别
 
@@ -90,16 +90,18 @@
 
 ## 3. 逐表字段
 
-公共治理列（`etl_batch_id` / `ods_updated_time` / `is_deleted` / `created_time` / `updated_time`）按作业生成，下表不重复。过滤见 §1.3。
+公共治理列（`etl_batch_id` / `ods_updated_time` / `created_time` / `updated_time`）按作业生成，下表不重复。`is_deleted`、`is_history` 是源列直接映射，见各表字段矩阵。过滤见 §1.3。
 
 ### 3.1 `dwd_policy_base` → `policy_base_info`
 
-**行过滤**：`is_deleted = 0 AND IFNULL(is_history, 0) = 0`。  
+**行过滤**：无。不过滤 `is_deleted`，也不过滤 `is_history`。  
 **派生**：`source_plane` = `domestic`。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `id` | `policy_id` | 直接 | 原文；空行丢弃 |
+| `is_deleted` | `is_deleted` | 直接 | `0`/`1` 原样。取数不过滤 |
+| `is_history` | `is_history` | 直接 | `0` 当前 / `1` 历史 / `NULL` 原样（`NULL` 视为当前）。取数不过滤 |
 | `title` | `title` | 直接 | 源 varchar(500) |
 | `publish_code` | `issued_number` | 直接 | |
 | `ministry` | `publish_organization` | 直接 | |
@@ -134,13 +136,15 @@
 
 ### 3.2 `dwd_global_policy_base` → `policy_base_info`
 
-**行过滤**：`is_deleted = 0 AND IFNULL(is_history, 0) = 0`。  
+**行过滤**：无。不过滤 `is_deleted`，也不过滤 `is_history`。  
 **派生**：`source_plane` = `global`。  
 国际源无 `rank` / `type` / `status` / `expire_date` / `province|city|district`：对应列 NULL，禁止用国内码回填。
 
 | 源字段 | 目标字段 | 映射类型 | 转换逻辑 |
 |---|---|---|---|
 | `id` | `policy_id` | 直接 | 与国内同一字符串空间；靠 source_plane 区分 |
+| `is_deleted` | `is_deleted` | 直接 | `0`/`1` 原样。取数不过滤 |
+| `is_history` | `is_history` | 直接 | `0` 当前 / `1` 历史 / `NULL` 原样（`NULL` 视为当前）。取数不过滤 |
 | `title` | `title` | 直接 | 源为 text |
 | `abstract` | `abstract` | 直接 | |
 | `organ` | `publish_organization` | 直接 | 必填；空则 drop 并计数 |
@@ -187,7 +191,7 @@
 5. 禁止写 ADS / ES / Nebula
 ```
 
-增量建议：源 `updated_time`（空则 `created_time`）水位；删除跟 `is_deleted=1` 或历史翻转为软删 DWD。具体 CDC 参数由产线回签。
+增量建议：源 `updated_time`（空则 `created_time`）水位。源 `is_deleted` 变为 `1`、或 `is_history` 变为 `1` 时，把同一值写入 DWD，不在取数 SQL 里丢掉该行。具体 CDC 参数由产线回签。应用读 DWD 加 `is_deleted = 0` 与 `IFNULL(is_history, 0) = 0`。
 
 ---
 

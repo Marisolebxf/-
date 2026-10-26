@@ -1,5 +1,15 @@
 # CHANGELOG · GDF-POLICY-WORKPACK
 
+## 对照修订 · 2026-10-26（不升 Mapping 版本）
+
+- `12` 去掉内部 HTTP。`scripts/` 与现行包 v2 同文。Mapping 仍是 v1.0.4。现行施工只认 v2。
+
+## v1.0.4 · 2026-10-26
+
+- 取数无行过滤。`is_deleted`、`is_history` 都原样进 ODS，Wave B 直接映射到 `policy_base_info` 同名列。`is_history` 的 `NULL` 不改写成 `0`。
+- DWD `policy_base_info` 增加 `is_history`（`10/policy_base_info-MySQL.md`）。
+- 应用读 DWD 时自行加 `is_deleted = 0` 与 `IFNULL(is_history, 0) = 0`。见 `04`、`02`、`09` §1.3 / §3。
+
 ## v1.0.3 · 2026-10-23
 
 - 生产规约：抽取产业、条款结构化必须提供 Python 脚本，逻辑与算法 demo 中台同一模块（`industry_enrich` / `industry_job`、`clause_job`）。禁止 CDC / SeaTunnel 另写。见 `12` 脚本规约。
