@@ -40518,6 +40518,11 @@ tasks:
       - "type-check 三绿 + 手工走查三页下拉均为 15 集群树 + handoff 含全局扫描清单（使用点×处理方式×页面）"
     update_time: "2026-10-26T15:17:13+08:00"
   - id: ENT-Q068-CATALOG-SWEEP-A02
+    cost_warn: "false"
+    actual_cost: 1.9
+    model_used: "glm-4.7"
+    actual_tokens: 190000
+    evidence: "[object Object]"
     supervised_by: "human:徐滕强"
     claimed_at: "2026-10-26T07:17:13.158Z"
     last_seen_at: "2026-10-26T07:17:13.158Z"
@@ -40535,7 +40540,7 @@ tasks:
     difficulty: "S"
     estimated_tokens: 80000
     note: |
-      ⚠️ DoD 二次修订（2026-10-26 用户指正：不能只换8项）：此前『8 项 INB 新码』是老 scope=future（八大未来产业）的残留切片。前端切 Q068 后下拉为 15 集群全量（10+5，含未来空间/未来制造/未来信息/未来健康），industryDomains/industryCategories 会传入任意集群的 INB 码。修订：删除『八大』概念，_FUTURE_CHAIN_CODE_TO_NAMES 重构为全量 INB 码表归一（真源=demo_gkxlumenx_dim.industry_cluster_map 实表 50 行，cluster_id+industry_id+industry_name），覆盖 15 集群全部 INB* L0/L1 码；未登记码走诚实 fallback（直传原码不猜名）；自检覆盖未来空间(INB180401/INB170802)等非八大集群码。主单 L01 前端下拉与 Python 过滤同口径全量 15 集群。
+      python-agent 完工（2026-10-26）：_FUTURE_CHAIN_CODE_TO_NAMES → 模块级 _INDUSTRY_CODE_TO_NAMES 全量 INB 码表（DIM 50 行快照 42 唯一码，L1 附 L0 父名，未登记码诚实 fallback）；老码键+别名零残留；自检新增 4 项（未来空间命中/fallback/老码失效/42 码不变量）；改动停本地工作区未 commit（验收闸门）；数据缺口：L0 INB1805 未登记 DIM，走 fallback。待 coordinator 走查后推状态。
     touched_files:
       - "lumen-algo-py: lumen_common/algorithms/science/__init__.py"
       - "lumen-algo-py: tests/test_resolve_filter_candidates_fallback.py"
@@ -40543,7 +40548,7 @@ tasks:
       - "lumen-algo-py：science/__init__.py 的 _FUTURE_CHAIN_CODE_TO_NAMES 扩至兼容 Q068 INB 新码（INB170101 集成电路/INB170201 生物医药/INB170102 人工智能/INB170301 新能源/INB170801 低空经济/INB180203 量子信息/INB171001 海洋经济/INB170503 智能机器人），保留 IC001/AI001 等老码映射以兼容旧任务快照重放"
       - "新增/更新最小自检（老码+新码双命中断言，参照 tests/test_resolve_filter_candidates_fallback.py 形式）"
       - "改动停在本地工作区等人工验收，handoff 含 ponytail/cost 行，回填主单 ENT-Q068-CATALOG-SWEEP-L01 evidence"
-    update_time: "2026-10-26T15:17:13+08:00"
+    update_time: "2026-10-26T16:00:31+08:00"
     update_time: "2026-10-26T14:55:54+08:00"
   - id: QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01
     evidence: "agent-handoffs/QA/QA-KJZTFWXT-BLINE-SCRIPT-REVISE-L01.md"
