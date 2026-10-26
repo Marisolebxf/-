@@ -123,8 +123,6 @@ node scripts/find-supervisor-slot.mjs --subcoord lineage-subcoord --json
 ```bash
 # 在 demo-ui-topic 仓创建一个新 worktree 跑 E-ENT-IA
 ./scripts/worktree-helper.sh add demo-ui-topic E-ENT-IA feat/ent-elements
-# 编排仓多会话（与业务仓同一套）：
-./scripts/worktree-helper.sh add gkx-orchestration sysint-0303a feat/sysint-0303a
 # → worktrees/demo-ui-topic--E-ENT-IA/
 
 # 列出所有 worktree
